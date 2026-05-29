@@ -18,18 +18,23 @@ When adding a new component to the design system, follow these steps to keep the
 Short 1-2 sentence description of the component and its primary use case.
 
 ## Alternate Names
+
 Other names developers or design systems commonly use for this component (e.g., Collapse, Modal, Dropdown).
 
 ## When to Use
+
 Clear guidelines and scenarios where this component is appropriate.
 
 ## When Not to Use
+
 Scenarios where an alternative component is more suitable, along with recommendations.
 
 ## Types of Data Edited
+
 The types of data, inputs, or states this component is used to manage or display.
 
 ## Best Practices
+
 A list of visual, functional, and accessibility guidelines to ensure a premium implementation.
 ```
 
