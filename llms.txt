@@ -1,0 +1,50 @@
+# Recursica Design System - LLMs & AI Assistant Guide
+
+This document is optimized for LLM ingestion to help AI coding assistants understand the architecture, style, guidelines, and components of the **Recursica Design System**.
+
+---
+
+## 🚀 Core Philosophy & Architectural Intent
+
+Recursica is an adapter-based design system. It allows developers to write clean, adapter-agnostic UI code while compiling/resolving components to target component libraries (like Mantine or Material UI/MUI) dynamically.
+
+1.  **Strict Styling Isolation**: Never write ad-hoc CSS or Tailwind utilities for things that the design system provides.
+2.  **Adapter Agnostic API**: Use Recursica component props to configure layouts, variants, and colors.
+3.  **High-Performance Code**: Avoid unnecessary rendering overhead. Keep component imports specific to their adapters when compiling.
+
+---
+
+## 📖 Global AI Instructions
+
+Detailed guidelines on how to code with Recursica are available in:
+*   [AGENT.md](file:///Users/mattmassey/work/recursica-knowledge/AGENT.md) - Deep guidelines for component selection, styling conventions, and adapter patterns.
+
+---
+
+## 📦 Component Registry
+
+Here is the index of available components under the `components/` folder. Use the paths below to fetch detailed specifications for individual components:
+
+### Foundational & Layout Components
+
+*   **Accordion**
+    *   *Path*: [components/Accordion/Accordion.md](file:///Users/mattmassey/work/recursica-knowledge/components/Accordion/Accordion.md)
+    *   *Summary*: A collapsible content panel commonly used to toggle visibility of details. Supports multiple expanded items and micro-interactions.
+*   **Button**
+    *   *Path*: [components/Button/Button.md](file:///Users/mattmassey/work/recursica-knowledge/components/Button/Button.md)
+    *   *Summary*: A premium interactive trigger for actions, featuring multiple states (loading, disabled, hover), variants (filled, outlined, text), and size configurations.
+*   **Card**
+    *   *Path*: [components/Card/Card.md](file:///Users/mattmassey/work/recursica-knowledge/components/Card/Card.md)
+    *   *Summary*: A visual container used to group related information, featuring smooth shadow styling, borders, and hover micro-animations.
+*   **Checkbox**
+    *   *Path*: [components/Checkbox/Checkbox.md](file:///Users/mattmassey/work/recursica-knowledge/components/Checkbox/Checkbox.md)
+    *   *Summary*: A binary selection input supporting custom check icons, label alignments, and indeterminate states.
+*   **Dialog**
+    *   *Path*: [components/Dialog/Dialog.md](file:///Users/mattmassey/work/recursica-knowledge/components/Dialog/Dialog.md)
+    *   *Summary*: A modal window overlay for displaying focal content, configuration, or confirmation flows.
+*   **Select**
+    *   *Path*: [components/Select/Select.md](file:///Users/mattmassey/work/recursica-knowledge/components/Select/Select.md)
+    *   *Summary*: A dropdown input allowing selection from a list of options. Supports searching, multi-selection, and customized option rendering.
+*   **TextField**
+    *   *Path*: [components/TextField/TextField.md](file:///Users/mattmassey/work/recursica-knowledge/components/TextField/TextField.md)
+    *   *Summary*: A versatile text input field with support for prefixes, suffixes, validation errors, and floating labels.
