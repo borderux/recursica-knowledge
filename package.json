@@ -1,0 +1,38 @@
+{
+  "name": "@recursica/knowledge",
+  "description": "Recursica design system central knowledge, documentation, and agent instructions",
+  "version": "0.1.0",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://github.com/borderux/recursica-knowledge#readme",
+  "bugs": {
+    "url": "https://github.com/borderux/recursica-knowledge/issues"
+  },
+  "author": "hi@borderux.com",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/borderux/recursica-knowledge.git"
+  },
+  "files": [
+    "components",
+    "llms.txt",
+    "AGENT.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "version": "changeset version",
+    "release": "changeset publish --access public"
+  },
+  "packageManager": "npm@10.9.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@changesets/changelog-github": "^0.5.1",
+    "@changesets/cli": "^2.29.4"
+  }
+}

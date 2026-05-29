@@ -1,0 +1,49 @@
+# Unified Release Workflow for @recursica/knowledge
+#
+# This workflow handles releases for the recursica-knowledge package using Changesets.
+# When a pull request created by Changesets is merged into main:
+# - It automatically bumps the version number in package.json.
+# - It publishes the package to npmjs.org.
+# - It creates a GitHub release and git tags.
+
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # To create releases and tags
+      pull-requests: write # To create pull requests
+      id-token: write # Required for NPM OIDC Trusted Publishing (Provenance)
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "npm"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create Release Pull Request or Publish to GitHub Releases
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          publish: npm run release
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_PAT }}
+          NPM_CONFIG_PROVENANCE: true
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
