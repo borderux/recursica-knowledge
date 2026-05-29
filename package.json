@@ -1,7 +1,7 @@
 {
   "name": "@recursica/knowledge",
   "description": "Recursica design system central knowledge, documentation, and agent instructions",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": false,
   "publishConfig": {
     "access": "public"
