@@ -25,7 +25,9 @@
   ],
   "scripts": {
     "version": "changeset version",
-    "release": "changeset publish --access public"
+    "release": "changeset publish --access public",
+    "prepare": "node .husky/install.mjs",
+    "format": "prettier --write \"**/*.{json,md,yml,yaml}\""
   },
   "packageManager": "npm@10.9.0",
   "engines": {
@@ -33,6 +35,12 @@
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.1",
-    "@changesets/cli": "^2.29.4"
+    "@changesets/cli": "^2.29.4",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.2",
+    "prettier": "3.5.3"
+  },
+  "lint-staged": {
+    "*.{json,md,yml,yaml}": "prettier --write"
   }
 }
