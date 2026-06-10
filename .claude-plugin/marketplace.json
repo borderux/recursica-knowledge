@@ -1,0 +1,17 @@
+{
+  "name": "recursica-knowledge",
+  "owner": {
+    "name": "recursica"
+  },
+  "metadata": {
+    "description": "A collection of Claude Agent Skills and components for building and extending the Recursica Design System."
+  },
+  "plugins": [
+    {
+      "name": "recursica-knowledge",
+      "description": "Skills and component specifications for component selection, design token application, and component implementation in Recursica.",
+      "source": "./",
+      "skills": ["./skills/recursica-component-selector"]
+    }
+  ]
+}

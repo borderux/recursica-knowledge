@@ -1,41 +1,13 @@
-# Recursica Knowledge & Design System
+# Recursica Knowledge
 
-Welcome to the central knowledge, documentation, and skill store for the **Recursica Design System**. This repository contains premium, structured markdown documentation detailing all UI components, adapter-level mapping guidelines (e.g. Mantine and Material UI), and agentic instruction files.
+Welcome to the central repository for **Recursica Design System Agent Skills and Knowledge**. This repository acts as a registered marketplace for Claude Code plugins and modular agent skills, allowing AI coding assistants to gain deep, procedural knowledge of the Recursica architecture, component definitions, and styling principles.
 
-These resources are designed to be ingested by developers and dynamically served to AI coding assistants via the `recursica-mcp` Model Context Protocol (MCP) server.
+## 🚀 Getting Started & Installation
 
-## 📝 Documenting a New Component
+For detailed step-by-step setup guides (using the npm package or the Claude plugin marketplace), please see **[SETUP.md](SETUP.md)**.
 
-When adding a new component to the design system, follow these steps to keep the documentation consistent:
+---
 
-1.  **Create a Folder**: Inside `components/`, create a new folder named after the component (e.g., `components/Badge/`).
-2.  **Add Markdown File**: Inside that folder, create `<ComponentName>.md` (e.g., `Badge.md`).
-3.  **Use the Component Template**: Structure the markdown document using the following template:
+## 🤝 Contributing to the Registry
 
-```markdown
-# Component Name
-
-Short 1-2 sentence description of the component and its primary use case.
-
-## Alternate Names
-
-Other names developers or design systems commonly use for this component (e.g., Collapse, Modal, Dropdown).
-
-## When to Use
-
-Clear guidelines and scenarios where this component is appropriate.
-
-## When Not to Use
-
-Scenarios where an alternative component is more suitable, along with recommendations.
-
-## Types of Data Edited
-
-The types of data, inputs, or states this component is used to manage or display.
-
-## Best Practices
-
-A list of visual, functional, and accessibility guidelines to ensure a premium implementation.
-```
-
-4.  **Register the Component**: Add the new component path and description to the root [llms.txt](file:///Users/mattmassey/work/recursica-knowledge/llms.txt) so that LLMs can instantly discover it.
+If you would like to document a new component or create a new Claude skill, please see [CONTRIBUTING.md](CONTRIBUTING.md) for detailed step-by-step instructions.

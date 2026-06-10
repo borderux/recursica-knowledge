@@ -1,84 +1,90 @@
-# AGENT.md - System Instructions for AI Coding Assistants
+# AGENT.md - Guide for Creating & Extending Agent Skills
 
-This document serves as the official system instruction and handbook for AI coding agents developing, extending, or consuming the **Recursica Design System**.
+This document defines the official guidelines and architectural rules for developers creating, extending, or maintaining **Recursica Knowledge** agent skills.
 
-Any agent writing code within Recursica adapter packages (`mui-adapter`, `mantine-adapter`) or building downstream projects must adhere strictly to the guidelines defined below.
+Any agent or developer contributing skills to this repository must follow the conventions outlined below to ensure compatibility, efficiency, and high-quality UI generation.
 
 ---
 
-## 📐 1. The Recursica Architecture
+## 📏 1. The Recursica Architecture
 
-Recursica utilizes a decoupled, adapter-based architecture. This architecture splits component definitions from concrete library implementations:
+All skills generated here should guide AI assistants to respect Recursica's decoupled, adapter-based design system. AI agents must keep component definitions isolated from target libraries:
 
+- **`adapter-common`**: Defines the shared TypeScript interfaces, design tokens, utility functions, and props.
+- **Adapters (`mui-adapter`, `mantine-adapter`)**: The concrete implementations mapping Recursica props to Material UI or Mantine.
+- **Guideline**: Skills must instruct downstream AI agents to _only_ import abstract components from the appropriate adapter package, rather than raw target library components or raw HTML.
+
+---
+
+## 🎨 2. Skill Styling & Aesthetic Rules
+
+Recursica is designed for **premium visual experiences**. When writing instructions for skills (e.g. how the agent should build components), enforce the following:
+
+1. **Design Tokens**: Do not use ad-hoc pixel overrides. Use theme variables (e.g., `<Card padding="md" radius="lg">` instead of `style={{ padding: '14px' }}`).
+2. **Micro-Animations**: Require smooth transitions (`transition: all 0.2s ease-in-out`) and interactive states (hover transformations, active states).
+3. **Typography**: Enforce hierarchical headers (`h1` -> `h2` -> `h3`) for SEO and accessibility.
+
+---
+
+## 🧠 3. How to Create a New Agent Skill
+
+A skill consists of procedural instructions that load into an AI agent's context on-demand. To add a new skill to the marketplace:
+
+### Step 1: Create the Skill Directory
+
+Under the `skills/` folder, create a new subdirectory named with a lowercase, hyphen-separated identifier:
+
+```bash
+mkdir skills/my-new-skill
 ```
-                      +-------------------+
-                      |  adapter-common   |
-                      | (Core Interfaces) |
-                      +---------+---------+
-                                |
-        +-----------------------+-----------------------+
-        |                                               |
-        v                                               v
-+-------+-----------+                           +-------+-----------+
-|    mui-adapter    |                           |  mantine-adapter  |
-|  (MUI Components) |                           | (Mantine Comp.)   |
-+-------------------+                           +-------------------+
+
+### Step 2: Create the `SKILL.md`
+
+Inside that folder, create a `SKILL.md` file. It must follow this exact format:
+
+```markdown
+---
+name: my-new-skill
+description: A concise 1-2 sentence description explaining when Claude should trigger this skill.
+version: 1.0.0
+---
+
+# My New Skill Title
+
+Detailed guidelines, step-by-step instructions, and output examples explaining what the AI agent should do when this skill is activated.
 ```
 
-- **`adapter-common`**: Defines the shared TypeScript interfaces, design tokens, utility functions, and prop specifications. All adapter packages must extend and enforce these contracts.
-- **Adapters (`mui-adapter`, `mantine-adapter`)**: The concrete implementations that translate Recursica's abstract props into styled components utilizing the underlying target library (MUI or Mantine).
+### Step 3: Design the Trigger Description (Crucial)
+
+The `description` field in the YAML frontmatter controls **Progressive Disclosure**. At startup, Claude only loads this description. Write it carefully so Claude knows exactly when to load the full skill:
+
+- **Good**: `"Trigger this when the developer asks to design, write, or refactor a UI layout containing forms or text input fields."`
+- **Bad**: `"Instructions for form components."` (too vague, won't trigger reliably).
+
+### Step 4: Register in the Marketplace Manifest
+
+Open [.claude-plugin/marketplace.json](file:///Users/mattmassey/work/recursica-knowledge/.claude-plugin/marketplace.json) and add your skill path to the `skills` array under the `recursica-knowledge` plugin list:
+
+```json
+{
+  "name": "recursica-knowledge",
+  "plugins": [
+    {
+      "name": "recursica-knowledge",
+      ...
+      "skills": [
+        "./skills/recursica-component-selector",
+        "./skills/my-new-skill"
+      ]
+    }
+  ]
+}
+```
 
 ---
 
-## 🎨 2. Aesthetic & Styling Guidelines
+## ⚠️ 4. Common Anti-Patterns to Avoid in Skills
 
-Recursica is built to deliver **premium, state-of-the-art visual experiences**. When rendering or modifying UI components, agents must prioritize rich aesthetics:
-
-1.  **Harmonious Color Palettes**:
-    - Avoid generic CSS colors (`red`, `blue`, `#00ff00`).
-    - Use carefully selected primary, secondary, and neutral palettes defined in the Recursica theme system.
-    - Leverage semi-transparent backgrounds and backdrops (`rgba` or `hsla`) to implement glassmorphism when appropriate.
-2.  **Typography & Hierarchy**:
-    - Ensure distinct differences in weights (e.g., Light 300, Regular 400, Medium 500, Semi-Bold 600, Bold 700).
-    - Always structure headers hierarchically (`h1` -> `h2` -> `h3`) for screen readers and SEO correctness.
-3.  **Micro-Animations & Transitions**:
-    - All interactive elements (buttons, accordion headers, dropdown options, text inputs) must feature smooth transitions (`transition: all 0.2s ease-in-out`).
-    - Use subtle hover transformations (e.g., `transform: translateY(-1px)` or opacity adjustments) to keep the application feeling responsive and alive.
-4.  **No Placeholders**:
-    - Never render generic grey blocks for images or text. Use generated visual media or realistic contextual dummy text.
-
----
-
-## 🚀 3. Coding Workflow & Component Selection
-
-When tasked with building or editing a user interface, AI agents must follow this systematic process:
-
-### Step 1: Discover & Map Components
-
-Before writing a component from scratch, search the `recursica-knowledge` base (or use the MCP `list_components` tool) to see if a matching component already exists (e.g. `Accordion`, `TextField`).
-
-- **RULE**: If a Recursica component exists, you **MUST** use it. Do not write raw HTML elements (`<button>`, `<input>`) or pull components directly from MUI/Mantine.
-
-### Step 2: Configure Layouts via Tokens
-
-Align components using Recursica spacing and layout props. Do not use ad-hoc pixel values in your styles.
-
-- **Good**: `<Card padding="md" radius="lg">`
-- **Bad**: `<div style={{ padding: '14px', borderRadius: '10px' }}>`
-
-### Step 3: Implement Adapters Correctly
-
-When working inside an adapter package (e.g., `packages/mui-adapter`), ensure you:
-
-1.  Import core types from `@recursica/adapter-common`.
-2.  Map Recursica-specific props to the corresponding target library properties.
-3.  Ensure the styling conforms to the target library's theme provider system to ensure uniform spacing and color application.
-
----
-
-## ⚠️ 4. Common Anti-Patterns to Avoid
-
-- ❌ **Bypassing the Adapter**: Importing standard MUI or Mantine components directly into downstream projects without using the Recursica adapter wrappers. This breaks library interchangeability.
-- ❌ **Direct Style Overrides**: Overriding component visuals using nested CSS sheets that bypass Recursica's theme variables.
-- ❌ **Incomplete Prop-Mapping**: Creating new features in `mui-adapter` without checking if the same props are implemented or stubbed in `mantine-adapter`, leading to cross-adapter drift.
-- ❌ **Skipping Accessibility**: Neglecting `aria-*` tags, keyboard focus rings, and proper semantic HTML elements.
+- ❌ **Over-stuffing the Context**: Avoid putting static component specs directly inside the `SKILL.md` file. Instead, instruct the agent to read the matching Markdown file inside the [components/](file:///Users/mattmassey/work/recursica-knowledge/components/) folder.
+- ❌ **Ambiguous YAML name**: Using capital letters or spaces in the YAML frontmatter `name` key. Keep it kebab-case (e.g. `recursica-component-selector`).
+- ❌ **Unregistered Skills**: Creating a skill folder under `skills/` but forgetting to add its path to `marketplace.json`, which makes it undiscoverable by the plugin loader.

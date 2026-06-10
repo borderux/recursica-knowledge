@@ -11,13 +11,22 @@ Recursica is an adapter-based design system. It allows developers to write clean
 1.  **Strict Styling Isolation**: Never write ad-hoc CSS or Tailwind utilities for things that the design system provides.
 2.  **Adapter Agnostic API**: Use Recursica component props to configure layouts, variants, and colors.
 3.  **High-Performance Code**: Avoid unnecessary rendering overhead. Keep component imports specific to their adapters when compiling.
+---
+
+## 📁 Repository Structure
+
+- [skills/](file:///Users/mattmassey/work/recursica-knowledge/skills/) - Contains custom, modular Claude Agent Skills. Each skill is stored in its own directory with a `SKILL.md` file (conforming to the Anthropic Agent Skills specification).
+  - For example, [recursica-component-selector](file:///Users/mattmassey/work/recursica-knowledge/skills/recursica-component-selector/) helps the agent choose the right UI components.
+- [components/](file:///Users/mattmassey/work/recursica-knowledge/components/) - A directory containing structured Markdown files documenting individual UI components in the Recursica system (e.g., behaviors, data types, and guidelines). Skills reference these specifications to build correct UI code.
+- [.claude-plugin/](file:///Users/mattmassey/work/recursica-knowledge/.claude-plugin/) - Contains configuration files for the plugin marketplace:
+  - [marketplace.json](file:///Users/mattmassey/work/recursica-knowledge/.claude-plugin/marketplace.json) registers the repository and lists the available skills.
 
 ---
 
 ## 📖 Global AI Instructions
 
-Detailed guidelines on how to code with Recursica are available in:
-*   [AGENT.md](file:///Users/mattmassey/work/recursica-knowledge/AGENT.md) - Deep guidelines for component selection, styling conventions, and adapter patterns.
+Detailed guidelines on how to code with Recursica and write new skills are available in:
+*   [AGENT.md](file:///Users/mattmassey/work/recursica-knowledge/AGENT.md) - Deep guidelines for component selection, styling conventions, adapter patterns, and creating new Agent Skills.
 
 ---
 
