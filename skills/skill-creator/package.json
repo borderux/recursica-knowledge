@@ -1,0 +1,15 @@
+{
+  "name": "skill-creator",
+  "version": "0.1.0",
+  "description": "Create new skills, modify and improve existing skills, and measure skill performance.",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "See LICENSE.txt",
+  "author": "Anthropic",
+  "repository": {
+    "type": "git",
+    "url": "git+https://https://github.com/anthropics/skills.git"
+  }
+}

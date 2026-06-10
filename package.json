@@ -2,7 +2,14 @@
   "name": "@recursica/knowledge",
   "description": "Recursica design system central knowledge, documentation, and agent instructions",
   "version": "0.2.0",
+  "bin": {
+    "recursica-knowledge": "./bin/init.js"
+  },
   "private": false,
+  "workspaces": [
+    ".",
+    "skills/*"
+  ],
   "publishConfig": {
     "access": "public"
   },
@@ -17,8 +24,10 @@
     "url": "git+https://github.com/borderux/recursica-knowledge.git"
   },
   "files": [
+    "bin",
     "components",
     "skills",
+    "docs",
     "llms.txt",
     "AGENT.md",
     "README.md",
@@ -28,7 +37,9 @@
     "LICENSE"
   ],
   "scripts": {
-    "version": "changeset version",
+    "build": "node scripts/build-skills.js",
+    "postinstall": "node bin/init.js",
+    "version": "changeset version && node scripts/sync-skill-versions.js",
     "release": "changeset publish",
     "prepare": "node .husky/install.mjs",
     "format": "prettier --write \"**/*.{json,md,yml,yaml}\""

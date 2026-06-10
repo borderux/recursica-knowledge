@@ -1,6 +1,10 @@
 ---
 name: skill-creator
-description: Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, edit, or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy.
+description: Create new skills, modify and improve existing skills, and measure skill performance.
+license: See LICENSE.txt
+metadata:
+  author: Anthropic
+  version: 0.1.0
 ---
 
 # Skill Creator
@@ -44,6 +48,9 @@ It's OK to briefly explain terms if you're in doubt, and feel free to clarify te
 
 ## Creating a skill
 
+> [!IMPORTANT] > **Working in the Recursica Knowledge Repository**:
+> If you are creating, setting up, or registering a skill inside this repository, you must follow the repository-specific workflows, package configuration, and local registration (symlinking) rules defined in the **[CONTRIBUTING_SKILL.md](../../docs/CONTRIBUTING_SKILL.md)** guide.
+
 ### Capture Intent
 
 Start by understanding the user's intent. The current conversation might already contain a workflow the user wants to capture (e.g., they say "turn this into a skill"). If so, extract answers from the conversation history first — the tools used, the sequence of steps, corrections the user made, input/output formats observed. The user may need to fill the gaps, and should confirm before proceeding to the next step.
@@ -61,7 +68,7 @@ Check available MCPs - if useful for research (searching docs, finding similar s
 
 ### Write the SKILL.md
 
-Based on the user interview, fill in these components:
+Based on the user interview, fill in these components. (Note: For repository-specific automation, frontmatter syncing, package templates, and workspace setup rules, see **[CONTRIBUTING_SKILL.md](../../docs/CONTRIBUTING_SKILL.md)**):
 
 - **name**: Skill identifier
 - **description**: When to trigger, what it does. This is the primary triggering mechanism - include both what the skill does AND specific contexts for when to use it. All "when to use" info goes here, not in the body. Note: currently Claude has a tendency to "undertrigger" skills -- to not use them when they'd be useful. To combat this, please make the skill descriptions a little bit "pushy". So for instance, instead of "How to build a simple fast dashboard to display internal Anthropic data.", you might write "How to build a simple fast dashboard to display internal Anthropic data. Make sure to use this skill whenever the user mentions dashboards, data visualization, internal metrics, or wants to display any kind of company data, even if they don't explicitly ask for a 'dashboard.'"
@@ -71,6 +78,8 @@ Based on the user interview, fill in these components:
 ### Skill Writing Guide
 
 #### Anatomy of a Skill
+
+Skills use the following folder structure. (When working in this repository, follow the package template and local registration steps detailed in **[CONTRIBUTING_SKILL.md](../../docs/CONTRIBUTING_SKILL.md)**):
 
 ```
 skill-name/
