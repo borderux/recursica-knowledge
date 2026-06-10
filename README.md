@@ -8,6 +8,18 @@ For detailed step-by-step setup guides (using the npm package or the Claude plug
 
 ---
 
-## 🤝 Contributing to the Registry
+## 🤝 Contributing to our Knowledge
 
 If you would like to document a new component or create a new Claude skill, please see [CONTRIBUTING.md](CONTRIBUTING.md) for detailed step-by-step instructions.
+
+---
+
+## 📦 Packaging and Building Skills
+
+To package all agent skills into distributable `.zip` files:
+
+```bash
+npm run build
+```
+
+This build script scans the `skills/` directory and compresses each individual skill folder into the `dist/` folder (e.g., `dist/recursica-skill-creator.zip`).

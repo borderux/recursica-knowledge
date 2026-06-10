@@ -2,25 +2,20 @@
 
 Thank you for contributing to the Recursica Design System Agent Skills and Knowledge base!
 
----
+Please refer to the appropriate guide depending on what you would like to contribute:
 
-## 🛠️ Adding New Components
-
-The [components/](file:///Users/mattmassey/work/recursica-knowledge/components/) folder serves as our specification database. To add a new component specification:
-
-1. Create a folder named after the component (e.g., `components/Badge/`).
-2. Add `<ComponentName>.md` (e.g., `Badge.md`) in that directory.
-3. Define the component using standard headers:
-   - **Component Name**
-   - **Alternate Names**
-   - **When to Use**
-   - **When Not to Use**
-   - **Types of Data Edited**
-   - **Best Practices**
-4. Update the root [llms.txt](file:///Users/mattmassey/work/recursica-knowledge/llms.txt) index to reference the new component path.
+- **[Contributing Components](docs/CONTRIBUTING_COMPONENT.md)**: Guidelines for adding or updating UI component documentation in the `components/` directory.
+- **[Contributing Skills](docs/CONTRIBUTING_SKILL.md)**: Guidelines for creating, extending, and versioning modular Claude Agent Skills in the `skills/` directory.
 
 ---
 
-## 🧠 Creating & Extending Skills
+## 🔄 Versioning & Publishing
 
-To write new skills or modify existing behavior, see [AGENT.md](file:///Users/mattmassey/work/recursica-knowledge/AGENT.md) for detailed guidelines on writing, testing, and registering Agent Skills in the marketplace.
+If you are proposing general changes to the repository or want to publish/release new package versions:
+
+- We use **Changesets** to manage version numbers and release changelogs.
+- To create a changeset for the entire repository (`@recursica/knowledge` root package) or individual skills, run:
+  ```bash
+  npx changeset
+  ```
+- For detailed step-by-step instructions on how the Changesets workflow operates, see **[Contributing Skills (Changesets Guide)](docs/CONTRIBUTING_SKILL.md#🔄-versioning--changesets)**.

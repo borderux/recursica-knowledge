@@ -1,0 +1,19 @@
+{
+  "name": "recursica-skill-template",
+  "version": "0.1.0",
+  "description": "Replace with a description of the skill and its purpose.",
+  "private": false,
+  "license": "MIT",
+  "author": "hi@borderux.com",
+  "homepage": "https://github.com/borderux/recursica-knowledge#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "bugs": {
+    "url": "https://github.com/borderux/recursica-knowledge/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/borderux/recursica-knowledge.git"
+  }
+}
