@@ -28,12 +28,12 @@
     "components",
     "skills",
     "docs",
+    "scripts",
     "llms.txt",
     "AGENT.md",
     "README.md",
     "CONTRIBUTING.md",
     "SETUP.md",
-    ".claude-plugin",
     "LICENSE"
   ],
   "scripts": {
