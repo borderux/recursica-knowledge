@@ -14,3 +14,7 @@ dist/
 .agent/skills/
 .claude/skills/
 
+# Scripts
+scripts/
+
+
