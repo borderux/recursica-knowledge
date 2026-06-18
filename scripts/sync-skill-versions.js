@@ -13,6 +13,7 @@ const fs = require('fs');
 const path = require('path');
 
 const skillsDir = path.join(__dirname, '../skills');
+const componentsDir = path.join(__dirname, '../components');
 const templateDir = path.join(__dirname, '../template');
 
 const targets = [];
@@ -28,7 +29,17 @@ if (fs.existsSync(skillsDir)) {
   dirs.forEach(dir => {
     const dirPath = path.join(skillsDir, dir);
     if (fs.statSync(dirPath).isDirectory()) {
-      targets.push({ dir: dirPath, name: dir });
+      if (dir === 'components') {
+        const subDirs = fs.readdirSync(dirPath);
+        subDirs.forEach(subDir => {
+          const subDirPath = path.join(dirPath, subDir);
+          if (fs.statSync(subDirPath).isDirectory()) {
+            targets.push({ dir: subDirPath, name: subDir });
+          }
+        });
+      } else {
+        targets.push({ dir: dirPath, name: dir });
+      }
     }
   });
 }

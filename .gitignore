@@ -10,3 +10,7 @@ npm-debug.log*
 # Build Artifacts
 dist/
 
+# Local Agent Skills Symlinks
+.agent/skills/
+.claude/skills/
+

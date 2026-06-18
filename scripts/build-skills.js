@@ -3,6 +3,7 @@ const path = require('path');
 const { execSync } = require('child_process');
 
 const skillsDir = path.join(__dirname, '../skills');
+const componentsDir = path.join(__dirname, '../components');
 const distDir = path.join(__dirname, '../dist');
 
 // Ensure dist directory exists
@@ -12,36 +13,49 @@ if (!fs.existsSync(distDir)) {
 
 // Read all directories under skills/, excluding internal-use skills
 const EXCLUDED_SKILLS = new Set(['skill-creator']);
+const targets = [];
 
-const skills = fs.readdirSync(skillsDir).filter(file => {
-  const fullPath = path.join(skillsDir, file);
-  return fs.statSync(fullPath).isDirectory() && !EXCLUDED_SKILLS.has(file);
-});
+if (fs.existsSync(skillsDir)) {
+  fs.readdirSync(skillsDir).forEach(file => {
+    const fullPath = path.join(skillsDir, file);
+    if (fs.statSync(fullPath).isDirectory() && !EXCLUDED_SKILLS.has(file)) {
+      if (file === 'components') {
+        // Read component skills recursively
+        fs.readdirSync(fullPath).forEach(subFile => {
+          const subPath = path.join(fullPath, subFile);
+          if (fs.statSync(subPath).isDirectory()) {
+            targets.push({ path: subPath, name: subFile });
+          }
+        });
+      } else {
+        targets.push({ path: fullPath, name: file });
+      }
+    }
+  });
+}
 
+console.log(`Found ${targets.length} skill(s) to package...`);
 
-console.log(`Found ${skills.length} skill(s) to package...`);
-
-skills.forEach(skill => {
-  const skillPath = path.join(skillsDir, skill);
-  const zipPath = path.join(distDir, `${skill}.zip`);
+targets.forEach(target => {
+  const zipPath = path.join(distDir, `${target.name}.zip`);
 
   // Clean existing zip if it exists
   if (fs.existsSync(zipPath)) {
     fs.unlinkSync(zipPath);
   }
 
-  console.log(`Packaging ${skill} -> dist/${skill}.zip...`);
+  console.log(`Packaging ${target.name} -> dist/${target.name}.zip...`);
 
   try {
     // Run zip command inside the skill folder to package files relative to the skill root.
-    // Exclude development dependencies, OS files, and test evals.
-    execSync(`zip -rq "${zipPath}" . -x "node_modules/*" -x "**/__pycache__/*" -x "**/*.pyc" -x "**/.DS_Store" -x "evals/*"`, {
-      cwd: skillPath,
+    // Exclude development dependencies, OS files, test evals, DOCS.md, and assets folder.
+    execSync(`zip -rq "${zipPath}" . -x "node_modules/*" -x "**/__pycache__/*" -x "**/*.pyc" -x "**/.DS_Store" -x "evals/*" -x "DOCS.md" -x "assets/*"`, {
+      cwd: target.path,
       stdio: 'inherit'
     });
-    console.log(`✅ Packaged ${skill} successfully.`);
+    console.log(`✅ Packaged ${target.name} successfully.`);
   } catch (error) {
-    console.error(`❌ Failed to package ${skill}:`, error.message);
+    console.error(`❌ Failed to package ${target.name}:`, error.message);
     process.exit(1);
   }
 });
