@@ -177,3 +177,4 @@ Output rules:
 - Do not apply a tag below its `confidence` threshold — not even at 0.01 below
 - Participant lines and interviewer lines are both eligible; use the S4 type rules to apply appropriate scrutiny based on tag type
 
+CRITICAL INSTRUCTION: You are evaluating a bulk transcript. You MUST process every single line provided to you. Do NOT stop early. Do NOT summarize. I expect an exhaustive list of tags covering the entire transcript from the first line to the final line.
