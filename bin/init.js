@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const packageSkillsDir = path.join(__dirname, '../skills');
+const packageComponentsDir = path.join(__dirname, '../components');
 
 if (!fs.existsSync(packageSkillsDir)) {
   console.error('❌ Error: Skills directory not found in the package.');
@@ -20,38 +21,48 @@ fs.mkdirSync(claudeSkillsDir, { recursive: true });
 
 // Read skills inside the package, excluding internal-use skills
 const EXCLUDED_SKILLS = new Set(['skill-creator']);
+const targets = [];
 
-const skills = fs.readdirSync(packageSkillsDir).filter(file => {
-  const fullPath = path.join(packageSkillsDir, file);
-  return fs.statSync(fullPath).isDirectory() && !EXCLUDED_SKILLS.has(file);
-});
+if (fs.existsSync(packageSkillsDir)) {
+  fs.readdirSync(packageSkillsDir).forEach(file => {
+    const fullPath = path.join(packageSkillsDir, file);
+    if (fs.statSync(fullPath).isDirectory() && !EXCLUDED_SKILLS.has(file)) {
+      if (file === 'components') {
+        // Scan the components subfolder
+        fs.readdirSync(fullPath).forEach(subFile => {
+          const subPath = path.join(fullPath, subFile);
+          if (fs.statSync(subPath).isDirectory()) {
+            targets.push({ type: 'skill', dirName: subFile, relativeDir: 'skills/components' });
+          }
+        });
+      } else {
+        targets.push({ type: 'skill', dirName: file, relativeDir: 'skills' });
+      }
+    }
+  });
+}
+
+
 
 console.log(`Initializing Recursica Knowledge skills in ${targetCwd}...`);
 
-skills.forEach(skill => {
-  // We want to create a relative symlink.
-  // The destination folder is .agent/skills/ or .claude/skills/
-  // The target is node_modules/@recursica/knowledge/skills/<skill>
-  // Since .agent/skills is at <root>/.agent/skills, a relative link back to the skill is:
-  // ../../node_modules/@recursica/knowledge/skills/<skill>
-  // If we are initializing in the recursica-knowledge repository itself:
-  // From .agent/skills, the relative link to the local skills folder is:
-  // ../../skills/<skill>
-
+targets.forEach(target => {
+  const skill = target.linkName || target.dirName;
   let targetPath;
-  // Check if we are running in the package itself or in a project that has it installed
   const isInOwnRepo = !__dirname.includes('node_modules');
 
   if (isInOwnRepo) {
-    targetPath = `../../skills/${skill}`;
+    targetPath = `../../${target.relativeDir}/${target.dirName}`;
   } else {
-    targetPath = `../../node_modules/@recursica/knowledge/skills/${skill}`;
+    targetPath = `../../node_modules/@recursica/knowledge/${target.relativeDir}/${target.dirName}`;
   }
 
   const linkPaths = [
     path.join(agentSkillsDir, skill),
     path.join(claudeSkillsDir, skill)
   ];
+  
+
 
   linkPaths.forEach(linkPath => {
     let exists = false;
@@ -63,13 +74,10 @@ skills.forEach(skill => {
     }
 
     if (exists) {
-      const relativeDest = path.relative(targetCwd, linkPath);
-      console.warn(`  ⚠️ Warning: Skill "${skill}" already exists at ${relativeDest}. Skipping.`);
       return;
     }
 
     try {
-      // Create symlink
       fs.symlinkSync(targetPath, linkPath, 'dir');
       console.log(`  Linked ${skill} -> ${linkPath}`);
     } catch (err) {
