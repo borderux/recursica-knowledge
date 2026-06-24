@@ -8,7 +8,8 @@
   "private": false,
   "workspaces": [
     ".",
-    "skills/*"
+    "skills/*",
+    "skills/components/*"
   ],
   "publishConfig": {
     "access": "public"
@@ -25,7 +26,6 @@
   },
   "files": [
     "bin",
-    "components",
     "skills",
     "docs",
     "scripts",
