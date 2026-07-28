@@ -25,6 +25,8 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 
 **MUST NOT create history entries for modals or panels.** These are invoked by a trigger, not navigated to. Giving them history states destroys the distinction between "a place in the application" and "a transient state," which is exactly the distinction the history stack should encode.
 
+**Single exception — the deliberately deep-linkable modal.** A modal designed so its URL can be copied, shared, and reopened by someone else is a location, and gets a route and a link trigger together, on purpose. This is rare and must be an explicit decision. Default remains: modals are unrouted and button-triggered.
+
 Applies to movement through primary nav, secondary nav, and tabs alike.
 
 **Tabs get their own routes.** Give each tab a sub-path under its parent view's route, so a tab is linkable, restorable, and reachable with back and forward like any other location.
@@ -145,7 +147,7 @@ Before considering navigation done, verify:
 
 - [ ] Every navigable view has a unique, URL-addressable route.
 - [ ] Navigation pushes to browser history; back and forward work correctly.
-- [ ] No modal or panel creates a history entry.
+- [ ] No modal or panel creates a history entry, except a deliberately deep-linkable modal with a shareable URL.
 - [ ] No tab state is persisted as remembered UI state instead of a route.
 - [ ] Each tab has its own sub-path under its parent route.
 - [ ] Horizontal vs. vertical was chosen on responsive target and item-count growth — vertical where top-level items will grow.
