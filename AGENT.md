@@ -14,7 +14,9 @@ If you (the AI assistant) are tasked with creating, editing, or registering cust
 
 - **Do not invent your own directories or manifests.**
 - **Refer to [CONTRIBUTING.md](CONTRIBUTING.md)** for the step-by-step developer guidelines on copying the template, configuring metadata, registering in the marketplace, and using Changesets for versioning.
+- **Start with [`recursica-skill-design-router`](skills/meta/recursica-skill-design-router/SKILL.md)** for any screen-level UI work. It sequences the decisions, routes each one to its owning skill, resolves conflicts between rules, and requires asking the user rather than guessing.
 - **Skills live in category folders** under [skills/](skills/):
+  - [skills/meta/](skills/meta/) — how to use the rest of the family. No design rules of its own.
   - [skills/components/](skills/components/) — one skill per UI component.
   - [skills/design-rules/](skills/design-rules/) — one skill per design topic, carrying the team's house rules for composition. Load these alongside the relevant component skills when building a screen.
   - [skills/psychology/](skills/psychology/) — the cognitive-science basis behind those rules, with citations. Load when a decision turns on how much to put in front of a user, or when a rule needs justifying.

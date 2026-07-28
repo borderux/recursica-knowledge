@@ -41,6 +41,8 @@ Detailed guidelines on how to code with Recursica and write new skills are avail
 
 ## 🧭 Design Rules Registry
 
+**Start with `skills/meta/recursica-skill-design-router/SKILL.md`** for any screen-level work. It establishes the decision order, routes each decision to its owning skill below, states the precedence for resolving conflicts between rules, and requires asking the user rather than guessing when requirements compete or no rule applies.
+
 Load these whenever composing a screen, not just when touching a single component.
 
 | Skill | Covers |
