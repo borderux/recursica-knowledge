@@ -3,7 +3,8 @@
 Skills live in category folders under `skills/`:
 
 - `skills/components/` — one skill per UI component (`recursica-skill-button`, `recursica-skill-tabs`, …). These describe a single component's anatomy and when to reach for it.
-- `skills/design-rules/` — one skill per design topic (`recursica-skill-forms`, `recursica-skill-navigation`, `recursica-skill-buttons-links`). These carry the team's opinions as rules a build agent must follow, and are usually derived from a recorded design interview.
+- `skills/design-rules/` — one skill per design topic (`recursica-skill-forms`, `recursica-skill-navigation`, `recursica-skill-buttons-links`, `recursica-skill-selection-controls`). These carry the team's opinions as rules a build agent must follow, and are usually derived from a recorded design interview.
+- `skills/psychology/` — the cognitive-science basis behind the design rules (`recursica-skill-working-memory`), with citations to the literature. Design-rules skills state a rule; a psychology skill explains why the number is what it is and where it stops applying. These are the one category where outside sources belong — cite them properly, and be accurate about what the research does and does not support.
 
 Any directory holding a `SKILL.md` is treated as a skill by the build and version-sync scripts, so new category folders work without changing tooling.
 

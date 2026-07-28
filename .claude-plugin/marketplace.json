@@ -15,6 +15,8 @@
         "./skills/design-rules/recursica-skill-buttons-links",
         "./skills/design-rules/recursica-skill-forms",
         "./skills/design-rules/recursica-skill-navigation",
+        "./skills/design-rules/recursica-skill-selection-controls",
+        "./skills/psychology/recursica-skill-working-memory",
         "./skills/components/recursica-skill-accordion",
         "./skills/components/recursica-skill-assistive-element",
         "./skills/components/recursica-skill-autocomplete",

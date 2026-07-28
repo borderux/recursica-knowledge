@@ -22,7 +22,8 @@ This skill covers the following component specs defined in the UI Kit:
 
 ## When to Use
 
-- **Switching views**: Let users toggle between different layouts or modes (e.g., list vs. grid or daily vs. weekly view).
+- **Horizontal single select**: This is how a horizontal radio group is done. Checkboxes and radio buttons must never be rotated into a horizontal row — when the layout calls for one, a segmented control is the control to reach for.
+  - **Switching views**: Let users toggle between different layouts or modes (e.g., list vs. grid or daily vs. weekly view).
   - **Inline filtering**: Provide quick filtering options without forcing users to open a dropdown or modal.
   - **Exclusive choice**: Use when only one option should be active at a time from a small set (2–5 items).
   - **Compact UI**: Offer a more space-efficient alternative to radio buttons in toolbars or headers.
@@ -32,18 +33,28 @@ This skill covers the following component specs defined in the UI Kit:
 
 ## When Not to Use
 
-- **Too many options**: Avoid when more than five options are needed. Use Tabs or a Select component instead.
+- **Too many options**: Avoid above five options. Fall back to a vertical radio group, or a dropdown if the set also exceeds the general option ceiling. **Do not fall back to Tabs** — tabs hold parts of one whole, not the values of a single-select field.
   - **Long labels**: Not suitable if labels are lengthy or complex, which can break the compact layout.
-  - **Multiple selections**: Avoid using when users must select more than one option. Checkboxes or multi-select are better.
+  - **Multiple selections**: Avoid using when users must select more than one option. Selectable chips are the horizontal multi-select control; a checkbox group is the vertical one.
   - **Disruptive changes**: Avoid if switching options triggers heavy reloads or disruptive actions without clear feedback.
-  - **Anti-patterns**: Don't use segmented controls for more than 4-5 items (use a dropdown instead).
+  - **Anti-patterns**: Don't use segmented controls for more than 4-5 items.
 
 ---
 
 ## Best Practices
 
 - Follow platform accessibility guidelines.
-- Ensure consistent padding and alignments.
+- Spacing, padding, and selected-state styling are owned by the component. Do not tune them.
+- **This control's ceiling is tighter than the general one.** The house option ceiling is 7 ± 2, but a segmented control is horizontal and compact, so it caps at 2–5. The tighter limit wins here.
+
+---
+
+## House Design Rules
+
+Control choice, option counts, pre-selection, and commit timing are governed by the design-rules skills. Load them alongside this one:
+
+- [`recursica-skill-selection-controls`](../../design-rules/recursica-skill-selection-controls/SKILL.md) — when a segmented control is the right control, and the rules it inherits from radio groups.
+- [`recursica-skill-working-memory`](../../psychology/recursica-skill-working-memory/SKILL.md) — the basis for option-count limits.
 
 ---
 

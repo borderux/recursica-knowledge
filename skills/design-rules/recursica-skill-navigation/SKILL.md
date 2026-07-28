@@ -48,7 +48,7 @@ Do not treat horizontal vs. vertical as a matter of taste when growth is anticip
 
 ## Number of navigation items
 
-**Target 7 ± 2 items per level, scaled by the complexity of the subject matter.** This is the working-memory limit, and it is the right guide for navigation:
+**Target 7 ± 2 items per level, scaled by the complexity of the subject matter.** See `recursica-skill-working-memory` for the basis, the citations, and the limits of this rule:
 
 - **Complex subject matter → about 5 items.**
 - **Simple subject matter → up to 9 items.**

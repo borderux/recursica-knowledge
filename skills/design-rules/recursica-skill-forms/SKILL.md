@@ -156,13 +156,22 @@ If the consequence appears on a later step instead, **that is not progressive di
 
 ## Persistence and autosave
 
-**If the technology supports draft persistence, always persist.** Data should survive refresh and return visits automatically, with no user action.
+**A form is in exactly one save mode.** Everything else in this section follows from which mode it is in.
 
-**Show a persistent save status** on the page — that it was saved as a draft, and when. The user should never have to wonder.
+| Mode                      | When the change commits                         | Status message                                                                  |
+| ------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------- |
+| **Field-level / instant** | On each field change, immediately to the server | **Required.** Show a persistent status on the page — saved as a draft, and when |
+| **Batch save**            | On submit, all at once                          | **None.** No status message, and no dirty-state indicator                       |
+
+**MUST NOT intermingle the two modes.** Within a system, either everything commits per field or everything commits on submit. Mixing them is a significant failure — the user can no longer form a reliable model of when their work is safe.
+
+**Batch save is the default.** See `recursica-skill-selection-controls` for the full reasoning: the user must be able to change their mind, and one commit produces one clean log entry instead of a stream of field writes.
+
+**In batch mode, do not display a dirty or uncommitted state.** The signal the user needs is the submit button becoming enabled once every editable control is valid. Nothing else.
+
+**If the technology supports draft persistence, always persist.** Data should survive refresh and return visits automatically, with no user action. Draft persistence is a field-level behavior, so it carries the status message requirement.
 
 **Always keep a submit button**, even under autosave. A form with no submit button is confusing even when autosave makes it technically redundant.
-
-**MUST NOT intermingle autosave and manual save.** Within a system, either everything autosaves or everything requires an explicit save action. Mixing the two is a significant failure — the user can no longer form a reliable model of when their work is safe.
 
 ## Accessibility
 
@@ -209,7 +218,9 @@ Before considering a form done, verify:
 - [ ] Enabled fields read as enabled; disabled is clearly different.
 - [ ] Pre-filled values are low-comprehension only.
 - [ ] Disclosed content sits directly below and adjacent to its trigger.
-- [ ] Save behavior is uniformly autosave or uniformly manual, with visible save status and a submit button.
+- [ ] The form is in exactly one save mode — field-level everywhere or batch everywhere.
+- [ ] Field-level mode shows a persistent save status; batch mode shows no status and no dirty indicator.
+- [ ] A submit button is present either way.
 - [ ] Tab order matches visual order.
 - [ ] No password visibility toggle. No challenge CAPTCHA.
 - [ ] No confirmation dialog unless the action is irreversible with no recovery path.
