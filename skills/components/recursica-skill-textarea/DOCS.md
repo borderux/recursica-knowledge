@@ -1,1 +1,1 @@
-../../../components/Textarea/DOCS.md
+../../../docs/components/Textarea/DOCS.md

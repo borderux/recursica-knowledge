@@ -1,1 +1,1 @@
-../../../components/Stepper/DOCS.md
+../../../docs/components/Stepper/DOCS.md

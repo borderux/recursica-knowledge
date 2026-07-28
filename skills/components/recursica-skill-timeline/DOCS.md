@@ -1,1 +1,1 @@
-../../../components/Timeline/DOCS.md
+../../../docs/components/Timeline/DOCS.md

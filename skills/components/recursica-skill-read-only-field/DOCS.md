@@ -1,1 +1,1 @@
-../../../components/ReadOnlyField/DOCS.md
+../../../docs/components/ReadOnlyField/DOCS.md

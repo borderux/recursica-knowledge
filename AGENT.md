@@ -13,8 +13,11 @@ For detailed information on what this project is, what it does, and how it is st
 If you (the AI assistant) are tasked with creating, editing, or registering custom Claude Agent Skills:
 
 - **Do not invent your own directories or manifests.**
-- **Refer to [CONTRIBUTING.md](CONTRIBUTING.md)** for the step-by-step developer guidelines on copying the template, configuring metadata in `package.json`, registering in workspaces, and using Changesets for versioning.
-- **Auto-managed Frontmatter**: Never manually edit the version, name, description, license, or author in any `SKILL.md` file directly. These are synchronized automatically from `package.json` when building.
+- **Refer to [CONTRIBUTING.md](CONTRIBUTING.md)** for the step-by-step developer guidelines on copying the template, configuring metadata, registering in the marketplace, and using Changesets for versioning.
+- **Skills live in category folders** under [skills/](skills/):
+  - [skills/components/](skills/components/) — one skill per UI component.
+  - [skills/design-rules/](skills/design-rules/) — one skill per design topic, carrying the team's house rules for composition. Load these alongside the relevant component skills when building a screen.
+- **Frontmatter**: where a skill has a `package.json`, that file is the source of truth for name, version, description, license, and author, and [sync-skill-versions.js](scripts/sync-skill-versions.js) copies them into `SKILL.md`. Skills without a `package.json` keep those fields in the `SKILL.md` frontmatter directly. The `name` must match the skill's directory name, and `description` must be 1024 characters or fewer.
 
 ---
 
@@ -23,6 +26,7 @@ If you (the AI assistant) are tasked with creating, editing, or registering cust
 If you are asked to add or update documentation for UI components:
 
 - **Refer to [CONTRIBUTING.md](CONTRIBUTING.md)** for component folder creation, required markdown file templates, and registration rules.
-- **Components specifications** reside inside the [components/](components/) directory.
+- **Component specifications** reside inside the [docs/components/](docs/components/) directory, one folder per component containing a `DOCS.md`.
+- Each component skill links its specification through a `DOCS.md` symlink, e.g. `skills/components/recursica-skill-button/DOCS.md -> ../../../docs/components/Button/DOCS.md`. Create that symlink when you add a new component spec.
 
 ---

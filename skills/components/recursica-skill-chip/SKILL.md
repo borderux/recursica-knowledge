@@ -45,6 +45,5 @@ This skill covers the following component specs defined in the UI Kit:
 
 ## Referential Libraries & Documentation
 
-- [Carbon Implementation Audit](file:///Users/aaronmartlage/Documents/recursica-forge/recursica-forge-pagination/src/components/adapters/carbon/Chip/Chip.carbon.audit.md)
-- [Mantine Implementation Audit](file:///Users/aaronmartlage/Documents/recursica-forge/recursica-forge-pagination/src/components/adapters/mantine/Chip/Chip.mantine.audit.md)
-- [Material Implementation Audit](file:///Users/aaronmartlage/Documents/recursica-forge/recursica-forge-pagination/src/components/adapters/material/Chip/Chip.material.audit.md)
+- Carbon Design System: [Carbon Chip Documentation](https://carbondesignsystem.com)
+- Material UI: [MUI Chip Documentation](https://mui.com)

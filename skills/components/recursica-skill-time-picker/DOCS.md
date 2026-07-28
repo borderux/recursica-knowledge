@@ -1,1 +1,1 @@
-../../../components/TimePicker/DOCS.md
+../../../docs/components/TimePicker/DOCS.md

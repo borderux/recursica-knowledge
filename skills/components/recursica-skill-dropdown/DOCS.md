@@ -1,1 +1,1 @@
-../../../components/Dropdown/DOCS.md
+../../../docs/components/Dropdown/DOCS.md

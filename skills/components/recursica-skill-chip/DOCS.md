@@ -1,1 +1,1 @@
-../../../components/Chip/DOCS.md
+../../../docs/components/Chip/DOCS.md

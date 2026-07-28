@@ -1,1 +1,1 @@
-../../../components/Badge/DOCS.md
+../../../docs/components/Badge/DOCS.md

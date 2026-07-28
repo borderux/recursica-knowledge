@@ -1,1 +1,1 @@
-../../../components/Accordion/DOCS.md
+../../../docs/components/Accordion/DOCS.md

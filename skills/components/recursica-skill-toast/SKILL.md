@@ -44,6 +44,5 @@ This skill covers the following component specs defined in the UI Kit:
 
 ## Referential Libraries & Documentation
 
-- [Carbon Implementation Audit](file:///Users/aaronmartlage/Documents/recursica-forge/recursica-forge-pagination/src/components/adapters/carbon/Toast/Toast.carbon.audit.md)
-- [Mantine Implementation Audit](file:///Users/aaronmartlage/Documents/recursica-forge/recursica-forge-pagination/src/components/adapters/mantine/Toast/Toast.mantine.audit.md)
-- [Material Implementation Audit](file:///Users/aaronmartlage/Documents/recursica-forge/recursica-forge-pagination/src/components/adapters/material/Toast/Toast.material.audit.md)
+- Carbon Design System: [Carbon Toast Documentation](https://carbondesignsystem.com)
+- Material UI: [MUI Toast Documentation](https://mui.com)

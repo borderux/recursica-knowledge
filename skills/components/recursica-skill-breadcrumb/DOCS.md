@@ -1,1 +1,1 @@
-../../../components/Breadcrumb/DOCS.md
+../../../docs/components/Breadcrumb/DOCS.md

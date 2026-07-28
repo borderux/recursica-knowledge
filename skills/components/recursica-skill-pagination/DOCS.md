@@ -1,1 +1,1 @@
-../../../components/Pagination/DOCS.md
+../../../docs/components/Pagination/DOCS.md

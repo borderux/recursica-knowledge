@@ -1,1 +1,1 @@
-../../../components/RadioButton/DOCS.md
+../../../docs/components/RadioButton/DOCS.md

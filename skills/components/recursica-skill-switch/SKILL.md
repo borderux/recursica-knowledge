@@ -46,6 +46,5 @@ This skill covers the following component specs defined in the UI Kit:
 
 ## Referential Libraries & Documentation
 
-- [Carbon Implementation Audit](file:///Users/aaronmartlage/Documents/recursica-forge/recursica-forge-pagination/src/components/adapters/carbon/Switch/audit.md)
-- [Mantine Implementation Audit](file:///Users/aaronmartlage/Documents/recursica-forge/recursica-forge-pagination/src/components/adapters/mantine/Switch/audit.md)
-- [Material Implementation Audit](file:///Users/aaronmartlage/Documents/recursica-forge/recursica-forge-pagination/src/components/adapters/material/Switch/audit.md)
+- Carbon Design System: [Carbon Switch Documentation](https://carbondesignsystem.com)
+- Material UI: [MUI Switch Documentation](https://mui.com)

@@ -12,6 +12,9 @@
       "description": "Skills and component specifications for component selection, design token application, and component implementation in Recursica.",
       "source": "./",
       "skills": [
+        "./skills/design-rules/recursica-skill-buttons-links",
+        "./skills/design-rules/recursica-skill-forms",
+        "./skills/design-rules/recursica-skill-navigation",
         "./skills/components/recursica-skill-accordion",
         "./skills/components/recursica-skill-assistive-element",
         "./skills/components/recursica-skill-autocomplete",
@@ -48,8 +51,7 @@
         "./skills/components/recursica-skill-timeline",
         "./skills/components/recursica-skill-toast",
         "./skills/components/recursica-skill-tooltip",
-        "./skills/components/recursica-skill-transfer-list",
-        "./skills/skill-creator"
+        "./skills/components/recursica-skill-transfer-list"
       ]
     }
   ]

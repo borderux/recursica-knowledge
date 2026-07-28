@@ -1,1 +1,1 @@
-../../../components/TransferList/DOCS.md
+../../../docs/components/TransferList/DOCS.md

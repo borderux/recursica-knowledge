@@ -1,1 +1,1 @@
-../../../components/Tooltip/DOCS.md
+../../../docs/components/Tooltip/DOCS.md

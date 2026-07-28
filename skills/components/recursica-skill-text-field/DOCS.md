@@ -1,1 +1,1 @@
-../../../components/TextField/DOCS.md
+../../../docs/components/TextField/DOCS.md

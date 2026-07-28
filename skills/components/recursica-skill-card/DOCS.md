@@ -1,1 +1,1 @@
-../../../components/Card/DOCS.md
+../../../docs/components/Card/DOCS.md

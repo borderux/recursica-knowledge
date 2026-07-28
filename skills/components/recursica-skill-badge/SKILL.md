@@ -43,6 +43,5 @@ This skill covers the following component specs defined in the UI Kit:
 
 ## Referential Libraries & Documentation
 
-- [Carbon Implementation Audit](file:///Users/aaronmartlage/Documents/recursica-forge/recursica-forge-pagination/src/components/adapters/carbon/Badge/audit.md)
-- [Mantine Implementation Audit](file:///Users/aaronmartlage/Documents/recursica-forge/recursica-forge-pagination/src/components/adapters/mantine/Badge/audit.md)
-- [Material Implementation Audit](file:///Users/aaronmartlage/Documents/recursica-forge/recursica-forge-pagination/src/components/adapters/material/Badge/audit.md)
+- Carbon Design System: [Carbon Badge Documentation](https://carbondesignsystem.com)
+- Material UI: [MUI Badge Documentation](https://mui.com)

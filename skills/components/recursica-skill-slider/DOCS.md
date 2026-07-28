@@ -1,1 +1,1 @@
-../../../components/Slider/DOCS.md
+../../../docs/components/Slider/DOCS.md

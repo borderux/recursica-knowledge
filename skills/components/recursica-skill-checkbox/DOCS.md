@@ -1,1 +1,1 @@
-../../../components/Checkbox/DOCS.md
+../../../docs/components/Checkbox/DOCS.md

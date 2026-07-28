@@ -1,25 +1,29 @@
 # Contributing Agent Skills
 
+Skills live in category folders under `skills/`:
+
+- `skills/components/` — one skill per UI component (`recursica-skill-button`, `recursica-skill-tabs`, …). These describe a single component's anatomy and when to reach for it.
+- `skills/design-rules/` — one skill per design topic (`recursica-skill-forms`, `recursica-skill-navigation`, `recursica-skill-buttons-links`). These carry the team's opinions as rules a build agent must follow, and are usually derived from a recorded design interview.
+
+Any directory holding a `SKILL.md` is treated as a skill by the build and version-sync scripts, so new category folders work without changing tooling.
+
 To add a new skill to the registry:
 
 1. **Copy the Template Folder**:
-   Copy the [template/](../template/) directory to `skills/recursica-<your-skill-name>`.
-2. **Configure package.json**:
-   Update the following fields in `skills/recursica-<your-skill-name>/package.json` to customize your skill's metadata:
-   - `name`: The kebab-case name of your skill, which **must** be prefixed with `recursica-` (e.g., `recursica-my-new-skill`).
-   - `description`: The trigger description that determines when the skill is loaded.
-   - `author`: The author name or organization (e.g., `hi@borderux.com`).
-   - `license`: The license identifier (e.g., `MIT` or `See LICENSE.txt`).
+   Copy the [template/](../template/) directory to `skills/<category>/recursica-skill-<your-skill-name>`.
+2. **Configure metadata**:
+   Set `name`, `description`, `license`, and `metadata.author` in the new `SKILL.md` frontmatter. The `name` **must** match the directory name and be prefixed with `recursica-skill-`, and `description` **must** be 1024 characters or fewer — skills over that limit are rejected at install time.
+   If the skill also carries a `package.json` (the template includes one), keep those fields in sync there; `package.json` wins whenever [sync-skill-versions.js](../scripts/sync-skill-versions.js) runs.
 3. **Register in Marketplace**:
-   Add the skill path (e.g., `"./skills/recursica-<your-skill-name>"`) to the `skills` array inside [.claude-plugin/marketplace.json](../.claude-plugin/marketplace.json).
+   Add the skill path (e.g., `"./skills/<category>/recursica-skill-<your-skill-name>"`) to the `skills` array inside [.claude-plugin/marketplace.json](../.claude-plugin/marketplace.json).
 4. **Run Setup**:
-   Run `npm install` at the root of the project to register the new skill as an npm workspace.
+   Run `npm install` at the root of the project.
 5. **Local Agent Registration (For Testing)**:
    If you want to register and use the skill within this repository (so that local AI assistants like Antigravity or Claude can load and execute it during development), symlink it into the `.agent/skills/` and `.claude/skills/` directories:
    ```bash
    # Run these commands from the repository root:
-   ln -s ../../skills/recursica-<your-skill-name> .agent/skills/recursica-<your-skill-name>
-   ln -s ../../skills/recursica-<your-skill-name> .claude/skills/recursica-<your-skill-name>
+   ln -s ../../skills/<category>/recursica-skill-<your-skill-name> .agent/skills/recursica-skill-<your-skill-name>
+   ln -s ../../skills/<category>/recursica-skill-<your-skill-name> .claude/skills/recursica-skill-<your-skill-name>
    ```
 
 > [!TIP] > **No need to manually edit SKILL.md metadata**:

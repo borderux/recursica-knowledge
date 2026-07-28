@@ -1,1 +1,1 @@
-../../../components/NumberInput/DOCS.md
+../../../docs/components/NumberInput/DOCS.md

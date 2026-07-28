@@ -10,7 +10,9 @@ if (!fs.existsSync(distDir)) {
   fs.mkdirSync(distDir, { recursive: true });
 }
 
-// Read all directories under skills/, including nested ones like skills/components/
+// Read all directories under skills/, including nested category folders such as
+// skills/components/ and skills/design-rules/. A directory holding a SKILL.md is a
+// skill; any other directory is treated as a category folder and recursed into.
 const EXCLUDED_SKILLS = new Set(['skill-creator']);
 const skills = [];
 
@@ -19,17 +21,18 @@ function findSkills(dir, relativePath = '') {
   items.forEach(item => {
     const fullPath = path.join(dir, item);
     const relPath = path.join(relativePath, item);
-    
-    if (fs.statSync(fullPath).isDirectory()) {
-      if (item === 'components') {
-        findSkills(fullPath, relPath);
-      } else if (!EXCLUDED_SKILLS.has(item)) {
-        skills.push({
-          name: item,
-          path: fullPath,
-          relPath: relPath
-        });
-      }
+
+    if (!fs.statSync(fullPath).isDirectory()) return;
+    if (EXCLUDED_SKILLS.has(item)) return;
+
+    if (fs.existsSync(path.join(fullPath, 'SKILL.md'))) {
+      skills.push({
+        name: item,
+        path: fullPath,
+        relPath: relPath
+      });
+    } else {
+      findSkills(fullPath, relPath);
     }
   });
 }

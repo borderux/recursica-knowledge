@@ -1,1 +1,1 @@
-../../../components/Switch/DOCS.md
+../../../docs/components/Switch/DOCS.md

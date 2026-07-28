@@ -22,22 +22,24 @@ if (fs.existsSync(templateDir)) {
   targets.push({ dir: templateDir, name: 'template' });
 }
 
-// Add active skill directories, including nested ones like skills/components/
+// Add active skill directories, including nested category folders such as
+// skills/components/ and skills/design-rules/. A directory holding a SKILL.md is a
+// skill; any other directory is treated as a category folder and recursed into.
 if (fs.existsSync(skillsDir)) {
-  function addTargets(dir, name) {
+  function addTargets(dir) {
     const items = fs.readdirSync(dir);
     items.forEach(item => {
       const fullPath = path.join(dir, item);
-      if (fs.statSync(fullPath).isDirectory()) {
-        if (item === 'components') {
-          addTargets(fullPath, item);
-        } else {
-          targets.push({ dir: fullPath, name: item });
-        }
+      if (!fs.statSync(fullPath).isDirectory()) return;
+
+      if (fs.existsSync(path.join(fullPath, 'SKILL.md'))) {
+        targets.push({ dir: fullPath, name: item });
+      } else {
+        addTargets(fullPath);
       }
     });
   }
-  addTargets(skillsDir, 'skills');
+  addTargets(skillsDir);
 }
 
 targets.forEach(({ dir, name }) => {

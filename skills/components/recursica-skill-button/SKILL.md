@@ -23,8 +23,8 @@ This skill covers the following component specs defined in the UI Kit:
 
 - **Use for actions**: Employ buttons for clear actions, like submitting forms or confirming decisions
   - **Clear calls to action**: Guide users on what actions are available to them in the interface
-  - **Navigation**: Use buttons for guiding users through navigation or multi-step processes
-  - **Accessibility & Best Practices**: Provide clear, action-oriented labels (e.g., 'Save Changes' instead of 'OK') and ensure a minimum tap target of 44x44px on mobile.
+  - **Advancing a process**: Use buttons to move a flow forward or back (a stepper's Next and Back), which acts on the process rather than navigating to another page
+  - **Accessibility & Best Practices**: Label with a verb plus its object ('Save page', not 'OK'), and always give an icon-only button a tooltip.
 
 ---
 
@@ -32,7 +32,7 @@ This skill covers the following component specs defined in the UI Kit:
 
 - **Decoration**: Don't use buttons solely for decoration; reserve them for functional actions
   - **Ambiguity**: Avoid buttons with unclear labels or ambiguous actions to prevent user confusion
-  - **Overuse**: Don't overuse buttons; choose appropriate UI elements like links if navigating users outside of the application
+  - **Navigation**: Never use a button to move the user to another page or object — that is a link. Buttons are local to the page they sit on
   - **Anti-patterns**: Avoid having more than one primary button on a single view.
 
 ---
@@ -40,12 +40,20 @@ This skill covers the following component specs defined in the UI Kit:
 ## Best Practices
 
 - Follow platform accessibility guidelines.
-- Ensure consistent padding and alignments.
+- Spacing, padding, and visual weight are owned by the component. Do not tune them.
+
+---
+
+## House Design Rules
+
+Component choice, labeling, hierarchy, and placement are governed by the design-rules skills. Load them alongside this one:
+
+- [`recursica-skill-buttons-links`](../../design-rules/recursica-skill-buttons-links/SKILL.md) — button vs. link semantics, icon-only vs. text, disabled states, primary/secondary hierarchy, label copy, destructive confirmation, undo, toggles, toolbar overflow.
+- [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — submit and cancel behavior inside forms.
 
 ---
 
 ## Referential Libraries & Documentation
 
-- [Carbon Implementation Audit](file:///Users/aaronmartlage/Documents/recursica-forge/recursica-forge-pagination/src/components/adapters/carbon/Button/audit.md)
-- [Mantine Implementation Audit](file:///Users/aaronmartlage/Documents/recursica-forge/recursica-forge-pagination/src/components/adapters/mantine/Button/audit.md)
-- [Material Implementation Audit](file:///Users/aaronmartlage/Documents/recursica-forge/recursica-forge-pagination/src/components/adapters/material/Button/audit.md)
+- Carbon Design System: [Carbon Button Documentation](https://carbondesignsystem.com)
+- Material UI: [MUI Button Documentation](https://mui.com)

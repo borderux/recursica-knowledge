@@ -1,1 +1,1 @@
-../../../components/Button/DOCS.md
+../../../docs/components/Button/DOCS.md

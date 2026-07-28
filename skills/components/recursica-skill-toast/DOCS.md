@@ -1,1 +1,1 @@
-../../../components/Toast/DOCS.md
+../../../docs/components/Toast/DOCS.md

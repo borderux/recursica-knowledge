@@ -2,6 +2,8 @@
 
 This document is optimized for LLM ingestion to help AI coding assistants understand the architecture, style, guidelines, and components of the **Recursica Design System**.
 
+All paths below are relative to the root of this repository.
+
 ---
 
 ## 🚀 Core Philosophy & Architectural Intent
@@ -11,49 +13,83 @@ Recursica is an adapter-based design system. It allows developers to write clean
 1.  **Strict Styling Isolation**: Never write ad-hoc CSS or Tailwind utilities for things that the design system provides.
 2.  **Adapter Agnostic API**: Use Recursica component props to configure layouts, variants, and colors.
 3.  **High-Performance Code**: Avoid unnecessary rendering overhead. Keep component imports specific to their adapters when compiling.
+
 ---
 
 ## 📁 Repository Structure
 
-- [skills/](file:///Users/mattmassey/work/recursica-knowledge/skills/) - Contains custom, modular Claude Agent Skills. Each skill is stored in its own directory with a `SKILL.md` file (conforming to the Anthropic Agent Skills specification).
-  - For example, [recursica-component-selector](file:///Users/mattmassey/work/recursica-knowledge/skills/recursica-component-selector/) helps the agent choose the right UI components.
-- [components/](file:///Users/mattmassey/work/recursica-knowledge/components/) - A directory containing structured Markdown files documenting individual UI components in the Recursica system (e.g., behaviors, data types, and guidelines). Skills reference these specifications to build correct UI code.
-- [.claude-plugin/](file:///Users/mattmassey/work/recursica-knowledge/.claude-plugin/) - Contains configuration files for the plugin marketplace:
-  - [marketplace.json](file:///Users/mattmassey/work/recursica-knowledge/.claude-plugin/marketplace.json) registers the repository and lists the available skills.
+- `skills/` — Custom, modular Claude Agent Skills. Each skill lives in its own directory with a `SKILL.md` file conforming to the Anthropic Agent Skills specification. Skills are grouped into two categories:
+  - `skills/components/` — One skill per UI component (for example `skills/components/recursica-skill-button/SKILL.md`). Each covers a single component's anatomy, when to use it, and when not to. Most also carry a `DOCS.md` symlink to the component's full specification under `docs/components/`.
+  - `skills/design-rules/` — One skill per design topic, carrying the team's opinions as rules a build agent must follow: `recursica-skill-forms`, `recursica-skill-navigation`, `recursica-skill-buttons-links`. These govern composition decisions; component skills govern component choice.
+- `docs/components/` — Structured Markdown specifications for individual UI components (anatomy, states, behaviors, guidelines). Component skills reference these to build correct UI code.
+- `docs/CONTRIBUTING_SKILL.md`, `docs/CONTRIBUTING_COMPONENT.md` — How to add a skill or a component spec.
+- `template/` — Starting point for a new skill.
+- `scripts/` — `build-skills.js` packages each skill into `dist/`; `sync-skill-versions.js` syncs `package.json` metadata into `SKILL.md` frontmatter.
+- `.claude-plugin/marketplace.json` — Registers the repository as a plugin marketplace and lists every available skill.
 
 ---
 
 ## 📖 Global AI Instructions
 
 Detailed guidelines on how to code with Recursica and write new skills are available in:
-*   [AGENT.md](file:///Users/mattmassey/work/recursica-knowledge/AGENT.md) - Deep guidelines for component selection, styling conventions, adapter patterns, and creating new Agent Skills.
+
+- `AGENT.md` — Entry point for AI agents: where skills and component documentation live, and the rules for adding to either.
+- `CONTRIBUTING.md` — Routes to the component and skill contribution guides.
+
+---
+
+## 🧭 Design Rules Registry
+
+Load these whenever composing a screen, not just when touching a single component.
+
+| Skill | Covers |
+| --- | --- |
+| `skills/design-rules/recursica-skill-forms/SKILL.md` | Form layout, labels, grouping, required/optional marking, validation timing, error presentation, microcopy, pre-fill, progressive disclosure, autosave, submit and cancel, confirmation, password fields, CAPTCHA |
+| `skills/design-rules/recursica-skill-navigation/SKILL.md` | Horizontal vs. vertical nav, item counts, sub-level disclosure, accordion vs. tree, collapsible defaults, active states and breadcrumbs, overflow, permissions, routing and browser history, tabs |
+| `skills/design-rules/recursica-skill-buttons-links/SKILL.md` | Button vs. link semantics, table row actions, icon-only vs. text buttons, bulk actions, button hierarchy and placement, label copy, destructive confirmation, undo, toggles, toolbar overflow, modal triggers |
 
 ---
 
 ## 📦 Component Registry
 
-Here is the index of available components under the `components/` folder. Use the paths below to fetch detailed specifications for individual components:
+Each component has a specification at `docs/components/<Name>/DOCS.md` and, where a matching skill exists, a skill at `skills/components/recursica-skill-<name>/SKILL.md`.
 
-### Foundational & Layout Components
+| Component | Specification | Skill |
+| --- | --- | --- |
+| Accordion | `docs/components/Accordion/DOCS.md` | `recursica-skill-accordion` |
+| Avatar | `docs/components/Avatar/DOCS.md` | `recursica-skill-avatar` |
+| Badge | `docs/components/Badge/DOCS.md` | `recursica-skill-badge` |
+| Breadcrumb | `docs/components/Breadcrumb/DOCS.md` | `recursica-skill-breadcrumb` |
+| Button | `docs/components/Button/DOCS.md` | `recursica-skill-button` |
+| Card | `docs/components/Card/DOCS.md` | `recursica-skill-card` |
+| Checkbox | `docs/components/Checkbox/DOCS.md` | `recursica-skill-checkbox` |
+| Chip | `docs/components/Chip/DOCS.md` | `recursica-skill-chip` |
+| DatePicker | `docs/components/DatePicker/DOCS.md` | `recursica-skill-date-picker` |
+| Dropdown | `docs/components/Dropdown/DOCS.md` | `recursica-skill-dropdown` |
+| FileInput | `docs/components/FileInput/DOCS.md` | `recursica-skill-file-input` |
+| FileUpload | `docs/components/FileUpload/DOCS.md` | `recursica-skill-file-upload` |
+| HoverCardPopover | `docs/components/HoverCardPopover/DOCS.md` | `recursica-skill-hover-card-popover` |
+| Link | `docs/components/Link/DOCS.md` | `recursica-skill-link` |
+| Loader | `docs/components/Loader/DOCS.md` | `recursica-skill-loader` |
+| Menu | `docs/components/Menu/DOCS.md` | `recursica-skill-menu` |
+| Modal | `docs/components/Modal/DOCS.md` | `recursica-skill-modal` |
+| NumberInput | `docs/components/NumberInput/DOCS.md` | `recursica-skill-number-input` |
+| Pagination | `docs/components/Pagination/DOCS.md` | `recursica-skill-pagination` |
+| Panel | `docs/components/Panel/DOCS.md` | `recursica-skill-panel` |
+| RadioButton | `docs/components/RadioButton/DOCS.md` | `recursica-skill-radio-button` |
+| ReadOnlyField | `docs/components/ReadOnlyField/DOCS.md` | `recursica-skill-read-only-field` |
+| SegmentedControl | `docs/components/SegmentedControl/DOCS.md` | `recursica-skill-segmented-control` |
+| Slider | `docs/components/Slider/DOCS.md` | `recursica-skill-slider` |
+| Stepper | `docs/components/Stepper/DOCS.md` | `recursica-skill-stepper` |
+| Switch | `docs/components/Switch/DOCS.md` | `recursica-skill-switch` |
+| Table | `docs/components/Table/DOCS.md` | _no skill yet_ |
+| Tabs | `docs/components/Tabs/DOCS.md` | `recursica-skill-tabs` |
+| Textarea | `docs/components/Textarea/DOCS.md` | `recursica-skill-textarea` |
+| TextField | `docs/components/TextField/DOCS.md` | `recursica-skill-text-field` |
+| TimePicker | `docs/components/TimePicker/DOCS.md` | `recursica-skill-time-picker` |
+| Timeline | `docs/components/Timeline/DOCS.md` | `recursica-skill-timeline` |
+| Toast | `docs/components/Toast/DOCS.md` | `recursica-skill-toast` |
+| Tooltip | `docs/components/Tooltip/DOCS.md` | `recursica-skill-tooltip` |
+| TransferList | `docs/components/TransferList/DOCS.md` | `recursica-skill-transfer-list` |
 
-*   **Accordion**
-    *   *Path*: [components/Accordion/Accordion.md](file:///Users/mattmassey/work/recursica-knowledge/components/Accordion/Accordion.md)
-    *   *Summary*: A collapsible content panel commonly used to toggle visibility of details. Supports multiple expanded items and micro-interactions.
-*   **Button**
-    *   *Path*: [components/Button/Button.md](file:///Users/mattmassey/work/recursica-knowledge/components/Button/Button.md)
-    *   *Summary*: A premium interactive trigger for actions, featuring multiple states (loading, disabled, hover), variants (filled, outlined, text), and size configurations.
-*   **Card**
-    *   *Path*: [components/Card/Card.md](file:///Users/mattmassey/work/recursica-knowledge/components/Card/Card.md)
-    *   *Summary*: A visual container used to group related information, featuring smooth shadow styling, borders, and hover micro-animations.
-*   **Checkbox**
-    *   *Path*: [components/Checkbox/Checkbox.md](file:///Users/mattmassey/work/recursica-knowledge/components/Checkbox/Checkbox.md)
-    *   *Summary*: A binary selection input supporting custom check icons, label alignments, and indeterminate states.
-*   **Dialog**
-    *   *Path*: [components/Dialog/Dialog.md](file:///Users/mattmassey/work/recursica-knowledge/components/Dialog/Dialog.md)
-    *   *Summary*: A modal window overlay for displaying focal content, configuration, or confirmation flows.
-*   **Select**
-    *   *Path*: [components/Select/Select.md](file:///Users/mattmassey/work/recursica-knowledge/components/Select/Select.md)
-    *   *Summary*: A dropdown input allowing selection from a list of options. Supports searching, multi-selection, and customized option rendering.
-*   **TextField**
-    *   *Path*: [components/TextField/TextField.md](file:///Users/mattmassey/work/recursica-knowledge/components/TextField/TextField.md)
-    *   *Summary*: A versatile text input field with support for prefixes, suffixes, validation errors, and floating labels.
+Three skills have no specification under `docs/components/` yet: `recursica-skill-assistive-element`, `recursica-skill-autocomplete`, and `recursica-skill-label`.

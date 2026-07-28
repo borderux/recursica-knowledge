@@ -1,1 +1,1 @@
-../../../components/FileInput/DOCS.md
+../../../docs/components/FileInput/DOCS.md
