@@ -56,8 +56,9 @@ Work top to bottom. Each answer constrains the ones below it.
 | 6   | For each field, which control the data shape demands                                                   | `recursica-skill-selection-controls`                   |
 | 7   | Status, counts, tags, and metadata on objects                                                          | `recursica-skill-badges-chips`                         |
 | 8   | Every clickable thing: is it an action or a navigation, how is it labeled, where does it sit           | `recursica-skill-buttons-links`                        |
-| 9   | Any count — nav items, options, chips                                                                  | `recursica-skill-working-memory`                       |
-| 10  | Empty, loading, error, and partial states                                                              | **No skill yet — ask**                                 |
+| 9   | Any chart or visual data display                                                                       | `recursica-skill-data-visualization`                   |
+| 10  | Any count — nav items, options, chips                                                                  | `recursica-skill-working-memory`                       |
+| 11  | Empty, loading, error, and partial states                                                              | **No skill yet — ask**                                 |
 
 **Two ordering rules worth stating outright:**
 
@@ -81,7 +82,7 @@ Apply in order. The first rule that settles the conflict wins.
 
 These come up constantly and no house rule covers them. **Ask rather than inventing an answer**, and expect this list to shrink as topics are recorded.
 
-- **Behavior below desktop.** Four skills defer to "a real space constraint" or "mobile" without defining what happens there. This is the most frequently hit gap.
+- **Behavior below desktop.** Four skills defer to "a real space constraint" or "mobile" without defining what happens there. This is the most frequently hit gap. The one exception is charts: `recursica-skill-data-visualization` states that a chart adapts rather than shrinks, keeps the same story, and discloses omitted information.
 - **Tables and data grids**, beyond the fragments deposited by other skills: row selection, header checkbox, status column, row actions. Column order, widths, alignment, truncation, sorting defaults, and density are unowned.
 - **Empty, loading, error, and partial states**, including the difference between "no data yet" and "no results for these filters".
 - **Page scaffold** — the standard composition of a page: title, breadcrumb, primary action, filters, content.
