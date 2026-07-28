@@ -24,7 +24,7 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 
 **MUST: single column, top to bottom.** One field per row, stacked vertically. This is non-negotiable and **does not respond to container width.** A wide container never earns side-by-side fields. Extra horizontal space goes unused, or the form's max width is constrained — it is never spent on a second column.
 
-**NEVER use a multi-column form layout.** Not for addresses (`Address 1` / `Address 2` / `City` / `State` / `Zip` in two columns), not to "save vertical space," not ever. Multi-column layouts are banned because tab order becomes ambiguous: does focus move down the left column and then down the right, or left-to-right across each row? Both readings are defensible, which is why the layout is broken. A form's reading order must never move both left-to-right *and* top-to-bottom.
+**NEVER use a multi-column form layout.** Not for addresses (`Address 1` / `Address 2` / `City` / `State` / `Zip` in two columns), not to "save vertical space," not ever. Multi-column layouts are banned because tab order becomes ambiguous: does focus move down the left column and then down the right, or left-to-right across each row? Both readings are defensible, which is why the layout is broken. A form's reading order must never move both left-to-right _and_ top-to-bottom.
 
 **Exception — the compound control.** Small, tightly associated inputs that represent one logical value may sit on one row: a date picker + time entry + AM/PM select. Treat this as **one control** with **one label**. This is the only case where inputs share a row.
 
@@ -35,7 +35,7 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 Rationale, in priority order:
 
 - Short scan distance from label to field. A left-justified label in a wide column can leave a gap large enough that the user tracks horizontally to the wrong field and fills it in.
-- Checking your work is a single vertical scan down the column of *values*. No jumping label → value → label → value.
+- Checking your work is a single vertical scan down the column of _values_. No jumping label → value → label → value.
 - Keeps the form short.
 
 **Container width affects the label/field relationship only — never the field sequence.** Fields stay one per row, top to bottom, always. The single thing that flexes is whether a label sits beside its field or above it.
@@ -52,9 +52,9 @@ Decide from the user's mental model, not from field count alone. Go multi-step w
 
 1. **Discrete stages.** The task naturally decomposes into steps the user already thinks of as separate, and chunking makes it more digestible.
 2. **Volume.** Sheer quantity of fields creates visual noise that needs reducing.
-3. **Downstream branching.** An answer causes a *later* step to be significantly different.
+3. **Downstream branching.** An answer causes a _later_ step to be significantly different.
 
-**The disclosure/step boundary:** if an answer causes a *minor, local* change — a field or section immediately below — use progressive disclosure and stay on one page. If it causes a *materially different downstream step*, use multi-step. Do not reach for multi-step to handle small conditional fields.
+**The disclosure/step boundary:** if an answer causes a _minor, local_ change — a field or section immediately below — use progressive disclosure and stay on one page. If it causes a _materially different downstream step_, use multi-step. Do not reach for multi-step to handle small conditional fields.
 
 ## Grouping
 
@@ -74,7 +74,7 @@ Group fields in this order of preference:
 
 **Avoid asterisk clutter.** When the vast majority of fields are required, do not sprinkle asterisks. Use a systemic signal instead — e.g. **bold label = required, regular weight = optional** — and state the convention once. Less visual noise, same clarity.
 
-**Declare optionality at the group level** wherever a whole section may not apply to a user. A user who lacks the knowledge for an entire section means the *section* is optional; say so at the group heading rather than on every field.
+**Declare optionality at the group level** wherever a whole section may not apply to a user. A user who lacks the knowledge for an entire section means the _section_ is optional; say so at the group heading rather than on every field.
 
 ## Buttons and submit
 
@@ -198,7 +198,7 @@ Before considering a form done, verify:
 - [ ] No custom spacing between fields; component spacing only.
 - [ ] Fields grouped by parent object, or by logical sequence. Repeating objects are tables.
 - [ ] Non-editable values use the read-only component, not a disabled input.
-- [ ] Only the exception is marked (required *or* optional, never both). No asterisk clutter.
+- [ ] Only the exception is marked (required _or_ optional, never both). No asterisk clutter.
 - [ ] Help text and placeholders carry the rules up front.
 - [ ] Validation fires inline on blur, non-blocking.
 - [ ] Submit is disabled until the form is valid and complete.
