@@ -20,7 +20,7 @@ Recursica is an adapter-based design system. It allows developers to write clean
 
 - `skills/` — Custom, modular Claude Agent Skills. Each skill lives in its own directory with a `SKILL.md` file conforming to the Anthropic Agent Skills specification. Skills are grouped into two categories:
   - `skills/components/` — One skill per UI component (for example `skills/components/recursica-skill-button/SKILL.md`). Each covers a single component's anatomy, when to use it, and when not to. Most also carry a `DOCS.md` symlink to the component's full specification under `docs/components/`.
-  - `skills/design-rules/` — One skill per design topic, carrying the team's opinions as rules a build agent must follow: `recursica-skill-forms`, `recursica-skill-navigation`, `recursica-skill-buttons-links`, `recursica-skill-selection-controls`. These govern composition decisions; component skills govern component choice.
+  - `skills/design-rules/` — One skill per design topic, carrying the team's opinions as rules a build agent must follow: `recursica-skill-forms`, `recursica-skill-navigation`, `recursica-skill-buttons-links`, `recursica-skill-selection-controls`, `recursica-skill-badges-chips`. These govern composition decisions; component skills govern component choice.
   - `skills/psychology/` — The cognitive-science basis behind the design rules, with citations to the literature: `recursica-skill-working-memory`. Design-rules skills state a limit; these explain where it came from and where it stops applying.
 - `docs/components/` — Structured Markdown specifications for individual UI components (anatomy, states, behaviors, guidelines). Component skills reference these to build correct UI code.
 - `docs/CONTRIBUTING_SKILL.md`, `docs/CONTRIBUTING_COMPONENT.md` — How to add a skill or a component spec.
@@ -49,6 +49,7 @@ Load these whenever composing a screen, not just when touching a single componen
 | `skills/design-rules/recursica-skill-navigation/SKILL.md` | Horizontal vs. vertical nav, item counts, sub-level disclosure, accordion vs. tree, collapsible defaults, active states and breadcrumbs, overflow, permissions, routing and browser history, tabs |
 | `skills/design-rules/recursica-skill-buttons-links/SKILL.md` | Button vs. link semantics, table row actions, icon-only vs. text buttons, bulk actions, button hierarchy and placement, label copy, destructive confirmation, undo, toggles, toolbar overflow, modal triggers |
 | `skills/design-rules/recursica-skill-selection-controls/SKILL.md` | Checkbox vs. switch vs. radio vs. dropdown vs. multi-select, segmented controls and selectable chips, option counts, pre-selection, select-all and indeterminate states, table selection, immediate vs. batch submit |
+| `skills/design-rules/recursica-skill-badges-chips/SKILL.md` | Badge vs. chip, status and metadata vs. selection, one badge per object, tags and pills, dismissible and toggled chips, placement in tables, cards, tabs, headings and navigation, chip counts, error states |
 | `skills/psychology/recursica-skill-working-memory/SKILL.md` | Miller's 7 ± 2, Cowan's revision to ~4 chunks, chunking, recognition vs. recall, and the boundary where item-count ceilings stop applying — with citations |
 
 ---

@@ -26,6 +26,7 @@ Where it currently applies, as stated by the owning skill:
 | ------------------------------------ | --------------------------------------------------------------- | ------------------------------------ |
 | Navigation items per level           | 7 ± 2; nearer 5 for complex subject matter, up to 9 for simple  | `recursica-skill-navigation`         |
 | Options in a radio or checkbox group | 7 ± 2 scaled by cognitive load; above it, convert to a dropdown | `recursica-skill-selection-controls` |
+| Chips in a group or filter bar       | 7 ± 2 scaled by cognitive load, as a checkbox group             | `recursica-skill-badges-chips`       |
 
 No house ceiling has been set for table columns, toolbar actions, or steps in a flow. Do not invent one by analogy — treat those as open questions rather than applying this number where it has not been established.
 

@@ -34,7 +34,10 @@ This skill covers the following component specs defined in the UI Kit:
 - **Limited options**: If there are only a few static options or the information is straightforward, using chips may be unnecessary
   - **Complex input**: For cases requiring more complex input or extensive data, consider alternative UI components like dropdowns or inputs
   - **Single select**: Chips are for multi-select. For an exclusive choice use a segmented control horizontally, or a radio group vertically
-  - **Anti-patterns**: Don't use chips for primary navigation links.
+  - **Status**: Never render a status as a chip, and never as an actionable one. A single status value is a badge, which the system updates
+  - **Data-dense views**: A chip is large and carries padding, spacing, and possibly an icon or dismiss button. Where space is tight, a badge is the right component
+  - **Error states**: Never use a chip to indicate an error
+  - **Anti-patterns**: Don't use chips for primary navigation links, and don't use them to label sidebar nav items — that is a badge.
 
 ---
 
@@ -50,6 +53,7 @@ This skill covers the following component specs defined in the UI Kit:
 
 Control choice, option counts, and commit timing are governed by the design-rules skills. Load them alongside this one:
 
+- [`recursica-skill-badges-chips`](../../design-rules/recursica-skill-badges-chips/SKILL.md) — chip vs. badge, tags, dismissible and toggled chips, chip group counts, and placement.
 - [`recursica-skill-selection-controls`](../../design-rules/recursica-skill-selection-controls/SKILL.md) — when selectable chips are the right control, and the rules they inherit from checkbox groups.
 - [`recursica-skill-working-memory`](../../psychology/recursica-skill-working-memory/SKILL.md) — the basis for option-count limits.
 

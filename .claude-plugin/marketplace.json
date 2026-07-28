@@ -12,6 +12,7 @@
       "description": "Skills and component specifications for component selection, design token application, and component implementation in Recursica.",
       "source": "./",
       "skills": [
+        "./skills/design-rules/recursica-skill-badges-chips",
         "./skills/design-rules/recursica-skill-buttons-links",
         "./skills/design-rules/recursica-skill-forms",
         "./skills/design-rules/recursica-skill-navigation",
