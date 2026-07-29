@@ -1,6 +1,6 @@
 ---
-title: "Tabs"
-description: "Recursica helps agencies build client digital products faster and more consistently. Our system streamlines design, ensures brand consistency, and improves team collaboration."
+title: "Table"
+description: "A table displays a structured set of data in rows and columns, letting users compare, sort, and scan values across many records at once."
 previewName: "table"
 license: MIT
 metadata:
@@ -10,7 +10,7 @@ metadata:
 
 # Table
 
-**Tabs organize content and allow users to switch between different views.**
+**A table displays a structured set of data in rows and columns, allowing users to compare, sort, and scan values across many records at a glance.**
 
 ## When to use
 
