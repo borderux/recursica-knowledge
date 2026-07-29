@@ -80,7 +80,7 @@ Work down this list; the first match wins.
 
 ## Selection in tables
 
-**Row selection is a checkbox in the leftmost cell, with a checkbox in the table header.**
+**Row selection is a checkbox in the leftmost cell, with a checkbox in the table header.** Table structure itself is `recursica-skill-tables`.
 
 **Header checkbox mechanics — MUST behave this way:**
 

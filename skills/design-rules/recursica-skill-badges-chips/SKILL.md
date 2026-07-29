@@ -69,7 +69,7 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 - **The first column is reserved for the bulk-selection checkbox** where one exists.
 - Place status **immediately before or after the object's identifying information.** If the leading information is in the first column, status goes in the second; if identity occupies the second, status can lead in the first.
 
-The point is association: the status must read as belonging to that object.
+The point is association: the status must read as belonging to that object. Column order and widths are `recursica-skill-tables`.
 
 ## Placement elsewhere — the sentence rule
 

@@ -161,7 +161,7 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 
 - **Palette selection and component styling.** Handled by Recursica components. The rules here govern the encoding channel, not which colors are used.
 - **Dashboard composition** — what goes on a dashboard and how it is arranged. Covered by `recursica-skill-dashboards`.
-- **Data tables as a primary surface.** This skill only requires that one accompany a chart.
+- **Data tables as a primary surface.** Covered by `recursica-skill-tables`. This skill only requires that one accompany a chart.
 
 ## Pre-flight checklist
 

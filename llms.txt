@@ -20,7 +20,7 @@ Recursica is an adapter-based design system. It allows developers to write clean
 
 - `skills/` — Custom, modular Claude Agent Skills. Each skill lives in its own directory with a `SKILL.md` file conforming to the Anthropic Agent Skills specification. Skills are grouped into two categories:
   - `skills/components/` — One skill per UI component (for example `skills/components/recursica-skill-button/SKILL.md`). Each covers a single component's anatomy, when to use it, and when not to. Most also carry a `DOCS.md` symlink to the component's full specification under `docs/components/`.
-  - `skills/design-rules/` — One skill per design topic, carrying the team's opinions as rules a build agent must follow: `recursica-skill-forms`, `recursica-skill-navigation`, `recursica-skill-buttons-links`, `recursica-skill-selection-controls`, `recursica-skill-badges-chips`, `recursica-skill-data-visualization`, `recursica-skill-dashboards`. These govern composition decisions; component skills govern component choice.
+  - `skills/design-rules/` — One skill per design topic, carrying the team's opinions as rules a build agent must follow: `recursica-skill-forms`, `recursica-skill-navigation`, `recursica-skill-buttons-links`, `recursica-skill-selection-controls`, `recursica-skill-badges-chips`, `recursica-skill-data-visualization`, `recursica-skill-dashboards`, `recursica-skill-tables`. These govern composition decisions; component skills govern component choice.
   - `skills/psychology/` — The cognitive-science basis behind the design rules, with citations to the literature: `recursica-skill-working-memory`. Design-rules skills state a limit; these explain where it came from and where it stops applying.
 - `docs/components/` — Structured Markdown specifications for individual UI components (anatomy, states, behaviors, guidelines). Component skills reference these to build correct UI code.
 - `docs/CONTRIBUTING_SKILL.md`, `docs/CONTRIBUTING_COMPONENT.md` — How to add a skill or a component spec.
@@ -54,6 +54,7 @@ Load these whenever composing a screen, not just when touching a single componen
 | `skills/design-rules/recursica-skill-badges-chips/SKILL.md` | Badge vs. chip, status and metadata vs. selection, one badge per object, tags and pills, dismissible and toggled chips, placement in tables, cards, tabs, headings and navigation, chip counts, error states |
 | `skills/design-rules/recursica-skill-data-visualization/SKILL.md` | When to visualize at all, chart type selection, the near-ban on pie and donut charts, zero baselines and linear scales, time as a dimension, sequence integrity, labels, thresholds and benchmarks, encoding beyond color, accompanying data tables, missing data, projections, real-time updates |
 | `skills/design-rules/recursica-skill-dashboards/SKILL.md` | Dashboard vs. workbench, purpose and stability, opinionated hierarchy, chart and card limits, numbers over charts, one or two CTAs, no work on the dashboard, max width, no inner scrolling, empty and first-run states, customization, data freshness |
+| `skills/design-rules/recursica-skill-tables/SKILL.md` | What earns a column, no horizontal scrolling, stacked cell text, widths by data type, alignment and right-aligned currency, truncate vs. wrap, infinite scroll vs. pagination, fixed header and footer, null cells, default and multi-sort, clickable rows, inline editing, totals, column visibility, frozen columns |
 | `skills/psychology/recursica-skill-working-memory/SKILL.md` | Miller's 7 ± 2, Cowan's revision to ~4 chunks, chunking, recognition vs. recall, and the boundary where item-count ceilings stop applying — with citations |
 
 ---
@@ -90,7 +91,7 @@ Each component has a specification at `docs/components/<Name>/DOCS.md` and, wher
 | Slider | `docs/components/Slider/DOCS.md` | `recursica-skill-slider` |
 | Stepper | `docs/components/Stepper/DOCS.md` | `recursica-skill-stepper` |
 | Switch | `docs/components/Switch/DOCS.md` | `recursica-skill-switch` |
-| Table | `docs/components/Table/DOCS.md` | _no skill yet_ |
+| Table | `docs/components/Table/DOCS.md` | _no component skill; see `recursica-skill-tables` in design-rules_ |
 | Tabs | `docs/components/Tabs/DOCS.md` | `recursica-skill-tabs` |
 | Textarea | `docs/components/Textarea/DOCS.md` | `recursica-skill-textarea` |
 | TextField | `docs/components/TextField/DOCS.md` | `recursica-skill-text-field` |

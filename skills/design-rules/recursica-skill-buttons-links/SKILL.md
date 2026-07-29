@@ -79,7 +79,7 @@ The test is whether the second trigger is a genuine alternative to the first or 
 
 **Disabled actions are simply disabled buttons.** When an action is unavailable because of the object's current state, disable the button. Nothing more elaborate is needed.
 
-**One primary action per row.** Everything else belongs in a secondary actions menu. Do not stack many actions onto a row, especially actions that vary from object to object.
+**One primary action per row.** Everything else belongs in a secondary actions menu. Note that any interactive element in a row means the row itself cannot be clickable — see `recursica-skill-tables`. Do not stack many actions onto a row, especially actions that vary from object to object.
 
 ### Icon-only vs. text buttons in rows
 
