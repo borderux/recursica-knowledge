@@ -79,6 +79,10 @@ Apply in order. The first rule that settles the conflict wins.
 
 **Never average two rules into a compromise.** Picking a midpoint between conflicting constraints produces a design neither rule sanctions.
 
+## Before you ask — check the cross-surface conventions
+
+**`recursica-skill-system-conventions`** carries four conventions generalized from the topic skills: one behavioral mode per system, the unadvertised affordance, never carrying meaning in a single channel, and fixing the structure instead of the symptom. When no topic skill covers a decision, check there before treating it as unowned. It is the house position on novel surfaces.
+
 ## What has no owner yet
 
 These come up constantly and no house rule covers them. **Ask rather than inventing an answer**, and expect this list to shrink as topics are recorded.
@@ -110,7 +114,7 @@ Before starting, and again before declaring the work done:
 - [ ] Every decision in the table above was either made under its owning skill or raised as a question.
 - [ ] The owning skill was actually loaded and read for each decision — not recalled from memory.
 - [ ] No conflict between rules was resolved by preference, averaging, or silence.
-- [ ] No gap in the rules was filled by invention or outside convention.
+- [ ] No gap in the rules was filled by invention or outside convention; `recursica-skill-system-conventions` was checked first.
 - [ ] Every open question was put to the user before building, with options.
 - [ ] Any answer the user gave was offered back as an addition to the owning skill.
 - [ ] Non-happy states were addressed or explicitly raised as unowned.

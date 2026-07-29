@@ -99,7 +99,7 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 **Where customization is required anyway:**
 
 - The user's arrangement **persists across sessions** — it is set once, not shuffled by the system.
-- **Do not advertise it.** Provide a settings or configuration entry point without calling attention to it, and let it be discovered or passed along between colleagues.
+- **Do not advertise it.** Provide a settings or configuration entry point without calling attention to it, and let it be discovered or passed along between colleagues. This is the unadvertised affordance convention — see `recursica-skill-system-conventions`, and `recursica-skill-discoverability` for why it works.
 
 ## Empty and first-run states
 

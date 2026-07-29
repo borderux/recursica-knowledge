@@ -74,6 +74,7 @@ Menus and navigation are recognition surfaces too — which is why the navigatio
 ## Out of scope
 
 - **Choosing a control type.** Covered by `recursica-skill-selection-controls`.
+- **Whether a feature should be discoverable or promoted.** Covered by `recursica-skill-discoverability`, the sibling psychology skill.
 - **Navigation structure, grouping, and overflow behavior.** Covered by `recursica-skill-navigation`.
 - **Any count limit not listed in the table above.** No rule exists yet; say so rather than deriving one.
 

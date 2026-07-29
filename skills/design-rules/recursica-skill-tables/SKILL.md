@@ -140,7 +140,7 @@ Decide in this order:
 
 ## Column visibility and reordering
 
-**Treat it as a customization, using the same model as dashboard configuration:** a relatively hidden affordance — a settings or gear icon on the table — opening a UI for choosing visible columns and their order.
+**Treat it as a customization, using the same model as dashboard configuration** — the unadvertised affordance convention in `recursica-skill-system-conventions`**:** a relatively hidden affordance — a settings or gear icon on the table — opening a UI for choosing visible columns and their order.
 
 **Drag-and-drop reordering is not preferred.** It overloads the interaction and is not accessible without a mouse. **If dragging is offered, another mechanism to reorder and toggle columns MUST also exist.**
 
