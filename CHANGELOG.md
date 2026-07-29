@@ -1,5 +1,11 @@
 # @recursica/knowledge
 
+## 0.5.0
+
+### Minor Changes
+
+- fecda27: Added docs for missing components
+
 ## 0.4.0
 
 ### Minor Changes
