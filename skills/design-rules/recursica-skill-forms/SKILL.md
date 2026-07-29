@@ -65,7 +65,7 @@ Group fields in this order of preference:
 1. **By parent object.** If ten fields are properties of one object, group them under a single object heading. This is the best structure available.
 2. **By step or logical sequence** in which the information gets populated.
 
-**Repeating objects** — many instances of the same object with the same properties — are a table, not a stack of form groups. Rows are objects, columns are fields. See `recursica-skill-tables`.
+**Repeating objects** — many instances of the same object with the same properties — are a table, not a stack of form groups and not a set of cards. Rows are objects, columns are fields. See `recursica-skill-tables`.
 
 ## Required vs. optional
 

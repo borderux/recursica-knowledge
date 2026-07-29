@@ -19,6 +19,14 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 2. **Fit the screen.** Every column-width, stacking, and truncation decision exists to keep the table inside the primary desktop dimensions. Horizontal scrolling is the failure state, not a layout option.
 3. **One interaction model per row, and per application.** A row is clickable only when nothing else in it is. Inline editing is on for every table or none, because the user cannot see which mode a cell is in.
 
+## Table or cards?
+
+**A set of repeating objects is a table by default.** Cards are the narrow exception, and they require all of the following: the set is **small and finite**, every instance carries **the same information types**, and each instance contains a **graphical element** — a chart, an image, a photograph.
+
+- **High plurality, unbounded, or growing → table.** Always.
+- **Purely textual and numeric data → table**, however few the records. A table shows the same values in less space and lets the reader compare down a column. `recursica-skill-card` allows an occasional aesthetic exception here for a small, finite set — invoked deliberately and stated, never as the default.
+- **Small, finite, and graphical → cards.** See `recursica-skill-card`.
+
 ## What earns a column
 
 **Decide from what the user is doing:** taking action on these records, or understanding them at a high level. Anything that serves neither does not need a column.

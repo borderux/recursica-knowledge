@@ -99,13 +99,14 @@ Instances:
 
 Instances:
 
-| Situation                                         | The house response                                                                                       | Owner                                           |
-| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| A region of a screen that needs to read as a unit | White space and type hierarchy. No box                                                                   | `recursica-skill-card`                          |
-| Several repeating objects of the same kind        | A card each — the one case a boundary is earned                                                          | `recursica-skill-card`                          |
-| A dashboard's composition                         | A static layout with type hierarchy and whitespace, cards placed inside it. Never a screen made of cards | `recursica-skill-dashboards`                    |
-| Spacing between form fields and sections          | Built into the components. Do not add wrappers or spacer elements                                        | `recursica-skill-forms`                         |
-| A form, form section, or single form control      | **Never inside a card**, with no exception. Group with headings and component spacing                    | `recursica-skill-forms`, `recursica-skill-card` |
+| Situation                                                                | The house response                                                                                            | Owner                                            |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| A region of a screen that needs to read as a unit                        | White space and type hierarchy. No box                                                                        | `recursica-skill-card`                           |
+| A small, finite set of repeating objects, each carrying a chart or image | A card each — the one case a boundary is earned                                                               | `recursica-skill-card`                           |
+| High plurality, or repeating objects that are purely data                | A table, not cards. High plurality has no exception; purely-data sets have an occasional stated aesthetic one | `recursica-skill-tables`, `recursica-skill-card` |
+| A dashboard's composition                                                | A static layout with type hierarchy and whitespace, cards placed inside it. Never a screen made of cards      | `recursica-skill-dashboards`                     |
+| Spacing between form fields and sections                                 | Built into the components. Do not add wrappers or spacer elements                                             | `recursica-skill-forms`                          |
+| A form, form section, or single form control                             | **Never inside a card**, with no exception. Group with headings and component spacing                         | `recursica-skill-forms`, `recursica-skill-card`  |
 
 **Why it generalizes:** a boundary is a claim that the things inside it belong together _and are separable from a peer beside them._ With no peer, the claim is empty and the border is decoration that costs padding, width, and hierarchy. A generated screen made of nested boxes is the most common symptom.
 
@@ -125,5 +126,6 @@ Instances:
 - [ ] No meaning depends on a single channel; each has a stated second channel.
 - [ ] No mechanism was added to make a broken structure fit; where a constraint was immovable, that was stated explicitly.
 - [ ] Every visible container has a named peer it separates from; regions without peers are grouped with space instead.
+- [ ] Repeating objects are a table unless the set is small, finite, and each instance carries a graphical element — or the aesthetic exception was invoked and stated.
 - [ ] No form, form section, or form control sits inside a card.
 - [ ] Where a topic skill covered the decision, its rule was followed over the general form here.

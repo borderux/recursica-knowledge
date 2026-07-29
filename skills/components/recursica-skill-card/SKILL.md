@@ -19,15 +19,45 @@ This skill covers the following component specs defined in the UI Kit:
 
 ---
 
-## The three tests — all must pass
+## The five tests — all must pass
 
-Before using a card, confirm all three:
+Before using a card, confirm all five:
 
 1. **Plurality.** There is more than one instance on the screen. A single object is never a card.
-2. **Repetition.** Every instance carries the same information types, in the same arrangement.
-3. **Segregation with unity.** The instances need to read as visually distinct objects while still reading as one group of the same kind of thing.
+2. **Finite and small.** The set is bounded and short. **High plurality is a table.**
+3. **Repetition.** Every instance carries the same information types, in the same arrangement.
+4. **A graphical element.** Each instance contains something visual — a chart, an image, a photograph. **A set of purely textual and numeric data is a table.**
+5. **Segregation with unity.** The instances need to read as visually distinct objects while still reading as one group of the same kind of thing.
 
-**If any test fails, do not use a card.** Use spacing.
+**If any test fails, do not use a card.** Depending on which one failed, use a table or use spacing.
+
+**Test 4 has one exception, below. Tests 1, 2, 3, and 5 have none.**
+
+---
+
+## The aesthetic exception
+
+**Occasionally a small, finite, repeating set simply looks better as cards, with no graphical element in it.** That is a legitimate reason, and it is the only aesthetic override in this skill.
+
+It is narrow:
+
+- **It waives test 4 only.** High plurality is still a table. A single object is still not a card. A form is still never a card.
+- **It is occasional.** If most card sets in an application are riding on this exception, the exception has become the rule and the reasoning has gone wrong.
+- **Say when you are using it.** State that it is an aesthetic call rather than presenting the card set as the default reading, so the choice stays visible and stays rare.
+
+---
+
+## Cards or a table?
+
+| The set                                                           | Component                                                         |
+| ----------------------------------------------------------------- | ----------------------------------------------------------------- |
+| High plurality, unbounded, or growing over time                   | **Table** — no exception                                          |
+| Purely data — text and numbers, no graphical element              | **Table**, unless the aesthetic exception is invoked deliberately |
+| Small, finite, repeating, each instance carrying a chart or image | **Cards**                                                         |
+
+**The graphical element is what normally earns the card.** A table row cannot hold a photograph or a chart legibly, and that is the reason a card set exists at all. Without one, a table usually shows the same information in less space and lets the reader compare values down a column — which is why the aesthetic exception is occasional rather than routine.
+
+See [`recursica-skill-tables`](../../design-rules/recursica-skill-tables/SKILL.md) for the table rules.
 
 ---
 
@@ -61,7 +91,7 @@ This follows from the rule above: a form is one object's properties, not a set o
 
 ## Use spacing instead
 
-When the three tests fail and grouping is still needed, reach for these in order:
+When the tests fail and grouping is still needed, reach for these in order:
 
 1. **White space.** Distance is the primary grouping mechanism. Related things sit closer together than unrelated things.
 2. **Type hierarchy.** A heading establishes a group and its rank without drawing anything.
