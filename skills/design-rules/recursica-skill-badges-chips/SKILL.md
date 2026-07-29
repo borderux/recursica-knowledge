@@ -125,6 +125,14 @@ Both cases are handled by the components — hover and focus states are built in
 
 **Just swap the badge to its new value.** No transition, no animation — animating a small status badge is egregious, nobody is watching it that closely, and a user who caused the change already expects it.
 
+## Uncovered — ask, do not invent
+
+No house rule covers these yet. **Ask the human rather than choosing** — see the never-guess rule in `recursica-skill-design-router`. Do not pattern-match them to a rule above.
+
+- **Count formatting inside a badge.** Whether counts cap — `99+` — and at what value.
+- **Whether a badge may carry an icon.**
+- **What a filter bar does when it exceeds 7 ± 2.** Overflow and scrolling are forbidden elsewhere; the alternative here is unset.
+
 ## Out of scope
 
 - **All color, visual design, and styling**, including badge and chip sizing, type treatment, and focus states. Handled by Recursica components.
@@ -151,3 +159,4 @@ Before considering status and metadata treatment done, verify:
 - [ ] Data-dense views use badges rather than chips.
 - [ ] Badges are not focusable; interactive chips are.
 - [ ] Status updates swap the badge with no animation.
+- [ ] Nothing in the uncovered list — count caps, icons in badges, filter bars over the ceiling — was decided without asking.

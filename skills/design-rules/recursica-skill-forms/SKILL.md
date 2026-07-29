@@ -195,6 +195,14 @@ Compliant components are the foundation, and the design system provides them. Th
 - Acceptable: fully invisible/automated checks; a single checkbox that runs a background test.
 - **NEVER use challenge CAPTCHAs** that require image selection, puzzles, or other human judgment tasks. Humans fail them regularly, which is infuriating and does not justify the marginal security gain.
 
+## Uncovered — ask, do not invent
+
+No house rule covers these yet. **Ask the human rather than choosing** — see the never-guess rule in `recursica-skill-design-router`. Do not pattern-match them to a rule above.
+
+- **Validation across steps in a multi-step flow.** Whether a step validates on leaving it, and what backward navigation does to entered data.
+- **Whether search and filter inputs follow form rules** or are a different surface.
+- **Form-level error summaries.** Field-level validation is specified; a summary at the top is not.
+
 ## Out of scope
 
 - **Control-type selection** — dropdown vs. radio vs. checkbox vs. toggle. Covered by a separate skill.
@@ -227,3 +235,4 @@ Before considering a form done, verify:
 - [ ] Tab order matches visual order.
 - [ ] No password visibility toggle. No challenge CAPTCHA.
 - [ ] No confirmation dialog unless the action is irreversible with no recovery path.
+- [ ] Nothing in the uncovered list — cross-step validation, filter and search inputs, error summaries — was decided without asking.

@@ -68,6 +68,8 @@ It is occasionally unavoidable when a client insists every field occupy its own 
 
 **Currency MUST be right-aligned, with no exception**, so the decimal point sits in the same position down the column. Generalize the reason: **any value with a fixed positional feature aligns right.**
 
+**Cell formatting itself — date format, decimal precision, the currency symbol in the header, accounting parentheses, precision consistency down a column — is owned by `recursica-skill-dates-and-currency`.**
+
 ## Truncate or wrap
 
 Decide in this order:
@@ -164,6 +166,15 @@ Decide in this order:
 
 **Freeze at most one column. Never more than three.**
 
+## Uncovered — ask, do not invent
+
+No house rule covers these yet. **Ask the human rather than choosing** — see the never-guess rule in `recursica-skill-design-router`. Do not pattern-match them to a rule above.
+
+- **Which data types are unsortable.** The rule excludes types with no logical sequence; the list has not been enumerated.
+- **Loading and error states for a table**, including partial failure.
+- **Where the detail link lives.** A row may not be clickable when it holds an interactive element, so which column carries the way in is unset.
+- **Bulk action placement relative to the table** — above it, in a toolbar, or elsewhere.
+
 ## Out of scope
 
 - **Maximum column widths, truncation thresholds, row padding, and the footer component.** Owned by the design system.
@@ -196,3 +207,4 @@ Before considering a table done, verify:
 - [ ] Column visibility and reordering sit behind an unadvertised settings affordance, with a non-drag mechanism available.
 - [ ] No grouped rows; sub-detail uses one level of expand/collapse.
 - [ ] At most one frozen column, never more than three.
+- [ ] Nothing in the uncovered list — unsortable types, loading and error states, detail-link placement, bulk action placement — was decided without asking.

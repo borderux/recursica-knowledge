@@ -58,8 +58,9 @@ Work top to bottom. Each answer constrains the ones below it.
 | 8   | Every clickable thing: is it an action or a navigation, how is it labeled, where does it sit           | `recursica-skill-buttons-links`                    |
 | 9   | If it is an overview or landing screen: is it a dashboard or a workbench, and what belongs on it       | `recursica-skill-dashboards`                       |
 | 10  | Any chart or visual data display                                                                       | `recursica-skill-data-visualization`               |
-| 11  | Any count — nav items, options, chips                                                                  | `recursica-skill-working-memory`                   |
-| 12  | Empty, loading, error, and partial states                                                              | **No skill yet — ask**                             |
+| 11  | Any date, time, currency, or numeric value on screen                                                   | `recursica-skill-dates-and-currency`               |
+| 12  | Any count — nav items, options, chips                                                                  | `recursica-skill-working-memory`                   |
+| 13  | Empty, loading, error, and partial states                                                              | **No skill yet — ask**                             |
 
 **Two ordering rules worth stating outright:**
 
@@ -85,7 +86,9 @@ Apply in order. The first rule that settles the conflict wins.
 
 ## What has no owner yet
 
-These come up constantly and no house rule covers them. **Ask rather than inventing an answer**, and expect this list to shrink as topics are recorded.
+**Two kinds of gap, in two places.** Each topic skill carries its own `Uncovered — ask, do not invent` section for holes inside a topic it otherwise owns — unsortable column types, badge count caps, chart empty states, and so on. Check the owning skill's list first.
+
+The list below is the other kind: **whole topics with no owning skill at all.** Both kinds get the same treatment — **ask rather than inventing an answer** — and both lists shrink as topics are recorded.
 
 - **Behavior below desktop.** Four skills defer to "a real space constraint" or "mobile" without defining what happens there. This is the most frequently hit gap. The one exception is charts: `recursica-skill-data-visualization` states that a chart adapts rather than shrinks, keeps the same story, and discloses omitted information.
 - **Empty, loading, error, and partial states**, including the difference between "no data yet" and "no results for these filters". Dashboards are the exception: `recursica-skill-dashboards` forbids an empty dashboard and requires a dismissible first-run element.
@@ -114,7 +117,7 @@ Before starting, and again before declaring the work done:
 - [ ] Every decision in the table above was either made under its owning skill or raised as a question.
 - [ ] The owning skill was actually loaded and read for each decision — not recalled from memory.
 - [ ] No conflict between rules was resolved by preference, averaging, or silence.
-- [ ] No gap in the rules was filled by invention or outside convention; `recursica-skill-system-conventions` was checked first.
+- [ ] No gap in the rules was filled by invention or outside convention; the owning skill's uncovered list and `recursica-skill-system-conventions` were both checked first.
 - [ ] Every open question was put to the user before building, with options.
 - [ ] Any answer the user gave was offered back as an addition to the owning skill.
 - [ ] Non-happy states were addressed or explicitly raised as unowned.

@@ -131,6 +131,15 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 
 **Adapt; do not force one dashboard to stretch from phone to desktop.** Someone checking in on a phone is doing something different from someone working at a desk all day. Understand the context of use, decide what is removed, and treat the compact view as its own design.
 
+## Uncovered — ask, do not invent
+
+No house rule covers these yet. **Ask the human rather than choosing** — see the never-guess rule in `recursica-skill-design-router`. Do not pattern-match them to a rule above.
+
+- **What occupies the primary position when everything genuinely is fine.** Announcing good news is forbidden; the alternative is unset.
+- **Whether one or two CTAs survives multiple personas on one screen.**
+- **Where a dashboard sits in the navigation**, given that every location needs a route and a nav item.
+- **Loading behavior.** Fast is required; whether the screen appears progressively or all at once is unset.
+
 ## Out of scope
 
 - **The internals of a chart** — type, axes, labels, thresholds. Covered by `recursica-skill-data-visualization`.
@@ -162,3 +171,4 @@ Before considering a dashboard done, verify:
 - [ ] No unrelated or differently scaled data placed side by side.
 - [ ] A maximum width is set, and there are no inner scrolling regions anywhere.
 - [ ] Smaller viewports get an adapted design, not a squeezed one.
+- [ ] Nothing in the uncovered list — the all-clear state, multi-persona CTAs, nav placement, load behavior — was decided without asking.

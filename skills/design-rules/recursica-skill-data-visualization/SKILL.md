@@ -157,6 +157,15 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 
 **The story must be identical at every size.** A larger display may carry a richer set of data, and **where information is omitted at a smaller size, say so explicitly.**
 
+## Uncovered — ask, do not invent
+
+No house rule covers these yet. **Ask the human rather than choosing** — see the never-guess rule in `recursica-skill-design-router`. Do not pattern-match them to a rule above.
+
+- **Sparklines and micro-charts inside table cells.**
+- **Legend placement**, and whether a chart carries a title and where.
+- **Chart empty states** — no data yet versus no results for the current filters.
+- **Export.** Whether a chart is exportable, and in what form.
+
 ## Out of scope
 
 - **Palette selection and component styling.** Handled by Recursica components. The rules here govern the encoding channel, not which colors are used.
@@ -193,3 +202,4 @@ Before considering a visualization done, verify:
 - [ ] Annotations sit beside the chart, not over it.
 - [ ] Overlapping series use different techniques, not just different node shapes.
 - [ ] At smaller sizes the chart adapts rather than shrinks, and omitted information is called out.
+- [ ] Nothing in the uncovered list — sparklines, legends, titles, empty states, export — was decided without asking.

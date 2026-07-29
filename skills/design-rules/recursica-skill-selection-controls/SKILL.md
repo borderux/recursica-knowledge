@@ -149,6 +149,14 @@ Example: a set of transportation modes where checking "Car" reveals a car attrib
 
 **Reset is a form-level concern, not a control-level one.** Where a reset is warranted, use a button labeled with a verb and its object — "Reset form", "Clear form" — calling the native HTML reset. There is no per-control restore behavior.
 
+## Uncovered — ask, do not invent
+
+No house rule covers these yet. **Ask the human rather than choosing** — see the never-guess rule in `recursica-skill-design-router`. Do not pattern-match them to a rule above.
+
+- **When autocomplete or typeahead replaces a dropdown.** A dropdown handles many options; the point at which search beats scanning is unset.
+- **Radio buttons inside a table row.** Mentioned in passing as an alternative to a switch; not established as a pattern.
+- **Multi-select maximums.** Whether a user may be limited to selecting _n_ of many.
+
 ## Out of scope
 
 - **All color, visual design, and styling**, plus keyboard interaction within a control. Handled by Recursica components.
@@ -176,3 +184,4 @@ Before considering a set of selection controls done, verify:
 - [ ] Disclosed fields submit with the same batch as their trigger.
 - [ ] Temporarily unavailable choices are disabled; permanently non-editable values use the read-only control or are not form controls at all.
 - [ ] Selection rules (minimums, maximums) appear as assistive text under the control.
+- [ ] Nothing in the uncovered list — autocomplete thresholds, radios in rows, selection maximums — was decided without asking.

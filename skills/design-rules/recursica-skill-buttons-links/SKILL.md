@@ -137,6 +137,15 @@ The reasoning, stated plainly: labeling the button "Unfollow" puts a negative ac
 
 **Single exception — the deliberately deep-linkable modal.** If the modal has a dedicated URL the user could copy from the browser, send to someone else, and have open for them, it may be triggered by a link. This is a rare, explicitly designed case: the modal gets a route _and_ a link trigger together, both on purpose. Absent a real shareable URL, the modal is unrouted and the trigger is a button.
 
+## Uncovered — ask, do not invent
+
+No house rule covers these yet. **Ask the human rather than choosing** — see the never-guess rule in `recursica-skill-design-router`. Do not pattern-match them to a rule above.
+
+- **Split buttons.** Whether they are permitted at all.
+- **Loading and pending state on non-submit actions.** The forms skill covers submit; `Export` and `Recalculate` are unowned.
+- **The threshold for moving actions into an overflow menu.** "Rare" is stated; no count is.
+- **Keyboard shortcuts for frequent actions.**
+
 ## Out of scope
 
 - **All color, visual design, and styling**, including focus states for buttons and links, external-link icon treatment, and the markup that makes a link-styled-as-button behave for assistive technology. Handled by Recursica components.
@@ -170,3 +179,4 @@ Before considering a set of triggers done, verify:
 - [ ] Toggles are buttons labeled with the affirmative state, never "Unfollow"-style negatives.
 - [ ] Rarely used toolbar functions sit in an overflow menu; standard function sets follow convention.
 - [ ] Modal triggers are buttons unless the modal has a genuinely shareable URL.
+- [ ] Nothing in the uncovered list — split buttons, non-submit loading states, overflow thresholds, shortcuts — was decided without asking.

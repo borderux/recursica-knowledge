@@ -133,6 +133,14 @@ Location is communicated by three things, and you need more than the first:
 
 **If forms on multiple tabs are unavoidable**, you MUST prompt the user on unsaved changes — most likely a modal on tab click. Recognize what this costs: it compounds tab selection with dirty-form handling into one interaction, which is the clearest evidence that tabs were the wrong container. Treat the prompt as damage control, not as a supported pattern.
 
+## Uncovered — ask, do not invent
+
+No house rule covers these yet. **Ask the human rather than choosing** — see the never-guess rule in `recursica-skill-design-router`. Do not pattern-match them to a rule above.
+
+- **Ordering of items within a level.** Frequency, alphabetical, workflow sequence — no rule exists.
+- **Maximum depth.** 7 ± 2 governs width per level, not how many levels are acceptable.
+- **Whether a dashboard or overview screen gets its own nav item, and where.**
+
 ## Out of scope
 
 - **All color, visual design, and styling.** Handled by Recursica components.
@@ -172,3 +180,4 @@ Before considering navigation done, verify:
 - [ ] No custom keyboard handling added inside tab sets.
 - [ ] Multi-part forms use a stepper.
 - [ ] Where forms on tabs are unavoidable, tab switching prompts on unsaved changes.
+- [ ] Nothing in the uncovered list — item ordering, nesting depth, dashboard placement — was decided without asking.

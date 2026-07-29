@@ -112,6 +112,10 @@ Instances:
 
 **Applying it to a new surface:** before drawing a container, name the peer it is being distinguished from. If there is no peer, remove the container and set the spacing instead.
 
+## When a sixth convention seems to be emerging
+
+**Do not add one.** If a pattern appears to recur across surfaces but is not listed here, say so and let the human decide whether it is a convention. A convention invented by an agent is indistinguishable from a recorded one on a later read, which is exactly what this file exists to prevent.
+
 ## Out of scope
 
 - **Any decision an owning topic skill covers.** Load that skill; it wins.
@@ -129,3 +133,4 @@ Instances:
 - [ ] Repeating objects are a table unless the set is small, finite, and each instance carries a graphical element — or the aesthetic exception was invoked and stated.
 - [ ] No form, form section, or form control sits inside a card.
 - [ ] Where a topic skill covered the decision, its rule was followed over the general form here.
+- [ ] No new cross-surface convention was added without the human deciding it is one.
