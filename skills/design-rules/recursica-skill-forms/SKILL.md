@@ -15,6 +15,8 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 
 **Spacing is not your decision either.** Field and section spacing is built into the form field components themselves. Do not add custom margins, padding, or spacer elements between fields to tune vertical rhythm — compose the components and let them handle it.
 
+**NEVER place a form, a form section, or any individual form control inside a card.** There is no exception. A card is for a set of repeating peer objects; a form is one object's properties, so the boundary separates nothing. Group fields with headings and the components' own spacing. See `recursica-skill-card`.
+
 ## The two governing principles
 
 1. **Eliminate ambiguity.** Every layout decision should have exactly one correct reading order, one correct tab order, and one obvious next action. If a design forces the user to guess — what to fill in, where to go next, whether their work was saved — it is wrong.
@@ -205,6 +207,7 @@ Before considering a form done, verify:
 - [ ] One field per row, single column, top to bottom — at every container width. Compound controls are the only shared rows.
 - [ ] Labels left of fields, right-aligned — stacked above only when the container is too narrow for both.
 - [ ] No custom spacing between fields; component spacing only.
+- [ ] No form, form section, or form control is inside a card.
 - [ ] Fields grouped by parent object, or by logical sequence. Repeating objects are tables.
 - [ ] Non-editable values use the read-only component, not a disabled input.
 - [ ] Only the exception is marked (required _or_ optional, never both). No asterisk clutter.

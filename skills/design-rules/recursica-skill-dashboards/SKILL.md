@@ -60,7 +60,7 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 
 **Fewer data points is better.** The measure of a dashboard is how actionable and clear its few insights are, not how much it shows.
 
-**Never make the whole page cards.** All-cards layouts are chaotic, because a grid of equal-weight cards has no hierarchy — and hierarchy is exactly what a car dashboard has and a card wall does not. Use the system's layout structures, type hierarchy, and whitespace to build a static composition, and place cards inside it.
+**Never make the whole page cards.** All-cards layouts are chaotic, because a grid of equal-weight cards has no hierarchy — and hierarchy is exactly what a car dashboard has and a card wall does not. Use the system's layout structures, type hierarchy, and whitespace to build a static composition, and place cards inside it. A card is for repeating peer objects — see `recursica-skill-card` and the earned-container convention in `recursica-skill-system-conventions`.
 
 **No competing visualizations on screen at once.**
 

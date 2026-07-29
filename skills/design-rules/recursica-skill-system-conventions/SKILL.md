@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-system-conventions
-description: Cross-surface house conventions that recur throughout the Recursica design rules, generalized so they can be applied where no surface-specific rule exists yet — one behavioral mode per system, the unadvertised affordance for rarely-needed configuration, never carrying meaning in a single channel, and fixing the structure instead of engineering around a symptom. Use when no owning topic skill covers a decision, when a requirement would introduce a second mode of an existing behavior, when deciding whether to promote or hide a configuration entry point, or when a design is about to gain a mechanism to cope with a structural problem. Trigger on "is there a convention for", "should this be configurable", "consistent across the app", "no rule covers this", or "can we add a control for". Load alongside the owning topic skill, never instead of it — a surface-specific rule always wins over the general form here.
+description: Cross-surface house conventions that recur throughout the Recursica design rules, generalized so they can be applied where no surface-specific rule exists yet — one behavioral mode per system, the unadvertised affordance for rarely-needed configuration, never carrying meaning in a single channel, fixing the structure instead of engineering around a symptom, and earning a visible container before drawing one. Use when no owning topic skill covers a decision, when a requirement would introduce a second mode of an existing behavior, when deciding whether to hide a configuration entry point, when a design is about to gain a mechanism to cope with a structural problem, or when a region is about to be wrapped in a card or box. Trigger on "is there a convention for", "should this be configurable", "consistent across the app", "no rule covers this", or "wrap this in a card". Load alongside the owning topic skill, never instead of it — a surface-specific rule always wins.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -9,7 +9,7 @@ metadata:
 
 # System conventions
 
-Four conventions appear repeatedly across the Recursica design rules. Each was stated independently, on a different surface, in a different recording — which is what makes them conventions rather than one-off rules.
+Five conventions appear repeatedly across the Recursica design rules. Each was stated independently, on a different surface, in a different recording — which is what makes them conventions rather than one-off rules.
 
 **This skill is derived, not recorded.** Every convention below lists the instances it generalizes from, with their owning skill. Those instances are authoritative; this file states the pattern they share.
 
@@ -93,6 +93,24 @@ Instances:
 
 **Applying it to a new surface:** when reaching for a mechanism whose purpose is to make something fit, stop and name what would have to change for it to fit without the mechanism. Propose that instead. If the constraint is external and immovable — a client requirement, a data volume that cannot be reduced — say so explicitly rather than letting the mechanism stand in as a design choice.
 
+## 5. A visible container must be earned
+
+**Grouping is expressed with space by default. A drawn boundary — a card, a box, a bordered region — is only for separating repeated peer objects from each other.** Not every container needs to be visible.
+
+Instances:
+
+| Situation                                         | The house response                                                                                       | Owner                                           |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| A region of a screen that needs to read as a unit | White space and type hierarchy. No box                                                                   | `recursica-skill-card`                          |
+| Several repeating objects of the same kind        | A card each — the one case a boundary is earned                                                          | `recursica-skill-card`                          |
+| A dashboard's composition                         | A static layout with type hierarchy and whitespace, cards placed inside it. Never a screen made of cards | `recursica-skill-dashboards`                    |
+| Spacing between form fields and sections          | Built into the components. Do not add wrappers or spacer elements                                        | `recursica-skill-forms`                         |
+| A form, form section, or single form control      | **Never inside a card**, with no exception. Group with headings and component spacing                    | `recursica-skill-forms`, `recursica-skill-card` |
+
+**Why it generalizes:** a boundary is a claim that the things inside it belong together _and are separable from a peer beside them._ With no peer, the claim is empty and the border is decoration that costs padding, width, and hierarchy. A generated screen made of nested boxes is the most common symptom.
+
+**Applying it to a new surface:** before drawing a container, name the peer it is being distinguished from. If there is no peer, remove the container and set the spacing instead.
+
 ## Out of scope
 
 - **Any decision an owning topic skill covers.** Load that skill; it wins.
@@ -106,4 +124,6 @@ Instances:
 - [ ] Every hidden affordance is keyboard and assistive-technology reachable, with a non-drag alternative where the gesture is a drag or long-press.
 - [ ] No meaning depends on a single channel; each has a stated second channel.
 - [ ] No mechanism was added to make a broken structure fit; where a constraint was immovable, that was stated explicitly.
+- [ ] Every visible container has a named peer it separates from; regions without peers are grouped with space instead.
+- [ ] No form, form section, or form control sits inside a card.
 - [ ] Where a topic skill covered the decision, its rule was followed over the general form here.
