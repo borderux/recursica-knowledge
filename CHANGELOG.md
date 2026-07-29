@@ -1,5 +1,11 @@
 # @recursica/knowledge
 
+## 0.6.0
+
+### Minor Changes
+
+- 4827885: Updated Table description in docs
+
 ## 0.5.0
 
 ### Minor Changes
