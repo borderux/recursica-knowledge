@@ -25,7 +25,7 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 
 **Do not visualize a difference too small to see.** 51% versus 49% is not a chart. State it.
 
-**Only put a visualization on a dashboard when it tells the story more simply at a glance.** Ten visualizations on one dashboard is overwhelming and confusing, and the tendency to add charts that serve no one is real. Dashboard composition itself is a separate topic.
+**Only put a visualization on a dashboard when it tells the story more simply at a glance.** Ten visualizations on one dashboard is overwhelming and confusing, and the tendency to add charts that serve no one is real. See `recursica-skill-dashboards` for the limits — at most four charts, and a number with typographic emphasis in preference to a chart that restates it.
 
 **NEVER use an infographic in an enterprise application.** Infographics are a marketing storytelling device. Do not dress up application data; let the data come through.
 
@@ -160,7 +160,7 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 ## Out of scope
 
 - **Palette selection and component styling.** Handled by Recursica components. The rules here govern the encoding channel, not which colors are used.
-- **Dashboard composition** — what goes on a dashboard and how it is arranged. A separate topic.
+- **Dashboard composition** — what goes on a dashboard and how it is arranged. Covered by `recursica-skill-dashboards`.
 - **Data tables as a primary surface.** This skill only requires that one accompany a chart.
 
 ## Pre-flight checklist
