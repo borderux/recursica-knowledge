@@ -13,6 +13,33 @@ House rules for charts in enterprise applications. These are opinions, not neutr
 
 Context these rules assume: **complex enterprise web applications, desktop-first**, built on the Recursica design system. Palette selection and component styling are inherited. Your decisions are whether to visualize at all, which chart, what the axes do, what is labeled, and what the user can interact with.
 
+## Read this first: charts come from a library, not from Recursica
+
+**Nothing in the Recursica component set draws a chart, and nothing is planned.** Charting is a third-party dependency, so the first question on any screen that needs one is not how to build it — it is whether the application has a charting library at all.
+
+### The sequence
+
+1. **Check whether the data needs visualizing.** The next section is often the answer: a number, or a table, is frequently better than a chart. Settle this first, because it may remove the dependency question entirely.
+2. **Check the project for a declared charting library.** Look in the dependency manifest and the project's own configuration. If one is there, use it — that decision has already been made, and introducing a second charting library is not yours to do.
+3. **If none is declared, stop and prompt the user to add one.** Do not proceed, and do not build around it. Present open-source options that suit this application's architecture, with the tradeoffs, and let the user choose. See `recursica-skill-design-router` on asking rather than guessing.
+4. **Never hand-build a chart from layout primitives.** A build test produced a bar chart from `Grid`, `Flex`, `Stack`, and `Text` with badges as the bars. It worked and it is not sanctioned — a badge is not a bar, and the styling escape hatch is for a missing prop or token, never for a missing component.
+
+### What makes a charting library fit
+
+When you present options, judge them against this application, not against popularity:
+
+- **Genuinely open source**, under a permissive license — MIT, Apache 2.0, or BSD.
+- **React-first**, rather than an imperative library wrapped thinly enough that it fights React's rendering.
+- **Themeable from the outside**, so series colors, axes, and gridlines can be driven by Recursica tokens. A library that insists on its own palette cannot satisfy the color rules below.
+- **No competing theme provider.** A library that brings its own context and expects to own the color scheme is how the half-themed page happens — the same failure mode already seen between the Recursica and Mantine layers.
+- **Gives you control over the things these rules require**: a zero baseline, linear scales, axis labelling, and pattern or texture in addition to color. A library whose defaults are decorative — 3D effects, gradient fills, animated pie charts — will fight every rule below.
+- **Proportionate in weight.** These are data-dense screens that people use all day; a large bundle for one chart is a poor trade.
+- **Accessible output, or output you can pair with a data table.** The accompanying-data-table rule is not optional, so the chart does not have to solve accessibility alone — but it must not actively prevent it.
+
+**No library is house-endorsed yet.** Nothing has been chosen, so present candidates and their tradeoffs rather than asserting a standard. Once a project picks one, that choice is the project's, and every rule below still binds whatever it draws.
+
+The rest of this skill is what a correct chart looks like, whichever library renders it.
+
 ## Governing principles
 
 1. **Story first, then the simplest form that tells it.** Decide what the visualization is saying — change, lack of change, comparison — and then use the simplest chart that carries it. There is a constant pull to add one more dimension or one more series. Resist it: the more data you add, the less likely the reader sees the simple story.
@@ -159,6 +186,10 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 
 ## Uncovered — ask, do not invent
 
+- **Which charting library, if any, becomes the house standard.** The selection criteria above are settled and the process is settled — check for a declared library, prompt for one if absent — but no library has been chosen, so every project currently answers this independently.
+- **How a chosen library's theming is wired to Recursica tokens.** The requirement is clear; the mechanism is not, and no adapter exists for it.
+- **Categorical color when the palette runs out.** A badge exposes four semantic intents, which cannot encode five or more categories. In the build test this forced a single uniform fill — which the never-single-channel rule wanted anyway, but by accident rather than by design.
+
 No house rule covers these yet. **Ask the human rather than choosing** — see the never-guess rule in `recursica-skill-design-router`. Do not pattern-match them to a rule above.
 
 - **Sparklines and micro-charts inside table cells.**
@@ -173,6 +204,10 @@ No house rule covers these yet. **Ask the human rather than choosing** — see t
 - **Data tables as a primary surface.** Covered by `recursica-skill-tables`. This skill only requires that one accompany a chart.
 
 ## Pre-flight checklist
+
+- [ ] The data genuinely needs visualizing; a number or a table was ruled out first.
+- [ ] The project's declared charting library was used, or — if none is declared — the user was prompted to add one with real open-source options and their tradeoffs, and the work stopped there.
+- [ ] No chart was hand-built from layout primitives, and no component was pressed into service as a chart element.
 
 Before considering a visualization done, verify:
 

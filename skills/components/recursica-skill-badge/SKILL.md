@@ -41,6 +41,10 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.badge`. **Do not pass 
 
 **No disabled state, no interactive state, no hover treatment.** A badge has no states because it is not a control.
 
+**Four intents is a closed set, and most domains have more statuses than that.** A provisioning workflow with Pending, Approved, Ordered, Shipped, Delivered, Blocked, and Cancelled has seven statuses and four styles to express them, so **styles necessarily repeat** — two different statuses will look identical.
+
+**That is safe only because the badge's text always carries the distinction.** Map several statuses to one intent deliberately, keep the label as the thing that identifies the status, and never let the color be what tells Ordered from Shipped. Required by `recursica-skill-system-conventions`. **Do not invent a fifth intent.** There is no prop for one, so producing one means going around the component — and a fifth colour is not a missing token to report, it is a colour the system has deliberately not given you. See `recursica-skill-design-router` on the escape hatch.
+
 ## Rules for using it
 
 **One badge per object.** Two values side by side means the information is plural, and plural is chips.
@@ -106,6 +110,7 @@ Do not implement, override, or tune any of these — the component owns them:
 - [ ] No badge communicates an error condition; `warning` and `alert` were not guessed at.
 - [ ] It sits immediately after its object on the same line, never stacked.
 - [ ] The text alone carries the full meaning; no meaning rides on color.
+- [ ] Where the domain has more statuses than the four intents, the mapping is deliberate and the label is what distinguishes them; no fifth intent was invented.
 - [ ] A count includes its unit in what gets announced.
 - [ ] The badge is announced as part of its object, not as a stray fragment.
 - [ ] It has no tabindex, no click handler, and no interactive role.

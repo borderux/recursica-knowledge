@@ -150,7 +150,7 @@ Do not add margins or spacer elements between items or between the group and its
 ## Uncovered — ask, do not invent
 
 - **How a checkbox group shows an error.** The kit gives `dropdown` and `autocomplete` an `error` state and gives the checkbox none, yet a group can carry a selection rule that fails validation. The error treatment for a group is unstated.
-- **The multi-select dropdown.** `recursica-skill-selection-controls` requires one — a checkbox group inside a dropdown — and the kit's `dropdown` defines no multi-select axis. This is a **gap in the component inventory, not an invitation to compose one.** Do not assemble a checkbox group inside a dropdown to satisfy the design rule. Do not rely on this without asking.
+- **The multi-select dropdown does not exist, and this is now confirmed in the shipped adapter as well as the token inventory** — the dropdown maps to a single-value select with no multi-select variant. `recursica-skill-selection-controls` requires one in two places. It is a gap in the component inventory, **not an invitation to compose one**: do not assemble a checkbox group inside a dropdown, and do not substitute a transfer list without asking. Where several values must be filtered, composing independent single-value filters that AND together is the workaround a build test used successfully. Ask.
 - **Whether a select-all control is a `checkbox-item` in the group or something outside it**, and how it relates to the group's `item-gap`.
 - **Selection maximums.** Whether a user may be limited to _n_ of many.
 - **Nesting depth for parent-child checkboxes.** The indeterminate state implies hierarchy; no rule says how deep it may go or how a parent's state is computed beyond one level.

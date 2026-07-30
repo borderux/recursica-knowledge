@@ -52,6 +52,8 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 
 ## How much
 
+**Before any chart on a dashboard, confirm the application has a charting library.** Recursica draws no charts; if none is declared, prompt the user to add one before designing the dashboard around visualizations that cannot yet be built. See `recursica-skill-data-visualization`.
+
 **At most four charts.** Beyond that the reader is doing analysis, not glancing.
 
 **Four cards across the top is good; six to eight is the ceiling.** Order the page so the fastest-to-read things come first — a single number is read in a second, a table takes real time to digest.

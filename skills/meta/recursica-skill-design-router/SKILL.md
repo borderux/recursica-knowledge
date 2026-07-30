@@ -41,6 +41,19 @@ This repository holds more than the skill family — website content, build scri
 
 **Load the whole family, not one file.** A component skill tells you what the component is and how to make it accessible; it does not tell you whether that component belongs on the screen. That answer is in a design-rules skill. Working from a component skill alone is the most common way to produce something that is individually correct and collectively wrong.
 
+## The styling escape hatch is a gap report, not a permission
+
+The component adapters expose a styling escape hatch. **Its name makes it sound like an override. Treat it as a signal instead**, and run this test before using it:
+
+**Is there a prop or a token for what you are trying to change?**
+
+- **Yes — then you are overriding something the component owns, and that is forbidden.** Every component skill lists these under `Not your decision`. Stop, and use the prop.
+- **No — then you are filling in for a missing prop or token.** That is the ordinary reason the hatch gets used, and the important part is what you do next: **the missing prop or token is a gap in the design system, and it must be reported.** Using the hatch quietly and moving on is how a gap becomes permanent and invisible.
+
+**Either way, reaching for it means something is wrong** — either your approach or the system. Say which, and say it in the same breath as the code.
+
+**It is never a way to produce a component that does not exist.** A badge given a forced width to act as a bar in a chart is not a filled-in prop; it is a missing component wearing another component's clothes. See `recursica-skill-data-visualization`.
+
 ## Never guess — ask instead
 
 **MUST NOT resolve uncertainty by choosing silently.** This is the most important rule in the family, because a silent guess is indistinguishable from a house rule to the next reader.
@@ -96,6 +109,9 @@ Work top to bottom. Each answer constrains the ones below it.
 Apply in order. The first rule that settles the conflict wins.
 
 1. **The design system beats every skill.** Anything the components own — spacing, color, type, focus states, keyboard behavior inside a control — is not a decision. If a rule appears to ask you to style a component, you have misread it.
+
+   **But a library default is not a house rule, and must never be construed as one.** The components are adapters over Mantine, Material, or whatever library sits underneath. What that library does by default carries no authority here. Where a default disagrees with a house rule, **the house rule wins and the default is a defect to report** — not evidence that the rule is wrong or that the behavior is intended. The panel is the live example: it wraps a drawer that defaults to modal, while the house rule is that a panel is non-modal. Verify behavior in the running application rather than inferring it from what the library usually does.
+
 2. **A prohibition beats a permission.** `NEVER` and `MUST NOT` outrank "may", "is fine", and "acceptable". If one skill forbids what another allows, the prohibition holds.
 3. **A design-rules or psychology skill beats a component skill.** This one settles most real conflicts, so apply it before reaching for the rest. The design-rules skills are recorded from the team; the component skills were assembled from the token inventory around them. Where the two disagree about **composition** — whether a component belongs here, how many are allowed, what may contain what, when one control replaces another — the design-rules skill is correct and the component skill has a defect. Follow the design rule, and say that the component skill needs fixing.
 
