@@ -1,1 +1,0 @@
-../../../components/FileInput/DOCS.md

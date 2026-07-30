@@ -1,1 +1,0 @@
-../../../components/Chip/DOCS.md

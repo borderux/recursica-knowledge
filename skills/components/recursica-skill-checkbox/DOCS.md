@@ -1,1 +1,0 @@
-../../../components/Checkbox/DOCS.md

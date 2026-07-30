@@ -1,1 +1,0 @@
-../../../components/Pagination/DOCS.md

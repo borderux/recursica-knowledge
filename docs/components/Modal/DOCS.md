@@ -5,8 +5,9 @@ previewName: "modal"
 specs:
   - section: "Sample"
     items:
-      - label: "Demands immediate user attention to confirm a critical action or respond to a system event before the user can resume work in the main application."
+      - label: "Focused action"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/modal/assets/modal-sample-demands-immediate-user-attention-to-confirm-a-critical-action-or-respond-to-a-system-event-before-the-user-can-resume-work-in-the-main-application.svg"
+        text: "Demands immediate user attention to confirm a critical action or respond to a system event before the user can resume work in the main application."
 anatomy:
   image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/modal/assets/modal-anatomy.svg"
   items:
@@ -34,6 +35,36 @@ metadata:
 
 # Modal
 
+**A modal blocks the page to get one decision or one short task done, then gets out of the way.** Because it stops everything else, the bar for opening one is high — most things that feel like they need a modal do not.
+
+## When to use
+
+- **The task is short and self-contained**: something that must be finished or abandoned before someone carries on.
+- **The action is irreversible, destructive, and hard to recreate**: that is the one case that genuinely justifies a confirmation.
+- **A system event has to be acknowledged**: work cannot sensibly resume until someone has seen it.
+- **The words can carry the decision**: a title that states what is about to happen — "Delete this project?" — and a primary action labeled "Delete project" rather than "OK".
+
+## When to avoid
+
+- **The content underneath is needed while working**: use a panel, or edit in place. A modal covers exactly the thing someone is trying to refer to.
+- **The action is reversible**: just do it, and offer an undo. "Are you sure?" on something harmless teaches people to dismiss without reading, which is what makes the one genuinely dangerous confirmation useless.
+- **It would confirm that something succeeded**: use a toast. Success does not need a decision.
+- **The task is long, multi-step, or a substantial form**: give it a page. A form that scrolls inside a dialog belongs on its own route.
+- **The destination is somewhere people would want to link to**: use a page, so the address bar means something.
+- **Another modal is already open**: modals do not open modals. Stacked dialogs leave nobody sure where they are or what dismissing will do — restructure the flow.
+
+## Specifications
+
+### Sample
+
+### Anatomy
+
+<!--
+LEGACY — original content exported from the Recursica website, superseded by the body above.
+Retained verbatim so nothing from the old site is lost. Do not render.
+
+# Modal
+
 **Modals are a type of window that appears in front of a page’s content to provide information or ask for a decision. Modals require immediate attention and disable all functionality until the user decides to confirm, dismiss or take appropriate action.**
 
 ## When to use
@@ -54,3 +85,4 @@ metadata:
 ### Sample
 
 ### Anatomy
+-->

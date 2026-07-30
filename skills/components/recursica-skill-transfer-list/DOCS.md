@@ -1,1 +1,0 @@
-../../../components/TransferList/DOCS.md

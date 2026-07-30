@@ -7,8 +7,10 @@ specs:
     items:
       - label: "Stacked"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/time-picker/assets/time-picker-label-placement-stacked.svg"
+        text: "Please note that the stacked version does not truncate or wrap the label. Noting this, please try to keep the label as short as possible."
       - label: "Left to right"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/time-picker/assets/time-picker-label-placement-left-to-right.svg"
+        text: "Please note the wrapping and truncation rules for the left to right version and how the optional label is below the label."
   - section: "States"
     items:
       - label: "Default"
@@ -17,6 +19,8 @@ specs:
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/time-picker/assets/time-picker-states-error.svg"
       - label: "Focused"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/time-picker/assets/time-picker-states-focused.png"
+      - label: "Disabled"
+        image: "https://framerusercontent.com/images/r4rxhYWgqffvPUiRzuBCOGCGDk4.png"
 anatomy:
   image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/time-picker/assets/time-picker-anatomy.svg"
   items:
@@ -50,6 +54,39 @@ metadata:
 
 # Time picker
 
+**The time picker captures a point in the day, either by typing it or by choosing it.** Reach for it when an exact hour and minute matter — a start time, an end time, a reminder, an appointment.
+
+## When to use
+
+- **A specific time of day has to be set**: the start or end of an event, a reminder, an appointment.
+- **Hours and minutes are stated explicitly**: the reader names the time rather than picking from a short list.
+- **The precision matters to the task**: if any nearby time would do, the reader is not really setting a time.
+- **Typing is always possible**: someone who already knows the time types it and moves on, while someone who does not opens the picker. Neither path should be the only way in.
+- **The clock follows the reader**: whether the time reads as 12-hour or 24-hour comes from their own locale or setting, not from the screen, and it stays the same everywhere they go.
+
+## When to avoid
+
+- **An approximate or relative time**: "in 30 minutes" is an offset, not a time — capture a number and its unit instead.
+- **A few preset times**: use a segmented control or a dropdown, which show the choices at a glance.
+- **A length of time rather than a point in time**: use a number input for each unit, so it reads "3h 20m" and cannot be mistaken for a clock time.
+- **A calendar date**: use the date picker. When a date and a time are both needed, put the two controls side by side on one row under a single label.
+- **Recurring or conditional scheduling**: "every Monday at 3 PM" needs a scheduling surface built for the job, not one field.
+- **The value is never editable here**: use the read-only field. A disabled picker is not a way to display a time.
+
+## Specifications
+
+### Label placement
+
+### States
+
+### Anatomy
+
+<!--
+LEGACY — original content exported from the Recursica website, superseded by the body above.
+Retained verbatim so nothing from the old site is lost. Do not render.
+
+# Time picker
+
 **Time pickers allow users to select a time value quickly using a text input. They are commonly used for scheduling, reminders, alarms, or any task that requires precise time entry.**
 
 ## When to use
@@ -75,3 +112,4 @@ metadata:
 ### States
 
 ### Anatomy
+-->

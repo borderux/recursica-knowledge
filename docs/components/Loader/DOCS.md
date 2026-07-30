@@ -7,10 +7,13 @@ specs:
     items:
       - label: "Oval"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/loader/assets/loader-types-oval.svg"
+        text: "A circular spinner. This is a classic, universally understood loader suitable for most use cases, especially in compact spaces."
       - label: "Bars"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/loader/assets/loader-types-bars.svg"
+        text: "A series of animating vertical bars. A stylistic alternative to the oval."
       - label: "Dots"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/loader/assets/loader-types-dots.svg"
+        text: "A sequence of three or more animating dots. Another alternative to the oval."
   - section: "Size"
     items:
       - label: "xs"
@@ -19,6 +22,10 @@ specs:
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/loader/assets/loader-size-sm.svg"
       - label: "Md"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/loader/assets/loader-size-md.svg"
+      - label: "Lg"
+        image: "https://framerusercontent.com/images/k3yDXUWfjTYvgpJ0WKA9kA9Zg.svg"
+      - label: "Xl"
+        image: "https://framerusercontent.com/images/Fwxp9V0AJBBR6sKhXt7f41F7g.svg"
 anatomy:
   image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/loader/assets/loader-anatomy.svg"
   items:
@@ -37,6 +44,38 @@ metadata:
   author: hi@borderux.com
   version: 0.1.0
 ---
+
+# Loader
+
+**A loader says that something is happening.** It cannot say how much is done or how long is left, so pair it with a few words naming what is being loaded.
+
+## When to use
+
+- **A wait is real and its length is unknown**: fetching data, submitting a form, running a recalculation.
+- **The wait is long enough to notice**: past roughly a third of a second. Below that, a spinner appears and vanishes, which reads as a glitch.
+- **One region is loading**: scope the loader to that card, panel, or modal rather than covering the screen. A screen-wide loader is for a screen-wide wait.
+- **Text can sit beside it**: "Loading invoices" rather than "Loading". The words carry the meaning; the spinner only says a wait is underway.
+
+## When to avoid
+
+- **The amount of work is known**: a spinner cannot show how far along something is. A determinate progress indicator can, and that is a different control.
+- **The operation finishes in well under a second**: show no indicator at all. The flash is more distracting than the wait.
+- **The wait is over and the result needs stating**: put text where the result belongs, or use a toast for something page-wide.
+- **There is no data and there never was**: use an empty state. A spinner suggests data is on its way when nothing is coming.
+- **The operation failed**: stop the spinner and show an error message that says what happened. A spinner that keeps turning tells someone the system is still trying.
+- **The motion would be the only signal**: pair it with text. A turning shape says nothing to someone using a screen reader, nothing when motion is turned off in system settings, and nothing in a screenshot.
+
+## Specifications
+
+### Types
+
+### Size
+
+### Anatomy
+
+<!--
+LEGACY — original content exported from the Recursica website, superseded by the body above.
+Retained verbatim so nothing from the old site is lost. Do not render.
 
 # Loader
 
@@ -63,3 +102,4 @@ metadata:
 ### Size
 
 ### Anatomy
+-->

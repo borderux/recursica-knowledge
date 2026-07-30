@@ -1,1 +1,0 @@
-../../../components/Button/DOCS.md

@@ -7,8 +7,10 @@ specs:
     items:
       - label: "Stacked"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/text-field/assets/text-field-label-placement-stacked.svg"
+        text: "Please note that the stacked version does not truncate or wrap the label. Noting this, please try to keep the label as short as possible."
       - label: "Left to Right"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/text-field/assets/text-field-label-placement-left-to-right.svg"
+        text: "Please note the wrapping and truncation rules for the left to right version and how the optional label is below the label."
   - section: "Content"
     items:
       - label: "Valued"
@@ -25,6 +27,8 @@ specs:
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/text-field/assets/text-field-states-focused.svg"
       - label: "Error"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/text-field/assets/text-field-states-error.svg"
+      - label: "Read only"
+        image: "https://framerusercontent.com/images/CWoGZVREpZtBIcD55AEfVboMs.svg"
 anatomy:
   image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/text-field/assets/text-field-anatomy.svg"
   items:
@@ -46,6 +50,39 @@ metadata:
   author: hi@borderux.com
   version: 0.1.0
 ---
+
+# Text field
+
+**The text field lets someone enter and edit a single line of text.** Reach for it when the value can't be predicted from a set of options, and when typing it is faster than choosing it.
+
+## When to use
+
+- **The value is unpredictable**: names, addresses, descriptions, references — anything a preset list couldn't enumerate.
+- **Typing beats choosing**: memorable data someone enters faster by hand than by navigating a control.
+- **Short, single-line content**: any combination of letters, numbers, and symbols.
+
+## When to avoid
+
+- **The value comes from a known set**: use a dropdown, radio group, or autocomplete. A free-form field over a fixed set of answers invites errors.
+- **The answer is yes or no**: use a switch or a checkbox.
+- **The content runs to multiple lines**: use a textarea. A single-line field scrolls its value sideways, which makes long entries unreadable.
+- **A number that needs increment controls**: use a number input.
+- **The value is never editable**: use the read-only field. A disabled input isn't a way to display a value.
+- **Placeholder text as the label**: it disappears on the first keystroke, so anything needed to complete the field is lost.
+
+## Specifications
+
+### Label placement
+
+### Content
+
+### States
+
+### Anatomy
+
+<!--
+LEGACY — original content exported from the Recursica website, superseded by the body above.
+Retained verbatim so nothing from the old site is lost. Do not render.
 
 # Text field
 
@@ -72,3 +109,4 @@ metadata:
 ### States
 
 ### Anatomy
+-->

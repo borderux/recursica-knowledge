@@ -1,1 +1,0 @@
-../../../components/Avatar/DOCS.md

@@ -1,1 +1,0 @@
-../../../components/Card/DOCS.md
