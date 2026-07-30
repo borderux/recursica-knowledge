@@ -1,7 +1,9 @@
 {
   "name": "recursica-knowledge",
   "owner": {
-    "name": "recursica"
+    "name": "Border UX",
+    "email": "hi@borderux.com",
+    "url": "https://github.com/borderux"
   },
   "metadata": {
     "description": "A collection of Claude Agent Skills and components for building and extending the Recursica Design System."
