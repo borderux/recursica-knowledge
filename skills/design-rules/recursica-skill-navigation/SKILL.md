@@ -13,6 +13,8 @@ House rules for application navigation — primary and secondary nav, sub-level 
 
 Context these rules assume: **complex enterprise web applications, desktop-first**, built on the Recursica design system. Component-level visual design is not your decision — selected states, hover styling, spacing, and color are inherited. Your job is structure, interaction, and route behavior.
 
+**Navigation labels name objects, not actions** — `Forms`, never `View forms`. What each item is called, whether it is singular or plural, and how far a term may be shortened are governed by `recursica-skill-naming-terminology`.
+
 ## Governing principles
 
 1. **A location is a route.** If something is navigation, it has a unique URL and a browser history entry. If it is invoked by a trigger — a modal, a panel — it is neither. This test is the most important thing in this file, because it is the one most often broken.

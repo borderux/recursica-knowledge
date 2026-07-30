@@ -13,6 +13,8 @@ House rules for deciding whether a trigger is a button or a link, how it is labe
 
 Context these rules assume: **complex enterprise web applications, desktop-first**, built on the Recursica design system. Button and link visual treatment, focus states, external-link icon styling, and the markup that makes a link-styled-as-button accessible are all inherited from the components. Your decisions are which component, which label, and which action ranks first.
 
+**A button label is verb plus object — `Save form`. A navigation label is the object alone — `Forms`.** That split is the whole difference in copy terms, and it is governed on the naming side by `recursica-skill-naming-terminology`.
+
 ## Governing principles
 
 1. **The component follows the intent, not the appearance.** A link goes somewhere. A button does something to an object. If you want an action that doesn't look heavy, use a text button — never a link. Appearance is adjustable; semantics are not.
