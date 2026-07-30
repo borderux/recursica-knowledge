@@ -13,7 +13,7 @@ If you are using **Claude Code**, you can register this repository as a plugin m
 Add the registry using the repository owner and name:
 
 ```bash
-/plugin marketplace add recursica/recursica-knowledge
+/plugin marketplace add borderux/recursica-knowledge
 ```
 
 ### 2. Install the Plugin

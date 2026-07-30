@@ -1,7 +1,9 @@
 {
   "name": "recursica-knowledge",
   "owner": {
-    "name": "recursica"
+    "name": "Border UX",
+    "email": "hi@borderux.com",
+    "url": "https://github.com/borderux"
   },
   "metadata": {
     "description": "A collection of Claude Agent Skills and components for building and extending the Recursica Design System."
@@ -15,16 +17,19 @@
         "./skills/meta/recursica-skill-design-router",
         "./skills/design-rules/recursica-skill-badges-chips",
         "./skills/design-rules/recursica-skill-buttons-links",
-        "./skills/design-rules/recursica-skill-data-visualization",
         "./skills/design-rules/recursica-skill-dashboards",
+        "./skills/design-rules/recursica-skill-data-visualization",
         "./skills/design-rules/recursica-skill-dates-and-currency",
+        "./skills/design-rules/recursica-skill-feedback-messaging",
         "./skills/design-rules/recursica-skill-forms",
         "./skills/design-rules/recursica-skill-navigation",
+        "./skills/design-rules/recursica-skill-panels-modals",
         "./skills/design-rules/recursica-skill-selection-controls",
-        "./skills/design-rules/recursica-skill-tables",
         "./skills/design-rules/recursica-skill-system-conventions",
-        "./skills/psychology/recursica-skill-working-memory",
+        "./skills/design-rules/recursica-skill-tables",
+        "./skills/design-rules/recursica-skill-typography-semantics",
         "./skills/psychology/recursica-skill-discoverability",
+        "./skills/psychology/recursica-skill-working-memory",
         "./skills/components/recursica-skill-accordion",
         "./skills/components/recursica-skill-assistive-element",
         "./skills/components/recursica-skill-autocomplete",

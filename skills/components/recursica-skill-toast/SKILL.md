@@ -31,7 +31,9 @@ A toast reports what just happened, without interrupting the work.
 | The persistent save status required by field-level saving   | A persistent status on the page — `recursica-skill-forms`                          |
 | Progress while an action is in flight                       | The in-button loading state on submit, or `recursica-skill-loader`                 |
 
-**A toast is the wrong home for anything that must not be missed.** It appears away from where the user is looking and leaves on its own, so a critical alert requiring immediate action is not a toast. **And there is no other component in this system for one.** Do not press a toast into that job, do not assemble a persistent alert surface, and do not send the reader to a component that does not exist. Raise it — see the uncovered list.
+**A toast reports something that just happened.** That is the house test — `recursica-skill-feedback-messaging` splits the channels by tense: a completed event is a toast, a condition that has not happened yet is a banner. Check the tense of the sentence before choosing.
+
+**A toast is the wrong home for anything that must not be missed.** It appears away from where the user is looking and leaves on its own, so a critical alert requiring immediate action is not a toast. **And there is no component in this system for one yet** — the banner the tense rule calls for is planned but not in the token inventory. Do not press a toast into that job, do not assemble a persistent alert surface, and do not send the reader to a component that does not exist. Raise it — see the uncovered list.
 
 ## What exists
 
@@ -71,6 +73,16 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.toast`. **Do not pass 
 
 **Never use a toast as the only record of a destructive action.** Once it is gone, the user has no way back to it.
 
+**Duration is the underlying library's, and is not modified.** Whatever Mantine, Material, or whichever library backs the component sets is the duration. Do not tune it, do not vary it per message, and do not extend it to make an action reachable. Owned by `recursica-skill-feedback-messaging`.
+
+**A dismiss control is always present**, built into the toast component, and the user may always remove the notification from the screen. Never ship a toast that cannot be dismissed.
+
+**An undo window is also the library's.** How long an immediate undo stays available is not set by the design.
+
+**Because the duration cannot be extended, an undo must never live only inside a toast.** The keyboard journey to reach it — leave the field, tab to the toast, activate — runs against a timer you do not control. Put the undo somewhere persistent and let the toast point at it.
+
+**Consolidate duplicates.** Repeated occurrences of the same message collapse into one. Ten identical toasts stacked up is a failure to handle the condition — see `recursica-skill-feedback-messaging`.
+
 ## Accessibility
 
 **This is the highest-risk component in the system.** It appears without the user asking, disappears without the user acting, and does all its work outside the user's point of regard. A toast that is not announced is invisible to a screen reader user; a toast that steals focus interrupts typing; and a toast that auto-dismisses while carrying an undo offers an action nobody can reach with a keyboard.
@@ -89,7 +101,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.toast`. **Do not pass 
 ### Keyboard and non-mouse navigation
 
 - **Never move focus to the toast when it appears.** It rips the caret out of a field mid-word and drops the user somewhere they did not ask to be.
-- **A toast containing an action cannot auto-dismiss out from under someone.** This is the central tension: reaching an undo by keyboard means leaving the current field, tabbing to the toast, and activating it — and a timer that runs during that journey makes the action unreachable in practice. **Resolve it one of two ways and say plainly which you built:** the toast that carries an action persists until the user dismisses it, or the undo also lives somewhere persistent on the page and the toast is merely a pointer to it. **Never ship a timed toast whose action is the only path to the undo.**
+- **A toast containing an action cannot auto-dismiss out from under someone.** This is the central tension: reaching an undo by keyboard means leaving the current field, tabbing to the toast, and activating it — and a timer that runs during that journey makes the action unreachable in practice. **Since the duration belongs to the library and is not modified, keeping the toast on screen longer is not an available fix.** So the undo must also live somewhere persistent on the page, with the toast pointing at it. **Never ship a timed toast whose action is the only path to the undo.**
 - **The toast must be reachable in the tab order while it is visible**, at a predictable point — not after the entire rest of the page.
 - **If a dismissal timer pauses on hover, it must also pause on focus.** A pointer-only reprieve is not a reprieve.
 - **Dismissal must not be pointer-only.** If the toast can be closed, it can be closed from the keyboard.
@@ -109,6 +121,8 @@ Do not implement, override, or tune any of these — the component owns them for
 
 ## Load these too
 
+- [`recursica-skill-feedback-messaging`](../../design-rules/recursica-skill-feedback-messaging/SKILL.md) — the owning design-rules skill: whether success needs confirming at all, banner versus toast by tense, why inline messaging is avoided, consolidation, the waiting thresholds, and what the library owns.
+
 - [`recursica-skill-buttons-links`](../../design-rules/recursica-skill-buttons-links/SKILL.md) — undo policy, when a reversible action is performed rather than confirmed, in-place undo versus global undo, and action label copy.
 - [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — field-level errors, the persistent status message field-level saving requires, and the no-status rule under batch saving.
 - [`recursica-skill-modal`](../recursica-skill-modal/SKILL.md) — the blocking alternative for a decision that cannot wait, and the narrow case for confirming up front.
@@ -116,12 +130,11 @@ Do not implement, override, or tune any of these — the component owns them for
 
 ## Uncovered — ask, do not invent
 
-- **Auto-dismiss timing.** The kit defines no duration token. Earlier house guidance said 4–6 seconds with a manual close, which collides directly with the rule above that a toast carrying an action must stay reachable by keyboard. **The house has not settled this — ask.**
-- **Whether the toast has a close control at all.** One is documented outside the token inventory; the kit defines no token for it. Do not rely on this without asking.
+- **Where the durations land in practice.** The house position is settled — see the rule above — but no token records what any given library's default is, so you cannot verify a duration from this repository.
 - **Whether a toast may contain an action button.** "With action" and "without action" are documented outside the token inventory; the kit defines no token for an action, only `icon` and `text`. Do not rely on this without asking.
 - **Where toasts appear on screen.** No position axis exists; "towards the bottom" is documented outside the token inventory. Do not rely on this without asking.
 - **Stacking.** How many toasts may be visible at once, in what order, and what happens beyond that limit.
-- **Warning severity, and critical alerts.** No warning style exists, and **no persistent high-severity alert component exists anywhere in this system** — nothing to hold an alert the user must not miss. This is a gap for the human to close, not a surface to assemble, and not a component to name as though it were available. Do not rely on this without asking.
+- **Warning severity, and critical alerts.** No warning style exists, and **no persistent high-severity alert surface exists in this system yet** — nothing to hold an alert the user must not miss. The banner component is planned and may close part of this; until it ships, do not assemble a substitute and do not name a component as though it were available.
 - **Whether a toast is ever appropriate for a background job that finishes long after the triggering action.**
 
 ## Pre-flight checklist
@@ -138,7 +151,10 @@ Do not implement, override, or tune any of these — the component owns them for
 - [ ] The icon is silent; the text states the outcome.
 - [ ] Stacked toasts share one queued live region and never produce overlapping announcements.
 - [ ] Any action has a real accessible name including its object; any close control has a real name.
-- [ ] A toast carrying an action does not auto-dismiss, or the action also lives somewhere persistent — and which one was built is stated.
+- [ ] No undo lives only inside a toast; the action also exists somewhere persistent.
+- [ ] Duration, persistence, and the undo window were left to the library and not tuned.
+- [ ] Every toast can be dismissed by the user, and duplicates are consolidated rather than stacked.
+- [ ] The message reports something that just happened; anything not yet happened was raised as a banner case.
 - [ ] The toast is keyboard-reachable at a predictable point in the tab order while visible.
 - [ ] Any hover pause on the timer also pauses on focus; dismissal is not pointer-only.
 - [ ] The toast covers no needed control and does not obscure the focus ring; nothing needed is hover-only.
