@@ -1,1 +1,0 @@
-../../../components/Slider/DOCS.md

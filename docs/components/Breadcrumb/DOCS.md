@@ -7,12 +7,16 @@ specs:
     items:
       - label: "Label only"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/breadcrumb/assets/breadcrumb-content-label-only.svg"
+        text: "Use labels only for the standard navigational trail to maintain the lightweight breadcrumb pattern and ensure high scannability."
       - label: "Icon + Label"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/breadcrumb/assets/breadcrumb-content-icon-label.svg"
+        text: "Use this to reinforce the section that the label refers to."
       - label: "Icon only"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/breadcrumb/assets/breadcrumb-content-icon-only.svg"
+        text: "Use this only for highly compact interfaces where the icon is universally understood (like a Home/Product link) and no space for a label exists."
       - label: "Mixed"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/breadcrumb/assets/breadcrumb-content-mixed.svg"
+        text: "Mix and match properties to display the clickable element with only an icon, and the non-clickable element with an icon and a label."
 anatomy:
   image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/breadcrumb/assets/breadcrumb-anatomy.svg"
   items:
@@ -37,6 +41,37 @@ metadata:
 
 # Breadcrumb
 
+**A breadcrumb states where the current page sits in the hierarchy and gives a way back up it.** It is supplementary wayfinding — useful alongside the navigation, never a substitute for it. The last item is the page you are on, and it is not a link to itself.
+
+## When to use
+
+- **The structure is genuinely nested**: the page sits more than one level down.
+- **The page has to answer "where am I" by itself**: even with the navigation off screen, the trail plus the heading say where you are.
+- **The path runs through several levels or categories**: a trail keeps orientation across a deep hierarchy.
+- **The trail reflects structure, not history**: two people who arrive at the same page from different directions see the same crumbs.
+- **Each label names its destination**: the crumb matches the heading you land on, so arriving confirms the trail rather than contradicting it.
+
+## When to avoid
+
+- **The application is only one or two levels deep**: use headings. A clear heading hierarchy already expresses location.
+- **It would be the only way back to the parent**: use real navigation — a sidebar or a top bar. Removing the trail should never trap anyone in a section.
+- **Location is already unambiguous from the heading and the navigation**: leave it out. A redundant trail is clutter.
+- **Someone is moving through ordered steps in a process**: use a stepper.
+- **Someone is switching between parts of one page**: use tabs.
+- **You want to record where someone has been**: show the hierarchy instead. A breadcrumb is structural, not a history log.
+
+## Specifications
+
+### Content
+
+### Anatomy
+
+<!--
+LEGACY — original content exported from the Recursica website, superseded by the body above.
+Retained verbatim so nothing from the old site is lost. Do not render.
+
+# Breadcrumb
+
 **Breadcrumbs visually show the platform’s structural hierarchy, helping users to understand the path they’ve taken, allowing them to navigate easily.**
 
 ## When to use
@@ -56,3 +91,4 @@ metadata:
 ### Content
 
 ### Anatomy
+-->

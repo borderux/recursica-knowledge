@@ -1,1 +1,0 @@
-../../../components/Switch/DOCS.md

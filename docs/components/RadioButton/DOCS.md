@@ -7,8 +7,10 @@ specs:
     items:
       - label: "Stacked"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/radio/assets/radio-label-placement-stacked.svg"
+        text: "The stacked version does not truncate or wrap the label. Noting this, please try to keep the label as short as possible."
       - label: "Left to Right"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/radio/assets/radio-label-placement-left-to-right.svg"
+        text: 'Please note the wrapping and truncation rules for the left to right version and how the "Optional" label is below the label.'
   - section: "States"
     items:
       - label: "Enabled Selected"
@@ -40,6 +42,38 @@ metadata:
 
 # Radio
 
+**A radio group is one question with several answers, of which exactly one can be chosen.** Reach for it when the options are few enough to read side by side, stacked one per row so each choice sits clearly beside its own label.
+
+## When to use
+
+- **Exactly one option applies**: the answers are mutually exclusive, and one of them has to be picked.
+- **Every option should be visible**: the reader compares the whole set in place instead of opening something to find out what is on offer.
+- **The set is small**: keep it to a handful — around seven at most, fewer when the options are unfamiliar, dissimilar, or need real expertise to tell apart.
+- **The choice commits with the form**: it is saved on submit along with the fields around it, not the instant it is clicked.
+
+## When to avoid
+
+- **More than one answer can apply**: use checkboxes. A checkbox means "as many as apply", which is a different question entirely.
+- **The value is on or off, and the opposite is obvious**: use a switch.
+- **There are more options than a group can comfortably hold**: use a single-select dropdown, which keeps a long list tidy.
+- **The reader will type to find a value in a long, familiar list**: use an autocomplete.
+- **The options have to sit in a row**: use a segmented control, which is built for two to five short options. Radio buttons stay stacked, and tabs are not a substitute.
+- **The value is never editable here**: use a read-only field, which shows the label and the value with no control at all.
+
+## Specifications
+
+### Label placement
+
+### States
+
+### Anatomy
+
+<!--
+LEGACY — original content exported from the Recursica website, superseded by the body above.
+Retained verbatim so nothing from the old site is lost. Do not render.
+
+# Radio
+
 **Radio buttons allow users to select a single item from a list.**
 
 ## When to use
@@ -60,3 +94,4 @@ metadata:
 ### States
 
 ### Anatomy
+-->

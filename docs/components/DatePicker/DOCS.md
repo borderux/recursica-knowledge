@@ -7,8 +7,10 @@ specs:
     items:
       - label: "Stacked"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/date-picker/assets/date-picker-label-placement-stacked.svg"
+        text: "Please note that the stacked version does not truncate or wrap the label. Noting this, please try to keep the label as short as possible."
       - label: "Left to right"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/date-picker/assets/date-picker-label-placement-left-to-right.svg"
+        text: "Please note the wrapping and truncation rules for the left to right version and how the optional label is below the label."
   - section: "States"
     items:
       - label: "Default"
@@ -27,6 +29,7 @@ anatomy:
   image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/date-picker/assets/date-picker-anatomy.svg"
   items:
     - num: 1
+      label: "Text field"
       text: "Opens the date picker upon selection and allows the user to manually enter a date."
     - num: 2
       label: "Dropdown menu"
@@ -49,6 +52,39 @@ metadata:
 
 # Date picker
 
+**A date picker captures a single calendar date, either by typing it or by picking it.** Typing always stays possible — the calendar speeds entry up for people who want it, but it is never the only way in.
+
+## When to use
+
+- **The value is one calendar date**: a due date, a start date, an effective date.
+- **A calendar genuinely helps**: someone is reasoning about weekdays, proximity, or the shape of a month rather than recalling a date they already know.
+- **The date is close to today**: near enough that the calendar reaches it in a step or two.
+- **The date should read unambiguously**: a spelled month, as in Jan 7, 2026, so nobody has to work out whether 01/07 means January or July.
+- **The reader's own calendar is the right one**: dates follow the reader's locale and time zone, with the zone named whenever it is not theirs.
+
+## When to avoid
+
+- **The value is a time of day**: use a time picker.
+- **The date is already known by heart**: use a text field with the expected format in the help text. Typing beats picking whenever recall is instant.
+- **The date is far in the past, like a birth date**: use a text field. Paging a calendar back through decades is punishing.
+- **A relative or approximate span, like "in 30 days"**: capture the offset as a number plus a unit. That is not a date.
+- **A month, a quarter, or a fiscal period**: use separate inputs with the format stated. A partial date is not this control.
+- **The date is only being displayed, or is never editable here**: use formatted text, or the read-only field in a form. A disabled picker is not a way to show a date.
+
+## Specifications
+
+### Label placement
+
+### States
+
+### Anatomy
+
+<!--
+LEGACY — original content exported from the Recursica website, superseded by the body above.
+Retained verbatim so nothing from the old site is lost. Do not render.
+
+# Date picker
+
 **The date picker allows the user to pick a single date.**
 
 ## When to use
@@ -68,3 +104,4 @@ metadata:
 ### States
 
 ### Anatomy
+-->

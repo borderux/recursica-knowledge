@@ -22,4 +22,4 @@ To package all agent skills into distributable `.zip` files:
 npm run build
 ```
 
-This build script scans the `skills/` directory and compresses each individual skill folder into the `dist/` folder (e.g., `dist/recursica-skill-creator.zip`).
+This build script scans the `skills/` directory — including the `components/` and `design-rules/` category folders — and compresses each individual skill folder into the `dist/` folder (e.g., `dist/recursica-skill-button.zip`). Any directory containing a `SKILL.md` is treated as a skill.

@@ -7,8 +7,10 @@ specs:
     items:
       - label: "First / Last buttons"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/pagination/assets/pagination-behavior-first-last-buttons.svg"
+        text: "An optional boolean (True / False) property. Jumps the user directly to the first or last page in a larger pagination set."
       - label: "Truncation"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/pagination/assets/pagination-behavior-truncation.svg"
+        text: "When the total number of pages exceeds the visible number of items, an ellipsis (...) is used to indicate a gap in the page sequence. This ensures a more compact component."
 anatomy:
   image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/pagination/assets/pagination-anatomy.svg"
   items:
@@ -36,6 +38,36 @@ metadata:
 
 # Pagination
 
+**Pagination moves the reader between pages of one set of records.** It belongs to the table it serves, sitting in the table's footer — it is a way through records, not a way around the application.
+
+## When to use
+
+- **A table holds more records than it can show**: a table set inside a larger page shows a fixed handful of rows — five or ten is plenty — and pagination carries the rest.
+- **The table should not scroll**: every row it holds is visible at once, so nothing is hidden behind a scrollbar in either direction.
+- **The order is stable and someone will come back to a position**: a reader who reaches page 7, opens a record, and returns should land on page 7 again. Continuous scrolling cannot promise that.
+- **The current page is marked plainly**: page numbers only help if the reader can tell at a glance which one they are on.
+
+## When to avoid
+
+- **A full-size table filling its container**: use infinite scroll. Clicking through page after page of a large grid is a clunky way to read it.
+- **A feed built for continuous discovery**: use infinite scroll, and pick that once for the whole product so every table behaves the way the reader expects.
+- **The whole set fits on one page**: show no controls at all. Page numbers for a single page are noise.
+- **One long, continuous document**: use a different structure. Splitting prose into pages breaks the reading.
+- **Showing the reader where they are in the application**: use breadcrumbs. Pagination says which page of a list, not which part of the product.
+- **A process that moves through ordered steps**: use a stepper.
+
+## Specifications
+
+### Behavior
+
+### Anatomy
+
+<!--
+LEGACY — original content exported from the Recursica website, superseded by the body above.
+Retained verbatim so nothing from the old site is lost. Do not render.
+
+# Pagination
+
 **A pagination component is a navigational element used to split a large collection of content — such as search results or products — into separate pages. It allows users to browse the content in manageable chunks without having to load everything at once.**
 
 ## When to use
@@ -57,3 +89,4 @@ metadata:
 ### Behavior
 
 ### Anatomy
+-->

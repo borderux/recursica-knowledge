@@ -1,1 +1,0 @@
-../../../components/Stepper/DOCS.md

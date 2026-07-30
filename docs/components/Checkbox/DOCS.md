@@ -7,8 +7,10 @@ specs:
     items:
       - label: "Stacked"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/checkbox/assets/checkbox-label-placement-stacked.svg"
+        text: "The stacked version does not truncate or wrap the label. Noting this, please try to keep the label as short as possible."
       - label: "Left to right"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/checkbox/assets/checkbox-label-placement-left-to-right.svg"
+        text: 'Please note the wrapping and truncation rules for the left to right version and how the "Optional" label is below the label.'
   - section: "States"
     items:
       - label: "Selected"
@@ -44,6 +46,39 @@ metadata:
 
 # Checkbox
 
+**A checkbox turns one value on or off.** A group of them is how several related choices are combined, letting someone select none, some, or all of them. Items in a group stack vertically.
+
+## When to use
+
+- **Any number of options may be selected**: the options are independent and not mutually exclusive.
+- **Every option should be visible at once**: a stacked, scannable list beats opening something to find out what is available.
+- **The options have a parent and children**: a parent box summarises its sub-list, and shows a partly-selected state when only some children are chosen.
+- **The choice commits with the form**: on submit, not the instant a box is ticked.
+- **Some options can start out selected**: pre-selecting none, some, or all is fine in a checkbox group.
+
+## When to avoid
+
+- **Exactly one option may be chosen**: use radio buttons. Checkboxes suggest that more than one is allowed.
+- **The change must apply the moment it is flipped**: use a switch.
+- **There is one lone yes-or-no field with no peers**: a switch usually reads better in a form.
+- **There are more options than stay scannable**: use a multi-select dropdown. Around seven is the practical ceiling, fewer when the options are hard to tell apart — and a very long form is a fair reason to collapse a group even below that.
+- **The options need to sit in a row**: use selectable chips. A horizontal row of checkboxes makes it hard to tell which box belongs to which label, so a group is never rotated sideways.
+- **The value is never editable here**: use the read-only field. A disabled checkbox is not a way to display a value.
+
+## Specifications
+
+### Label placement
+
+### States
+
+### Anatomy
+
+<!--
+LEGACY — original content exported from the Recursica website, superseded by the body above.
+Retained verbatim so nothing from the old site is lost. Do not render.
+
+# Checkbox
+
 **Checkboxes allow users to select one or more items from a list.**
 
 ## When to use
@@ -66,3 +101,4 @@ metadata:
 ### States
 
 ### Anatomy
+-->

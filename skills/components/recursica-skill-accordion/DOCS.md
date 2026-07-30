@@ -1,1 +1,0 @@
-../../../components/Accordion/DOCS.md

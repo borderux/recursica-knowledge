@@ -1,1 +1,0 @@
-../../../components/Menu/DOCS.md

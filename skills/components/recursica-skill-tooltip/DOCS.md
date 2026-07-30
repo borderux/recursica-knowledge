@@ -1,1 +1,0 @@
-../../../components/Tooltip/DOCS.md

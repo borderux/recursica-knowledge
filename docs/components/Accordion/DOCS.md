@@ -36,6 +36,37 @@ metadata:
 
 # Accordion
 
+**An accordion collapses peer sections of content so someone opens only the one they need.** Reach for it when a page carries more sections than anyone needs at once, and working through them one at a time is the natural way. Panels start collapsed, and the set stays one level deep.
+
+## When to use
+
+- **There are more sections than the reader needs at once**: reading one at a time is how the page is meant to be used.
+- **The sections are peers**: one level, side by side, none contained in another.
+- **A navigation group with no landing page of its own**: it reveals its sub-items in place instead of going somewhere.
+- **A table row has sub-detail**: a single level of expand and collapse on that row.
+- **The header labels can be chosen from while closed**: if someone has to open a section to learn what is in it, the label is the thing to fix.
+
+## When to avoid
+
+- **The content has more than one level of nesting**: use a tree. Real hierarchy needs a structure built for it, and an accordion inside an accordion gets lost fast.
+- **The content is needed frequently**: show it. Anything behind a header costs a click every single time.
+- **The page is short to begin with**: leave it open. Collapsing a sparse page only makes it feel emptier.
+- **The sections are parts of one whole someone flips between**: use tabs.
+- **The content is a form, or part of one**: use a page, or a stepper for a multi-part form. Entry is not sectioned content, and a form split across panels is easy to half-finish.
+- **The content is on the critical path**: put it on the page, uncollapsed. Hiding what someone must read to act is the one thing progressive disclosure does not excuse.
+
+## Specifications
+
+### States
+
+### Anatomy
+
+<!--
+LEGACY — original content exported from the Recursica website, superseded by the body above.
+Retained verbatim so nothing from the old site is lost. Do not render.
+
+# Accordion
+
 **Accordions allow users to show and hide sections on a page.**
 
 ## When to use
@@ -57,3 +88,4 @@ metadata:
 ### States
 
 ### Anatomy
+-->

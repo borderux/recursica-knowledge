@@ -7,8 +7,10 @@ specs:
     items:
       - label: "Standard"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/panel/assets/panel-types-standard.svg"
+        text: "Displays all content without requiring the user to scroll through it. This state is suitable for short summaries, confirmations, or brief configuration forms."
       - label: "Scrollable"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/panel/assets/panel-types-scrollable.svg"
+        text: "Triggered when the volume of content exceeds the panel's fixed height. The panel enables an internal scrollbar, allowing the user to view all information while the main header and footer CTAs remain pinned and accessible."
 anatomy:
   image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/panel/assets/panel-anatomy.svg"
   items:
@@ -36,6 +38,36 @@ metadata:
 
 # Panel
 
+**A panel puts supplementary content beside the page without blocking it.** It has the same header, content, and footer as a modal, but the page behind it stays live — so reach for it when the reader needs to see what they are working on while they work.
+
+## When to use
+
+- **The page underneath still matters**: filters, settings, a details view, or editing one thing that is on screen. This is the case a modal cannot serve.
+- **Secondary detail would clutter the main view**: keep it one click away rather than crowding, or covering, the content it describes.
+- **The content belongs to the current view**: it is about what is on screen, not about somewhere else in the application.
+- **The result shows on the page itself**: a filter set that narrows a table gives its own feedback — the reader watches the table change.
+
+## When to avoid
+
+- **The task must be finished or abandoned before continuing**: use a modal. The same goes for anything irreversible that needs confirming first.
+- **Confirming that something worked, or offering undo**: use a toast. A panel is too much furniture for a brief acknowledgement.
+- **A long, multi-part, or substantial form**: give it a page of its own, and a stepper if it comes in stages. A panel that scrolls on and on is a page in disguise.
+- **The reader needs to link to it or return to it later**: use a page with its own address. A panel opens from a button and leaves no trace in browser history.
+- **The functionality has to be found**: put it on the page. A panel's contents do not exist until someone thinks to open it, which is the wrong trade for anything essential.
+- **Primary or secondary application navigation**: use the application's own navigation. A panel is not a place to hide the way around.
+
+## Specifications
+
+### Types
+
+### Anatomy
+
+<!--
+LEGACY — original content exported from the Recursica website, superseded by the body above.
+Retained verbatim so nothing from the old site is lost. Do not render.
+
+# Panel
+
 **Panels slide in or expand from the edge of the screen to reveal additional content or functionality. They are commonly used to provide supplementary information, navigation options, or toolsets without cluttering the main interface.**
 
 ## When to use
@@ -55,3 +87,4 @@ metadata:
 ### Types
 
 ### Anatomy
+-->

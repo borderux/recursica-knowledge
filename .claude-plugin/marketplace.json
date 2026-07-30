@@ -12,6 +12,19 @@
       "description": "Skills and component specifications for component selection, design token application, and component implementation in Recursica.",
       "source": "./",
       "skills": [
+        "./skills/meta/recursica-skill-design-router",
+        "./skills/design-rules/recursica-skill-badges-chips",
+        "./skills/design-rules/recursica-skill-buttons-links",
+        "./skills/design-rules/recursica-skill-data-visualization",
+        "./skills/design-rules/recursica-skill-dashboards",
+        "./skills/design-rules/recursica-skill-dates-and-currency",
+        "./skills/design-rules/recursica-skill-forms",
+        "./skills/design-rules/recursica-skill-navigation",
+        "./skills/design-rules/recursica-skill-selection-controls",
+        "./skills/design-rules/recursica-skill-tables",
+        "./skills/design-rules/recursica-skill-system-conventions",
+        "./skills/psychology/recursica-skill-working-memory",
+        "./skills/psychology/recursica-skill-discoverability",
         "./skills/components/recursica-skill-accordion",
         "./skills/components/recursica-skill-assistive-element",
         "./skills/components/recursica-skill-autocomplete",
@@ -41,6 +54,7 @@
         "./skills/components/recursica-skill-slider",
         "./skills/components/recursica-skill-stepper",
         "./skills/components/recursica-skill-switch",
+        "./skills/components/recursica-skill-table",
         "./skills/components/recursica-skill-tabs",
         "./skills/components/recursica-skill-text-field",
         "./skills/components/recursica-skill-textarea",
@@ -49,7 +63,7 @@
         "./skills/components/recursica-skill-toast",
         "./skills/components/recursica-skill-tooltip",
         "./skills/components/recursica-skill-transfer-list",
-        "./skills/skill-creator"
+        "./skills/components/recursica-skill-tree"
       ]
     }
   ]
