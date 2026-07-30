@@ -82,7 +82,9 @@ Work top to bottom. Each answer constrains the ones below it.
 | 10  | Any chart or visual data display                                                                       | `recursica-skill-data-visualization`               |
 | 11  | Any date, time, currency, or numeric value on screen                                                   | `recursica-skill-dates-and-currency`               |
 | 12  | Any count — nav items, options, chips                                                                  | `recursica-skill-working-memory`                   |
-| 13  | Empty, loading, error, and partial states                                                              | **No skill yet — ask**                             |
+| 13  | What the application says back — success, failure, waiting, banner vs. toast                           | `recursica-skill-feedback-messaging`               |
+| 14  | Headings, emphasis, abbreviations, and the markup under the visual hierarchy                           | `recursica-skill-typography-semantics`             |
+| 15  | Empty, loading, error, and partial states                                                              | **No skill yet — ask**                             |
 
 **Two ordering rules worth stating outright:**
 
@@ -118,9 +120,9 @@ The list below is the other kind: **whole topics with no owning skill at all.** 
 
 - **Behavior below desktop.** Four skills defer to "a real space constraint" or "mobile" without defining what happens there. This is the most frequently hit gap. The one exception is charts: `recursica-skill-data-visualization` states that a chart adapts rather than shrinks, keeps the same story, and discloses omitted information.
 - **Empty, loading, error, and partial states**, including the difference between "no data yet" and "no results for these filters". Dashboards are the exception: `recursica-skill-dashboards` forbids an empty dashboard and requires a dismissible first-run element.
-- **Page scaffold** — the standard composition of a page: title, breadcrumb, primary action, filters, content.
-- **Feedback and messaging** — toast vs. inline vs. banner vs. modal, and whether success needs confirming at all. Only undo-toast is specified.
-- **Naming and terminology** — object naming, title vs. sentence case, consistency between nav label, page title, and table header.
+- **Page scaffold** — the standard composition of a page: title, breadcrumb, primary action, filters, content. Note that `recursica-skill-typography-semantics` requires exactly one H1, present even when hidden.
+- **Naming and terminology** — object naming, title vs. sentence case, consistency between nav label, page title, and table header. `recursica-skill-typography-semantics` sets AP style as the copy standard but does not settle case conventions.
+- **Live regions** — which dynamic updates are announced to assistive technology and how urgently. Deferred in the typography session and not picked up in the feedback session; individual component skills state their own announcement requirements, but there is no cross-surface policy.
 - **Icon semantics** — when an icon is allowed and which icon carries which meaning.
 - **Motion** — beyond "do not animate a badge on status change".
 - **Defaults** — which tab opens, and defaults on any surface other than a table. Table sort order and rows per page are settled in `recursica-skill-tables`.

@@ -73,6 +73,9 @@ These are gaps rather than conflicts. Each one is something an agent will be ask
 
 ## 4. Decisions only you can make
 
+- **Live regions remain unowned.** Announcing dynamic updates to assistive technology was deferred out of the typography session and never picked up in the feedback session. Every component skill states its own announcement requirements — polite versus assertive, debounced counts, focus never moving — and those are consistent with each other, but there is no recorded cross-surface policy behind them.
+- **The banner component is pending, not undecided.** The channel rule is settled — not-yet-happened is a banner, just-happened is a toast — and the component is planned. Until it ships, two skills instruct the agent to raise the need rather than improvise a substitute. Worth tracking as a build item rather than an open question.
+
 - **Toast dismissal timing.** The old guidance was 4–6 seconds with a manual close. That collides directly with keeping an undo reachable by keyboard — an auto-dismissing toast pulls the action away from someone who is still tabbing toward it. This is the sharpest live contradiction in the set.
 - **Radio pre-selection.** The Radio page says "always have the top radio button in a group selected." `recursica-skill-selection-controls` says be very cautious about pre-selecting anything, because a radio cannot be deselected. The same page then says a progressive-disclosure radio group should render with nothing selected.
 - **Whether a table's page is a real route with a history entry.** This decides whether a page number can legitimately be a link, which decides whether previous and next may ever be disabled — and `recursica-skill-link` forbids disabling a link.
