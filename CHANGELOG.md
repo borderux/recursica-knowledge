@@ -1,5 +1,17 @@
 # @recursica/knowledge
 
+## 0.6.0
+
+### Minor Changes
+
+- 4827885: Updated Table description in docs
+
+## 0.5.0
+
+### Minor Changes
+
+- fecda27: Added docs for missing components
+
 ## 0.4.0
 
 ### Minor Changes

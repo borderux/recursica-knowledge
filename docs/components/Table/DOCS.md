@@ -1,6 +1,6 @@
 ---
 title: "Table"
-description: "Recursica helps agencies build client digital products faster and more consistently. Our system streamlines design, ensures brand consistency, and improves team collaboration."
+description: "A table displays a structured set of data in rows and columns, letting users compare, sort, and scan values across many records at once."
 previewName: "table"
 specs:
   - section: "Table properties"
@@ -76,7 +76,7 @@ metadata:
 
 # Table
 
-**A table shows many records of the same kind in rows and columns, so someone can scan them, sort them, and compare values down a column.** It is the default whenever a screen has to present a set of records that is large, unbounded, or still growing.
+**A table displays a structured set of data in rows and columns, allowing users to compare, sort, and scan values across many records at a glance.** It is the default whenever a screen has to present a set of records that is large, unbounded, or still growing.
 
 ## When to use
 
