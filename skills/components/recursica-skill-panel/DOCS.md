@@ -1,1 +1,0 @@
-../../../docs/components/Panel/DOCS.md

@@ -46,6 +46,18 @@ Rationale, in priority order:
 
 Stacking is a fallback, never a preference. It makes forms long and forces the user to alternate between label and field while scanning — worse still because field heights vary (a textarea is tall, a radio group has n options), so the rhythm is irregular.
 
+**MUST: one label placement per form. Side-by-side or stacked, never both at the same breakpoint.** The container-width test is applied once, to the form, and the answer governs every field in it. If the form's container cannot fit label and field side by side, **every** field in that form stacks — including the short ones that would have fit.
+
+This is not a cosmetic preference. Mixing the two placements inside one form:
+
+- **Destroys the single vertical scan.** The side-by-side rule exists so that checking your work is one pass down a column of values. A stacked field in the middle of that column breaks the column.
+- **Produces two competing left edges**, so the user cannot tell whether the next thing they read is a label or a value.
+- **Makes the exception look like meaning.** A field laid out differently from its neighbours reads as a different kind of field, and the user looks for a reason that does not exist.
+
+**Across breakpoints, one form may switch placement as a whole** — side-by-side on a wide container, stacked in a narrow drawer. That is still one placement per form, evaluated per breakpoint. What is prohibited is a mix within a single breakpoint.
+
+**Sections do not get their own placement either.** A form's sections are parts of one form; a section that stacks while the section above it sits side by side is the same defect.
+
 **Label copy:** always name the object explicitly. Labels must never infer intent or context from surrounding content — a screen reader user hears the label alone. If a verb is involved, make the verb explicit and active. No passive verbs, no linking verbs.
 
 ## Single page vs. multi-step
@@ -83,6 +95,8 @@ Group fields in this order of preference:
 **MUST: primary submit button in the bottom right, secondary cancel immediately to its left.** Same row, bottom of the form.
 
 **MUST: on submit, convert the button itself into a loading, disabled state.** The button is the progress indicator. Disabling it also prevents double submission.
+
+How that is built: the button's disabled treatment with icon-only or icon-with-label content, where the icon animates. There is no separate loading variant and none is needed — see `recursica-skill-button`. Keep the button the same size and in the same place, keep it focusable so the person who just pressed Enter does not lose their place, and expose the busy state to assistive technology rather than relying on the animation.
 
 **NEVER show a blocking spinner or overlay on submit.** Do not gray out the form, do not throw a modal spinner, do not lock the viewport. The in-button state is sufficient and keeps the user's entries visible.
 
@@ -214,6 +228,7 @@ Before considering a form done, verify:
 
 - [ ] One field per row, single column, top to bottom — at every container width. Compound controls are the only shared rows.
 - [ ] Labels left of fields, right-aligned — stacked above only when the container is too narrow for both.
+- [ ] One label placement across the whole form at any given breakpoint: every field side-by-side, or every field stacked. No mixing, including between sections.
 - [ ] No custom spacing between fields; component spacing only.
 - [ ] No form, form section, or form control is inside a card.
 - [ ] Fields grouped by parent object, or by logical sequence. Repeating objects are tables.

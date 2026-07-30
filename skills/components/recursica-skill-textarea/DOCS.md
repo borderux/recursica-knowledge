@@ -1,1 +1,0 @@
-../../../docs/components/Textarea/DOCS.md

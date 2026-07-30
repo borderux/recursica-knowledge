@@ -1,1 +1,0 @@
-../../../docs/components/Link/DOCS.md

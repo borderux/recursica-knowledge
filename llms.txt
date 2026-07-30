@@ -18,15 +18,29 @@ Recursica is an adapter-based design system. It allows developers to write clean
 
 ## 📁 Repository Structure
 
-- `skills/` — Custom, modular Claude Agent Skills. Each skill lives in its own directory with a `SKILL.md` file conforming to the Anthropic Agent Skills specification. Skills are grouped into two categories:
-  - `skills/components/` — One skill per UI component (for example `skills/components/recursica-skill-button/SKILL.md`). Each covers a single component's anatomy, when to use it, and when not to. Most also carry a `DOCS.md` symlink to the component's full specification under `docs/components/`.
+- `skills/` — Custom, modular Claude Agent Skills. Each skill lives in its own directory with a `SKILL.md` file conforming to the Anthropic Agent Skills specification. **These files are the agent knowledge base. Nothing else in this repository is.** Skills are grouped into four categories:
+  - `skills/meta/` — `recursica-skill-design-router`. **Load this first, before any other Recursica skill.** It sequences the decisions, routes each to its owning skill, states the precedence when rules collide, and requires asking rather than guessing.
+  - `skills/components/` — One skill per UI component (for example `skills/components/recursica-skill-button/SKILL.md`): when the component is right, which variants and states exist, the rules for using it, and explicit screen-reader and keyboard requirements. A component skill contains everything an agent needs about that component; it carries no `DOCS.md` and needs none.
   - `skills/design-rules/` — One skill per design topic, carrying the team's opinions as rules a build agent must follow: `recursica-skill-forms`, `recursica-skill-navigation`, `recursica-skill-buttons-links`, `recursica-skill-selection-controls`, `recursica-skill-badges-chips`, `recursica-skill-data-visualization`, `recursica-skill-dashboards`, `recursica-skill-tables`, `recursica-skill-dates-and-currency`, `recursica-skill-system-conventions`. These govern composition decisions; component skills govern component choice.
   - `skills/psychology/` — The cognitive-science basis behind the design rules, with citations to the literature: `recursica-skill-working-memory`, `recursica-skill-discoverability`. Design-rules skills state a limit; these explain where it came from and where it stops applying.
-- `docs/components/` — Structured Markdown specifications for individual UI components (anatomy, states, behaviors, guidelines). Component skills reference these to build correct UI code.
+- `docs/components/` — The design-system **website's** published component pages, one `DOCS.md` per component: rendered spec imagery, anatomy diagrams, and human-facing copy. **This is not agent knowledge and must not be used as a source when building.** Parts of it are out of date and parts contradict the skills; where they disagree, the skill wins. Skill packages in `dist/` ship the `SKILL.md` alone so that website copy cannot be picked up as guidance.
+- `docs/open-questions.md` — A maintainer record of the places where the token inventory, the website, and the recorded rules disagree, and what still needs a human decision. Read by people, not by build agents.
 - `docs/CONTRIBUTING_SKILL.md`, `docs/CONTRIBUTING_COMPONENT.md` — How to add a skill or a component spec.
 - `template/` — Starting point for a new skill.
 - `scripts/` — `build-skills.js` packages each skill into `dist/`; `sync-skill-versions.js` syncs `package.json` metadata into `SKILL.md` frontmatter.
 - `.claude-plugin/marketplace.json` — Registers the repository as a plugin marketplace and lists every available skill.
+
+---
+
+## 🚦 What to use as knowledge
+
+**Use:** `skills/meta/`, `skills/design-rules/`, `skills/psychology/`, `skills/components/` — the `SKILL.md` files, with the router loaded first.
+
+**Never use as a source when building:** any `DOCS.md`; the rest of `docs/`; `template/`, `scripts/`, `spec/`, `scratch/`, `n8n/`, `dist/`; and the conventions of any other design system, including Material, Carbon, and Mantine. Where a Recursica skill is silent the answer is to ask, not to import a rule from elsewhere.
+
+**Load both layers for every component placed.** The component skill says what the component is and how to make it accessible. The design-rules skill says whether it belongs on the screen at all. Working from a component skill alone is the most common way to build something individually correct and collectively wrong.
+
+**When two skills disagree**, precedence is stated in the router. In short: the design system owns styling; a prohibition beats a permission; **a design-rules skill beats a component skill on composition**, while the component skill wins only on which variants and states actually exist.
 
 ---
 
@@ -64,44 +78,48 @@ Load these whenever composing a screen, not just when touching a single componen
 
 ## 📦 Component Registry
 
-Each component has a specification at `docs/components/<Name>/DOCS.md` and, where a matching skill exists, a skill at `skills/components/recursica-skill-<name>/SKILL.md`.
+One skill per component, each self-contained. There is no companion file to read: `SKILL.md` carries the variant and state inventory, the usage rules, the accessibility requirements, and the list of related skills to load with it.
 
-| Component | Specification | Skill |
-| --- | --- | --- |
-| Accordion | `docs/components/Accordion/DOCS.md` | `recursica-skill-accordion` |
-| Avatar | `docs/components/Avatar/DOCS.md` | `recursica-skill-avatar` |
-| Badge | `docs/components/Badge/DOCS.md` | `recursica-skill-badge` |
-| Breadcrumb | `docs/components/Breadcrumb/DOCS.md` | `recursica-skill-breadcrumb` |
-| Button | `docs/components/Button/DOCS.md` | `recursica-skill-button` |
-| Card | `docs/components/Card/DOCS.md` | `recursica-skill-card` |
-| Checkbox | `docs/components/Checkbox/DOCS.md` | `recursica-skill-checkbox` |
-| Chip | `docs/components/Chip/DOCS.md` | `recursica-skill-chip` |
-| DatePicker | `docs/components/DatePicker/DOCS.md` | `recursica-skill-date-picker` |
-| Dropdown | `docs/components/Dropdown/DOCS.md` | `recursica-skill-dropdown` |
-| FileInput | `docs/components/FileInput/DOCS.md` | `recursica-skill-file-input` |
-| FileUpload | `docs/components/FileUpload/DOCS.md` | `recursica-skill-file-upload` |
-| HoverCardPopover | `docs/components/HoverCardPopover/DOCS.md` | `recursica-skill-hover-card-popover` |
-| Link | `docs/components/Link/DOCS.md` | `recursica-skill-link` |
-| Loader | `docs/components/Loader/DOCS.md` | `recursica-skill-loader` |
-| Menu | `docs/components/Menu/DOCS.md` | `recursica-skill-menu` |
-| Modal | `docs/components/Modal/DOCS.md` | `recursica-skill-modal` |
-| NumberInput | `docs/components/NumberInput/DOCS.md` | `recursica-skill-number-input` |
-| Pagination | `docs/components/Pagination/DOCS.md` | `recursica-skill-pagination` |
-| Panel | `docs/components/Panel/DOCS.md` | `recursica-skill-panel` |
-| RadioButton | `docs/components/RadioButton/DOCS.md` | `recursica-skill-radio-button` |
-| ReadOnlyField | `docs/components/ReadOnlyField/DOCS.md` | `recursica-skill-read-only-field` |
-| SegmentedControl | `docs/components/SegmentedControl/DOCS.md` | `recursica-skill-segmented-control` |
-| Slider | `docs/components/Slider/DOCS.md` | `recursica-skill-slider` |
-| Stepper | `docs/components/Stepper/DOCS.md` | `recursica-skill-stepper` |
-| Switch | `docs/components/Switch/DOCS.md` | `recursica-skill-switch` |
-| Table | `docs/components/Table/DOCS.md` | _no component skill; see `recursica-skill-tables` in design-rules_ |
-| Tabs | `docs/components/Tabs/DOCS.md` | `recursica-skill-tabs` |
-| Textarea | `docs/components/Textarea/DOCS.md` | `recursica-skill-textarea` |
-| TextField | `docs/components/TextField/DOCS.md` | `recursica-skill-text-field` |
-| TimePicker | `docs/components/TimePicker/DOCS.md` | `recursica-skill-time-picker` |
-| Timeline | `docs/components/Timeline/DOCS.md` | `recursica-skill-timeline` |
-| Toast | `docs/components/Toast/DOCS.md` | `recursica-skill-toast` |
-| Tooltip | `docs/components/Tooltip/DOCS.md` | `recursica-skill-tooltip` |
-| TransferList | `docs/components/TransferList/DOCS.md` | `recursica-skill-transfer-list` |
+| Component skill |
+| --- |
+| `recursica-skill-accordion` |
+| `recursica-skill-assistive-element` |
+| `recursica-skill-autocomplete` |
+| `recursica-skill-avatar` |
+| `recursica-skill-badge` |
+| `recursica-skill-breadcrumb` |
+| `recursica-skill-button` |
+| `recursica-skill-card` |
+| `recursica-skill-checkbox` |
+| `recursica-skill-chip` |
+| `recursica-skill-date-picker` |
+| `recursica-skill-dropdown` |
+| `recursica-skill-file-input` |
+| `recursica-skill-file-upload` |
+| `recursica-skill-hover-card-popover` |
+| `recursica-skill-label` |
+| `recursica-skill-link` |
+| `recursica-skill-loader` |
+| `recursica-skill-menu` |
+| `recursica-skill-modal` |
+| `recursica-skill-number-input` |
+| `recursica-skill-pagination` |
+| `recursica-skill-panel` |
+| `recursica-skill-radio-button` |
+| `recursica-skill-read-only-field` |
+| `recursica-skill-segmented-control` |
+| `recursica-skill-slider` |
+| `recursica-skill-stepper` |
+| `recursica-skill-switch` |
+| `recursica-skill-table` |
+| `recursica-skill-tabs` |
+| `recursica-skill-text-field` |
+| `recursica-skill-textarea` |
+| `recursica-skill-time-picker` |
+| `recursica-skill-timeline` |
+| `recursica-skill-toast` |
+| `recursica-skill-tooltip` |
+| `recursica-skill-transfer-list` |
+| `recursica-skill-tree` |
 
-Three skills have no specification under `docs/components/` yet: `recursica-skill-assistive-element`, `recursica-skill-autocomplete`, and `recursica-skill-label`.
+Every component skill ends with an `## Uncovered — ask, do not invent` section. When a decision falls in there, ask the user; do not fill the gap from another design system or from a `DOCS.md`.

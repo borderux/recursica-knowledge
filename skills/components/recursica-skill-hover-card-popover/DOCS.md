@@ -1,1 +1,0 @@
-../../../docs/components/HoverCardPopover/DOCS.md

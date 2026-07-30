@@ -1,1 +1,0 @@
-../../../docs/components/SegmentedControl/DOCS.md

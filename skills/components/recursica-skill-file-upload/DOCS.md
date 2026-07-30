@@ -1,1 +1,0 @@
-../../../docs/components/FileUpload/DOCS.md

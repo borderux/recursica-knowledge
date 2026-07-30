@@ -19,6 +19,28 @@ Load this before you start. Then load the owning skill for each decision as you 
 2. **Arbitrate** — when two rules disagree, resolve it by a stated precedence, not by preference.
 3. **Escalate** — when requirements compete or no rule exists, ask. Never guess.
 
+## What counts as knowledge
+
+**The `SKILL.md` files are the knowledge. Nothing else in the repository is.**
+
+This repository holds more than the skill family — website content, build scripts, packaging templates, workflow configuration, and working notes all live alongside it. None of that is guidance for building a UI.
+
+**Use, always:**
+
+- **`skills/meta/`** — this file. Load it first, before any other Recursica skill.
+- **`skills/design-rules/`** — the house rules for composition. These are recorded from the team directly.
+- **`skills/psychology/`** — the basis and the limits of those rules.
+- **`skills/components/`** — one skill per component: what exists, how to use it, how to make it accessible.
+
+**Never use as a source:**
+
+- **`DOCS.md`, anywhere.** These are the design-system website's published pages — marketing-adjacent copy, spec imagery, and anatomy diagrams written for humans browsing a site. Some of it is out of date, and some of it contradicts the rules in these skills. **Do not read a `DOCS.md` to answer a build question, and do not cite one.** Everything a build agent needs from a component has already been distilled into that component's `SKILL.md`.
+- **`docs/` generally**, including contribution guides and the open-questions record. Those are for the humans maintaining this repository.
+- **`template/`, `scripts/`, `spec/`, `scratch/`, `n8n/`, `dist/`.** Packaging and tooling.
+- **Another design system.** Material, Carbon, Mantine, and the rest are not authorities here. Where a Recursica skill is silent, the answer is to ask — not to import a convention from elsewhere.
+
+**Load the whole family, not one file.** A component skill tells you what the component is and how to make it accessible; it does not tell you whether that component belongs on the screen. That answer is in a design-rules skill. Working from a component skill alone is the most common way to produce something that is individually correct and collectively wrong.
+
 ## Never guess — ask instead
 
 **MUST NOT resolve uncertainty by choosing silently.** This is the most important rule in the family, because a silent guess is indistinguishable from a house rule to the next reader.
@@ -73,10 +95,14 @@ Apply in order. The first rule that settles the conflict wins.
 
 1. **The design system beats every skill.** Anything the components own — spacing, color, type, focus states, keyboard behavior inside a control — is not a decision. If a rule appears to ask you to style a component, you have misread it.
 2. **A prohibition beats a permission.** `NEVER` and `MUST NOT` outrank "may", "is fine", and "acceptable". If one skill forbids what another allows, the prohibition holds.
-3. **The more specific surface wins.** A rule about one control beats a general rule about all controls. A segmented control caps at 2–5 even though the general option ceiling is 7 ± 2, because the segmented control's own rule is narrower.
-4. **The skill that names the surface owns it.** When two skills both seem to apply, the one whose description names that surface is authoritative; the other is context.
-5. **A stated house rule beats an outside convention.** Widely accepted practice from elsewhere does not override a Recursica rule, and is never a reason to relax one. If the house rule looks wrong, say so and ask — do not route around it.
-6. **A later clarification beats an earlier general statement** — but only for wording and scope. If the substance genuinely conflicts, ask rather than assuming the newer text won.
+3. **A design-rules or psychology skill beats a component skill.** This one settles most real conflicts, so apply it before reaching for the rest. The design-rules skills are recorded from the team; the component skills were assembled from the token inventory around them. Where the two disagree about **composition** — whether a component belongs here, how many are allowed, what may contain what, when one control replaces another — the design-rules skill is correct and the component skill has a defect. Follow the design rule, and say that the component skill needs fixing.
+
+   The component skill still wins on exactly one thing: **what variants and states actually exist.** A design rule that implies a capability the component does not have is a gap to raise, not a licence to invent the capability.
+
+4. **The more specific surface wins, within a tier.** A rule about one control beats a general rule about all controls. A segmented control caps at 2–5 even though the general option ceiling is 7 ± 2, because the segmented control's own rule is narrower. This does not promote a component skill over a design rule — that is settled above.
+5. **The skill that names the surface owns it.** When two skills both seem to apply, the one whose description names that surface is authoritative; the other is context.
+6. **A stated house rule beats an outside convention.** Widely accepted practice from elsewhere does not override a Recursica rule, and is never a reason to relax one. If the house rule looks wrong, say so and ask — do not route around it.
+7. **A later clarification beats an earlier general statement** — but only for wording and scope. If the substance genuinely conflicts, ask rather than assuming the newer text won.
 
 **Never average two rules into a compromise.** Picking a midpoint between conflicting constraints produces a design neither rule sanctions.
 
@@ -112,6 +138,8 @@ The list below is the other kind: **whole topics with no owning skill at all.** 
 Before starting, and again before declaring the work done:
 
 - [ ] This skill was loaded before any other Recursica skill.
+- [ ] Every source used was a `SKILL.md`. No `DOCS.md` was read, cited, or treated as guidance, and no convention was imported from another design system.
+- [ ] Both layers were loaded for every component placed: the component skill for what it is, and the design-rules skill for whether it belongs.
 - [ ] The object the screen is about was identified before any component was chosen.
 - [ ] Routing was decided before layout.
 - [ ] Every decision in the table above was either made under its owning skill or raised as a question.

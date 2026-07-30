@@ -13,7 +13,10 @@ specs:
     items:
       - label: "Interaction"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/read-only-field/assets/read-only-field-behavior-interaction.svg"
+        text: "By default, the component is not interactive; the user cannot select or modify the text."
       - label: "Is editable"
+        image: "https://framerusercontent.com/images/9QGRgZiw7tEN5ctAnxtu4wlDD8.svg"
+        text: "When Is editable is set to True, clicking the component or its edit icon should trigger an editing experience, such opening a modal."
 anatomy:
   image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/read-only-field/assets/read-only-field-anatomy.svg"
   items:
@@ -35,6 +38,38 @@ metadata:
   author: hi@borderux.com
   version: 0.1.0
 ---
+
+# Read-only field
+
+**A read-only field shows a label and its value inside a form, with no input at all.** Reach for it when this person cannot change the value here, so it reads as a fact rather than something waiting to be filled in.
+
+## When to use
+
+- **A form in view mode**: a profile or settings page showing what is already saved — a name, an email, a reference number.
+- **A confirmation step**: a summary of everything entered, laid out for one last read before submitting.
+- **The value is system-generated**: an account ID, a created date, a computed total — things the reader sees but never sets.
+- **It sits among real fields**: it keeps the same label-and-value rhythm as its neighbours, so a form in view mode still reads as one form.
+
+## When to avoid
+
+- **The value can be edited here**: use the matching input — a text field, a number input, whatever fits the data.
+- **The value is unavailable for now but could become editable**: use the real input in its disabled state. A disabled field is still a field, and it hints that the reader might be able to use it after doing something else first; a read-only field makes no such promise.
+- **Nobody edits this data in any context**: use plain text. The shell of a form control implies a form, and there isn't one.
+- **The content is not a label paired with a value**: use ordinary headings and body copy.
+- **Repeating things that each carry the same properties**: use a table, where rows are the things and columns are their fields.
+- **The value is really a set of things**: use a list or a table rather than one field with commas in it.
+
+## Specifications
+
+### Label placement
+
+### Behavior
+
+### Anatomy
+
+<!--
+LEGACY — original content exported from the Recursica website, superseded by the body above.
+Retained verbatim so nothing from the old site is lost. Do not render.
 
 # Read-only field
 
@@ -61,3 +96,4 @@ metadata:
 ### Behavior
 
 ### Anatomy
+-->

@@ -1,1 +1,0 @@
-../../../docs/components/RadioButton/DOCS.md

@@ -7,8 +7,10 @@ specs:
     items:
       - label: "Elevation"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/card/assets/card-style-elevation.png"
+        text: "Use a shadow to create depth off the surface layer. Best for layouts where cards need to stand out."
       - label: "Outline"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/card/assets/card-style-outline.png"
+        text: "Uses a simple 1px border to contain the content for a flatter, more minimalist UI."
   - section: "Slot"
     items:
       - label: "Top"
@@ -21,6 +23,7 @@ anatomy:
   image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/card/assets/card-anatomy.png"
   items:
     - num: 1
+      label: "Slot"
       text: "The header is a flexible slot for replaceable content (like an image) and can be hidden for a minimal, text-only card."
     - num: 2
       label: "Border"
@@ -29,8 +32,10 @@ anatomy:
       label: "Text content"
       text: "The content block containing a title and description can be positioned either above or below the header slot."
     - num: 4
+      label: "Button"
       text: "A single, optional call-to-action button. The style of the button can be any (Primary, Outline, or Ghost)."
     - num: 5
+      label: "Badge"
       text: "An optional badge can be used to provide secondary status information."
     - num: 6
       label: "Header button"
@@ -44,6 +49,39 @@ metadata:
   author: hi@borderux.com
   version: 0.1.0
 ---
+
+# Card
+
+**A card separates one repeating object from its peers.** It is not a general container for whatever needs grouping — grouping is done with space, and a drawn boundary has to be earned. Overuse is the usual failure: screens turn into nested boxes because a card looks like a safe way to tidy things up.
+
+## When to use
+
+- **There is a set of repeating objects of the same type**: several products, records, or search results, each built from the same information in the same arrangement.
+- **The set is small and finite**: bounded and short enough to take in at a glance.
+- **Each one holds something visual**: a chart, an image, or a photograph — content a table row could not carry legibly.
+- **Peers would otherwise blur together**: where the boundary between one object and the next is genuinely at risk of being misread.
+- **Occasionally, because it simply looks better**: a small, repeating, text-only set can be a legitimate exception. It should stay rare — if most card sets in an application rest on it, the reasoning has drifted.
+
+## When to avoid
+
+- **The set is large, unbounded, or growing**: use a table. High plurality is a table, with no exception.
+- **The content is only text and numbers**: use a table. Without something visual in each one, cards add weight and take away comparison.
+- **You are showing one object's properties**: use a detail view or a form. A single object is never a card.
+- **A form, a form section, or a single form control**: never put one in a card. A form is one object's properties rather than a set of peers, so the box has nothing to separate, and the spacing a form needs is already built in.
+- **A region of a page needs to read as a unit**: use white space and type hierarchy. A region of a page does not need a box around it.
+- **You want to contain a chart or a table**: leave it be — a chart or a table is already an object. And never nest a card inside a card or build a whole screen out of them; a dashboard is a layout with hierarchy, not a grid of equal boxes.
+
+## Specifications
+
+### Style
+
+### Slot
+
+### Anatomy
+
+<!--
+LEGACY — original content exported from the Recursica website, superseded by the body above.
+Retained verbatim so nothing from the old site is lost. Do not render.
 
 # Card
 
@@ -69,3 +107,4 @@ metadata:
 ### Slot
 
 ### Anatomy
+-->

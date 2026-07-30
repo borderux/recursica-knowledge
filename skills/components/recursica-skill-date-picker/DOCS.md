@@ -1,1 +1,0 @@
-../../../docs/components/DatePicker/DOCS.md

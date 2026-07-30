@@ -7,18 +7,24 @@ specs:
     items:
       - label: "Left"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/timeline/assets/timeline-alignment-left.svg"
+        text: "The timeline access and notes are on the left, with all content appearing to the right."
       - label: "Right"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/timeline/assets/timeline-alignment-right.svg"
+        text: "The timeline access and notes are on the right, with all content appearing to the left."
   - section: "Variants"
     items:
       - label: "Default"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/timeline/assets/timeline-variants-default.svg"
+        text: "The standard style, using a simple dot for the marker."
       - label: "Avatar"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/timeline/assets/timeline-variants-avatar.png"
+        text: "Replace the marker with an avatar component. Use this for activity feeds to show who performed an action."
       - label: "Icon"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/timeline/assets/timeline-variants-icon.svg"
+        text: "Replace the marker with an icon. Use this to represent the type of event (e.g., a comment icon, a file icon)."
       - label: "Theme icon"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/timeline/assets/timeline-variants-theme-icon.svg"
+        text: "Replaces the marker with a high-emphasis icon that has a solid background color."
 anatomy:
   image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/timeline/assets/timeline-anatomy.svg"
   items:
@@ -46,6 +52,38 @@ metadata:
   author: hi@borderux.com
   version: 0.1.0
 ---
+
+# Timeline
+
+**A timeline lists events that already happened, in order, each with a timestamp.** Reach for it when the reader's question is what happened and when.
+
+## When to use
+
+- **A chronological record read as a sequence**: an audit trail, an incident log, activity on one object, a release history.
+- **Order and date matter more than dense detail**: each entry is a short title, a line of description, and a time.
+- **Milestones already reached**: a timeline reports what has happened rather than guiding what comes next.
+- **Events that happened close together can be grouped**: one entry reads better than three near-identical ones a second apart. The point is a legible sequence, not a complete log.
+
+## When to avoid
+
+- **Guiding someone through a process they are doing now**: use a stepper. A timeline reports; a stepper leads.
+- **Order does not matter**: use a list. Implying chronology where there is none misleads the reader.
+- **Many records, or records the reader will sort, filter, and compare**: use a table, which is built for volume and comparison.
+- **Each entry needs long text, media, or its own controls**: use an accordion, or give each entry its own page.
+- **Comparing two parallel tracks side by side**: use two separate views or a table. A timeline asserts one sequence, and two facing columns of events do not read as one.
+- **A very long history**: group it by month or quarter, or page through it. A timeline that scrolls without end stops being scannable, which was the reason to use one.
+
+## Specifications
+
+### Alignment
+
+### Variants
+
+### Anatomy
+
+<!--
+LEGACY — original content exported from the Recursica website, superseded by the body above.
+Retained verbatim so nothing from the old site is lost. Do not render.
 
 # Timeline
 
@@ -78,3 +116,4 @@ metadata:
 ### Variants
 
 ### Anatomy
+-->

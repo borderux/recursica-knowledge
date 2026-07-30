@@ -7,8 +7,10 @@ specs:
     items:
       - label: "Top"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/file-input/assets/file-input-label-placement-top.svg"
+        text: "Please note that the stacked version does not truncate or wrap the label. Noting this, please try to keep the label as short as possible."
       - label: "Left"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/file-input/assets/file-input-label-placement-left.svg"
+        text: "Please note the wrapping and truncation rules for the left to right version and how the optional label is below the label."
   - section: "Content"
     items:
       - label: "Placeholder"
@@ -47,6 +49,37 @@ metadata:
 
 # File input
 
+**The file input is a single-line field for picking a file from your own device.** It looks and behaves like a text field, so reach for it when a file is one field among many rather than the point of the screen.
+
+## When to use
+
+- **The file is a property of the object**: an attachment on a ticket, a document on a submission, an avatar on a profile.
+- **The form is dense**: a large drop area would dominate a form where the file is a minor detail.
+- **The count is small**: one file, or a few, with no working list for someone to manage.
+
+## When to avoid
+
+- **Several files are added and managed as a list**: use the file upload, which keeps a visible list of what has been added.
+- **Uploading is the purpose of the screen or the section**: use the file upload. The larger area is the right weight for a task that deserves it.
+- **The file lives in Google Drive, Dropbox, or OneDrive**: use that service's own picker. This field reads the local device only.
+- **Someone needs to rename, move, or reorganize stored files**: use a table of those files. A field that picks a file is not a file manager.
+- **An attachment is shown but cannot be replaced here**: use the read-only field. A disabled input is not a way to display a file.
+- **The placeholder carries the rules**: put them in the help text. A placeholder disappears the moment there is a value, taking the constraint with it.
+
+## Specifications
+
+### Label placement
+
+### Content
+
+### Anatomy
+
+<!--
+LEGACY — original content exported from the Recursica website, superseded by the body above.
+Retained verbatim so nothing from the old site is lost. Do not render.
+
+# File input
+
 **A file Input is a form control that allows users to select one or more files from their local device for upload. It displays the selection and provides a way for users to clear it.**
 
 ## When to use
@@ -67,3 +100,4 @@ metadata:
 ### Content
 
 ### Anatomy
+-->

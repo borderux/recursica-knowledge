@@ -1,1 +1,0 @@
-../../../docs/components/NumberInput/DOCS.md

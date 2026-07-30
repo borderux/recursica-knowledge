@@ -5,14 +5,20 @@ previewName: "link"
 specs:
   - section: "Variations"
     items:
-      - label: "A link that appears as a block-level or standalone element. It is typically used for navigation or calls-to-action."
+      - label: "Standalone"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/link/assets/link-variations-a-link-that-appears-as-a-block-level-or-standalone-element-it-is-typically-used-for-navigation-or-calls-to-action.svg"
+        text: "A link that appears as a block-level or standalone element. It is typically used for navigation or calls-to-action."
+      - label: "Inline"
+        image: "https://framerusercontent.com/images/8xyOQOFrCG5fCyyWZ6vOP0SNvgE.svg"
+        text: "A link that is part of a larger block of text, like a sentence. Its styling is designed to be clear but not disruptive to the reading flow."
   - section: "Behavior"
     items:
       - label: "Navigation"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/link/assets/link-behavior-navigation.svg"
+        text: 'Clicking a link navigates the user to the destination specified in its "href" attribute.'
       - label: "External link"
         image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/link/assets/link-behavior-external-link.svg"
+        text: 'Links that navigate to an external website or domain should be accompanied by an "external link" icon to inform the user they are leaving the current site. This helps manage user expectations.'
 anatomy:
   image: "https://raw.githubusercontent.com/borderux/recursica.com/main/content/knowledge/docs/components/link/assets/link-anatomy.svg"
   items:
@@ -31,6 +37,38 @@ metadata:
   author: hi@borderux.com
   version: 0.1.0
 ---
+
+# Link
+
+**A link takes someone somewhere; it never changes data.** That is the whole distinction from a button: a link goes to a location, a button performs an action. Getting it right is what lets people predict what will happen before they commit.
+
+## When to use
+
+- **Activating it changes the location**: another page, a section of this page, an external site, or a file to download.
+- **The navigation sits inside prose**: a source, a definition, a related record mentioned in a sentence.
+- **The navigation stands on its own**: a menu, a footer, a "view all" beside a heading.
+- **Leaving a table row for a related record**: a link is quieter than a button, which is what dense rows need.
+
+## When to avoid
+
+- **It changes data or state**: use a button. Save, Delete, Close, and Apply are buttons even when a link would look tidier.
+- **It only needs to look lightweight**: use a button in the text style. Looking quiet is a matter of styling, not of meaning.
+- **It opens a modal on the same page**: use a button. A modal is not a location.
+- **The destination is unavailable right now**: omit the link, or say why in text. Links are not disabled — a greyed-out link explains nothing and cannot be reached by keyboard.
+- **The label would read "Click here" or "Learn more"**: name the destination instead — "Billing settings". People scanning a list of links out of context need each one to make sense on its own.
+- **The text is only wired to a click**: use a real link, so right-click, middle-click, copy link address, and open in a new tab all work. For the same reason, let the reader decide when a new tab opens rather than forcing one.
+
+## Specifications
+
+### Variations
+
+### Behavior
+
+### Anatomy
+
+<!--
+LEGACY — original content exported from the Recursica website, superseded by the body above.
+Retained verbatim so nothing from the old site is lost. Do not render.
 
 # Link
 
@@ -55,3 +93,4 @@ metadata:
 ### Behavior
 
 ### Anatomy
+-->

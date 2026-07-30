@@ -1,1 +1,0 @@
-../../../docs/components/Modal/DOCS.md

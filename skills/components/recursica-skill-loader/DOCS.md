@@ -1,1 +1,0 @@
-../../../docs/components/Loader/DOCS.md

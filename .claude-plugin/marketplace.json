@@ -54,6 +54,7 @@
         "./skills/components/recursica-skill-slider",
         "./skills/components/recursica-skill-stepper",
         "./skills/components/recursica-skill-switch",
+        "./skills/components/recursica-skill-table",
         "./skills/components/recursica-skill-tabs",
         "./skills/components/recursica-skill-text-field",
         "./skills/components/recursica-skill-textarea",
@@ -61,7 +62,8 @@
         "./skills/components/recursica-skill-timeline",
         "./skills/components/recursica-skill-toast",
         "./skills/components/recursica-skill-tooltip",
-        "./skills/components/recursica-skill-transfer-list"
+        "./skills/components/recursica-skill-transfer-list",
+        "./skills/components/recursica-skill-tree"
       ]
     }
   ]

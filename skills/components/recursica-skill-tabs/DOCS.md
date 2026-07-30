@@ -1,1 +1,0 @@
-../../../docs/components/Tabs/DOCS.md

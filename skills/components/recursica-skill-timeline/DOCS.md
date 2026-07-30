@@ -1,1 +1,0 @@
-../../../docs/components/Timeline/DOCS.md

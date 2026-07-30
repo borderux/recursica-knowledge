@@ -1,1 +1,0 @@
-../../../docs/components/Toast/DOCS.md

@@ -1,50 +1,139 @@
 ---
 name: recursica-skill-loader
-description: Trigger this when the developer asks to design, write, or refactor a UI layout containing the loader component.
+description: How to use the Recursica loader correctly — when a wait warrants a spinner and when it does not, the three sizes and the indicator color, the fact that the kit provides an indeterminate spinner and nothing else, the text that must accompany it, and the screen-reader and keyboard requirements for announcing that loading started and that content arrived. Use whenever adding, reviewing, or refactoring a loading state, a pending region, an in-flight submit, or a data fetch. Trigger on "loader", "spinner", "loading", "activity indicator", "pending", "busy", "in flight", "skeleton", "progress", "screen reader", "live region", "reduced motion", or a request to show that something is happening. Do NOT use for a determinate progress bar or a percentage — no such variant exists. Do NOT use for stating an outcome once the wait is over — that is recursica-skill-toast. Do NOT use for a screen with no data — that is recursica-skill-dashboards.
 license: MIT
 metadata:
   author: hi@borderux.com
   version: 0.1.0
 ---
 
-# Loader Skill
+# Loader
 
-**A loader, also known as an activity indicator or spinner, is an animated graphic that notifies users that an operation is in progress. It helps manage expectations during a waiting period of unknown duration, such as fetching data or processing a request.**
+A loader says that something is in flight. It cannot say how much, or how long.
 
-## Anatomy & Sub-components
+## Use it when
 
-This skill covers the following component specs defined in the UI Kit:
+- **A wait is real and its length is unknown** — a fetch, a submit, a recalculation.
+- **The wait is long enough to notice.** Operations taking longer than roughly 300ms warrant a loader; below that a spinner flashes and reads as a glitch.
+- **One region is loading**, and the loader can be scoped to that region — a card, a panel, a modal — rather than the whole screen.
 
-- `loader`
+## Do not use it when
 
----
+| Instead of a loader                           | Use                                                                                                               |
+| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| The work has a known quantity or percentage   | Nothing. No determinate variant and no progress component exist in this system — raise it, see the uncovered list |
+| The operation finishes in well under a second | No indicator at all. A flash is more distracting than the wait                                                    |
+| The wait is over and the result needs stating | Text where the result belongs, or `recursica-skill-toast` for a global one                                        |
+| There is no data and there never was          | A populated empty state — and never on a dashboard, see `recursica-skill-dashboards`                              |
+| You want the page's shape drawn in grey first | Nothing. There is no skeleton in this kit                                                                         |
+| The operation failed                          | An error message. Stop the spinner and say what happened                                                          |
 
-## When to Use
+**A loader is not an empty state and not an error state.** A spinner that keeps turning after a failed request tells the user the system is still trying. It is not.
 
-- **Data fetching**: When loading data from a server or API to populate a page or component.
-  - **Form submissions**: Display after a user submits a form to indicate that their submission is being processed.
-  - **In-place loading**: Use within a specific component (like a card or modal) when only that section of the UI is loading new content.
-  - **Page transitions**: Display a loader during initial page loads or when navigating between complex views.
-  - **Accessibility & Best Practices**: Use loaders for operations taking longer than 300ms, and pair with text explaining what is happening.
+## What exists
 
----
+Taken from `recursica_ui-kit.json` → `ui-kit.components.loader`. **Do not pass a variant, type, or state that is not listed here.**
 
-## When Not to Use
+| Axis    | Options                     |
+| ------- | --------------------------- |
+| `sizes` | `small`, `default`, `large` |
 
-- **Determinate processes**: If a process has a known duration or progress (like a file upload), use a progress bar instead. A progress bar is more informative as it shows how much is complete.
-  - **Very fast actions**: Avoid showing a loader for operations that complete in under a second. A brief flash of a loader can be more distracting than helpful.
-  - **Anti-patterns**: Avoid flashing loaders for near-instant operations.
+**The kit gives you an indeterminate spinner and nothing else. This is the most important fact about this component.** The only property is `indicator-color`.
 
----
+**There is no determinate variant, no percentage, and no filling track.** A loader therefore cannot communicate how far along the work is, and you must not pretend otherwise — no "45%", no estimated time remaining. **A known-duration wait has no alternative component in this system either**, so do not send the reader to one: a spinner cannot communicate duration, and nothing here can. Raise it as a gap; see the uncovered list.
 
-## Best Practices
+**There is no label or text slot.** Any wording that accompanies the spinner is a separate element you place yourself.
 
-- Follow platform accessibility guidelines.
-- Ensure consistent padding and alignments.
+**There is no skeleton, no shimmer, no progress bar, and no type axis.**
 
----
+**Three loader types are documented outside the token inventory, with no tokens behind them** — Oval, Bars, and Dots — along with sizes named xs, sm, and md against the kit's `small`, `default`, `large`. **Do not assume they are available.** A track representing total progress and an indicator showing percentage of completion are documented there too; no determinate variant exists to support either. See the uncovered list.
 
-## Referential Libraries & Documentation
+## Rules for using it
 
-- Carbon Design System: [Carbon Loader Documentation](https://carbondesignsystem.com)
-- Material UI: [MUI Loader Documentation](https://mui.com)
+**Always pair the loader with text saying what is happening.** Since the component has no label slot, place the text beside or beneath it: "Loading invoices", not "Loading". The text is what carries the meaning; the spinner only carries that a wait is underway.
+
+**Scope the loader to the region that is actually loading.** A card's fetch does not justify covering the screen. A screen-wide loader is for a screen-wide wait.
+
+**Do not show a loader for a wait under roughly 300ms.** Delay it, or omit it. A spinner appearing and vanishing inside a third of a second is noise.
+
+**Never let the spinning motion be the only signal.** `recursica-skill-system-conventions` prohibits meaning in a single channel, and animation is the single most fragile channel there is — it is invisible to a screen reader, absent under reduced motion, and gone in a screenshot. The accompanying text is the second channel.
+
+**Honor the operating system's reduced-motion preference.** Where motion is reduced or removed, the text and the announcement must still communicate the wait on their own.
+
+**Reserve the space the content will occupy.** A loader smaller than the content it stands in for makes the layout jump when the content arrives, which throws away the user's reading position.
+
+**One loader per loading region.** Do not nest or stack them, and do not run a region loader inside a page loader.
+
+**Do not leave a control operable behind a loader.** If a submit is in flight, the control that started it must not accept a second activation.
+
+**Do not use a spinner to imply the data is live.** Where a dashboard's components refresh on different intervals, `recursica-skill-dashboards` requires the currency of the data to be stated per component in text.
+
+## Accessibility
+
+A spinner is pure animation, which means that to a screen reader user it is nothing at all unless you announce it. The characteristic failure is not an unreachable control — it is a wait that begins and ends in complete silence, leaving the user with no idea that anything happened.
+
+### Screen readers
+
+- **Announce that loading has started, and announce that the content has arrived.** Both halves are required, and the second is the one that gets skipped. A spinner that appears and vanishes silently leaves the user unaware there was ever a wait or a result.
+- **Say what is loading and what arrived.** "Loading invoices", then "24 invoices loaded". Not "Loading", and not "Loader".
+- **The announcement must be polite, never assertive.** It must not interrupt what the user is reading or typing. This applies to the finish as much as the start.
+- **The announcing region must already exist in the page before the loader appears.** A live region inserted at the same moment as its message is frequently never announced at all.
+- **Never announce progress you do not have.** With no determinate variant there is no percentage, no step count, and no time estimate to report. Do not fabricate one.
+- **The spinning motion communicates nothing to assistive technology.** It is a single visual channel, and `recursica-skill-system-conventions` requires a second — the text and the announcement.
+- **Do not narrate every poll, retry, or refresh.** A region that reloads on an interval must not announce each cycle; announce meaningful change only.
+- **If the load fails, say so in the announcement.** A spinner that simply disappears reads as success.
+
+### Keyboard and non-mouse navigation
+
+- **Never put focus on a loader.** It is not a control. No tabindex, no click handler, and no focus call — a focused element that then disappears strands the user.
+- **Never leave focus on a control that has disappeared behind the loader.** When the control the user activated is removed or covered, focus falls to the body and the user loses their place entirely. Move focus deliberately to a stable element first.
+- **When a region is replaced, keep the user's place.** If focus was inside the region, put it on the region's heading or its first interactive element once the content arrives — never at the top of the document.
+- **Do not trap the keyboard behind a loader.** Content that is covered or not yet present must not remain as a set of silent, invisible tab stops behind the spinner.
+- **Nothing needed may be revealed on hover** — least of all the text explaining what is loading, which must be persistently visible.
+- **Never suppress the focus ring** on anything still interactive around the loader.
+
+## Not your decision
+
+Do not implement, override, or tune any of these — the component owns them for every size:
+
+- `indicator-color`.
+- Diameter, stroke weight, and every dimension per size.
+- The animation itself — its speed, easing, and direction.
+
+## Load these too
+
+- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel, and one behavioral mode per system.
+- [`recursica-skill-dashboards`](../../design-rules/recursica-skill-dashboards/SKILL.md) — disclosing how current the data is, per component where intervals differ, and the prohibition on shipping an empty dashboard.
+- [`recursica-skill-tables`](../../design-rules/recursica-skill-tables/SKILL.md) — which lists loading and error states for a table as unowned, including partial failure.
+- [`recursica-skill-buttons-links`](../../design-rules/recursica-skill-buttons-links/SKILL.md) — which lists pending state on non-submit actions as unowned; the button component has no loading state.
+- [`recursica-skill-toast`](../recursica-skill-toast/SKILL.md) — stating an outcome once the wait is over.
+
+## Uncovered — ask, do not invent
+
+- **Progress indication.** There is no determinate variant, no percentage, and no track that fills — **and no separate progress component exists anywhere in this system.** A wait of known duration therefore has nothing to express it. This is a gap for the human to close, not a surface to assemble, and not a component to name as though it were available. If progress must be shown, ask — do not build one.
+- **Whether the loader may carry a label.** No text slot exists, so the accompanying text is yours to place, and its position relative to the spinner is unset.
+- **Three loader types are documented outside the token inventory, with no tokens behind them.** Oval, Bars, and Dots, plus sizes xs, sm, and md, against a kit that defines only `small`, `default`, `large` with `indicator-color`. A progress track is documented there as well. **Do not assume they are available**, and do not rely on this without asking.
+- **Skeletons.** None exists in the kit, and whether the house permits them at all is unanswered.
+- **Loading and error states for a table**, including partial failure — listed as unowned in `recursica-skill-tables`.
+- **Pending state on a non-submit action** — listed as unowned in `recursica-skill-buttons-links`.
+- **Whether the loader itself is delayed.** 300ms is the threshold for whether a wait warrants a loader; whether the spinner is also held back that long is unstated.
+- **Which size belongs on which surface**, and whether a screen-wide wait uses `large` or something else entirely.
+
+## Pre-flight checklist
+
+- [ ] The wait is real, of unknown length, and longer than roughly 300ms; nothing shorter shows a loader.
+- [ ] The loader is scoped to the region that is loading, and there is only one of them.
+- [ ] Text beside the loader says what is happening, naming the thing being loaded.
+- [ ] No progress, percentage, or time estimate is claimed anywhere, and no non-existent progress component was named as the alternative for a known-duration wait.
+- [ ] The spinning motion is not the only signal, and reduced-motion preferences are honored.
+- [ ] Space is reserved so the layout does not jump when content arrives.
+- [ ] Loading start and completion are both announced, politely, from a live region that already existed.
+- [ ] A failure stops the spinner and is announced as a failure, not left as silence.
+- [ ] Polling and retries do not narrate every cycle.
+- [ ] Focus is never placed on the loader, and never left on a control that disappeared behind it.
+- [ ] After a region is replaced, focus lands in the new content, not at the top of the document.
+- [ ] Covered or absent content is not left as invisible tab stops.
+- [ ] The explanatory text is not hover-only, and the focus ring is intact on surrounding controls.
+- [ ] No size outside `small`, `default`, `large` was passed; no type, label, track, skeleton, or determinate variant was invented.
+- [ ] No component-owned styling or animation was overridden.
+- [ ] Nothing in the uncovered list was invented.
