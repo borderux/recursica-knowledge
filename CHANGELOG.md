@@ -1,5 +1,11 @@
 # @recursica/knowledge
 
+## 0.7.0
+
+### Minor Changes
+
+- d9505a9: Revised skills layout from the operator
+
 ## 0.6.0
 
 ### Minor Changes
