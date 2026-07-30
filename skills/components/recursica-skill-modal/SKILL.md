@@ -50,7 +50,9 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.modal`. **The modal ha
 
 **The title states the decision**, not the component. "Delete this project?" rather than "Confirm".
 
-**Never open a modal from a modal.** Stacked modals leave the user with no model of where they are or what dismissing will do.
+**Never open a modal from a modal.** Once the user is in a mode, they do not go into sub-modes — stacked modals leave them with no model of where they are or what dismissing will do. **Two scrims dimming the page at once must never occur.**
+
+**The one exception is replacement, not stacking.** A shared confirmation modal reused across the application may be raised after an action completes inside another modal — but it appears **in place of** the first, which goes away as the new one appears. Never on top. This is not ideal; it exists because secondary modals get reused. Owned by `recursica-skill-panels-modals`.
 
 **Never put a form in a card inside a modal**, and do not wrap the modal's own content in a card. The modal is already the boundary; see `recursica-skill-card`.
 
@@ -95,6 +97,8 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Load these too
 
+- [`recursica-skill-panels-modals`](../../design-rules/recursica-skill-panels-modals/SKILL.md) — the owning design-rules skill: modal vs. panel vs. page, why mode is the only real difference, the prohibition on stacking, and unsaved-change protection.
+
 - [`recursica-skill-buttons-links`](../../design-rules/recursica-skill-buttons-links/SKILL.md) — modal triggers, destructive-action confirmation, undo, footer button hierarchy.
 - [`recursica-skill-navigation`](../../design-rules/recursica-skill-navigation/SKILL.md) — routing and browser history, including the deep-linkable modal exception.
 - [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — save mode and validation for any form the modal contains.
@@ -103,7 +107,6 @@ Do not implement, override, or tune any of these — the component owns them:
 ## Uncovered — ask, do not invent
 
 - **Whether clicking the overlay dismisses the modal.** Not stated either way.
-- **Unsaved-change protection** when the user cancels a modal containing edits.
 - **Loading state inside a modal** while an action is in flight. No such state exists on the component.
 - **Whether a non-dismissible modal is ever permitted** — a forced acknowledgement with no cancel.
 - **Nested confirmation** — confirming a destructive action from inside a modal, given the prohibition on stacking.
@@ -115,7 +118,8 @@ Do not implement, override, or tune any of these — the component owns them:
 - [ ] No size, type, or severity variant was passed — none exist.
 - [ ] Triggered by a button, with no history entry, unless it is a deliberate deep-linkable modal with a route.
 - [ ] Title states the decision; the primary action's label states what will happen.
-- [ ] No modal opens another modal; no card wraps the content.
+- [ ] No modal opens another modal on top of it, and no two scrims are visible at once; any reused confirmation replaced the open modal rather than stacking on it.
+- [ ] No card wraps the content.
 - [ ] The dialog is announced as modal and named by its title; everything behind it is inert.
 - [ ] Focus moves into the modal on open, is trapped while open, and returns to the trigger on close.
 - [ ] Escape closes and behaves as cancel; dismissal is never pointer-only.
