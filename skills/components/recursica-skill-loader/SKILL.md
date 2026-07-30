@@ -14,7 +14,7 @@ A loader says that something is in flight. It cannot say how much, or how long.
 ## Use it when
 
 - **A wait is real and its length is unknown** — a fetch, a submit, a recalculation.
-- **The wait is long enough to notice.** Operations taking longer than roughly 300ms warrant a loader; below that a spinner flashes and reads as a glitch.
+- **The wait is long enough to notice.** `recursica-skill-feedback-messaging` sets the threshold: show a loading indication when the operation will take more than roughly **3 seconds**. Below that a spinner flashes and reads as a glitch.
 - **One region is loading**, and the loader can be scoped to that region — a card, a panel, a modal — rather than the whole screen.
 
 ## Do not use it when
@@ -54,7 +54,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.loader`. **Do not pass
 
 **Scope the loader to the region that is actually loading.** A card's fetch does not justify covering the screen. A screen-wide loader is for a screen-wide wait.
 
-**Do not show a loader for a wait under roughly 300ms.** Delay it, or omit it. A spinner appearing and vanishing inside a third of a second is noise.
+**Do not show a loader for a wait under roughly 3 seconds.** Delay it, or omit it. A spinner that appears and vanishes is noise, and it makes a fast operation feel slower than it was. The threshold is owned by `recursica-skill-feedback-messaging`; an earlier 300ms figure in this skill was not a recorded house rule and has been corrected.
 
 **Never let the spinning motion be the only signal.** `recursica-skill-system-conventions` prohibits meaning in a single channel, and animation is the single most fragile channel there is — it is invisible to a screen reader, absent under reduced motion, and gone in a screenshot. The accompanying text is the second channel.
 
@@ -116,12 +116,12 @@ Do not implement, override, or tune any of these — the component owns them for
 - **Skeletons.** None exists in the kit, and whether the house permits them at all is unanswered.
 - **Loading and error states for a table**, including partial failure — listed as unowned in `recursica-skill-tables`.
 - **Pending state on a non-submit action** — listed as unowned in `recursica-skill-buttons-links`.
-- **Whether the loader itself is delayed.** 300ms is the threshold for whether a wait warrants a loader; whether the spinner is also held back that long is unstated.
+- **Whether the loader itself is delayed.** 3 seconds is the threshold for whether a wait warrants a loader at all; whether the spinner is also held back for that long, or appears at once for an operation predicted to exceed it, is unstated.
 - **Which size belongs on which surface**, and whether a screen-wide wait uses `large` or something else entirely.
 
 ## Pre-flight checklist
 
-- [ ] The wait is real, of unknown length, and longer than roughly 300ms; nothing shorter shows a loader.
+- [ ] The wait is real, of unknown length, and longer than roughly 3 seconds; nothing shorter shows a loader.
 - [ ] The loader is scoped to the region that is loading, and there is only one of them.
 - [ ] Text beside the loader says what is happening, naming the thing being loaded.
 - [ ] No progress, percentage, or time estimate is claimed anywhere, and no non-existent progress component was named as the alternative for a known-duration wait.

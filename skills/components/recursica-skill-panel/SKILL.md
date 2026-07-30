@@ -69,6 +69,28 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.panel`. **The panel ha
 
 **When the panel changes the page behind it** — a filter set that narrows a table — the change on the page is the feedback. Do not add a toast for it.
 
+**A panel is flush to the left or right viewport edge and runs the full height of the viewport**, top to bottom. It is never inset, never floating, and never partial height. Left and right are both standard, designated per panel; **never open panels on both sides at once**, and where panels stack, they all use the same side, though their widths may differ. A **top or bottom edge is permitted but extremely nonstandard and has no designed treatment — get it approved before building one.** Owned by `recursica-skill-panels-modals`.
+
+**A panel MUST NEVER scroll horizontally.** No exception. A horizontal scrollbar means the content does not belong in a panel.
+
+**Vertical scrolling is the signal to move the work to a page**, reproducing on that page whatever context it needed.
+
+**A panel may open a modal** — a panel is not a mode, so this is not stacking modes, and it is how the unsaved-changes confirmation appears on close.
+
+**A panel may be stacked over another panel, though it is not ideal** — the second covers the first completely and closing it reveals the first. **It may never be nested inside one.** Covered, never contained. There is no hard limit on stacking, but **more than two stacked panels requires the user's approval.**
+
+**A panel does not survive a route change**, except where the navigation exists only to open another panel or modal.
+
+**Below the tablet breakpoint, open the panel as a page instead** — not a narrower panel, and not a full-screen overlay imitating one. At tablet and above it stays a panel.
+
+**A panel is non-modal, and that is the point of it.** The user can still navigate the application and act on the page behind — see `recursica-skill-panels-modals`, which settles this directly. A panel built to block the page is a modal wearing the wrong component.
+
+**A form in a panel uses stacked label placement for every field.** The panel is narrow, which is the container-width condition that triggers stacking, and the whole form stacks — including short fields that would have fitted side by side. Owned by `recursica-skill-forms`.
+
+**Closing a panel that holds unsaved form data prompts before discarding it**, the same way navigating away from a dirty page does. Do not prompt on every close; the prompt is for data the user entered and never saved.
+
+**A panel may be deliberately deep-linkable**, with a route and a link trigger together, exactly as a modal may. This is an explicit decision rather than a default — see `recursica-skill-navigation`.
+
 ## Accessibility
 
 **Decide, and state, whether you are building a modal panel or a non-modal one, then build one of them consistently.** Almost every panel accessibility failure is a half-modal: a surface that looks non-blocking, traps focus like a dialog, or hides the page from assistive technology while leaving it clickable. The default here is non-modal — the page behind stays live, readable, and reachable.
@@ -109,6 +131,8 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Load these too
 
+- [`recursica-skill-panels-modals`](../../design-rules/recursica-skill-panels-modals/SKILL.md) — the owning design-rules skill: panel vs. modal vs. page, the context test, the scrolling threshold, the prohibition on stacking modes, forms in a panel, unsaved-change protection, and the focus-trapping difference.
+
 - [`recursica-skill-modal`](../recursica-skill-modal/SKILL.md) — the blocking alternative, and the focus-trap and inert-background rules a genuinely modal panel inherits.
 - [`recursica-skill-navigation`](../../design-rules/recursica-skill-navigation/SKILL.md) — a location is a route; a trigger-invoked panel is not one and gets no history entry.
 - [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — one label placement per form and the container-width test behind it, single-column layout, validation, and save mode for any form the panel holds.
@@ -118,14 +142,12 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Uncovered — ask, do not invent
 
-- **Which edge the panel appears from**, and whether it slides in or expands. No axis defines it.
-- **Panel width.** `min-width` and `max-width` are fixed and no size axis exists, so a "wide panel" cannot be built.
-- **Whether the panel is modal or non-modal by house default**, and whether an overlay or scrim is ever drawn behind it.
+- **Whether it slides in or expands** on open. The side is designated and the anchoring is settled; the transition is not.
+- **Panel width.** `min-width` and `max-width` are fixed and no size axis exists, so a "wide panel" cannot be built — though stacked panels may differ in width from one another, and nothing says whether a left and a right panel share a width.
+- **What a top or bottom panel looks like.** Permitted, undesigned, and therefore approval-gated rather than rule-governed.
+- **Whether an overlay or scrim is ever drawn behind a panel.** The modality question is settled — a panel is non-modal — but whether anything dims the page behind it is not stated.
 - **Whether clicking outside the panel dismisses it.**
 - **When the divider appears.** "Standard" and "Scrollable" types are documented outside the token inventory, with no token behind either and no types axis — the kit defines only `divider-size`. Do not rely on this without asking.
-- **Whether a panel may ever be routed and deep-linkable.** `recursica-skill-navigation` states that exception for modals only.
-- **Unsaved-change protection** when the user closes a panel containing edits.
-- **Whether a panel may open a modal, or a second panel**, and whether more than one panel may be open at once. The prohibition on stacking is stated for modals, not panels.
 - **Loading state inside a panel** while its content is fetched. No such state exists on the component.
 
 ## Pre-flight checklist
@@ -148,4 +170,12 @@ Do not implement, override, or tune any of these — the component owns them:
 - [ ] The close control has a real accessible name; the focus ring is intact; nothing needed is hover-only.
 - [ ] Changes the panel makes to the page are announced, not only re-rendered.
 - [ ] No component-owned padding, gap, border, width, or elevation was overridden.
+- [ ] The panel is non-modal: focus is not trapped and the page behind stays reachable by keyboard.
+- [ ] No panel is nested inside another; any stacked panel fully covers the first and shares its side.
+- [ ] The panel is flush to the left or right edge and full height; only one side is in use.
+- [ ] Nothing scrolls horizontally; content inducing vertical scrolling was moved to a page with its context reproduced.
+- [ ] The panel closes on a route change unless the navigation only opens another panel or modal.
+- [ ] Below tablet it opens as a page; anything beyond two stacked panels, or any top or bottom panel, was approved first.
+- [ ] Any form inside uses stacked label placement throughout.
+- [ ] Closing with unsaved form data prompts; closing an untouched panel does not.
 - [ ] Nothing in the uncovered list was invented.
