@@ -83,7 +83,15 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.panel`. **The panel ha
 
 **Below the tablet breakpoint, open the panel as a page instead** — not a narrower panel, and not a full-screen overlay imitating one. At tablet and above it stays a panel.
 
+**The shipped adapter defaults this component to modal behavior, which is the opposite of the house rule.** The panel wraps Mantine's `Drawer`, which by default draws an overlay, closes on click-outside, traps focus, and locks page scroll. **A panel built with the documented API alone is silently modal.** Until the adapter's defaults are corrected, getting the house behavior requires passing the underlying props explicitly:
+
+`withOverlay={false}` · `closeOnClickOutside={false}` · `trapFocus={false}` · `lockScroll={false}`
+
+A build test confirmed all four are needed and that they survive the adapter's prop filtering. **A library default is not a house rule.** Mantine's drawer being modal by default says nothing about what a Recursica panel should do, and must never be read as though it did — see `recursica-skill-design-router`. **This is a tracked adapter defect** — when the default is fixed, delete the overrides rather than carrying them forever. Check before assuming they are still required.
+
 **A panel is non-modal, and that is the point of it.** The user can still navigate the application and act on the page behind — see `recursica-skill-panels-modals`, which settles this directly. A panel built to block the page is a modal wearing the wrong component.
+
+**NEVER put a table inside a panel.** The panel is narrow and a table needs width, so the result either scrolls horizontally — forbidden outright — or truncates every column. Repeating content becomes stacked field groups instead. **Secondary material goes in a second tab**, not below the primary content. Owned by `recursica-skill-panels-modals`.
 
 **A form in a panel uses stacked label placement for every field.** The panel is narrow, which is the container-width condition that triggers stacking, and the whole form stacks — including short fields that would have fitted side by side. Owned by `recursica-skill-forms`.
 
@@ -170,12 +178,12 @@ Do not implement, override, or tune any of these — the component owns them:
 - [ ] The close control has a real accessible name; the focus ring is intact; nothing needed is hover-only.
 - [ ] Changes the panel makes to the page are announced, not only re-rendered.
 - [ ] No component-owned padding, gap, border, width, or elevation was overridden.
-- [ ] The panel is non-modal: focus is not trapped and the page behind stays reachable by keyboard.
+- [ ] The panel is non-modal: focus is not trapped and the page behind stays reachable by keyboard — verified in the running application, not assumed from the props passed.
 - [ ] No panel is nested inside another; any stacked panel fully covers the first and shares its side.
 - [ ] The panel is flush to the left or right edge and full height; only one side is in use.
 - [ ] Nothing scrolls horizontally; content inducing vertical scrolling was moved to a page with its context reproduced.
 - [ ] The panel closes on a route change unless the navigation only opens another panel or modal.
 - [ ] Below tablet it opens as a page; anything beyond two stacked panels, or any top or bottom panel, was approved first.
-- [ ] Any form inside uses stacked label placement throughout.
+- [ ] Any form inside uses stacked label placement throughout; no table is inside the panel, and secondary material is in its own tab.
 - [ ] Closing with unsaved form data prompts; closing an untouched panel does not.
 - [ ] Nothing in the uncovered list was invented.

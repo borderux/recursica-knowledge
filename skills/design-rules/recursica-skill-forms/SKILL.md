@@ -68,6 +68,8 @@ Decide from the user's mental model, not from field count alone. Go multi-step w
 2. **Volume.** Sheer quantity of fields creates visual noise that needs reducing.
 3. **Downstream branching.** An answer causes a _later_ step to be significantly different.
 
+**The counter-case: cross-referential information favors one long form.** Where completing one section depends on checking or remembering another, a stepper becomes actively worse than length — moving forward and back to re-read costs more than scrolling. Usability testing on a long credit-card application found the single form outperformed the stepper for exactly this reason: the user wanted to confirm the whole thing was correct and complete at once. **The question is how much has to stay in context, not how many fields there are.** See `recursica-skill-screen-priority`.
+
 **The disclosure/step boundary:** if an answer causes a _minor, local_ change — a field or section immediately below — use progressive disclosure and stay on one page. If it causes a _materially different downstream step_, use multi-step. Do not reach for multi-step to handle small conditional fields.
 
 ## Grouping
@@ -80,6 +82,10 @@ Group fields in this order of preference:
 **Repeating objects** — many instances of the same object with the same properties — are a table, not a stack of form groups and not a set of cards. Rows are objects, columns are fields. See `recursica-skill-tables`.
 
 ## Required vs. optional
+
+**A field is only required in the states where it is actually required.** Where a field becomes mandatory at a later stage of a workflow, it is not required before that stage — and it must not display a required error while the record is still in a state that does not need it. An error demanding a value the current state does not call for is a validation bug the user cannot act on, and it teaches them to ignore errors.
+
+**Say the condition, not just the requirement.** Where a field will be required later, the assistive text carries the condition — the message explains at which point the value is needed rather than asserting it is missing now.
 
 **MUST mark only the exception, never both.**
 
@@ -153,6 +159,8 @@ Pre-fill is not all-or-nothing. Gate it on **comprehension risk**.
 - The current user's name, when the system already knows who they are.
 
 **NEVER pre-fill high-comprehension data** — values the user would have to reason about, look up, or verify against another source to know whether the default is right. An unverifiable default is worse than an empty field, because it gets submitted unchecked.
+
+**A form that edits an existing object is the separate case, and it always arrives populated** with that object's current values. You are editing the object, not starting over. This never stops applying. Owned by `recursica-skill-defaults`, which also carries the 90 percent threshold for pre-selecting an option and the veto on pre-selecting anything with downstream consequences.
 
 ## Progressive disclosure
 
@@ -234,6 +242,7 @@ Before considering a form done, verify:
 - [ ] Fields grouped by parent object, or by logical sequence. Repeating objects are tables.
 - [ ] Non-editable values use the read-only component, not a disabled input.
 - [ ] Only the exception is marked (required _or_ optional, never both). No asterisk clutter.
+- [ ] No field shows a required error in a state that does not require it; conditional requirements state their condition.
 - [ ] Help text and placeholders carry the rules up front.
 - [ ] Validation fires inline on blur, non-blocking.
 - [ ] Submit is disabled until the form is valid and complete.

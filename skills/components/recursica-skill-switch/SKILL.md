@@ -19,6 +19,8 @@ A switch turns one thing on or off. The label says what is controlled; the state
 - **The state must be readable at a glance**, including on touch, where the switch's larger target and clearer on/off reading are an advantage.
 - **It is the one lone binary field in a form.** A single checkbox with no peers looks odd; a switch usually reads better. This is the one case where appearance may decide, because the two are functionally interchangeable here.
 
+**A switch only appears inside a form.** Outside one — in chrome, a filter bar, a toolbar, a header — the control is a `recursica-skill-segmented-control`, whatever the value looks like. Owned by `recursica-skill-selection-controls`.
+
 ## Do not use it when
 
 | Instead of a switch                                                         | Use                                                                                |
@@ -147,6 +149,7 @@ Do not add margins or spacer elements between switches or around the group; the 
 
 ## Pre-flight checklist
 
+- [ ] The switch is inside a form; nothing in chrome, a toolbar, or a filter bar uses one.
 - [ ] The binary-inverse test passes — the opposite state is known, unique, and binary.
 - [ ] The label test passes — the label alone names what is controlled, with no competing values.
 - [ ] The label states what is controlled, never the state, and does not change when the switch is flipped.

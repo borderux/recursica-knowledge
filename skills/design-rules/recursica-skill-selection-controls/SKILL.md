@@ -31,7 +31,9 @@ Work down this list; the first match wins.
 
 ## Switch vs. checkbox
 
-**A switch has a deliberately narrow use.** Reach for a checkbox unless the switch test passes.
+**A switch only ever appears inside a form.** That is the outer gate, and it comes before the tests below. Anywhere else — application chrome, a filter bar, a toolbar, a page header — **a toggle is a segmented control**, not a switch. See `recursica-skill-segmented-control`.
+
+**A switch has a deliberately narrow use.** Inside a form, reach for a checkbox unless the switch test passes.
 
 **The binary-inverse test — MUST pass before using a switch.** The inverse of the value must be binary, known, and unique: true/false, yes/no, on/off. Qualitative pairs fail. "Black" is not a valid switch value, because _not black_ is not guaranteed to be white — it could be gray, or pink, or anything. If the opposite of the value is not the single obvious other state, it is not a switch.
 
@@ -54,7 +56,9 @@ Work down this list; the first match wins.
 
 **Checkbox groups: pre-select freely.** Zero, some, or all pre-checked are all acceptable; there is no house rule either way.
 
-**Radio groups: be very cautious about pre-selecting a value.** Most users do not know how to deselect a radio button once one is selected, so a default silently becomes the answer. Only pre-select when the default is genuinely correct for nearly everyone.
+**Radio groups: be very cautious about pre-selecting a value.** Most users do not know how to deselect a radio button once one is selected, so a default silently becomes the answer. **A pre-selected radio is the costliest default in the system.**
+
+**The threshold is roughly 90 percent** — pre-select only where that likely a share of users would choose that option anyway. **And never pre-select an option with major downstream consequences in the workflow, however likely it is.** Both gates are owned by `recursica-skill-defaults`.
 
 ## Option counts and dropdowns
 
@@ -167,6 +171,7 @@ No house rule covers these yet. **Ask the human rather than choosing** — see t
 
 Before considering a set of selection controls done, verify:
 
+- [ ] Every switch is inside a form; every toggle outside a form is a segmented control.
 - [ ] Mutually exclusive options use a radio group, never checkboxes.
 - [ ] Every switch passes the binary-inverse test — the opposite state is known, unique, and binary.
 - [ ] Every switch passes the label test — the label alone names what is controlled, with no competing values.

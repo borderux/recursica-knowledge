@@ -150,7 +150,7 @@ Never style an unfocused dropdown so that it reads as disabled. An editable fiel
 
 ## Uncovered — ask, do not invent
 
-- **The multi-select dropdown.** `recursica-skill-selection-controls` requires one — a checkbox group inside a dropdown — and this component defines no multi-select axis. This is a **gap in the component inventory, not an invitation to compose one.** Do not assemble a checkbox group inside a dropdown to satisfy the design rule. Do not rely on this without asking.
+- **The multi-select dropdown does not exist, and this is now confirmed in the shipped adapter as well as the token inventory** — the dropdown maps to a single-value select with no multi-select variant. `recursica-skill-selection-controls` requires one in two places. It is a gap in the component inventory, **not an invitation to compose one**: do not assemble a checkbox group inside a dropdown, and do not substitute a transfer list without asking. Where several values must be filtered, composing independent single-value filters that AND together is the workaround a build test used successfully. Ask.
 - **The open menu itself.** Option rows, their height, hover and active treatment, grouping headers, dividers, icons or descriptions within an option, and maximum menu height before it scrolls are all outside the component's token inventory.
 - **The point at which a dropdown becomes an autocomplete.** This component's own guidance says to consider a typeahead when the list is long and the user is familiar with the options; `recursica-skill-selection-controls` records the threshold as unset. Do not pick a number.
 - **Whether a dropdown may be cleared** back to no value once a selection is made, and whether an explicit "None" option is allowed.

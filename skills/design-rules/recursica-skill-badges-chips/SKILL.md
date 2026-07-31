@@ -130,7 +130,7 @@ Both cases are handled by the components — hover and focus states are built in
 No house rule covers these yet. **Ask the human rather than choosing** — see the never-guess rule in `recursica-skill-design-router`. Do not pattern-match them to a rule above.
 
 - **Count formatting inside a badge.** Whether counts cap — `99+` — and at what value.
-- **Whether a badge may carry an icon.**
+- **Whether a badge may carry an icon.** If one is added, `recursica-skill-icon-semantics` governs which glyph it may be — and it fixes a chip's dismiss control as an X, never a trash can, because a trash can is unintelligible at that size.
 - **What a filter bar does when it exceeds 7 ± 2.** Overflow and scrolling are forbidden elsewhere; the alternative here is unset.
 
 ## Out of scope

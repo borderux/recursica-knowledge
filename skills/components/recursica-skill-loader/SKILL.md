@@ -14,6 +14,7 @@ A loader says that something is in flight. It cannot say how much, or how long.
 ## Use it when
 
 - **A wait is real and its length is unknown** — a fetch, a submit, a recalculation.
+- **A region of an otherwise-loaded page is lagging.** This is where a spinner genuinely earns its place: deliver the fast content, let the stragglers spin, rather than holding the whole page. Dashboard widgets loading at different speeds are the common case.
 - **The wait is long enough to notice.** `recursica-skill-feedback-messaging` sets the threshold: show a loading indication when the operation will take more than roughly **3 seconds**. Below that a spinner flashes and reads as a glitch.
 - **One region is loading**, and the loader can be scoped to that region — a card, a panel, a modal — rather than the whole screen.
 
@@ -25,7 +26,7 @@ A loader says that something is in flight. It cannot say how much, or how long.
 | The operation finishes in well under a second | No indicator at all. A flash is more distracting than the wait                                                    |
 | The wait is over and the result needs stating | Text where the result belongs, or `recursica-skill-toast` for a global one                                        |
 | There is no data and there never was          | A populated empty state — and never on a dashboard, see `recursica-skill-dashboards`                              |
-| You want the page's shape drawn in grey first | Nothing. There is no skeleton in this kit                                                                         |
+| You want the page's shape drawn in grey first | **Nothing. Skeletons and ghost text are forbidden outright** — see below                                          |
 | The operation failed                          | An error message. Stop the spinner and say what happened                                                          |
 
 **A loader is not an empty state and not an error state.** A spinner that keeps turning after a failed request tells the user the system is still trying. It is not.
@@ -44,7 +45,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.loader`. **Do not pass
 
 **There is no label or text slot.** Any wording that accompanies the spinner is a separate element you place yourself.
 
-**There is no skeleton, no shimmer, no progress bar, and no type axis.**
+**There is no skeleton, no shimmer, no progress bar, and no type axis — and skeletons are not merely absent, they are prohibited.** Grey bars standing in for text are a spinner in another costume: they add cognitive work to decode and return nothing. `recursica-skill-screen-scaffolding` settles it — **a loading page shows nothing until it shows content.**
 
 **Three loader types are documented outside the token inventory, with no tokens behind them** — Oval, Bars, and Dots — along with sizes named xs, sm, and md against the kit's `small`, `default`, `large`. **Do not assume they are available.** A track representing total progress and an indicator showing percentage of completion are documented there too; no determinate variant exists to support either. See the uncovered list.
 
@@ -76,7 +77,7 @@ A spinner is pure animation, which means that to a screen reader user it is noth
 
 - **Announce that loading has started, and announce that the content has arrived.** Both halves are required, and the second is the one that gets skipped. A spinner that appears and vanishes silently leaves the user unaware there was ever a wait or a result.
 - **Say what is loading and what arrived.** "Loading invoices", then "24 invoices loaded". Not "Loading", and not "Loader".
-- **The announcement must be polite, never assertive.** It must not interrupt what the user is reading or typing. This applies to the finish as much as the start.
+- **The announcement must be polite, never assertive.** A wait starting or finishing is not a condition the user must know immediately, so it must not interrupt what they are reading or typing. See `recursica-skill-live-regions`.
 - **The announcing region must already exist in the page before the loader appears.** A live region inserted at the same moment as its message is frequently never announced at all.
 - **Never announce progress you do not have.** With no determinate variant there is no percentage, no step count, and no time estimate to report. Do not fabricate one.
 - **The spinning motion communicates nothing to assistive technology.** It is a single visual channel, and `recursica-skill-system-conventions` requires a second — the text and the announcement.
@@ -113,7 +114,7 @@ Do not implement, override, or tune any of these — the component owns them for
 - **Progress indication.** There is no determinate variant, no percentage, and no track that fills — **and no separate progress component exists anywhere in this system.** A wait of known duration therefore has nothing to express it. This is a gap for the human to close, not a surface to assemble, and not a component to name as though it were available. If progress must be shown, ask — do not build one.
 - **Whether the loader may carry a label.** No text slot exists, so the accompanying text is yours to place, and its position relative to the spinner is unset.
 - **Three loader types are documented outside the token inventory, with no tokens behind them.** Oval, Bars, and Dots, plus sizes xs, sm, and md, against a kit that defines only `small`, `default`, `large` with `indicator-color`. A progress track is documented there as well. **Do not assume they are available**, and do not rely on this without asking.
-- **Skeletons.** None exists in the kit, and whether the house permits them at all is unanswered.
+- **When a page-level spinner is warranted rather than an empty page.** Roughly three seconds is the threshold, and a lagging region of an otherwise-loaded page is the clearest case — but the boundary between "a region" and "the page" is a judgment.
 - **Loading and error states for a table**, including partial failure — listed as unowned in `recursica-skill-tables`.
 - **Pending state on a non-submit action** — listed as unowned in `recursica-skill-buttons-links`.
 - **Whether the loader itself is delayed.** 3 seconds is the threshold for whether a wait warrants a loader at all; whether the spinner is also held back for that long, or appears at once for an operation predicted to exceed it, is unstated.
