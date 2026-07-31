@@ -160,6 +160,8 @@ Pre-fill is not all-or-nothing. Gate it on **comprehension risk**.
 
 **NEVER pre-fill high-comprehension data** — values the user would have to reason about, look up, or verify against another source to know whether the default is right. An unverifiable default is worse than an empty field, because it gets submitted unchecked.
 
+**A form that edits an existing object is the separate case, and it always arrives populated** with that object's current values. You are editing the object, not starting over. This never stops applying. Owned by `recursica-skill-defaults`, which also carries the 90 percent threshold for pre-selecting an option and the veto on pre-selecting anything with downstream consequences.
+
 ## Progressive disclosure
 
 **Couple the revealed content as tightly as possible to the control that triggered it** — immediately adjacent, immediately after, appearing in real time. The user must be able to see the causal link between their selection and the change, so they feel they are controlling the form rather than the form controlling them.

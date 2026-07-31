@@ -38,7 +38,9 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 
 **NEVER mix conventions.** A bar where some controls read `All` and others sit empty, with both meaning unfiltered, tells the user those controls behave differently when they do not. This is the most common filter-bar defect and it costs nothing to avoid.
 
-**A default that filters must be visible as a filter.** If the collection arrives pre-narrowed, the control must show that state — never a screen that silently hides rows while every control reads neutral. Which defaults are appropriate has no owning skill yet — ask.
+**A filter should arrive unapplied.** Filters are additive: the user starts from everything and narrows. A pre-applied filter risks the user not realizing it is there and concluding the data is missing. Owned by `recursica-skill-defaults`.
+
+**A default that filters must be visible as a filter.** If the collection arrives pre-narrowed, the control must show that state — never a screen that silently hides rows while every control reads neutral. **Set a default filter; never filter the data itself.**
 
 ## Dates
 

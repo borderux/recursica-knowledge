@@ -131,6 +131,8 @@ Location is communicated by three things, and you need more than the first:
 
 **Tabs represent parts of a whole.** The governing metaphor is a file cabinet: the tabs are the folders in one drawer, and the user flips between them looking at the same body of material. Use tabs only when the content genuinely fits that metaphor.
 
+**The first tab in reading order opens by default** — the leftmost one in a left-to-right locale, because that is where the eye starts. Owned by `recursica-skill-defaults`.
+
 **MUST NOT spread a form across tabs.** Tabs are for sectioning content, not for breaking up data entry. **A multi-part form uses a stepper component, not tabs.** Do not put multiple forms, or one form's fields, on separate tabs.
 
 **Keyboard interaction inside a tab set is not your decision.** Whether tabs move focus by arrow keys or by tab key is owned by the underlying coded library (MUI, Mantine, or whatever the Recursica tab component wraps). Use the component and inherit its behavior — do not add custom key handling.

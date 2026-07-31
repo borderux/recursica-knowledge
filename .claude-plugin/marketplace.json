@@ -20,6 +20,7 @@
         "./skills/design-rules/recursica-skill-dashboards",
         "./skills/design-rules/recursica-skill-data-visualization",
         "./skills/design-rules/recursica-skill-dates-and-currency",
+        "./skills/design-rules/recursica-skill-defaults",
         "./skills/design-rules/recursica-skill-feedback-messaging",
         "./skills/design-rules/recursica-skill-filters",
         "./skills/design-rules/recursica-skill-forms",
