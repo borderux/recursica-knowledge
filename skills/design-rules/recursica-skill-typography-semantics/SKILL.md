@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-typography-semantics
-description: House rules for typography and semantic markup in enterprise web applications — always using the real element rather than styling a div into one, one H1 per page even when hidden, type styles from tokens, never custom values, when a heading is hidden but kept for screen readers, why vertical spacing between headings is contextual, em and strong over visual emphasis, abbreviations written out on first use, and AP style. Use when adding, reviewing, or refactoring headings, body copy, emphasis, abbreviations, a heading outline, or the markup beneath a visual hierarchy. Trigger on "typography", "type style", "heading", "H1", "semantic HTML", "screen reader only", "visually hidden", "em", "strong", "abbreviation", "eyebrow text", "line length", "measure", "max-width", "AP style", or a question about which element to use. Do NOT use for announcing dynamic updates — that is recursica-skill-feedback-messaging. Do NOT use for label copy inside a form — that is recursica-skill-forms.
+description: House rules for typography and semantic markup in enterprise web applications — always using the real element rather than styling a div into one, one H1 per page even when hidden, type styles from tokens, never custom values, when a heading is hidden but kept for screen readers, why vertical spacing between headings is contextual, em and strong over visual emphasis, abbreviations written out on first use, and AP style. Use when adding, reviewing, or refactoring headings, body copy, emphasis, abbreviations, a heading outline, or the markup beneath a visual hierarchy. Trigger on "typography", "type style", "heading", "H1", "semantic HTML", "screen reader only", "visually hidden", "em", "strong", "abbreviation", "eyebrow text", "line length", "measure", "max-width", "AP style", or a question about which element to use. Do NOT use for announcing dynamic updates — that is recursica-skill-feedback-messaging. Do NOT use for what things are called — that is recursica-skill-naming-terminology.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -173,6 +173,8 @@ W_max = 44 × 12.48                 = 555px
 
 **Follow the AP style guide.** Typography checking and copy conventions follow AP standards.
 
+**Sentence case versus title case is set by the token, and must not be modified.** Which one a heading uses is determined by the brand and encoded in the type style it carries, so it is predetermined before an agent sees it. **Do not change the case of a heading or a label to suit a layout or a preference.** If a type style does not appear to encode its case, that is a gap to raise — not a decision to make. What things are _called_ is governed by `recursica-skill-naming-terminology`.
+
 ## Reading order
 
 **The semantic structure should match what is on the screen.** The order the markup reads in is the order the content appears in. Where visual arrangement and document order disagree, the arrangement is what changes.
@@ -184,6 +186,7 @@ W_max = 44 × 12.48                 = 555px
 ## Not your decision
 
 - **The values behind every type style** — font size, line height, letter spacing, weight. Delivered as tokens.
+- **Case.** Sentence case or title case is the token's, determined by the brand.
 - **What `em` and `strong` look like.** Defined in CSS against the semantic tag.
 - **Component-internal typography.** Owned by the component.
 - **Spacing token values.** You choose which token an adjacency calls for; you do not author new ones.
@@ -203,7 +206,7 @@ W_max = 44 × 12.48                 = 555px
 - **Live regions and `aria-live`.** Deferred here and not picked up elsewhere. Component skills state their own announcement requirements; there is no cross-surface policy.
 - **Which heading level a page's sections start at**, given that the single H1 may be hidden.
 - **Whether `abbr` markup is used** for the abbreviated follow-on instances, or whether plain text is enough once the term has been written out.
-- **Sentence case versus title case** for headings, and consistency between a nav label, a page title, and a table header. Named as unowned in `recursica-skill-design-router`.
+- **Whether every type style actually encodes its case treatment.** The rule is that case is token-controlled; where a style seems not to carry it, raise it.
 
 ## Pre-flight checklist
 
@@ -217,7 +220,7 @@ W_max = 44 × 12.48                 = 555px
 - [ ] Any visually hidden heading passes both tests — it disrupted the layout and added no understanding — and remains available to screen readers.
 - [ ] No eyebrow text uses a heading level to obtain its size.
 - [ ] Every abbreviation is written out in full on first use with the short form in parentheses, unless it is common knowledge in an unambiguous context.
-- [ ] Copy follows AP style.
+- [ ] Copy follows AP style, and no case or capitalization was set or changed by hand.
 - [ ] Document order matches visual order.
 - [ ] No markup was contorted to reduce screen reader verbosity.
 - [ ] Every `h3`–`h6`, body, and caption text block has a `max-width` computed by the line-length check, and no wide container was filled to its edge.

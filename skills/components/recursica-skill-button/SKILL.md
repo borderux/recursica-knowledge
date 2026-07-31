@@ -63,6 +63,10 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.button`. **Do not pass
 
 **An icon-only button always needs a tooltip** — and separately an accessible name. The tooltip serves sighted mouse users; it is not what a screen reader reads unless it is also the name.
 
+**A count goes in parentheses after the label, and never replaces it.** `Apply status`, then `Apply status (1)`, then `Apply status (102)`. The label is fixed; the count is appended to it. Never fold the number into the wording — no `Apply 102 statuses`, and no label that reads differently at one than at many.
+
+**Below one, show no count at all.** There is no `(0)`. A zero tells the user nothing they cannot already see, and it makes an inert control look like it has something in it. The parentheses appear with the first selection and disappear with the last.
+
 **A toggle button's label names the state it has reached**, not the state it would move to — Follow becomes Following once followed.
 
 **A submit in flight is the disabled treatment plus an icon.** `recursica-skill-forms` requires that on submit the button itself becomes a loading, disabled state; this is how that is built. Use `icon-only` or `icon-label`, apply `disabled`, and let the icon animate. Keep the button in the same position and at the same size — a button that resizes or moves as it starts working pulls the target out from under the pointer.
@@ -81,6 +85,9 @@ The component provides the focus ring and activation semantics. Everything below
 - **The accessible name should match the visible label.** Where they differ, the visible label must be contained in the name, or a user speaking the label cannot activate it by voice.
 - **A row or list action must name its object.** "Delete" repeated down a table is thirteen identical announcements. Either the name carries the object — "Delete invoice 1043" — or the row provides that context programmatically.
 - **When a toggle button's label changes, its accessible name changes with it.** A stale name after activation is worse than no name.
+- **The accessible name spells the count out as a phrase; the visible label keeps the parenthetical.** Visible: `Apply status (102)`. Announced: **"Apply status to 102 items."** A bare number read after a label — "Apply status 102" — is ambiguous out loud, because it could be a quantity, an identifier, or part of the name.
+- **This is the sanctioned case for the two differing**, and it stays within the rule above because the visible label is contained in the accessible name: someone activating by voice can still say "Apply status" and be understood.
+- **The name updates as the count does**, and with no selection it is simply `Apply status` — no count in either place. Do not announce every increment while the user is selecting; what matters is the name being correct when they reach the button.
 - **It must be a real button element**, never a `div` or `span` with a click handler. Only a real button is announced as one, and only a real button responds to Enter and Space for free.
 - **Never rely on the icon to carry the meaning.** An icon-only button conveys nothing to a screen reader beyond its name — required by `recursica-skill-system-conventions`.
 - **A button in flight must announce that it is busy**, and the animating icon must be silent. The animation is a visual channel only; without the busy state a screen reader user hears nothing and presses again.
@@ -124,6 +131,8 @@ Do not implement, override, or tune any of these — the component owns them for
 
 - [ ] Nothing that navigates was built as a button.
 - [ ] Every label is a verb plus its object and reads correctly alone.
+- [ ] Any count sits in parentheses after an unchanging label, and is absent entirely at zero.
+- [ ] The accessible name spells the count out as a phrase — "Apply status to 102 items" — while the visible label keeps the parenthetical form.
 - [ ] Exactly one `solid` button on the surface.
 - [ ] Every `icon-only` button has both a tooltip and an accessible name.
 - [ ] Every button is a real button element, in the tab order, activated by Enter and Space.

@@ -19,13 +19,14 @@ A badge is one piece of read-only metadata attached to something else. The syste
 
 ## Do not use it when
 
-| Instead of a badge                         | Use                                                       |
-| ------------------------------------------ | --------------------------------------------------------- |
-| The user selects, toggles, or dismisses it | `recursica-skill-chip`                                    |
-| The object carries several values          | Chips. A badge is singular                                |
-| The value is an error or failure condition | An icon or a purpose-built treatment — see the rule below |
-| The text is long, or a phrase              | Plain text. A badge is not a container for a sentence     |
-| It labels the page or section itself       | A heading. A badge modifies an object, not a view         |
+| Instead of a badge                          | Use                                                                                   |
+| ------------------------------------------- | ------------------------------------------------------------------------------------- |
+| The user selects, toggles, or dismisses it  | `recursica-skill-chip`                                                                |
+| The object carries several values           | Chips. A badge is singular                                                            |
+| The value is an error or failure condition  | An icon or a purpose-built treatment — see the rule below                             |
+| The text is long, or a phrase               | Plain text. A badge is not a container for a sentence                                 |
+| It labels the page or section itself        | A heading. A badge modifies an object, not a view                                     |
+| It titles a region, group, or panel section | A heading. **Never a badge** — a badge is metadata about a thing, not the name of one |
 
 **A badge is never interactive.** There is no selectable badge and no dismissible badge in this system. If the user must operate it, you have a chip.
 
@@ -40,6 +41,12 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.badge`. **Do not pass 
 **There is no size axis and no content axis in the kit**, though both are documented outside the token inventory. See the uncovered list before relying on either — that mismatch has not been resolved.
 
 **No disabled state, no interactive state, no hover treatment.** A badge has no states because it is not a control.
+
+**Four intents is a closed set, and most domains have more statuses than that.** A provisioning workflow with Pending, Approved, Ordered, Shipped, Delivered, Blocked, and Cancelled has seven statuses and four styles to express them, so **styles necessarily repeat** — two different statuses will look identical.
+
+**The style must agree with the sentiment of the value.** A positive state never wears the negative treatment. `alert` reads as something wrong, so an approved, complete, or successful value must never carry it — that is a badge actively contradicting its own text, and the colour wins the first read. Where the exact status-to-intent map is undecided, see the uncovered list; what is settled is that **the intent must never fight the word.**
+
+**That is safe only because the badge's text always carries the distinction.** Map several statuses to one intent deliberately, keep the label as the thing that identifies the status, and never let the color be what tells Ordered from Shipped. Required by `recursica-skill-system-conventions`. **Do not invent a fifth intent.** There is no prop for one, so producing one means going around the component — and a fifth colour is not a missing token to report, it is a colour the system has deliberately not given you. See `recursica-skill-design-router` on the escape hatch.
 
 ## Rules for using it
 
@@ -93,6 +100,7 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Uncovered — ask, do not invent
 
+- **The status-to-intent map.** The principle is settled — the intent agrees with the sentiment, and `alert` never carries a positive value — but which intent each domain status takes has not been decided, and with four intents against more statuses the mapping needs stating rather than improvising.
 - **What `warning` and `alert` are for**, given that a badge must not communicate an error. Until this is answered, do not reach for either.
 - **A size axis (default and large) and a content axis (message and counter) are documented outside the token inventory, with no token behind either.** Do not assume they are available, and do not rely on this without asking.
 - **A cap on counts** — whether a large number is truncated, and how.
@@ -106,6 +114,9 @@ Do not implement, override, or tune any of these — the component owns them:
 - [ ] No badge communicates an error condition; `warning` and `alert` were not guessed at.
 - [ ] It sits immediately after its object on the same line, never stacked.
 - [ ] The text alone carries the full meaning; no meaning rides on color.
+- [ ] No badge titles a region, a group, or a section; headings do that.
+- [ ] Every badge's intent agrees with the sentiment of its value; no positive state wears `alert`.
+- [ ] Where the domain has more statuses than the four intents, the mapping is deliberate and the label is what distinguishes them; no fifth intent was invented.
 - [ ] A count includes its unit in what gets announced.
 - [ ] The badge is announced as part of its object, not as a stray fragment.
 - [ ] It has no tabindex, no click handler, and no interactive role.

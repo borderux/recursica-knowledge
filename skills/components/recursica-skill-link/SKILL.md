@@ -99,7 +99,7 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Uncovered — ask, do not invent
 
-- **Which icon marks an external link**, and whether it is required or optional. Icon semantics have no owning skill.
+- **Which icon marks an external link**, and whether it is required or optional. `recursica-skill-icon-semantics` owns icon meaning but names no glyph for this one.
 - **Download links** — whether file type and size are shown, and where.
 - **Whether a link may carry a size or emphasis treatment.** No axis exists for either.
 - **Links inside a paragraph of a table cell**, where density and prose collide.

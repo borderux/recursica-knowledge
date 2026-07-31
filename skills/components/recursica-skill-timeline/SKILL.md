@@ -76,6 +76,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.timeline` and `ui-kit.
 
 **A timeline is not an edit surface.** If entries are being created or modified here, that is a form, on its own terms.
 
+**`inactive` does not mean "already happened."** Every entry in a log or history is in the past, and all of them are real. Rendering completed events in the de-emphasised treatment makes a record of what happened look like a plan for what will — the exact opposite of the truth. Reserve any dimmed or pending treatment for genuinely future or unreached states, and if the timeline is purely historical, **no entry is de-emphasised.**
+
 ## Accessibility
 
 A timeline is a list of events, and almost everything that makes it readable is visual: a vertical line implying sequence, a bullet implying a type, a color implying selection, and a relative timestamp whose real value is nowhere. **All four have to be replaced with something programmatic.**
@@ -135,6 +137,7 @@ Do not implement, override, or tune any of these — the components own them:
 
 ## Pre-flight checklist
 
+- [ ] No completed or historical entry is rendered in a de-emphasised or pending treatment.
 - [ ] The events are genuinely sequential and already happened; a current process went to a stepper.
 - [ ] High volume, sortable, or comparable records went to a table; unordered content went to a list.
 - [ ] A long history is grouped or paginated rather than rendered whole.

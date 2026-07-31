@@ -13,6 +13,10 @@ House rules for application navigation — primary and secondary nav, sub-level 
 
 Context these rules assume: **complex enterprise web applications, desktop-first**, built on the Recursica design system. Component-level visual design is not your decision — selected states, hover styling, spacing, and color are inherited. Your job is structure, interaction, and route behavior.
 
+**A control never navigates and does something else in the same activation.** Moving the user and applying a filter, opening a surface, or switching a tab are separate outcomes; bundling them means the label can only honestly describe one. Where a destination must arrive pre-filtered, that is a different destination with its own route — not a link that filters on the way. See convention 6 in `recursica-skill-system-conventions`.
+
+**Navigation labels name objects, not actions** — `Forms`, never `View forms`. What each item is called, whether it is singular or plural, and how far a term may be shortened are governed by `recursica-skill-naming-terminology`.
+
 ## Governing principles
 
 1. **A location is a route.** If something is navigation, it has a unique URL and a browser history entry. If it is invoked by a trigger — a modal, a panel — it is neither. This test is the most important thing in this file, because it is the one most often broken.
@@ -126,6 +130,8 @@ Location is communicated by three things, and you need more than the first:
 ## Tabs
 
 **Tabs represent parts of a whole.** The governing metaphor is a file cabinet: the tabs are the folders in one drawer, and the user flips between them looking at the same body of material. Use tabs only when the content genuinely fits that metaphor.
+
+**The first tab in reading order opens by default** — the leftmost one in a left-to-right locale, because that is where the eye starts. Owned by `recursica-skill-defaults`.
 
 **MUST NOT spread a form across tabs.** Tabs are for sectioning content, not for breaking up data entry. **A multi-part form uses a stepper component, not tabs.** Do not put multiple forms, or one form's fields, on separate tabs.
 
