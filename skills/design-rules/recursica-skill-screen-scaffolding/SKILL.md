@@ -129,6 +129,10 @@ The filter controls themselves are owned by `recursica-skill-filters`.
 
 **Chrome does not scroll away with the content**, and it does not change from page to page.
 
+**The top-left position holds the brand.** Almost always the client's logo — a variant puts the logo upper right and profile information upper left. See `recursica-skill-screen-priority`.
+
+**The application has one scrollbar.** Sticky regions stay put while the page scrolls beneath them, and **no inner scrolling region is ever built.** Beyond a sticky header, sticky footer, and persistent nav rail, at most one further sticky element. Owned by `recursica-skill-screen-priority`.
+
 ## Summary figures
 
 **A group of summary figures is a set of peers** and gets one consistent treatment across all of them.
@@ -157,7 +161,7 @@ The number one indicator, and the rest in order:
 
 ## Out of scope
 
-- **What earns the strongest position on a screen** — that is prioritization, recorded separately.
+- **What earns the strongest position, how much a screen may hold, and what to cut** — `recursica-skill-screen-priority`.
 - **The layout grid itself**, its column count and behavior. A separate skill.
 - **Whether a task belongs on this page** — `recursica-skill-panels-modals`.
 - **Navigation structure and routes** — `recursica-skill-navigation`.

@@ -87,22 +87,23 @@ Work top to bottom. Each answer constrains the ones below it.
 | 2   | Is this a location? If so it needs a unique route, a URL, and a history entry                          | `recursica-skill-navigation`                       |
 | 3   | Where does it sit in the app shell — nav pattern, nav item, breadcrumbs, page heading                  | `recursica-skill-navigation`                       |
 | 4   | The page's composition, and whether a region needs its own surface                                     | `recursica-skill-screen-scaffolding`               |
-| 5   | Content shape: many instances of one object → a table; one object's properties → a detail or form view | `recursica-skill-tables` / `recursica-skill-forms` |
-| 6   | Where the task lives — a panel beside the page, a modal over it, or a page of its own                  | `recursica-skill-panels-modals`                    |
-| 7   | Narrowing a collection — the filter bar, search, date ranges                                           | `recursica-skill-filters`                          |
-| 8   | If the user enters or edits data: layout, labels, grouping, validation, save mode                      | `recursica-skill-forms`                            |
-| 9   | For each field, which control the data shape demands                                                   | `recursica-skill-selection-controls`               |
-| 10  | Status, counts, tags, and metadata on objects                                                          | `recursica-skill-badges-chips`                     |
-| 11  | Every clickable thing: is it an action or a navigation, how is it labeled, where does it sit           | `recursica-skill-buttons-links`                    |
-| 12  | If it is an overview or landing screen: is it a dashboard or a workbench, and what belongs on it       | `recursica-skill-dashboards`                       |
-| 13  | Any chart or visual data display                                                                       | `recursica-skill-data-visualization`               |
-| 14  | Any date, time, currency, or numeric value on screen                                                   | `recursica-skill-dates-and-currency`               |
-| 15  | Any count — nav items, options, chips                                                                  | `recursica-skill-working-memory`                   |
-| 16  | What the application says back — success, failure, waiting, banner vs. toast                           | `recursica-skill-feedback-messaging`               |
-| 17  | Announcing a change to assistive technology when content updates in place                              | `recursica-skill-live-regions`                     |
-| 18  | What every object, navigation item, title, and column is called                                        | `recursica-skill-naming-terminology`               |
-| 19  | Headings, emphasis, abbreviations, and the markup under the visual hierarchy                           | `recursica-skill-typography-semantics`             |
-| 20  | Empty, loading, error, and partial states                                                              | **No skill yet — ask**                             |
+| 5   | What matters most on the screen, what to cut, and whether it is finished                               | `recursica-skill-screen-priority`                  |
+| 6   | Content shape: many instances of one object → a table; one object's properties → a detail or form view | `recursica-skill-tables` / `recursica-skill-forms` |
+| 7   | Where the task lives — a panel beside the page, a modal over it, or a page of its own                  | `recursica-skill-panels-modals`                    |
+| 8   | Narrowing a collection — the filter bar, search, date ranges                                           | `recursica-skill-filters`                          |
+| 9   | If the user enters or edits data: layout, labels, grouping, validation, save mode                      | `recursica-skill-forms`                            |
+| 10  | For each field, which control the data shape demands                                                   | `recursica-skill-selection-controls`               |
+| 11  | Status, counts, tags, and metadata on objects                                                          | `recursica-skill-badges-chips`                     |
+| 12  | Every clickable thing: is it an action or a navigation, how is it labeled, where does it sit           | `recursica-skill-buttons-links`                    |
+| 13  | If it is an overview or landing screen: is it a dashboard or a workbench, and what belongs on it       | `recursica-skill-dashboards`                       |
+| 14  | Any chart or visual data display                                                                       | `recursica-skill-data-visualization`               |
+| 15  | Any date, time, currency, or numeric value on screen                                                   | `recursica-skill-dates-and-currency`               |
+| 16  | Any count — nav items, options, chips                                                                  | `recursica-skill-working-memory`                   |
+| 17  | What the application says back — success, failure, waiting, banner vs. toast                           | `recursica-skill-feedback-messaging`               |
+| 18  | Announcing a change to assistive technology when content updates in place                              | `recursica-skill-live-regions`                     |
+| 19  | What every object, navigation item, title, and column is called                                        | `recursica-skill-naming-terminology`               |
+| 20  | Headings, emphasis, abbreviations, and the markup under the visual hierarchy                           | `recursica-skill-typography-semantics`             |
+| 21  | Empty, loading, error, and partial states                                                              | **No skill yet — ask**                             |
 
 **Two ordering rules worth stating outright:**
 
@@ -140,9 +141,11 @@ Apply in order. The first rule that settles the conflict wins.
 The list below is the other kind: **whole topics with no owning skill at all.** Both kinds get the same treatment — **ask rather than inventing an answer** — and both lists shrink as topics are recorded.
 
 - **Behavior below desktop.** Several skills defer to "a real space constraint" or "mobile" without defining what happens there. This is the most frequently hit gap. Two exceptions: `recursica-skill-data-visualization` states that a chart adapts rather than shrinks, keeps the same story, and discloses omitted information; and `recursica-skill-panels-modals` states that below the tablet breakpoint every panel opens as a page instead. Those two are the only places a below-desktop rule exists.
-- **Empty, loading, error, and partial states**, including the difference between "no data yet" and "no results for these filters". Dashboards are the exception: `recursica-skill-dashboards` forbids an empty dashboard and requires a dismissible first-run element.
+- **Empty, loading, error, and partial states.** Three pieces are now settled and the rest is not: a loading page shows nothing and skeletons are forbidden (`recursica-skill-screen-scaffolding`); no-rows-returned and could-not-fetch carry different messages (`recursica-skill-screen-priority`); filtered-to-zero differs from never-had-data (`recursica-skill-filters`). What remains is layout, copy, and whether an empty state may carry an action. Including the difference between "no data yet" and "no results for these filters". Dashboards are the exception: `recursica-skill-dashboards` forbids an empty dashboard and requires a dismissible first-run element.
 - **Icon semantics** — when an icon is allowed and which icon carries which meaning.
 - **Motion** — beyond "do not animate a badge on status change".
+- **Alignment across sections** — that separate areas of an application call things the same names and use the same workflows. `recursica-skill-screen-priority` gives the breach criteria and says it is a review pass run after design; it is named as a skill the family still needs, possibly run by a dedicated agent.
+- **Scan patterns and eye-tracking research** — flagged as belonging in `skills/psychology/` with citations, and not yet gathered.
 - **The layout grid** — eight or twelve columns, gutters, and what elements align to. `recursica-skill-screen-scaffolding` requires alignment to a grid and explicitly defers the grid itself to a skill that does not exist yet.
 - **Defaults** — which tab opens, and defaults on any surface other than a table. Table sort order and rows per page are settled in `recursica-skill-tables`.
 

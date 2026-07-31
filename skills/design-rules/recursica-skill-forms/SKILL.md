@@ -68,6 +68,8 @@ Decide from the user's mental model, not from field count alone. Go multi-step w
 2. **Volume.** Sheer quantity of fields creates visual noise that needs reducing.
 3. **Downstream branching.** An answer causes a _later_ step to be significantly different.
 
+**The counter-case: cross-referential information favors one long form.** Where completing one section depends on checking or remembering another, a stepper becomes actively worse than length — moving forward and back to re-read costs more than scrolling. Usability testing on a long credit-card application found the single form outperformed the stepper for exactly this reason: the user wanted to confirm the whole thing was correct and complete at once. **The question is how much has to stay in context, not how many fields there are.** See `recursica-skill-screen-priority`.
+
 **The disclosure/step boundary:** if an answer causes a _minor, local_ change — a field or section immediately below — use progressive disclosure and stay on one page. If it causes a _materially different downstream step_, use multi-step. Do not reach for multi-step to handle small conditional fields.
 
 ## Grouping
