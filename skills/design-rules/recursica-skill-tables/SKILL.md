@@ -192,6 +192,7 @@ No house rule covers these yet. **Ask the human rather than choosing** — see t
 Before considering a table done, verify:
 
 - [ ] The sorted column is visibly indicated, including on tables whose sort cannot be changed.
+- [ ] A loading table shows nothing rather than skeleton rows.
 - [ ] Every column serves either acting on the records or understanding them; the rest moved to expansion, panel, or detail page.
 - [ ] The table fits the primary desktop dimensions with no horizontal scrolling.
 - [ ] No cell holds more than two values, and the column header explains both.

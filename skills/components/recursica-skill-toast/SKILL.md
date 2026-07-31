@@ -90,7 +90,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.toast`. **Do not pass 
 ### Screen readers
 
 - **The toast must be announced when it appears, without moving focus.** Use a live region that already exists in the DOM before the message is inserted — a region created at the same moment as the message is frequently not announced at all.
-- **An error toast is assertive; a success or `default` toast is polite.** Never let a confirmation interrupt what the user is reading or typing, and never leave a failure waiting behind a queue.
+- **An error toast announces assertively; a success or `default` toast announces politely.** Assertive interrupts, which is why it is reserved for the failure. Never let a confirmation cut across what the user is reading or typing, and never leave a failure waiting behind a queue. Owned by `recursica-skill-live-regions`.
+- **A toast always announces.** There is no toast that appears silently. Whatever statement the toast makes is the announcement, so nothing else should duplicate it.
 - **The style is not announced.** `success` and `error` differ by color and icon only, so the text must say which it is: "Saved" versus "Could not save".
 - **The icon is decorative and must be silent.** It carries no information a screen reader user can use and must not be announced as an unlabeled graphic.
 - **Multiple toasts must not produce overlapping announcements.** One live region, messages queued in order — never a live region per toast, and never a second message clobbering the first mid-sentence.
@@ -147,7 +148,7 @@ Do not implement, override, or tune any of these — the component owns them for
 - [ ] No toast is standing in for the persistent status message field-level saving requires.
 - [ ] One toast per event, with a count for bulk operations; at most one action in it.
 - [ ] A live region exists in the DOM before the message is inserted, and the toast is announced without moving focus.
-- [ ] Errors announce assertively; success and default announce politely.
+- [ ] Errors announce assertively, success and default politely; every toast announces, and nothing duplicates it.
 - [ ] The icon is silent; the text states the outcome.
 - [ ] Stacked toasts share one queued live region and never produce overlapping announcements.
 - [ ] Any action has a real accessible name including its object; any close control has a real name.

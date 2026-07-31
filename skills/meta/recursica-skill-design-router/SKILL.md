@@ -99,9 +99,10 @@ Work top to bottom. Each answer constrains the ones below it.
 | 14  | Any date, time, currency, or numeric value on screen                                                   | `recursica-skill-dates-and-currency`               |
 | 15  | Any count — nav items, options, chips                                                                  | `recursica-skill-working-memory`                   |
 | 16  | What the application says back — success, failure, waiting, banner vs. toast                           | `recursica-skill-feedback-messaging`               |
-| 17  | What every object, navigation item, title, and column is called                                        | `recursica-skill-naming-terminology`               |
-| 18  | Headings, emphasis, abbreviations, and the markup under the visual hierarchy                           | `recursica-skill-typography-semantics`             |
-| 19  | Empty, loading, error, and partial states                                                              | **No skill yet — ask**                             |
+| 17  | Announcing a change to assistive technology when content updates in place                              | `recursica-skill-live-regions`                     |
+| 18  | What every object, navigation item, title, and column is called                                        | `recursica-skill-naming-terminology`               |
+| 19  | Headings, emphasis, abbreviations, and the markup under the visual hierarchy                           | `recursica-skill-typography-semantics`             |
+| 20  | Empty, loading, error, and partial states                                                              | **No skill yet — ask**                             |
 
 **Two ordering rules worth stating outright:**
 
@@ -140,9 +141,9 @@ The list below is the other kind: **whole topics with no owning skill at all.** 
 
 - **Behavior below desktop.** Several skills defer to "a real space constraint" or "mobile" without defining what happens there. This is the most frequently hit gap. Two exceptions: `recursica-skill-data-visualization` states that a chart adapts rather than shrinks, keeps the same story, and discloses omitted information; and `recursica-skill-panels-modals` states that below the tablet breakpoint every panel opens as a page instead. Those two are the only places a below-desktop rule exists.
 - **Empty, loading, error, and partial states**, including the difference between "no data yet" and "no results for these filters". Dashboards are the exception: `recursica-skill-dashboards` forbids an empty dashboard and requires a dismissible first-run element.
-- **Live regions** — which dynamic updates are announced to assistive technology and how urgently. Deferred in the typography session and not picked up in the feedback session; individual component skills state their own announcement requirements, but there is no cross-surface policy.
 - **Icon semantics** — when an icon is allowed and which icon carries which meaning.
 - **Motion** — beyond "do not animate a badge on status change".
+- **The layout grid** — eight or twelve columns, gutters, and what elements align to. `recursica-skill-screen-scaffolding` requires alignment to a grid and explicitly defers the grid itself to a skill that does not exist yet.
 - **Defaults** — which tab opens, and defaults on any surface other than a table. Table sort order and rows per page are settled in `recursica-skill-tables`.
 
 ## Reading the rules correctly
