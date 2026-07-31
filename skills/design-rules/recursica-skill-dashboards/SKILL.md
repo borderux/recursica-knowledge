@@ -52,6 +52,8 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 
 ## How much
 
+**Figures shown together must reconcile with one another.** Two counts side by side invite the reader to relate them, so a subset must be visibly a subset. A dashboard reporting three pending and eighteen overdue, where overdue is a subset of pending, is not a labelling nuisance — it reports something impossible, and the reader stops trusting every number on the screen. Check the arithmetic between figures before shipping. Naming is owned by `recursica-skill-naming-terminology`; the layout of a figure group by `recursica-skill-screen-scaffolding`.
+
 **Before any chart on a dashboard, confirm the application has a charting library.** Recursica draws no charts; if none is declared, prompt the user to add one before designing the dashboard around visualizations that cannot yet be built. See `recursica-skill-data-visualization`.
 
 **At most four charts.** Beyond that the reader is doing analysis, not glancing.

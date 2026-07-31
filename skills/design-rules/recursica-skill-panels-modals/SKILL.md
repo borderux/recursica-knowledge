@@ -91,6 +91,16 @@ Difficult work can legitimately live in a panel: a task with high cognitive load
 
 **If the form is long enough to scroll the panel, it is not a panel form.** See the scrolling rule above.
 
+## What a panel's content looks like
+
+**NEVER put a table inside a panel.** A panel is narrow and a table needs width; the result either scrolls horizontally, which is absolutely forbidden, or truncates every column into uselessness. Where a panel needs to show several records or several attributes of one record, they become **field groups with stacked fields**, not rows and columns.
+
+**Repeating structures inside a panel are stacked field groups.** One group per item, each field on its own line under its label. That is the shape a narrow surface supports.
+
+**Secondary information belongs in a second tab, not further down the same panel.** When a panel holds both the thing the user came for and supporting material — a history, an audit log, related records — putting them in sequence makes the panel long and buries the primary content. Tabs inside the panel separate them, and the primary content is the tab that opens.
+
+**A log is not a future state.** Where a panel shows a history, every entry in it has already happened, so none of them may be rendered in a pending, upcoming, or de-emphasised treatment. A dimmed history reads as something scheduled rather than something done — see `recursica-skill-timeline`.
+
 ## Dismissal and unsaved work
 
 **Both surfaces dismiss the same way:** a close control in the header, and an action button in the footer.
@@ -165,6 +175,9 @@ A panel earns its shape from sitting beside the page it depends on. Below the wi
 - [ ] No panel is nested inside a panel; any second panel stacks fully over the first and reveals it on close.
 - [ ] Stacking was the shape of the work, not a default reach, and anything beyond two stacked panels was approved first.
 - [ ] Every form in a panel uses stacked label placement for all of its fields.
+- [ ] No table inside a panel; repeating content is stacked field groups.
+- [ ] Secondary material sits in a second tab rather than below the primary content.
+- [ ] Nothing already completed is shown in a pending or de-emphasised treatment.
 - [ ] Closing a panel with unsaved form data prompts before discarding; closing an untouched panel does not.
 - [ ] Any deep-linkable panel or modal was a deliberate decision with a route and a link trigger.
 - [ ] Panels close on a route change, except where the navigation exists only to open another panel or modal.

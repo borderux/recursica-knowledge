@@ -81,6 +81,10 @@ Group fields in this order of preference:
 
 ## Required vs. optional
 
+**A field is only required in the states where it is actually required.** Where a field becomes mandatory at a later stage of a workflow, it is not required before that stage — and it must not display a required error while the record is still in a state that does not need it. An error demanding a value the current state does not call for is a validation bug the user cannot act on, and it teaches them to ignore errors.
+
+**Say the condition, not just the requirement.** Where a field will be required later, the assistive text carries the condition — the message explains at which point the value is needed rather than asserting it is missing now.
+
 **MUST mark only the exception, never both.**
 
 - Mostly required fields → mark the few **optional** ones.
@@ -234,6 +238,7 @@ Before considering a form done, verify:
 - [ ] Fields grouped by parent object, or by logical sequence. Repeating objects are tables.
 - [ ] Non-editable values use the read-only component, not a disabled input.
 - [ ] Only the exception is marked (required _or_ optional, never both). No asterisk clutter.
+- [ ] No field shows a required error in a state that does not require it; conditional requirements state their condition.
 - [ ] Help text and placeholders carry the rules up front.
 - [ ] Validation fires inline on blur, non-blocking.
 - [ ] Submit is disabled until the form is valid and complete.

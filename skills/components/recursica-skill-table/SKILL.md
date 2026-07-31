@@ -57,7 +57,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.table`, `table-cell`, 
 
 **Null is `NA`, never an empty cell and never `0`.** An empty cell reads as an oversight and a zero reads as a real value. **This rule is owned by `recursica-skill-tables`**, which specifies `NA` in disabled-looking text, and generalized by `recursica-skill-system-conventions`. It is restated here only because it has an accessibility consequence; read the owning skill for the rule itself, and where it differs from this line, it is correct.
 
-**Every table has a default sort**, chosen deliberately. Owned by `recursica-skill-tables`.
+**Every table has a default sort, and the sorted column always shows its indicator** — including when the sort cannot be changed. The header component provides `sorted-text-style` and the sort icon; your job is making sure one column carries them. A table whose order is invisible makes the reader guess. Owned by `recursica-skill-tables`.
 
 **A click on a header flips the sort direction.** Multi-sort is a long-press — an unadvertised affordance, which means it also needs a keyboard path; see the accessibility section.
 
@@ -136,7 +136,7 @@ Do not implement, override, or tune any of these — the component owns them:
 - [ ] It is a real table with real header cells associated with their columns, and it has an accessible name.
 - [ ] No horizontal scroll region; column count was reduced instead.
 - [ ] Null cells read `NA`, per `recursica-skill-tables`; no empty cells and no misleading zeros.
-- [ ] A deliberate default sort is set, and sort state is announced on the header, not just styled.
+- [ ] A deliberate default sort is set, the sorted column shows its indicator even when sort is fixed, and sort state is announced on the header rather than only styled.
 - [ ] Multi-sort has a keyboard path; the column-visibility gear is keyboard reachable and reordering has a non-drag path.
 - [ ] Row checkboxes name their row; select-all is named and exposes its indeterminate state.
 - [ ] Currency uses the `currency-style` token, and its format — right-aligned, symbol in the header, two decimals — was taken from `recursica-skill-dates-and-currency` and `recursica-skill-tables`, not from this file.

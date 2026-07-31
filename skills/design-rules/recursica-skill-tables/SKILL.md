@@ -100,6 +100,10 @@ Decide in this order:
 
 ## Default sort
 
+**MUST: every table is sorted, and the sorted column is always visibly indicated.** A table with no visible sort indicator forces the reader to infer the order from the data, and they will usually infer it wrong. **This holds even when the sort cannot be changed** — a fixed order is still an order, and the reader is entitled to know which column produced it and in which direction.
+
+The indicator is part of the column header component; see `recursica-skill-table`. Your job is to make sure one column carries it.
+
 **Sort on the primary content column** — the column carrying the object's identity or leading value. That is typically the leftmost column, allowing that a selection checkbox or a status column may precede it, so in practice it is the first, second, or third.
 
 **Direction follows the data:**
@@ -187,6 +191,7 @@ No house rule covers these yet. **Ask the human rather than choosing** — see t
 
 Before considering a table done, verify:
 
+- [ ] The sorted column is visibly indicated, including on tables whose sort cannot be changed.
 - [ ] Every column serves either acting on the records or understanding them; the rest moved to expansion, panel, or detail page.
 - [ ] The table fits the primary desktop dimensions with no horizontal scrolling.
 - [ ] No cell holds more than two values, and the column header explains both.

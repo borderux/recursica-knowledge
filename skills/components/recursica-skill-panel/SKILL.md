@@ -91,6 +91,8 @@ A build test confirmed all four are needed and that they survive the adapter's p
 
 **A panel is non-modal, and that is the point of it.** The user can still navigate the application and act on the page behind — see `recursica-skill-panels-modals`, which settles this directly. A panel built to block the page is a modal wearing the wrong component.
 
+**NEVER put a table inside a panel.** The panel is narrow and a table needs width, so the result either scrolls horizontally — forbidden outright — or truncates every column. Repeating content becomes stacked field groups instead. **Secondary material goes in a second tab**, not below the primary content. Owned by `recursica-skill-panels-modals`.
+
 **A form in a panel uses stacked label placement for every field.** The panel is narrow, which is the container-width condition that triggers stacking, and the whole form stacks — including short fields that would have fitted side by side. Owned by `recursica-skill-forms`.
 
 **Closing a panel that holds unsaved form data prompts before discarding it**, the same way navigating away from a dirty page does. Do not prompt on every close; the prompt is for data the user entered and never saved.
@@ -182,6 +184,6 @@ Do not implement, override, or tune any of these — the component owns them:
 - [ ] Nothing scrolls horizontally; content inducing vertical scrolling was moved to a page with its context reproduced.
 - [ ] The panel closes on a route change unless the navigation only opens another panel or modal.
 - [ ] Below tablet it opens as a page; anything beyond two stacked panels, or any top or bottom panel, was approved first.
-- [ ] Any form inside uses stacked label placement throughout.
+- [ ] Any form inside uses stacked label placement throughout; no table is inside the panel, and secondary material is in its own tab.
 - [ ] Closing with unsaved form data prompts; closing an untouched panel does not.
 - [ ] Nothing in the uncovered list was invented.

@@ -49,6 +49,18 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 - **Plural** when the destination holds many — a navigation item reading **People**, because arriving there produces a list of persons.
 - **Singular** when the destination is one thing — **Profile**, because there is one profile being edited.
 
+## Every label is a noun
+
+**A label names a thing. It is never a verb.** This holds for a field label, a filter label, a column header, a navigation item, and a summary figure alike — everywhere except a button, which names an action.
+
+**`Name`, not `Search`.** The user is not filling in a thing called _search_; they are entering a name. A verb in a label describes what the user is doing, which they already know, instead of naming the thing they are doing it to.
+
+**A label needs its noun.** `Overdue` is an adjective and names nothing; `Overdue requests` names a thing. A bare adjective as a label is a label that stopped halfway.
+
+**Cut words that add nothing.** `Total pending requests` says exactly what `Pending requests` says, so _total_ is noise on a screen someone reads every day. Concision is the priority; a word earns its place by adding accuracy.
+
+**NEVER define a term next to itself.** A label followed by a gloss explaining what it means — `Overdue — past the start date` — is an admission that the label failed. **Fix the label.** If the concept genuinely needs explaining beyond a good name, that is a tooltip or help content, never a subtitle sitting under the thing it defines.
+
 ## Navigation labels name objects, not actions
 
 **Primary navigation uses object labels.** **Forms**, not **View forms** — going to a list is not an action the user is taking, it is a movement to a place.
@@ -99,6 +111,9 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 
 ## Pre-flight checklist
 
+- [ ] Every label is a noun with its noun present — no verbs outside buttons, no bare adjectives.
+- [ ] No filler words; every word in a label adds accuracy.
+- [ ] No label is glossed by a definition beside it.
 - [ ] Every object is named in the users' vocabulary, not the business's or the data model's.
 - [ ] The data model's term appears only where the concept is not conversationally known to the user.
 - [ ] A client-imposed term was used as insisted and flagged for usability testing rather than quietly corrected.

@@ -130,6 +130,18 @@ Two smaller notes worth keeping:
 - **`TextField`'s events are ordinary React synthetic events.** Reading `e.currentTarget.value` lazily inside a `setState` updater callback threw and blanked the whole panel. Capture eagerly.
 - **There is no error boundary**, so that throw unmounted the tree to a blank screen with nothing obvious in the console. That is a real input for the empty/loading/error-states session — a blank page is the worst possible error state and the system currently has no answer for it.
 
+## From the design review of Test 4's screens
+
+A round of feedback on generated screens, treated as rules rather than fixes for that app. Most of it became new rules; three things are recorded here because they still need you.
+
+**Needs your decision:**
+
+- **The status-to-intent map for badges.** Settled: the intent must agree with the sentiment, and `alert` never carries a positive value like _approved_. Not settled: which of the four intents each domain status takes. With four intents against a typical seven-or-more statuses, the mapping needs stating once rather than being improvised per screen.
+- **What each layer level means.** The component docs refer to `Layer` 0 through 3 and the component is not exported. The rule that a blurred-together region needs a surface is recorded; which level, and what distinguishes them, is not.
+- **A parent status alongside per-item statuses.** A request carrying one overall status while each line item carries its own from the same vocabulary raises questions nothing answers: what derives the parent, what happens when items disagree, and whether both are editable. This is a data-model question surfacing as a UI one, and it will recur in any order-like domain.
+
+**Recorded as rules elsewhere:** switch is form-only with segmented controls for every toggle outside a form; bulk actions revealed on selection when there is one and persistent-but-disabled when there are several, with a prior question about whether bulk belongs at all; action labels naming what actually happens; a sorted column always indicated even when sort is fixed; no tables inside panels; secondary panel content in a second tab; nothing completed rendered as pending; conditional requirements stating their condition; every label a noun with no filler and no gloss beside it.
+
 ## Now resolved
 
 These were open when this file was first written. Each was settled by reading the design rules rather than by adding new opinion, and the corresponding `## Uncovered` entries have been removed from the component skills.

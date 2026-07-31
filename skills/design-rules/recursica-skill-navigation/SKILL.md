@@ -13,6 +13,8 @@ House rules for application navigation — primary and secondary nav, sub-level 
 
 Context these rules assume: **complex enterprise web applications, desktop-first**, built on the Recursica design system. Component-level visual design is not your decision — selected states, hover styling, spacing, and color are inherited. Your job is structure, interaction, and route behavior.
 
+**A control never navigates and does something else in the same activation.** Moving the user and applying a filter, opening a surface, or switching a tab are separate outcomes; bundling them means the label can only honestly describe one. Where a destination must arrive pre-filtered, that is a different destination with its own route — not a link that filters on the way. See convention 6 in `recursica-skill-system-conventions`.
+
 **Navigation labels name objects, not actions** — `Forms`, never `View forms`. What each item is called, whether it is singular or plural, and how far a term may be shortened are governed by `recursica-skill-naming-terminology`.
 
 ## Governing principles

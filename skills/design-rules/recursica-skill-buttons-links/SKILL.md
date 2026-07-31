@@ -15,6 +15,12 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 
 **A button label is verb plus object — `Save form`. A navigation label is the object alone — `Forms`.** That split is the whole difference in copy terms, and it is governed on the naming side by `recursica-skill-naming-terminology`.
 
+**The label must name what actually happens.** A control labelled `View` that opens an editable surface is mislabelled — the user was promised reading and given writing. If the surface it opens can change data, the label says so: `Edit`, or `Manage`. The check is simple: open the thing, and see whether its label described it.
+
+**A button opens a panel or a modal; a link does not.** Opening a surface is an action, so it takes a button even where a link would look lighter. A link is for going somewhere.
+
+**One control, one outcome.** A trigger that opens a surface does not also change tab, route, or filter — see convention 6 in `recursica-skill-system-conventions`.
+
 ## Governing principles
 
 1. **The component follows the intent, not the appearance.** A link goes somewhere. A button does something to an object. If you want an action that doesn't look heavy, use a text button — never a link. Appearance is adjustable; semantics are not.
@@ -95,9 +101,16 @@ The rule underneath: **a constant label can become an icon; a varying label must
 
 ## Bulk actions
 
-**Preferred: show bulk action buttons at all times but disabled until at least one row is selected.** The affordance matters — the user learns what is possible in bulk before selecting anything.
+**How bulk actions appear depends on how many there are.**
 
-**Fallback when space does not allow it:** reveal the bulk action buttons once at least one row is selected.
+- **One bulk action** — reveal it once at least one row is selected. A single disabled control sitting there permanently teaches almost nothing and costs a permanent piece of the layout.
+- **Several bulk actions** — show them at all times, disabled until at least one row is selected. Here the affordance earns its keep: the user learns what is possible in bulk before selecting anything.
+
+**Before either, ask whether bulk action belongs on this screen at all.** Bulk operations are worth building where the work is genuinely done in batches. Where records are handled one at a time, a bulk control is a guess about the user's workflow, and a guess that costs layout and attention on every visit. **If you cannot name the batch task it serves, do not build it** — see `recursica-skill-design-router`.
+
+**A bulk action's label carries the selected count in parentheses** — `Apply status`, `Apply status (1)`, `Apply status (102)` — with no count shown until at least one row is selected. The label never changes; only the parenthetical appears and disappears. This is also what makes `Apply to 0 selected` unnecessary: the count belongs in the button, not in a phrase built around it. **The spelled-out phrase belongs in the accessible name instead** — announced as "Apply status to 102 items" while the button visibly reads `Apply status (102)`. See `recursica-skill-button`.
+
+**Bulk controls never sit inside the filter bar.** They act on the data, not on what is shown. See `recursica-skill-filters`.
 
 ## Destructive actions and confirmation
 
