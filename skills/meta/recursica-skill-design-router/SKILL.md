@@ -102,8 +102,9 @@ Work top to bottom. Each answer constrains the ones below it.
 | 17  | What the application says back — success, failure, waiting, banner vs. toast                           | `recursica-skill-feedback-messaging`               |
 | 18  | Announcing a change to assistive technology when content updates in place                              | `recursica-skill-live-regions`                     |
 | 19  | What every object, navigation item, title, and column is called                                        | `recursica-skill-naming-terminology`               |
-| 20  | Headings, emphasis, abbreviations, and the markup under the visual hierarchy                           | `recursica-skill-typography-semantics`             |
-| 21  | Empty, loading, error, and partial states                                                              | **No skill yet — ask**                             |
+| 20  | Which icon carries which meaning, and whether it may appear without a label                            | `recursica-skill-icon-semantics`                   |
+| 21  | Headings, emphasis, abbreviations, and the markup under the visual hierarchy                           | `recursica-skill-typography-semantics`             |
+| 22  | Empty, loading, error, and partial states                                                              | **No skill yet — ask**                             |
 
 **Two ordering rules worth stating outright:**
 
@@ -132,7 +133,7 @@ Apply in order. The first rule that settles the conflict wins.
 
 ## Before you ask — check the cross-surface conventions
 
-**`recursica-skill-system-conventions`** carries four conventions generalized from the topic skills: one behavioral mode per system, the unadvertised affordance, never carrying meaning in a single channel, and fixing the structure instead of the symptom. When no topic skill covers a decision, check there before treating it as unowned. It is the house position on novel surfaces.
+**`recursica-skill-system-conventions`** carries six conventions generalized from the topic skills: one behavioral mode per system, the unadvertised affordance, never carrying meaning in a single channel, fixing the structure instead of the symptom, a visible container must be earned, and one control, one outcome. When no topic skill covers a decision, check there before treating it as unowned. It is the house position on novel surfaces.
 
 ## What has no owner yet
 
@@ -142,8 +143,7 @@ The list below is the other kind: **whole topics with no owning skill at all.** 
 
 - **Behavior below desktop.** Several skills defer to "a real space constraint" or "mobile" without defining what happens there. This is the most frequently hit gap. Two exceptions: `recursica-skill-data-visualization` states that a chart adapts rather than shrinks, keeps the same story, and discloses omitted information; and `recursica-skill-panels-modals` states that below the tablet breakpoint every panel opens as a page instead. Those two are the only places a below-desktop rule exists.
 - **Empty, loading, error, and partial states.** Three pieces are now settled and the rest is not: a loading page shows nothing and skeletons are forbidden (`recursica-skill-screen-scaffolding`); no-rows-returned and could-not-fetch carry different messages (`recursica-skill-screen-priority`); filtered-to-zero differs from never-had-data (`recursica-skill-filters`). What remains is layout, copy, and whether an empty state may carry an action. Including the difference between "no data yet" and "no results for these filters". Dashboards are the exception: `recursica-skill-dashboards` forbids an empty dashboard and requires a dismissible first-run element.
-- **Icon semantics** — when an icon is allowed and which icon carries which meaning.
-- **Motion** — beyond "do not animate a badge on status change".
+- **Motion** — beyond "do not animate a badge on status change". `recursica-skill-icon-semantics` also leaves whether an icon may animate open.
 - **Alignment across sections** — that separate areas of an application call things the same names and use the same workflows. `recursica-skill-screen-priority` gives the breach criteria and says it is a review pass run after design; it is named as a skill the family still needs, possibly run by a dedicated agent.
 - **Scan patterns and eye-tracking research** — flagged as belonging in `skills/psychology/` with citations, and not yet gathered.
 - **The layout grid** — eight or twelve columns, gutters, and what elements align to. `recursica-skill-screen-scaffolding` requires alignment to a grid and explicitly defers the grid itself to a skill that does not exist yet.

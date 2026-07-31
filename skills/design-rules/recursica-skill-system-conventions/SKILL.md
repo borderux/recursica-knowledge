@@ -69,6 +69,7 @@ Instances:
 | Field error state          | A visual state change **plus** a discrete indicator: icon, flag, or message        | `recursica-skill-forms`              |
 | Chart series identity      | Pattern in addition to color; the chart survives being rendered in black and white | `recursica-skill-data-visualization` |
 | Null versus zero in a cell | An explicit "NA", not an empty cell or a `0` that reads as a real value            | `recursica-skill-tables`             |
+| Object status              | An icon in addition to color, and an accessible name in addition to the icon       | `recursica-skill-icon-semantics`     |
 
 **Why it generalizes:** these three were stated about unrelated surfaces and share one mechanism — a single-channel encoding is a single point of failure for comprehension. The palette is the design system's business; **which channels carry the meaning is yours.**
 

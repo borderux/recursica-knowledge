@@ -58,8 +58,10 @@ Links may carry an icon to signal that the destination is external or will open 
 
 **Tooltips:**
 
-- **Icon-only button → MUST have a tooltip.** No exceptions.
+- **Icon-only button → MUST have a tooltip.** No exceptions. Asked where the rule stops applying, the answer was "never" — see `recursica-skill-icon-semantics`.
 - **Icon + label → the label must be good enough on its own.** A tooltip here is optional, and only for ancillary information about an unusual function that new users may not recognize. Never use a tooltip to rescue a weak label.
+
+**A generic icon on a specific function takes a label, not a tooltip.** Where the glyph could mean different things to different people, the control gets icon + label or a text-only label. Owned by `recursica-skill-icon-semantics`, which also fixes which icon carries which meaning — X for close, a trash can for delete, a horizontal ellipsis rather than a vertical kebab for "more".
 
 ## Button hierarchy
 

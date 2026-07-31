@@ -66,6 +66,8 @@ It is occasionally unavoidable when a client insists every field occupy its own 
 | Dates                      | Left or right; a subjective preference |
 | Icons, checkboxes, buttons | Centered                               |
 
+**A lone icon in a cell is only ever an icon-only button.** A non-interactive icon NEVER sits alone in a cell with no other information — a status column pairs the icon with its text. Owned by `recursica-skill-icon-semantics`.
+
 **Currency MUST be right-aligned, with no exception**, so the decimal point sits in the same position down the column. Generalize the reason: **any value with a fixed positional feature aligns right.**
 
 **Cell formatting itself — date format, decimal precision, the currency symbol in the header, accounting parentheses, precision consistency down a column — is owned by `recursica-skill-dates-and-currency`.**

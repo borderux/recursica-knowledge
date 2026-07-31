@@ -90,6 +90,8 @@ For every piece of information, ask: **is the user's workflow hindered if I remo
 - **No** → remove it.
 - **Possibly, or maybe** → do not remove it; **reduce it.** Shorten it, demote it, or move it down the triangle.
 
+**One stated exception: a decorative icon.** An icon that changes nothing about how the interface is used may still be kept for visual anchoring — beside a heading, on pages whose layouts are otherwise near-identical. Owned by `recursica-skill-icon-semantics`. Nothing else survives a "no."
+
 ### A screen is complete when
 
 **It meets the user's needs against their workflow and mental model, and the simplification pass has been done** — unnecessary content removed, and the phrasing and wording of labels made as concise as possible.
