@@ -16,3 +16,8 @@ dist/
 
 
 
+
+# Real identifier values for this installation, and prompts with them filled in.
+# The repository stores {{TOKEN}} markers instead — see buzz-agents/README.md.
+buzz-agents/local-values.json
+buzz-agents/.resolved/

@@ -22,6 +22,7 @@ Welcome! This repository holds the central skills and component documentation fo
 | `docs/components/*/DOCS.md`                                   | The design-system **website's** published pages. Written for humans browsing a site, partly out of date, and in places contradicting the skills. Everything an agent needs has been distilled into the component's `SKILL.md`. |
 | `docs/` otherwise, including `docs/open-questions.md`         | Contribution guides and maintainer records                                                                                                                                                                                     |
 | `template/`, `scripts/`, `spec/`, `scratch/`, `n8n/`, `dist/` | Packaging, tooling, and workflow configuration                                                                                                                                                                                 |
+| `buzz-agents/`                                                | Versioned definitions of the Buzz agents themselves — system prompts and settings, kept so they can be branched and rebuilt in a new Buzz community. Configuration, not design guidance. See [buzz-agents/README.md](buzz-agents/README.md). |
 
 **Do not read a `DOCS.md` to answer a build question, and do not cite one.** Skill packages in `dist/` deliberately contain the `SKILL.md` and nothing else.
 

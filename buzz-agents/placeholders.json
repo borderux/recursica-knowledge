@@ -1,0 +1,50 @@
+{
+  "$comment": [
+    "Environment-specific values are not stored in this repository. Prompts keep a",
+    "{{TOKEN}} in their place, and the value is supplied when the agent is installed",
+    "into a Buzz community.",
+    "",
+    "tokens     — bidirectional. export-agents.mjs swaps the local value out for the",
+    "             token; restore-agents.mjs swaps a target community's value back in.",
+    "redactions — one-way. Text that should never be stored at all, scrubbed on export",
+    "             and never reinstated. Use for anything personal or dead."
+  ],
+  "tokens": {
+    "BQ_PROJECT": {
+      "description": "Google Cloud project holding the BigQuery datasets Claire reads.",
+      "usedBy": ["claire"],
+      "example": "acme-research-123456",
+      "howToFind": "Google Cloud console → project picker → the project ID (not the display name)."
+    },
+    "BUILDER_REPO": {
+      "description": "owner/name of the prototype repository ALAN builds in.",
+      "usedBy": ["alan"],
+      "example": "acme/design-sandbox",
+      "howToFind": "The GitHub path of the repo ALAN should build prototypes in."
+    },
+    "BUILDER_REPO_NAME": {
+      "description": "Bare repository name from BUILDER_REPO. Used for checkout paths.",
+      "usedBy": ["alan"],
+      "example": "design-sandbox",
+      "howToFind": "The part of BUILDER_REPO after the slash."
+    },
+    "KNOWLEDGE_REPO_NAME": {
+      "description": "Bare name of the design-knowledge repository ALAN promotes findings into and must never edit directly.",
+      "usedBy": ["alan"],
+      "example": "design-knowledge",
+      "howToFind": "The repository holding the design-rule skills."
+    }
+  },
+  "$redactionsComment": [
+    "Redactions are regular expressions, not literals, so that a rule never has to",
+    "spell out the very text it exists to remove. A literal `find` would put the",
+    "identifier straight back into this file."
+  ],
+  "redactions": [
+    {
+      "pattern": "and several links point at `/Users/[^`]+`, which does not exist\\.",
+      "replace": "and several links point at absolute paths on a previous maintainer's machine, which no longer resolve.",
+      "reason": "Named a person and their local filesystem layout. The instruction only needs the fact that the links are dead."
+    }
+  ]
+}

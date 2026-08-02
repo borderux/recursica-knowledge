@@ -1,0 +1,25 @@
+{
+  "name": "Claire",
+  "display_name": "Claire",
+  "is_builtin": false,
+  "slug": "7a5dd78d-106c-4df3-882c-b379188ff223",
+  "runtime": "claude",
+  "provider": null,
+  "model": null,
+  "respond_to": "owner-only",
+  "respond_to_allowlist": [],
+  "parallelism": 10,
+  "turn_timeout_seconds": 320,
+  "idle_timeout_seconds": null,
+  "max_turn_duration_seconds": null,
+  "start_on_app_launch": false,
+  "auto_restart_on_config_change": true,
+  "agent_args": [],
+  "agent_command_override": null,
+  "acp_command": "buzz-acp",
+  "mcp_command": "",
+  "backend": {
+    "type": "local"
+  },
+  "system_prompt_file": "SYSTEM_PROMPT.md"
+}

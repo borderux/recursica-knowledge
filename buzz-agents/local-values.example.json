@@ -1,0 +1,7 @@
+{
+  "$comment": "Copy to local-values.json (gitignored) and fill in for this installation. See placeholders.json for what each one is and where to find it.",
+  "BQ_PROJECT": "",
+  "BUILDER_REPO": "",
+  "BUILDER_REPO_NAME": "",
+  "KNOWLEDGE_REPO_NAME": ""
+}

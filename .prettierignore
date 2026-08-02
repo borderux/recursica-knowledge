@@ -1,3 +1,9 @@
 node_modules/
 package-lock.json
 .changeset/
+
+# Exported Buzz agent definitions are byte-for-byte copies of what Buzz Desktop
+# runs. Formatting them edits the agents' actual instructions — prettier reflows
+# blockquote indentation and inserts blank lines, which changes the prompt text
+# and makes `export-agents.mjs --check` report drift on every run.
+buzz-agents/agents/
