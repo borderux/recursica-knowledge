@@ -21,5 +21,7 @@
   "backend": {
     "type": "local"
   },
-  "system_prompt_file": "SYSTEM_PROMPT.md"
+  "system_prompt_file": "SYSTEM_PROMPT.md",
+  "avatar_file": "avatar.png",
+  "avatar_source_sha256": "4b1ca78a57243de6e3e4d89bf3b60529b446736d7535f53c08c19b703235e9a5"
 }

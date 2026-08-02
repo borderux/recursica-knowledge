@@ -1,8 +1,8 @@
 {
-  "name": "ALAN",
-  "display_name": "ALAN",
+  "name": "Stu",
+  "display_name": "Stu",
   "is_builtin": false,
-  "slug": "6d6adcc4-ba80-4a99-9b04-4c74d98bfc13",
+  "slug": "cf6dfc95-29e3-4d96-acd0-b191f4a2ea41",
   "runtime": "claude",
   "provider": null,
   "model": null,
@@ -23,5 +23,5 @@
   },
   "system_prompt_file": "SYSTEM_PROMPT.md",
   "avatar_file": "avatar.png",
-  "avatar_source_sha256": "3be32c1a5de08c62da886f8dfc8f5ae5e12b218d8f087a893c706cbb76a68517"
+  "avatar_source_sha256": "f4c7ad1d1e3e44785c3a97ebd60566b2a12bcbeb3f84a152bd2f264a35e8f72b"
 }

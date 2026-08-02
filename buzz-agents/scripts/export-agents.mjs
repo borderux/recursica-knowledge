@@ -7,6 +7,7 @@
  *
  *   agent.json        portable settings only
  *   SYSTEM_PROMPT.md  the prompt as real markdown, so it diffs and branches
+ *   avatar.png        the agent's picture, pulled off the relay
  *
  * The prompt is deliberately NOT stored inside agent.json. A prompt embedded as a
  * JSON string is a single line of escaped `\n`s — unreviewable in a PR and useless
@@ -43,9 +44,16 @@ import {
   findLeaks,
   findStaleRedactions,
 } from "../lib/placeholders.mjs";
+import {
+  AVATAR_FILE,
+  describeAvatar,
+  fetchAvatar,
+  renderAvatar,
+} from "../lib/avatars.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const agentsDir = path.join(__dirname, "..", "agents");
+const repoRoot = path.join(__dirname, "..", "..");
 
 /**
  * Settings that describe WHAT the agent is. These recreate the agent anywhere.
@@ -53,9 +61,9 @@ const agentsDir = path.join(__dirname, "..", "agents");
  * persona_id, runtime_pid, backend_agent_id, provider_binary_path, timestamps,
  * last_* status, is_active, avatar_url) or secret (auth_tag).
  *
- * avatar_url is excluded on purpose: for custom agents it points at the current
- * community's relay (`https://<relay>/me`), and for builtins it is a multi-KB
- * base64 data URI. Neither survives a move to a new community.
+ * avatar_url is excluded on purpose — it names the community it was uploaded to and
+ * means nothing in a different one. The image behind it is stored instead, as
+ * `avatar.png`; see ../lib/avatars.mjs.
  */
 const PORTABLE_FIELDS = [
   "name",
@@ -193,6 +201,55 @@ for (const persona of personas) {
   }
   config.system_prompt_file = "SYSTEM_PROMPT.md";
 
+  /**
+   * Avatars are fetched only when the relay's copy has actually changed. The hash in
+   * the media URL is the hash of the bytes, so the recorded `avatar_source_sha256`
+   * answers "is this current?" without a download — and, because the stored file is
+   * downscaled, without the re-encode ever being mistaken for drift.
+   */
+  const avatar = describeAvatar(persona.avatar_url);
+  const avatarPath = path.join(outDir, AVATAR_FILE);
+  let avatarBytes = null;
+
+  if (avatar) {
+    const priorPath = path.join(outDir, "agent.json");
+    const prior = fs.existsSync(priorPath)
+      ? JSON.parse(fs.readFileSync(priorPath, "utf8"))
+      : null;
+    const current =
+      prior?.avatar_source_sha256 === avatar.hash && fs.existsSync(avatarPath);
+
+    if (current || checkOnly) {
+      if (!current) changed.push(path.relative(repoRoot, avatarPath));
+      config.avatar_file = AVATAR_FILE;
+      config.avatar_source_sha256 = avatar.hash;
+    } else {
+      try {
+        const raw =
+          avatar.inline ?? fetchAvatar(persona.avatar_url, avatar.hash);
+        const rendered = renderAvatar(raw, avatar.hash);
+        avatarBytes = rendered.bytes;
+        config.avatar_file = AVATAR_FILE;
+        config.avatar_source_sha256 = avatar.hash;
+        if (!rendered.resized) {
+          console.warn(
+            `  ! ${persona.name}: could not run sips — storing the avatar at full size ` +
+              `(${(rendered.bytes.length / 1e6).toFixed(1)} MB).`,
+          );
+        }
+      } catch (err) {
+        // Recording an avatar_file that is not on disk would be worse than recording
+        // none, so the fields are left off and the reason is stated.
+        console.warn(
+          `  ! ${persona.name}: no avatar written — ${err.message.trim().split("\n")[0]}`,
+        );
+        console.warn(
+          "      Needs the `buzz` CLI on PATH with credentials for the relay holding it.",
+        );
+      }
+    }
+  }
+
   // A persona's prompt is copied onto its instance when the agent is created.
   // If they have since diverged, the running agent is not the recorded one —
   // say so rather than silently exporting the stale side.
@@ -229,11 +286,17 @@ for (const persona of personas) {
   for (const [file, contents] of writes) {
     const existing = fs.existsSync(file) ? fs.readFileSync(file, "utf8") : null;
     if (existing === contents) continue;
-    changed.push(path.relative(path.join(__dirname, "..", ".."), file));
+    changed.push(path.relative(repoRoot, file));
     if (!checkOnly) {
       fs.mkdirSync(outDir, { recursive: true });
       fs.writeFileSync(file, contents);
     }
+  }
+
+  if (avatarBytes) {
+    fs.mkdirSync(outDir, { recursive: true });
+    fs.writeFileSync(avatarPath, avatarBytes);
+    changed.push(path.relative(repoRoot, avatarPath));
   }
 
   const applied = Object.keys(tokens).filter((t) =>
@@ -242,6 +305,7 @@ for (const persona of personas) {
   console.log(
     `  ${persona.name.padEnd(8)} ${prompt.length} chars` +
       (applied.length ? `  [${applied.join(", ")}]` : "") +
+      (config.avatar_file ? "  +avatar" : "") +
       `  → buzz-agents/agents/${dirName}/`,
   );
 }

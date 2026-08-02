@@ -147,6 +147,18 @@ for (const dir of dirs) {
   // Fields with no CLI surface at all. Silently dropping them would make a
   // restored agent look identical while behaving differently, so name them.
   const manual = [];
+  // The avatar has to exist on the target relay before it can be pointed at, so the
+  // upload comes with it. A restored agent with a blank face is not the same agent
+  // to the people talking to it.
+  if (config.avatar_file) {
+    const avatar = path.relative(
+      process.cwd(),
+      path.join(base, config.avatar_file),
+    );
+    manual.push(`avatar = ${avatar}`);
+    manual.push(`  upload it first: buzz upload file --file ${avatar}`);
+    manual.push("  then set the returned URL as the agent's picture");
+  }
   if (config.parallelism != null && config.parallelism !== 1)
     manual.push(`parallelism = ${config.parallelism}`);
   if (config.turn_timeout_seconds != null)

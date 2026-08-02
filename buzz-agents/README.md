@@ -33,10 +33,13 @@ buzz-agents/
 ├── agents/
 │   └── <name>/
 │       ├── agent.json                portable settings
-│       └── SYSTEM_PROMPT.md          the prompt, as reviewable markdown
+│       ├── SYSTEM_PROMPT.md          the prompt, as reviewable markdown
+│       └── avatar.png                the agent's picture
 ├── placeholders.json                 the tokens, what each one is, where to find it
 ├── local-values.example.json         copy to local-values.json (gitignored)
-├── lib/placeholders.mjs
+├── lib/
+│   ├── placeholders.mjs
+│   └── avatars.mjs
 └── scripts/
     ├── export-agents.mjs             Buzz Desktop → this directory
     └── restore-agents.mjs            this directory → a Buzz community
@@ -63,7 +66,37 @@ keypair and credential). Only the persona is portable.
 release adds another secret field, an allowlist ignores it by default. Do not invert it.
 
 `avatar_url` is dropped deliberately: it points at the current community's relay, which
-means nothing in a different one.
+means nothing in a different one. The picture it points at _is_ stored — see below.
+
+## Avatars
+
+An agent's picture is part of its identity, and a restored agent with a blank face is
+not the same agent to the people talking to it. But Buzz Desktop stores only an
+`avatar_url`; the image itself lives on the relay and nowhere else. So the export pulls
+the bytes down and commits them as `avatar.png`.
+
+The URL is not stored. `https://<community>.communities.buzz.xyz/media/<sha256>.png`
+names the installation, which is the same reason prompts carry `{{TOKEN}}` markers.
+
+What is stored alongside it is `avatar_source_sha256`. Relay media is
+content-addressed — the filename in the URL _is_ the sha256 of the bytes — so drift
+detection costs nothing: compare the hash in the live URL against the recorded one and
+you know whether the avatar changed, without downloading anything. Downloads happen
+only when it did.
+
+Stored avatars are downscaled to 512px wide. The originals are ~1856x2304 and ~6.5 MB
+each; three of them would take this repository from 1.1 MB to over 20 MB, and it is
+cloned by everyone installing the Recursica plugin. The full-resolution original stays
+on the relay, identified by the recorded hash.
+
+> Because the stored file is re-encoded, `--check` compares the **source** hash and
+> never the stored file's own. A future `sips` that encodes the same pixels
+> differently would otherwise show up as drift on every run.
+
+Downloading needs the `buzz` CLI on PATH with credentials for the relay holding the
+image — Blossom GETs are authenticated. Without it the export still writes the prompt
+and settings, says which avatar it could not fetch, and records no avatar rather than
+naming a file that is not there.
 
 ## Only our own agents are stored
 
@@ -155,6 +188,9 @@ agents are never exported in the first place.
   runtime, provider, model, and `respond_to`. **Parallelism, timeouts, `agent_args`,
   and command overrides have no CLI flag** — the restore script prints them as a
   `MANUAL` block to set in Buzz Desktop rather than dropping them silently.
+- **The avatar has no CLI flag either**, and it has to exist on the target relay before
+  it can be pointed at. The `MANUAL` block carries the `buzz upload file` command for
+  each agent; the returned URL is what goes in Buzz Desktop.
 - **Agent memory is not covered here.** The `core` engram lives on the relay, not in
   `managed-agents.json`, and each agent can only read its own
   (`buzz mem get core`). A restored agent starts with empty memory.
