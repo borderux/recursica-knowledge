@@ -33,6 +33,12 @@
       "usedBy": ["alan"],
       "example": "design-knowledge",
       "howToFind": "The repository holding the design-rule skills."
+    },
+    "TRANSCRIPT_DIR": {
+      "description": "Directory holding the agent session transcripts Janice reads as evidence. Contains one <session-id>.jsonl per session.",
+      "usedBy": ["janice"],
+      "example": "/Users/you/.claude/projects/-Users-you--buzz",
+      "howToFind": "Claude Code writes transcripts to ~/.claude/projects/<encoded-cwd>/, where the encoded name is the agent nest's absolute path with each slash replaced by a dash."
     }
   },
   "$redactionsComment": [

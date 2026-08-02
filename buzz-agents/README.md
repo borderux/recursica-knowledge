@@ -85,9 +85,9 @@ you know whether the avatar changed, without downloading anything. Downloads hap
 only when it did.
 
 Stored avatars are downscaled to 512px wide. The originals are ~1856x2304 and ~6.5 MB
-each; three of them would take this repository from 1.1 MB to over 20 MB, and it is
-cloned by everyone installing the Recursica plugin. The full-resolution original stays
-on the relay, identified by the recorded hash.
+each; at full size they would take this repository from 1.1 MB to tens of megabytes, and
+it is cloned by everyone installing the Recursica plugin. The full-resolution original
+stays on the relay, identified by the recorded hash.
 
 > Because the stored file is re-encoded, `--check` compares the **source** hash and
 > never the stored file's own. A future `sips` that encodes the same pixels
