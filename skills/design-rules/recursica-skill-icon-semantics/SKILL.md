@@ -49,6 +49,8 @@ Two tests. If either fires, the control gets **icon + label, or a text-only labe
 
 **A tooltip does not substitute for a label in either case.** The tooltip requirement above is a floor for icon-only controls, not a way to make an ambiguous icon acceptable.
 
+**Esoteric business concepts cannot be drawn.** Common, generic actions — edit, home, close — are memorable because the same glyph means the same thing everywhere. **An icon invented for a function specific to one application is very hard to make memorable**, and in enterprise software the concepts are often too abstract for any symbol to carry: there is no agreed semiotics to draw on. Where a concept is niche, **the label is the icon's job, not the other way round.** This is why an icon-only rail fails hardest in business systems — see `recursica-skill-navigation` and `recursica-skill-working-memory`.
+
 ## Icons inside established components
 
 **An icon may be the sole carrier of meaning where the control it belongs to is a well-established pattern.** People already know what a dropdown's indicator, an accordion's indicator, and a navigation toggle mean, so no tooltip is required for the icon a component brings with it.

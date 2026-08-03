@@ -104,7 +104,15 @@ Location is communicated by three things, and you need more than the first:
 
 **NEVER collapse a vertical nav into an icon-only rail.** There is no meaningful benefit to it. When space must be reclaimed, hide the nav behind a hamburger that opens **with text labels** intact — a fully hidden nav that reads clearly when opened beats a permanently visible one the user has to decode.
 
-**NEVER use icon-only primary navigation** in any form.
+**NEVER use icon-only primary navigation** in any form. **A narrow viewport is not an exception** — the prohibition holds at every width, and a rail of icons is not the mobile or tablet escape hatch. Past a handful of icons nobody remembers what they mean, and there is no affordance without a hover state. **A rail of fifteen icons whose collapsed state degrades to bare hoverable dots is the real-world extreme, and it is a published design system doing it.** See `recursica-skill-responsive-behavior` and `recursica-skill-icon-semantics`.
+
+**Below desktop, global navigation collapses into a hamburger**, and what slides in carries **both the icon and the text**.
+
+**NEVER a bottom navigation bar.** It is not a house pattern at any width; the hamburger is the answer below desktop.
+
+**A drawer is a panel.** The slide-in navigation surface is a panel holding navigation — no different in kind from a hamburger menu. **A sidebar is the permanent one**: the desktop left-nav alternative to a top nav. Do not treat the two as separate constructs. See `recursica-skill-panels-modals`.
+
+**Whether the application will be used on a tablet or a phone must be asked before the navigation pattern is chosen**, not accommodated afterward. Owned by `recursica-skill-responsive-behavior`.
 
 ## Overflow
 

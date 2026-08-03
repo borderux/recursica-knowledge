@@ -83,6 +83,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.panel`. **The panel ha
 
 **Below the tablet breakpoint, open the panel as a page instead** — not a narrower panel, and not a full-screen overlay imitating one. At tablet and above it stays a panel.
 
+**NEVER draw a shader, scrim, or tint behind an open panel.** This is now settled and absolute: there is no value in dimming content the panel exists to sit beside. `recursica-skill-panels-modals` owns the rule; the overlay override below is how it is enforced against the library's default.
+
 **The shipped adapter defaults this component to modal behavior, which is the opposite of the house rule.** The panel wraps Mantine's `Drawer`, which by default draws an overlay, closes on click-outside, traps focus, and locks page scroll. **A panel built with the documented API alone is silently modal.** Until the adapter's defaults are corrected, getting the house behavior requires passing the underlying props explicitly:
 
 `withOverlay={false}` · `closeOnClickOutside={false}` · `trapFocus={false}` · `lockScroll={false}`
@@ -153,7 +155,6 @@ Do not implement, override, or tune any of these — the component owns them:
 - **Whether it slides in or expands** on open. The side is designated and the anchoring is settled; the transition is not.
 - **Panel width.** `min-width` and `max-width` are fixed and no size axis exists, so a "wide panel" cannot be built — though stacked panels may differ in width from one another, and nothing says whether a left and a right panel share a width.
 - **What a top or bottom panel looks like.** Permitted, undesigned, and therefore approval-gated rather than rule-governed.
-- **Whether an overlay or scrim is ever drawn behind a panel.** The modality question is settled — a panel is non-modal — but whether anything dims the page behind it is not stated.
 - **Whether clicking outside the panel dismisses it.**
 - **When the divider appears.** "Standard" and "Scrollable" types are documented outside the token inventory, with no token behind either and no types axis — the kit defines only `divider-size`. Do not rely on this without asking.
 - **Loading state inside a panel** while its content is fetched. No such state exists on the component.

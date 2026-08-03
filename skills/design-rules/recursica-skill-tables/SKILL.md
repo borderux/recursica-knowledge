@@ -51,6 +51,8 @@ It is occasionally unavoidable when a client insists every field occupy its own 
 
 **Unrelated data in one column is never permitted.** If the only way to fit everything is to combine unrelated values, the table has already lost and horizontal scrolling is what remains.
 
+**A complex data table is not displayed below the tablet breakpoint at all.** There is too much data for the space, so the narrow-table problem is solved by the table not being there — never by making it swipeable. Owned by `recursica-skill-responsive-behavior`.
+
 ## Column widths
 
 **Set widths by data type**, so that truncation is rarely needed: dates, currency, and statuses are narrow; sentences need room. Fixing widths per content type is what keeps a table stable as data varies.

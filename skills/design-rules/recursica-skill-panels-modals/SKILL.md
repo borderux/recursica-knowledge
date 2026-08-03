@@ -39,6 +39,22 @@ Work through these in order:
 
 **A modal is only for when the user truly needs to interact or decide inside it.** The mode is the cost; something has to justify it.
 
+## A panel is semi-modal, and never shaded
+
+**A panel is not modal. It is semi-modal.** The user is interacting with something in a mode, but the mode is not exclusive — the rest of the page stays readable and reachable.
+
+**NEVER draw a shader, scrim, tint, or overlay behind an open panel.** There is no value in hiding the content. The entire reason a panel exists is that the user can see and work with what is behind it, so dimming it removes the panel's only justification. **This is not negotiable — it is the way the house says Recursica can work at all.**
+
+**A panel that has to shade the page is the wrong surface.** If the content behind genuinely must be blocked, build a page or a real modal instead. Opening something small, working in it, and going straight back is not a pattern worth the machinery.
+
+**Mantine and MUI both draw an overlay behind a drawer by default, and the house overrides it.** A library default is not a house rule — see `recursica-skill-design-router` and the adapter note in `recursica-skill-panel`.
+
+### Terminology
+
+- **Drawer and panel are synonyms.** A drawer is a panel: a surface that slides in. A navigation drawer is a panel holding navigation, and it is no different in kind from a hamburger menu.
+- **A sidebar is not a drawer.** A sidebar is permanently on screen — the desktop left-nav alternative to a top nav. See `recursica-skill-navigation`.
+- **Modal and dialog are used interchangeably.** A modal is a mode; a dialog box is one.
+
 ## Scrolling
 
 **A panel MUST NEVER scroll horizontally.** There is no exception and no case that earns one. A horizontal scrollbar inside a panel means the content does not belong in a panel — not that it needs a scroll region.
@@ -129,6 +145,13 @@ Difficult work can legitimately live in a panel: a task with high cognitive load
 
 A panel earns its shape from sitting beside the page it depends on. Below the width where both fit, there is no beside, so the parallel-work premise is gone and the panel has nothing left to be.
 
+**A work-bearing modal becomes a page there too, and a confirmation does not.** The test is whether the user is doing work in it:
+
+- **A mini workflow, a form, or editing details in a modal → a page** below tablet.
+- **A confirmation modal stays a modal** at every width. "Are you sure you want to delete this?" is not work.
+
+**MUST NOT reach for a platform-native surface instead.** The iOS sheet is the specific temptation and it is forbidden: it does not exist on Android, and to someone who does not use that platform it reads as confusing rather than familiar. **Keep the interaction patterns the desktop application already uses** — see `recursica-skill-responsive-behavior`.
+
 ## Focus and navigation priority
 
 **A modal or a panel takes navigation priority over the page beneath it.** Reaching it must not require traversing the page first.
@@ -182,5 +205,9 @@ A panel earns its shape from sitting beside the page it depends on. Below the wi
 - [ ] Any deep-linkable panel or modal was a deliberate decision with a route and a link trigger.
 - [ ] Panels close on a route change, except where the navigation exists only to open another panel or modal.
 - [ ] Below the tablet breakpoint every panel opens as a page, not as a narrow panel or a full-screen stand-in.
+- [ ] Work-bearing modals become pages below tablet; confirmations stay modals.
+- [ ] No iOS or Android surface — no sheet — stands in for a panel or modal below desktop.
+- [ ] No shader, scrim, or tint is drawn behind any open panel, and the library's default overlay was overridden.
+- [ ] Nothing labelled a drawer was treated as a different construct from a panel, and no permanent sidebar was called one.
 - [ ] The modal traps focus; the panel does not, and the page behind it stays reachable by keyboard.
 - [ ] Nothing in the uncovered list was invented.
