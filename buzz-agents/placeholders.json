@@ -38,7 +38,49 @@
       "description": "Directory holding the agent session transcripts Janice reads as evidence. Contains one <session-id>.jsonl per session.",
       "usedBy": ["janice"],
       "example": "/Users/you/.claude/projects/-Users-you--buzz",
-      "howToFind": "Claude Code writes transcripts to ~/.claude/projects/<encoded-cwd>/, where the encoded name is the agent nest's absolute path with each slash replaced by a dash."
+      "howToFind": "Claude Code writes transcripts to ~/.claude/projects/<encoded-cwd>/, where the encoded name is the agent nest's absolute path with each slash and dot replaced by a dash — /Users/you/.buzz becomes -Users-you--buzz. bootstrap-nest.mjs derives this for you."
+    },
+    "TAG_SHEET_ID": {
+      "description": "Google Sheet holding the shared tag dictionary every research channel tags against. Research taxonomy, no client content.",
+      "usedBy": ["nest"],
+      "example": "1AbCdEfGhIjKlMnOpQrStUvWxYz0123456789",
+      "howToFind": "Open the Tag Dictionary sheet; it is the part of the URL between /d/ and /edit. Must be shared as Viewer with the claire-tag-dictionary-reader service account — see Step 0 of CLAIRE_ZERO_TO_RUNNING.md."
+    },
+    "DRIVE_FOLDER": {
+      "description": "Drive folder id for one client. The entire world a channel's Drive service account can see.",
+      "usedBy": ["nest"],
+      "example": "1AbCdEfGhIjKlMnOpQrStUvWxYz_",
+      "howToFind": "Open the client folder in Drive; it is the part of the URL after /folders/."
+    },
+    "CLAIRE_CHANNEL": {
+      "description": "UUID of the building-claire channel in this community. Janice routes findings about Claire here.",
+      "usedBy": ["nest"],
+      "example": "00000000-0000-0000-0000-000000000000",
+      "howToFind": "Open the channel in Buzz; the UUID is in the channel header or URL."
+    },
+    "STU_CHANNEL": {
+      "description": "UUID of the building-stu channel in this community. Janice routes findings about Stu here.",
+      "usedBy": ["nest"],
+      "example": "00000000-0000-0000-0000-000000000000",
+      "howToFind": "Open the channel in Buzz; the UUID is in the channel header or URL."
+    },
+    "ALAN_CHANNEL": {
+      "description": "UUID of the building-alan channel in this community. Janice routes findings about ALAN here.",
+      "usedBy": ["nest"],
+      "example": "00000000-0000-0000-0000-000000000000",
+      "howToFind": "Open the channel in Buzz; the UUID is in the channel header or URL."
+    },
+    "JANICE_CHANNEL": {
+      "description": "UUID of the building-janice channel in this community. Janice's wake messages land here, and it is the fallback for findings about an agent with no channel of its own.",
+      "usedBy": ["nest", "janice"],
+      "example": "00000000-0000-0000-0000-000000000000",
+      "howToFind": "Open the channel in Buzz; the UUID is in the channel header or URL."
+    },
+    "JANICE_PUBKEY": {
+      "description": "Hex pubkey of this community's Janice instance, used by the wake hook to address her.",
+      "usedBy": ["nest"],
+      "example": "0000000000000000000000000000000000000000000000000000000000000000",
+      "howToFind": "buzz channels members --channel <janice-channel-uuid>, or the agent's profile in Buzz Desktop. Each community's Janice has her own keypair, so this is never portable."
     }
   },
   "$redactionsComment": [

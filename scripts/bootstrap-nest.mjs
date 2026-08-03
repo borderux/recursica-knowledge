@@ -1,0 +1,341 @@
+#!/usr/bin/env node
+/**
+ * Install the agent nest into ~/.buzz on this machine.
+ *
+ * The Buzz agent definitions in buzz-agents/ are only half of what an agent needs.
+ * The other half — the scripts it runs, the fenced MCP servers it calls, the guides it
+ * reads at runtime — lives in nest/ and lands in ~/.buzz. This script puts it there.
+ *
+ *   node scripts/bootstrap-nest.mjs --check     what would change, touching nothing
+ *   node scripts/bootstrap-nest.mjs             install
+ *
+ * Re-runnable and idempotent, the same way export-agents.mjs is: run it again after
+ * pulling the branch and it updates what changed and leaves the rest alone.
+ *
+ * It deliberately does NOT create Google Cloud resources, register MCP servers, or
+ * create agents. Those are separate, later, and each has its own script — see
+ * nest/GUIDES/CLAIRE_ZERO_TO_RUNNING.md.
+ */
+
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import crypto from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+
+import { loadValues, detokenize, localValuesPath } from "../buzz-agents/lib/placeholders.mjs";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.join(__dirname, "..");
+const nestSrc = path.join(repoRoot, "nest");
+const manifestPath = path.join(nestSrc, "nest-manifest.json");
+
+const argv = process.argv.slice(2);
+const has = (f) => argv.includes(f);
+const opt = (name, dflt) => {
+  const i = argv.indexOf(`--${name}`);
+  return i >= 0 && argv[i + 1] ? argv[i + 1] : dflt;
+};
+
+const CHECK = has("--check") || has("--dry-run");
+const ALLOW_FALLBACK = has("--allow-toolbox-fallback");
+const NEST = path.resolve(opt("nest", process.env.BUZZ_HOME || path.join(os.homedir(), ".buzz")));
+
+if (has("--help") || has("-h")) {
+  console.log(`Install the agent nest into ~/.buzz.
+
+  --check                      Report what would change; write nothing.
+  --nest <dir>                 Target nest (default: $BUZZ_HOME or ~/.buzz).
+  --values <file>              Values file (default: buzz-agents/local-values.json).
+  --allow-toolbox-fallback     Permit installing the older published toolbox when the
+                               reference build is unavailable. Read the warning first.
+  --help
+
+Values come from buzz-agents/local-values.json. Copy local-values.example.json and fill
+it in; this script names every value it still needs.`);
+  process.exit(0);
+}
+
+/* ── reporting ─────────────────────────────────────────────────────────────── */
+
+let changed = 0;
+let failed = 0;
+const notes = [];
+
+const ok = (m) => console.log(`  \x1b[32m✓\x1b[0m ${m}`);
+const wrote = (m) => {
+  changed++;
+  console.log(`  \x1b[36m${CHECK ? "would write" : "wrote"}\x1b[0m ${m}`);
+};
+const warn = (m) => {
+  notes.push(m);
+  console.log(`  \x1b[33m!\x1b[0m ${m}`);
+};
+const bad = (m) => {
+  failed++;
+  console.log(`  \x1b[31m✗\x1b[0m ${m}`);
+};
+const section = (t) => console.log(`\n\x1b[1m${t}\x1b[0m`);
+
+/* ── 0. manifest ───────────────────────────────────────────────────────────── */
+
+if (!fs.existsSync(manifestPath)) {
+  console.error(`No manifest at ${manifestPath}. Is this the recursica-knowledge checkout?`);
+  process.exit(1);
+}
+const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+
+console.log(`\n\x1b[1mBootstrapping nest\x1b[0m → ${NEST}${CHECK ? "   (--check: nothing will be written)" : ""}`);
+
+/* ── 1. prerequisites ──────────────────────────────────────────────────────── */
+
+section("Prerequisites");
+
+const which = (cmd) => {
+  try {
+    return execFileSync("command", ["-v", cmd], { shell: "/bin/sh", encoding: "utf8" }).trim();
+  } catch {
+    return null;
+  }
+};
+
+for (const p of manifest.prerequisites ?? []) {
+  const found = p.kind === "file" ? (fs.existsSync(p.check) ? p.check : null) : which(p.check);
+  if (found) {
+    ok(`${p.name} — ${found}`);
+  } else if (p.optional) {
+    warn(`${p.name} not found (optional). ${p.why} → ${p.fix}`);
+  } else {
+    bad(`${p.name} not found. ${p.why}\n      → ${p.fix}`);
+  }
+}
+
+if (failed) {
+  console.log(
+    `\n\x1b[31mStopping.\x1b[0m ${failed} required prerequisite${failed > 1 ? "s" : ""} missing — ` +
+      `installing the nest without them would produce an agent that cannot run.\n`,
+  );
+  process.exit(1);
+}
+
+/* ── 2. values ─────────────────────────────────────────────────────────────── */
+
+section("Values");
+
+const valuesFile = path.resolve(opt("values", localValuesPath));
+let values = loadValues(valuesFile);
+if (!values) {
+  console.log(`  \x1b[31m✗\x1b[0m No ${path.relative(repoRoot, valuesFile) || valuesFile}.
+
+      cp buzz-agents/local-values.example.json buzz-agents/local-values.json
+
+      Then fill it in — buzz-agents/placeholders.json says what each value is and
+      where to find it. Re-run and this script will name anything still missing.\n`);
+  process.exit(1);
+}
+
+// TRANSCRIPT_DIR is derivable from the nest path, so don't make anyone look it up.
+// Claude Code encodes the cwd by replacing every '/' and '.' with '-'.
+if (!values.TRANSCRIPT_DIR) {
+  const encoded = NEST.replace(/[/.]/g, "-");
+  values = { ...values, TRANSCRIPT_DIR: path.join(os.homedir(), ".claude", "projects", encoded) };
+  ok(`TRANSCRIPT_DIR derived → ${values.TRANSCRIPT_DIR}`);
+}
+
+const provided = Object.entries(values).filter(([k, v]) => !k.startsWith("$") && v).length;
+ok(`${provided} value${provided === 1 ? "" : "s"} loaded from ${path.relative(repoRoot, valuesFile) || valuesFile}`);
+
+/* ── 3. directories ────────────────────────────────────────────────────────── */
+
+section("Directories");
+
+for (const d of manifest.directories ?? []) {
+  const target = path.join(NEST, d.path);
+  const mode = parseInt(d.mode, 8);
+  if (fs.existsSync(target)) {
+    const cur = fs.statSync(target).mode & 0o777;
+    if (cur !== mode) {
+      if (!CHECK) fs.chmodSync(target, mode);
+      wrote(`${d.path}/ mode ${cur.toString(8)} → ${d.mode}`);
+    } else {
+      ok(`${d.path}/`);
+    }
+  } else {
+    if (!CHECK) fs.mkdirSync(target, { recursive: true, mode });
+    wrote(`${d.path}/ (mode ${d.mode})`);
+  }
+}
+
+/* ── 4. files ──────────────────────────────────────────────────────────────── */
+
+section("Files");
+
+const sha = (buf) => crypto.createHash("sha256").update(buf).digest("hex");
+const unresolvedByFile = new Map();
+
+for (const f of manifest.files ?? []) {
+  const src = path.join(nestSrc, f.from);
+  const dst = path.join(NEST, f.to);
+
+  if (!fs.existsSync(src)) {
+    bad(`${f.from} missing from nest/ — manifest and tree disagree`);
+    continue;
+  }
+
+  let body = fs.readFileSync(src, "utf8");
+
+  if (f.resolve) {
+    const { text, missing } = detokenize(body, values);
+    body = text;
+    if (missing.length) unresolvedByFile.set(f.to, missing);
+  }
+
+  const mode = parseInt(f.mode, 8);
+  const exists = fs.existsSync(dst);
+  const same = exists && sha(fs.readFileSync(dst)) === sha(Buffer.from(body, "utf8"));
+  const modeOk = exists && (fs.statSync(dst).mode & 0o777) === mode;
+
+  if (same && modeOk) {
+    ok(f.to);
+    continue;
+  }
+  if (!CHECK) {
+    fs.mkdirSync(path.dirname(dst), { recursive: true });
+    fs.writeFileSync(dst, body, "utf8");
+    fs.chmodSync(dst, mode);
+  }
+  wrote(`${f.to}${!exists ? " (new)" : same ? " (mode)" : ""}`);
+}
+
+/* Unresolved tokens are fatal. A script carrying a literal {{BQ_PROJECT}} goes looking
+   for a project by that name; Janice's routing table carrying one posts findings into a
+   channel that does not exist. Same fail-closed rule restore-agents.mjs uses on prompts. */
+if (unresolvedByFile.size) {
+  const all = [...new Set([...unresolvedByFile.values()].flat())].sort();
+  console.log(
+    `\n\x1b[31m✗ Unresolved tokens.\x1b[0m ` +
+      (CHECK
+        ? `These files would install with placeholders still in them:\n`
+        : `These files were written with placeholders still in them:\n`),
+  );
+  for (const [file, missing] of unresolvedByFile) {
+    console.log(`      ${file}\n        ${missing.join(", ")}`);
+  }
+  console.log(`\n      Add to buzz-agents/local-values.json, then re-run:\n`);
+  for (const t of all) console.log(`        "${t}": ""`);
+  console.log(`\n      buzz-agents/placeholders.json says where to find each value.\n`);
+  failed++;
+}
+
+/* ── 5. toolbox ────────────────────────────────────────────────────────────── */
+
+section("BigQuery toolbox");
+
+const tb = manifest.toolbox ?? {};
+const tbPath = path.join(NEST, tb.installTo ?? "bin/toolbox");
+const platform = `${process.platform}/${process.arch}`;
+const wantSha = tb.checksums?.[`${tb.referenceVersion}/${platform}`];
+
+const installedSha = fs.existsSync(tbPath) ? sha(fs.readFileSync(tbPath)) : null;
+
+if (installedSha && installedSha === wantSha) {
+  ok(`toolbox ${tb.referenceVersion} present and checksum matches`);
+} else if (installedSha) {
+  warn(
+    `toolbox present but is NOT the reference ${tb.referenceVersion} build.\n` +
+      `      installed sha256 ${installedSha.slice(0, 16)}…\n` +
+      `      expected  sha256 ${(wantSha ?? "unknown").slice(0, 16)}…\n` +
+      `      Leaving it alone. Verify with: ${tbPath} --version`,
+  );
+} else if (tb.sourceUrl) {
+  if (CHECK) {
+    wrote(`toolbox would download from ${tb.sourceUrl}`);
+  } else {
+    process.stdout.write(`  downloading toolbox from ${tb.sourceUrl} … `);
+    const res = await fetch(tb.sourceUrl);
+    if (!res.ok) {
+      console.log("");
+      bad(`download failed: HTTP ${res.status}`);
+    } else {
+      const buf = Buffer.from(await res.arrayBuffer());
+      const got = sha(buf);
+      if (wantSha && got !== wantSha) {
+        console.log("");
+        bad(`checksum mismatch — refusing to install.\n      got ${got}\n      want ${wantSha}`);
+      } else {
+        fs.mkdirSync(path.dirname(tbPath), { recursive: true });
+        fs.writeFileSync(tbPath, buf);
+        fs.chmodSync(tbPath, parseInt(tb.mode ?? "0755", 8));
+        console.log("");
+        wrote(`bin/toolbox (${tb.referenceVersion}, checksum verified)`);
+      }
+    }
+  }
+} else if (ALLOW_FALLBACK && tb.fallback) {
+  const url = tb.fallback.urlTemplate
+    .replace("{version}", tb.fallback.version)
+    .replace("{os}", process.platform)
+    .replace("{arch}", process.arch);
+  warn(
+    `installing FALLBACK toolbox ${tb.fallback.version}, not the reference ${tb.referenceVersion}.\n` +
+      `      This is the component that enforces the allowedDatasets fence. Verify the\n` +
+      `      fence still holds afterwards:  bin/verify-channel-isolation.py --slug <slug>`,
+  );
+  if (CHECK) {
+    wrote(`toolbox would download from ${url}`);
+  } else {
+    process.stdout.write(`  downloading ${url} … `);
+    const res = await fetch(url);
+    if (!res.ok) {
+      console.log("");
+      bad(`download failed: HTTP ${res.status}`);
+    } else {
+      const buf = Buffer.from(await res.arrayBuffer());
+      fs.mkdirSync(path.dirname(tbPath), { recursive: true });
+      fs.writeFileSync(tbPath, buf);
+      fs.chmodSync(tbPath, parseInt(tb.mode ?? "0755", 8));
+      console.log("");
+      wrote(`bin/toolbox (fallback ${tb.fallback.version}, UNVERIFIED against reference)`);
+    }
+  }
+} else {
+  bad(
+    `toolbox not installed, and there is no verified source to fetch it from.\n\n` +
+      `      The reference build is ${tb.referenceVersion}. It is not published to the\n` +
+      `      genai-toolbox GCS bucket (which tops out at v${tb.fallback?.version}), the\n` +
+      `      GitHub release carries no assets, and Buzz.app does not ship it.\n\n` +
+      `      Pick one:\n` +
+      `        a) Copy it from a machine that has it:\n` +
+      `             scp othermac:~/.buzz/bin/toolbox ${tbPath}\n` +
+      `        b) Have it published once, then set "sourceUrl" in nest/nest-manifest.json:\n` +
+      `             buzz upload file --file ~/.buzz/bin/toolbox\n` +
+      `        c) Accept the older published build (read the warning):\n` +
+      `             node scripts/bootstrap-nest.mjs --allow-toolbox-fallback`,
+  );
+}
+
+/* ── 6. what this script does not do ───────────────────────────────────────── */
+
+section("Not done by this script");
+console.log(`  These are separate steps, each with its own tool:
+
+    Google Cloud resources     nest/GUIDES/CLAIRE_ZERO_TO_RUNNING.md steps 1–6
+    Dataset + MCP registration bin/deploy-claire-channel.sh
+    Prove the IAM fence        bin/verify-channel-isolation.py
+    Create the agents          node buzz-agents/scripts/restore-agents.mjs --channel <uuid>
+    ANTHROPIC_API_KEY          your own; never shared between operators`);
+
+/* ── summary ───────────────────────────────────────────────────────────────── */
+
+console.log("");
+if (failed) {
+  console.log(`\x1b[31m✗ ${failed} problem${failed > 1 ? "s" : ""}.\x1b[0m Fix the above and re-run — this script is idempotent.\n`);
+  process.exit(1);
+}
+console.log(
+  CHECK
+    ? `\x1b[1m--check complete.\x1b[0m ${changed} change${changed === 1 ? "" : "s"} pending. Re-run without --check to apply.\n`
+    : `\x1b[32m✓ Nest ready\x1b[0m at ${NEST}. ${changed} change${changed === 1 ? "" : "s"}.\n`,
+);
+if (notes.length) console.log(`  ${notes.length} warning${notes.length > 1 ? "s" : ""} above worth reading.\n`);

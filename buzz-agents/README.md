@@ -3,6 +3,15 @@
 Version-controlled copies of the Buzz agents used with Recursica, so they can be
 branched, reviewed, and rebuilt in a new Buzz community.
 
+> **Setting the agents up on your own Mac? Read [INSTALL.md](INSTALL.md).** It is the
+> step-by-step path and it is the only document you need. This file explains how the
+> storage format works, which matters when you are changing it rather than using it.
+>
+> The agent definitions here are half of what an agent needs; the scripts, fenced MCP
+> servers and runtime guides are the other half and live in [`../nest/`](../nest/),
+> installed by `scripts/bootstrap-nest.mjs`. An agent without the nest starts and then
+> finds none of its tools.
+
 Buzz Desktop keeps agents in a single local file:
 
 ```

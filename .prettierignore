@@ -7,3 +7,9 @@ package-lock.json
 # blockquote indentation and inserts blank lines, which changes the prompt text
 # and makes `export-agents.mjs --check` report drift on every run.
 buzz-agents/agents/
+
+# The nest is byte-for-byte operational tooling for the same reason. Its guides are
+# read at runtime (Janice loads JANICE_REVIEW_CHECKLIST.md every review) and its
+# schema guide is the DDL source that deploy-claire-channel.sh runs through sed —
+# reflowing a fenced SQL block or a table would change what actually executes.
+nest/
