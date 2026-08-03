@@ -79,7 +79,7 @@ The filter controls themselves are owned by `recursica-skill-filters`.
 
 ## Maximum width
 
-**Page-level content has a maximum width, and it comes from the design system's layout rule.** It is not yours to set.
+**Page-level content has a maximum width, and it comes from the design system's layout rule.** It is not yours to set. **The house default is 1200**, and it applies to the **main content area only** — headers, footers, and other sticky chrome are not bound by it and may span the full viewport. Owned by `recursica-skill-responsive-behavior`, which also carries the tablet and small-device breakpoints.
 
 **Space beyond it stays empty.** That is the correct outcome, not a gap to fill.
 

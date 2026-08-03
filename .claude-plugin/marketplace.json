@@ -29,6 +29,7 @@
         "./skills/design-rules/recursica-skill-naming-terminology",
         "./skills/design-rules/recursica-skill-navigation",
         "./skills/design-rules/recursica-skill-panels-modals",
+        "./skills/design-rules/recursica-skill-responsive-behavior",
         "./skills/design-rules/recursica-skill-screen-priority",
         "./skills/design-rules/recursica-skill-screen-scaffolding",
         "./skills/design-rules/recursica-skill-selection-controls",
