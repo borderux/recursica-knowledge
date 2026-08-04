@@ -176,7 +176,9 @@ Read the state it reports per agent, because the right action is different for e
 | `in sync` | Nothing to do | Say so and stop |
 | `BEHIND the branch` | They pulled; their agent is an older commit | Offer the `draft-update` it prints |
 | `has local edits not in git` | **They edited the agent in Buzz Desktop and never exported it** | Do NOT apply. Their prompt is unversioned work and applying would delete it |
+| `runs the committed prompt, unstamped` | First run since stamps existed, or a stamp got lost | Nothing. It records the version itself and reports `in sync` |
 | `prompt in sync, settings differ` | Only runtime/provider/model/`respond_to` moved | Offer the settings-only `draft-update` |
+| `prompt not committed yet` | A prompt in the repo has never been committed | Commit it; a version stamp is a commit sha |
 | `not installed on this Mac` | Genuinely missing | That one, and only that one, needs Step 4 |
 
 For the local-edits case, tell them what they have and let them choose. The capture is
@@ -194,6 +196,11 @@ Same gate as Step 4 — each one opens a form they must save. If it reports a pr
 20,000-character limit, do not trim the prompt to fit; that is a content decision for the
 owner, and `~/.buzz/GUIDES/JANICE_REVIEW_CHECKLIST.md` covers how to move a section out to a
 guide instead.
+
+**Sending a draft does not record it.** Nothing is stamped until the owner saves the form,
+because a draft can be discarded. So after they tell you they have saved, run the report once
+more — that pass sees the prompt that actually landed and records the version. Do not tell
+them an update is complete on the strength of `accepted: true`.
 
 ## Step 5 — Only for a new client
 

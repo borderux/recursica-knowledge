@@ -48,11 +48,12 @@ buzz-agents/
 ├── local-values.example.json         copy to local-values.json (gitignored)
 ├── lib/
 │   ├── placeholders.mjs
-│   └── avatars.mjs
+│   ├── avatars.mjs
+│   └── version-stamp.mjs             which commit an agent is running
 └── scripts/
     ├── export-agents.mjs             Buzz Desktop → this directory
     ├── restore-agents.mjs            this directory → a Buzz community
-    └── sync-prompts.mjs              which of the two is stale?
+    └── sync-prompts.mjs              am I on the committed version?
 ```
 
 The prompt is a separate `.md` file rather than a string inside `agent.json` on
@@ -213,13 +214,13 @@ agents are never exported in the first place.
 characters)`. Claire's resolved prompt currently sits under 100 characters below that,
   so it is a live constraint rather than a theoretical one.
 
-## Sync — which side is stale?
+## Sync — is my agent on the committed version?
 
 Export and restore each assume they know the answer. After a `git pull`, an operator does
 not:
 
 ```bash
-# report only — needs no credentials, no channel, changes nothing
+# report only — needs no credentials, no channel, sends nothing
 node buzz-agents/scripts/sync-prompts.mjs
 
 # see the change before deciding
@@ -229,39 +230,95 @@ node buzz-agents/scripts/sync-prompts.mjs --diff
 node buzz-agents/scripts/sync-prompts.mjs --channel <uuid>
 node buzz-agents/scripts/sync-prompts.mjs --channel <uuid> --run
 
-# CI / pre-flight: non-zero exit if anything anywhere differs
+# CI / pre-flight: non-zero exit if anything anywhere differs; writes nothing at all
 node buzz-agents/scripts/sync-prompts.mjs --check
 ```
 
-### It compares in stored form, not resolved form
+### It compares versions, not prompts
+
+Each agent carries a **version stamp**: an env var in Buzz's global agent config whose value
+is `<commit>@<fingerprint>` — the commit that last changed that agent's `SYSTEM_PROMPT.md`,
+and a short digest of the prompt that was installed at the time.
+
+```
+AGENT_PROMPT_VERSION_CLAIRE=<40-char commit sha>@<12-char digest>
+```
+
+The everyday check is then two string comparisons. Is the stamped commit the newest commit
+touching this prompt? Is the prompt still the one that was fingerprinted? Two yeses is "in
+sync", and no prompt is compared against the repository at all.
+
+The two halves answer different questions and both are needed:
+
+| Half            | Answers                                            | Why the other half cannot                                                                     |
+| --------------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| **commit sha**  | Has the branch moved past what I installed?        | A fingerprint says something changed, never whether the repo or the agent is the newer side   |
+| **fingerprint** | Is the agent still running what I installed?       | A sha records a past act; an edit made in Buzz Desktop afterwards leaves it untouched         |
+
+Drop the fingerprint and an agent edited in Buzz Desktop reads as up to date, hiding the one
+copy of that prompt nobody else has. Drop the sha and you are back to guessing direction from
+content.
+
+The fingerprint is **not** the agent's `updated_at`, which was the first thing tried. That
+only works if the Desktop reliably bumps the field on every save, and if it ever does not,
+the check fails by reporting "unchanged" — silently, in the exact case it exists to catch.
+
+### Why a stamp beats comparing the prompts
 
 The obvious implementation — fill in the tokens and compare against the live prompt — is
 wrong in a way that looks like it works. **Redactions are one-way** by design: text scrubbed
 on export is never reinstated. So a resolved comparison reports drift on every redacted
 agent, on every run, forever, with no edit that could ever clear it. ALAN is redacted today,
-and that is exactly what would have happened to him.
+and that is exactly what happened to him.
 
-Instead the _live_ prompt is pushed through the export transformation — tokenize, then
-redact — and the result compared against the stored file. That asks "would
-`export-agents.mjs` write anything?", which gives the same answer for a real edit and the
-right answer for a redaction, and reuses the transformation the export already relies on
-rather than inventing a second one that has to agree with it.
+Neither half of a stamp has that problem. A sha is the same string on both sides or it is
+not, and a fingerprint compares a live prompt against itself at an earlier moment — same
+space, so there is no token or redaction boundary to reason about and no direction to get
+backwards.
 
-### Which side is ahead is answered by git, not guessed
+### What happens when the two disagree
 
-Content alone cannot distinguish "the branch moved ahead of me" from "I edited my agent in
-Buzz Desktop and never exported it" — and those want opposite fixes. Getting it backwards
-silently deletes unversioned work.
+Only then is a prompt read, and only to decide which of three things is true. The comparison
+is a single equality against the stored file — in stored form, not resolved, for the reason
+above — never a history walk.
 
-Git holds the answer. If the stored form of the live prompt matches an **earlier commit** of
-`SYSTEM_PROMPT.md`, the live agent is a known past state of this repository and the branch
-has simply moved on: safe to apply. If it matches **no commit ever made**, the live prompt
-contains work this repository has never seen, and the fix is `export-agents.mjs` and a
-commit — not an overwrite. The second case prints no apply command unless you pass
-`--force-apply`.
+| Live prompt is…                       | State                        | Action                                                                 |
+| ------------------------------------- | ---------------------------- | ---------------------------------------------------------------------- |
+| the committed one                     | `in sync`                    | The stamp was missing or stale; it is written, and that is the only time it is written |
+| the one it was stamped at             | `BEHIND the branch`          | The branch moved on. Offers the `draft-update`                          |
+| neither                               | `has local edits not in git` | Unversioned work. No apply command without `--force-apply`; the fix is `export-agents.mjs` |
 
-Outside a git checkout the direction cannot be established, so the script reports the drift
-and declines to apply rather than picking a side.
+A stamp is only ever written for a state that has been **observed**. `draft-update` opens a
+form the owner may never save, so stamping at send time would record an intention as a fact
+and an agent whose draft was discarded would report itself up to date forever. Applying an
+update therefore takes two runs: one to send the draft, and the next one, after the save, to
+record what landed.
+
+A prompt with no commit has no version to stamp, so `--check` calls it out rather than
+inventing a sha that no clone could resolve.
+
+### Where the stamp lives, and why not on the agent
+
+Buzz has env vars in two places. `AgentDefinition` carries a per-agent `env_vars` map, but it
+belongs to the persona definition published to the relay: it is absent from the local
+`managed-agents.json` (0 of 14 entries carry it) and no `buzz` subcommand writes it —
+`draft-update` offers six flags and none is `--env`. So a script cannot reach it.
+
+What is reachable is `agents/global-agent-config.json`, whose `env_vars` map Buzz injects
+into every managed agent it launches. It is one namespace shared by all agents, so the agent
+name goes in the key.
+
+The file is written directly rather than through the Desktop's own
+`set_global_agent_config`, which restarts every affected agent on change — a bad trade for
+writing a record that changes no behaviour. Writes are atomic and touch only
+`AGENT_PROMPT_VERSION_*` keys; the provider, model and preferred runtime sitting in the same
+file are read and written back untouched, and the writer refuses any key outside that prefix.
+Constraints come from the Buzz binary rather than guesswork: keys must match
+`[A-Za-z_][A-Za-z0-9_]*`, values cannot contain NUL, and `BUZZ_*` is reserved.
+
+If the Desktop ever overwrites that file and drops the stamps, the failure is safe: a missing
+stamp reads as unknown, which sends the check down the slow path, re-derives the truth from
+the prompt, and writes the stamp again.
 
 ### What it refuses to do
 
@@ -276,3 +333,7 @@ and declines to apply rather than picking a side.
 
 `--diff` output is in stored form, so it carries no project ids, folder ids or home
 directories and is safe to paste into a channel.
+
+`--check` writes nothing, including no stamps: an operator running it in CI, or before
+deciding anything, has not agreed to a write. `--no-stamp` reads stamps without ever writing
+one.

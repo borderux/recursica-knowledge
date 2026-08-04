@@ -1,57 +1,76 @@
 #!/usr/bin/env node
 /**
- * Report whether the agents running on this Mac still match the versioned prompts,
- * and hand back a `draft-update` for the ones that are behind.
+ * Report whether the agents running on this Mac are on the committed version of their
+ * prompts, and hand back a `draft-update` for the ones that are behind.
  *
- * This is the missing third direction. `export-agents.mjs` moves Buzz Desktop into
- * git; `restore-agents.mjs` builds an agent that does not exist yet. Neither answers
- * the question an operator actually has after `git pull`: *am I running the prompt on
- * this branch, and if not, which side is stale?*
+ * `export-agents.mjs` moves Buzz Desktop into git; `restore-agents.mjs` builds an agent
+ * that does not exist yet. This answers the question an operator has after `git pull`:
+ * *is the agent I am running the one this branch says it should be?*
  *
  * Usage:
  *   node buzz-agents/scripts/sync-prompts.mjs [--channel <uuid>] [--agent <name>]
  *                                             [--values <file>] [--input <path>]
+ *                                             [--config <path>]
  *                                             [--diff] [--check] [--run]
+ *                                             [--no-stamp] [--force-apply]
  *
  *   --channel <uuid>   channel to open the drafts in. Without it the report still
  *                      runs; only the commands need it.
  *   --agent <name>     limit to one agent (repeatable)
  *   --values <file>    token values (default: buzz-agents/local-values.json)
- *   --input <path>     Buzz Desktop state (default: the usual macOS location)
+ *   --input <path>     Buzz Desktop agent state (default: the usual macOS location)
+ *   --config <path>    Buzz global agent config holding the stamps
  *   --diff             print the drift as a unified diff
  *   --check            exit 1 if anything is out of sync; write and send nothing
  *   --run              execute the draft-update commands instead of printing them
- *   --force-apply      also offer a command for an agent whose live prompt is not in
- *                      git. Read --diff first: this overwrites unversioned work.
+ *   --no-stamp         never write a version stamp, only read them
+ *   --force-apply      also offer a command for an agent whose live prompt is not the
+ *                      committed one. Read --diff first: this overwrites local edits.
  *
- * ## The comparison happens in repo space, not resolved space
+ * ## The check is a version comparison, not a prompt comparison
  *
- * The obvious implementation — fill the tokens in the stored prompt and compare it to
- * the live one — is wrong, and wrong in a way that looks like it works. `placeholders.json`
- * carries **redactions** as well as tokens, and redactions are deliberately one-way:
- * text scrubbed on export is never reinstated. A resolved-space comparison therefore
- * reports drift on every redacted agent, on every run, forever, and there is no edit
- * that would ever clear it.
+ * Each agent carries a **version stamp**: an env var in Buzz's global agent config whose
+ * value is the commit that last changed that agent's `SYSTEM_PROMPT.md`, plus a short
+ * fingerprint of the prompt that was installed at the time. The everyday question is then
+ * two string comparisons. Nothing tokenizes, nothing diffs, nothing walks history, and an
+ * agent that is up to date costs almost nothing to prove.
  *
- * So the live prompt is pushed through the *export* transformation instead — tokenize,
- * then redact — and the result is compared against the stored file. That asks "would
- * `export-agents.mjs` write anything?", which is the same question with the same answer
- * for real edits, and the right answer (none) for a redaction. It also reuses the
- * transformation the export has been running all along rather than inventing a second
- * one that has to agree with it.
+ * That removes a whole class of false positive. Prompts are stored with `{{TOKEN}}`
+ * markers and some carry one-way **redactions**, so comparing a stored prompt against a
+ * live one has to reason about which space each side is in — and got it wrong in the
+ * obvious implementation, reporting the redacted agent as drifted forever. Neither half
+ * of a stamp has that problem. The sha is the same string on both sides or it is not, and
+ * the fingerprint compares a live prompt against itself at an earlier moment, never
+ * across the token boundary.
  *
- * ## Which side is stale is decided by git, not by guessing
+ * The two halves answer different questions and both are needed. The sha answers "has the
+ * branch moved past what I installed?" — the question that decides whether to offer an
+ * update. The fingerprint answers "is the agent still running what I installed?", which a
+ * sha cannot: it records a past act, and an edit made in Buzz Desktop afterwards leaves it
+ * untouched. Without the fingerprint an edited agent reads as up to date and the only copy
+ * of that prompt stays hidden.
  *
- * Content alone cannot tell "the branch moved ahead of me" from "I edited my agent in
- * Buzz Desktop and never exported it" — and the two want opposite fixes. Applying the
- * repo over local edits destroys them silently.
+ * See ../lib/version-stamp.mjs for where the stamp lives, why it is not a field on the
+ * agent record, and why the fingerprint is not the agent's `updated_at`.
  *
- * Git already holds the answer. If the repo-space image of the live prompt matches an
- * *earlier commit* of the stored file, then the live agent is a known past state of the
- * repo and the branch has simply moved on: safe to apply. If it matches no commit ever
- * made, the live prompt contains work this repository has never seen, and the fix is to
- * export and commit it — not to overwrite it. Those two cases get different advice, and
- * the second one will not produce an apply command without `--force-apply`.
+ * ## A stamp is only ever written for something observed
+ *
+ * `draft-update` does not change an agent. It opens a form in the owner's Buzz Desktop,
+ * and nothing takes effect until they press save — which they may never do. So a script
+ * that stamped at send time would be recording an intention as a fact, and an agent whose
+ * draft was discarded would then report itself up to date forever, which is worse than
+ * having no stamp at all.
+ *
+ * A stamp is therefore written for exactly one state: the live prompt already matches the
+ * committed one. The ordinary consequence is that applying an update takes two runs — one
+ * to send the draft, and the next one, after the owner saves, to record what landed.
+ *
+ * ## An unrecognised prompt is never overwritten without being asked twice
+ *
+ * If the shas disagree and the live prompt is neither the current commit nor the one it
+ * was stamped at, then it holds edits this repository has never seen. Applying the branch
+ * over that would delete them, so no apply command is offered without `--force-apply`.
+ * The fix in that case is `export-agents.mjs`, which captures them.
  *
  * Requires the `buzz` CLI on PATH with credentials for this community only when `--run`
  * is used. The report itself reads local files and needs nothing.
@@ -70,6 +89,19 @@ import {
   applyRedactions,
   detokenize,
 } from "../lib/placeholders.mjs";
+import {
+  globalConfigPath,
+  readEnvVars,
+  writeStamps,
+  stampKey,
+  formatStamp,
+  parseStamp,
+  promptFingerprint,
+  promptCommit,
+  describeCommit,
+  fileAtCommit,
+  promptCommitsBetween,
+} from "../lib/version-stamp.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const buzzAgentsDir = path.join(__dirname, "..");
@@ -82,10 +114,10 @@ const resolvedDir = path.join(buzzAgentsDir, ".resolved");
  * with `system prompt is too long (max 20000 characters)`. Verified against the live
  * CLI on 2026-08-04 — 20,001 characters is refused, 19,999 accepted.
  *
- * It matters here because Claire's resolved prompt currently sits within a few hundred
- * characters of the ceiling. Checking before printing a command means the operator is
- * told which agent will not fit and by how much, instead of running a command that
- * fails, or worse landing a prompt that was quietly cut off mid-rule.
+ * It matters here because Claire's resolved prompt sits a few characters below the
+ * ceiling. Checking before printing a command means the operator is told which agent
+ * will not fit and by how much, instead of running a command that fails, or worse
+ * landing a prompt that was quietly cut off mid-rule.
  */
 const PROMPT_LIMIT = 20000;
 
@@ -94,6 +126,10 @@ const PROMPT_LIMIT = 20000;
  * carry — reporting drift in a field with no flag would be telling the operator about
  * a problem and then walking away from it. The fields with no CLI surface are already
  * printed as a MANUAL block by restore-agents.mjs.
+ *
+ * These are compared on every run, including for an agent whose stamp is current. The
+ * stamp versions the prompt and says nothing about the settings, so skipping them on
+ * the fast path would quietly narrow what "in sync" means.
  */
 const SYNCABLE_SETTINGS = ["runtime", "provider", "model", "respond_to"];
 
@@ -115,7 +151,7 @@ if (flag("--help") || flag("-h")) {
   const header = fs.readFileSync(fileURLToPath(import.meta.url), "utf8");
   const usage = header.slice(
     header.indexOf(" * Usage:"),
-    header.indexOf(" * ## The comparison"),
+    header.indexOf(" * ## The check"),
   );
   console.log(usage.replace(/^ \* ?/gm, "").trimEnd());
   process.exit(0);
@@ -124,10 +160,14 @@ if (flag("--help") || flag("-h")) {
 const channel = opt("--channel");
 const only = optAll("--agent").map((s) => s.toLowerCase());
 const valuesFile = opt("--values") ?? localValuesPath;
+const configPath = opt("--config") ?? globalConfigPath();
 const showDiff = flag("--diff");
 const checkOnly = flag("--check");
 const run = flag("--run");
 const forceApply = flag("--force-apply");
+// --check must not have side effects: an operator running it in CI, or before deciding
+// anything, has not agreed to a write.
+const mayStamp = !flag("--no-stamp") && !checkOnly;
 
 function defaultInputPath() {
   const appSupport = path.join(
@@ -167,9 +207,9 @@ if (!Array.isArray(entries)) {
 const { tokens, redactions } = loadPlaceholders();
 const values = loadValues(valuesFile);
 
-// Same reasoning as the export: without the values, tokenization is a no-op, every
-// agent looks drifted, and the suggested fix would be to commit real identifiers.
-// Refusing is the only safe answer.
+// Same reasoning as the export: without the values, tokenization is a no-op, so a live
+// prompt read on the exception path could never match the stored one and the suggested
+// fix would be to commit real identifiers. Refusing is the only safe answer.
 if (Object.keys(tokens).length > 0 && values === null) {
   console.error(`No values file at ${valuesFile}`);
   console.error(
@@ -190,63 +230,16 @@ const personas = entries.filter(
 );
 const instances = entries.filter((e) => e.persona_id);
 
-/* ------------------------------------------------------------------ git history */
-
-/**
- * Every past version of a stored prompt, newest first, as {commit, subject, text}.
- *
- * Returns null — not an empty list — when git cannot answer, so that "no history" and
- * "history says this content is new" stay distinguishable. Only the second one justifies
- * telling an operator their live prompt contains unversioned work.
- */
-function fileHistory(relPath) {
-  let commits;
-  try {
-    commits = execFileSync(
-      "git",
-      ["-C", repoRoot, "log", "--format=%H%x00%s", "--", relPath],
-      { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] },
-    )
-      .split("\n")
-      .filter(Boolean)
-      .map((line) => {
-        const [commit, subject] = line.split("\0");
-        return { commit, subject };
-      });
-  } catch {
-    return null;
-  }
-  if (!commits.length) return null;
-
-  const out = [];
-  for (const c of commits) {
-    try {
-      out.push({
-        ...c,
-        text: execFileSync(
-          "git",
-          ["-C", repoRoot, "show", `${c.commit}:${relPath}`],
-          {
-            encoding: "utf8",
-            stdio: ["ignore", "pipe", "ignore"],
-          },
-        ),
-      });
-    } catch {
-      // The path did not exist at that commit — a rename or the commit that added it.
-    }
-  }
-  return out;
-}
+const envVars = readEnvVars(configPath);
 
 /* ------------------------------------------------------------------ diffing */
 
 /**
- * Unified diff of the two repo-space texts.
+ * Unified diff of the two stored-form texts.
  *
- * Repo space matters for more than correctness: both sides are tokenized and redacted,
+ * Stored form matters for more than correctness: both sides are tokenized and redacted,
  * so the output carries no project ids, folder ids or home directories and is safe to
- * paste into a channel. A resolved-space diff would not be.
+ * paste into a channel. A resolved diff would not be.
  */
 function unifiedDiff(a, b, labelA, labelB) {
   fs.mkdirSync(resolvedDir, { recursive: true });
@@ -303,11 +296,17 @@ for (const dir of dirs) {
   const relPromptPath = path.relative(repoRoot, promptPath);
   const stored = fs.readFileSync(promptPath, "utf8");
 
+  const key = stampKey(dir);
+  const { sha: stamp, witness } = parseStamp(envVars[key]);
   const report = {
     dir,
     config,
     stored,
     relPromptPath,
+    key,
+    stamp,
+    witness,
+    repoCommit: promptCommit(repoRoot, relPromptPath),
     notes: [],
     settings: [],
   };
@@ -330,13 +329,6 @@ for (const dir of dirs) {
   // only name guaranteed to hit something is the one Buzz Desktop is holding.
   report.liveName = live.display_name ?? live.name;
 
-  let livePrompt = live.system_prompt ?? "";
-  if (!livePrompt.endsWith("\n")) livePrompt += "\n";
-
-  // What export-agents.mjs would write if it ran right now.
-  const image = applyRedactions(tokenize(livePrompt, vals), redactions);
-  report.image = image;
-
   /**
    * Settings drift splits in two, and conflating them would print a broken command.
    * The flags only ever *set* a value — there is no way to clear one. So a repo value
@@ -352,9 +344,25 @@ for (const dir of dirs) {
     report.settings.push({ field, repo, live: live[field], settable });
   }
 
+  if (!report.repoCommit) {
+    // No commit means no version to compare against, and inventing one from the file
+    // on disk would stamp an agent with a sha that no clone of this repo can resolve.
+    report.state = "unversioned";
+    report.notes.push(
+      "no commit touches this prompt yet — commit it before it can be versioned",
+    );
+    continue;
+  }
+
+  let livePrompt = live.system_prompt ?? "";
+  if (!livePrompt.endsWith("\n")) livePrompt += "\n";
+  report.fingerprint = promptFingerprint(livePrompt);
+
   // A persona's prompt is copied to its instance at creation. If they have diverged,
   // "what is running" has two answers and neither should be reported as if it were the
-  // only one. Same warning the export raises.
+  // only one. Same warning the export raises. Checked before the fast path: a current
+  // stamp says the persona is the committed version and says nothing about the instance,
+  // so this is exactly the case a stamp cannot see.
   const instance = instances.find((i) => i.persona_id === live.slug);
   if (
     instance &&
@@ -366,32 +374,122 @@ for (const dir of dirs) {
     );
   }
 
-  if (image === stored) {
+  /* ---- the fast path: two string comparisons, both within one space ---- */
+  if (
+    report.stamp === report.repoCommit &&
+    report.witness === report.fingerprint
+  ) {
     report.state = report.settings.length ? "settings-only" : "in-sync";
     continue;
   }
 
-  const history = fileHistory(relPromptPath);
-  if (history === null) {
-    // Without history there is no way to tell which side is stale, and guessing here
-    // would be guessing about whether to overwrite someone's work.
-    report.state = "unknown-direction";
-    report.notes.push(
-      "no git history for this file — cannot tell whether the branch or the live agent is ahead",
-    );
+  /* ---- the exception path: the shas disagree, or the prompt has moved ---- */
+
+  // The sha says the branch has not moved, so a witness that no longer matches means the
+  // prompt was edited in Buzz Desktop after being stamped. Or there is no witness, from a
+  // stamp written before this script recorded one. Either way the stamp cannot be taken
+  // on trust and the prompt has to be looked at properly.
+  if (report.stamp === report.repoCommit) {
+    report.recheck = true;
+  }
+
+  // What export-agents.mjs would write if it ran right now. Comparing in stored form
+  // rather than resolving the stored prompt is what keeps a one-way redaction from
+  // reading as a difference; see the export for the transformation itself.
+  const image = applyRedactions(tokenize(livePrompt, vals), redactions);
+  report.image = image;
+
+  if (image === stored) {
+    // The agent already runs the committed prompt; only the stamp was missing, stale, or
+    // no longer trusted. This is the one state in which a stamp may be written, because
+    // it is the only one that has been observed rather than merely requested.
+    report.state = "stampable";
+    if (report.recheck) {
+      report.notes.push(
+        report.witness === null
+          ? "stamp carried no fingerprint, so it was re-derived from the prompt — re-stamping"
+          : // The fingerprint covers the live prompt, the comparison above covers its
+            // tokenized form. Both moving apart means a value behind a `{{TOKEN}}` changed
+            // while the prompt around it did not — a real change, but not one the repo
+            // holds or should.
+            "the live prompt changed but its stored form did not — a token value moved; re-stamping",
+      );
+    }
     continue;
   }
 
-  const match = history.find((h) => h.text === image);
-  if (match) {
-    report.state = "repo-ahead";
-    report.behind = history.indexOf(match);
-    report.at = match;
-  } else {
-    report.state = "live-ahead";
-    if (sameIgnoringWhitespace(image, stored)) {
-      report.notes.push("differs only in whitespace and line wrapping");
+  if (report.stamp) {
+    const atStamp = fileAtCommit(repoRoot, report.stamp, relPromptPath);
+    if (atStamp === null) {
+      // The stamp cannot be resolved, so there is no way to confirm the live prompt is a
+      // version this repository once held. Treated as unrecognised rather than as behind:
+      // offering an apply command here would risk overwriting work on the strength of a
+      // sha that means nothing in this checkout.
+      report.state = "live-edited";
+      report.notes.push(
+        `stamped ${report.stamp.slice(0, 7)} is not a commit in this checkout — ` +
+          "fetch, or the stamp came from a branch you do not have",
+      );
+    } else if (atStamp === image) {
+      // Running exactly what it was stamped at, and the branch has moved on since.
+      report.state = "update-available";
+      report.behind = promptCommitsBetween(
+        repoRoot,
+        report.stamp,
+        report.repoCommit,
+        relPromptPath,
+      );
+    } else {
+      // Neither the current commit nor the stamped one. Someone edited it in Buzz
+      // Desktop after it was installed, and that work exists nowhere else.
+      report.state = "live-edited";
+      if (report.recheck) {
+        report.notes.push(
+          `the prompt was edited after it was stamped: fingerprint ` +
+            `${report.witness ?? "unrecorded"} → ${report.fingerprint}`,
+        );
+      }
     }
+  } else {
+    // No stamp and a prompt that is not the committed one. Which side is newer is
+    // genuinely unknown, and the dangerous guess is the one that overwrites.
+    report.state = "live-edited";
+    report.notes.push(
+      "no stamp, so there is no record of which version was installed",
+    );
+  }
+
+  if (
+    report.state === "live-edited" &&
+    sameIgnoringWhitespace(image, stored)
+  ) {
+    report.notes.push("differs only in whitespace and line wrapping");
+  }
+}
+
+/* ------------------------------------------------------------------ stamp */
+
+const stampable = reports.filter((r) => r.state === "stampable");
+let stamped = [];
+
+if (stampable.length && mayStamp) {
+  try {
+    stamped = writeStamps(
+      Object.fromEntries(
+        stampable.map((r) => [
+          r.key,
+          formatStamp(r.repoCommit, r.fingerprint),
+        ]),
+      ),
+      configPath,
+    );
+    for (const r of stampable) {
+      r.state = r.settings.length ? "settings-only" : "in-sync";
+      r.justStamped = true;
+    }
+  } catch (err) {
+    console.error(`  ! could not write version stamps: ${err.message}`);
+    console.error(`      ${configPath}`);
   }
 }
 
@@ -400,24 +498,34 @@ for (const dir of dirs) {
 const label = {
   "in-sync": "in sync",
   "settings-only": "prompt in sync, settings differ",
-  "repo-ahead": "BEHIND the branch",
-  "live-ahead": "has local edits not in git",
-  "unknown-direction": "differs, direction unknown",
+  stampable: "runs the committed prompt, unstamped",
+  "update-available": "BEHIND the branch",
+  "live-edited": "has local edits not in git",
+  unversioned: "prompt not committed yet",
   absent: "not installed on this Mac",
 };
 
 console.log(
-  `Comparing ${path.relative(process.cwd(), agentsDir)} against ${inputPath}\n`,
+  `Comparing ${path.relative(process.cwd(), agentsDir)} against ${inputPath}`,
 );
+console.log(`Version stamps in ${configPath}\n`);
 
 for (const r of reports) {
-  const size = r.image ? `${r.stored.length} → ${r.image.length} chars` : "";
-  console.log(`  ${r.dir.padEnd(8)} ${label[r.state].padEnd(31)} ${size}`);
-  if (r.state === "repo-ahead") {
+  const version = r.repoCommit ? r.repoCommit.slice(0, 7) : "—";
+  console.log(
+    `  ${r.dir.padEnd(8)} ${label[r.state].padEnd(37)} ${version}` +
+      (r.justStamped ? "  (stamped now)" : ""),
+  );
+  if (r.state === "update-available") {
+    const subject = describeCommit(repoRoot, r.repoCommit);
     console.log(
-      `           live matches ${r.at.commit.slice(0, 7)} "${r.at.subject}"` +
-        (r.behind ? ` — ${r.behind} commit(s) behind` : ""),
+      `           stamped ${r.stamp.slice(0, 7)} → branch ${version}` +
+        (r.behind ? `, ${r.behind} prompt commit(s) behind` : "") +
+        (subject ? `: "${subject}"` : ""),
     );
+  }
+  if (r.state === "stampable" && !mayStamp) {
+    console.log(`           would stamp ${r.key}=${r.repoCommit.slice(0, 7)}`);
   }
   for (const s of r.settings) {
     console.log(
@@ -430,31 +538,51 @@ for (const r of reports) {
   for (const n of r.notes) console.log(`           ! ${n}`);
 }
 
+if (stamped.length) {
+  console.log(`\n  Wrote ${stamped.length} version stamp(s): ${stamped.join(", ")}`);
+  console.log(
+    "  Buzz injects these into the agents it launches; they record what is installed\n" +
+      "  and change no behaviour.",
+  );
+}
+
 if (showDiff) {
   for (const r of reports) {
     if (!r.image || r.image === r.stored) continue;
     console.log(
-      `\n${"=".repeat(72)}\n${r.dir}: stored (a) vs live (b), both tokenized\n`,
+      `\n${"=".repeat(72)}\n${r.dir}: committed (a) vs live (b), both in stored form\n`,
     );
     console.log(
-      unifiedDiff(r.stored, r.image, `${r.dir}-stored`, `${r.dir}-live`),
+      unifiedDiff(r.stored, r.image, `${r.dir}-committed`, `${r.dir}-live`),
     );
   }
 }
 
-const behind = reports.filter((r) => r.state === "repo-ahead");
-const ahead = reports.filter((r) => r.state === "live-ahead");
+const behind = reports.filter((r) => r.state === "update-available");
+const ahead = reports.filter((r) => r.state === "live-edited");
 // A settings-only agent whose every difference is unsettable has nothing to send; it
 // would otherwise produce a draft-update carrying no changes at all.
 const settingsOnly = reports.filter(
   (r) => r.state === "settings-only" && r.settings.some((s) => s.settable),
 );
-const unknown = reports.filter((r) => r.state === "unknown-direction");
+const unversioned = reports.filter((r) => r.state === "unversioned");
 const absent = reports.filter((r) => r.state === "absent");
+
+if (behind.length) {
+  console.log(
+    `\n${behind.length} agent(s) have a newer prompt on this branch than the one they were ` +
+      "installed from:",
+  );
+  for (const r of behind) console.log(`    ${r.dir}`);
+  console.log(
+    "  Update from the repo? The commands below open a draft for each; nothing changes\n" +
+      "  until you save it in Buzz Desktop.",
+  );
+}
 
 if (ahead.length) {
   console.log(
-    `\n! ${ahead.length} agent(s) are running a prompt this repository has never held:`,
+    `\n! ${ahead.length} agent(s) are running a prompt this repository does not hold:`,
   );
   for (const r of ahead) console.log(`    ${r.dir}`);
   console.log(
@@ -480,9 +608,10 @@ if (absent.length) {
   );
 }
 
-if (unknown.length) {
+if (unversioned.length) {
   console.log(
-    "\n  Run from a git checkout to have the direction of the drift worked out for you.",
+    "\n  Commit the prompts above, then re-run: a stamp is a commit sha, so an " +
+      "uncommitted\n  prompt has no version to compare against.",
   );
 }
 
@@ -491,10 +620,10 @@ if (unknown.length) {
 const applicable = [...behind, ...settingsOnly, ...(forceApply ? ahead : [])];
 
 /**
- * "In sync" is stricter than "nothing to apply". An agent missing from this Mac, or one
- * whose only difference is a setting no flag can change, is still not what the branch
- * says — and `--check` exists to catch exactly that, so it cannot be allowed to pass
- * just because this script has no command to offer.
+ * "In sync" is stricter than "nothing to apply". An agent missing from this Mac, one
+ * whose only difference is a setting no flag can change, and one running an unstamped
+ * prompt are all still not what the branch says — and `--check` exists to catch exactly
+ * that, so it cannot be allowed to pass just because this script has no command to offer.
  */
 const clean = reports.every((r) => r.state === "in-sync" && !r.settings.length);
 
@@ -632,4 +761,8 @@ if (!run) {
 console.log(
   "\nEach draft opens a form in the owner's Buzz Desktop. Nothing changes until they save it —\n" +
     "an agent cannot rewrite its own instructions, and that review gate is deliberate.",
+);
+console.log(
+  "No stamp is written for a draft that was sent. Save it in Buzz Desktop, then re-run\n" +
+    "this script: it records the version once it can see the prompt that actually landed.",
 );

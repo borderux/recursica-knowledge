@@ -243,11 +243,20 @@ pull, ask what changed:
 node buzz-agents/scripts/sync-prompts.mjs
 ```
 
-It compares each agent running on your Mac against the branch and tells you which side is
-stale. Where the branch is ahead it prints a `buzz agents draft-update` you can run; where
-_you_ are ahead — you edited an agent in Buzz Desktop and never exported it — it says so and
-refuses to overwrite your edit. Add `--diff` to see the change before deciding, and
-`--channel <uuid> --run` to send the drafts.
+Each agent carries a **version stamp** — an env var recording the commit its prompt came
+from — so the check is a version comparison rather than a prompt comparison. Where the branch
+has a newer commit than the one you installed, it prints a `buzz agents draft-update` you can
+run; where _you_ are ahead — you edited an agent in Buzz Desktop and never exported it — it
+says so and refuses to overwrite your edit. Add `--diff` to see the change before deciding,
+and `--channel <uuid> --run` to send the drafts.
+
+The first run on an existing setup finds no stamps, checks the prompts once to work out where
+each agent actually stands, and writes them. From then on it is two string comparisons per
+agent. Use `--check` if you want a report that writes nothing at all.
+
+Applying an update takes two runs, on purpose. The first sends the draft; the second, after
+you have saved it in Buzz Desktop, records the version that actually landed. Nothing stamps
+an agent for a draft you might still discard.
 
 Every draft still opens a form in Buzz Desktop that you have to save. Your agents will not
 silently rewrite themselves.
