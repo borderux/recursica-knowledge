@@ -88,7 +88,9 @@ import {
   tokenize,
   applyRedactions,
   detokenize,
+  deriveValues,
 } from "../lib/placeholders.mjs";
+import { sameAgent } from "../lib/agent-names.mjs";
 import {
   globalConfigPath,
   readEnvVars,
@@ -221,7 +223,12 @@ if (Object.keys(tokens).length > 0 && values === null) {
   process.exit(1);
 }
 
-const vals = values ?? {};
+// Derived values count as values here. A live prompt holds the resolved transcript path,
+// and tokenization is what turns it back into {{TRANSCRIPT_DIR}} for comparison — so
+// without the derivation Janice compares unequal to her own stored prompt on every run,
+// reporting drift no edit could ever clear. Invisible to anyone whose values file sets
+// TRANSCRIPT_DIR by hand, which is why it survived the original verification.
+const vals = deriveValues(values ?? {});
 
 // Personas are the definitions; instances are a persona bound to this community.
 // Same split the export relies on.
@@ -314,9 +321,15 @@ for (const dir of dirs) {
 
   // Match on `name`, the field the export derives the directory from. display_name is
   // what a human sees and what draft-update wants, but it is also what a human renames.
+  //
+  // Compared canonically, because the owner suffix in `Claire (Alex)` is exactly such a
+  // rename and Buzz stores it verbatim in `name` too. An exact comparison found nothing,
+  // called an installed agent `absent`, and advised creating her — a second Claire.
   const live =
     personas.find((p) => p.name === config.name) ??
-    personas.find((p) => p.display_name === config.display_name);
+    personas.find((p) => p.display_name === config.display_name) ??
+    personas.find((p) => sameAgent(p.name, config.name)) ??
+    personas.find((p) => sameAgent(p.display_name, config.display_name));
 
   if (!live) {
     report.state = "absent";

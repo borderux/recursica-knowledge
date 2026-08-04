@@ -14,9 +14,11 @@
  * still say `{{BQ_PROJECT}}` would go looking for a project by that literal name.
  *
  * Usage:
- *   node buzz-agents/scripts/restore-agents.mjs --channel <uuid> [--agent <name>] [--values <file>] [--run]
+ *   node buzz-agents/scripts/restore-agents.mjs --channel <uuid> [--owner <name>] [--agent <name>] [--values <file>] [--run]
  *
  *   --channel            target channel UUID in the new community (required)
+ *   --owner <name>       whose install this is; creates them as `Claire (Alex)` so a
+ *                        channel holding several operators' agents stays readable
  *   --agent <name>       restore just one agent (repeatable)
  *   --values <file>      token values for the target community
  *                        (default: buzz-agents/local-values.json)
@@ -36,7 +38,9 @@ import {
   loadValues,
   localValuesPath,
   detokenize,
+  deriveValues,
 } from "../lib/placeholders.mjs";
+import { ownedDisplayName } from "../lib/agent-names.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const agentsDir = path.join(__dirname, "..", "agents");
@@ -61,6 +65,7 @@ const channel = opt("--channel");
 const only = optAll("--agent").map((s) => s.toLowerCase());
 const run = flag("--run");
 const valuesFile = opt("--values") ?? localValuesPath;
+const owner = opt("--owner");
 
 if (!channel) {
   console.error("Missing --channel <uuid>. Find it with: buzz channels list");
@@ -68,7 +73,10 @@ if (!channel) {
 }
 
 const { tokens } = loadPlaceholders();
-const values = loadValues(valuesFile) ?? {};
+// Derived the same way bootstrap derives them. Janice's prompt carries {{TRANSCRIPT_DIR}},
+// which operators are told to leave blank, so without this she is the one agent whose
+// draft never opens.
+const values = deriveValues(loadValues(valuesFile) ?? {});
 
 // Resolved prompts are written here so the printed commands are runnable as shown.
 // Gitignored — they hold the very identifiers the stored prompts leave out.
@@ -92,7 +100,10 @@ for (const dir of dirs) {
   );
   const promptPath = path.join(base, config.system_prompt_file);
 
-  const displayName = config.display_name;
+  // A community holds one of these per operator. Without the owner in the name, a channel
+  // with two installs shows two agents called `Claire` and no way to tell whose is whose.
+  // Stored definitions stay canonical; the suffix is added here, at creation, only.
+  const displayName = ownedDisplayName(config.display_name, owner);
 
   const stored = fs.readFileSync(promptPath, "utf8");
   const { text: resolved, missing } = detokenize(stored, values);
