@@ -17,7 +17,7 @@
  *   node buzz-agents/scripts/restore-agents.mjs --channel <uuid> [--owner <name>] [--agent <name>] [--values <file>] [--run]
  *
  *   --channel            target channel UUID in the new community (required)
- *   --owner <name>       whose install this is; creates them as `Claire (Aaron)` so a
+ *   --owner <name>       whose install this is; creates them as `Claire (Alex)` so a
  *                        channel holding several operators' agents stays readable
  *   --agent <name>       restore just one agent (repeatable)
  *   --values <file>      token values for the target community

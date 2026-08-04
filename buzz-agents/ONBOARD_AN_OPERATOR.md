@@ -46,7 +46,7 @@ three — and better than sending them is **putting them in the channel canvas.*
 
 ### Put the configuration in the channel canvas before you hand anything over
 
-The deploy is meant to be run *in* the channel the agents are for, and their Fizz reads that
+The deploy is meant to be run _in_ the channel the agents are for, and their Fizz reads that
 channel's canvas for its `## Claire config` block — the same block Claire herself reads at
 runtime. Anything in there is a value nobody has to send, transcribe or mistype, for this
 operator and every one after them.
@@ -138,7 +138,7 @@ Fill in the blanks and send. Keep the key out of it.
 >    deploy the buzz agents: clone https://github.com/borderux/recursica-knowledge into ~/.buzz/REPOS/ and follow nest/.claude/skills/deploy-agents/SKILL.md
 >    ```
 >
->    Asking her *in* the channel is what lets her read the config from its canvas instead
+>    Asking her _in_ the channel is what lets her read the config from its canvas instead
 >    of asking you for each value.
 >
 >    Prefer doing it by hand? Clone that repo yourself and read

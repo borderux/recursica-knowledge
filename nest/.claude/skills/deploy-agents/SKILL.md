@@ -179,8 +179,8 @@ client_email  claire-<slug>-service-user@<BQ_PROJECT>.iam.gserviceaccount.com
 filename      ~/.buzz/.secrets/claire-<slug>-service-user.json
 ```
 
-So for slug `padi` in project `recursica-466023` the account is
-`claire-padi-service-user@recursica-466023.iam.gserviceaccount.com`. Derive the expected
+So for slug `acme` in project `acme-research-123456` the account is
+`claire-acme-service-user@acme-research-123456.iam.gserviceaccount.com`. Derive the expected
 string, compare it to the file's `client_email`, and say which you got.
 
 A mismatch is worth stopping for, because each of the two ways it can differ is a distinct
@@ -230,7 +230,7 @@ node buzz-agents/scripts/restore-agents.mjs --channel <uuid> --owner <name>     
 node buzz-agents/scripts/restore-agents.mjs --channel <uuid> --owner <name> --run    # open the drafts
 ```
 
-That creates them as **`Claire (Aaron)`**, `Stu (Aaron)` and so on. Everyone runs their own
+That creates them as **`Claire (Alex)`**, `Stu (Alex)` and so on. Everyone runs their own
 agents, so a shared channel otherwise ends up holding several bots called `Claire` with
 nothing distinguishing them — which happened, and left a real "which of these is mine?"
 Only the display name carries the owner; the stored definition stays canonical, so it is

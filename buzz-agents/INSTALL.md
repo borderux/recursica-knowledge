@@ -39,11 +39,11 @@ deploy the buzz agents: clone https://github.com/borderux/recursica-knowledge in
 She reads the configuration out of that channel's canvas, installs the nest, opens the four
 drafts for you to approve, and runs the isolation check. That is why the channel matters: a
 private channel is invisible to an agent that is not a member of it — canvas, name and all —
-and *your* being in it does not cover her. Asked in the right channel she needs almost
+and _your_ being in it does not cover her. Asked in the right channel she needs almost
 nothing from you; asked anywhere else she has to interview you for every value.
 
 **Why that line carries the repo URL and a file path.** The instructions she follows live
-*inside* the repo, so on a clean Buzz install she has no way to find them and no way to
+_inside_ the repo, so on a clean Buzz install she has no way to find them and no way to
 find the thing that contains them. This message is the only one that has to spell both out.
 Once the nest is installed the skill is registered locally, and from then on it is just:
 

@@ -217,8 +217,8 @@ const changed = [];
 const rawPrompts = [];
 
 for (const persona of personas) {
-  // Canonical, so `Claire (Aaron)` exports to agents/claire/ and updates the definition
-  // she came from. Without stripping the owner suffix this wrote agents/claire-aaron/
+  // Canonical, so `Claire (Alex)` exports to agents/claire/ and updates the definition
+  // she came from. Without stripping the owner suffix this wrote agents/claire-alex/
   // beside it — a duplicate of the same agent, one per operator who ever exported.
   const dirName = canonicalAgentName(persona.name || persona.display_name)
     .toLowerCase()
@@ -230,7 +230,7 @@ for (const persona of personas) {
   for (const field of PORTABLE_FIELDS) {
     if (persona[field] !== undefined) config[field] = persona[field];
   }
-  // The owner suffix is local to one install. Storing `Claire (Aaron)` would put one
+  // The owner suffix is local to one install. Storing `Claire (Alex)` would put one
   // operator's name in the definition every other operator restores from.
   for (const field of ["name", "display_name"]) {
     if (config[field] !== undefined) config[field] = canonicalAgentName(config[field]);

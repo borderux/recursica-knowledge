@@ -322,7 +322,7 @@ for (const dir of dirs) {
   // Match on `name`, the field the export derives the directory from. display_name is
   // what a human sees and what draft-update wants, but it is also what a human renames.
   //
-  // Compared canonically, because the owner suffix in `Claire (Aaron)` is exactly such a
+  // Compared canonically, because the owner suffix in `Claire (Alex)` is exactly such a
   // rename and Buzz stores it verbatim in `name` too. An exact comparison found nothing,
   // called an installed agent `absent`, and advised creating her — a second Claire.
   const live =
