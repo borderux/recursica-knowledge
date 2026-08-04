@@ -13,7 +13,7 @@ The single exception is **Step 0**, the tag dictionary: a research taxonomy with
 content in it, deliberately shared by every project, and handled so that no channel account
 can read it anyway.
 
-Worked example throughout: slug `padi`, which is live today.
+Worked example throughout: slug `acme-health`, which is live today.
 
 ---
 
@@ -106,8 +106,7 @@ Cloud console → **IAM & Admin → Service Accounts → Create service account*
 > **This is the step that decides whether isolation is real.** `BigQuery Job User` lets the
 > account run a query but grants access to zero data. Any other BigQuery role here —
 > Data Editor, Data Viewer, Admin — or a basic role like Editor or Owner reaches **every
-> dataset in the project** and silently cancels Step 5. This has already gone wrong once on
-> this project; Step 11 exists to catch it.
+> dataset in the project** and silently cancels Step 5. Step 11 exists to catch it.
 
 ---
 

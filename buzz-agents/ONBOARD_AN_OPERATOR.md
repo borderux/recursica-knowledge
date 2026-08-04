@@ -119,7 +119,7 @@ Fill in the blanks and send. Keep the key out of it.
 >
 > Channel UUIDs and Janice's pubkey your Fizz can look up herself.
 >
-> The service-account key comes separately, via ****\_\_\_\_****. Put it at
+> The service-account key comes separately, via \***\*\_\_\_\_\*\***. Put it at
 > `~/.buzz/.secrets/claire-<slug>-service-user.json` and `chmod 600` it. Never let it into a
 > git checkout or a chat message.
 >

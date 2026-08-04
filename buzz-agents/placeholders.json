@@ -118,6 +118,16 @@
       "pattern": "\\babc123def456\\b",
       "replace": "abc123def456",
       "reason": "Scrub live GCP key ID fragment."
+    },
+    {
+      "pattern": "\\bAaron(?: Martlage)?\\b",
+      "replace": "the operator",
+      "reason": "Scrub personal name."
+    },
+    {
+      "pattern": "\\bDana R\\.",
+      "replace": "Subject A.",
+      "reason": "Scrub research participant name."
     }
   ]
 }

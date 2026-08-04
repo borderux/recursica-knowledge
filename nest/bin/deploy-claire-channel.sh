@@ -28,7 +28,7 @@
 set -euo pipefail
 
 BUZZ_HOME="${BUZZ_HOME:-$HOME/.buzz}"
-NODE_BIN="${NODE_BIN:-/usr/local/bin/node}"
+NODE_BIN="${NODE_BIN:-$(command -v node 2>/dev/null || echo /usr/local/bin/node)}"
 TOOLBOX_BIN="${TOOLBOX_BIN:-$BUZZ_HOME/bin/toolbox}"
 CLAUDE_BIN="${CLAUDE_BIN:-$HOME/.local/bin/claude}"
 TEMPLATES="$BUZZ_HOME/mcp/templates"

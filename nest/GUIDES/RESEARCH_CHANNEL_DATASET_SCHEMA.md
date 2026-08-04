@@ -408,12 +408,12 @@ prompt: Analyst's `write_finding` tool hardcodes `status = 'proposed'` and takes
 
 ## Human edits survive a re-ingest
 
-Aaron, 2026-08-02: a human's work is never deleted by an agent. One mechanism per table where an
+Project owner, 2026-08-02: a human's work is never deleted by an agent. One mechanism per table where an
 agent and a human both write.
 
 **`transcript_lines` / `line_edits`.** The first attempt at this was a pair of sticky columns —
 `transcript_lines.edited_by`, plus a rule that Scribe's `MERGE` must skip rows carrying it. That
-is the same class of protection as the agent prompts in `CLAIRE_STACK_AUDIT_2026_08_02.md` §F2,
+is the same class of protection as prompt-based rules,
 which claimed constraints the configuration did not enforce: it holds exactly as long as every
 future `MERGE` remembers the guard, and it fails silently when one doesn't. `MERGE` also cannot
 express the guard for the delete branch — `WHEN NOT MATCHED BY SOURCE` takes no subquery — so

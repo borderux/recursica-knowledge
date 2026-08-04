@@ -55,6 +55,32 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const agentsDir = path.join(__dirname, "..", "agents");
 const repoRoot = path.join(__dirname, "..", "..");
 
+function getAllTextFiles(dir) {
+  const files = [];
+  if (!fs.existsSync(dir)) return files;
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name === ".resolved" || entry.name === "node_modules") continue;
+      files.push(...getAllTextFiles(fullPath));
+    } else if (entry.isFile()) {
+      if (
+        entry.name.endsWith(".png") ||
+        entry.name.endsWith(".jpg") ||
+        entry.name.endsWith(".jpeg") ||
+        entry.name === "toolbox" ||
+        entry.name === "local-values.json" ||
+        entry.name === "local-values.example.json" ||
+        entry.name === "placeholders.json"
+      )
+        continue;
+      files.push(fullPath);
+    }
+  }
+  return files;
+}
+
 /**
  * Settings that describe WHAT the agent is. These recreate the agent anywhere.
  * Everything absent from this list is either machine-local (pubkey, relay_url,
@@ -112,7 +138,11 @@ const checkOnly = args.includes("--check");
 const inputIdx = args.indexOf("--input");
 const inputPath = inputIdx !== -1 ? args[inputIdx + 1] : defaultInputPath();
 
-if (!fs.existsSync(inputPath)) {
+let entries = [];
+if (fs.existsSync(inputPath)) {
+  const parsed = JSON.parse(fs.readFileSync(inputPath, "utf8"));
+  if (Array.isArray(parsed)) entries = parsed;
+} else if (!checkOnly) {
   console.error(`No managed-agents.json at ${inputPath}`);
   console.error(
     "Pass --input <path> if Buzz Desktop stores its state elsewhere.",
@@ -120,18 +150,10 @@ if (!fs.existsSync(inputPath)) {
   process.exit(1);
 }
 
-const entries = JSON.parse(fs.readFileSync(inputPath, "utf8"));
-if (!Array.isArray(entries)) {
-  console.error("Expected managed-agents.json to be an array.");
-  process.exit(1);
-}
-
 const { tokens, redactions } = loadPlaceholders();
 const localValues = loadValues(localValuesPath);
 
-// Refuse to run rather than write real identifiers into the repository. Silently
-// exporting untokenized prompts is the one failure mode this script must not have.
-if (Object.keys(tokens).length > 0 && localValues === null) {
+if (!checkOnly && Object.keys(tokens).length > 0 && localValues === null) {
   console.error(`No local-values.json at ${localValuesPath}`);
   console.error(
     "placeholders.json declares tokens, so their values are needed to replace them.",
@@ -309,9 +331,48 @@ for (const persona of personas) {
   );
 }
 
-// A redaction that matches nothing has either done its job upstream or has quietly
-// stopped matching after a prompt edit. Either way it should not pass unnoticed.
-const stale = findStaleRedactions(rawPrompts.join("\n"), redactions);
+// Scan all files under nest/ and buzz-agents/ using findLeaks and findStaleRedactions
+const buzzDir = path.join(__dirname, "..");
+const nestDir = path.join(repoRoot, "nest");
+const scannedFiles = [
+  ...getAllTextFiles(buzzDir),
+  ...getAllTextFiles(nestDir),
+];
+const allScannedTexts = [...rawPrompts];
+let leakCount = 0;
+
+for (const file of scannedFiles) {
+  try {
+    const content = fs.readFileSync(file, "utf8");
+    allScannedTexts.push(content);
+    if (Object.keys(values).length > 0) {
+      const isAgentPrompt = file.includes("/buzz-agents/agents/");
+      const checkValues = isAgentPrompt
+        ? values
+        : Object.fromEntries(
+            Object.entries(values).filter(
+              ([k]) => k !== "KNOWLEDGE_REPO_NAME",
+            ),
+          );
+      const leaks = findLeaks(content, checkValues);
+      if (leaks.length) {
+        console.error(
+          `\n  ! ${path.relative(repoRoot, file)}: leaked values survived: ${leaks.join(", ")}`,
+        );
+        leakCount++;
+      }
+    }
+  } catch {
+    // Ignore non-utf8 files
+  }
+}
+
+if (leakCount > 0) {
+  console.error(`\nFound ${leakCount} file(s) with leaked values.`);
+  process.exit(1);
+}
+
+const stale = findStaleRedactions(allScannedTexts.join("\n"), redactions);
 if (stale.length) {
   console.warn(
     `\n  ! ${stale.length} redaction pattern(s) matched nothing — review or remove:`,

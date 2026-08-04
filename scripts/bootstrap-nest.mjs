@@ -40,6 +40,10 @@ const opt = (name, dflt) => {
 
 const CHECK = has("--check") || has("--dry-run");
 const NEST = path.resolve(opt("nest", process.env.BUZZ_HOME || path.join(os.homedir(), ".buzz")));
+if (NEST === repoRoot || NEST.startsWith(repoRoot + path.sep)) {
+  console.error(`Refusing to install nest inside repository checkout: ${NEST}`);
+  process.exit(1);
+}
 
 if (has("--help") || has("-h")) {
   console.log(`Install the agent nest into ~/.buzz.
