@@ -36,7 +36,10 @@
     "version": "changeset version",
     "release": "changeset publish",
     "prepare": "node .husky/install.mjs",
-    "format": "prettier --write \"**/*.{json,md,yml,yaml}\""
+    "format": "prettier --write \"**/*.{json,md,yml,yaml}\"",
+    "agents:export": "node buzz-agents/scripts/export-agents.mjs",
+    "agents:check": "node buzz-agents/scripts/export-agents.mjs --check",
+    "agents:restore": "node buzz-agents/scripts/restore-agents.mjs"
   },
   "packageManager": "npm@10.9.0",
   "engines": {

@@ -1,0 +1,21 @@
+{
+  "$comment": "Copy to local-values.json (gitignored) and fill in for this installation. See placeholders.json for what each one is and where to find it. bootstrap-nest.mjs reads this file and will tell you exactly which values it still needs.",
+
+  "$agentPrompts": "Used by export-agents.mjs / restore-agents.mjs when tokenizing agent prompts.",
+  "BQ_PROJECT": "",
+  "BUILDER_REPO": "",
+  "BUILDER_REPO_NAME": "",
+  "KNOWLEDGE_REPO_NAME": "",
+  "TRANSCRIPT_DIR": "",
+
+  "$nest": "Used by bootstrap-nest.mjs when installing the nest into ~/.buzz.",
+  "TAG_SHEET_ID": "",
+  "DRIVE_FOLDER": "",
+
+  "$channels": "This community's channel UUIDs. Janice's routing table needs these resolved — an unresolved token here means she posts findings to a channel named after the token.",
+  "CLAIRE_CHANNEL": "",
+  "STU_CHANNEL": "",
+  "ALAN_CHANNEL": "",
+  "JANICE_CHANNEL": "",
+  "JANICE_PUBKEY": ""
+}

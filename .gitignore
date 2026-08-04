@@ -16,3 +16,24 @@ dist/
 
 
 
+
+# Real identifier values for this installation, and prompts with them filled in.
+# The repository stores {{TOKEN}} markers instead — see buzz-agents/README.md.
+buzz-agents/local-values.json
+buzz-agents/.resolved/
+
+# Credentials, belt and braces. Nothing here is supposed to produce these files —
+# service-account keys belong in ~/.buzz/.secrets/, outside any checkout — but a
+# single committed key is unrecoverable in a public repo, so the patterns stay.
+.env
+.env.*
+!.env.example
+secrets/
+**/secrets/
+*-service-user.json
+*-service-account.json
+*-reader.json
+*-sa.json
+*-[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].json
+gcp-key.json
+**/.secrets/

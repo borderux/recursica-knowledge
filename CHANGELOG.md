@@ -4,7 +4,7 @@
 
 ### Minor Changes
 
-- d9505a9: Revised skills layout from Aaron
+- d9505a9: Revised skills layout
 
 ## 0.6.0
 
