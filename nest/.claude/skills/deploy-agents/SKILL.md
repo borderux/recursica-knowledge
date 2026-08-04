@@ -45,7 +45,14 @@ assuming a path:
 ls ~/.buzz/REPOS/ 2>/dev/null
 ```
 
-No clone yet? Clone it into `~/.buzz/REPOS/`. Everything below runs from that directory.
+No clone yet — the normal case on a clean Buzz install. Clone it yourself; do not ask them
+to do it in a terminal:
+
+```bash
+git clone https://github.com/borderux/recursica-knowledge.git ~/.buzz/REPOS/recursica-knowledge
+```
+
+`main` is correct — do not check out a branch. Everything below runs from that directory.
 
 ## Step 2 — Collect their values
 
