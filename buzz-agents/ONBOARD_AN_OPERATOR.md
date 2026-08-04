@@ -101,8 +101,8 @@ Fill in the blanks and send. Keep the key out of it.
 > build.
 >
 > 1. Install Buzz Desktop, and have `claude` and `node` on your PATH.
-> 2. Clone `https://github.com/borderux/recursica-knowledge` into `~/.buzz/REPOS/` and
->    check out the `feature/buzz-agent-definitions` branch.
+> 2. Clone `https://github.com/borderux/recursica-knowledge` into `~/.buzz/REPOS/`.
+>    `main` is what you want — no branch to check out.
 > 3. Ask your Fizz: **"deploy the agents"** — she will walk you through it. If she has not
 >    picked up the skill yet, point her at
 >    `nest/.claude/skills/deploy-agents/SKILL.md` in that checkout.
