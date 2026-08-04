@@ -51,7 +51,8 @@ buzz-agents/
 │   └── avatars.mjs
 └── scripts/
     ├── export-agents.mjs             Buzz Desktop → this directory
-    └── restore-agents.mjs            this directory → a Buzz community
+    ├── restore-agents.mjs            this directory → a Buzz community
+    └── sync-prompts.mjs              which of the two is stale?
 ```
 
 The prompt is a separate `.md` file rather than a string inside `agent.json` on
@@ -205,3 +206,73 @@ agents are never exported in the first place.
   (`buzz mem get core`). A restored agent starts with empty memory.
 - MCP servers, skills, and the workspace an agent reads at runtime live in that
   agent's own checkout, not in its Buzz definition.
+- **`draft-update` does not check that the agent exists.** A name matching nothing still
+  returns `accepted: true` and opens a draft that updates nothing. Verified 2026-08-04.
+  Take the name from `managed-agents.json`, never from a guess — `sync-prompts.mjs` does.
+- **A prompt over 20,000 characters is rejected**: `system prompt is too long (max 20000
+characters)`. Claire's resolved prompt currently sits under 100 characters below that,
+  so it is a live constraint rather than a theoretical one.
+
+## Sync — which side is stale?
+
+Export and restore each assume they know the answer. After a `git pull`, an operator does
+not:
+
+```bash
+# report only — needs no credentials, no channel, changes nothing
+node buzz-agents/scripts/sync-prompts.mjs
+
+# see the change before deciding
+node buzz-agents/scripts/sync-prompts.mjs --diff
+
+# print the draft-update commands, then send them
+node buzz-agents/scripts/sync-prompts.mjs --channel <uuid>
+node buzz-agents/scripts/sync-prompts.mjs --channel <uuid> --run
+
+# CI / pre-flight: non-zero exit if anything anywhere differs
+node buzz-agents/scripts/sync-prompts.mjs --check
+```
+
+### It compares in stored form, not resolved form
+
+The obvious implementation — fill in the tokens and compare against the live prompt — is
+wrong in a way that looks like it works. **Redactions are one-way** by design: text scrubbed
+on export is never reinstated. So a resolved comparison reports drift on every redacted
+agent, on every run, forever, with no edit that could ever clear it. ALAN is redacted today,
+and that is exactly what would have happened to him.
+
+Instead the _live_ prompt is pushed through the export transformation — tokenize, then
+redact — and the result compared against the stored file. That asks "would
+`export-agents.mjs` write anything?", which gives the same answer for a real edit and the
+right answer for a redaction, and reuses the transformation the export already relies on
+rather than inventing a second one that has to agree with it.
+
+### Which side is ahead is answered by git, not guessed
+
+Content alone cannot distinguish "the branch moved ahead of me" from "I edited my agent in
+Buzz Desktop and never exported it" — and those want opposite fixes. Getting it backwards
+silently deletes unversioned work.
+
+Git holds the answer. If the stored form of the live prompt matches an **earlier commit** of
+`SYSTEM_PROMPT.md`, the live agent is a known past state of this repository and the branch
+has simply moved on: safe to apply. If it matches **no commit ever made**, the live prompt
+contains work this repository has never seen, and the fix is `export-agents.mjs` and a
+commit — not an overwrite. The second case prints no apply command unless you pass
+`--force-apply`.
+
+Outside a git checkout the direction cannot be established, so the script reports the drift
+and declines to apply rather than picking a side.
+
+### What it refuses to do
+
+- Send a prompt with an unresolved `{{TOKEN}}` — same fail-closed rule as restore.
+- Print a command whose prompt exceeds the 20,000-character limit. It names the agent and
+  the overage instead; the fix is to move a section out to a `GUIDES/*.md` the agent is told
+  to read, not to shave prose.
+- Emit a flag for a setting it cannot actually set. The flags only ever assign a value, so a
+  repo value of `null` against a live value of something is real drift that no
+  `draft-update` can express. It is reported as a Buzz Desktop step instead of becoming
+  `--model null`.
+
+`--diff` output is in stored form, so it carries no project ids, folder ids or home
+directories and is safe to paste into a channel.

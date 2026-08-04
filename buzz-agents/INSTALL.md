@@ -15,10 +15,10 @@ Buzz.app. There is no Linux build and no container option.
 
 Two halves, and it is worth knowing which is which when something breaks:
 
-| Half | What it is | Where it comes from |
-|---|---|---|
-| **The agents** | Claire, Stu, Janice, ALAN — their prompts and settings | `buzz-agents/` → drafts you approve in Buzz Desktop |
-| **The nest** | The scripts, fenced MCP servers and guides they use at runtime | `nest/` → `~/.buzz/` via one command |
+| Half           | What it is                                                     | Where it comes from                                 |
+| -------------- | -------------------------------------------------------------- | --------------------------------------------------- |
+| **The agents** | Claire, Stu, Janice, ALAN — their prompts and settings         | `buzz-agents/` → drafts you approve in Buzz Desktop |
+| **The nest**   | The scripts, fenced MCP servers and guides they use at runtime | `nest/` → `~/.buzz/` via one command                |
 
 An agent without the nest starts up and then cannot do anything, because every tool it
 reaches for lives in `~/.buzz`. Install both.
@@ -57,13 +57,13 @@ owner's side — what to send, what never to send, and how to revoke it later.
 
 ## Step 1 — Prerequisites
 
-| | Why | Get it |
-|---|---|---|
-| **Buzz Desktop** | Supplies the `buzz` CLI *and* `buzz-acp`. Neither is distributed separately. | Install the app |
-| **Claude Code** | The runtime every agent is configured against | `claude` on your PATH |
-| **Node 18+** | Runs the Drive fence server and these scripts | `node` on your PATH |
-| **`gcloud`** | Only if you will create a *new* client dataset | Google Cloud SDK |
-| **`ANTHROPIC_API_KEY`** | Your own. Never shared between operators. | Your account |
+|                         | Why                                                                          | Get it                |
+| ----------------------- | ---------------------------------------------------------------------------- | --------------------- |
+| **Buzz Desktop**        | Supplies the `buzz` CLI _and_ `buzz-acp`. Neither is distributed separately. | Install the app       |
+| **Claude Code**         | The runtime every agent is configured against                                | `claude` on your PATH |
+| **Node 18+**            | Runs the Drive fence server and these scripts                                | `node` on your PATH   |
+| **`gcloud`**            | Only if you will create a _new_ client dataset                               | Google Cloud SDK      |
+| **`ANTHROPIC_API_KEY`** | Your own. Never shared between operators.                                    | Your account          |
 
 Step 4 checks all of these and names anything missing, so you do not have to verify by hand.
 
@@ -82,7 +82,7 @@ git checkout feature/buzz-agent-definitions
 ## Step 3 — Fill in your values
 
 Identifiers are not stored in this repository — it is public. Prompts and scripts carry
-`{{TOKEN}}` markers, and you supply the values for *your* installation.
+`{{TOKEN}}` markers, and you supply the values for _your_ installation.
 
 ```bash
 cp buzz-agents/local-values.example.json buzz-agents/local-values.json
@@ -118,7 +118,7 @@ the scripts, MCP servers and guides, and resolves your tokens on the way in.
 **It is idempotent.** Re-run it after every `git pull` to pick up changes; it rewrites only
 what differs.
 
-**If it stops, read what it says.** The usual stop is *unresolved tokens* — it lists every
+**If it stops, read what it says.** The usual stop is _unresolved tokens_ — it lists every
 missing value and the file that needed it. Add them to `local-values.json` and re-run. It
 refuses rather than installing a script that would go looking for a project literally named
 `{{BQ_PROJECT}}`.
@@ -153,7 +153,7 @@ agents have no tools.
 
 ---
 
-## Step 6 — Only if you are creating a *new* client
+## Step 6 — Only if you are creating a _new_ client
 
 Joining a client that already exists? Skip this. You need the dataset to exist and the
 Drive folder shared with the service account — ask whoever set it up.
@@ -197,16 +197,16 @@ Then smoke-test in your channel:
 
 ## When it goes wrong
 
-| Symptom | Cause | Fix |
-|---|---|---|
-| Bootstrap stops on prerequisites | Missing app or binary | Install what it named, re-run |
-| Bootstrap stops on unresolved tokens | Blank values | Fill in `local-values.json`, re-run |
-| Your agent has no tools | Buzz not restarted since install | Restart Buzz Desktop |
-| A tool is missing entirely | `toolbox` download failed or was interrupted | Re-run Step 4; it refetches and verifies |
-| `Access Denied` on your own dataset | Dataset grant missing, or wrong region (must be US) | Check both |
-| Janice never says anything | Normal — a clean turn gets no message | Nothing to fix |
-| Janice posts to a channel named `{{JANICE_CHANNEL}}` | Nest installed with tokens unresolved | Re-run Step 4 |
-| `ISOLATION BROKEN` | Project-level BigQuery role on the service account | Leave only `jobUser`, re-run Step 7 |
+| Symptom                                              | Cause                                               | Fix                                      |
+| ---------------------------------------------------- | --------------------------------------------------- | ---------------------------------------- |
+| Bootstrap stops on prerequisites                     | Missing app or binary                               | Install what it named, re-run            |
+| Bootstrap stops on unresolved tokens                 | Blank values                                        | Fill in `local-values.json`, re-run      |
+| Your agent has no tools                              | Buzz not restarted since install                    | Restart Buzz Desktop                     |
+| A tool is missing entirely                           | `toolbox` download failed or was interrupted        | Re-run Step 4; it refetches and verifies |
+| `Access Denied` on your own dataset                  | Dataset grant missing, or wrong region (must be US) | Check both                               |
+| Janice never says anything                           | Normal — a clean turn gets no message               | Nothing to fix                           |
+| Janice posts to a channel named `{{JANICE_CHANNEL}}` | Nest installed with tokens unresolved               | Re-run Step 4                            |
+| `ISOLATION BROKEN`                                   | Project-level BigQuery role on the service account  | Leave only `jobUser`, re-run Step 7      |
 
 ---
 
@@ -235,5 +235,19 @@ Re-running bootstrap also picks up new nest files, including updates to the `dep
 skill Fizz uses. Your own `.claude/settings.json` is left alone once it exists — bootstrap
 reports when it differs from the branch instead of overwriting your hooks and permissions.
 
-For prompt changes, ask Fizz — or run the drift check and approve the draft it offers you.
-Your agents will not silently rewrite themselves.
+Bootstrap covers the nest. It does not touch your agents' prompts, because nothing is
+allowed to rewrite an agent's instructions without you looking at them first. So after a
+pull, ask what changed:
+
+```bash
+node buzz-agents/scripts/sync-prompts.mjs
+```
+
+It compares each agent running on your Mac against the branch and tells you which side is
+stale. Where the branch is ahead it prints a `buzz agents draft-update` you can run; where
+_you_ are ahead — you edited an agent in Buzz Desktop and never exported it — it says so and
+refuses to overwrite your edit. Add `--diff` to see the change before deciding, and
+`--channel <uuid> --run` to send the drafts.
+
+Every draft still opens a form in Buzz Desktop that you have to save. Your agents will not
+silently rewrite themselves.

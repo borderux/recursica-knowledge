@@ -26,7 +26,8 @@ Ask, and do not guess — the answer changes half the steps:
    the service account and the Drive folder. Most common. You need their values, not
    `gcloud`.
 2. **Creating a new client from scratch.** Needs Google Cloud work and `gcloud`.
-3. **Repairing or updating an existing install.** A nest already exists here.
+3. **Repairing or updating an existing install.** A nest already exists here. The agents
+   exist too, so Step 4 is the wrong tool — see *Updating agents that already exist*.
 
 Check which by looking, before you ask twice:
 
@@ -155,6 +156,44 @@ CLI flags.
 
 Then tell them to **restart Buzz Desktop.** MCP servers are read once at startup; until
 they restart, their agents have no tools and will look broken.
+
+## Updating agents that already exist
+
+Case 3 only. **Do not use Step 4 here** — `draft-create` proposes a *new* agent, so it would
+offer them a second Claire rather than update the one they have.
+
+Start by asking what is actually different, which needs no credentials and changes nothing:
+
+```bash
+node buzz-agents/scripts/sync-prompts.mjs
+node buzz-agents/scripts/sync-prompts.mjs --diff     # see the change itself
+```
+
+Read the state it reports per agent, because the right action is different for each:
+
+| It says | What happened | What to do |
+|---|---|---|
+| `in sync` | Nothing to do | Say so and stop |
+| `BEHIND the branch` | They pulled; their agent is an older commit | Offer the `draft-update` it prints |
+| `has local edits not in git` | **They edited the agent in Buzz Desktop and never exported it** | Do NOT apply. Their prompt is unversioned work and applying would delete it |
+| `prompt in sync, settings differ` | Only runtime/provider/model/`respond_to` moved | Offer the settings-only `draft-update` |
+| `not installed on this Mac` | Genuinely missing | That one, and only that one, needs Step 4 |
+
+For the local-edits case, tell them what they have and let them choose. The capture is
+`node buzz-agents/scripts/export-agents.mjs`, then a normal PR. Do not run
+`--force-apply` on their behalf: it exists so a human can overwrite their own work
+knowingly, not so you can.
+
+To send the drafts once they have agreed:
+
+```bash
+node buzz-agents/scripts/sync-prompts.mjs --channel <uuid> --run
+```
+
+Same gate as Step 4 — each one opens a form they must save. If it reports a prompt over the
+20,000-character limit, do not trim the prompt to fit; that is a content decision for the
+owner, and `~/.buzz/GUIDES/JANICE_REVIEW_CHECKLIST.md` covers how to move a section out to a
+guide instead.
 
 ## Step 5 — Only for a new client
 
