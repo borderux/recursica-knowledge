@@ -7,6 +7,10 @@
     "           0700 by the bootstrap and never populated from this repo.",
     "resolve  — whether {{TOKEN}} markers are replaced with local-values.json values",
     "           on the way in. See $resolveComment below; this is not a blanket yes.",
+    "ifAbsent — install only when the target does not exist. For files an operator is",
+    "           expected to edit: overwriting on the next `git pull` + bootstrap would",
+    "           silently discard their changes. A differing file is reported, not",
+    "           replaced. Everything without this flag is ours and is kept in sync.",
     "",
     "Deliberately NOT in this manifest:",
     "  bin/toolbox            154 MB. Fetched from upstream by version + checksum.",
@@ -15,7 +19,8 @@
     "                         to the copy instead of the template.",
     "  .claude/agents/*-<slug>.md  Same — rendered from mcp/templates/agents/.",
     "  drive-fence/diag-export.mjs  A one-off investigation into a Drive 403, not runtime.",
-    "  .secrets/*             Service-account keys. Never versioned, never templated."
+    "  .secrets/*             Service-account keys. Never versioned, never templated.",
+    "  .claude/skills/buzz-cli/  Ships with Buzz Desktop; not ours to install or update."
   ],
 
   "$resolveComment": [
@@ -81,6 +86,7 @@
     { "path": ".secrets", "mode": "0700" },
     { "path": ".scratch", "mode": "0755" },
     { "path": ".claude/agents", "mode": "0755" },
+    { "path": ".claude/skills", "mode": "0700" },
     { "path": "RESEARCH", "mode": "0755" },
     { "path": "PLANS", "mode": "0755" },
     { "path": "GUIDES", "mode": "0755" },
@@ -111,7 +117,32 @@
     { "from": "GUIDES/RESEARCH_CHANNEL_DATASET_SCHEMA.md", "to": "GUIDES/RESEARCH_CHANNEL_DATASET_SCHEMA.md", "mode": "0644", "resolve": false },
     { "from": "GUIDES/JANICE_REVIEW_CHECKLIST.md", "to": "GUIDES/JANICE_REVIEW_CHECKLIST.md", "mode": "0644", "resolve": true },
     { "from": "GUIDES/CLAIRE_ZERO_TO_RUNNING.md", "to": "GUIDES/CLAIRE_ZERO_TO_RUNNING.md", "mode": "0644", "resolve": true },
-    { "from": "GUIDES/BIGQUERY_MCP_AND_GOOGLE_AUTH_SETUP.md", "to": "GUIDES/BIGQUERY_MCP_AND_GOOGLE_AUTH_SETUP.md", "mode": "0644", "resolve": true }
+    { "from": "GUIDES/BIGQUERY_MCP_AND_GOOGLE_AUTH_SETUP.md", "to": "GUIDES/BIGQUERY_MCP_AND_GOOGLE_AUTH_SETUP.md", "mode": "0644", "resolve": true },
+
+    { "from": ".claude/settings.json", "to": ".claude/settings.json", "mode": "0644", "resolve": true, "ifAbsent": true },
+    { "from": ".claude/skills/deploy-agents/SKILL.md", "to": ".claude/skills/deploy-agents/SKILL.md", "mode": "0644", "resolve": false }
+  ],
+
+  "$settingsComment": [
+    ".claude/settings.json is load-bearing for two of the four agents, and was missing",
+    "from this manifest until 2026-08-04 — so every operator but the first would have got",
+    "a Janice who never reviewed anything and never said why.",
+    "",
+    "  hooks.Stop      runs bin/wake-janice.sh after every turn. This is the ONLY thing",
+    "                  that triggers a Janice review. Without it she is installed,",
+    "                  healthy, and permanently idle — and silence is also what a clean",
+    "                  review looks like, so the failure is invisible.",
+    "  permissions     allow: [Agent] — Claire fans out parallel Scribe/Tagger subagents.",
+    "  MAX_MCP_OUTPUT_TOKENS  60000. BigQuery result sets truncate at the default.",
+    "",
+    "resolve:true for {{BUZZ_HOME}} — the hook needs an absolute path, and the nest is",
+    "not always ~/.buzz (--nest, $BUZZ_HOME). bootstrap-nest.mjs derives this value from",
+    "the target directory rather than asking for it; it is not in local-values.json.",
+    "",
+    "ifAbsent:true because this is an operator's own settings file. They may add hooks or",
+    "permissions of their own, and a later bootstrap must not throw those away. The cost",
+    "is that changes we make here do not reach an existing nest automatically — bootstrap",
+    "says so, with a diff hint, rather than deciding for them."
   ],
 
   "prerequisites": [

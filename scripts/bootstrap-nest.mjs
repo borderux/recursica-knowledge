@@ -143,6 +143,11 @@ if (!values.TRANSCRIPT_DIR) {
   ok(`TRANSCRIPT_DIR derived → ${values.TRANSCRIPT_DIR}`);
 }
 
+// BUZZ_HOME is where we are installing, so it is known rather than asked for. The Stop
+// hook in .claude/settings.json needs it as an absolute path, and the nest is not always
+// ~/.buzz — --nest and $BUZZ_HOME both move it.
+values = { ...values, BUZZ_HOME: NEST };
+
 const provided = Object.entries(values).filter(([k, v]) => !k.startsWith("$") && v).length;
 ok(`${provided} value${provided === 1 ? "" : "s"} loaded from ${path.relative(repoRoot, valuesFile) || valuesFile}`);
 
@@ -198,6 +203,22 @@ for (const f of manifest.files ?? []) {
 
   if (same && modeOk) {
     ok(f.to);
+    continue;
+  }
+
+  // An operator's own file. Create it if they have none; never overwrite one they may
+  // have edited. Report the drift and let them merge it.
+  if (f.ifAbsent && exists) {
+    if (same) {
+      ok(f.to);
+    } else {
+      warn(
+        `${f.to} differs from this branch, and is yours to edit — leaving it alone.\n` +
+          `      If you did not change it deliberately, you may be missing something added\n` +
+          `      upstream. Compare against the source ({{TOKEN}}s show unresolved there):\n` +
+          `        diff ${dst} ${src}`,
+      );
+    }
     continue;
   }
   if (!CHECK) {

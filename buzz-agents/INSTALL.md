@@ -25,6 +25,36 @@ reaches for lives in `~/.buzz`. Install both.
 
 ---
 
+## The short way: ask Fizz
+
+Fizz ships with Buzz Desktop, so you already have her. Do Steps 1 and 2 below — install
+Buzz Desktop, clone the repo — then tell her:
+
+```
+deploy the agents
+```
+
+She collects your values, installs the nest, opens the four drafts for you to approve, and
+runs the isolation check. She can look up the channel UUIDs and Janice's pubkey herself, so
+you are asked for less than this document asks for.
+
+**On a machine with no nest yet she has not picked up the skill.** Point her at it once:
+
+```
+deploy the agents — the skill is at nest/.claude/skills/deploy-agents/SKILL.md in the checkout
+```
+
+The rest of this page is the same process by hand. Use it if you would rather see every
+command, or if something went wrong and you want to know what she was doing.
+
+> **Never paste a service-account key into a chat**, with Fizz or anyone. Put the file at
+> `~/.buzz/.secrets/` and tell her the path. Relay messages cannot be unsent.
+
+Handing this to someone else? [ONBOARD_AN_OPERATOR.md](ONBOARD_AN_OPERATOR.md) is the
+owner's side — what to send, what never to send, and how to revoke it later.
+
+---
+
 ## Step 1 — Prerequisites
 
 | | Why | Get it |
@@ -200,6 +230,10 @@ Not oversights — each is deliberate:
 git pull
 node scripts/bootstrap-nest.mjs      # picks up changed scripts and guides
 ```
+
+Re-running bootstrap also picks up new nest files, including updates to the `deploy-agents`
+skill Fizz uses. Your own `.claude/settings.json` is left alone once it exists — bootstrap
+reports when it differs from the branch instead of overwriting your hooks and permissions.
 
 For prompt changes, ask Fizz — or run the drift check and approve the draft it offers you.
 Your agents will not silently rewrite themselves.
