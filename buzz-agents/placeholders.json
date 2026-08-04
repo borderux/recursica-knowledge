@@ -110,12 +110,12 @@
       "reason": "Scrub real participant identifier token."
     },
     {
-      "pattern": "\\b{{TAG_SHEET_ID}}\\b",
+      "pattern": "\\b1_RIlxH4iS82QLZUPp-pH0YfjD2S_ois4z-ZIGatY6So\\b",
       "replace": "{{TAG_SHEET_ID}}",
       "reason": "Scrub real Google Sheet ID."
     },
     {
-      "pattern": "\\babc123def456\\b",
+      "pattern": "\\bce0b6365bbe1\\b",
       "replace": "abc123def456",
       "reason": "Scrub live GCP key ID fragment."
     },
