@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+# Launch Stu, the local data explorer, for one research channel.
+#
+#   ~/.buzz/bin/stu --slug acme --channel <channel-uuid>
+#
+# Idempotent: if a server is already serving this slug on the port, it prints that URL and
+# exits 0 rather than binding a second one. That matters because Stu has two launch paths —
+# Claire finishing a transcript, and a person saying "@Stu open the explorer" — and they will
+# collide.
+#
+# Exit codes: 0 running (started or already up), 1 usage/preflight, 2 build or start failed.
+
+set -euo pipefail
+
+BUZZ_HOME="${BUZZ_HOME:-$HOME/.buzz}"
+APP="$BUZZ_HOME/REPOS/stu-explorer"
+SLUG=""
+CHANNEL=""
+PORT="${STU_PORT:-4317}"
+FOREGROUND=0
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --slug)       SLUG="$2"; shift 2 ;;
+    --channel)    CHANNEL="$2"; shift 2 ;;
+    --port)       PORT="$2"; shift 2 ;;
+    --foreground) FOREGROUND=1; shift ;;
+    -h|--help)    sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *) echo "stu: unknown argument $1" >&2; exit 1 ;;
+  esac
+done
+
+die() { echo "stu: $*" >&2; exit "${2:-1}"; }
+
+[[ -n "$SLUG" ]] || die "--slug is required (e.g. --slug acme)"
+[[ -d "$APP" ]] || die "Stu is not installed at $APP"
+
+KEY="$BUZZ_HOME/.secrets/claire-$SLUG-service-user.json"
+[[ -f "$KEY" ]] || die "no service-account key at $KEY — deploy the channel first"
+
+URL="http://127.0.0.1:$PORT"
+
+# Already up and serving this slug? Say so and stop. Only treat a *matching* slug as "already
+# running": a server on this port for another channel is a conflict, not a reuse.
+if RUNNING="$(curl -fsS --max-time 2 "$URL/api/config" 2>/dev/null)"; then
+  if grep -q "\"slug\":\"$SLUG\"" <<<"$RUNNING"; then
+    echo "stu: already running — $URL"
+    exit 0
+  fi
+  die "port $PORT is serving a different channel: $RUNNING
+  Pass --port to run this one alongside it." 2
+fi
+
+# The server serves web/dist. A missing build is the most common first-run failure, so build it
+# rather than handing back a 404 the user has to interpret.
+if [[ ! -f "$APP/web/dist/index.html" ]]; then
+  echo "stu: no web build found — building (first run only)"
+  ( cd "$APP/web" && npm install --silent && npm run build --silent ) \
+    || die "the web build failed" 2
+fi
+
+ARGS=(--slug "$SLUG" --port "$PORT")
+[[ -n "$CHANNEL" ]] && ARGS+=(--channel "$CHANNEL")
+
+if [[ "$FOREGROUND" == "1" ]]; then
+  exec node "$APP/server/server.mjs" "${ARGS[@]}"
+fi
+
+LOG="${TMPDIR:-/tmp}/stu-$SLUG.log"
+node "$APP/server/server.mjs" "${ARGS[@]}" >"$LOG" 2>&1 &
+PID=$!
+
+# Wait for the port rather than sleeping a fixed amount: the first BigQuery token exchange is
+# the slow part and it varies.
+for _ in $(seq 1 30); do
+  if curl -fsS --max-time 2 "$URL/api/config" >/dev/null 2>&1; then
+    echo "stu: $SLUG → $URL (pid $PID, log $LOG)"
+    exit 0
+  fi
+  kill -0 "$PID" 2>/dev/null || { cat "$LOG" >&2; die "the server exited during startup" 2; }
+  sleep 1
+done
+
+cat "$LOG" >&2
+die "the server did not become ready within 30s" 2

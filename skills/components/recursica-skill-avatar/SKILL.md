@@ -70,8 +70,8 @@ An avatar is either a picture or a control, and the two fail differently. As a p
 
 ### Screen readers
 
-- **An `image` avatar needs alternative text naming the person or thing** whenever the avatar is the only place that name appears. "the operator", not "avatar" and not "profile photo".
-- **When the name is already adjacent in text, the avatar is decorative and must be silent.** Give it empty alternative text. "the operator, image, the operator" is worse than saying nothing, and it happens in every row of the list.
+- **An `image` avatar needs alternative text naming the person or thing** whenever the avatar is the only place that name appears. "Jane Doe", not "avatar" and not "profile photo".
+- **When the name is already adjacent in text, the avatar is decorative and must be silent.** Give it empty alternative text. "Jane Doe, image, Jane Doe" is worse than saying nothing, and it happens in every row of the list.
 - **A `text` avatar's initials must never be announced as an identity.** "AM" tells a screen reader user nothing. The initials are decorative; the name in text is what gets read.
 - **An `icon` avatar must be silent.** It carries no identity, so there is nothing to announce — and it must not surface as "image" or "graphic".
 - **An avatar that is a control needs a real accessible name that says what activating it does** — "Account menu", or the user's name plus what it opens. The image is not the name, and an unnamed control is announced as just "button".

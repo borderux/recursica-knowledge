@@ -29,7 +29,7 @@ SELECT
   p.participant_name,
   p.participant_type,
   p.demographics
-FROM `{{BQ_PROJECT}}.research_db.participants` p
+FROM `{{BQ_PROJECT}}.{{BQ_DATASET}}.participants` p
 WHERE p.conversation_id = '[DOC_ID]'
 ```
 
@@ -48,7 +48,7 @@ SELECT
   tl.participant_id,
   COALESCE(tl.cleaned_text, tl.original_text) AS text,
   tl.applied_tags
-FROM `{{BQ_PROJECT}}.research_db.transcript_lines` tl
+FROM `{{BQ_PROJECT}}.{{BQ_DATASET}}.transcript_lines` tl
 WHERE tl.conversation_id = '[DOC_ID]'
 ORDER BY tl.line_sequence_number ASC
 ```

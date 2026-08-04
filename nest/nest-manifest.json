@@ -1,0 +1,179 @@
+{
+  "$comment": [
+    "What bootstrap-nest.mjs installs into ~/.buzz, and how.",
+    "",
+    "mode     — file permissions. Executables get 0755; nothing here is secret, so",
+    "           there is no 0600 entry. The .secrets/ directory itself is created",
+    "           0700 by the bootstrap and never populated from this repo.",
+    "resolve  — whether {{TOKEN}} markers are replaced with local-values.json values",
+    "           on the way in. See $resolveComment below; this is not a blanket yes.",
+    "ifAbsent — install only when the target does not exist. For files an operator is",
+    "           expected to edit: overwriting on the next `git pull` + bootstrap would",
+    "           silently discard their changes. A differing file is reported, not",
+    "           replaced. Everything without this flag is ours and is kept in sync.",
+    "",
+    "Deliberately NOT in this manifest:",
+    "  bin/toolbox            154 MB. Fetched from upstream by version + checksum.",
+    "  mcp/bq-<slug>.yaml     Generated per channel by deploy-claire-channel.sh from",
+    "                         mcp/templates/. Versioning rendered output invites edits",
+    "                         to the copy instead of the template.",
+    "  .claude/agents/*-<slug>.md  Same — rendered from mcp/templates/agents/.",
+    "  drive-fence/diag-export.mjs  A one-off investigation into a Drive 403, not runtime.",
+    "  .secrets/*             Service-account keys. Never versioned, never templated.",
+    "  .claude/skills/buzz-cli/  Ships with Buzz Desktop; not ours to install or update."
+  ],
+
+  "$resolveComment": [
+    "Token resolution is per file, because 'resolve everything' is wrong twice.",
+    "",
+    "RESEARCH_CHANNEL_DATASET_SCHEMA.md is resolve:false on purpose. It is the DDL",
+    "source of truth, and deploy-claire-channel.sh substitutes {{BQ_PROJECT}} itself",
+    "at deploy time (its sed also handles the per-channel @dataset). Baking the project",
+    "in at bootstrap would mean a later `deploy --project other-project` silently emits",
+    "DDL naming the project chosen at install time instead.",
+    "",
+    "JANICE_REVIEW_CHECKLIST.md is resolve:true and must stay that way. Janice reads it",
+    "at runtime for the channel routing table. An unresolved {{JANICE_CHANNEL}} there is",
+    "not a cosmetic problem — she would post findings to a channel named after the token."
+  ],
+
+  "toolbox": {
+    "referenceVersion": "1.8.0",
+    "installTo": "bin/toolbox",
+    "mode": "0755",
+    "checksums": {
+      "1.8.0/darwin/arm64": "c69e0b5e25bd5f5f3f3f4d7563d1d8ef0b8ecc922c6654d5db7641f4b0bc4b95"
+    },
+
+    "sourceUrlTemplate": "https://storage.googleapis.com/mcp-toolbox-for-databases/v{version}/{os}/{arch}/toolbox",
+
+    "$comment": [
+      "Self-service. The reference binary is 1.8.0",
+      "(`toolbox version 1.8.0+binary.darwin.arm64.44d1a05`) and it downloads from",
+      "Google's official release bucket, checksum-verified against the pin above.",
+      "",
+      "Earlier revisions of this file recorded 1.8.0 as unfetchable. That was a",
+      "dead-bucket error, not a publishing gap: the upstream project was RENAMED",
+      "from `genai-toolbox` to `googleapis/mcp-toolbox`, and its release bucket",
+      "moved with it. The old `storage.googleapis.com/genai-toolbox` bucket was",
+      "frozen at v1.1.0 at the point of the rename, which is why every later",
+      "version 404s there while v1.0.0 still returns 200. The live bucket is",
+      "`mcp-toolbox-for-databases`, per the install instructions in the upstream",
+      "README at tag v1.8.0.",
+      "",
+      "Verified 2026-08-04: the darwin/arm64 download from the URL above is",
+      "BYTE-IDENTICAL to the vetted binary on the machine this stack was built on —",
+      "same 153,986,752 bytes, same sha256 c69e0b5e…, and the recorded checksum was",
+      "taken from that vetted binary, not from the download. So the pin below is a",
+      "genuine cross-check of provenance, not a self-referential hash of whatever",
+      "the bucket happened to serve.",
+      "",
+      "A checksum mismatch fails closed and refuses to install: this is the",
+      "component that enforces the `allowedDatasets` fence, so a wrong or tampered",
+      "binary must never half-work.",
+      "",
+      "Only darwin/arm64 is recorded, because that is the only platform this stack runs",
+      "on: buzz and buzz-acp ship exclusively as arm64 Mach-O inside Buzz.app.",
+      "Re-pin with: shasum -a 256 ~/.buzz/bin/toolbox",
+      "",
+      "To move to a newer toolbox, bump referenceVersion and add the matching",
+      "checksum — download it, run it, confirm the dataset fence still holds with",
+      "bin/verify-channel-isolation.py, and only then record the hash."
+    ]
+  },
+
+  "directories": [
+    { "path": ".secrets", "mode": "0700" },
+    { "path": ".scratch", "mode": "0755" },
+    { "path": ".claude/agents", "mode": "0755" },
+    { "path": ".claude/skills", "mode": "0700" },
+    { "path": "RESEARCH", "mode": "0755" },
+    { "path": "PLANS", "mode": "0755" },
+    { "path": "GUIDES", "mode": "0755" },
+    { "path": "WORK_LOGS", "mode": "0755" },
+    { "path": "OUTBOX", "mode": "0755" },
+    { "path": "REPOS", "mode": "0755" }
+  ],
+
+  "files": [
+    { "from": "bin/deploy-claire-channel.sh", "to": "bin/deploy-claire-channel.sh", "mode": "0755", "resolve": true },
+    { "from": "bin/verify-channel-isolation.py", "to": "bin/verify-channel-isolation.py", "mode": "0755", "resolve": true },
+    { "from": "bin/sync-tag-dictionary.mjs", "to": "bin/sync-tag-dictionary.mjs", "mode": "0755", "resolve": true },
+    { "from": "bin/stu", "to": "bin/stu", "mode": "0755", "resolve": true },
+    { "from": "bin/wake-janice.sh", "to": "bin/wake-janice.sh", "mode": "0755", "resolve": true },
+    { "from": "bin/janice-turn-window.py", "to": "bin/janice-turn-window.py", "mode": "0755", "resolve": true },
+
+    { "from": "mcp/drive-fence/server.mjs", "to": "mcp/drive-fence/server.mjs", "mode": "0755", "resolve": true },
+    { "from": "mcp/drive-fence/preflight.mjs", "to": "mcp/drive-fence/preflight.mjs", "mode": "0755", "resolve": true },
+    { "from": "mcp/drive-fence/token.mjs", "to": "mcp/drive-fence/token.mjs", "mode": "0644", "resolve": true },
+
+    { "from": "mcp/templates/bq-channel.yaml.tmpl", "to": "mcp/templates/bq-channel.yaml.tmpl", "mode": "0644", "resolve": true },
+    { "from": "mcp/templates/bq-channel-ro.yaml.tmpl", "to": "mcp/templates/bq-channel-ro.yaml.tmpl", "mode": "0644", "resolve": true },
+    { "from": "mcp/templates/agents/scribe.md.tmpl", "to": "mcp/templates/agents/scribe.md.tmpl", "mode": "0644", "resolve": true },
+    { "from": "mcp/templates/agents/lexicon.md.tmpl", "to": "mcp/templates/agents/lexicon.md.tmpl", "mode": "0644", "resolve": true },
+    { "from": "mcp/templates/agents/tagger.md.tmpl", "to": "mcp/templates/agents/tagger.md.tmpl", "mode": "0644", "resolve": true },
+    { "from": "mcp/templates/agents/analyst.md.tmpl", "to": "mcp/templates/agents/analyst.md.tmpl", "mode": "0644", "resolve": true },
+
+    { "from": "GUIDES/RESEARCH_CHANNEL_DATASET_SCHEMA.md", "to": "GUIDES/RESEARCH_CHANNEL_DATASET_SCHEMA.md", "mode": "0644", "resolve": false },
+    { "from": "GUIDES/JANICE_REVIEW_CHECKLIST.md", "to": "GUIDES/JANICE_REVIEW_CHECKLIST.md", "mode": "0644", "resolve": true },
+    { "from": "GUIDES/CLAIRE_ZERO_TO_RUNNING.md", "to": "GUIDES/CLAIRE_ZERO_TO_RUNNING.md", "mode": "0644", "resolve": true },
+    { "from": "GUIDES/BIGQUERY_MCP_AND_GOOGLE_AUTH_SETUP.md", "to": "GUIDES/BIGQUERY_MCP_AND_GOOGLE_AUTH_SETUP.md", "mode": "0644", "resolve": true },
+
+    { "from": ".claude/settings.json", "to": ".claude/settings.json", "mode": "0644", "resolve": true, "ifAbsent": true },
+    { "from": ".claude/skills/deploy-agents/SKILL.md", "to": ".claude/skills/deploy-agents/SKILL.md", "mode": "0644", "resolve": false }
+  ],
+
+  "$settingsComment": [
+    ".claude/settings.json is load-bearing for two of the four agents, and was missing",
+    "from this manifest until 2026-08-04 — so every operator but the first would have got",
+    "a Janice who never reviewed anything and never said why.",
+    "",
+    "  hooks.Stop      runs bin/wake-janice.sh after every turn. This is the ONLY thing",
+    "                  that triggers a Janice review. Without it she is installed,",
+    "                  healthy, and permanently idle — and silence is also what a clean",
+    "                  review looks like, so the failure is invisible.",
+    "  permissions     allow: [Agent] — Claire fans out parallel Scribe/Tagger subagents.",
+    "  MAX_MCP_OUTPUT_TOKENS  60000. BigQuery result sets truncate at the default.",
+    "",
+    "resolve:true for {{BUZZ_HOME}} — the hook needs an absolute path, and the nest is",
+    "not always ~/.buzz (--nest, $BUZZ_HOME). bootstrap-nest.mjs derives this value from",
+    "the target directory rather than asking for it; it is not in local-values.json.",
+    "",
+    "ifAbsent:true because this is an operator's own settings file. They may add hooks or",
+    "permissions of their own, and a later bootstrap must not throw those away. The cost",
+    "is that changes we make here do not reach an existing nest automatically — bootstrap",
+    "says so, with a diff hint, rather than deciding for them."
+  ],
+
+  "prerequisites": [
+    {
+      "name": "Buzz Desktop",
+      "check": "/Applications/Buzz.app/Contents/MacOS/buzz",
+      "kind": "file",
+      "why": "Supplies both the buzz CLI and buzz-acp. Neither is distributed separately, and both are arm64 macOS only.",
+      "fix": "Install Buzz Desktop, then re-run."
+    },
+    {
+      "name": "claude CLI",
+      "check": "claude",
+      "kind": "command",
+      "why": "The runtime every agent is configured against (runtime: claude).",
+      "fix": "Install Claude Code, then re-run."
+    },
+    {
+      "name": "node",
+      "check": "node",
+      "kind": "command",
+      "why": "Runs the drive-fence MCP server, the tag-dictionary sync, and this bootstrap.",
+      "fix": "Install Node.js 18+, then re-run."
+    },
+    {
+      "name": "gcloud",
+      "check": "gcloud",
+      "kind": "command",
+      "optional": true,
+      "why": "Only needed to create a new client dataset and service account via setup_gcp.sh.",
+      "fix": "Install the Google Cloud SDK if you will be onboarding a new client."
+    }
+  ]
+}

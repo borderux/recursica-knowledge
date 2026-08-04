@@ -1,0 +1,25 @@
+{
+  "env": {
+    "MAX_MCP_OUTPUT_TOKENS": "60000"
+  },
+  "permissions": {
+    "allow": [
+      "Agent"
+    ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{BUZZ_HOME}}/bin/wake-janice.sh",
+            "async": true,
+            "timeout": 30,
+            "statusMessage": "Waking Janice for review"
+          }
+        ]
+      }
+    ]
+  }
+}

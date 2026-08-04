@@ -35,7 +35,7 @@ SELECT
   evidence_interview_ids,
   first_identified_run,
   last_updated_run
-FROM `{{BQ_PROJECT}}.research_db.gap_tracker`
+FROM `{{BQ_PROJECT}}.{{BQ_DATASET}}.gap_tracker`
 WHERE project_name = '[PROJECT_NAME]'
 ORDER BY gap_id ASC
 ```
@@ -56,8 +56,8 @@ SELECT
   tl.participant_id,
   COALESCE(tl.cleaned_text, tl.original_text) AS text,
   tl.applied_tags
-FROM `{{BQ_PROJECT}}.research_db.transcript_lines` tl
-JOIN `{{BQ_PROJECT}}.research_db.conversations` c
+FROM `{{BQ_PROJECT}}.{{BQ_DATASET}}.transcript_lines` tl
+JOIN `{{BQ_PROJECT}}.{{BQ_DATASET}}.conversations` c
   ON c.conversation_id = tl.conversation_id
 WHERE c.project_name = '[PROJECT_NAME]'
 ORDER BY tl.conversation_id, tl.line_sequence_number ASC

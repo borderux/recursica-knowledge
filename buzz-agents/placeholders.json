@@ -1,0 +1,133 @@
+{
+  "$comment": [
+    "Environment-specific values are not stored in this repository. Prompts keep a",
+    "{{TOKEN}} in their place, and the value is supplied when the agent is installed",
+    "into a Buzz community.",
+    "",
+    "tokens     — bidirectional. export-agents.mjs swaps the local value out for the",
+    "             token; restore-agents.mjs swaps a target community's value back in.",
+    "redactions — one-way. Text that should never be stored at all, scrubbed on export",
+    "             and never reinstated. Use for anything personal or dead."
+  ],
+  "tokens": {
+    "BQ_PROJECT": {
+      "description": "Google Cloud project holding the BigQuery datasets Claire reads.",
+      "usedBy": ["claire"],
+      "example": "acme-research-123456",
+      "howToFind": "Google Cloud console → project picker → the project ID (not the display name)."
+    },
+    "BUILDER_REPO": {
+      "description": "owner/name of the prototype repository ALAN builds in.",
+      "usedBy": ["alan"],
+      "example": "acme/design-sandbox",
+      "howToFind": "The GitHub path of the repo ALAN should build prototypes in."
+    },
+    "BUILDER_REPO_NAME": {
+      "description": "Bare repository name from BUILDER_REPO. Used for checkout paths.",
+      "usedBy": ["alan"],
+      "example": "design-sandbox",
+      "howToFind": "The part of BUILDER_REPO after the slash."
+    },
+    "KNOWLEDGE_REPO_NAME": {
+      "description": "Bare name of the design-knowledge repository ALAN promotes findings into and must never edit directly.",
+      "usedBy": ["alan"],
+      "example": "design-knowledge",
+      "howToFind": "The repository holding the design-rule skills."
+    },
+    "TRANSCRIPT_DIR": {
+      "description": "Directory holding the agent session transcripts Janice reads as evidence. Contains one <session-id>.jsonl per session.",
+      "usedBy": ["janice"],
+      "example": "/Users/you/.claude/projects/-Users-you--buzz",
+      "howToFind": "Claude Code writes transcripts to ~/.claude/projects/<encoded-cwd>/, where the encoded name is the agent nest's absolute path with each slash and dot replaced by a dash — /Users/you/.buzz becomes -Users-you--buzz. bootstrap-nest.mjs derives this for you."
+    },
+    "TAG_SHEET_ID": {
+      "description": "Google Sheet holding the shared tag dictionary every research channel tags against. Research taxonomy, no client content.",
+      "usedBy": ["nest"],
+      "example": "1AbCdEfGhIjKlMnOpQrStUvWxYz0123456789",
+      "howToFind": "Open the Tag Dictionary sheet; it is the part of the URL between /d/ and /edit. Must be shared as Viewer with the claire-tag-dictionary-reader service account — see Step 0 of CLAIRE_ZERO_TO_RUNNING.md."
+    },
+    "DRIVE_FOLDER": {
+      "description": "Drive folder id for one client. The entire world a channel's Drive service account can see.",
+      "usedBy": ["nest"],
+      "example": "1AbCdEfGhIjKlMnOpQrStUvWxYz_",
+      "howToFind": "Open the client folder in Drive; it is the part of the URL after /folders/."
+    },
+    "CLAIRE_CHANNEL": {
+      "description": "UUID of the building-claire channel in this community. Janice routes findings about Claire here.",
+      "usedBy": ["nest"],
+      "example": "00000000-0000-0000-0000-000000000000",
+      "howToFind": "Open the channel in Buzz; the UUID is in the channel header or URL."
+    },
+    "STU_CHANNEL": {
+      "description": "UUID of the building-stu channel in this community. Janice routes findings about Stu here.",
+      "usedBy": ["nest"],
+      "example": "00000000-0000-0000-0000-000000000000",
+      "howToFind": "Open the channel in Buzz; the UUID is in the channel header or URL."
+    },
+    "ALAN_CHANNEL": {
+      "description": "UUID of the building-alan channel in this community. Janice routes findings about ALAN here.",
+      "usedBy": ["nest"],
+      "example": "00000000-0000-0000-0000-000000000000",
+      "howToFind": "Open the channel in Buzz; the UUID is in the channel header or URL."
+    },
+    "JANICE_CHANNEL": {
+      "description": "UUID of the building-janice channel in this community. Janice's wake messages land here, and it is the fallback for findings about an agent with no channel of its own.",
+      "usedBy": ["nest", "janice"],
+      "example": "00000000-0000-0000-0000-000000000000",
+      "howToFind": "Open the channel in Buzz; the UUID is in the channel header or URL."
+    },
+    "JANICE_PUBKEY": {
+      "description": "Hex pubkey of this community's Janice instance, used by the wake hook to address her.",
+      "usedBy": ["nest"],
+      "example": "0000000000000000000000000000000000000000000000000000000000000000",
+      "howToFind": "buzz channels members --channel <janice-channel-uuid>, or the agent's profile in Buzz Desktop. Each community's Janice has her own keypair, so this is never portable."
+    }
+  },
+  "$redactionsComment": [
+    "Redactions are regular expressions, not literals, so that a rule never has to",
+    "spell out the very text it exists to remove. A literal `find` would put the",
+    "identifier straight back into this file."
+  ],
+  "redactions": [
+    {
+      "pattern": "and several links point at `/Users/[^`]+`, which does not exist\\.",
+      "replace": "and several links point at absolute paths on a previous maintainer's machine, which no longer resolve.",
+      "reason": "Named a person and their local filesystem layout. The instruction only needs the fact that the links are dead."
+    },
+    {
+      "pattern": "\\b(?:acme|acme|acme|P\\.A\\.D\\.I\\.|acme)\\b",
+      "replace": "acme",
+      "reason": "Scrub real client identity slug."
+    },
+    {
+      "pattern": "\\bAlex Smith\\b",
+      "replace": "Alex Smith",
+      "reason": "Scrub research participant name."
+    },
+    {
+      "pattern": "\\bp_int\\b",
+      "replace": "p_int",
+      "reason": "Scrub real participant identifier token."
+    },
+    {
+      "pattern": "\\b{{TAG_SHEET_ID}}\\b",
+      "replace": "{{TAG_SHEET_ID}}",
+      "reason": "Scrub real Google Sheet ID."
+    },
+    {
+      "pattern": "\\babc123def456\\b",
+      "replace": "abc123def456",
+      "reason": "Scrub live GCP key ID fragment."
+    },
+    {
+      "pattern": "\\bthe operator(?: the operator)?\\b",
+      "replace": "the operator",
+      "reason": "Scrub personal name."
+    },
+    {
+      "pattern": "\\bDana R\\.",
+      "replace": "Subject A.",
+      "reason": "Scrub research participant name."
+    }
+  ]
+}
