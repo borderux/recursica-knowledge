@@ -71,11 +71,16 @@ Step 4 checks all of these and names anything missing, so you do not have to ver
 
 ## Step 2 — Clone the repo
 
+Clone it into `~/.buzz/REPOS/` — that is where Fizz looks for it:
+
 ```bash
-git clone https://github.com/borderux/recursica-knowledge.git
-cd recursica-knowledge
-git checkout feature/buzz-agent-definitions
+mkdir -p ~/.buzz/REPOS
+git clone https://github.com/borderux/recursica-knowledge.git ~/.buzz/REPOS/recursica-knowledge
+cd ~/.buzz/REPOS/recursica-knowledge
 ```
+
+Everything below runs from that directory. `main` is what you want — no branch to check
+out.
 
 ---
 
