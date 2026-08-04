@@ -27,22 +27,29 @@ reaches for lives in `~/.buzz`. Install both.
 
 ## The short way: ask Fizz
 
-Fizz ships with Buzz Desktop, so you already have her. Do Steps 1 and 2 below — install
-Buzz Desktop, clone the repo — then tell her:
+Fizz ships with Buzz Desktop, so you already have her. Do Step 1 — install Buzz Desktop and
+have `claude` and `node` on your PATH — then send her this **one message**. It replaces
+Step 2 onward; she clones the repo herself:
 
 ```
-deploy the agents
+deploy the buzz agents: clone https://github.com/borderux/recursica-knowledge into ~/.buzz/REPOS/ and follow nest/.claude/skills/deploy-agents/SKILL.md
 ```
 
 She collects your values, installs the nest, opens the four drafts for you to approve, and
 runs the isolation check. She can look up the channel UUIDs and Janice's pubkey herself, so
 you are asked for less than this document asks for.
 
-**On a machine with no nest yet she has not picked up the skill.** Point her at it once:
+**Why that line carries the repo URL and a file path.** The instructions she follows live
+*inside* the repo, so on a clean Buzz install she has no way to find them and no way to
+find the thing that contains them. This message is the only one that has to spell both out.
+Once the nest is installed the skill is registered locally, and from then on it is just:
 
 ```
-deploy the agents — the skill is at nest/.claude/skills/deploy-agents/SKILL.md in the checkout
+deploy the agents
 ```
+
+That shorter line also covers repairing a half-finished install and updating after a
+`git pull` — she works out which case she is in by looking at `~/.buzz`.
 
 The rest of this page is the same process by hand. Use it if you would rather see every
 command, or if something went wrong and you want to know what she was doing.
