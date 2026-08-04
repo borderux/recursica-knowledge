@@ -4,83 +4,91 @@
     "{{TOKEN}} in their place, and the value is supplied when the agent is installed",
     "into a Buzz community.",
     "",
-    "tokens     — bidirectional. export-agents.mjs swaps the local value out for the",
+    "tokens     \u2014 bidirectional. export-agents.mjs swaps the local value out for the",
     "             token; restore-agents.mjs swaps a target community's value back in.",
-    "redactions — one-way. Text that should never be stored at all, scrubbed on export",
-    "             and never reinstated. Use for anything personal or dead."
+    "redactions \u2014 one-way. Text that should never be stored at all, scrubbed on export",
+    "             and never reinstated. Use for anything personal or dead.",
+    "",
+    "Most of these are on the canvas of the channel the install is being run in, which is",
+    "where to look before asking anybody for one. nest/.claude/skills/deploy-agents/SKILL.md",
+    "holds the canvas-key-to-token map and the canonical canvas layout.",
+    "",
+    "Only declared tokens belong in local-values.json. Every value in that file is treated",
+    "as a substring to replace on export, so adding a short one \u2014 a client slug, a person's",
+    "first name \u2014 rewrites unrelated words in prompts that happen to contain it."
   ],
   "tokens": {
     "BQ_PROJECT": {
       "description": "Google Cloud project holding the BigQuery datasets Claire reads.",
       "usedBy": ["claire"],
       "example": "acme-research-123456",
-      "howToFind": "Google Cloud console → project picker → the project ID (not the display name)."
+      "howToFind": "Canvas key `bq_project` in the install channel. Otherwise: Google Cloud console \u2192 project picker \u2192 the project ID (not the display name)."
     },
     "BUILDER_REPO": {
       "description": "owner/name of the prototype repository ALAN builds in.",
       "usedBy": ["alan"],
       "example": "acme/design-sandbox",
-      "howToFind": "The GitHub path of the repo ALAN should build prototypes in."
+      "howToFind": "Canvas key `builder_repo` in the install channel. Otherwise: the GitHub path of the repo ALAN should build prototypes in."
     },
     "BUILDER_REPO_NAME": {
       "description": "Bare repository name from BUILDER_REPO. Used for checkout paths.",
       "usedBy": ["alan"],
       "example": "design-sandbox",
-      "howToFind": "The part of BUILDER_REPO after the slash."
+      "howToFind": "The part of BUILDER_REPO after the slash. Derived from canvas key `builder_repo`, not looked up."
     },
     "KNOWLEDGE_REPO_NAME": {
       "description": "Bare name of the design-knowledge repository ALAN promotes findings into and must never edit directly.",
       "usedBy": ["alan"],
       "example": "design-knowledge",
-      "howToFind": "The repository holding the design-rule skills."
+      "howToFind": "Canvas key `knowledge_repo` in the install channel. The repository holding the design-rule skills, which ALAN promotes findings into and must never edit directly."
     },
     "TRANSCRIPT_DIR": {
       "description": "Directory holding the agent session transcripts Janice reads as evidence. Contains one <session-id>.jsonl per session.",
       "usedBy": ["janice"],
       "example": "/Users/you/.claude/projects/-Users-you--buzz",
-      "howToFind": "Claude Code writes transcripts to ~/.claude/projects/<encoded-cwd>/, where the encoded name is the agent nest's absolute path with each slash and dot replaced by a dash — /Users/you/.buzz becomes -Users-you--buzz. bootstrap-nest.mjs derives this for you."
+      "howToFind": "Claude Code writes transcripts to ~/.claude/projects/<encoded-cwd>/, where the encoded name is the agent nest's absolute path with each slash and dot replaced by a dash \u2014 /Users/you/.buzz becomes -Users-you--buzz. bootstrap-nest.mjs derives this for you."
     },
     "TAG_SHEET_ID": {
       "description": "Google Sheet holding the shared tag dictionary every research channel tags against. Research taxonomy, no client content.",
       "usedBy": ["nest"],
       "example": "1AbCdEfGhIjKlMnOpQrStUvWxYz0123456789",
-      "howToFind": "Open the Tag Dictionary sheet; it is the part of the URL between /d/ and /edit. Must be shared as Viewer with the claire-tag-dictionary-reader service account — see Step 0 of CLAIRE_ZERO_TO_RUNNING.md."
+      "howToFind": "Canvas key `tag_sheet` in the install channel. Otherwise: open the Tag Dictionary sheet; it is the part of the URL between /d/ and /edit. Must be shared as Viewer with the claire-tag-dictionary-reader service account \u2014 see Step 0 of CLAIRE_ZERO_TO_RUNNING.md."
     },
     "DRIVE_FOLDER": {
       "description": "Drive folder id for one client. The entire world a channel's Drive service account can see.",
       "usedBy": ["nest"],
       "example": "1AbCdEfGhIjKlMnOpQrStUvWxYz_",
-      "howToFind": "Open the client folder in Drive; it is the part of the URL after /folders/."
+      "howToFind": "Canvas key `drive_folder` in the install channel. Otherwise: open the client folder in Drive; it is the part of the URL after /folders/."
     },
     "CLAIRE_CHANNEL": {
       "description": "UUID of the building-claire channel in this community. Janice routes findings about Claire here.",
       "usedBy": ["nest"],
       "example": "00000000-0000-0000-0000-000000000000",
-      "howToFind": "Open the channel in Buzz; the UUID is in the channel header or URL."
+      "howToFind": "Canvas key `claire_channel` in the install channel. Otherwise `buzz channels list`, or the channel header in Buzz. This is Janice's routing table, not the channel the install runs in."
     },
     "STU_CHANNEL": {
       "description": "UUID of the building-stu channel in this community. Janice routes findings about Stu here.",
       "usedBy": ["nest"],
       "example": "00000000-0000-0000-0000-000000000000",
-      "howToFind": "Open the channel in Buzz; the UUID is in the channel header or URL."
+      "howToFind": "Canvas key `stu_channel` in the install channel. Otherwise `buzz channels list`, or the channel header in Buzz. This is Janice's routing table, not the channel the install runs in."
     },
     "ALAN_CHANNEL": {
       "description": "UUID of the building-alan channel in this community. Janice routes findings about ALAN here.",
       "usedBy": ["nest"],
       "example": "00000000-0000-0000-0000-000000000000",
-      "howToFind": "Open the channel in Buzz; the UUID is in the channel header or URL."
+      "howToFind": "Canvas key `alan_channel` in the install channel. Otherwise `buzz channels list`, or the channel header in Buzz. This is Janice's routing table, not the channel the install runs in."
     },
     "JANICE_CHANNEL": {
       "description": "UUID of the building-janice channel in this community. Janice's wake messages land here, and it is the fallback for findings about an agent with no channel of its own.",
       "usedBy": ["nest", "janice"],
       "example": "00000000-0000-0000-0000-000000000000",
-      "howToFind": "Open the channel in Buzz; the UUID is in the channel header or URL."
+      "howToFind": "Canvas key `janice_channel` in the install channel. Otherwise `buzz channels list`, or the channel header in Buzz. This is Janice's routing table, not the channel the install runs in."
     },
     "JANICE_PUBKEY": {
-      "description": "Hex pubkey of this community's Janice instance, used by the wake hook to address her.",
+      "description": "Hex pubkey of the Janice instance on this machine, used by the wake hook to address her. One per operator, not one per community.",
       "usedBy": ["nest"],
       "example": "0000000000000000000000000000000000000000000000000000000000000000",
-      "howToFind": "buzz channels members --channel <janice-channel-uuid>, or the agent's profile in Buzz Desktop. Each community's Janice has her own keypair, so this is never portable."
+      "howToFind": "Not on the canvas: each operator runs their own Janice, so this is per-machine, not per-community, and it does not exist until that Janice's draft has been saved. Then: buzz channels members --channel <janice-channel-uuid>, or the agent's profile in Buzz Desktop. Bootstrap therefore runs twice; it is idempotent."
     }
   },
   "$redactionsComment": [
