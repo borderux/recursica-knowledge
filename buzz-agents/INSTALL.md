@@ -28,19 +28,22 @@ reaches for lives in `~/.buzz`. Install both.
 ## The short way: ask Fizz
 
 Fizz ships with Buzz Desktop, so you already have her. Do Step 1 — install Buzz Desktop and
-have `claude` and `node` on your PATH — then send her this **one message**. It replaces
-Step 2 onward; she clones the repo herself:
+have `claude` and `node` on your PATH — then **add your own Fizz to the channel the agents
+are for** and send her this **one message, in that channel**. It replaces Step 2 onward; she
+clones the repo herself:
 
 ```
 deploy the buzz agents: clone https://github.com/borderux/recursica-knowledge into ~/.buzz/REPOS/ and follow nest/.claude/skills/deploy-agents/SKILL.md
 ```
 
-She collects your values, installs the nest, opens the four drafts for you to approve, and
-runs the isolation check. She can look up the channel UUIDs and Janice's pubkey herself, so
-you are asked for less than this document asks for.
+She reads the configuration out of that channel's canvas, installs the nest, opens the four
+drafts for you to approve, and runs the isolation check. That is why the channel matters: a
+private channel is invisible to an agent that is not a member of it — canvas, name and all —
+and _your_ being in it does not cover her. Asked in the right channel she needs almost
+nothing from you; asked anywhere else she has to interview you for every value.
 
 **Why that line carries the repo URL and a file path.** The instructions she follows live
-*inside* the repo, so on a clean Buzz install she has no way to find them and no way to
+_inside_ the repo, so on a clean Buzz install she has no way to find them and no way to
 find the thing that contains them. This message is the only one that has to spell both out.
 Once the nest is installed the skill is registered locally, and from then on it is just:
 
@@ -147,11 +150,19 @@ component that enforces the dataset fence.
 
 ```bash
 # See the commands first
-node buzz-agents/scripts/restore-agents.mjs --channel <your-channel-uuid>
+node buzz-agents/scripts/restore-agents.mjs --channel <your-channel-uuid> --owner <your-name>
 
 # Run them
-node buzz-agents/scripts/restore-agents.mjs --channel <your-channel-uuid> --run
+node buzz-agents/scripts/restore-agents.mjs --channel <your-channel-uuid> --owner <your-name> --run
 ```
+
+`--owner` names them **`Claire (Your Name)`**, `Stu (Your Name)` and so on. Everyone runs
+their own agents, so a shared channel otherwise holds several bots called `Claire` with no
+way to tell whose is whose. Only the display name changes — the definition in the repo stays
+canonical and shared.
+
+Use the flag rather than renaming an agent in Buzz Desktop afterwards. A hand-rename is not
+recognised as the same agent by `sync-prompts.mjs` or `export-agents.mjs`.
 
 Each command opens a **prefilled form in your Buzz Desktop that you review and save.** That
 review step is deliberate and cannot be skipped — an agent definition arriving from a git

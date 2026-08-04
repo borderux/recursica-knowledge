@@ -92,6 +92,39 @@ export function fetchAvatar(avatarUrl, expectedHash) {
 }
 
 /**
+ * PNG chunks that carry metadata rather than pixels.
+ *
+ * The relay rejects an upload with `media contains metadata or a non-canonical metadata
+ * channel`, so an avatar carrying any of these cannot be attached to an agent at all.
+ * `sips` writes an `eXIf` chunk on every resize, which is why re-encoding with `sips` does
+ * not clear the rejection — it is the thing adding it.
+ */
+const METADATA_CHUNKS = new Set(["eXIf", "tEXt", "iTXt", "zTXt", "tIME", "iCCP"]);
+
+/**
+ * Drop metadata chunks, keep everything that affects rendering.
+ *
+ * A denylist rather than an allowlist: stripping an unrecognised chunk that turned out to
+ * be `PLTE` or `tRNS` would silently change how the image draws. Each PNG chunk carries
+ * its own CRC, so removing whole chunks needs no checksum recalculation.
+ */
+export function stripPngMetadata(bytes) {
+  if (bytes.length < 8 || bytes.readUInt32BE(0) !== 0x89504e47) return bytes;
+  const keep = [bytes.subarray(0, 8)];
+  let offset = 8;
+  while (offset + 12 <= bytes.length) {
+    const length = bytes.readUInt32BE(offset);
+    const type = bytes.toString("ascii", offset + 4, offset + 8);
+    const end = offset + 12 + length;
+    if (end > bytes.length) return bytes; // truncated; do not rewrite what we cannot parse
+    if (!METADATA_CHUNKS.has(type)) keep.push(bytes.subarray(offset, end));
+    offset = end;
+    if (type === "IEND") break;
+  }
+  return Buffer.concat(keep);
+}
+
+/**
  * Downscale to `AVATAR_WIDTH`, preserving aspect ratio.
  *
  * `sips` ships with macOS, which is where Buzz Desktop keeps the state this script
@@ -116,9 +149,9 @@ export function renderAvatar(bytes, hash) {
       "--out",
       out,
     ]);
-    return { bytes: fs.readFileSync(out), resized: true };
+    return { bytes: stripPngMetadata(fs.readFileSync(out)), resized: true };
   } catch {
-    return { bytes, resized: false };
+    return { bytes: stripPngMetadata(bytes), resized: false };
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }

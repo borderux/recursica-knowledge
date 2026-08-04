@@ -43,7 +43,9 @@ import {
   applyRedactions,
   findLeaks,
   findStaleRedactions,
+  deriveValues,
 } from "../lib/placeholders.mjs";
+import { canonicalAgentName } from "../lib/agent-names.mjs";
 import {
   AVATAR_FILE,
   describeAvatar,
@@ -164,7 +166,12 @@ if (!checkOnly && Object.keys(tokens).length > 0 && localValues === null) {
   process.exit(1);
 }
 
-const values = localValues ?? {};
+// Derived values must be tokenized on the way out, not just resolved on the way in.
+// Janice's live prompt holds an absolute path under the operator's home directory; if
+// TRANSCRIPT_DIR is not among the values, tokenize() leaves it alone and findLeaks() has
+// no value to look for either — so the export would commit someone's real home path into
+// a public repository, with both guards reporting clean.
+const values = deriveValues(localValues ?? {});
 const unset = Object.keys(tokens).filter((t) => !values[t]);
 if (unset.length) {
   console.warn(
@@ -210,7 +217,10 @@ const changed = [];
 const rawPrompts = [];
 
 for (const persona of personas) {
-  const dirName = String(persona.name || persona.display_name)
+  // Canonical, so `Claire (Alex)` exports to agents/claire/ and updates the definition
+  // she came from. Without stripping the owner suffix this wrote agents/claire-alex/
+  // beside it — a duplicate of the same agent, one per operator who ever exported.
+  const dirName = canonicalAgentName(persona.name || persona.display_name)
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
@@ -219,6 +229,11 @@ for (const persona of personas) {
   const config = {};
   for (const field of PORTABLE_FIELDS) {
     if (persona[field] !== undefined) config[field] = persona[field];
+  }
+  // The owner suffix is local to one install. Storing `Claire (Alex)` would put one
+  // operator's name in the definition every other operator restores from.
+  for (const field of ["name", "display_name"]) {
+    if (config[field] !== undefined) config[field] = canonicalAgentName(config[field]);
   }
   config.system_prompt_file = "SYSTEM_PROMPT.md";
 

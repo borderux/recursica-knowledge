@@ -7,6 +7,7 @@
  */
 
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -30,6 +31,34 @@ export function loadValues(file) {
   return Object.fromEntries(
     Object.entries(raw).filter(([k]) => !k.startsWith("$")),
   );
+}
+
+/** Where the nest is, by the same precedence bootstrap-nest.mjs uses. */
+export function nestPath() {
+  return path.resolve(process.env.BUZZ_HOME || path.join(os.homedir(), ".buzz"));
+}
+
+/**
+ * Add the values that follow from the nest location rather than being looked up.
+ *
+ * Every consumer of `local-values.json` needs these, not just the installer: Janice's
+ * prompt carries {{TRANSCRIPT_DIR}}, and the docs tell operators to leave it blank
+ * because bootstrap derives it. When only bootstrap derived it, restore-agents.mjs
+ * read the file directly, found the token unset, and refused to open Janice's draft —
+ * so following the instructions produced a fail-closed stop at the next step.
+ *
+ * Callers that know the nest (bootstrap has --nest) pass it in; everyone else gets the
+ * default. One rule in one place: two copies of a derivation are two things to disagree.
+ */
+export function deriveValues(values, nest = nestPath()) {
+  const out = { ...values };
+  // Claude Code encodes the cwd by replacing every '/' and '.' with '-'.
+  if (!out.TRANSCRIPT_DIR) {
+    out.TRANSCRIPT_DIR = path.join(os.homedir(), ".claude", "projects", nest.replace(/[/.]/g, "-"));
+  }
+  // Known, not asked for — the nest is not always ~/.buzz.
+  out.BUZZ_HOME = nest;
+  return out;
 }
 
 /**
