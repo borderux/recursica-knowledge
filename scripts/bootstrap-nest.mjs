@@ -39,7 +39,6 @@ const opt = (name, dflt) => {
 };
 
 const CHECK = has("--check") || has("--dry-run");
-const ALLOW_FALLBACK = has("--allow-toolbox-fallback");
 const NEST = path.resolve(opt("nest", process.env.BUZZ_HOME || path.join(os.homedir(), ".buzz")));
 
 if (has("--help") || has("-h")) {
@@ -48,8 +47,6 @@ if (has("--help") || has("-h")) {
   --check                      Report what would change; write nothing.
   --nest <dir>                 Target nest (default: $BUZZ_HOME or ~/.buzz).
   --values <file>              Values file (default: buzz-agents/local-values.json).
-  --allow-toolbox-fallback     Permit installing the older published toolbox when the
-                               reference build is unavailable. Read the warning first.
   --help
 
 Values come from buzz-agents/local-values.json. Copy local-values.example.json and fill
@@ -94,7 +91,10 @@ section("Prerequisites");
 
 const which = (cmd) => {
   try {
-    return execFileSync("command", ["-v", cmd], { shell: "/bin/sh", encoding: "utf8" }).trim();
+    // sh -c directly, rather than shell:true, which is deprecated as of DEP0190 and
+    // printed a scary security warning on every run of the very first script an
+    // operator runs. cmd values come from the manifest, not from user input.
+    return execFileSync("/bin/sh", ["-c", `command -v "${cmd}"`], { encoding: "utf8" }).trim();
   } catch {
     return null;
   }
@@ -236,6 +236,10 @@ const tb = manifest.toolbox ?? {};
 const tbPath = path.join(NEST, tb.installTo ?? "bin/toolbox");
 const platform = `${process.platform}/${process.arch}`;
 const wantSha = tb.checksums?.[`${tb.referenceVersion}/${platform}`];
+const tbUrl = tb.sourceUrlTemplate
+  ?.replace("{version}", tb.referenceVersion)
+  .replace("{os}", process.platform)
+  .replace("{arch}", process.arch);
 
 const installedSha = fs.existsSync(tbPath) ? sha(fs.readFileSync(tbPath)) : null;
 
@@ -248,12 +252,12 @@ if (installedSha && installedSha === wantSha) {
       `      expected  sha256 ${(wantSha ?? "unknown").slice(0, 16)}…\n` +
       `      Leaving it alone. Verify with: ${tbPath} --version`,
   );
-} else if (tb.sourceUrl) {
+} else if (tbUrl && wantSha) {
   if (CHECK) {
-    wrote(`toolbox would download from ${tb.sourceUrl}`);
+    wrote(`toolbox would download from ${tbUrl}`);
   } else {
-    process.stdout.write(`  downloading toolbox from ${tb.sourceUrl} … `);
-    const res = await fetch(tb.sourceUrl);
+    process.stdout.write(`  downloading toolbox ${tb.referenceVersion} (154 MB) … `);
+    const res = await fetch(tbUrl);
     if (!res.ok) {
       console.log("");
       bad(`download failed: HTTP ${res.status}`);
@@ -272,46 +276,25 @@ if (installedSha && installedSha === wantSha) {
       }
     }
   }
-} else if (ALLOW_FALLBACK && tb.fallback) {
-  const url = tb.fallback.urlTemplate
-    .replace("{version}", tb.fallback.version)
-    .replace("{os}", process.platform)
-    .replace("{arch}", process.arch);
-  warn(
-    `installing FALLBACK toolbox ${tb.fallback.version}, not the reference ${tb.referenceVersion}.\n` +
-      `      This is the component that enforces the allowedDatasets fence. Verify the\n` +
-      `      fence still holds afterwards:  bin/verify-channel-isolation.py --slug <slug>`,
+} else if (!wantSha) {
+  bad(
+    `no toolbox checksum recorded for ${platform}, so there is nothing to verify a\n` +
+      `      download against, and this script will not install an unverified copy of the\n` +
+      `      binary that enforces the dataset fence.\n\n` +
+      `      Only darwin/arm64 is pinned, because buzz and buzz-acp ship exclusively as\n` +
+      `      arm64 Mach-O inside Buzz.app — the rest of this stack does not run on\n` +
+      `      ${platform} either. If that has changed, download the build for this\n` +
+      `      platform, verify the dataset fence still holds, and add its sha256 to\n` +
+      `      "checksums" in nest/nest-manifest.json.`,
   );
-  if (CHECK) {
-    wrote(`toolbox would download from ${url}`);
-  } else {
-    process.stdout.write(`  downloading ${url} … `);
-    const res = await fetch(url);
-    if (!res.ok) {
-      console.log("");
-      bad(`download failed: HTTP ${res.status}`);
-    } else {
-      const buf = Buffer.from(await res.arrayBuffer());
-      fs.mkdirSync(path.dirname(tbPath), { recursive: true });
-      fs.writeFileSync(tbPath, buf);
-      fs.chmodSync(tbPath, parseInt(tb.mode ?? "0755", 8));
-      console.log("");
-      wrote(`bin/toolbox (fallback ${tb.fallback.version}, UNVERIFIED against reference)`);
-    }
-  }
 } else {
   bad(
-    `toolbox not installed, and there is no verified source to fetch it from.\n\n` +
-      `      The reference build is ${tb.referenceVersion}. It is not published to the\n` +
-      `      genai-toolbox GCS bucket (which tops out at v${tb.fallback?.version}), the\n` +
-      `      GitHub release carries no assets, and Buzz.app does not ship it.\n\n` +
-      `      Pick one:\n` +
-      `        a) Copy it from a machine that has it:\n` +
-      `             scp othermac:~/.buzz/bin/toolbox ${tbPath}\n` +
-      `        b) Have it published once, then set "sourceUrl" in nest/nest-manifest.json:\n` +
-      `             buzz upload file --file ~/.buzz/bin/toolbox\n` +
-      `        c) Accept the older published build (read the warning):\n` +
-      `             node scripts/bootstrap-nest.mjs --allow-toolbox-fallback`,
+    `toolbox is not installed and nest/nest-manifest.json has no sourceUrlTemplate,\n` +
+      `      so there is no verified source to fetch it from. Restore the template, or\n` +
+      `      copy the binary from a machine that has a working nest:\n\n` +
+      `        scp othermac:~/.buzz/bin/toolbox ${tbPath}\n` +
+      `        chmod 755 ${tbPath}\n\n` +
+      `      Then re-run; the checksum is verified either way.`,
   );
 }
 

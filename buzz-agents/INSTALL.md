@@ -88,32 +88,16 @@ the scripts, MCP servers and guides, and resolves your tokens on the way in.
 **It is idempotent.** Re-run it after every `git pull` to pick up changes; it rewrites only
 what differs.
 
-**If it stops, read what it says.** Two stops are normal and both name their own fix:
+**If it stops, read what it says.** The usual stop is *unresolved tokens* — it lists every
+missing value and the file that needed it. Add them to `local-values.json` and re-run. It
+refuses rather than installing a script that would go looking for a project literally named
+`{{BQ_PROJECT}}`.
 
-- *Unresolved tokens* — it lists every missing value and the file that needed it. Add them
-  to `local-values.json` and re-run. It refuses rather than installing a script that would
-  go looking for a project literally named `{{BQ_PROJECT}}`.
-- *toolbox not installed* — see [Step 4a](#step-4a--the-toolbox-binary).
-
-### Step 4a — the toolbox binary
-
-The BigQuery MCP server is a 154 MB binary that is deliberately not committed here. The
-build this stack is known to work against (1.8.0) is **not currently downloadable from
-anywhere the script can verify** — the published bucket stops at v1.1.0.
-
-So, easiest first:
-
-```bash
-# Copy it from a machine that already has a working nest
-scp othermac:~/.buzz/bin/toolbox ~/.buzz/bin/toolbox
-chmod 755 ~/.buzz/bin/toolbox
-```
-
-Then re-run Step 4 — it verifies the checksum and confirms you have the right build.
-
-If nobody can hand you a copy, `--allow-toolbox-fallback` installs the older published
-version. Read the warning it prints first: that binary is what enforces the dataset fence,
-so if you use it, run Step 7's isolation check before touching client data.
+It also downloads the 154 MB BigQuery `toolbox` binary from Google's official release
+bucket and verifies its sha256 against the version this stack is pinned to. That is the
+slow part of the step — give it a minute. The binary is not committed here; it is fetched
+and checked, and a mismatch aborts instead of installing, because `toolbox` is the
+component that enforces the dataset fence.
 
 ---
 
@@ -188,7 +172,7 @@ Then smoke-test in your channel:
 | Bootstrap stops on prerequisites | Missing app or binary | Install what it named, re-run |
 | Bootstrap stops on unresolved tokens | Blank values | Fill in `local-values.json`, re-run |
 | Your agent has no tools | Buzz not restarted since install | Restart Buzz Desktop |
-| A tool is missing entirely | `toolbox` not installed | Step 4a |
+| A tool is missing entirely | `toolbox` download failed or was interrupted | Re-run Step 4; it refetches and verifies |
 | `Access Denied` on your own dataset | Dataset grant missing, or wrong region (must be US) | Check both |
 | Janice never says anything | Normal — a clean turn gets no message | Nothing to fix |
 | Janice posts to a channel named `{{JANICE_CHANNEL}}` | Nest installed with tokens unresolved | Re-run Step 4 |
