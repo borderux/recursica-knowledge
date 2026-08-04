@@ -185,6 +185,36 @@ node buzz-agents/scripts/restore-agents.mjs --channel <uuid> --run
 Prompts with their tokens filled in are written to `buzz-agents/.resolved/`, also
 gitignored, so the printed commands are runnable exactly as shown.
 
+### Restored agents carry their owner's name
+
+An agent created from this repository is named `Claire (Alex)`, not `Claire`. A community
+ends up with one Claire per operator — each a separate keypair, all legitimate — and three
+agents called `Claire` in one channel cannot be told apart, addressed, or `@mention`ed with
+any certainty about which one answers.
+
+The **stored** name stays canonical, because the definition is nobody's in particular:
+
+| Where                                     | Name            | Why                                  |
+| ----------------------------------------- | --------------- | ------------------------------------ |
+| `agents/claire/agent.json`                | `Claire`        | The definition is not one operator's |
+| Buzz Desktop, the relay, a channel header | `Claire (Alex)` | Two Claires must be distinguishable  |
+
+The suffix is applied by `restore-agents.mjs` and stripped again by `export-agents.mjs`.
+Without the stripping, the first export from a second operator's Mac would fork the tree —
+`agents/claire-alex/` beside `agents/claire/`, holding the same prompt — and put one
+person's name into everybody else's agent. Note the redaction that scrubs a personal name
+would not have caught it: redactions apply to prompt text, and this is the name field.
+
+`--owner` sets the name; the default is the first word of this checkout's
+`git config user.name`, which this repository already treats as the human operator's
+identity. `--no-owner` opts out, and is only right for a community that will hold exactly one
+set of agents forever.
+
+The owner is a display convention and nothing keys off it. Ownership is the keypair and the
+`respond_to` setting, neither of which a rename touches. `sync-prompts.mjs` matches through
+the suffix, and reports `more than one match on this Mac` rather than guessing when two
+personas answer to one definition — see `lib/agent-names.mjs`.
+
 Needs the `buzz` CLI with `BUZZ_RELAY_URL`, `BUZZ_PRIVATE_KEY` and `BUZZ_AUTH_TAG` set
 for the target community. Every command opens a prefilled form in the owner's Buzz
 Desktop that they must review and save — an agent definition arriving from a git

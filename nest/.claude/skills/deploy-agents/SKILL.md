@@ -93,10 +93,58 @@ Only ask for what the canvas genuinely does not carry, and say which values thos
 that you looked. If the canvas has no `## Claire config` block at all, confirm you are in
 the right channel before falling back to asking for everything.
 
+#### Canvas keys → values
+
+| Canvas key | Becomes | Notes |
+|---|---|---|
+| `slug` | *not a token* — a `--slug` argument | Lowercase, hyphens. Names the dataset, the key file, the MCP servers |
+| `bq_project` | `BQ_PROJECT` | |
+| `bq_dataset` | *nothing* | Confirmation only. It must equal `research_<slug>` with hyphens as underscores |
+| `drive_folder` | `DRIVE_FOLDER` | |
+| `tag_sheet` | `TAG_SHEET_ID` | |
+| `claire_channel`, `stu_channel`, `alan_channel`, `janice_channel` | the four `*_CHANNEL` tokens | Janice's routing table, **not** the channel you are installing in |
+| `builder_repo` | `BUILDER_REPO`, and `BUILDER_REPO_NAME` = the part after the slash | ALAN only |
+| `knowledge_repo` | `KNOWLEDGE_REPO_NAME` | ALAN only |
+
+Those four routing UUIDs are a common trap: they are where Janice files findings, and none of
+them is the channel this install is running in. Do not point `--channel` at a `building-*`
+channel because a canvas key named it.
+
+`bq_dataset` is a cross-check rather than an input. If it disagrees with `research_<slug>`,
+stop and ask which is right instead of picking one — the wrong dataset name is a fence that
+fails open.
+
 **If a value is missing from the canvas, the fix is to add it to the canvas** — not to
 collect it in chat and move on. The next operator hits the identical gap otherwise.
 `TAG_SHEET_ID` is the one most often absent and it is not derivable; ask the owner for it,
-then suggest they put it in the canvas.
+then **write it back**. Show them the block before you set it: `buzz canvas set` replaces the
+whole document, so it has to carry what was already there.
+
+```markdown
+## Claire config
+
+- slug: acme
+- bq_project: acme-research-123456
+- bq_dataset: research_acme
+- drive_folder: 1AbCdEfGhIjKlMnOpQrStUvWxYz_
+- tag_sheet: 1AbCdEfGhIjKlMnOpQrStUvWxYz0123456789
+
+## Janice routing
+
+- claire_channel: 00000000-0000-0000-0000-000000000000
+- stu_channel: 00000000-0000-0000-0000-000000000000
+- alan_channel: 00000000-0000-0000-0000-000000000000
+- janice_channel: 00000000-0000-0000-0000-000000000000
+
+## ALAN — omit this section if the community has no ALAN
+
+- builder_repo: acme/design-sandbox
+- knowledge_repo: recursica-knowledge
+```
+
+A canvas is channel-visible, so it holds identifiers only. Never put the service-account key
+on it — and it needs no key path either, because the account's address is derivable from
+`slug` and `bq_project` alone.
 
 ### You can only see channels you are a member of
 
@@ -146,6 +194,13 @@ git check-ignore -v buzz-agents/local-values.json
 ```
 
 If that prints nothing, **stop** — the file is not ignored and this repository is public.
+
+**Put only the keys the example file lists in there.** It is tempting to add the slug, or the
+operator's name, since you have both by now — do not. Every value in that file is treated as
+a substring to swap for its token when prompts are exported, so a short one does damage out
+of all proportion to its usefulness: a slug like `acme` would rewrite the word `acmeism`, and
+a first name would rewrite every mention of that person. The slug is a `--slug` argument and
+the owner is `--owner`. Neither is a token.
 
 ### The one real secret
 
@@ -223,12 +278,19 @@ its own fix:
 
 ## Step 4 — Create the agents
 
-Always pass `--owner` with their name:
+`--channel` is **this** channel — the one you were asked in, whose canvas you read in Step 2.
 
 ```bash
-node buzz-agents/scripts/restore-agents.mjs --channel <uuid> --owner <name>          # show the commands
-node buzz-agents/scripts/restore-agents.mjs --channel <uuid> --owner <name> --run    # open the drafts
+node buzz-agents/scripts/restore-agents.mjs --channel <this-channel-uuid> --owner <name>          # show the commands
+node buzz-agents/scripts/restore-agents.mjs --channel <this-channel-uuid> --owner <name> --run    # open the drafts
 ```
+
+`--owner` defaults to the first word of the checkout's `git config user.name`, and the script
+prints which name it resolved and where from before it sends anything. **Read that line out
+and confirm it** — it is what people will type to address the agent. If it cannot work out a
+name it stops rather than falling back to bare `Claire`; `--no-owner` is how you ask for the
+bare name on purpose, and it is only right for a community that will hold exactly one set of
+these agents forever.
 
 That creates them as **`Claire (Alex)`**, `Stu (Alex)` and so on. Everyone runs their own
 agents, so a shared channel otherwise ends up holding several bots called `Claire` with
@@ -238,6 +300,12 @@ still one shared `agents/claire/` for everybody.
 
 Do not hand-rename an agent in Buzz Desktop to achieve this. Use `--owner`, so the name is
 applied the one way the tooling recognises.
+
+Someone else's `Claire (…)` already in the channel is **not** a conflict and not a reason to
+reuse it — it is theirs, on their machine, spending their budget. Two owner-suffixed Claires
+in one room is the convention working. What is a real problem is two agents on *one* Mac
+answering to the same definition; `sync-prompts.mjs` reports that as `more than one match on
+this Mac` and names both, and it will not guess between them.
 
 **You cannot finish this step, and you must not imply that you have.** Each command opens
 a prefilled draft in *their* Buzz Desktop that **they** review and save. That gate is
@@ -282,6 +350,7 @@ Read the state it reports per agent, because the right action is different for e
 | `prompt in sync, settings differ` | Only runtime/provider/model/`respond_to` moved | Offer the settings-only `draft-update` |
 | `prompt not committed yet` | A prompt in the repo has never been committed | Commit it; a version stamp is a commit sha |
 | `not installed on this Mac` | Genuinely missing | That one, and only that one, needs Step 4 |
+| `more than one match on this Mac` | Two personas here answer to one definition — e.g. a `Claire` and a `Claire (Alex)` | Nothing, until a human resolves it. It names both; ask which to keep. Do not guess — `draft-update` reports `accepted: true` for a name that hits nothing, so the wrong guess looks like a success |
 
 **Check `not installed` against Buzz Desktop before acting on it.** It is the one state whose
 wrong answer is expensive: acting on it creates a duplicate agent, and a duplicate cannot be
@@ -341,11 +410,15 @@ make safe. `ISOLATION BROKEN` almost always means a project-level BigQuery role;
 Tell them, specifically:
 
 - What is installed and verified, with the isolation result quoted.
+- **The agents' full names, including the owner suffix** — `Claire (Alex)`, not `Claire`.
+  That is what they type to address one, so "Claire is up" leaves them guessing at the name.
+- Whether you changed the canvas, and what you added to it.
 - **What they still have to do by hand**: save four drafts, restart Buzz Desktop, and
   anything from the `MANUAL` block.
 - Anything you could not verify. Say so plainly rather than implying full success.
 
-Then a smoke test they run themselves: `@Claire ingest the transcript in the Drive folder`.
+Then a smoke test they run themselves, using the real name:
+`@Claire (Alex) ingest the transcript in the Drive folder`.
 
 ## Things to get right
 
