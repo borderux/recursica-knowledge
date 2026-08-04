@@ -14,11 +14,17 @@
  * still say `{{BQ_PROJECT}}` would go looking for a project by that literal name.
  *
  * Usage:
- *   node buzz-agents/scripts/restore-agents.mjs --channel <uuid> [--owner <name>] [--agent <name>] [--values <file>] [--run]
+ *   node buzz-agents/scripts/restore-agents.mjs --channel <uuid> [--owner <name>]
+ *                                               [--no-owner] [--agent <name>]
+ *                                               [--values <file>] [--run]
  *
  *   --channel            target channel UUID in the new community (required)
  *   --owner <name>       whose install this is; creates them as `Claire (Alex)` so a
- *                        channel holding several operators' agents stays readable
+ *                        channel holding several operators' agents stays readable.
+ *                        Defaults to the first word of this checkout's
+ *                        `git config user.name`
+ *   --no-owner           create bare `Claire`. Only for a community that will hold
+ *                        exactly one set of these agents, ever
  *   --agent <name>       restore just one agent (repeatable)
  *   --values <file>      token values for the target community
  *                        (default: buzz-agents/local-values.json)
@@ -40,7 +46,7 @@ import {
   detokenize,
   deriveValues,
 } from "../lib/placeholders.mjs";
-import { ownedDisplayName } from "../lib/agent-names.mjs";
+import { ownedDisplayName, resolveOwner } from "../lib/agent-names.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const agentsDir = path.join(__dirname, "..", "agents");
@@ -65,10 +71,41 @@ const channel = opt("--channel");
 const only = optAll("--agent").map((s) => s.toLowerCase());
 const run = flag("--run");
 const valuesFile = opt("--values") ?? localValuesPath;
-const owner = opt("--owner");
-
 if (!channel) {
   console.error("Missing --channel <uuid>. Find it with: buzz channels list");
+  process.exit(1);
+}
+
+if (flag("--no-owner") && opt("--owner")) {
+  console.error(
+    "--owner and --no-owner contradict each other. Pass one; they name the agents differently.",
+  );
+  process.exit(1);
+}
+
+/**
+ * Omitting the owner used to mean bare `Claire`, silently — the one outcome the suffix
+ * exists to prevent, reached by forgetting a flag. So it is derived when absent, and a
+ * derivation that fails stops rather than falling back to the bad default. `--no-owner`
+ * is how you ask for the bare name deliberately.
+ */
+const { owner, source } = flag("--no-owner")
+  ? { owner: null, source: "--no-owner" }
+  : resolveOwner({
+      explicit: opt("--owner"),
+      cwd: path.join(__dirname, "..", ".."),
+    });
+
+if (!owner && !flag("--no-owner")) {
+  console.error(`Could not work out whose install this is, so these would be created as
+bare \`Claire\`, \`Stu\` and so on. In a community where a second operator ever runs
+this repo, that leaves several agents sharing one name and no way to address a
+particular one.
+
+  --owner <name>   the name for the parentheses, e.g. --owner Alex
+  --no-owner       deliberately create bare names
+
+Or set it once for this checkout: git config user.name "Your Name"`);
   process.exit(1);
 }
 
@@ -217,6 +254,14 @@ if (!commands.length) {
   console.log("# Nothing to restore.");
   process.exit(0);
 }
+
+console.log(
+  owner
+    ? `# Creating as "<agent> (${owner})" — owner from ${source}.\n` +
+      `# Wrong name? Re-run with --owner <name>. It is what people will @mention.`
+    : `# Creating bare names (--no-owner). Nothing tells these apart from another\n` +
+      `# operator's set if one is ever installed in this community.`,
+);
 
 for (const cmd of commands) {
   if (cmd.manual) {

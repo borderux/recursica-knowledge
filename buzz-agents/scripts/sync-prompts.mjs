@@ -90,7 +90,7 @@ import {
   detokenize,
   deriveValues,
 } from "../lib/placeholders.mjs";
-import { sameAgent } from "../lib/agent-names.mjs";
+import { matchAgents } from "../lib/agent-names.mjs";
 import {
   globalConfigPath,
   readEnvVars,
@@ -325,13 +325,22 @@ for (const dir of dirs) {
   // Compared canonically, because the owner suffix in `Claire (Alex)` is exactly such a
   // rename and Buzz stores it verbatim in `name` too. An exact comparison found nothing,
   // called an installed agent `absent`, and advised creating her — a second Claire.
-  const live =
-    personas.find((p) => p.name === config.name) ??
-    personas.find((p) => p.display_name === config.display_name) ??
-    personas.find((p) => sameAgent(p.name, config.name)) ??
-    personas.find((p) => sameAgent(p.display_name, config.display_name));
+  // All matches, not the first. `.find()` resolved a Mac holding both `Claire` and
+  // `Claire (Alex)` to whichever came first in the file — and the draft-update that
+  // followed would have quietly updated an agent the operator never named.
+  const matches = matchAgents(personas, config);
+  const live = matches.length === 1 ? matches[0] : null;
 
   if (!live) {
+    if (matches.length > 1) {
+      report.state = "ambiguous";
+      report.notes.push(
+        `matches ${matches.length} installed agents (${matches
+          .map((m) => m.display_name ?? m.name)
+          .join(", ")}) — rename or remove one in Buzz Desktop so there is a single answer`,
+      );
+      continue;
+    }
     report.state = "absent";
     continue;
   }
@@ -516,6 +525,7 @@ const label = {
   "live-edited": "has local edits not in git",
   unversioned: "prompt not committed yet",
   absent: "not installed on this Mac",
+  ambiguous: "more than one match on this Mac",
 };
 
 console.log(
