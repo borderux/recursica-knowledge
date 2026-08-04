@@ -68,18 +68,70 @@ identifiers, and they are the same for everyone in the community:
 - `CLAIRE_CHANNEL`, `STU_CHANNEL`, `ALAN_CHANNEL`, `JANICE_CHANNEL` — channel UUIDs
 - `JANICE_PUBKEY` — this community's Janice, hex
 - `BUILDER_REPO`, `BUILDER_REPO_NAME`, `KNOWLEDGE_REPO_NAME` — only if they want ALAN
+- **their name**, for the agent display names — see below. Ask for the form they want
+  shown, not their account id
 
 `buzz-agents/placeholders.json` says where each one is found; quote from it rather than
 inventing instructions. Leave `TRANSCRIPT_DIR` blank — bootstrap derives it.
 
-You can resolve some of this yourself instead of asking. Do:
+### The canvas of the channel you were asked in is the source of these values
+
+**This is the normal path — start here, not with questions.** Deployment is meant to be run
+*in the channel the agents are being deployed to*, and that channel's canvas holds the
+configuration. So the channel you were @mentioned in is almost always the deployment
+channel, and you can read most of the list above straight out of it:
 
 ```bash
-buzz channels list
+buzz canvas get --channel <uuid>          # the channel you are talking in
 ```
 
-Channel UUIDs are in there by name, and `buzz channels members --channel <janice-uuid>`
-gives you `JANICE_PUBKEY`. Ask only for what you could not find.
+A `## Claire config` block gives you `slug`, `drive_folder`, `dataset` and the project — the
+same block Claire reads at runtime, so it is the authoritative copy rather than a
+transcription of it. Take `BQ_PROJECT` and the slug from there.
+
+Only ask for what the canvas genuinely does not carry, and say which values those are and
+that you looked. If the canvas has no `## Claire config` block at all, confirm you are in
+the right channel before falling back to asking for everything.
+
+**If a value is missing from the canvas, the fix is to add it to the canvas** — not to
+collect it in chat and move on. The next operator hits the identical gap otherwise.
+`TAG_SHEET_ID` is the one most often absent and it is not derivable; ask the owner for it,
+then suggest they put it in the canvas.
+
+### You can only see channels you are a member of
+
+`buzz channels list` shows **open** channels plus the **private** ones your own identity
+belongs to. A private channel you are not in is not listed, not searchable, and its UUID is
+not resolvable from its name. There is no error — it is simply absent, which reads like a
+typo or a deleted channel.
+
+So if they name a channel you cannot find, do not conclude it does not exist. Say this
+instead, because it is almost always the real cause:
+
+> I cannot see `#<name>`. Private channels are invisible to agents that are not members —
+> add **me** (your own Fizz, not the owner's) to it, then send me the UUID.
+
+Being a member yourself is what matters. The owner already being in the channel does not
+help you, and neither does the person you are talking to being in it. Do not try
+`buzz channels add-member` to add yourself; you cannot resolve the UUID you would need.
+
+### `JANICE_PUBKEY` is circular in a new community — expect two bootstrap runs
+
+`buzz channels members --channel <janice-uuid>` gives you `JANICE_PUBKEY` **only if a Janice
+already exists in that community.** Each operator gets their *own* Janice, whose pubkey does
+not exist until they save the draft in Step 4 — so on a first install there is nothing to
+look up and nothing anyone can tell you.
+
+That is expected, not a blocker. Leave `JANICE_PUBKEY` blank, note it, and:
+
+1. Bootstrap and create the agents without it. `wake-janice.sh` is the only consumer.
+2. After they save the Janice draft, get her pubkey and re-run `bootstrap-nest.mjs`.
+
+Bootstrap is idempotent, so the second run rewrites only that. **Tell them this up front** —
+otherwise the first run's unresolved-token failure looks like something went wrong.
+
+Everything else you can resolve yourself: channel UUIDs by name from `buzz channels list`.
+Ask only for what you could not find.
 
 Then write the file — **never** to the repo root, always to `buzz-agents/`:
 
@@ -119,6 +171,29 @@ chmod 600 ~/.buzz/.secrets/claire-<slug>-service-user.json
 node -e 'console.log(require(process.argv[1]).client_email)' <path>   # identify, don't dump
 ```
 
+**You already know what that `client_email` should say, so check it rather than accepting
+whatever arrives.** Both the account and the filename follow from values you have:
+
+```
+client_email  claire-<slug>-service-user@<BQ_PROJECT>.iam.gserviceaccount.com
+filename      ~/.buzz/.secrets/claire-<slug>-service-user.json
+```
+
+So for slug `padi` in project `recursica-466023` the account is
+`claire-padi-service-user@recursica-466023.iam.gserviceaccount.com`. Derive the expected
+string, compare it to the file's `client_email`, and say which you got.
+
+A mismatch is worth stopping for, because each of the two ways it can differ is a distinct
+problem:
+
+| What differs | What it means |
+|---|---|
+| The **project** part | The key belongs to another client's project. Do not install it — this is precisely the cross-client leak the isolation check exists to catch. |
+| The **slug** part | Probably the wrong client's key, or a key made by hand under a different name. Confirm which client it is for before use. |
+
+Never print the key's contents, any part of a private key, or the `private_key_id`. The
+`client_email` is an identifier, not a credential, and is the only field to quote.
+
 ## Step 3 — Install the nest
 
 Dry run first, always. Show them what it says:
@@ -148,10 +223,21 @@ its own fix:
 
 ## Step 4 — Create the agents
 
+Always pass `--owner` with their name:
+
 ```bash
-node buzz-agents/scripts/restore-agents.mjs --channel <uuid>          # show the commands
-node buzz-agents/scripts/restore-agents.mjs --channel <uuid> --run    # open the drafts
+node buzz-agents/scripts/restore-agents.mjs --channel <uuid> --owner <name>          # show the commands
+node buzz-agents/scripts/restore-agents.mjs --channel <uuid> --owner <name> --run    # open the drafts
 ```
+
+That creates them as **`Claire (Aaron)`**, `Stu (Aaron)` and so on. Everyone runs their own
+agents, so a shared channel otherwise ends up holding several bots called `Claire` with
+nothing distinguishing them — which happened, and left a real "which of these is mine?"
+Only the display name carries the owner; the stored definition stays canonical, so it is
+still one shared `agents/claire/` for everybody.
+
+Do not hand-rename an agent in Buzz Desktop to achieve this. Use `--owner`, so the name is
+applied the one way the tooling recognises.
 
 **You cannot finish this step, and you must not imply that you have.** Each command opens
 a prefilled draft in *their* Buzz Desktop that **they** review and save. That gate is
@@ -160,6 +246,15 @@ people. Tell them plainly: four drafts to open and save, by hand.
 
 Work through the `MANUAL` block it prints — parallelism, timeouts, avatar upload have no
 CLI flags.
+
+If `buzz upload file` rejects an avatar with *media contains metadata or a non-canonical
+metadata channel*, the PNG is carrying an `eXIf` chunk. The committed avatars no longer do.
+Do **not** try to fix it by re-encoding with `sips` — `sips` is what writes that chunk, so
+every retry reproduces the rejection. If you meet it on some other image, strip the chunk:
+
+```bash
+node -e 'const f=process.argv[1],fs=require("fs");import("'"$PWD"'/buzz-agents/lib/avatars.mjs").then(m=>fs.writeFileSync(f,m.stripPngMetadata(fs.readFileSync(f))))' <file.png>
+```
 
 Then tell them to **restart Buzz Desktop.** MCP servers are read once at startup; until
 they restart, their agents have no tools and will look broken.
@@ -187,6 +282,11 @@ Read the state it reports per agent, because the right action is different for e
 | `prompt in sync, settings differ` | Only runtime/provider/model/`respond_to` moved | Offer the settings-only `draft-update` |
 | `prompt not committed yet` | A prompt in the repo has never been committed | Commit it; a version stamp is a commit sha |
 | `not installed on this Mac` | Genuinely missing | That one, and only that one, needs Step 4 |
+
+**Check `not installed` against Buzz Desktop before acting on it.** It is the one state whose
+wrong answer is expensive: acting on it creates a duplicate agent, and a duplicate cannot be
+merged back. If they can see that agent in Desktop, the report is wrong, not the person — say
+so and stop rather than creating a second one.
 
 For the local-edits case, tell them what they have and let them choose. The capture is
 `node buzz-agents/scripts/export-agents.mjs`, then a normal PR. Do not run

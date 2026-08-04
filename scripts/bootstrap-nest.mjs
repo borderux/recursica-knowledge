@@ -24,7 +24,7 @@ import crypto from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-import { loadValues, detokenize, localValuesPath } from "../buzz-agents/lib/placeholders.mjs";
+import { loadValues, detokenize, deriveValues, localValuesPath } from "../buzz-agents/lib/placeholders.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.join(__dirname, "..");
@@ -139,18 +139,13 @@ if (!values) {
   process.exit(1);
 }
 
-// TRANSCRIPT_DIR is derivable from the nest path, so don't make anyone look it up.
-// Claude Code encodes the cwd by replacing every '/' and '.' with '-'.
-if (!values.TRANSCRIPT_DIR) {
-  const encoded = NEST.replace(/[/.]/g, "-");
-  values = { ...values, TRANSCRIPT_DIR: path.join(os.homedir(), ".claude", "projects", encoded) };
-  ok(`TRANSCRIPT_DIR derived → ${values.TRANSCRIPT_DIR}`);
-}
-
-// BUZZ_HOME is where we are installing, so it is known rather than asked for. The Stop
-// hook in .claude/settings.json needs it as an absolute path, and the nest is not always
-// ~/.buzz — --nest and $BUZZ_HOME both move it.
-values = { ...values, BUZZ_HOME: NEST };
+// TRANSCRIPT_DIR and BUZZ_HOME follow from the nest path, so nobody looks them up. The
+// derivation lives in lib/placeholders.mjs because restore-agents.mjs needs the identical
+// result — Janice's prompt carries {{TRANSCRIPT_DIR}} and it reads local-values.json
+// itself, so a derivation only this script knew about stopped it at the next step.
+const hadTranscriptDir = Boolean(values.TRANSCRIPT_DIR);
+values = deriveValues(values, NEST);
+if (!hadTranscriptDir) ok(`TRANSCRIPT_DIR derived → ${values.TRANSCRIPT_DIR}`);
 
 const provided = Object.entries(values).filter(([k, v]) => !k.startsWith("$") && v).length;
 ok(`${provided} value${provided === 1 ? "" : "s"} loaded from ${path.relative(repoRoot, valuesFile) || valuesFile}`);

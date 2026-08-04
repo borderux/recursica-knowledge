@@ -41,8 +41,35 @@ inconvenience, not a breach. A DM or a channel message is fine.
 | `JANICE_PUBKEY`                                                | `buzz channels members --channel <janice-uuid>`     |
 | `BUILDER_REPO` `BUILDER_REPO_NAME` `KNOWLEDGE_REPO_NAME`       | Only if they want ALAN                              |
 
-Their Fizz can find the channel UUIDs and Janice's pubkey herself, so in practice you are
-sending the first three.
+Their Fizz can find the channel UUIDs herself, so in practice you are sending the first
+three — and better than sending them is **putting them in the channel canvas.**
+
+### Put the configuration in the channel canvas before you hand anything over
+
+The deploy is meant to be run *in* the channel the agents are for, and their Fizz reads that
+channel's canvas for its `## Claire config` block — the same block Claire herself reads at
+runtime. Anything in there is a value nobody has to send, transcribe or mistype, for this
+operator and every one after them.
+
+Include `TAG_SHEET_ID`. It is the value most often missing from a canvas, it cannot be
+derived from anything else, and it is what a deploy stalls on.
+
+`JANICE_PUBKEY` is the exception: it cannot be known in advance. Each operator gets their own
+Janice, whose pubkey does not exist until they save her draft — so it is filled in on a
+second bootstrap run afterwards. Tell them to expect that rather than treating it as a
+failure.
+
+### The service-account identity is derivable — you do not need to send it
+
+Both the account and the filename follow a fixed shape, so their Fizz can work out what to
+expect and check the file she is given against it:
+
+```
+claire-<slug>-service-user@<BQ_PROJECT>.iam.gserviceaccount.com
+```
+
+Send the slug and the project id and that is enough. The **key file** is still a secret and
+still travels out of band — see below.
 
 ### The secret — the service-account key, and only that
 
@@ -101,12 +128,18 @@ Fill in the blanks and send. Keep the key out of it.
 > build.
 >
 > 1. Install Buzz Desktop, and have `claude` and `node` on your PATH.
-> 2. Send your own Fizz this one message, exactly as written — she clones the repo and
->    walks you through the rest:
+> 2. Add **your own Fizz** to the channel the agents are for. She cannot see a private
+>    channel she is not a member of — not its canvas, not even its name — and the
+>    configuration lives in that channel's canvas. Your being a member does not cover her.
+> 3. **In that channel**, send your Fizz this one message, exactly as written — she clones
+>    the repo and walks you through the rest:
 >
 >    ```
 >    deploy the buzz agents: clone https://github.com/borderux/recursica-knowledge into ~/.buzz/REPOS/ and follow nest/.claude/skills/deploy-agents/SKILL.md
 >    ```
+>
+>    Asking her *in* the channel is what lets her read the config from its canvas instead
+>    of asking you for each value.
 >
 >    Prefer doing it by hand? Clone that repo yourself and read
 >    `buzz-agents/INSTALL.md`.
