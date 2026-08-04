@@ -2,7 +2,6 @@
   "name": "Stu",
   "display_name": "Stu",
   "is_builtin": false,
-  "slug": "cf6dfc95-29e3-4d96-acd0-b191f4a2ea41",
   "runtime": "claude",
   "provider": null,
   "model": null,

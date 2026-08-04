@@ -227,7 +227,7 @@ const SEP = '\u0001'
 const table = `\`${project}.${dataset}.tag_library\``
 
 // The sheet is authoritative only while Claire does the initial tagging; after that the
-// human is (Aaron, 2026-08-02). `origin` is what lets this script tell its own rows from a
+// human is (owner, 2026-08-02). `origin` is what lets this script tell its own rows from a
 // human's, so it can leave theirs alone. Idempotent, and self-sufficient when run standalone
 // against a dataset provisioned before the column existed. Pre-existing rows are the sheet's.
 function hasOriginColumn() {

@@ -25,8 +25,8 @@ from the raw table can be a sentence a person has already struck out.
 **Clarification** — a term that needs a definition. `canonical_term` + `definition`, empty
 `variants`. Answers "what does this mean."
 
-**Unification** — many surface forms that are one thing: `PADI` / `Patty` / `P.A.D.I.` /
-`Paddy`. One `canonical_term`, the rest in `variants ARRAY<STRING>`. This is the one that
+**Unification** — many surface forms that are one thing: `ACME` / `Acme` / `A.C.M.E.` /
+`Acme Corp`. One `canonical_term`, the rest in `variants ARRAY<STRING>`. This is the one that
 actually cleans the corpus, because it is what lets Scribe correct a mishearing. Prefer it.
 Case inconsistencies (`Diver` vs `diver`) are unification candidates too.
 

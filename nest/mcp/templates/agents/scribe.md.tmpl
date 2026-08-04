@@ -186,7 +186,7 @@ quoted literals before you send the query, not syntax to send verbatim.
       Both ids being derived from the source is *the* anti-duplicate mechanism, not a convention.
       The earlier design generated a random `conversation_id` per run, so a second ingest
       produced new `line_id`s, the `MERGE` matched nothing, and it inserted a clean duplicate
-      set — that is where the 933 duplicate lines in `research_db` came from. Never generate
+      set — that is where duplicate lines in an unisolated dataset come from. Never generate
       either id from a timestamp, a UUID, or a counter.
 
       A window ends on a line boundary but not necessarily on a *turn* boundary — a turn can run

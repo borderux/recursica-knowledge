@@ -60,7 +60,7 @@ Add `--dry-run` to see the diff first. It validates the whole sheet before writi
 
 ## Before you start
 
-Pick a **slug** for the client: lowercase, hyphens, no spaces. `padi`, `acme-health`.
+Pick a **slug** for the client: lowercase, hyphens, no spaces. `acme`, `acme-health`.
 It names everything downstream:
 
 | Thing | Pattern | Example |
@@ -68,7 +68,7 @@ It names everything downstream:
 | BigQuery dataset | `research_<slug>` (hyphens → underscores) | `research_acme` |
 | Service account | `claire-<slug>-service-user` | `claire-acme-service-user` |
 | Key file | `~/.buzz/.secrets/claire-<slug>-service-user.json` | |
-| MCP servers | `bq-<slug>`, `drive-<slug>` | `bq-padi`, `drive-padi` |
+| MCP servers | `bq-<slug>`, `drive-<slug>` | `bq-acme`, `drive-acme` |
 | Subagents | `scribe-<slug>`, `lexicon-<slug>`, `tagger-<slug>`, `analyst-<slug>` | |
 
 Project is `{{BQ_PROJECT}}` throughout.
@@ -328,7 +328,7 @@ means the document continues and `next_start_line` is where to resume; `content_
 still works from one read.
 
 The ceiling lives in the tool rather than in a prompt on purpose. A prompt can forget a parameter;
-a tool cannot forget its own limit. The padi transcripts run 16k–37k characters, and the cost that
+a tool cannot forget its own limit. The acme transcripts run 16k–37k characters, and the cost that
 actually bites is not the read alone — it is the read plus the `MERGE` built from it, which
 inlines every line a second time. So Scribe ingests one interview as a sequence of chunks, each
 read, parsed and written before the next is fetched, with `conversations.ingest_cursor_line` and
@@ -366,7 +366,7 @@ once the extension is stripped are treated as one transcript: `list_files` shows
 `read_file` on either id serves the same single conversion, with `duplicate_of` pointing at the
 canonical file.
 
-Two details worth knowing, both from measuring the padi folder:
+Two details worth knowing, both from measuring the acme folder:
 
 - **The pairing is a name match, not a content hash, on purpose.** Of the two real pairs in that
   folder, one is byte-identical across formats and the other differs by 2 characters in 57,779

@@ -67,11 +67,11 @@ reason this directory exists, so the prompt is stored as text.
 definition) and an **instance** (that persona bound to one community, with its own
 keypair and credential). Only the persona is portable.
 
-| Kind              | Fields                                                                                                                                                                                                                                            | Stored here                                   |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
-| **Portable**      | `name`, `display_name`, `system_prompt`, `runtime`, `provider`, `model`, `respond_to`, `respond_to_allowlist`, `parallelism`, the timeouts, `agent_args`, `agent_command_override`, `acp_command`, `mcp_command`, `backend`, `is_builtin`, `slug` | ✅                                            |
-| **Machine-local** | `pubkey`, `relay_url`, `persona_id`, `backend_agent_id`, `runtime_pid`, `provider_binary_path`, `avatar_url`, timestamps, `last_*`, `is_active`                                                                                                   | ❌ regenerated when the agent is instantiated |
-| **Secret**        | `auth_tag` — a live relay credential                                                                                                                                                                                                              | ❌ **never commit this**                      |
+| Kind              | Fields                                                                                                                                                                                                                                    | Stored here                                   |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| **Portable**      | `name`, `display_name`, `system_prompt`, `runtime`, `provider`, `model`, `respond_to`, `respond_to_allowlist`, `parallelism`, the timeouts, `agent_args`, `agent_command_override`, `acp_command`, `mcp_command`, `backend`, `is_builtin` | ✅                                            |
+| **Machine-local** | `pubkey`, `relay_url`, `persona_id`, `backend_agent_id`, `runtime_pid`, `provider_binary_path`, `avatar_url`, timestamps, `last_*`, `is_active`                                                                                           | ❌ regenerated when the agent is instantiated |
+| **Secret**        | `auth_tag` — a live relay credential                                                                                                                                                                                                      | ❌ **never commit this**                      |
 
 `export-agents.mjs` copies fields by **allowlist**, not denylist. If a future Buzz
 release adds another secret field, an allowlist ignores it by default. Do not invert it.
@@ -250,10 +250,10 @@ sync", and no prompt is compared against the repository at all.
 
 The two halves answer different questions and both are needed:
 
-| Half            | Answers                                            | Why the other half cannot                                                                     |
-| --------------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| **commit sha**  | Has the branch moved past what I installed?        | A fingerprint says something changed, never whether the repo or the agent is the newer side   |
-| **fingerprint** | Is the agent still running what I installed?       | A sha records a past act; an edit made in Buzz Desktop afterwards leaves it untouched         |
+| Half            | Answers                                      | Why the other half cannot                                                                   |
+| --------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| **commit sha**  | Has the branch moved past what I installed?  | A fingerprint says something changed, never whether the repo or the agent is the newer side |
+| **fingerprint** | Is the agent still running what I installed? | A sha records a past act; an edit made in Buzz Desktop afterwards leaves it untouched       |
 
 Drop the fingerprint and an agent edited in Buzz Desktop reads as up to date, hiding the one
 copy of that prompt nobody else has. Drop the sha and you are back to guessing direction from
@@ -282,11 +282,11 @@ Only then is a prompt read, and only to decide which of three things is true. Th
 is a single equality against the stored file — in stored form, not resolved, for the reason
 above — never a history walk.
 
-| Live prompt is…                       | State                        | Action                                                                 |
-| ------------------------------------- | ---------------------------- | ---------------------------------------------------------------------- |
-| the committed one                     | `in sync`                    | The stamp was missing or stale; it is written, and that is the only time it is written |
-| the one it was stamped at             | `BEHIND the branch`          | The branch moved on. Offers the `draft-update`                          |
-| neither                               | `has local edits not in git` | Unversioned work. No apply command without `--force-apply`; the fix is `export-agents.mjs` |
+| Live prompt is…           | State                        | Action                                                                                     |
+| ------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------ |
+| the committed one         | `in sync`                    | The stamp was missing or stale; it is written, and that is the only time it is written     |
+| the one it was stamped at | `BEHIND the branch`          | The branch moved on. Offers the `draft-update`                                             |
+| neither                   | `has local edits not in git` | Unversioned work. No apply command without `--force-apply`; the fix is `export-agents.mjs` |
 
 A stamp is only ever written for a state that has been **observed**. `draft-update` opens a
 form the owner may never save, so stamping at send time would record an intention as a fact

@@ -166,7 +166,7 @@ function contentSha256(text) {
 // misquote. The char cap therefore trims whole lines off the end of a window
 // rather than cutting mid-line, and a single line longer than the cap is
 // returned whole and flagged instead of being chopped.
-// Sized against the real corpus, measured rather than guessed. The padi
+// Sized against the real corpus, measured rather than guessed. The acme
 // transcripts run 51k–80k characters over 118–185 lines, so a line cap alone
 // would never bind: 120 lines of ~500 characters is 60k, the whole document.
 // The char cap is what actually holds, and the cost it bounds is not the read
@@ -428,8 +428,8 @@ async function getOrCreateConvertedTwin(source) {
 
 // -------------------------------------------------- same-transcript pairing
 //
-// These folders hold the same interview twice: "Allen Q.docx" sits beside
-// "Allen Q.txt". Converting both produces two Google Docs of one transcript,
+// These folders hold the same interview twice: "Interview.docx" sits beside
+// "Interview.txt". Converting both produces two Google Docs of one transcript,
 // and — worse — two entries in the inventory, which becomes two conversations
 // for one interview downstream. The service account cannot delete anything in
 // this shared drive (canDelete=false, canTrash=false, verified live), so a

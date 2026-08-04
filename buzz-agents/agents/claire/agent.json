@@ -2,7 +2,6 @@
   "name": "Claire",
   "display_name": "Claire",
   "is_builtin": false,
-  "slug": "7a5dd78d-106c-4df3-882c-b379188ff223",
   "runtime": "claude",
   "provider": null,
   "model": null,

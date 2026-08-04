@@ -69,7 +69,6 @@ const PORTABLE_FIELDS = [
   "name",
   "display_name",
   "is_builtin",
-  "slug",
   "runtime",
   "provider",
   "model",

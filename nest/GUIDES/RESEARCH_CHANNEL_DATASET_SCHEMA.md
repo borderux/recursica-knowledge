@@ -1,23 +1,19 @@
 ---
 title: "Research Channel Dataset Schema — DDL Claire Runs to Provision a Channel"
 tags: [bigquery, schema, ddl, claire, dictionary, provisioning]
-status: draft
+status: active
 created: 2026-08-01
 ---
 
 # Research channel dataset schema
 
-Per Aaron (2026-07-31): every Buzz channel acting as a research channel gets **its own BigQuery
+Per project owner (2026-07-31): every Buzz channel acting as a research channel gets **its own BigQuery
 dataset**, instantiated by the agents rather than pre-created by hand, from a schema stored with
 the agent.
 
 This is that schema. Claire runs it once per channel via the `bq-admin` MCP server
 (see `GUIDES/BIGQUERY_MCP_AND_GOOGLE_AUTH_SETUP.md` §1.6 — the fenced worker server
 **cannot** run `CREATE SCHEMA`).
-
-**Destination:** this file should end up in `recursica-knowledge` next to the prompts, pinned by
-tag, so the DDL is versioned with the agent that runs it. Staged here until that repo decision
-lands.
 
 > **Provisioned 2026-08-01:** `{{BQ_PROJECT}}.research_building_claire` exists with all
 > eight tables, verified via `INFORMATION_SCHEMA.COLUMNS`. Two corrections were forced by
@@ -47,7 +43,7 @@ lands.
   prevents duplicates if `conversation_id` is stable across runs. With a per-run surrogate,
   a second ingest of the same document produced a new `conversation_id`, therefore new
   `line_id`s, therefore a `MERGE` that matched nothing and inserted a clean duplicate set.
-  That is the origin of the 933 duplicate lines in `research_db`. Deriving the id from the
+  That is the origin of duplicate lines in an unisolated dataset. Deriving the id from the
   source makes re-processing a no-op at the write, independent of whether any agent
   remembered to check first.
 
@@ -284,7 +280,7 @@ LEFT JOIN `{{BQ_PROJECT}}.@dataset.line_edits` e
 -- Participant consolidation — one real person, several speaker labels
 -- ─────────────────────────────────────────────────────────────
 -- The transcription service names the same person differently in every transcript, so one
--- interviewer arrives as `p_jt` in one document and `p_jt_cobell` in ten others. A person
+-- interviewer arrives as `p_int` in one document and `p_int_smith` in ten others. A person
 -- resolves them here. Same arrangement as line_edits and for the same reason: Scribe owns
 -- `participants` and rewrites it, so a consolidation stored there would be silently undone.
 --
@@ -359,11 +355,11 @@ SELECT
   -- Name and role resolve in OPPOSITE directions, and the asymmetry is the point.
   --
   -- A name is a property of the person, so the person's value wins: the transcription service
-  -- got it wrong and a human fixed it. A role is a property of the appearance — Sandra Ornelas
-  -- runs nineteen of these interviews and sits in on the twentieth as an observer, and both are
-  -- true. So the person's type is a FALLBACK, filling the gap for a speaker the roster never
-  -- registered at all, and it never overrides a role the transcript actually states. Resolving
-  -- role the same way as name would relabel her as the interviewer of an interview she watched.
+  -- got it wrong and a human fixed it. A role is a property of the appearance — the same
+  -- researcher runs nineteen of these interviews and sits in on the twentieth as an observer,
+  -- and both are true. So the person's type is a FALLBACK, filling the gap for a speaker the roster
+  -- never registered at all, and it never overrides a role the transcript actually states. Resolving
+  -- role the same way as name would relabel them as the interviewer of an interview they watched.
   COALESCE(p.participant_type, ppl.participant_type)             AS resolved_type,
   COALESCE(ppl.email, p.email)                                  AS resolved_email,
   k.person_id,
@@ -458,8 +454,8 @@ and active rather than by counting active rows. Before this, a tag added in Stu 
 filters on `removed_at IS NULL`. `added_by` is non-NULL when a human added the tag.
 
 **`participants` / `participant_links` + `people`.** The transcription service splits one person
-across several speaker labels — the same interviewer arrives as `p_jt` in one transcript and
-`p_jt_cobell` in ten others — and gets names wrong in ways only a person can fix. Scribe owns
+across several speaker labels — the same interviewer arrives as `p_int` in one transcript and
+`p_int_smith` in ten others — and gets names wrong in ways only a person can fix. Scribe owns
 `participants` and rewrites it, so the resolution lives in tables it cannot reach and reads
 resolve through **`participants_current`**. Exactly the `line_edits` arrangement, for exactly the
 same reason.
@@ -844,7 +840,7 @@ filters on `active`.
 
 ### On Sheets as a view
 
-Aaron: *"sheets might be used for data viewing and editing in some cases."* Workable, with one
+Project owner: *"sheets might be used for data viewing and editing in some cases."* Workable, with one
 constraint — **one direction at a time.** Bidirectional Sheet↔BigQuery sync on a table agents
 also write is a reliable way to lose edits. Either:
 

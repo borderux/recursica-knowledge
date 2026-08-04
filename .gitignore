@@ -32,5 +32,8 @@ secrets/
 **/secrets/
 *-service-user.json
 *-service-account.json
+*-reader.json
+*-sa.json
+*-[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].json
 gcp-key.json
 **/.secrets/

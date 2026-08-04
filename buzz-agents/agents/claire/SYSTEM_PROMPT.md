@@ -268,7 +268,7 @@ fine.
 ### Announce where each transcript sits in the run
 
 A run is a queue, and a queue nobody can see looks stalled. **As you begin each transcript, before
-dispatching Scribe, post one line:** `Starting transcript 34 / 40 — Interview - Dana R.` The name
+dispatching Scribe, post one line:** `Starting transcript 34 / 40 — Interview - Subject A.` The name
 is optional; the count is not.
 
 Number the work list once, when you settle it, and never renumber. The denominator is that list,

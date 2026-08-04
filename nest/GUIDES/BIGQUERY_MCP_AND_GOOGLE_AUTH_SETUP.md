@@ -7,27 +7,18 @@ created: 2026-08-01
 
 # Setup: BigQuery MCP tool + Google Docs service account
 
-Answers Aaron's two questions in `#building-claire` (2026-07-31). Every claim below is
+Answers operator requirements in `#building-claire`. Every claim below is
 verified against the toolbox source or a live HTTP check — citations inline.
 
 ---
 
-## Status as of 2026-08-01
+## Prerequisites & Architecture Overview
 
-Aaron completed the Drive share and the service account, and downloaded the toolbox. Verified
-against the live environment:
+Before proceeding, ensure the Google Cloud service account and Drive permissions are configured per `CLAIRE_ZERO_TO_RUNNING.md`.
 
-| Item | State |
-|---|---|
-| Toolbox binary | ✅ `~/.buzz/bin/toolbox`, reports `1.8.0+binary.darwin.arm64.44d1a05` |
-| Service account | ✅ `claire-transcript-reader@{{BQ_PROJECT}}.iam.gserviceaccount.com` |
-| BigQuery reachable | ✅ verified — listed datasets and queried 2,424 rows |
-| SA key location/perms | ⚠️ `~/.buzz/bin/…json`, mode `644` — move to `.secrets/`, `chmod 600` |
-| **MCP server registered** | ❌ **not done** — `~/.claude.json` lists only `pencil` |
-| Tags Sheet shared with SA | ❌ `knowledge.tags` is a Drive-backed external table, 403s (§1.8) |
-
-The binary works when driven directly; no agent can call it until §1.6's config is registered.
-Findings from the live read are in `RESEARCH/BIGQUERY_LIVE_AUDIT_2026_08_01.md`.
+- **Toolbox binary**: `~/.buzz/bin/toolbox`
+- **Service account**: `claire-transcript-reader@{{BQ_PROJECT}}.iam.gserviceaccount.com`
+- **Permissions**: Scoped read access to `research_<slug>` datasets and `{{TAG_SHEET_ID}}`.
 
 ---
 
@@ -98,7 +89,7 @@ if len(out) > 0 {
 
 The loop stops at the cap and returns the rows **with no indication that more existed**.
 Out of the box that is a 50-row silent truncation — a 10× regression on the `LIMIT 500` we're
-migrating away from, and the exact failure class Aaron called out.
+migrating away from, and the exact failure class the operator called out.
 
 `MaxQueryResultRows <= 0` disables the cap, so set it negative:
 
@@ -214,7 +205,7 @@ Run against the real config with `toolbox invoke`:
 | Test | Result |
 |---|---|
 | `SELECT COUNT(*)` in `research_building_claire` | ✅ succeeds |
-| Same against `research_db` | ❌ `query accesses dataset '{{BQ_PROJECT}}.research_db', which is not in the allowed list` |
+| Same against `other_client_db` | ❌ `query accesses dataset '{{BQ_PROJECT}}.other_client_db', which is not in the allowed list` |
 | `CREATE SCHEMA` | ❌ `dataset-level operations like 'CREATE_SCHEMA' are not allowed when dataset restrictions are in place` |
 | 200-row query, hand-authored config | ✅ returns **200** |
 | 200-row query, `--prebuilt` default | ⚠️ returns **50**, no truncation flag |

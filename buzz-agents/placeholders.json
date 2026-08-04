@@ -93,6 +93,31 @@
       "pattern": "and several links point at `/Users/[^`]+`, which does not exist\\.",
       "replace": "and several links point at absolute paths on a previous maintainer's machine, which no longer resolve.",
       "reason": "Named a person and their local filesystem layout. The instruction only needs the fact that the links are dead."
+    },
+    {
+      "pattern": "\\b(?:padi|PADI|Patty|P\\.A\\.D\\.I\\.|Paddy)\\b",
+      "replace": "acme",
+      "reason": "Scrub real client identity slug."
+    },
+    {
+      "pattern": "\\bSandra Ornelas\\b",
+      "replace": "Alex Smith",
+      "reason": "Scrub research participant name."
+    },
+    {
+      "pattern": "\\bp_jt(?:_cobell)?\\b",
+      "replace": "p_int",
+      "reason": "Scrub real participant identifier token."
+    },
+    {
+      "pattern": "\\b{{TAG_SHEET_ID}}\\b",
+      "replace": "{{TAG_SHEET_ID}}",
+      "reason": "Scrub real Google Sheet ID."
+    },
+    {
+      "pattern": "\\babc123def456\\b",
+      "replace": "abc123def456",
+      "reason": "Scrub live GCP key ID fragment."
     }
   ]
 }

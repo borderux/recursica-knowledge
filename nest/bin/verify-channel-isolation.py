@@ -63,7 +63,7 @@ def call(key, project, tool, args, timeout=90):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--slug", required=True, help="channel slug, e.g. padi")
+    ap.add_argument("--slug", required=True, help="channel slug, e.g. acme")
     ap.add_argument("--key", required=True, help="path to the channel service account JSON key")
     ap.add_argument("--project", default=os.environ.get("BQ_PROJECT", "{{BQ_PROJECT}}"))
     ap.add_argument("--also-allowed", action="append", default=[],

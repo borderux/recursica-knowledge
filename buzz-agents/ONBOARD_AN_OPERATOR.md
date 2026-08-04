@@ -14,9 +14,8 @@ that requires you to decide someone should have access.
 An operator install is for someone who needs agents **running on their own machine**, awake
 when they are, spending their own API budget.
 
-Someone who only wants to *ask Claire a question* needs no install at all — add them to the
-channel. Read the Tier 0 section of `PLANS/AGENT_DISTRIBUTION.md` before you do, because it
-is a client-data access decision: everyone in a channel reaches the same Claire pointed at
+Someone who only wants to _ask Claire a question_ needs no install at all — add them to the
+channel. Note that this is a client-data access decision: everyone in a channel reaches the same Claire pointed at
 the same dataset, on the host's budget.
 
 Do not run this checklist for someone who wanted the smaller thing.
@@ -33,14 +32,14 @@ These are the same for everyone in the community. They are already `{{TOKEN}}`s 
 repo precisely so they do not have to be published, but a leaked project id is an
 inconvenience, not a breach. A DM or a channel message is fine.
 
-| Value | Where you get it |
-|---|---|
-| `BQ_PROJECT` | Cloud console → project picker → project **id** |
-| `DRIVE_FOLDER` | The client Drive folder URL, after `/folders/` |
-| `TAG_SHEET_ID` | Tag Dictionary sheet URL, between `/d/` and `/edit` |
-| `CLAIRE_CHANNEL` `STU_CHANNEL` `ALAN_CHANNEL` `JANICE_CHANNEL` | `buzz channels list` |
-| `JANICE_PUBKEY` | `buzz channels members --channel <janice-uuid>` |
-| `BUILDER_REPO` `BUILDER_REPO_NAME` `KNOWLEDGE_REPO_NAME` | Only if they want ALAN |
+| Value                                                          | Where you get it                                    |
+| -------------------------------------------------------------- | --------------------------------------------------- |
+| `BQ_PROJECT`                                                   | Cloud console → project picker → project **id**     |
+| `DRIVE_FOLDER`                                                 | The client Drive folder URL, after `/folders/`      |
+| `TAG_SHEET_ID`                                                 | Tag Dictionary sheet URL, between `/d/` and `/edit` |
+| `CLAIRE_CHANNEL` `STU_CHANNEL` `ALAN_CHANNEL` `JANICE_CHANNEL` | `buzz channels list`                                |
+| `JANICE_PUBKEY`                                                | `buzz channels members --channel <janice-uuid>`     |
+| `BUILDER_REPO` `BUILDER_REPO_NAME` `KNOWLEDGE_REPO_NAME`       | Only if they want ALAN                              |
 
 Their Fizz can find the channel UUIDs and Janice's pubkey herself, so in practice you are
 sending the first three.
@@ -71,7 +70,7 @@ transcripts, so treat it as the access decision it is.
 - **Your `ANTHROPIC_API_KEY`.** Every operator brings their own and spends their own
   budget. Sharing one makes your spend their spend and defeats per-operator isolation.
 - **Any project-level BigQuery credential.** If the key you are about to send has
-  `roles/bigquery.dataEditor` at project level, it can read *every* client. Fix the roles
+  `roles/bigquery.dataEditor` at project level, it can read _every_ client. Fix the roles
   before sending: `jobUser` on the project, `dataEditor` on that one dataset.
 - **Your `local-values.json`.** It is a filled-in form, and it is gitignored for a reason.
   Send the values, not the file — it is quicker for them to fill in than for you to redact.
@@ -120,7 +119,7 @@ Fill in the blanks and send. Keep the key out of it.
 >
 > Channel UUIDs and Janice's pubkey your Fizz can look up herself.
 >
-> The service-account key comes separately, via ____________. Put it at
+> The service-account key comes separately, via ****\_\_\_\_****. Put it at
 > `~/.buzz/.secrets/claire-<slug>-service-user.json` and `chmod 600` it. Never let it into a
 > git checkout or a chat message.
 >

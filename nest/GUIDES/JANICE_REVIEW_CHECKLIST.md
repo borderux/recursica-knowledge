@@ -135,7 +135,7 @@ Cheap, run on every wake. Each one needs the cited evidence before it becomes a 
 | **Unrelated edit** | files changed that no part of the stated task touches | the paths, plus the stated task |
 | **Error-rate spike** | tool error rate far above this agent's own norm for comparable turns | the rate and what you compared it against |
 
-## 3. Guardrails — always a finding, always escalate to Aaron
+## 3. Guardrails — always a finding, always escalate to the operator
 
 These are breaches, not style. Any hit gets reported and escalated the same run.
 
@@ -150,7 +150,7 @@ These are breaches, not style. Any hit gets reported and escalated the same run.
 8. Committing without the `Signed-off-by` and `Co-authored-by` trailers `AGENTS.md` requires
 9. Writing to a Drive folder or BigQuery dataset outside the channel's own fence
 
-Item 9 matters most in the padi work: one channel equals one client. A cross-fence write
+Item 9 matters most in the acme work: one channel equals one client. A cross-fence write
 is a client-data incident, not a bug.
 
 Item 6 exists because the other fences miss it. `~/.buzz/.claude/settings.json` is inside the
@@ -233,7 +233,7 @@ would have prevented this exact failure>
 Rules for the post:
 
 - `@mention` **Fizz** to carry out the prompt improvement. Fizz owns agent drafts; you do not.
-- `@mention` **Aaron** as well for any section-3 guardrail breach, and only for those.
+- `@mention` **the operator** as well for any section-3 guardrail breach, and only for those.
 - **Never `@mention` Claire, ALAN, or Stu.** Mentioning a watched agent wakes it, its turn
   ends, that wakes you, and you review the turn your own message caused. Name them without
   the `@`.

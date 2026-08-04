@@ -30,7 +30,7 @@ SELECT
   alias,
   description,
   confidence
-FROM `recursica-466023.knowledge.tags`
+FROM `{{BQ_PROJECT}}.knowledge.tags`
 ORDER BY type, tag
 ```
 
@@ -57,7 +57,7 @@ SELECT
   participant_id,
   line_sequence_number,
   COALESCE(cleaned_text, original_text) AS text
-FROM `recursica-466023.research_db.transcript_lines`
+FROM `{{BQ_PROJECT}}.{{BQ_DATASET}}.transcript_lines`
 WHERE conversation_id = '[DOC_ID]'
 ORDER BY line_sequence_number ASC
 ```
@@ -94,14 +94,14 @@ For the current line, evaluate every single tag in your loaded library. Compute 
 - **S3 — Context reinforcement (25%):** Do the window lines establish that this construct is present?
 - **S4 — Tag type / speaker fit (15%):** Score based on the tag's `type` and current speaker:
 
-| Tag type | Participant | Interviewer |
-|---|---|---|
-| `insight` | 1.0 | 0.1 |
-| `focus` | 0.9 | 0.3 |
-| `tool` | 1.0 | 1.0 |
-| `participant` | 1.0 | 0.0 |
-| `action` | 0.9 | 0.6 |
-| `emotion` | 1.0 | 0.1 |
+| Tag type      | Participant | Interviewer |
+| ------------- | ----------- | ----------- |
+| `insight`     | 1.0         | 0.1         |
+| `focus`       | 0.9         | 0.3         |
+| `tool`        | 1.0         | 1.0         |
+| `participant` | 1.0         | 0.0         |
+| `action`      | 0.9         | 0.6         |
+| `emotion`     | 1.0         | 0.1         |
 
 `action` type tags (`follow_up`, `clip`, `recruit`) are researcher-observation tags. They do not describe what was said — they flag that the researcher should do something with this line. Score them based on the quality and compellingness of the utterance, not on semantic match to a topic. `clip` (0.80) fires on lines that are genuinely quotable and self-contained. `recruit` (0.80) fires when the exchange reveals a gap in participant coverage. `follow_up` (0.70) fires when a thread is raised but not pursued.
 
@@ -139,7 +139,7 @@ Output only the following JSON. No preamble, markdown fencing, or explanation.
       "applied_tags": [
         {
           "tag_id": "string",
-          "confidence": 0.00,
+          "confidence": 0.0,
           "justification": "One sentence citing specific language or context."
         }
       ]
@@ -160,11 +160,10 @@ Output only the following JSON. No preamble, markdown fencing, or explanation.
 - total_tag_applications = total count of tag-line pairings across all lines
 - tagged_at = current run timestamp in ISO 8601 format
 - Never omit run_metadata or line_tags keys
-- **STRICT LIBRARY ADHERENCE:** Only apply tags whose `tag` value exists in the loaded library. 
+- **STRICT LIBRARY ADHERENCE:** Only apply tags whose `tag` value exists in the loaded library.
 - Never invent or modify tag names.
 - justification must cite something specific: a phrase, word, or conversational context clue. "This line expresses frustration" is too vague. "Participant says 'I have to re-enter everything from scratch every single time' — explicit statement of repeated effort with an emotional intensifier" is correct.
 - For action type tags, justification should explain the researcher action: "Highly quotable, self-contained statement that encapsulates the workaround finding — strong clip candidate" is correct for clip.
 - Do not apply a tag below its confidence threshold — not even at 0.01 below
 - Participant lines and interviewer lines are both eligible; use the S4 type rules to apply appropriate scrutiny based on tag type
 - **CRITICAL INSTRUCTION:** You are evaluating a bulk transcript. You MUST process every single line provided to you. Do NOT stop early. Do NOT summarize. I expect an exhaustive list of tags covering the entire transcript from the first line to the final line.
-
