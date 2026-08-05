@@ -1,0 +1,8 @@
+# Written here by @recursica/official-release's postinstall when you run `npm install`.
+# The design tokens belong to the Recursica release, not to this app — vendoring a copy
+# means a stale one, and 2.1 MB of generated CSS in every diff.
+recursica_variables_scoped.css
+recursica_brand.json
+recursica_tokens.json
+recursica_ui-kit.json
+recursica.json
