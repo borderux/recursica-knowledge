@@ -1,0 +1,4 @@
+# A commit message is published exactly as typed and cannot be edited after a push, so it
+# gets the same name check the export path has always had. Labels only — see
+# buzz-agents/scripts/check-text-for-names.mjs.
+node buzz-agents/scripts/check-text-for-names.mjs "$1"

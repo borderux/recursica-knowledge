@@ -1,24 +1,37 @@
 {
   "$comment": [
     "Literal redactions for text that must never be written into this repository, and",
-    "that has no pattern to match it — research participant names above all.",
+    "that has no pattern to match it — a client's name and a participant's above all.",
     "",
     "placeholders.json holds regexes on purpose, so a rule never has to spell out the",
-    "text it removes. That works for anything with a shape. It does not work for the",
-    "name of a person in a client's interviews: there is no expression that matches",
-    "those and nothing else, and they are not knowable until the transcripts land.",
+    "text it removes. That works for anything with a shape. It does not work for a name:",
+    "there is no expression that matches this client, or the people in their interviews,",
+    "and nothing else. So every literal lives here, in a gitignored file, and nowhere in",
+    "the repository. placeholders.json carried a handful of them once; they were removed,",
+    "and NOTHING identifying goes back in — not even a value already in the history.",
     "",
-    "So they live here, in a gitignored file, and the real one is GENERATED:",
-    "  node buzz-agents/scripts/refresh-local-redactions.mjs \\",
-    "    --key ~/.buzz/.secrets/claire-<slug>-service-user.json \\",
-    "    --dataset research_<slug>",
+    "This example file is committed. local-redactions.json is not, and it has two halves:",
     "",
-    "It reads participants.participant_name and conversations.document_name, so the",
-    "list derives from the data rather than from whoever last noticed a leak. Re-run it",
-    "after ingesting new transcripts: the guard only covers names it has seen.",
+    "redactions  GENERATED, and overwritten on every run:",
+    "              node buzz-agents/scripts/refresh-local-redactions.mjs \\",
+    "                --key ~/.buzz/.secrets/claire-<slug>-service-user.json \\",
+    "                --dataset research_<slug>",
+    "            It reads participants.participant_name and conversations.document_name,",
+    "            so the list derives from the data rather than from whoever last noticed a",
+    "            leak. Re-run after ingesting new transcripts: the guard only covers names",
+    "            it has seen.",
     "",
-    "This example file is committed; local-redactions.json is not. Copy it only if you",
-    "have a name to add by hand that the dataset does not carry.",
+    "manual      HAND-WRITTEN, and carried through untouched by that script. For a subject",
+    "            no dataset contains and nothing can re-derive:",
+    "              - the client slug, and every spelling of it people actually type",
+    "              - an operator's own name, given and full",
+    "              - a retired credential or key-id fragment",
+    "              - a participant identifier token that is not itself a name",
+    "            Order matters: entries apply in sequence, so put the longest variant",
+    "            first. \"Ada Lovelace\" before \"Ada\", or the surname survives as a suffix",
+    "            on the replacement.",
+    "",
+    "Losing this file loses the manual half for good. Nothing regenerates it.",
     "",
     "find    the exact string. Matched on word boundaries where they apply, so a short",
     "        name does not rewrite the middle of an unrelated word. Under 3 characters",
@@ -28,6 +41,23 @@
     "        prints the name it caught is the same exposure with extra steps."
   ],
   "datasets": ["research_<slug>"],
+  "manual": [
+    {
+      "find": "<client-slug>",
+      "replace": "acme",
+      "label": "client slug"
+    },
+    {
+      "find": "Firstname Lastname",
+      "replace": "the operator",
+      "label": "operator personal name (full)"
+    },
+    {
+      "find": "Firstname",
+      "replace": "the operator",
+      "label": "operator personal name (given)"
+    }
+  ],
   "redactions": [
     {
       "find": "Firstname Lastname",

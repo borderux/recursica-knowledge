@@ -251,23 +251,50 @@ const redactions = [
   })),
 ];
 
+/**
+ * `manual` is carried through untouched.
+ *
+ * Everything this script derives comes from the dataset, so everything it derives can be
+ * rebuilt. Some subjects are not in the dataset and never will be — the client slug, an
+ * operator's own name, a retired credential fragment — and those are exactly the ones
+ * that used to sit in placeholders.json as literals because there was nowhere else to
+ * put them. There is now, and the one thing that would push them back into a versioned
+ * file is this script silently deleting them on the next run.
+ */
+const existing = fs.existsSync(outPath)
+  ? JSON.parse(fs.readFileSync(outPath, "utf8"))
+  : {};
+const manual = Array.isArray(existing.manual) ? existing.manual : [];
+
 const out = {
   $comment: [
-    "GENERATED — do not edit by hand, and do not commit. Rebuild with:",
+    "GENERATED, except for `manual`. Do not commit — this file is gitignored because it",
+    "names the things that must never reach the repository. Rebuild with:",
     "  node buzz-agents/scripts/refresh-local-redactions.mjs --key <key> --dataset <dataset>",
     "",
-    "Real participant names and transcript filenames, from the live dataset. These are",
-    "literal redactions, which is why they live in a gitignored file rather than in",
-    "placeholders.json — see loadLocalRedactions() in lib/placeholders.mjs.",
-    "Re-run after ingesting new transcripts; the guard only covers what it has seen.",
+    "redactions  Participant names and transcript filenames from the live dataset.",
+    "            Overwritten on every run. Re-run after ingesting new transcripts; the",
+    "            guard only covers what it has seen.",
+    "manual      Hand-written, and preserved across runs. For a subject the dataset does",
+    "            not carry: the client slug, an operator's own name, a dead credential",
+    "            fragment. Nothing derives these, so nothing can rebuild them — if you",
+    "            lose this file, the manual half has to be written again from memory.",
+    "",
+    "Both halves are literal redactions, which is why neither belongs in placeholders.json",
+    "— see loadLocalRedactions() in lib/placeholders.mjs.",
   ],
   datasets,
+  manual,
   redactions,
 };
 
 console.log(
   `\n  ${participants.length} participant name(s), ${documents.length} transcript filename(s), ` +
     `${derived.length} derived name part(s)`,
+);
+// Count only — printing a manual entry would print the client name it exists to hide.
+console.log(
+  `  ${manual.length} manual redaction(s) carried through unchanged`,
 );
 if (TOO_SHORT.length) {
   console.warn(
