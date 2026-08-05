@@ -14,7 +14,7 @@ import { promisify } from 'node:util'
 
 const run = promisify(execFile)
 
-export function createIdentity(bq, { channelId }) {
+export function createIdentity(bq, { channelId, user }) {
   const T = (name) => bq.table(name)
 
   async function buzz(args) {
@@ -22,15 +22,65 @@ export function createIdentity(bq, { channelId }) {
     return JSON.parse(stdout)
   }
 
+  /** What we already have on file for a pubkey, so a returning editor only has to confirm. */
+  async function known(pubkey) {
+    const rows = await bq.query(
+      `SELECT pubkey, email, display_name FROM ${T('users')} WHERE pubkey = @pk`,
+      { pk: pubkey },
+    )
+    return rows[0] ?? null
+  }
+
   return {
-    /** Channel members with display names, for the identity picker at launch. */
+    /**
+     * Who the launcher presented, enriched with anything already stored for them.
+     *
+     * This is the ordinary path. `members()` below needs the `buzz` CLI holding a relay
+     * credential, which exists only inside an agent's environment — so for every launch a
+     * person makes it failed, and the gate had nothing to offer. The launcher knows who it
+     * is starting the explorer for; it says so, and the person confirms.
+     */
+    async presented() {
+      if (!user) return null
+      const stored = await known(user.pubkey)
+      return {
+        pubkey: user.pubkey,
+        // A name passed at launch is the fresher fact; fall back to what was stored.
+        display_name: user.display_name ?? stored?.display_name ?? null,
+        email: user.email ?? stored?.email ?? null,
+        // Distinguishes "confirm this" from "confirm this for the first time" in the UI.
+        recognised: Boolean(stored),
+      }
+    },
+
+    /** Look up one pubkey the person typed in by hand. */
+    known,
+
+    /**
+     * Channel members with display names — the optional convenience path.
+     *
+     * Returns a reason instead of throwing. Requiring a relay credential is fine for a
+     * nice-to-have; it is not fine for the only way into the app, which is what it used to
+     * be. Callers render the reason and fall back to confirming a presented identity or
+     * accepting a pubkey by hand.
+     */
     async members() {
       if (!channelId) {
-        throw new Error(
-          'no channel configured — pass --channel <uuid> so Stu can resolve who you are',
-        )
+        return { members: [], unavailable: 'no channel configured (pass --channel <uuid>)' }
       }
-      const roster = await buzz(['channels', 'members', '--channel', channelId])
+      let roster
+      try {
+        roster = await buzz(['channels', 'members', '--channel', channelId])
+      } catch (err) {
+        // The two real cases: the CLI is not on PATH, or it has no credential. Neither is
+        // recoverable from inside a launchd job, so report and let the caller move on.
+        const detail = /BUZZ_PRIVATE_KEY|auth error/i.test(err.message)
+          ? 'the buzz CLI has no relay credential in this environment'
+          : /ENOENT/.test(err.message)
+            ? 'the buzz CLI is not on PATH'
+            : err.message.split('\n')[0]
+        return { members: [], unavailable: detail }
+      }
       const people = roster.filter((m) => m.role !== 'bot')
 
       // Profile lookups are independent; one missing profile must not lose the whole roster.
@@ -43,15 +93,18 @@ export function createIdentity(bq, { channelId }) {
         }
       }))
 
-      const known = await bq.query(
+      const onFile = await bq.query(
         `SELECT pubkey, email, display_name FROM ${T('users')}`,
       )
-      const byPubkey = new Map(known.map((u) => [u.pubkey, u]))
+      const byPubkey = new Map(onFile.map((u) => [u.pubkey, u]))
 
-      return named.map((m) => ({
-        ...m,
-        known_email: byPubkey.get(m.pubkey)?.email ?? null,
-      }))
+      return {
+        members: named.map((m) => ({
+          ...m,
+          known_email: byPubkey.get(m.pubkey)?.email ?? null,
+        })),
+        unavailable: null,
+      }
     },
 
     /**

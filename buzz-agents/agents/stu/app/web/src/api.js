@@ -15,6 +15,10 @@ async function request(method, path, body) {
 
 export const api = {
   config: () => request('GET', '/api/config'),
+  // Who the launcher said is at the keyboard, or null. The preferred path — see IdentityGate.
+  presentedIdentity: () => request('GET', '/api/identity/presented'),
+  knownIdentity: (pk) => request('GET', `/api/identity/known/${encodeURIComponent(pk)}`),
+  // `{ members, unavailable }` — the roster needs a relay credential and often has none.
   members: () => request('GET', '/api/members'),
   bindIdentity: (b) => request('POST', '/api/identity', b),
 
