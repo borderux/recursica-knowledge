@@ -37,6 +37,8 @@ Applies to movement through primary nav, secondary nav, and tabs alike.
 
 **Layout persistence is a routing outcome, not a remembered preference.** Do not implement "remember which tab was open" as stored UI state. If the tab is a route, returning to that URL restores it and the back button behaves. Anything beyond that is an implementation concern, not a design decision.
 
+**Navigation sits on layer 0 alongside the main content unless one of them needs containing.** Where containment is wanted, raise either the nav or the main content to layer 1 — not both — and keep that direction across the application. Owned by `recursica-skill-layers`.
+
 ## Horizontal top bar vs. vertical sidebar
 
 **There is no universal rule — but there is a test.** Decide on these two inputs, in order:

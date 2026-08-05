@@ -29,6 +29,8 @@ House rules for how a page is composed and what each region sits on. These are o
 
 **Page titles, sections, and any high-level summary content sit below the header**, in the page.
 
+**The header, the navigation, and the main content all sit on layer 0 unless one of them needs containing.** Where it does, that region is raised to layer 1 — the nav or the main content, not both — and the direction is decided once for the application. **Layer 0 is declared once, on the root element, and never re-declared.** Owned by `recursica-skill-layers`.
+
 ### Choosing between a top nav and a left rail
 
 **The number of navigation items decides.**
@@ -103,21 +105,27 @@ The filter controls themselves are owned by `recursica-skill-filters`.
 
 **Space first — see above.** Most regions need no surface at all.
 
+**The page canvas is layer 0**, declared on the root element. Nothing else has to paint it.
+
 **A region that reads as blurring into the one beside it needs one.** When adjacent regions have no separation and the reader cannot tell where one ends and the next begins, spacing has failed and the region needs its own layer.
 
 **Three levels of containment, and they are not interchangeable:**
 
 | Level            | What it is for                                                         | Owner                                      |
 | ---------------- | ---------------------------------------------------------------------- | ------------------------------------------ |
-| **No container** | The default. Space and type hierarchy do the grouping                  | this skill, and `recursica-skill-card`     |
-| **A layer**      | A region that needs its own surface but is not one of a set of peers   | this skill                                 |
+| **No container** | The default. Space and type hierarchy do the grouping                  | `recursica-skill-layers`, and this skill   |
+| **A layer**      | A region that needs its own surface but is not one of a set of peers   | `recursica-skill-layers`                   |
 | **A card**       | A small, finite set of repeating peer objects, each carrying a graphic | `recursica-skill-card`, and its five tests |
 
 **A layer is the middle option, and it is the one most often missed.** An agent that knows only "card or nothing" will box everything or box nothing. A region that deserves separation but has no peers — a chart and its labels, a group of summary figures — takes a layer.
 
 **A layer does not waive the card tests.** Needing a surface is not evidence of peer-hood.
 
-**The `Layer` component is referenced in the component documentation but is not exported.** Until it ships, a region that needs a surface is a gap to raise — **do not paint one with raw CSS variables or the underlying library's tokens.** See `recursica-skill-design-router`.
+**Layers are their own system, and `recursica-skill-layers` owns it.** There are four levels, 0 to 3; **the root element is always layer 0**; every component resolves its colours from the layer it sits on; and **every layer property — surface, border, radius, padding, shadow — comes from the Forge theme and is never set by you.** Read that skill before opening a layer.
+
+**Layers 0 and 1 do nearly all the work.** Layer 2 needs a stated reason and layer 3 is almost always a sign the structure is wrong.
+
+**How the adapter exposes a layer is still unconfirmed** — the token contract and the `data-recursica-layer` attribute are real, but a `Layer` component is referenced in the component documentation without being exported. **Do not paint a surface with raw CSS variables or the underlying library's tokens**; raise it. See `recursica-skill-design-router`.
 
 ## Application chrome
 
@@ -170,12 +178,10 @@ The number one indicator, and the rest in order:
 ## Uncovered — ask, do not invent
 
 - **The layout grid.** Eight or twelve columns is mentioned as the thing pages should align to, and it is explicitly deferred to its own skill. Until then, alignment is a stated requirement with no stated system.
-- **What each layer level means.** The component docs refer to layers 0 through 3; nothing distinguishes them.
 - **Empty states where data exists but is zero.** Named as not covered.
 - **Where global notifications or alerts sit in the page structure.** Named as not covered, and the banner component does not exist yet — see `recursica-skill-feedback-messaging`.
 - **What may go in a footer** beyond a copyright notice, and when it is fixed rather than scrolled to.
 - **Whether summary figures sit on layers or in cards.**
-- **The page-level canvas.** Nothing in the component set paints the background a layer sits against.
 
 ## Pre-flight checklist
 
@@ -190,7 +196,7 @@ The number one indicator, and the rest in order:
 - [ ] No form field is inside a card.
 - [ ] Content respects the system's maximum width, and leftover space was left empty rather than filled.
 - [ ] A loading page shows nothing — no skeleton, no ghost text, and a spinner only past roughly three seconds or for lagging regions of an otherwise-loaded page.
-- [ ] Every region was tried with space first; a surface was added only where regions genuinely blurred, and a region without peers took a layer rather than a card.
+- [ ] Layer 0 is declared once on the root and never re-declared; every region was tried with space first; a surface was added only where regions genuinely blurred, and a region without peers took a layer rather than a card.
 - [ ] No surface was painted with raw CSS or the library's tokens; a missing `Layer` was raised.
 - [ ] Application chrome sits in the header or rail, never in the content area.
 - [ ] Summary figures share one treatment, are named as noun phrases, and reconcile with each other.
