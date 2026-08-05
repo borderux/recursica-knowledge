@@ -146,6 +146,9 @@ if (!values) {
 const hadTranscriptDir = Boolean(values.TRANSCRIPT_DIR);
 values = deriveValues(values, NEST);
 if (!hadTranscriptDir) ok(`TRANSCRIPT_DIR derived → ${values.TRANSCRIPT_DIR}`);
+// bin/stu reads the app out of this checkout rather than a copy in the nest, so say which
+// checkout it was pointed at. Moving the clone breaks the launcher until bootstrap re-runs.
+ok(`STU_APP derived → ${values.STU_APP}`);
 
 const provided = Object.entries(values).filter(([k, v]) => !k.startsWith("$") && v).length;
 ok(`${provided} value${provided === 1 ? "" : "s"} loaded from ${path.relative(repoRoot, valuesFile) || valuesFile}`);

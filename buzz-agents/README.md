@@ -74,8 +74,11 @@ the prompt talks about drifting apart in review is the failure worth avoiding, s
 together.
 
 `nest/` still owns the launcher. [`nest/bin/stu`](../nest/bin/stu) is what `bootstrap-nest.mjs`
-installs into `~/.buzz/bin`, and it expects the app at `~/.buzz/REPOS/stu-explorer`; nothing
-here is installed by the bootstrap. An `app/` directory is source, not configuration — the
+installs into `~/.buzz/bin`, and it runs the app **out of this checkout**: bootstrap resolves
+`{{STU_APP}}` to the absolute path of `agents/stu/app` in the clone it ran from, so nothing
+here is copied into the nest. Move or rename the clone and the launcher stops resolving until
+bootstrap is re-run; `STU_APP` in the environment overrides it for a second checkout.
+An `app/` directory is source, not configuration — the
 export and restore scripts read `agent.json`, `SYSTEM_PROMPT.md` and `avatar.png` by name and
 ignore everything else, so adding one does not change what they do. `export-agents.mjs` does
 scan it for redaction patterns, which is a feature: a client's slug or a participant's id

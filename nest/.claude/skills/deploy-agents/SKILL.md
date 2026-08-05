@@ -301,6 +301,11 @@ still one shared `agents/claire/` for everybody.
 Do not hand-rename an agent in Buzz Desktop to achieve this. Use `--owner`, so the name is
 applied the one way the tooling recognises.
 
+**ALAN registers as `Alan (Alex)`, not `ALAN (Alex)`.** This skill and his own prompt style
+him ALAN; `agents/alan/agent.json` says `Alan`, and that is what Buzz gets. Quote the names
+the script prints, never the ones in this prose — a mention of `@ALAN (Alex)` resolves to
+nothing.
+
 Someone else's `Claire (…)` already in the channel is **not** a conflict and not a reason to
 reuse it — it is theirs, on their machine, spending their budget. Two owner-suffixed Claires
 in one room is the convention working. What is a real problem is two agents on *one* Mac

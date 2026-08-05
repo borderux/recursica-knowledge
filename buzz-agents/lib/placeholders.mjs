@@ -62,6 +62,10 @@ export function deriveValues(values, nest = nestPath()) {
   }
   // Known, not asked for — the nest is not always ~/.buzz.
   out.BUZZ_HOME = nest;
+  // Stu's app is source, not configuration, so bootstrap references it in this checkout
+  // rather than copying it into the nest. Derived from this file's own location, so a
+  // renamed or relocated clone still resolves — and re-running bootstrap re-bakes it.
+  out.STU_APP = path.join(buzzAgentsDir, "agents", "stu", "app");
   return out;
 }
 

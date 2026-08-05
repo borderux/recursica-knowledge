@@ -8,6 +8,20 @@ For detailed step-by-step setup guides (using the npm package or the Claude plug
 
 ---
 
+## 🐝 Running the Buzz agents
+
+This repository is also the durable record of the Buzz agents built around this knowledge — Claire, Stu, Janice and Alan — and of the runtime tooling they need. Nothing here is loaded when you install the design-system plugin; it is a separate stack with its own install path.
+
+| If you want to…                                | Read                                                                     |
+| ---------------------------------------------- | ------------------------------------------------------------------------ |
+| Install the agents on your own Mac             | **[buzz-agents/INSTALL.md](buzz-agents/INSTALL.md)**                     |
+| Hand them to a teammate as the community owner | [buzz-agents/ONBOARD_AN_OPERATOR.md](buzz-agents/ONBOARD_AN_OPERATOR.md) |
+| Change how the definitions are stored          | [buzz-agents/README.md](buzz-agents/README.md)                           |
+
+Requires macOS: the `buzz` CLI ships only inside Buzz Desktop, arm64 only, with no Linux or container build.
+
+---
+
 ## 🤝 Contributing to our Knowledge
 
 If you would like to document a new component or create a new Claude skill, please see [CONTRIBUTING.md](CONTRIBUTING.md) for detailed step-by-step instructions.
