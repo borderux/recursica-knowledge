@@ -64,7 +64,15 @@ function getAllTextFiles(dir) {
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      if (entry.name === ".resolved" || entry.name === "node_modules") continue;
+      // `dist` joins node_modules here now that an agent can ship an app: a built bundle is
+      // megabytes of minified generated text, and scanning it for leaks reports the source
+      // file's problem twice, or invents one out of a mangled identifier.
+      if (
+        entry.name === ".resolved" ||
+        entry.name === "node_modules" ||
+        entry.name === "dist"
+      )
+        continue;
       files.push(...getAllTextFiles(fullPath));
     } else if (entry.isFile()) {
       if (
@@ -74,7 +82,12 @@ function getAllTextFiles(dir) {
         entry.name === "toolbox" ||
         entry.name === "local-values.json" ||
         entry.name === "local-values.example.json" ||
-        entry.name === "placeholders.json"
+        entry.name === "placeholders.json" ||
+        // Recursica token files, written into an app's web/ by npm install. Generated, gitignored,
+        // 2.7 MB between them, and nothing a redaction rule could ever have to say about them.
+        entry.name.startsWith("recursica_") ||
+        entry.name === "recursica.json" ||
+        entry.name === "package-lock.json"
       )
         continue;
       files.push(fullPath);

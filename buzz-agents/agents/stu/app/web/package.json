@@ -1,0 +1,30 @@
+{
+  "name": "stu-explorer-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "predev": "node scripts/ensure-tokens.mjs",
+    "dev": "vite",
+    "prebuild": "node scripts/ensure-tokens.mjs",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@mantine/core": "^8.3.18",
+    "@mantine/hooks": "^8.3.18",
+    "@recursica/mantine-adapter": "^0.35.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-router": "^8.3.0"
+  },
+  "devDependencies": {
+    "@recursica/official-release": "2.6.0",
+    "@recursica/recursica-postcss-vars": "1.5.0",
+    "@vitejs/plugin-react": "^6.0.2",
+    "postcss": "8.5.16",
+    "postcss-preset-mantine": "^1.18.0",
+    "postcss-simple-vars": "^7.0.1",
+    "vite": "^8.1.0"
+  }
+}

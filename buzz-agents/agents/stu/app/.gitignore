@@ -1,0 +1,5 @@
+# Local channel settings — slug, channel uuid, GCP project. Copy stu.env.example to stu.env.
+stu.env
+
+# A service-account key dropped beside the app. Never versioned.
+secrets/
