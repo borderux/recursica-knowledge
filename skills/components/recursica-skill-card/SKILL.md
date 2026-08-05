@@ -91,6 +91,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.card`. **The kit defin
 
 **Do not choose Elevation and Outline arbitrarily** — which one a surface uses is not stated. See the uncovered list.
 
+**A card sits on a layer; it is not an alternative to one.** The card carries its own colour set for each of the four layer levels, so the layer it is placed on changes how it renders. A layer is a surface and a token scope; a card is an object boundary for repeating peers. See `recursica-skill-layers`.
+
 ## Rules for using it
 
 **Every card in a set is the same shape.** The same fields, in the same order, in the same slots. A set whose cards differ is a sign the objects are not really peers.

@@ -108,6 +108,7 @@ Instances:
 | A dashboard's composition                                                | A static layout with type hierarchy and whitespace, cards placed inside it. Never a screen made of cards      | `recursica-skill-dashboards`                     |
 | Spacing between form fields and sections                                 | Built into the components. Do not add wrappers or spacer elements                                             | `recursica-skill-forms`                          |
 | A form, form section, or single form control                             | **Never inside a card**, with no exception. Group with headings and component spacing                         | `recursica-skill-forms`, `recursica-skill-card`  |
+| A region that needs a surface but has no peers                           | A layer, at the shallowest level that works. Never a card, and never hand-painted CSS                         | `recursica-skill-layers`                         |
 
 **Why it generalizes:** a boundary is a claim that the things inside it belong together _and are separable from a peer beside them._ With no peer, the claim is empty and the border is decoration that costs padding, width, and hierarchy. A generated screen made of nested boxes is the most common symptom.
 
