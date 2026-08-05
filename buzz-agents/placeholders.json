@@ -94,7 +94,20 @@
   "$redactionsComment": [
     "Redactions are regular expressions, not literals, so that a rule never has to",
     "spell out the very text it exists to remove. A literal `find` would put the",
-    "identifier straight back into this file."
+    "identifier straight back into this file.",
+    "",
+    "Two entries below break that rule with participant names, and they are the reason",
+    "buzz-agents/local-redactions.json exists. NO FURTHER NAME GOES IN THIS FILE. A",
+    "person's name has no pattern to match it and is not knowable before the transcripts",
+    "land, so a literal here is both a permanent disclosure and a guard that is always one",
+    "incident behind. Names belong in that gitignored file, generated from the live dataset",
+    "by scripts/refresh-local-redactions.mjs.",
+    "",
+    "The two are left in place deliberately. They are already in this repository's history,",
+    "so deleting them from the working tree would not undo the disclosure — while removing",
+    "them today would stop scrubbing those names on any machine that has not built a",
+    "local-redactions.json yet. Getting them out for real means rewriting history, which is",
+    "a decision about a public repository, not a cleanup."
   ],
   "redactions": [
     {

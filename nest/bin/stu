@@ -2,30 +2,58 @@
 # Launch Stu, the local data explorer, for one research channel.
 #
 #   ~/.buzz/bin/stu --slug acme --channel <channel-uuid>
+#   ~/.buzz/bin/stu --slug acme --status
+#   ~/.buzz/bin/stu --slug acme --stop
 #
 # Idempotent: if a server is already serving this slug on the port, it prints that URL and
 # exits 0 rather than binding a second one. That matters because Stu has two launch paths —
 # Claire finishing a transcript, and a person saying "@Stu open the explorer" — and they will
 # collide.
 #
-# Exit codes: 0 running (started or already up), 1 usage/preflight, 2 build or start failed.
+# Lifetime: the server runs under launchd as a per-slug user agent, never as a child of the shell
+# that launched it. That is the whole point. An agent's tool call kills its entire process group
+# when it returns, so a plain `node ... &` came up, printed its URL, and was reaped a second later
+# every time an agent started it — it only ever survived when a human ran it from a terminal.
+# launchd owns the process instead, so it outlives the launching shell and stops only when
+# `--stop` runs or Buzz Desktop quits. If node itself crashes, launchd restarts it.
+#
+# Who is editing: pass --user <pubkey> (with --user-name / --user-email) and the app shows that
+# person for confirmation instead of trying to look up the channel roster. The roster lookup
+# needs a relay credential, which a launchd job does not have — see server/identity.mjs.
+#
+# Exit codes: 0 running (started, already up, or stopped), 1 usage/preflight, 2 build or start failed.
 
 set -euo pipefail
 
 BUZZ_HOME="${BUZZ_HOME:-$HOME/.buzz}"
 APP="$BUZZ_HOME/REPOS/stu-explorer"
+RUN_DIR="$BUZZ_HOME/run"
 SLUG=""
 CHANNEL=""
+PROJECT="${STU_PROJECT:-}"
+USER_PUBKEY="${STU_USER_PUBKEY:-}"
+USER_NAME="${STU_USER_NAME:-}"
+USER_EMAIL="${STU_USER_EMAIL:-}"
 PORT="${STU_PORT:-4317}"
-FOREGROUND=0
+ACTION="start"
+
+SELF="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --slug)       SLUG="$2"; shift 2 ;;
     --channel)    CHANNEL="$2"; shift 2 ;;
+    --project)    PROJECT="$2"; shift 2 ;;
+    --user)       USER_PUBKEY="$2"; shift 2 ;;
+    --user-name)  USER_NAME="$2"; shift 2 ;;
+    --user-email) USER_EMAIL="$2"; shift 2 ;;
     --port)       PORT="$2"; shift 2 ;;
-    --foreground) FOREGROUND=1; shift ;;
-    -h|--help)    sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    --foreground) ACTION="foreground"; shift ;;
+    --stop)       ACTION="stop"; shift ;;
+    --status)     ACTION="status"; shift ;;
+    # Internal: launchd's entry point. Runs node in the foreground and watches Buzz Desktop.
+    --supervise)  ACTION="supervise"; shift ;;
+    -h|--help)    sed -n '2,24p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "stu: unknown argument $1" >&2; exit 1 ;;
   esac
 done
@@ -33,23 +61,134 @@ done
 die() { echo "stu: $*" >&2; exit "${2:-1}"; }
 
 [[ -n "$SLUG" ]] || die "--slug is required (e.g. --slug acme)"
+# Same rule config.mjs enforces, and it also keeps the slug safe in a launchd label and filename.
+[[ "$SLUG" =~ ^[a-z0-9][a-z0-9-]*$ ]] || die "--slug must be lowercase alphanumeric with hyphens: got \"$SLUG\""
+
+URL="http://127.0.0.1:$PORT"
+LABEL="com.buzz.stu.$SLUG"
+DOMAIN="gui/$(id -u)"
+# Deliberately not ~/Library/LaunchAgents: plists there are loaded at every login, and a research
+# explorer that silently comes back after a reboot is worse than one you have to start.
+PLIST="$RUN_DIR/$LABEL.plist"
+LOG="$RUN_DIR/stu-$SLUG.log"
+
+# Is something already serving this slug here? Only a *matching* slug counts as reuse; another
+# channel on this port is a conflict.
+serving_this_slug() {
+  local body
+  body="$(curl -fsS --max-time 2 "$URL/api/config" 2>/dev/null)" || return 1
+  grep -q "\"slug\":\"$SLUG\"" <<<"$body"
+}
+
+# Empty when Buzz Desktop is not running. buzz-acp helpers come and go per session, so anchor on
+# the one process whose lifetime *is* the app.
+buzz_desktop_pid() {
+  pgrep -f '/Buzz\.app/Contents/MacOS/buzz-desktop' 2>/dev/null | head -1 || true
+}
+
+job_pid() {
+  launchctl print "$DOMAIN/$LABEL" 2>/dev/null \
+    | awk '/^[[:space:]]*pid = /{print $3; exit}' || true
+}
+
+# -------------------------------------------------------------------- stop / status
+
+if [[ "$ACTION" == "stop" ]]; then
+  launchctl bootout "$DOMAIN/$LABEL" 2>/dev/null || true
+  rm -f "$PLIST"
+  for _ in $(seq 1 10); do
+    curl -fsS --max-time 2 "$URL/api/config" >/dev/null 2>&1 || { echo "stu: $SLUG stopped"; exit 0; }
+    sleep 1
+  done
+  die "asked launchd to stop $LABEL but $URL is still answering — check 'lsof -nP -iTCP:$PORT'" 2
+fi
+
+if [[ "$ACTION" == "status" ]]; then
+  PID="$(job_pid)"
+  if serving_this_slug; then
+    echo "stu: $SLUG running — $URL (launchd $LABEL${PID:+, pid $PID}, log $LOG)"
+    exit 0
+  fi
+  if [[ -n "$PID" ]]; then
+    echo "stu: $SLUG loaded as $LABEL (pid $PID) but $URL is not answering yet — log $LOG"
+    exit 0
+  fi
+  echo "stu: $SLUG not running"
+  exit 0
+fi
+
+# -------------------------------------------------------------------- preflight
+
 [[ -d "$APP" ]] || die "Stu is not installed at $APP"
 
 KEY="$BUZZ_HOME/.secrets/claire-$SLUG-service-user.json"
 [[ -f "$KEY" ]] || die "no service-account key at $KEY — deploy the channel first"
 
-URL="http://127.0.0.1:$PORT"
+# launchd hands the job a bare PATH, so the interpreter is resolved here, while we still have the
+# launching shell's environment, and passed through the plist.
+NODE_BIN="${STU_NODE:-$(command -v node || true)}"
+[[ -n "$NODE_BIN" && -x "$NODE_BIN" ]] || die "no usable node found — set STU_NODE to its absolute path"
 
-# Already up and serving this slug? Say so and stop. Only treat a *matching* slug as "already
-# running": a server on this port for another channel is a conflict, not a reuse.
-if RUNNING="$(curl -fsS --max-time 2 "$URL/api/config" 2>/dev/null)"; then
-  if grep -q "\"slug\":\"$SLUG\"" <<<"$RUNNING"; then
-    echo "stu: already running — $URL"
-    exit 0
-  fi
-  die "port $PORT is serving a different channel: $RUNNING
-  Pass --port to run this one alongside it." 2
+# server/config.mjs requires a project and deliberately has no default, so leaving this to the
+# caller made the documented launch line fail on a clean machine. The key we just preflighted
+# names its own project, so read it from there rather than asking a person to know it. An
+# explicit --project or STU_PROJECT still wins, for the case where they differ on purpose.
+if [[ -z "$PROJECT" ]]; then
+  PROJECT="$("$NODE_BIN" -e '
+    const fs = require("node:fs");
+    try { process.stdout.write(JSON.parse(fs.readFileSync(process.argv[1], "utf8")).project_id ?? ""); }
+    catch { process.exit(1); }
+  ' "$KEY" 2>/dev/null || true)"
+  [[ -n "$PROJECT" ]] || die "could not read project_id from $KEY — pass --project <id> or set STU_PROJECT"
 fi
+
+if [[ -n "$USER_PUBKEY" && ! "$USER_PUBKEY" =~ ^[0-9a-f]{64}$ ]]; then
+  die "--user must be a 64-character hex pubkey (not an npub): got \"$USER_PUBKEY\""
+fi
+
+ARGS=(--slug "$SLUG" --project "$PROJECT" --port "$PORT")
+[[ -n "$CHANNEL" ]]     && ARGS+=(--channel "$CHANNEL")
+[[ -n "$USER_PUBKEY" ]] && ARGS+=(--user "$USER_PUBKEY")
+[[ -n "$USER_NAME" ]]   && ARGS+=(--user-name "$USER_NAME")
+[[ -n "$USER_EMAIL" ]]  && ARGS+=(--user-email "$USER_EMAIL")
+
+# -------------------------------------------------------------------- supervise (launchd child)
+
+if [[ "$ACTION" == "supervise" ]]; then
+  echo "stu: supervising $SLUG on $PORT (node $NODE_BIN)"
+
+  "$NODE_BIN" "$APP/server/server.mjs" "${ARGS[@]}" &
+  CHILD=$!
+
+  # launchctl bootout / kickstart -k sends SIGTERM here; take node down with us.
+  trap 'kill "$CHILD" 2>/dev/null || true; wait "$CHILD" 2>/dev/null || true; exit 0' TERM INT
+
+  # Only couple our lifetime to Buzz if Buzz was up when we started. Started from a plain terminal
+  # with the app closed, Stu should keep running until it is told to stop.
+  BUZZ_PID="$(buzz_desktop_pid)"
+  [[ -n "$BUZZ_PID" ]] \
+    && echo "stu: tracking Buzz Desktop (pid $BUZZ_PID) — will shut down when it quits" \
+    || echo "stu: Buzz Desktop is not running — staying up until --stop"
+
+  while :; do
+    if ! kill -0 "$CHILD" 2>/dev/null; then
+      RC=0; wait "$CHILD" 2>/dev/null || RC=$?
+      # Nonzero exit is what KeepAlive/SuccessfulExit=false reacts to, so a crashed server comes
+      # back instead of leaving a dead URL behind.
+      echo "stu: server exited (rc $RC) — launchd will restart it" >&2
+      exit 1
+    fi
+    if [[ -n "$BUZZ_PID" ]] && ! kill -0 "$BUZZ_PID" 2>/dev/null; then
+      echo "stu: Buzz Desktop closed — shutting down $SLUG"
+      kill "$CHILD" 2>/dev/null || true
+      wait "$CHILD" 2>/dev/null || true
+      exit 0
+    fi
+    sleep 2
+  done
+fi
+
+# -------------------------------------------------------------------- build
 
 # The server serves web/dist. A missing build is the most common first-run failure, so build it
 # rather than handing back a 404 the user has to interpret.
@@ -59,27 +198,86 @@ if [[ ! -f "$APP/web/dist/index.html" ]]; then
     || die "the web build failed" 2
 fi
 
-ARGS=(--slug "$SLUG" --port "$PORT")
-[[ -n "$CHANNEL" ]] && ARGS+=(--channel "$CHANNEL")
-
-if [[ "$FOREGROUND" == "1" ]]; then
-  exec node "$APP/server/server.mjs" "${ARGS[@]}"
+if [[ "$ACTION" == "foreground" ]]; then
+  exec "$NODE_BIN" "$APP/server/server.mjs" "${ARGS[@]}"
 fi
 
-LOG="${TMPDIR:-/tmp}/stu-$SLUG.log"
-node "$APP/server/server.mjs" "${ARGS[@]}" >"$LOG" 2>&1 &
-PID=$!
+# -------------------------------------------------------------------- start under launchd
+
+if serving_this_slug; then
+  echo "stu: already running — $URL"
+  exit 0
+fi
+if RUNNING="$(curl -fsS --max-time 2 "$URL/api/config" 2>/dev/null)"; then
+  die "port $PORT is serving a different channel: $RUNNING
+  Pass --port to run this one alongside it." 2
+fi
+
+mkdir -p "$RUN_DIR"
+
+xml_escape() { sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' <<<"$1"; }
+plist_arg() { printf '    <string>%s</string>\n' "$(xml_escape "$1")"; }
+
+{
+  cat <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>$(xml_escape "$LABEL")</string>
+  <key>ProgramArguments</key>
+  <array>
+EOF
+  plist_arg "$SELF"
+  plist_arg "--supervise"
+  plist_arg "--slug"; plist_arg "$SLUG"
+  plist_arg "--project"; plist_arg "$PROJECT"
+  plist_arg "--port"; plist_arg "$PORT"
+  if [[ -n "$CHANNEL" ]];     then plist_arg "--channel";    plist_arg "$CHANNEL"; fi
+  if [[ -n "$USER_PUBKEY" ]]; then plist_arg "--user";       plist_arg "$USER_PUBKEY"; fi
+  if [[ -n "$USER_NAME" ]];   then plist_arg "--user-name";  plist_arg "$USER_NAME"; fi
+  if [[ -n "$USER_EMAIL" ]];  then plist_arg "--user-email"; plist_arg "$USER_EMAIL"; fi
+  cat <<EOF
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>HOME</key><string>$(xml_escape "$HOME")</string>
+    <key>BUZZ_HOME</key><string>$(xml_escape "$BUZZ_HOME")</string>
+    <key>STU_NODE</key><string>$(xml_escape "$NODE_BIN")</string>
+    <key>PATH</key><string>$(xml_escape "$(dirname "$NODE_BIN"):/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin")</string>
+  </dict>
+  <key>WorkingDirectory</key><string>$(xml_escape "$APP")</string>
+  <key>StandardOutPath</key><string>$(xml_escape "$LOG")</string>
+  <key>StandardErrorPath</key><string>$(xml_escape "$LOG")</string>
+  <key>RunAtLoad</key><true/>
+  <!-- Restart a crash, but respect a clean exit: that is how "stopped because Buzz closed" and
+       "stopped because someone ran --stop" avoid being undone by the supervisor coming back. -->
+  <key>KeepAlive</key>
+  <dict><key>SuccessfulExit</key><false/></dict>
+  <key>ThrottleInterval</key><integer>5</integer>
+  <key>ProcessType</key><string>Interactive</string>
+</dict>
+</plist>
+EOF
+} > "$PLIST"
+
+# A previous run may still be loaded but not listening (crash-throttled, or exited when Buzz
+# closed). bootstrap refuses to load a label twice, so clear it first.
+launchctl bootout "$DOMAIN/$LABEL" 2>/dev/null || true
+launchctl bootstrap "$DOMAIN" "$PLIST" || die "launchd refused to load $LABEL from $PLIST" 2
 
 # Wait for the port rather than sleeping a fixed amount: the first BigQuery token exchange is
 # the slow part and it varies.
 for _ in $(seq 1 30); do
-  if curl -fsS --max-time 2 "$URL/api/config" >/dev/null 2>&1; then
-    echo "stu: $SLUG → $URL (pid $PID, log $LOG)"
+  if serving_this_slug; then
+    echo "stu: $SLUG → $URL (launchd $LABEL, pid $(job_pid), log $LOG)"
+    echo "stu: stays up until '$SELF --slug $SLUG --stop' or Buzz Desktop quits"
     exit 0
   fi
-  kill -0 "$PID" 2>/dev/null || { cat "$LOG" >&2; die "the server exited during startup" 2; }
   sleep 1
 done
 
-cat "$LOG" >&2
-die "the server did not become ready within 30s" 2
+# Do not leave a job crash-looping in the background under a name that looks healthy.
+tail -40 "$LOG" >&2 2>/dev/null || true
+launchctl bootout "$DOMAIN/$LABEL" 2>/dev/null || true
+die "the server did not become ready within 30s (log $LOG)" 2

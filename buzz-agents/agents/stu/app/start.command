@@ -7,6 +7,7 @@
 #   ./start.command                    # everything from stu.env, opens a browser
 #   ./start.command --port 4400        # alongside another copy
 #   ./start.command --slug acme --channel <uuid> --project <gcp-project>
+#   ./start.command --user <your-64-hex-pubkey>   # skip the roster lookup entirely
 #
 # This is the portable sibling of ~/.buzz/bin/stu. That launcher runs Stu as a long-lived
 # launchd job wired into Buzz Desktop's lifetime, which is right for an agent starting the
@@ -33,6 +34,9 @@ CHANNEL="${STU_CHANNEL:-}"
 PROJECT="${STU_PROJECT:-}"
 PORT="${STU_PORT:-4317}"
 KEY="${STU_BQ_KEY:-}"
+USER_PUBKEY="${STU_USER_PUBKEY:-}"
+USER_NAME="${STU_USER_NAME:-}"
+USER_EMAIL="${STU_USER_EMAIL:-}"
 OPEN_BROWSER=1
 
 while [[ $# -gt 0 ]]; do
@@ -42,8 +46,11 @@ while [[ $# -gt 0 ]]; do
     --project)   PROJECT="$2"; shift 2 ;;
     --port)      PORT="$2"; shift 2 ;;
     --key)       KEY="$2"; shift 2 ;;
+    --user)       USER_PUBKEY="$2"; shift 2 ;;
+    --user-name)  USER_NAME="$2"; shift 2 ;;
+    --user-email) USER_EMAIL="$2"; shift 2 ;;
     --no-open)   OPEN_BROWSER=0; shift ;;
-    -h|--help)   sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help)   sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "start.command: unknown argument $1" >&2; exit 1 ;;
   esac
 done
@@ -119,7 +126,12 @@ if BODY="$(curl -fsS --max-time 2 "$URL/api/config" 2>/dev/null)"; then
 fi
 
 ARGS=(--slug "$SLUG" --project "$PROJECT" --port "$PORT" --key "$KEY")
-[[ -n "$CHANNEL" ]] && ARGS+=(--channel "$CHANNEL")
+[[ -n "$CHANNEL" ]]     && ARGS+=(--channel "$CHANNEL")
+# Naming yourself here is what lets the app skip the channel roster, which needs a relay
+# credential this script has no way to supply. Without it you type a pubkey into the gate once.
+[[ -n "$USER_PUBKEY" ]] && ARGS+=(--user "$USER_PUBKEY")
+[[ -n "$USER_NAME" ]]   && ARGS+=(--user-name "$USER_NAME")
+[[ -n "$USER_EMAIL" ]]  && ARGS+=(--user-email "$USER_EMAIL")
 
 if [[ "$OPEN_BROWSER" == 1 ]]; then
   # Poll rather than sleep-and-hope: the browser opens when the port actually answers.

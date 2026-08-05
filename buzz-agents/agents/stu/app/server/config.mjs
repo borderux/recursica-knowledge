@@ -34,6 +34,25 @@ export function loadConfig() {
     join(BUZZ_HOME, '.secrets', `claire-${slug}-service-user.json`)
   const port = Number(arg('port') || process.env.STU_PORT || 4317)
 
+  // Who the launcher says is at the keyboard. The alternative was asking the app to work it out
+  // by listing the channel roster, which needs a relay credential — and a launchd job has none,
+  // so that path 400s for every launch a person makes rather than an agent. Whoever starts the
+  // explorer already knows who they are starting it for, so they say.
+  //
+  // Presented, not proven: see identity.mjs. This decides who the app *offers* to record as the
+  // editor, and the person still confirms it on screen.
+  const userPubkey = arg('user') || process.env.STU_USER_PUBKEY || null
+  if (userPubkey && !/^[0-9a-f]{64}$/.test(userPubkey)) {
+    fail(`--user must be a 64-character hex pubkey (not an npub): got "${userPubkey}"`)
+  }
+  const user = userPubkey
+    ? {
+        pubkey: userPubkey,
+        display_name: arg('user-name') || process.env.STU_USER_NAME || null,
+        email: arg('user-email') || process.env.STU_USER_EMAIL || null,
+      }
+    : null
+
   if (!existsSync(keyPath)) {
     fail(`service-account key not found at ${keyPath}\n` +
          `  Pass --key <path>, or deploy the channel first with bin/deploy-claire-channel.sh.`)
@@ -46,6 +65,7 @@ export function loadConfig() {
     channelId,
     keyPath,
     port,
+    user,
     // Loopback only. The key lives in this process; the browser talks to 127.0.0.1 and nothing
     // else can reach the API even on a shared network.
     host: '127.0.0.1',

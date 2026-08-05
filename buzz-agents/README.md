@@ -47,6 +47,7 @@ buzz-agents/
 │       └── app/                      only where an agent ships one — see below
 ├── placeholders.json                 the tokens, what each one is, where to find it
 ├── local-values.example.json         copy to local-values.json (gitignored)
+├── local-redactions.example.json     shape of local-redactions.json (gitignored, generated)
 ├── lib/
 │   ├── placeholders.mjs
 │   ├── avatars.mjs
@@ -54,6 +55,7 @@ buzz-agents/
 └── scripts/
     ├── export-agents.mjs             Buzz Desktop → this directory
     ├── restore-agents.mjs            this directory → a Buzz community
+    ├── refresh-local-redactions.mjs  participant names from the live dataset
     └── sync-prompts.mjs              am I on the committed version?
 ```
 
@@ -168,6 +170,42 @@ Both directions fail closed:
 `placeholders.json` also carries **redactions** — one-way scrubs for text that should
 never be stored at all, such as a former maintainer's home directory. Unlike tokens,
 these are not reinstated on restore.
+
+### Participant names are redacted from a generated file, not from this one
+
+Redactions in `placeholders.json` are regexes so that a rule never has to spell out the
+text it removes. Research participant names break that: there is no expression matching
+"the people in this client's interviews" and nothing else, and the names are not knowable
+until the transcripts are ingested. Writing them here to protect them would publish them.
+
+So they live in **`local-redactions.json`**, which is gitignored and **generated**:
+
+```bash
+node buzz-agents/scripts/refresh-local-redactions.mjs \
+  --key ~/.buzz/.secrets/claire-<slug>-service-user.json \
+  --dataset research_<slug>            # repeatable; --dry-run to look first
+```
+
+It reads `participants.participant_name` and `conversations.document_name`, so the list
+derives from the data rather than from whoever last noticed a leak. **Re-run it after
+ingesting new transcripts** — the guard only covers names it has seen, and export says so
+out loud when the file is missing rather than reporting clean.
+
+Two details that came out of the first dataset it ran against:
+
+- It also derives the **name-bearing tail of each filename**. A transcript stored as
+  `<Cohort> Interview Transcript - <Name>.docx` gets written in reports as
+  `<Name>.docx`, which a whole-string redaction misses. That derivation is also what
+  caught a person who appeared only in a filename and never in `participants`.
+- It does **not** split participant names into single words unless you pass
+  `--split-names`. Splitting turned an ordinary English word that happened to be
+  somebody's surname into a redaction, which then rewrote that word in an unrelated code
+  comment. A redaction that corrupts prose is one somebody switches off.
+
+> This covers names reaching **this repository**. It does nothing about a name pasted
+> into an issue, a chat message, or a commit body — those never run the export. Treat the
+> generated file as the answer to "what must not be published", not as a filter that
+> catches everything on its way out.
 
 > Tokens cover identifiers, not judgement. A system prompt still documents how the team
 > works, and this repository is public. Read a prompt before adding it here.

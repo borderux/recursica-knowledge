@@ -85,6 +85,7 @@ import {
   loadPlaceholders,
   loadValues,
   localValuesPath,
+  loadLocalRedactions,
   tokenize,
   applyRedactions,
   detokenize,
@@ -417,8 +418,14 @@ for (const dir of dirs) {
 
   // What export-agents.mjs would write if it ran right now. Comparing in stored form
   // rather than resolving the stored prompt is what keeps a one-way redaction from
-  // reading as a difference; see the export for the transformation itself.
-  const image = applyRedactions(tokenize(livePrompt, vals), redactions);
+  // reading as a difference; see the export for the transformation itself. That means
+  // the redaction set has to match the export's exactly, local ones included — a
+  // shorter list here would report permanent, unfixable drift on any prompt the export
+  // redacts.
+  const image = applyRedactions(tokenize(livePrompt, vals), [
+    ...redactions,
+    ...loadLocalRedactions(),
+  ]);
   report.image = image;
 
   if (image === stored) {

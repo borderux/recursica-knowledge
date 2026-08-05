@@ -16,8 +16,8 @@ export function createQueries(bq) {
 
   /**
    * A name reduced to something comparable. NFKD decomposes an accented letter into its base
-   * plus a combining mark and the character class then drops the mark, so "Gastón" meets
-   * "Gaston". Punctuation goes the same way, which is what lets "J.T." meet "JT".
+   * plus a combining mark and the character class then drops the mark, so "Zoë" meets
+   * "Zoe". Punctuation goes the same way, which is what lets "A.B." meet "AB".
    */
   const NAME_KEY = (expr) =>
     `TRIM(REGEXP_REPLACE(REGEXP_REPLACE(` +
@@ -29,7 +29,7 @@ export function createQueries(bq) {
 
   /**
    * One key extends the other **on a token boundary**. The boundary is the whole rule, not a
-   * refinement of it: a bare STARTS_WITH makes "Kari" and "Karim" the same person, and it makes
+   * refinement of it: a bare STARTS_WITH makes "Ana" and "Anabel" the same person, and it makes
    * every short first name a match for a longer one that merely begins the same way.
    */
   const EXTENDS = (x, y, key) =>

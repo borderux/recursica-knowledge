@@ -2,7 +2,7 @@
 //
 // The transcription service names the same person differently in every transcript, so one
 // interviewer arrives as `p_int` in one document and `p_int_smith` in ten others, and a name comes
-// through with the dive shop attached or a first name only. This screen is where a person says
+// through with their employer attached or a first name only. This screen is where a person says
 // which records are one human being and what that human being is called.
 //
 // Two things it is careful to keep visible, because both are the difference between a tool you can
