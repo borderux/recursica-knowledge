@@ -12,8 +12,9 @@ This is the app Stu launches. The agent that launches it is defined one director
 ```
 
 Idempotent — a second launch prints the running URL instead of binding another port.
-That launcher is installed into `~/.buzz` from [`nest/bin/stu`](../../../../nest/bin/stu) and
-expects the app at `~/.buzz/REPOS/stu-explorer`.
+That launcher is installed into `~/.buzz` from [`nest/bin/stu`](../../../../nest/bin/stu), and
+it runs **this directory** — `bootstrap-nest.mjs` bakes the absolute path in when it installs
+the script, so nothing is copied. Re-run bootstrap if you move the clone.
 
 ## Running it from this directory
 

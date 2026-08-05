@@ -62,6 +62,10 @@ export function deriveValues(values, nest = nestPath()) {
   }
   // Known, not asked for — the nest is not always ~/.buzz.
   out.BUZZ_HOME = nest;
+  // Stu's app is source, not configuration, so bootstrap references it in this checkout
+  // rather than copying it into the nest. Derived from this file's own location, so a
+  // renamed or relocated clone still resolves — and re-running bootstrap re-bakes it.
+  out.STU_APP = path.join(buzzAgentsDir, "agents", "stu", "app");
   return out;
 }
 
@@ -104,37 +108,61 @@ export function escapeLiteral(literal) {
 /**
  * Redactions whose subject cannot be written down in this repository.
  *
- * The declared redactions in placeholders.json are regexes precisely so a rule never
- * has to spell out the text it removes. That works for anything with a shape — a home
- * directory, an identifier prefix. It does not work for research participant names:
- * there is no pattern that matches "the people in this client's interviews" and nothing
- * else, and the names are not knowable until the transcripts are ingested. The two that
- * are literals in placeholders.json today are the proof — each was added after someone
- * noticed a specific name, which means the guard is always one incident behind, and each
- * one committed a real person's name to a public repository in order to keep it out.
+ * The declared redactions in placeholders.json are regexes precisely so a rule never has
+ * to spell out the text it removes. That works for anything with a shape — a home
+ * directory, an identifier prefix. It does not work for a name: there is no pattern that
+ * matches "this client" or "the people in their interviews" and nothing else.
  *
- * So literal redactions live here instead: a gitignored file, populated from the live
- * dataset by refresh-local-redactions.mjs. The rule travels with the operator who can
- * already see the data, and never with the repository.
+ * placeholders.json used to carry a handful of those as literals anyway, on the argument
+ * that they were already in the history so the working tree cost nothing. That trade is
+ * no longer accepted — a client name does not go in this repository in any file, and the
+ * literals were removed. NOTHING identifying goes back into a versioned file. If a rule
+ * needs to name its subject, its home is here.
  *
- * Entries are `{ find, replace, label }`. `label` is what gets reported when one of
- * these matches — callers must print the label and never `find`, or a leak warning in
- * CI output becomes the leak.
+ * This file is gitignored and has two halves:
+ *
+ *   redactions  GENERATED from the live dataset by refresh-local-redactions.mjs, and
+ *               overwritten on every run. Participant names and transcript filenames,
+ *               which are not knowable until the transcripts are ingested.
+ *   manual      HAND-WRITTEN and preserved across regeneration. For a subject the
+ *               dataset does not contain: the client slug, an operator's own name, a
+ *               retired credential fragment. Nothing derives these, so nothing can
+ *               rebuild them.
+ *
+ * Both halves have the same `{ find, replace, label }` shape and are treated
+ * identically. `label` is what gets reported when one matches — callers must print the
+ * label and never `find`, or a leak warning in CI output becomes the leak.
  */
 export function loadLocalRedactions(file = localRedactionsPath) {
   if (!fs.existsSync(file)) return [];
   const raw = JSON.parse(fs.readFileSync(file, "utf8"));
-  const entries = Array.isArray(raw) ? raw : (raw.redactions ?? []);
+  const entries = Array.isArray(raw)
+    ? raw
+    : [...(raw.manual ?? []), ...(raw.redactions ?? [])];
   return entries
     .filter((r) => r && typeof r.find === "string" && r.find.length >= 3)
     .map((r, i) => ({
-      // Word boundaries only where they mean something. A literal ending in "." — an
-      // initial, a file extension — has no word boundary after it, and \b there would
-      // never match.
+      /**
+       * Boundaries are alphanumeric, NOT \b — because `_` and `-` are exactly where a
+       * client slug hides.
+       *
+       * \b counts `_` as a word character, so a rule matching the bare slug `\bacme\b`
+       * does not fire inside `research_acme`. That is not a corner case: the slug reaches
+       * text almost entirely in composed form — `research_<slug>` the dataset,
+       * `claire-<slug>-service-user` the account, `bq-<slug>.yaml` the MCP config — and a
+       * bare mention is the rare one. The rule read as if it covered the slug, and covered
+       * only the spelling nobody writes.
+       *
+       * `(?<![A-Za-z0-9])` … `(?![A-Za-z0-9])` treats `_` and `-` as separators, which
+       * catches every composed form while still refusing to rewrite the middle of a
+       * longer word. Applied only at an end that is itself alphanumeric: a literal
+       * ending in "." — an initial, a file extension — has no boundary to assert after
+       * it, and requiring one there would match nothing.
+       */
       pattern:
-        (/^\w/.test(r.find) ? "\\b" : "") +
+        (/^[A-Za-z0-9]/.test(r.find) ? "(?<![A-Za-z0-9])" : "") +
         escapeLiteral(r.find) +
-        (/\w$/.test(r.find) ? "\\b" : ""),
+        (/[A-Za-z0-9]$/.test(r.find) ? "(?![A-Za-z0-9])" : ""),
       replace: r.replace ?? "[redacted]",
       label: r.label ?? `local redaction ${i + 1}`,
     }));

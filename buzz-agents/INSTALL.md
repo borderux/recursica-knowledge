@@ -111,6 +111,30 @@ Ask whoever runs your community for the channel UUIDs; they are the same for eve
 > `local-values.json` is gitignored. Keep it that way — it is the file that would put your
 > project and folder ids into a public repo.
 
+### `JANICE_PUBKEY` cannot be filled in yet — leave it blank
+
+Every other value exists before you start. This one does not, and the ordering is circular:
+each operator runs their **own** Janice, and her pubkey does not exist until you have saved
+her draft in Step 5. On a first install there is nothing to look up and nobody who can tell
+you.
+
+So leave it blank and expect **Step 4 to run twice**:
+
+1. Run it now. It installs everything it can, then stops with
+   `✗ Unresolved tokens: JANICE_PUBKEY` and exits non-zero. **That is the expected result,
+   not a failure** — `bin/wake-janice.sh` is the only file that needs the value, and it is
+   the only one held back.
+2. Do Step 5, save the Janice draft, then get her pubkey and re-run Step 4:
+
+   ```bash
+   buzz channels members --channel <your-janice-channel-uuid>
+   ```
+
+   Bootstrap is idempotent, so the second run writes only that one file.
+
+Until it does, Janice is installed and healthy but never wakes up — and a silent Janice is
+also what a clean review looks like, so nothing will tell you it did not happen.
+
 ---
 
 ## Step 4 — Install the nest
@@ -138,6 +162,9 @@ missing value and the file that needed it. Add them to `local-values.json` and r
 refuses rather than installing a script that would go looking for a project literally named
 `{{BQ_PROJECT}}`.
 
+**A stop naming only `JANICE_PUBKEY` is the expected first run**, for the reason in Step 3.
+Carry on to Step 5 and come back to this step once her draft is saved.
+
 It also downloads the 154 MB BigQuery `toolbox` binary from Google's official release
 bucket and verifies its sha256 against the version this stack is pinned to. That is the
 slow part of the step — give it a minute. The binary is not committed here; it is fetched
@@ -160,6 +187,11 @@ node buzz-agents/scripts/restore-agents.mjs --channel <your-channel-uuid> --owne
 their own agents, so a shared channel otherwise holds several bots called `Claire` with no
 way to tell whose is whose. Only the display name changes — the definition in the repo stays
 canonical and shared.
+
+> **ALAN is created as `Alan (Your Name)`.** These pages and his own prompt style him ALAN,
+> but the name in [`agents/alan/agent.json`](agents/alan/agent.json) is `Alan`, and that is
+> the one Buzz registers. `@ALAN (Your Name)` will not resolve. The script prints every name
+> it is about to create — take it from there rather than from prose.
 
 Use the flag rather than renaming an agent in Buzz Desktop afterwards. A hand-rename is not
 recognised as the same agent by `sync-prompts.mjs` or `export-agents.mjs`.
@@ -224,6 +256,8 @@ Then smoke-test in your channel:
 | ---------------------------------------------------- | --------------------------------------------------- | ---------------------------------------- |
 | Bootstrap stops on prerequisites                     | Missing app or binary                               | Install what it named, re-run            |
 | Bootstrap stops on unresolved tokens                 | Blank values                                        | Fill in `local-values.json`, re-run      |
+| …and the only one named is `JANICE_PUBKEY`           | Expected on a first install — it cannot exist yet   | Step 5, save Janice's draft, re-run Step 4 |
+| `stu: no Stu app at …`                               | The checkout moved after bootstrap baked its path   | Re-run Step 4 from the checkout          |
 | Your agent has no tools                              | Buzz not restarted since install                    | Restart Buzz Desktop                     |
 | A tool is missing entirely                           | `toolbox` download failed or was interrupted        | Re-run Step 4; it refetches and verifies |
 | `Access Denied` on your own dataset                  | Dataset grant missing, or wrong region (must be US) | Check both                               |

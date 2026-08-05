@@ -47,7 +47,7 @@ buzz-agents/
 │       └── app/                      only where an agent ships one — see below
 ├── placeholders.json                 the tokens, what each one is, where to find it
 ├── local-values.example.json         copy to local-values.json (gitignored)
-├── local-redactions.example.json     shape of local-redactions.json (gitignored, generated)
+├── local-redactions.example.json     shape of local-redactions.json (gitignored)
 ├── lib/
 │   ├── placeholders.mjs
 │   ├── avatars.mjs
@@ -56,6 +56,7 @@ buzz-agents/
     ├── export-agents.mjs             Buzz Desktop → this directory
     ├── restore-agents.mjs            this directory → a Buzz community
     ├── refresh-local-redactions.mjs  participant names from the live dataset
+    ├── check-text-for-names.mjs      refuse text that names anybody (commit-msg hook)
     └── sync-prompts.mjs              am I on the committed version?
 ```
 
@@ -74,8 +75,11 @@ the prompt talks about drifting apart in review is the failure worth avoiding, s
 together.
 
 `nest/` still owns the launcher. [`nest/bin/stu`](../nest/bin/stu) is what `bootstrap-nest.mjs`
-installs into `~/.buzz/bin`, and it expects the app at `~/.buzz/REPOS/stu-explorer`; nothing
-here is installed by the bootstrap. An `app/` directory is source, not configuration — the
+installs into `~/.buzz/bin`, and it runs the app **out of this checkout**: bootstrap resolves
+`{{STU_APP}}` to the absolute path of `agents/stu/app` in the clone it ran from, so nothing
+here is copied into the nest. Move or rename the clone and the launcher stops resolving until
+bootstrap is re-run; `STU_APP` in the environment overrides it for a second checkout.
+An `app/` directory is source, not configuration — the
 export and restore scripts read `agent.json`, `SYSTEM_PROMPT.md` and `avatar.png` by name and
 ignore everything else, so adding one does not change what they do. `export-agents.mjs` does
 scan it for redaction patterns, which is a feature: a client's slug or a participant's id
@@ -171,14 +175,25 @@ Both directions fail closed:
 never be stored at all, such as a former maintainer's home directory. Unlike tokens,
 these are not reinstated on restore.
 
-### Participant names are redacted from a generated file, not from this one
+### No name goes in a versioned file — not one, not ever
 
 Redactions in `placeholders.json` are regexes so that a rule never has to spell out the
-text it removes. Research participant names break that: there is no expression matching
-"the people in this client's interviews" and nothing else, and the names are not knowable
-until the transcripts are ingested. Writing them here to protect them would publish them.
+text it removes. A name breaks that: there is no expression matching "this client", or
+"the people in their interviews", and nothing else.
 
-So they live in **`local-redactions.json`**, which is gitignored and **generated**:
+`placeholders.json` used to carry seven such literals anyway — a client slug, two
+participant names, an operator's name, a live sheet id, a key-id fragment, a participant
+token — on the argument that the history already held them, so the working tree cost
+nothing. **That argument is retired.** The working tree is what a person reads, what a
+clone ships, and what a search engine indexes; "already leaked" is not a licence to leak
+again. They were removed, and nothing identifying goes back in.
+
+Everything literal lives in **`local-redactions.json`**, gitignored, in two halves:
+
+| Half         | Where it comes from                                        | Survives regeneration |
+| ------------ | ---------------------------------------------------------- | --------------------- |
+| `redactions` | Generated from the live dataset                            | No — rebuilt each run |
+| `manual`     | Hand-written: client slug, operator name, dead credentials | **Yes**               |
 
 ```bash
 node buzz-agents/scripts/refresh-local-redactions.mjs \
@@ -186,13 +201,22 @@ node buzz-agents/scripts/refresh-local-redactions.mjs \
   --dataset research_<slug>            # repeatable; --dry-run to look first
 ```
 
-It reads `participants.participant_name` and `conversations.document_name`, so the list
+It reads `participants.participant_name` and `conversations.document_name`, so that half
 derives from the data rather than from whoever last noticed a leak. **Re-run it after
-ingesting new transcripts** — the guard only covers names it has seen, and export says so
-out loud when the file is missing rather than reporting clean.
+ingesting new transcripts** — the guard only covers names it has seen. It carries `manual`
+through untouched, because nothing can re-derive a client slug: delete that half and it is
+gone for good.
 
-Two details that came out of the first dataset it ran against:
+`export-agents.mjs` **refuses to run** when the file is absent. It writes prompts into the
+repository, and with no literals loaded that is by definition an unguarded write. `--check`
+still runs and warns, since a read-only report cannot leak.
 
+Three details that came out of the datasets it has run against:
+
+- **Boundaries are alphanumeric, not `\b`.** `\b` counts `_` as a word character, so
+  `\bslug\b` never matched `research_<slug>` — and composed forms are how a slug actually
+  travels: `research_<slug>`, `claire-<slug>-service-user`, `bq-<slug>.yaml`. The rule read
+  as though it covered the slug and covered only the spelling nobody uses.
 - It also derives the **name-bearing tail of each filename**. A transcript stored as
   `<Cohort> Interview Transcript - <Name>.docx` gets written in reports as
   `<Name>.docx`, which a whole-string redaction misses. That derivation is also what
@@ -202,10 +226,43 @@ Two details that came out of the first dataset it ran against:
   somebody's surname into a redaction, which then rewrote that word in an unrelated code
   comment. A redaction that corrupts prose is one somebody switches off.
 
-> This covers names reaching **this repository**. It does nothing about a name pasted
-> into an issue, a chat message, or a commit body — those never run the export. Treat the
-> generated file as the answer to "what must not be published", not as a filter that
-> catches everything on its way out.
+### Commit messages get the same check
+
+A commit message is published exactly as typed, cannot be edited after a push, and is as
+readable as any file in the tree — it also survives every later cleanup **of** the tree.
+Export never saw it.
+
+`.husky/commit-msg` now runs every message through the same rules:
+
+```bash
+node buzz-agents/scripts/check-text-for-names.mjs <file>   # or pipe on stdin
+```
+
+Pipe an issue body, a PR description or a release note through it before posting one, or
+run `npm run check:names <file>`.
+
+It checks **both** kinds of thing this repository keeps out of its files: the literal
+redactions above, and the configured **token values** from `local-values.json` — a project
+id or a Drive folder is as absent from the tree as a name is, and for the same reason.
+Token hits are reported as `the value of {{BQ_PROJECT}}`, naming the token and never the
+value.
+
+It reports **labels only** — printing the matched string would put the name in the
+terminal, the CI log and the shell history, which is the same disclosure with extra steps.
+Unlike export it only warns when `local-redactions.json` is missing: a hook that blocks
+every commit on a fresh clone is a hook somebody deletes.
+
+> **The hook is inert until `npm install` has run in the checkout.** Husky installs
+> git's `core.hooksPath` from the `prepare` script, so a clone that has never installed
+> dependencies has no hooks at all — not this one and not `pre-commit`. Check with
+> `git config core.hooksPath`; empty means nothing is running. This is worth knowing
+> before treating the hook as the last line of defence: it guards the person who set the
+> repo up to be guarded.
+>
+> CI cannot cover the gap as things stand. The rules that name a client live only in the
+> gitignored file, so a GitHub Action has nothing to match against unless the names are
+> put in a repository secret — which is a decision about where those names are allowed to
+> exist, not a wiring problem.
 
 > Tokens cover identifiers, not judgement. A system prompt still documents how the team
 > works, and this repository is public. Read a prompt before adding it here.

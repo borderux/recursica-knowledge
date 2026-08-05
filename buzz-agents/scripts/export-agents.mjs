@@ -179,18 +179,45 @@ if (fs.existsSync(inputPath)) {
 const { tokens, redactions } = loadPlaceholders();
 const localValues = loadValues(localValuesPath);
 
-// Literal redactions — participant names and transcript filenames — come from a
-// gitignored file because writing them down here would publish the very thing they
-// exist to remove. Absent is a legitimate state (a clone with no dataset behind it),
-// but it means the participant guard is off, so say so rather than looking clean.
+/**
+ * Literal redactions — client slug, participant names, transcript filenames — come from
+ * a gitignored file, because writing them down in a versioned one publishes the very
+ * thing they exist to remove.
+ *
+ * A missing file used to be a warning. It cannot be: this script WRITES prompts into the
+ * repository, and with no local redactions loaded the only rules left are the structural
+ * ones in placeholders.json, which by design name nobody. So an export with the file
+ * absent is precisely an unguarded export, and it printed one line of warning before
+ * doing exactly what it would have done anyway. It now refuses.
+ *
+ * --check still runs, because a read-only report writing nothing cannot leak anything,
+ * and CI on a clone with no dataset behind it should still be able to detect drift. It
+ * says loudly that the guard was off.
+ */
 const localRedactions = loadLocalRedactions();
 if (localRedactions.length === 0) {
-  console.warn(
-    `  ! no local-redactions.json at ${localRedactionsPath} — participant names are NOT being checked.`,
-  );
-  console.warn(
-    "      Build it: node buzz-agents/scripts/refresh-local-redactions.mjs --key <key> --dataset <dataset>",
-  );
+  const how = [
+    `  no local-redactions.json at ${localRedactionsPath}`,
+    "",
+    "      Generate the dataset half:",
+    "        node buzz-agents/scripts/refresh-local-redactions.mjs --key <key> --dataset <dataset>",
+    "",
+    "      Or, with no dataset to hand, write the manual half by copying",
+    "      buzz-agents/local-redactions.example.json and filling in `manual`. Either is",
+    "      enough; the file is gitignored.",
+  ].join("\n");
+
+  if (checkOnly) {
+    console.warn(`  ! ${how}\n`);
+    console.warn(
+      "      --check writes nothing, so this is a warning. A real export will refuse.\n",
+    );
+  } else {
+    console.error(
+      `\n\x1b[31m✗ Refusing to export with no literal redactions loaded.\x1b[0m\n\n${how}\n`,
+    );
+    process.exit(1);
+  }
 }
 const allRedactions = [...redactions, ...localRedactions];
 

@@ -26,7 +26,12 @@
 set -euo pipefail
 
 BUZZ_HOME="${BUZZ_HOME:-$HOME/.buzz}"
-APP="$BUZZ_HOME/REPOS/stu-explorer"
+# The app is source, not configuration, so it is not copied into the nest — it is read
+# out of the checkout, at the path bootstrap-nest.mjs baked in when it installed this
+# script. STU_APP overrides it, which is how you point at a second checkout. Earlier
+# revisions hardcoded $BUZZ_HOME/REPOS/stu-explorer, a directory nothing ever created:
+# every fresh install got "Stu is not installed" from a correctly installed Stu.
+APP="${STU_APP:-{{STU_APP}}}"
 RUN_DIR="$BUZZ_HOME/run"
 SLUG=""
 CHANNEL=""
@@ -119,7 +124,10 @@ fi
 
 # -------------------------------------------------------------------- preflight
 
-[[ -d "$APP" ]] || die "Stu is not installed at $APP"
+[[ -d "$APP/server" ]] || die "no Stu app at $APP
+  That path is baked in by bootstrap-nest.mjs from the checkout it ran in. If you moved or
+  renamed the clone, re-run 'node scripts/bootstrap-nest.mjs' from it; to use a different
+  checkout, set STU_APP to its buzz-agents/agents/stu/app directory."
 
 KEY="$BUZZ_HOME/.secrets/claire-$SLUG-service-user.json"
 [[ -f "$KEY" ]] || die "no service-account key at $KEY — deploy the channel first"

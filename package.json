@@ -39,7 +39,8 @@
     "format": "prettier --write \"**/*.{json,md,yml,yaml}\"",
     "agents:export": "node buzz-agents/scripts/export-agents.mjs",
     "agents:check": "node buzz-agents/scripts/export-agents.mjs --check",
-    "agents:restore": "node buzz-agents/scripts/restore-agents.mjs"
+    "agents:restore": "node buzz-agents/scripts/restore-agents.mjs",
+    "check:names": "node buzz-agents/scripts/check-text-for-names.mjs"
   },
   "packageManager": "npm@10.9.0",
   "engines": {
