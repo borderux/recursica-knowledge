@@ -241,6 +241,12 @@ node buzz-agents/scripts/check-text-for-names.mjs <file>   # or pipe on stdin
 Pipe an issue body, a PR description or a release note through it before posting one, or
 run `npm run check:names <file>`.
 
+It checks **both** kinds of thing this repository keeps out of its files: the literal
+redactions above, and the configured **token values** from `local-values.json` — a project
+id or a Drive folder is as absent from the tree as a name is, and for the same reason.
+Token hits are reported as `the value of {{BQ_PROJECT}}`, naming the token and never the
+value.
+
 It reports **labels only** — printing the matched string would put the name in the
 terminal, the CI log and the shell history, which is the same disclosure with extra steps.
 Unlike export it only warns when `local-redactions.json` is missing: a hook that blocks

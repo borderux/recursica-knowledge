@@ -28,6 +28,10 @@ import {
   loadPlaceholders,
   loadLocalRedactions,
   localRedactionsPath,
+  loadValues,
+  localValuesPath,
+  findLeaks,
+  deriveValues,
 } from "../lib/placeholders.mjs";
 
 const file = process.argv[2];
@@ -58,6 +62,7 @@ const body = read()
 
 const { redactions } = loadPlaceholders();
 const local = loadLocalRedactions();
+const values = loadValues(localValuesPath);
 
 /**
  * A missing local-redactions.json is a warning here, not a failure.
@@ -73,6 +78,29 @@ if (local.length === 0) {
       "    Client and participant names are NOT being checked in this message.",
   );
 }
+if (values === null) {
+  console.error(
+    `  ! no ${localValuesPath} — configured identifiers are NOT being checked.`,
+  );
+}
+
+/**
+ * Configured token values count too.
+ *
+ * Redactions cover names. They do not cover the identifiers this repository keeps out of
+ * the tree by tokenizing them — a cloud project id, a Drive folder, a channel uuid. Those
+ * are exactly as absent from every versioned file, and for the same reason, but nothing
+ * was checking them here: a message naming the real project id sailed through while the
+ * client slug two words later was caught.
+ *
+ * Reported by TOKEN NAME, which is safe — `BQ_PROJECT` is public, its value is the part
+ * that is not. Same convention export-agents.mjs already uses.
+ */
+const tokenLeaks = values
+  ? findLeaks(body, deriveValues(values)).map(
+      (token) => `the value of {{${token}}}`,
+    )
+  : [];
 
 const matched = [
   ...redactions
@@ -81,6 +109,7 @@ const matched = [
   ...local
     .filter((r) => new RegExp(r.pattern, r.flags ?? "g").test(body))
     .map((r) => r.label),
+  ...tokenLeaks,
 ];
 
 if (matched.length === 0) process.exit(0);
