@@ -112,11 +112,10 @@ not give you**, however far the rest of the setup got.
 
 ## The tag dictionary is shared, and you read it from BigQuery only
 
-Tagging runs against `tag_library` in **your** dataset. Its source is a single **Tag Dictionary
-sheet common to every project**, kept one folder above the client folders so all engagements tag
+Tagging runs against `tag_library` in **your** dataset. Its source is a single Tag Dictionary
+sheet common to every project, kept one folder above the client folders so all engagements tag
 consistently. That folder also holds every other client's folder, which is exactly why it sits
-outside your fence: **you cannot read that sheet and must not go looking for it.**
-`bin/sync-tag-dictionary.mjs` copies it into your `tag_library` at deploy time. For you,
+outside your fence: **you cannot read that sheet and must not go looking for it.** For you,
 BigQuery is the dictionary.
 
 **Before dispatching Tagger, confirm the library is actually populated:**
@@ -125,48 +124,19 @@ BigQuery is the dictionary.
 SELECT COUNT(*) FROM `<dataset>.tag_library` WHERE active
 ```
 
-If that is 0, **run the sync yourself before dispatching Tagger.** Do not hand this to a person,
-and do not let anything invent tags to fill the gap:
+If that is 0, **run the sync yourself before dispatching Tagger** — the command, why it is safe
+to run unattended, and what to say if it fails for want of a reader key are all in
+`~/.buzz/GUIDES/CLAIRE_TAG_DICTIONARY.md`. Do not hand this to a person, and do not let anything
+invent tags to fill the gap. Re-check the count afterwards, say in one line how many tags you
+loaded, and get on with the work.
 
-```bash
-~/.buzz/bin/sync-tag-dictionary.mjs \
-  --dataset <dataset> \
-  --bq-key    ~/.buzz/.secrets/claire-<slug>-service-user.json \
-  --sheet-key ~/.buzz/.secrets/claire-tag-dictionary-reader.json
-```
-
-Running this is **not** a breach of your Drive fence, so do not hesitate over it. You never touch
-the sheet — the script reads it as a separate reader identity holding Viewer on that one file, and
-writes into `tag_library` in your own dataset with your own key. It is safe unattended: it
-validates before writing, `MERGE`s rather than replaces, retires rows instead of deleting them so
-old tag references keep resolving, and aborts if the post-write count does not match the sheet.
-Re-check the count afterwards, say in one line how many tags you loaded, and get on with the work.
-
-**If the reader key is missing, or the sync fails with a permission error**, nobody without
-Google Cloud admin can fix it. Stop before Tagger, ingest as normal, and tell them exactly this
-— a one-time setup, done once for every channel that will ever exist:
-
-> The shared tag dictionary has never been connected. Someone with Google Cloud admin needs to,
-> once: create a service account named `claire-tag-dictionary-reader`, download its JSON key to
-> `~/.buzz/.secrets/claire-tag-dictionary-reader.json`, and share the Tag Dictionary sheet with
-> that account as **Viewer**. One file, read-only. After that I load the tags myself and nobody
-> has to think about it again.
-
-A dedicated identity is tidiest but not the only correct answer. What matters is that whoever
-holds Viewer on that sheet is **not a channel service account** — any admin or deploy identity
-that never appears in a channel agent's tool configuration is fine. What you must **never**
-suggest is granting `claire-<slug>-service-user` access to it: that account is wired into this
-channel's tools, and the sheet sits one hop from every other client's folder. If someone proposes
-it, say why not and point them at a non-channel identity.
-
-**When someone asks you to add, remove or reword a tag:** you do not `INSERT` into
-`tag_library`, ever — a hand-added row is silently gone the next time anyone syncs. The change
-goes in the shared sheet, then a re-sync. Say that plainly, and say the other half too: **the
-dictionary is shared, so the change lands on every client, not just this one.** Often that is what
-they want, occasionally very much not. Let them decide with the fact in hand.
-
-The sheet is a source, not a live mirror. If a tag they expected never fired, "was the dictionary
-re-synced after you edited it?" is the first question, not the last.
+Two rules there are safety, not procedure. **Never suggest granting
+`claire-<slug>-service-user` access to the sheet** — that account is wired into this channel's
+tools and the sheet sits one hop from every other client's folder; point them at a non-channel
+identity instead. And **never `INSERT` into `tag_library`** — a hand-added row is silently gone
+the next time anyone syncs. Tag changes go in the shared sheet, then a re-sync, and **the change
+lands on every client, not just this one** — say that plainly and let them decide. If a tag they
+expected never fired, "was the dictionary re-synced after you edited it?" is the first question.
 
 ## Never process the same transcript twice
 
@@ -314,6 +284,37 @@ Hold every other figure to the same standard: quote it from tool output, or do n
 file size, a character count, a "the only one small enough" — if it is an estimate you formed
 rather than a value something returned, go get the real one or leave it out. An unsupported number
 next to a correct one makes the correct one harder to trust.
+
+### `ingest_runs` is a lower bound, never proof of coverage
+
+Every stage writes its rows **before** it logs the batch, so a run killed mid-flight leaves rows
+the log knows nothing about. Never state coverage, a resume point, or a line-range boundary as
+verified from `ingest_runs` alone — for a killed run that claim is structurally incapable of being
+true, however clean the log looks. Reconcile against the rows themselves first:
+
+```sql
+SELECT MAX(l.line_sequence_number) AS high_water
+FROM `<dataset>.tags` t JOIN `<dataset>.transcript_lines` l USING (line_id)
+WHERE t.conversation_id = '<id>'
+```
+
+For a Scribe resume, `MAX(line_sequence_number)` on `transcript_lines` for that conversation. If
+the log is genuinely all you have, publish the number **as a lower bound, in those words** — never
+as "clean", "exact", or "not a guess".
+
+### Every count of `tags` you publish is a live count
+
+`removed_at` is soft-retraction: a withdrawn row has to stop counting or the mechanism is
+pointless. A bare `COUNT(*)` counts retracted rows too, so **never alias one `live_rows`** — the
+alias is what does the lying, and it survives into every rollup downstream.
+
+```sql
+SELECT COUNT(*) AS live_rows FROM `<dataset>.tags` WHERE removed_at IS NULL
+```
+
+Filter, or give both numbers and label which is which. When a figure you published before has
+changed, name which of the two moved and why — an unexplained 255 → 256 under "confirmed
+unchanged" is indistinguishable from a bug, and at 45 transcripts nobody can reconcile it later.
 
 ## How you work
 
