@@ -208,6 +208,10 @@ if (!Array.isArray(entries)) {
 }
 
 const { tokens, redactions } = loadPlaceholders();
+// Read once, not once per agent: the exception path used to reload the file for every
+// agent it examined, and the emptiness of this list now decides a reported state, so it
+// must be the same answer for all of them.
+const localRedactions = loadLocalRedactions();
 const values = loadValues(valuesFile);
 
 // Same reasoning as the export: without the values, tokenization is a no-op, so a live
@@ -424,7 +428,7 @@ for (const dir of dirs) {
   // redacts.
   const image = applyRedactions(tokenize(livePrompt, vals), [
     ...redactions,
-    ...loadLocalRedactions(),
+    ...localRedactions,
   ]);
   report.image = image;
 
@@ -444,6 +448,33 @@ for (const dir of dirs) {
             "the live prompt changed but its stored form did not — a token value moved; re-stamping",
       );
     }
+    continue;
+  }
+
+  /**
+   * A mismatch means nothing when the redaction set is incomplete.
+   *
+   * The image above has to be built with exactly the redactions the export applies,
+   * local ones included. Those literals used to sit in placeholders.json, so every clone
+   * had them and this comparison always held. They are gitignored now — a client's name
+   * does not belong in a versioned file — which means a checkout that has not built
+   * local-redactions.json reproduces a DIFFERENT stored form for any prompt the export
+   * redacts, and the difference is indistinguishable from real drift.
+   *
+   * Guessing here is not cheap: the wrong guess is `update-available`, which offers an
+   * apply command that would overwrite the live prompt with the committed one. So when
+   * there are no local redactions loaded and the image does not match, say that the
+   * comparison could not be made, and offer nothing.
+   *
+   * Agents whose prompts carry nothing redactable are unaffected — their image matches
+   * and they never reach this path.
+   */
+  if (localRedactions.length === 0) {
+    report.state = "unverifiable";
+    report.notes.push(
+      "no local-redactions.json, so the stored form cannot be reproduced — this may be " +
+        "drift or may be a missing redaction rule, and the two look identical",
+    );
     continue;
   }
 
@@ -533,6 +564,7 @@ const label = {
   unversioned: "prompt not committed yet",
   absent: "not installed on this Mac",
   ambiguous: "more than one match on this Mac",
+  unverifiable: "cannot compare — no local-redactions.json",
 };
 
 console.log(
@@ -597,6 +629,22 @@ const settingsOnly = reports.filter(
 );
 const unversioned = reports.filter((r) => r.state === "unversioned");
 const absent = reports.filter((r) => r.state === "absent");
+const unverifiable = reports.filter((r) => r.state === "unverifiable");
+
+if (unverifiable.length) {
+  console.log(
+    `\n! ${unverifiable.length} agent(s) could not be compared at all:`,
+  );
+  for (const r of unverifiable) console.log(`    ${r.dir}`);
+  console.log(
+    "  Their stored form is built with the literal redactions, and there are none loaded,\n" +
+      "  so a difference here is as likely to be a missing rule as real drift. No command is\n" +
+      "  offered for a state that cannot be read. Build the file and re-run:\n\n" +
+      "    node buzz-agents/scripts/refresh-local-redactions.mjs --key <key> --dataset <dataset>\n\n" +
+      "  With no dataset to hand, copy buzz-agents/local-redactions.example.json and fill in\n" +
+      "  `manual`. Either is enough.\n",
+  );
+}
 
 if (behind.length) {
   console.log(
