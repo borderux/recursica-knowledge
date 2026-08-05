@@ -50,6 +50,12 @@ const routes = [
     channel_id: config.channelId,
   })],
 
+  // Deliberately not folded into /api/config: that route is the launcher's readiness probe and
+  // gets polled in a loop, so it stays a cheap static answer with no query behind it.
+  ['GET', '/api/identity/presented', () => identity.presented()],
+
+  ['GET', '/api/identity/known/:pubkey', (p) => identity.known(p.pubkey)],
+
   ['GET', '/api/members', () => identity.members()],
 
   ['POST', '/api/identity', async (_p, body) => identity.bind(body)],

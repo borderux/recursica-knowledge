@@ -1,0 +1,43 @@
+{
+  "$comment": [
+    "Literal redactions for text that must never be written into this repository, and",
+    "that has no pattern to match it — research participant names above all.",
+    "",
+    "placeholders.json holds regexes on purpose, so a rule never has to spell out the",
+    "text it removes. That works for anything with a shape. It does not work for the",
+    "name of a person in a client's interviews: there is no expression that matches",
+    "those and nothing else, and they are not knowable until the transcripts land.",
+    "",
+    "So they live here, in a gitignored file, and the real one is GENERATED:",
+    "  node buzz-agents/scripts/refresh-local-redactions.mjs \\",
+    "    --key ~/.buzz/.secrets/claire-<slug>-service-user.json \\",
+    "    --dataset research_<slug>",
+    "",
+    "It reads participants.participant_name and conversations.document_name, so the",
+    "list derives from the data rather than from whoever last noticed a leak. Re-run it",
+    "after ingesting new transcripts: the guard only covers names it has seen.",
+    "",
+    "This example file is committed; local-redactions.json is not. Copy it only if you",
+    "have a name to add by hand that the dataset does not carry.",
+    "",
+    "find    the exact string. Matched on word boundaries where they apply, so a short",
+    "        name does not rewrite the middle of an unrelated word. Under 3 characters",
+    "        is refused as too collision-prone to be safe.",
+    "replace what appears instead.",
+    "label   what gets REPORTED when this matches. Never `find` — a leak warning that",
+    "        prints the name it caught is the same exposure with extra steps."
+  ],
+  "datasets": ["research_<slug>"],
+  "redactions": [
+    {
+      "find": "Firstname Lastname",
+      "replace": "Participant 1",
+      "label": "participant name 1"
+    },
+    {
+      "find": "FirstnameL.docx",
+      "replace": "[transcript 1]",
+      "label": "transcript filename 1"
+    }
+  ]
+}
