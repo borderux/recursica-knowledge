@@ -58,6 +58,94 @@ Add `--dry-run` to see the diff first. It validates the whole sheet before writi
 
 ---
 
+## The two service accounts, and the mixup that looks like a permissions bug
+
+Step 0 just created the **second** of two Google identities this setup uses. They are easy to
+confuse, they fail in a way that points at the wrong culprit, and that has now cost an installer
+an hour. Read this once.
+
+| | Channel account | Dictionary reader |
+|---|---|---|
+| Name | `claire-<slug>-service-user` | `claire-tag-dictionary-reader` |
+| Drive | the client folder, **Contributor** | the Tag Dictionary **file only** |
+| BigQuery | `research_<slug>` and nothing else | nothing |
+| Runs when | **every agent turn** — all three MCP servers | **deploy only**, then never again |
+| Created in | Steps 2–6, once per client | Step 0, once ever |
+
+The thing to hold onto: **one account does Drive *and* both BigQuery servers.** There is no
+split. If you are looking for a separate identity behind `bq-<slug>`, there isn't one:
+
+```bash
+# what each registered server actually authenticates as
+python3 - <<'PY'
+import json, os
+d = json.load(open(os.path.expanduser("~/.claude.json")))
+for name, cfg in (d.get("mcpServers") or {}).items():
+    key = (cfg.get("env") or {}).get("GOOGLE_APPLICATION_CREDENTIALS", "(none)")
+    print(f"{name:14s} {key}")
+PY
+```
+
+All three of `bq-<slug>`, `bq-<slug>-ro` and `drive-<slug>` must print the **channel** key.
+
+### The symptom, when they get crossed
+
+Point `drive-<slug>` at the dictionary reader by mistake and Drive answers truthfully but
+misleadingly — the folder *is* reachable, just not writable:
+
+```
+folder "…" reachable; can write: false
+WARNING: read-only access. Share as Contributor if agents must write artifacts.
+```
+
+Which reads exactly like Step 4 was never done. It was. The fix is repointing one MCP
+registration, **not** granting anything in the console and **not** deleting a key. Before you
+touch IAM, confirm which account is actually being used:
+
+```bash
+for f in ~/.buzz/.secrets/*.json; do
+  printf '%-52s ' "$(basename "$f")"
+  python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['client_email'])" "$f"
+done
+```
+
+The filename proves nothing about what is inside it — `bin/stu:112` builds the path from the
+slug alone, and a key downloaded from the console arrives named after the *project*, not the
+account. `client_email` is the only answer.
+
+Expect one honest surprise here: on an installation that predates this guide, the
+`claire-tag-dictionary-reader.json` slot can hold a key for a differently-named account —
+the role is defined by the filename the deploy script looks for, not by the account inside.
+That is only a problem if the account is broader than the role needs; see below.
+
+### Two traps that follow from this
+
+**A person's Drive access grants a service account nothing.** Service accounts are not members
+of the Workspace domain and inherit none of its sharing (`mcp/drive-fence/preflight.mjs:3-5`).
+"I can open the folder" and "the agent can read the folder" are unrelated facts. This is the
+single most common install failure here, and Step 4 is the only thing that fixes it.
+
+**The dictionary reader is the more dangerous key, not the channel one.** Backwards from most
+people's intuition, so worth stating plainly. The channel account's entire reach is one folder
+and one dataset — that is the whole design, and it is why handing it to a collaborator working
+on *that* client is a hygiene question rather than a breach. The dictionary reader is the one to
+keep on one machine.
+
+That is only true if Step 0.1 was honoured — **no project roles at all**. If that account
+picked one up, or if the key in that slot belongs to an older, broader account, it can enumerate
+every dataset in the project. Check it directly, and note that the checker judges any non-channel
+account harshly by design, so read the dataset list rather than the verdict:
+
+```bash
+~/.buzz/bin/verify-channel-isolation.py \
+  --slug <slug> --key ~/.buzz/.secrets/claire-tag-dictionary-reader.json
+```
+
+`datasets this SA can enumerate:` should be empty or a single entry. A list of every research
+dataset in the project means that key needs its roles stripped in IAM, or replacing.
+
+---
+
 ## Before you start
 
 Pick a **slug** for the client: lowercase, hyphens, no spaces. `acme`, `acme-health`.
@@ -420,6 +508,10 @@ client data. Never point a channel at it.
 | The same interview appears twice in a report | two formats of it in one folder whose names differ by more than the extension | Check `duplicate_groups`; rename them to match, or delete one |
 | Tagger says `tag_library` is empty | Step 0 not done, or sync never run for this slug | Step 0, then `sync-tag-dictionary.mjs` |
 | `cannot read the tag dictionary sheet ... caller does not have permission` | sheet not shared with the reader SA | Step 0.3 — share as Viewer |
+| `can write: false` on the client folder, but Step 4 *was* done | `drive-<slug>` is authenticating as the dictionary reader, not the channel account | Print `client_email` for the key each server uses; repoint the registration. See "The two service accounts" |
+| Something tells you an account "isn't provisioned" and asks you to grant `writer` | same crossed-keys mixup, diagnosed from the symptom | Confirm the identity **before** changing any IAM. Nothing needs granting |
+| `404 File not found` on the Tag Dictionary sheet | the *channel* account was used to read it — it cannot see that file, by design | Use `--sheet-key` with the dictionary reader key |
+| The dictionary reader can enumerate every research dataset | it picked up a project role, or that slot holds an older broader account | Strip its roles in IAM (Step 0.1: none at all), or replace the key |
 | A tag you added to the sheet never fires | the sheet is a source, not a live mirror | Re-run `sync-tag-dictionary.mjs` for that dataset |
 | `ISOLATION BROKEN` | project-level BigQuery role on the SA | Step 2, leave only Job User |
 | A conversation sits at `status = 'ingesting'` | a chunked ingest stopped partway | Re-mention it — Scribe resumes from `ingest_cursor_line`. Not an error state to clear by hand |
