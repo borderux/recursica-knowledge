@@ -39,6 +39,9 @@ import {
   loadPlaceholders,
   loadValues,
   localValuesPath,
+  loadLocalRedactions,
+  localRedactionsPath,
+  findLiteralLeaks,
   tokenize,
   applyRedactions,
   findLeaks,
@@ -74,6 +77,14 @@ function getAllTextFiles(dir) {
       )
         continue;
       files.push(...getAllTextFiles(fullPath));
+    } else if (
+      // The gitignored local files hold the real values on purpose — they are the
+      // answer key, not repository content. Scanning them reports every value as a
+      // leak in the one place it is supposed to live, and buries the real findings.
+      entry.name === "local-values.json" ||
+      entry.name === "local-redactions.json"
+    ) {
+      continue;
     } else if (entry.isFile()) {
       if (
         entry.name.endsWith(".png") ||
@@ -167,6 +178,21 @@ if (fs.existsSync(inputPath)) {
 
 const { tokens, redactions } = loadPlaceholders();
 const localValues = loadValues(localValuesPath);
+
+// Literal redactions — participant names and transcript filenames — come from a
+// gitignored file because writing them down here would publish the very thing they
+// exist to remove. Absent is a legitimate state (a clone with no dataset behind it),
+// but it means the participant guard is off, so say so rather than looking clean.
+const localRedactions = loadLocalRedactions();
+if (localRedactions.length === 0) {
+  console.warn(
+    `  ! no local-redactions.json at ${localRedactionsPath} — participant names are NOT being checked.`,
+  );
+  console.warn(
+    "      Build it: node buzz-agents/scripts/refresh-local-redactions.mjs --key <key> --dataset <dataset>",
+  );
+}
+const allRedactions = [...redactions, ...localRedactions];
 
 if (!checkOnly && Object.keys(tokens).length > 0 && localValues === null) {
   console.error(`No local-values.json at ${localValuesPath}`);
@@ -314,7 +340,7 @@ for (const persona of personas) {
   if (!prompt.endsWith("\n")) prompt += "\n";
 
   rawPrompts.push(prompt);
-  prompt = applyRedactions(tokenize(prompt, values), redactions);
+  prompt = applyRedactions(tokenize(prompt, values), allRedactions);
 
   const leaks = findLeaks(prompt, values);
   if (leaks.length) {
@@ -389,6 +415,15 @@ for (const file of scannedFiles) {
         );
         leakCount++;
       }
+    }
+    // Reported by label. Printing what matched would put the name in the CI log,
+    // which is the same exposure with extra steps.
+    const nameLeaks = findLiteralLeaks(content, localRedactions);
+    if (nameLeaks.length) {
+      console.error(
+        `\n  ! ${path.relative(repoRoot, file)}: ${nameLeaks.length} local redaction(s) matched: ${nameLeaks.join(", ")}`,
+      );
+      leakCount++;
     }
   } catch {
     // Ignore non-utf8 files

@@ -22,6 +22,11 @@ dist/
 buzz-agents/local-values.json
 buzz-agents/.resolved/
 
+# Real participant names and transcript filenames, derived from the live dataset by
+# refresh-local-redactions.mjs. Literal redactions, so committing them would publish
+# the very names they exist to remove — the reason they are not in placeholders.json.
+buzz-agents/local-redactions.json
+
 # Credentials, belt and braces. Nothing here is supposed to produce these files —
 # service-account keys belong in ~/.buzz/.secrets/, outside any checkout — but a
 # single committed key is unrecoverable in a public repo, so the patterns stay.

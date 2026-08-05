@@ -16,6 +16,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const buzzAgentsDir = path.join(__dirname, "..");
 export const placeholdersPath = path.join(buzzAgentsDir, "placeholders.json");
 export const localValuesPath = path.join(buzzAgentsDir, "local-values.json");
+export const localRedactionsPath = path.join(
+  buzzAgentsDir,
+  "local-redactions.json",
+);
 
 export const TOKEN_PATTERN = /\{\{([A-Z0-9_]+)\}\}/g;
 
@@ -90,6 +94,63 @@ export function applyRedactions(text, redactions) {
     out = out.replace(new RegExp(r.pattern, r.flags ?? "g"), r.replace);
   }
   return out;
+}
+
+/** Escape a literal string so it can be used inside a regular expression. */
+export function escapeLiteral(literal) {
+  return literal.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Redactions whose subject cannot be written down in this repository.
+ *
+ * The declared redactions in placeholders.json are regexes precisely so a rule never
+ * has to spell out the text it removes. That works for anything with a shape — a home
+ * directory, an identifier prefix. It does not work for research participant names:
+ * there is no pattern that matches "the people in this client's interviews" and nothing
+ * else, and the names are not knowable until the transcripts are ingested. The two that
+ * are literals in placeholders.json today are the proof — each was added after someone
+ * noticed a specific name, which means the guard is always one incident behind, and each
+ * one committed a real person's name to a public repository in order to keep it out.
+ *
+ * So literal redactions live here instead: a gitignored file, populated from the live
+ * dataset by refresh-local-redactions.mjs. The rule travels with the operator who can
+ * already see the data, and never with the repository.
+ *
+ * Entries are `{ find, replace, label }`. `label` is what gets reported when one of
+ * these matches — callers must print the label and never `find`, or a leak warning in
+ * CI output becomes the leak.
+ */
+export function loadLocalRedactions(file = localRedactionsPath) {
+  if (!fs.existsSync(file)) return [];
+  const raw = JSON.parse(fs.readFileSync(file, "utf8"));
+  const entries = Array.isArray(raw) ? raw : (raw.redactions ?? []);
+  return entries
+    .filter((r) => r && typeof r.find === "string" && r.find.length >= 3)
+    .map((r, i) => ({
+      // Word boundaries only where they mean something. A literal ending in "." — an
+      // initial, a file extension — has no word boundary after it, and \b there would
+      // never match.
+      pattern:
+        (/^\w/.test(r.find) ? "\\b" : "") +
+        escapeLiteral(r.find) +
+        (/\w$/.test(r.find) ? "\\b" : ""),
+      replace: r.replace ?? "[redacted]",
+      label: r.label ?? `local redaction ${i + 1}`,
+    }));
+}
+
+/**
+ * Which local redactions still match — reported by label, never by subject.
+ *
+ * Separate from findLeaks because that one reports token names, and these have no
+ * token: the whole point is that the value has no business being in this repo under
+ * any name.
+ */
+export function findLiteralLeaks(text, localRedactions) {
+  return localRedactions
+    .filter((r) => new RegExp(r.pattern, r.flags ?? "g").test(text))
+    .map((r) => r.label);
 }
 
 /** Redaction patterns that matched nothing — a rule that has silently stopped working. */
