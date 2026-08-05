@@ -43,7 +43,8 @@ buzz-agents/
 │   └── <name>/
 │       ├── agent.json                portable settings
 │       ├── SYSTEM_PROMPT.md          the prompt, as reviewable markdown
-│       └── avatar.png                the agent's picture
+│       ├── avatar.png                the agent's picture
+│       └── app/                      only where an agent ships one — see below
 ├── placeholders.json                 the tokens, what each one is, where to find it
 ├── local-values.example.json         copy to local-values.json (gitignored)
 ├── lib/
@@ -60,6 +61,26 @@ The prompt is a separate `.md` file rather than a string inside `agent.json` on
 purpose. A prompt stored as JSON is one long line of escaped `\n`s: no useful diff, no
 `git blame`, nothing reviewable in a PR. Branching and versioning prompts is the whole
 reason this directory exists, so the prompt is stored as text.
+
+### When an agent ships an application
+
+An agent whose job is to run a program keeps that program in `agents/<name>/app/`, beside
+the prompt that describes it. Today that is only
+[`agents/stu/app/`](agents/stu/app/README.md) — the traceability explorer Stu launches.
+The alternative was `nest/`, with the rest of the runtime tooling; the prompt and the thing
+the prompt talks about drifting apart in review is the failure worth avoiding, so they sit
+together.
+
+`nest/` still owns the launcher. [`nest/bin/stu`](../nest/bin/stu) is what `bootstrap-nest.mjs`
+installs into `~/.buzz/bin`, and it expects the app at `~/.buzz/REPOS/stu-explorer`; nothing
+here is installed by the bootstrap. An `app/` directory is source, not configuration — the
+export and restore scripts read `agent.json`, `SYSTEM_PROMPT.md` and `avatar.png` by name and
+ignore everything else, so adding one does not change what they do. `export-agents.mjs` does
+scan it for redaction patterns, which is a feature: a client's slug or a participant's id
+committed into application source gets caught on the next export.
+
+Anything an app needs that names a real client — project id, channel uuid, slug, keys — stays
+out, the same rule as the prompts. `agents/stu/app/stu.env.example` is the pattern.
 
 ## What is and is not stored
 

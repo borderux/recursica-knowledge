@@ -1,0 +1,242 @@
+/* Page-level layout only.
+ *
+ * Everything here is scaffolding the design system does not own: the shell grid, the rail, the
+ * flow of the transcript. No rule in this file styles a Recursica component — that is what the
+ * adapter's anti-override layer exists to stop, and reaching around it would be an override
+ * rather than a gap.
+ *
+ * Where a dimension is the design system's to decide, it is read from a Recursica variable
+ * instead of chosen here. The page max width is the clearest case: `recursica-skill-screen-
+ * scaffolding` says it comes from the layout rule and is not ours to set.
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap");
+
+:root {
+  --stu-gutter: var(--recursica_brand_dimensions_gutters_horizontal, 24px);
+  --stu-gutter-y: var(--recursica_brand_dimensions_gutters_vertical, 24px);
+  --stu-max-width: calc(var(--recursica_brand_layout-grids_desktop_max-width, 1280) * 1px);
+  --stu-rail-width: 232px;
+}
+
+body {
+  margin: 0;
+}
+
+/* One scrollbar for the application. `recursica-skill-screen-priority` forbids an inner
+   scrolling region, so the rail is sticky rather than independently scrollable and the page
+   itself is the only thing that scrolls. */
+.stu-shell {
+  display: grid;
+  grid-template-columns: var(--stu-rail-width) minmax(0, 1fr);
+  align-items: start;
+  min-height: 100vh;
+}
+
+.stu-rail {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+.stu-rail > * {
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.stu-rail__inner {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--stu-gutter-y);
+}
+
+.stu-rail__brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stu-rail__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stu-rail__link {
+  display: block;
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  color: inherit;
+  font: inherit;
+}
+
+.stu-rail__link:hover {
+  background: color-mix(in srgb, currentColor 8%, transparent);
+}
+
+/* Selected state, carried by aria-current so the styling and the accessible name cannot drift
+   apart. Weight as well as background: the current section must not depend on colour alone. */
+.stu-rail__link[aria-current="page"] {
+  background: color-mix(in srgb, currentColor 14%, transparent);
+  font-weight: 600;
+}
+
+.stu-rail__foot {
+  margin-top: auto;
+}
+
+.stu-main {
+  min-width: 0;
+}
+
+.stu-page {
+  box-sizing: border-box;
+  /* Space beyond the maximum stays empty. That is the correct outcome, not a gap to fill. */
+  max-width: var(--stu-max-width);
+  padding: var(--stu-gutter-y) var(--stu-gutter);
+}
+
+.stu-page--narrow {
+  max-width: 34rem;
+}
+
+/* Regions are divided by space and by a heading, never by a container. */
+.stu-section + .stu-section {
+  margin-top: calc(var(--stu-gutter-y) * 1.5);
+}
+
+/* The primary action of a group sits at the end, on the right. */
+.stu-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.stu-figures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--stu-gutter) * 1.5);
+}
+
+.stu-filters,
+.stu-form,
+.stu-record,
+.stu-notice,
+.stu-detail {
+  box-sizing: border-box;
+}
+
+.stu-record + .stu-record,
+.stu-notice + .stu-notice {
+  margin-top: var(--stu-gutter-y);
+}
+
+/* Sort control in a table header. A button, because it performs an action rather than
+   navigating, and unstyled so the header's own typography carries through. */
+.stu-sort {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stu-sort__mark {
+  font-size: 0.7em;
+  min-width: 0.7em;
+}
+
+/* A row that navigates. Selected on the role rather than a class, because a Recursica component
+   drops `className` — see BLOCKED_STYLING_KEYS in the adapter. The role is load-bearing anyway:
+   it is what tells a screen reader the row is a link. */
+tr[role='link'] {
+  cursor: pointer;
+}
+
+/* The transcript. An ordered list, because the order is the content. */
+.stu-lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.stu-line {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  gap: var(--stu-gutter);
+  padding: 12px 0;
+  scroll-margin-top: 24px;
+}
+
+.stu-line + .stu-line {
+  border-top: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.stu-line__gutter {
+  text-align: right;
+  padding-top: 2px;
+}
+
+/* A grid item defaults to min-content width, so without this the longest unbroken run of text
+   pushes the line wider than its column and the whole page gains a horizontal scrollbar. */
+.stu-line > * {
+  min-width: 0;
+}
+
+/* Long-form reading. The measure is the difference between reading the interview and giving up
+   on it — see the line-length rule in recursica-skill-typography-semantics. */
+.stu-text {
+  max-width: 68ch;
+  white-space: pre-wrap;
+}
+
+/* Replaced source text. Struck through as well as dimmed, so the change reads the same to
+   someone who cannot see the difference in hue. */
+.stu-text--replaced {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+  opacity: 0.7;
+}
+
+.stu-facts {
+  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(10rem, max-content) minmax(0, 1fr);
+  gap: 4px var(--stu-gutter);
+}
+
+.stu-facts__row {
+  display: contents;
+}
+
+.stu-facts dt,
+.stu-facts dd {
+  margin: 0;
+  min-width: 0;
+}
+
+.stu-quotes,
+.stu-taglist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stu-quotes li,
+.stu-taglist li {
+  max-width: 72ch;
+}
