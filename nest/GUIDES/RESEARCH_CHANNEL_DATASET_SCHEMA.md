@@ -587,6 +587,34 @@ other. What it gains is a name the dataset can count and a group of its own in t
 The reviewer-facing consequence is worth stating: approving a hypothesis promotes a guess to a
 finding, and nothing but the evidence on the row stands behind that. Stu says so on the card.
 
+### Counting these types before Analyst has re-run
+
+**A type existing is not the same as a row carrying it, and the gap is visible in SQL.** In
+`research_padi` on 2026-08-06, immediately after both types landed:
+
+```
+typed_hypothesis        0     prefixed_hypothesis        1
+typed_open_question     0     prefixed_open_question     1
+```
+
+Both rows predate their type and still carry the kind in the title, because nothing rewrote them —
+retyping client data by hand to make a query look right is not a fix, and `write_finding`'s MERGE
+sets `finding_type` from the parameter, so the next Analyst run on the same `finding_id` corrects it
+for free.
+
+Until that run, **`WHERE finding_type = 'open_question'` returns nothing, and so does
+`'hypothesis'`.** Stu reads the legacy prefixes as well as the type, so its Inbox groups them
+correctly today; a query against the dataset does not, and will read as though the types never
+landed. Anything counting these before the corpus has been re-analysed needs both halves:
+
+```sql
+WHERE finding_type = 'open_question'
+   OR REGEXP_CONTAINS(title, r'(?i)^\s*OPEN QUESTIONS?\s*:')
+```
+
+Delete the second half once no row matches it — that is the signal the bridge has done its job and
+both the app's prefix readers and this clause can go.
+
 ### Run accounting — the anti-truncation mechanism
 
 ```sql
