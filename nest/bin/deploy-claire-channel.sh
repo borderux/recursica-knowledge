@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
 #
-# Deploy Claire and her team to a new research channel.
+# Deploy Claire and her team to a research channel, on this machine.
 #
 # One channel == one Drive folder + one BigQuery dataset + one service account.
 # Nothing is shared between channels, because channels are different clients.
+#
+# Run it whether or not the client already exists. The dataset half is idempotent —
+# CREATE SCHEMA is dropped when the dataset is already there, tables are IF NOT
+# EXISTS, the tag sync is a MERGE — and the other half is per-machine and has not
+# been done here yet: registering the three MCP servers and rendering the four
+# subagents. Skipping it leaves an operator with Claire and no tools.
 #
 # Usage:
 #   deploy-claire-channel.sh \
@@ -25,20 +31,45 @@
 # --tag-csv        seed from a CSV instead of the sheet (offline / testing).
 # --skip-tag-sync  leave tag_library empty. Tagger will refuse to tag.
 #
+# Project-wide default grants — pass one of these explicitly:
+# --lock-down      REVOKE the projectEditor/projectViewer grants BigQuery puts on every
+#                  new dataset. Correct for a client you are creating. Needs an identity
+#                  with bigquery.datasets.update, so usually --admin-key.
+# --no-lockdown    leave them. Correct when joining a client someone else created and
+#                  already locked down.
+# Given neither, it asks — and with no terminal to ask at it picks --no-lockdown and
+# says so in the summary. Passing one keeps the choice yours.
+#
+# --dry-run        validate and stop before changing anything.
+#
 set -euo pipefail
 
 BUZZ_HOME="${BUZZ_HOME:-$HOME/.buzz}"
 NODE_BIN="${NODE_BIN:-$(command -v node 2>/dev/null || echo /usr/local/bin/node)}"
 TOOLBOX_BIN="${TOOLBOX_BIN:-$BUZZ_HOME/bin/toolbox}"
-CLAUDE_BIN="${CLAUDE_BIN:-$HOME/.local/bin/claude}"
+# Resolved from PATH the same way NODE_BIN is, because that is what bootstrap's
+# prerequisite check tests. Hardcoding ~/.local/bin/claude meant a Homebrew or npm
+# install passed "✓ claude CLI" at bootstrap and then died here naming a path the
+# operator had never heard of.
+CLAUDE_BIN="${CLAUDE_BIN:-$(command -v claude 2>/dev/null || echo "$HOME/.local/bin/claude")}"
+# Every BigQuery statement this script runs goes through this helper, because neither
+# gcloud nor bq is installed on a Buzz host. Named once so a missing copy is caught in
+# preflight instead of six times at the call sites.
+BQ_EXEC="${BQ_EXEC:-$BUZZ_HOME/mcp/bin/bq-exec.mjs}"
 TEMPLATES="$BUZZ_HOME/mcp/templates"
 SCHEMA_GUIDE="$BUZZ_HOME/GUIDES/RESEARCH_CHANNEL_DATASET_SCHEMA.md"
 AGENTS_DIR="$BUZZ_HOME/.claude/agents"
 PROJECT="${BQ_PROJECT:-}"
 [[ -n "$PROJECT" ]] || PROJECT="{{BQ_PROJECT}}"
+# The token the schema guide carries, which this script substitutes at deploy time so
+# that --project keeps working (see $resolveComment in nest-manifest.json). Assembled
+# rather than written out, because bootstrap-nest.mjs resolves tokens in this file too:
+# spelled literally, the *pattern* became the install-time project id and the
+# substitution silently matched nothing.
+PROJECT_TOKEN="$(printf '{{%s}}' BQ_PROJECT)"
 
 SLUG=""; CHANNEL_UUID=""; DRIVE_FOLDER=""; SA_KEY=""; ADMIN_KEY=""
-LOCKDOWN="ask"; DRY_RUN="no"
+LOCKDOWN="ask"; DRY_RUN="no"; LOCKDOWN_FAILED="no"; LOCKDOWN_SKIPPED="no"
 
 # The tag dictionary is shared across every project, unlike everything else here.
 TAG_SHEET="${TAG_SHEET:-}"
@@ -66,7 +97,9 @@ while [[ $# -gt 0 ]]; do
     --lock-down)         LOCKDOWN="yes"; shift ;;
     --no-lockdown)       LOCKDOWN="no"; shift ;;
     --dry-run)           DRY_RUN="yes"; shift ;;
-    -h|--help)           sed -n '2,27p' "$0"; exit 0 ;;
+    # The header block, however long it is. It was a literal '2,27p', which silently
+    # stopped covering the whole thing the moment a flag was documented below line 27.
+    -h|--help)           awk 'NR>1 && /^#/ {print; next} NR>1 {exit}' "$0"; exit 0 ;;
     *) die "unknown argument: $1" ;;
   esac
 done
@@ -96,9 +129,16 @@ step "Preflight"
 [[ -f "$SCHEMA_GUIDE" ]] || die "schema guide missing: $SCHEMA_GUIDE"
 [[ -f "$SA_KEY" ]]       || die "service account key not found: $SA_KEY"
 [[ -f "$ADMIN_KEY" ]]    || die "admin key not found: $ADMIN_KEY"
+# Checked here rather than at the first call site: without it, the dataset probe below
+# fails for a reason that has nothing to do with the dataset, and reports an IAM problem.
+[[ -f "$BQ_EXEC" ]]      || die "BigQuery helper missing: $BQ_EXEC
+  Every statement this script runs needs it. Re-run scripts/bootstrap-nest.mjs to install it."
 
+# stat does not follow symlinks, and -L is what makes this the mode of the key itself
+# rather than of a link pointing at it. A slug-named link to a differently-named
+# service-account key is a supported layout, and reported 755 before this.
 for key in "$SA_KEY" "$ADMIN_KEY"; do
-  mode="$(stat -f '%Lp' "$key")"
+  mode="$(stat -L -f '%Lp' "$key")"
   [[ "$mode" == "600" ]] || die "$key is mode $mode — must be 600. Run: chmod 600 '$key'"
 done
 ok "keys present and mode 600"
@@ -149,7 +189,18 @@ awk '
     if (probe ~ /^(CREATE|ALTER)[[:space:]]/) printf "%s", stmt
   }
 ' "$SCHEMA_GUIDE" \
-  | sed -e "s/@dataset/$DATASET/g" -e "s/{{BQ_PROJECT}}/$PROJECT/g" > "$SCHEMA_SQL"
+  | sed -e "s/@dataset/$DATASET/g" -e "s/$PROJECT_TOKEN/$PROJECT/g" > "$SCHEMA_SQL"
+
+# A backstop for the substitution above. Any token still standing here would otherwise
+# reach BigQuery inside DDL and come back as a validation error naming the token, which
+# reads like a config mistake rather than an install one.
+if grep -q '{{[A-Z_]\{1,\}}}' "$SCHEMA_SQL"; then
+  die "the extracted DDL still holds unresolved template tokens:
+  $(grep -o '{{[A-Z_]\{1,\}}}' "$SCHEMA_SQL" | sort -u | tr '\n' ' ')
+  These come from $SCHEMA_GUIDE, which is deliberately installed with its tokens
+  intact — see \$resolveComment in nest-manifest.json. Substituting them is this
+  script's job, so this is a bug here, not a broken install."
+fi
 
 # What the guide asks for, counted rather than hardcoded, because the check below
 # compares against it. A literal goes stale silently the first time a table is added
@@ -166,21 +217,38 @@ ok "extracted $statements CREATE statements from the schema guide ($EXPECTED_TAB
 # dataset is already there, so an identity scoped to one dataset cannot run it. The
 # intended workflow is that the dataset is created by hand in the console, so drop
 # the statement when it would be a no-op anyway.
-if "$NODE_BIN" "$BUZZ_HOME/mcp/bin/bq-exec.mjs" --key "$ADMIN_KEY" --project "$PROJECT" --quiet \
-     --sql "SELECT 1 FROM \`$PROJECT.$DATASET\`.INFORMATION_SCHEMA.TABLES LIMIT 0" >/dev/null 2>&1; then
-  awk '/CREATE SCHEMA IF NOT EXISTS/{skip=1} skip{if (/;[[:space:]]*$/) skip=0; next} {print}' \
-    "$SCHEMA_SQL" > "$SCHEMA_SQL.tables"
-  mv "$SCHEMA_SQL.tables" "$SCHEMA_SQL"
-  ok "dataset already exists — applying table DDL only"
-else
-  warn "dataset does not exist yet — the admin key must hold bigquery.datasets.create"
-fi
+# The helper exits 2 for a rejected query and 0 on success. Anything else means it could
+# not run at all, which is not evidence about the dataset either way — reporting it as a
+# missing dataset sends the operator to IAM for a grant that was never the problem.
+set +e
+"$NODE_BIN" "$BQ_EXEC" --key "$ADMIN_KEY" --project "$PROJECT" --quiet \
+  --sql "SELECT 1 FROM \`$PROJECT.$DATASET\`.INFORMATION_SCHEMA.TABLES LIMIT 0" >/dev/null 2>&1
+probe_rc=$?
+set -e
 
-"$NODE_BIN" "$BUZZ_HOME/mcp/bin/bq-exec.mjs" \
+case "$probe_rc" in
+  0)
+    awk '/CREATE SCHEMA IF NOT EXISTS/{skip=1} skip{if (/;[[:space:]]*$/) skip=0; next} {print}' \
+      "$SCHEMA_SQL" > "$SCHEMA_SQL.tables"
+    mv "$SCHEMA_SQL.tables" "$SCHEMA_SQL"
+    ok "dataset already exists — applying table DDL only"
+    ;;
+  2)
+    warn "dataset does not exist yet — the admin key must hold bigquery.datasets.create"
+    ;;
+  *)
+    die "could not probe $PROJECT.$DATASET — $BQ_EXEC exited $probe_rc.
+  That is the helper failing to run, not a verdict on the dataset. Re-run it without
+  --quiet to see why:
+    $NODE_BIN $BQ_EXEC --key $ADMIN_KEY --project $PROJECT --sql 'SELECT 1'"
+    ;;
+esac
+
+"$NODE_BIN" "$BQ_EXEC" \
   --key "$ADMIN_KEY" --project "$PROJECT" --file "$SCHEMA_SQL" --quiet
 ok "schema applied (idempotent)"
 
-TABLE_COUNT="$("$NODE_BIN" "$BUZZ_HOME/mcp/bin/bq-exec.mjs" --key "$ADMIN_KEY" --project "$PROJECT" \
+TABLE_COUNT="$("$NODE_BIN" "$BQ_EXEC" --key "$ADMIN_KEY" --project "$PROJECT" \
   --sql "SELECT COUNT(*) AS n FROM \`$PROJECT.$DATASET\`.INFORMATION_SCHEMA.TABLES
          WHERE table_type = 'BASE TABLE'" 2>/dev/null \
   | "$NODE_BIN" -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>process.stdout.write(JSON.parse(s)[0].n))")"
@@ -197,7 +265,7 @@ step "Granting the channel service account dataset-scoped access"
 # GRANT needs bigquery.datasets.update, which a dataset-scoped dataEditor does not
 # hold. When the grant was already made in the console — the documented path — this
 # step is a no-op, so check before attempting it rather than failing the deploy.
-EXISTING_GRANT="$("$NODE_BIN" "$BUZZ_HOME/mcp/bin/bq-exec.mjs" --key "$ADMIN_KEY" --project "$PROJECT" \
+EXISTING_GRANT="$("$NODE_BIN" "$BQ_EXEC" --key "$ADMIN_KEY" --project "$PROJECT" \
   --sql "SELECT COUNT(*) AS n FROM \`$PROJECT\`.\`region-us\`.INFORMATION_SCHEMA.OBJECT_PRIVILEGES
          WHERE object_name = '$DATASET'
            AND grantee = 'serviceAccount:$SA_EMAIL'
@@ -206,7 +274,7 @@ EXISTING_GRANT="$("$NODE_BIN" "$BUZZ_HOME/mcp/bin/bq-exec.mjs" --key "$ADMIN_KEY
 
 if [[ "$EXISTING_GRANT" != "0" ]]; then
   ok "dataEditor on $DATASET already granted to $SA_EMAIL"
-elif "$NODE_BIN" "$BUZZ_HOME/mcp/bin/bq-exec.mjs" --key "$ADMIN_KEY" --project "$PROJECT" --quiet \
+elif "$NODE_BIN" "$BQ_EXEC" --key "$ADMIN_KEY" --project "$PROJECT" --quiet \
        --sql "GRANT \`roles/bigquery.dataEditor\` ON SCHEMA \`$PROJECT\`.$DATASET TO \"serviceAccount:$SA_EMAIL\"" \
        >/dev/null 2>&1; then
   ok "dataEditor on $DATASET granted to $SA_EMAIL"
@@ -222,6 +290,22 @@ fi
 # They mean any project-level editor reads every client's data, which defeats the
 # entire per-channel design. Removing them is the difference between real isolation
 # and the appearance of it.
+
+# An agent deploying on its owner's behalf has no terminal, and `read` fails on EOF —
+# which under `set -e` killed the run right here, after the DDL and before the tag
+# library, the rendered configs and the server registration. That is the same
+# "looked deployed, has no tools" outcome the failed-REVOKE path above exists to
+# avoid, reached by a different route. So decide it without asking, and pick the
+# reversible side: an un-revoked grant is two statements to run later and both
+# verify-channel-isolation.py and the summary below say so, whereas a channel that
+# stopped halfway through registration looks finished from the outside.
+if [[ "$LOCKDOWN" == "ask" && ! -t 0 ]]; then
+  LOCKDOWN="no"; LOCKDOWN_SKIPPED="yes"
+  warn "no terminal to ask at — leaving the project-wide default grants in place.
+      Pass --lock-down to revoke them, or --no-lockdown to choose this deliberately.
+      Repeated at the end of this run so it is not lost in the scroll."
+fi
+
 if [[ "$LOCKDOWN" == "ask" ]]; then
   printf '\n  This dataset currently grants access to ANY project-level editor/viewer:\n'
   printf '    roles/bigquery.dataEditor  projectEditor:%s\n' "$PROJECT"
@@ -232,11 +316,29 @@ if [[ "$LOCKDOWN" == "ask" ]]; then
   [[ "$reply" =~ ^[Yy] ]] && LOCKDOWN="yes" || LOCKDOWN="no"
 fi
 
+# Built once so the summary can print exactly what failed to run, verbatim and pasteable.
+# Kept flush left: it is echoed inside an indented block, and a continuation line carrying
+# its own leading spaces lands ragged there.
+REVOKE_SQL="REVOKE \`roles/bigquery.dataEditor\` ON SCHEMA \`$PROJECT\`.$DATASET FROM \"projectEditor:$PROJECT\";
+REVOKE \`roles/bigquery.dataViewer\` ON SCHEMA \`$PROJECT\`.$DATASET FROM \"projectViewer:$PROJECT\";"
+
 if [[ "$LOCKDOWN" == "yes" ]]; then
-  "$NODE_BIN" "$BUZZ_HOME/mcp/bin/bq-exec.mjs" --key "$ADMIN_KEY" --project "$PROJECT" --quiet \
-    --sql "REVOKE \`roles/bigquery.dataEditor\` ON SCHEMA \`$PROJECT\`.$DATASET FROM \"projectEditor:$PROJECT\";
-           REVOKE \`roles/bigquery.dataViewer\` ON SCHEMA \`$PROJECT\`.$DATASET FROM \"projectViewer:$PROJECT\""
-  ok "project-wide default grants revoked — dataset is now client-isolated"
+  # Not fatal, and deliberately so. REVOKE needs bigquery.datasets.update, which the
+  # documented setup withholds from a channel account on purpose — so the common case
+  # is a deploy that can wire everything and cannot do this one step. Aborting here
+  # used to skip the tag library, the rendered configs and the server registration,
+  # leaving a channel that looked deployed and had no tools. It is repeated in the
+  # summary instead, because a warning 200 lines up is a warning nobody reads.
+  if "$NODE_BIN" "$BQ_EXEC" --key "$ADMIN_KEY" --project "$PROJECT" --quiet \
+       --sql "$REVOKE_SQL" 2>/dev/null; then
+    ok "project-wide default grants revoked — dataset is now client-isolated"
+  else
+    LOCKDOWN_FAILED="yes"
+    warn "could NOT revoke the project-wide default grants — continuing.
+      REVOKE needs bigquery.datasets.update, which a dataset-scoped account does not
+      hold. Re-run with --admin-key <provisioning key>, or run it once by hand. The
+      exact statements are repeated at the end of this run."
+  fi
 else
   warn "project default grants LEFT IN PLACE — any project editor can read this client's data"
 fi
@@ -337,6 +439,43 @@ ok "registered $DRIVE_SERVER"
 # ─────────────────────────────────────────────────────────── done
 
 step "Deployed — two things left, both manual"
+
+if [[ "$LOCKDOWN_FAILED" == "yes" ]]; then
+  cat <<EOF
+
+  0. THIS DATASET IS NOT YET ISOLATED. The revoke could not run with the key given.
+     Until these two statements succeed, anyone holding a project-level Editor or
+     Viewer role on $PROJECT can read this client's data. Run them in the BigQuery
+     console as someone who can administer the dataset:
+
+$(printf '%s\n' "$REVOKE_SQL" | sed 's/^/       /')
+
+     Everything else below completed. verify-channel-isolation.py also reports this,
+     so it is not on your memory to track.
+EOF
+fi
+
+if [[ "$LOCKDOWN_SKIPPED" == "yes" ]]; then
+  cat <<EOF
+
+  0. NOBODY CHOSE whether to revoke the project-wide default grants, because there
+     was no terminal to ask at, so they were left as they were. Which of these you
+     are looking at depends on the dataset:
+
+       a NEW dataset — it is not isolated yet, and these two statements are what
+       isolate it. Run them as someone who can administer the dataset:
+
+$(printf '%s\n' "$REVOKE_SQL" | sed 's/^/       /')
+
+       a dataset you are JOINING — whoever created it has already done this, and
+       there is nothing for you to run.
+
+     Do not guess which. verify-channel-isolation.py answers it directly, and its
+     answer is about Google's IAM layer rather than about this script:
+
+       $BUZZ_HOME/bin/verify-channel-isolation.py --slug $SLUG --key $SA_KEY
+EOF
+fi
 
 cat <<EOF
 

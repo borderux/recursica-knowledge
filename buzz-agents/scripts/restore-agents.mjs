@@ -17,6 +17,7 @@
  *   node buzz-agents/scripts/restore-agents.mjs --channel <uuid> [--owner <name>]
  *                                               [--no-owner] [--agent <name>]
  *                                               [--values <file>] [--run]
+ *   node buzz-agents/scripts/restore-agents.mjs --help
  *
  *   --channel            target channel UUID in the new community (required)
  *   --owner <name>       whose install this is; creates them as `Claire (Alex)` so a
@@ -67,12 +68,49 @@ function optAll(name) {
   return out;
 }
 
+/**
+ * Enforced by the relay, not by us: `buzz agents draft-create` rejects a longer prompt.
+ * Same ceiling `draft-update` enforces, and `sync-prompts.mjs` documents it against the
+ * live CLI — 20,001 characters refused, 19,999 accepted.
+ *
+ * Checked here because this is the script a first install runs, and Claire's resolved
+ * prompt sits a few hundred characters below the ceiling. Without it, an over-length
+ * prompt surfaces as a raw relay rejection partway through creating four agents, on
+ * someone's first day.
+ */
+const PROMPT_LIMIT = 20000;
+
+/** Warn while there is still room to act, rather than only once it is too late. */
+const HEADROOM_WARN = 500;
+
+// Printed for --help, and after the error when --channel is missing — that was the only
+// output in that case, which read as a bug rather than as a missing argument.
+const usage = `Usage: node buzz-agents/scripts/restore-agents.mjs --channel <uuid> [options]
+
+  --channel <uuid>   target channel UUID (required). Find it with: buzz channels list
+  --owner <name>     whose install this is; creates them as \`Claire (Alex)\`.
+                     Defaults to the first word of git config user.name
+  --no-owner         create bare \`Claire\`. Only for a community that will hold
+                     exactly one set of these agents, ever
+  --agent <name>     restore just one agent (repeatable)
+  --values <file>    token values file (default: buzz-agents/local-values.json)
+  --run              execute the commands instead of printing them
+  --help
+
+Nothing is created silently: each command opens a prefilled draft in the owner's Buzz
+Desktop that they review and save.`;
+
+if (flag("--help") || flag("-h")) {
+  console.log(usage);
+  process.exit(0);
+}
+
 const channel = opt("--channel");
 const only = optAll("--agent").map((s) => s.toLowerCase());
 const run = flag("--run");
 const valuesFile = opt("--values") ?? localValuesPath;
 if (!channel) {
-  console.error("Missing --channel <uuid>. Find it with: buzz channels list");
+  console.error(`Missing --channel <uuid>. Find it with: buzz channels list\n\n${usage}`);
   process.exit(1);
 }
 
@@ -129,6 +167,8 @@ if (only.length) dirs = dirs.filter((d) => only.includes(d));
 
 const commands = [];
 const unresolved = [];
+const overLimit = [];
+const tight = [];
 
 for (const dir of dirs) {
   const base = path.join(agentsDir, dir);
@@ -147,6 +187,21 @@ for (const dir of dirs) {
   if (missing.length) {
     unresolved.push({ agent: displayName, tokens: missing });
     continue;
+  }
+
+  // Measured on the resolved text, because that is the copy the relay receives. The
+  // stored one is a different length — `{{BQ_PROJECT}}` is 14 characters and a project
+  // id is usually more — so checking it would be checking the wrong string.
+  if (resolved.length > PROMPT_LIMIT) {
+    overLimit.push({
+      agent: displayName,
+      chars: resolved.length,
+      over: resolved.length - PROMPT_LIMIT,
+    });
+    continue;
+  }
+  if (PROMPT_LIMIT - resolved.length < HEADROOM_WARN) {
+    tight.push({ agent: displayName, headroom: PROMPT_LIMIT - resolved.length });
   }
 
   fs.mkdirSync(resolvedDir, { recursive: true });
@@ -250,9 +305,36 @@ if (unresolved.length) {
   process.exit(1);
 }
 
+// The relay refuses these outright, so printing the command would be handing over one
+// that cannot work. Stop for the same reason an unresolved token stops the run.
+if (overLimit.length) {
+  console.error("Cannot restore — these prompts are longer than the relay accepts:\n");
+  for (const o of overLimit) {
+    console.error(
+      `  ${o.agent}: ${o.chars} characters, ${o.over} over the ${PROMPT_LIMIT} limit`,
+    );
+  }
+  console.error(`
+Move a whole section out to a GUIDES/*.md the agent is told to read, rather than
+shaving prose — nest/GUIDES/JANICE_REVIEW_CHECKLIST.md covers how. Keep every safety
+rule in the prompt itself.`);
+  process.exit(1);
+}
+
 if (!commands.length) {
   console.log("# Nothing to restore.");
   process.exit(0);
+}
+
+// Not a failure — but the next edit to one of these is the one that breaks an install,
+// and the person who makes it is usually not the person who reads this line.
+if (tight.length) {
+  for (const t of tight) {
+    console.log(
+      `# NOTE ${t.agent}: ${t.headroom} characters left of the ${PROMPT_LIMIT} prompt limit.`,
+    );
+  }
+  console.log("#");
 }
 
 console.log(

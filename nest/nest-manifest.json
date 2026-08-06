@@ -5,6 +5,13 @@
     "mode     — file permissions. Executables get 0755; nothing here is secret, so",
     "           there is no 0600 entry. The .secrets/ directory itself is created",
     "           0700 by the bootstrap and never populated from this repo.",
+    "           Directories are 0700 across the board. Nothing in ~/.buzz is read by",
+    "           another user or another process — one Mac, one operator — and several",
+    "           of these accumulate client-adjacent material as the agents work:",
+    "           WORK_LOGS and OUTBOX by definition, RESEARCH and .scratch in practice,",
+    "           .claude/agents/ the project and dataset ids. These were 0755, which",
+    "           made a research workspace world-readable from the first bootstrap for",
+    "           no benefit anybody could name.",
     "resolve  — whether {{TOKEN}} markers are replaced with local-values.json values",
     "           on the way in. See $resolveComment below; this is not a blanket yes.",
     "ifAbsent — install only when the target does not exist. For files an operator is",
@@ -37,6 +44,13 @@
     "at deploy time (its sed also handles the per-channel @dataset). Baking the project",
     "in at bootstrap would mean a later `deploy --project other-project` silently emits",
     "DDL naming the project chosen at install time instead.",
+    "",
+    "The trap that follows: deploy-claire-channel.sh is itself resolve:true, so a token",
+    "written literally in its sed pattern gets resolved along with everything else, and",
+    "the pattern turns into the install-time project id. It then matches nothing in the",
+    "unresolved guide, the substitution is a silent no-op, and BigQuery rejects the DDL",
+    "for an invalid project id named after the token. The script assembles that pattern",
+    "at runtime instead. Do not 'simplify' it back to a literal.",
     "",
     "JANICE_REVIEW_CHECKLIST.md is resolve:true and must stay that way. Janice reads it",
     "at runtime for the channel routing table. An unresolved {{JANICE_CHANNEL}} there is",
@@ -90,15 +104,15 @@
 
   "directories": [
     { "path": ".secrets", "mode": "0700" },
-    { "path": ".scratch", "mode": "0755" },
-    { "path": ".claude/agents", "mode": "0755" },
+    { "path": ".scratch", "mode": "0700" },
+    { "path": ".claude/agents", "mode": "0700" },
     { "path": ".claude/skills", "mode": "0700" },
-    { "path": "RESEARCH", "mode": "0755" },
-    { "path": "PLANS", "mode": "0755" },
-    { "path": "GUIDES", "mode": "0755" },
-    { "path": "WORK_LOGS", "mode": "0755" },
-    { "path": "OUTBOX", "mode": "0755" },
-    { "path": "REPOS", "mode": "0755" }
+    { "path": "RESEARCH", "mode": "0700" },
+    { "path": "PLANS", "mode": "0700" },
+    { "path": "GUIDES", "mode": "0700" },
+    { "path": "WORK_LOGS", "mode": "0700" },
+    { "path": "OUTBOX", "mode": "0700" },
+    { "path": "REPOS", "mode": "0700" }
   ],
 
   "files": [
@@ -108,6 +122,8 @@
     { "from": "bin/stu", "to": "bin/stu", "mode": "0755", "resolve": true },
     { "from": "bin/wake-janice.sh", "to": "bin/wake-janice.sh", "mode": "0755", "resolve": true },
     { "from": "bin/janice-turn-window.py", "to": "bin/janice-turn-window.py", "mode": "0755", "resolve": true },
+
+    { "from": "mcp/bin/bq-exec.mjs", "to": "mcp/bin/bq-exec.mjs", "mode": "0755", "resolve": true },
 
     { "from": "mcp/drive-fence/server.mjs", "to": "mcp/drive-fence/server.mjs", "mode": "0755", "resolve": true },
     { "from": "mcp/drive-fence/preflight.mjs", "to": "mcp/drive-fence/preflight.mjs", "mode": "0755", "resolve": true },

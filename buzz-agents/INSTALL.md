@@ -208,23 +208,42 @@ agents have no tools.
 
 ---
 
-## Step 6 — Only if you are creating a _new_ client
+## Step 6 — Wire up this machine
 
-Joining a client that already exists? Skip this. You need the dataset to exist and the
-Drive folder shared with the service account — ask whoever set it up.
+**Everyone runs this, including if you are joining a client that already exists.** Past the
+dataset work, it is the only thing that registers your MCP servers (`bq-<slug>`,
+`bq-<slug>-ro`, `drive-<slug>`) and writes your four subagents into
+`~/.buzz/.claude/agents/`. Step 4 installs the *templates* for those and never renders
+them, so skipping this leaves you with Claire, no tools and no subagents — and nothing
+downstream notices.
 
-Creating one from scratch? Follow
-[`nest/GUIDES/CLAIRE_ZERO_TO_RUNNING.md`](../nest/GUIDES/CLAIRE_ZERO_TO_RUNNING.md), then:
+Add `--dry-run` first to validate without changing anything.
+
+**Joining an existing client.** You need the dataset to already exist and the Drive folder
+shared with the service account — ask whoever set it up. Then:
 
 ```bash
 ~/.buzz/bin/deploy-claire-channel.sh \
   --slug <slug> \
   --channel-uuid <channel-uuid> \
   --drive-folder <folder-id> \
-  --sa-key ~/.buzz/.secrets/claire-<slug>-service-user.json
+  --sa-key ~/.buzz/.secrets/claire-<slug>-service-user.json \
+  --no-lockdown
 ```
 
-Add `--dry-run` first to validate without changing anything.
+This is safe to run against a dataset someone else is already using: `CREATE SCHEMA` is
+dropped when the dataset exists, every table is `CREATE TABLE IF NOT EXISTS`, and the tag
+sync is a `MERGE`. `--no-lockdown` because the `REVOKE` was the creating operator's job and
+is already done.
+
+**Creating one from scratch.** Follow
+[`nest/GUIDES/CLAIRE_ZERO_TO_RUNNING.md`](../nest/GUIDES/CLAIRE_ZERO_TO_RUNNING.md) first,
+then run the same command with `--lock-down` and an `--admin-key` that can administer the
+dataset.
+
+Either way, pass one of `--lock-down` / `--no-lockdown`. With neither, the script has a
+question to ask and — if an agent is running it for you — no terminal to ask at, so it
+decides for you and tells you what it chose.
 
 ---
 
@@ -259,6 +278,7 @@ Then smoke-test in your channel:
 | …and the only one named is `JANICE_PUBKEY`           | Expected on a first install — it cannot exist yet   | Step 5, save Janice's draft, re-run Step 4 |
 | `stu: no Stu app at …`                               | The checkout moved after bootstrap baked its path   | Re-run Step 4 from the checkout          |
 | Your agent has no tools                              | Buzz not restarted since install                    | Restart Buzz Desktop                     |
+| …and restarting did not help                         | Step 6 never ran, so nothing was registered         | `claude mcp list` — expect three `<slug>` servers. None? Run Step 6 |
 | A tool is missing entirely                           | `toolbox` download failed or was interrupted        | Re-run Step 4; it refetches and verifies |
 | `Access Denied` on your own dataset                  | Dataset grant missing, or wrong region (must be US) | Check both                               |
 | Janice never says anything                           | Normal — a clean turn gets no message               | Nothing to fix                           |
