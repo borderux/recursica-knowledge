@@ -331,9 +331,28 @@ quoted literals before you send the query, not syntax to send verbatim.
      AND p.participant_id IS NULL
    ```
 
-   Non-empty means a speaker has lines and no roster row. **Do not close at `ingested` while it
-   returns rows** — write the roster rows you are missing, and if you cannot determine a speaker's
-   type, set `status = 'failed'`, name the speaker ids in your report, and let a person resolve it.
+   Non-empty means a speaker has lines and no roster row. **Do not close at `ingested`, and do not
+   write the missing rows yourself.** Set `status = 'failed'`, name the speaker ids and their line
+   counts in your report, and let a person register them.
+
+   **You cannot repair this one, and trying makes it unrecoverable.** `participants_current`
+   resolves role as `COALESCE(p.participant_type, ppl.participant_type)` — your value in
+   `participants` first, the human's in `people` only as a fallback. That order is deliberate: a
+   role is a property of the appearance, not the person, so someone who runs nineteen interviews
+   and observes the twentieth must be able to be an interviewer on one and an observer on another.
+   The consequence for you is that **a role you infer permanently shadows the human value that
+   exists to fill this exact gap.** Guess "interviewer" for the wrong speaker and Analyst writes
+   field notes about the interviewer, off a full-sized pool, with every count in the header
+   reconciling — strictly worse than stopping, because nothing stops.
+
+   Writing the row with a NULL type is not a middle path either. `is_registered` flips to TRUE
+   while `resolved_type` stays NULL, so `pool_lines` is still 0 and Analyst still refuses — you
+   would have erased the warning signal without making the conversation analysable.
+
+   This is the same shape as every other gate in the dataset: `line_edits`, `project_dictionary`
+   sitting at `proposed` until a person sets `active`, `findings` hardcoded to `proposed`. An agent
+   proposes or reports; a person decides. Never invent a speaker, or a speaker's role, to make a
+   row look complete.
 
    ⚠️ **`ingested` is read downstream as "this transcript is analysable", not as "the lines
    landed".** Counting rows is not enough to earn it. Two padi conversations closed at `ingested`
