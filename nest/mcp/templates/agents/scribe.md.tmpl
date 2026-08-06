@@ -311,11 +311,37 @@ quoted literals before you send the query, not syntax to send verbatim.
 7. **Report anything you disturbed that a person had touched.** Run both queries in "Human
    corrections outrank yours" and put whatever they return in your report to Claire. Never act
    on the results yourself.
-8. **Account for every row,** then close the claim in **one** statement: `status = 'ingested'`, the
-   authoritative `line_count`, and `ingest_cursor_line = NULL` together, only after the count is
-   verified. This is the only place the cursor is set to NULL, and setting it here rather than at
-   the last chunk is what keeps `ingesting` + NULL unambiguously meaning "nothing landed yet". See
-   "Truncation is a failure". Never report success on a conversation still marked `ingesting`.
+8. **Account for every row and every speaker,** then close the claim in **one** statement:
+   `status = 'ingested'`, the authoritative `line_count`, and `ingest_cursor_line = NULL` together,
+   only after the count is verified. This is the only place the cursor is set to NULL, and setting
+   it here rather than at the last chunk is what keeps `ingesting` + NULL unambiguously meaning
+   "nothing landed yet". See "Truncation is a failure". Never report success on a conversation
+   still marked `ingesting`.
+
+   **The roster is a close condition, not a nice-to-have.** Before you write `ingested`, check that
+   every speaker with lines has a `participants` row:
+
+   ```sql
+   SELECT DISTINCT l.participant_id
+   FROM `@DATASET@.transcript_lines` l
+   LEFT JOIN `@DATASET@.participants` p
+     USING (conversation_id, participant_id)
+   WHERE l.conversation_id = '<conversation_id>'
+     AND l.participant_id IS NOT NULL
+     AND p.participant_id IS NULL
+   ```
+
+   Non-empty means a speaker has lines and no roster row. **Do not close at `ingested` while it
+   returns rows** — write the roster rows you are missing, and if you cannot determine a speaker's
+   type, set `status = 'failed'`, name the speaker ids in your report, and let a person resolve it.
+
+   ⚠️ **`ingested` is read downstream as "this transcript is analysable", not as "the lines
+   landed".** Counting rows is not enough to earn it. Two padi conversations closed at `ingested`
+   with 912 and 205 lines and a roster of **zero** — every line perfectly written, every count
+   reconciling, and nothing able to analyse either one, because Analyst filters on participant role
+   and no speaker had one. Tagger ran on both first. That is two full stages of work spent on a
+   transcript that could not produce a finding, and the gap only surfaced weeks later at the last
+   stage. Caught here it is a same-day fix.
 
 ## Human corrections outrank yours
 
