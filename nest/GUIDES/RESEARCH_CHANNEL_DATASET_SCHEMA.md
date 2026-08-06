@@ -178,7 +178,7 @@ CREATE TABLE IF NOT EXISTS `{{BQ_PROJECT}}.@dataset.findings` (
   project_name    STRING,
   conversation_id STRING OPTIONS (description = 'NULL for a cross-interview finding; set for a per-interview one'),
   scope           STRING OPTIONS (description = 'interview | cohort | project'),
-  finding_type    STRING OPTIONS (description = 'theme | sentiment | pain_point | need | behaviour | quote | opportunity | open_question'),
+  finding_type    STRING OPTIONS (description = 'theme | sentiment | pain_point | need | behaviour | quote | opportunity | open_question | hypothesis'),
   title           STRING NOT NULL,
   statement       STRING NOT NULL OPTIONS (description = 'The claim itself, in one or two sentences'),
   detail          STRING,
@@ -407,7 +407,7 @@ ALTER TABLE `{{BQ_PROJECT}}.@dataset.findings`
 
 ALTER TABLE `{{BQ_PROJECT}}.@dataset.findings`
   ALTER COLUMN finding_type SET OPTIONS (
-    description = 'theme | sentiment | pain_point | need | behaviour | quote | opportunity | open_question'
+    description = 'theme | sentiment | pain_point | need | behaviour | quote | opportunity | open_question | hypothesis'
   );
 ```
 
@@ -563,6 +563,77 @@ question should not shape the analysis, which is not the same as knowing the ans
 > human's answer. This is the same rule as `line_edits` and the same reason — see *Human edits
 > survive a re-ingest*. `proposed_answer` is the agent's own value and is safe to overwrite;
 > `resolution` is not.
+
+### A hypothesis is the same problem, and gets the same answer
+
+The same sweep found a second prose prefix: `HYPOTHESIS: does not seek safety information when
+researching, and knows it`, typed `behaviour`, confidence 0.45, one citation on an untagged line.
+Same smuggling, different label — and left as prose it would have kept happening, because from
+Analyst's position the alternative is dropping the observation entirely.
+
+So `hypothesis` is a `finding_type` too (project owner, 2026-08-06).
+
+**It is not the same thing as an open question and must not be folded into it.** A question is *I
+cannot tell*; a hypothesis is *I think this, weakly*. A reviewer answers the first and judges the
+second. Collapsing them would throw away the distinction that decides which of those two a reviewer
+is being asked to do.
+
+**It carries no extra columns and takes the ordinary decision.** `proposed_answer` and `resolution`
+belong to questions; a hypothesis is a claim, so it is approved or rejected on its evidence like any
+other. What it gains is a name the dataset can count and a group of its own in the Inbox, so a
+0.45-confidence speculation stops arriving indistinguishable from a finding because both said
+`theme`.
+
+The reviewer-facing consequence is worth stating: approving a hypothesis promotes a guess to a
+finding, and nothing but the evidence on the row stands behind that. Stu says so on the card.
+
+### Counting these types before Analyst has re-run
+
+**A type existing is not the same as a row carrying it, and the gap is visible in SQL.** In
+`research_padi` on 2026-08-06, immediately after both types landed:
+
+```
+typed_hypothesis        0     prefixed_hypothesis        1
+typed_open_question     0     prefixed_open_question     1
+```
+
+Both rows predate their type and still carry the kind in the title, because nothing rewrote them —
+retyping client data by hand to make a query look right is not a fix, and `write_finding`'s MERGE
+sets `finding_type` from the parameter, so the next Analyst run on the same `finding_id` corrects it
+for free.
+
+Until that run, **`WHERE finding_type = 'open_question'` returns nothing, and so does
+`'hypothesis'`.** Stu reads the legacy prefixes as well as the type, so its Inbox groups them
+correctly today; a query against the dataset does not, and will read as though the types never
+landed. Anything counting these before the corpus has been re-analysed needs both halves:
+
+```sql
+WHERE finding_type IN ('open_question', 'hypothesis')
+   OR REGEXP_CONTAINS(title, r'(?i)^\s*(OPEN QUESTIONS?|HYPOTHES[EI]S)\s*:')
+```
+
+**Both kinds in one clause, deliberately.** The first version of this query covered only
+`open_question`, in a section that argues a hypothesis is the same problem with the same answer —
+and that omission was worse than a miscount. The cleanup instruction below fires when no row
+matches the prefix arm, which for hypothesis was true from the start because the arm never covered
+it. So the bridge would have read as complete for a type it never bridged, and the prefixed
+hypothesis row would have stayed uncounted through the exact check meant to prove nothing was left.
+`HYPOTHES[EI]S` catches a plural, on the same reasoning as `QUESTIONS?`.
+
+Delete the prefix arm once no row matches it — that is the signal the bridge has done its job and
+both the app's prefix readers and this clause can go. Check it against **both** kinds before
+deleting: a clause that is dead for one and load-bearing for the other looks finished and is not.
+
+Run against `research_padi` on 2026-08-06 — extracted from this file rather than retyped, which is
+how the omission above was found — it returns exactly two rows:
+
+```
+f_17uXy2_experience_level_unresolved   theme       OPEN QUESTION
+f_1qFOG_hyp_safety_info_blindspot      behaviour   HYPOTHESIS
+```
+
+Both still carrying their prose prefix and neither carrying its type, which is the state this
+clause exists for. When it returns nothing, the bridge is finished.
 
 ### Run accounting — the anti-truncation mechanism
 
