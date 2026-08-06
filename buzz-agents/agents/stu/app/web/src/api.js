@@ -24,6 +24,13 @@ export const api = {
 
   conversations: () => request('GET', '/api/conversations'),
   transcript: (cid) => request('GET', `/api/conversations/${encodeURIComponent(cid)}/transcript`),
+  // The lines around one cited line. `radius` bounds it: the panel shows a window it can hold
+  // without scrolling, and re-anchors when a different quote is chosen.
+  lineContext: (cid, seq, radius) => request(
+    'GET',
+    `/api/conversations/${encodeURIComponent(cid)}/context?seq=${encodeURIComponent(seq)}` +
+    (radius == null ? '' : `&radius=${encodeURIComponent(radius)}`),
+  ),
 
   participants: () => request('GET', '/api/participants'),
   // Merge and rename are one call: a rename is a person with one record attached. Passing
@@ -56,4 +63,7 @@ export const api = {
   addLibraryTag: (b) => request('POST', '/api/tag-library', b),
   decideTerm: (termId, b) => request('PATCH', `/api/dictionary/${encodeURIComponent(termId)}`, b),
   decideFinding: (id, b) => request('PATCH', `/api/findings/${encodeURIComponent(id)}`, b),
+  // Answer an open question, or `{ dismiss: true }` to discard it from the analysis. A separate
+  // route from decideFinding because answering and approving are different acts.
+  resolveQuestion: (id, b) => request('PUT', `/api/findings/${encodeURIComponent(id)}/resolution`, b),
 }

@@ -178,10 +178,12 @@ CREATE TABLE IF NOT EXISTS `{{BQ_PROJECT}}.@dataset.findings` (
   project_name    STRING,
   conversation_id STRING OPTIONS (description = 'NULL for a cross-interview finding; set for a per-interview one'),
   scope           STRING OPTIONS (description = 'interview | cohort | project'),
-  finding_type    STRING OPTIONS (description = 'theme | sentiment | pain_point | need | behaviour | quote | opportunity'),
+  finding_type    STRING OPTIONS (description = 'theme | sentiment | pain_point | need | behaviour | quote | opportunity | open_question'),
   title           STRING NOT NULL,
   statement       STRING NOT NULL OPTIONS (description = 'The claim itself, in one or two sentences'),
   detail          STRING,
+  proposed_answer STRING OPTIONS (description = 'open_question only: the answer the agent would assume if nobody rules. Never authoritative'),
+  resolution      STRING OPTIONS (description = 'The human answer to an open question. Written only from Stu — never a write_finding parameter'),
   evidence        ARRAY<STRUCT<
                     conversation_id STRING,
                     line_id         STRING,
@@ -390,6 +392,23 @@ ALTER TABLE `{{BQ_PROJECT}}.@dataset.tags`
 ALTER TABLE `{{BQ_PROJECT}}.@dataset.tag_library`
   ADD COLUMN IF NOT EXISTS origin     STRING,
   ADD COLUMN IF NOT EXISTS created_by STRING;
+
+-- Open questions. See "An open question is a finding, not a second table" below.
+--
+-- The descriptions are repeated from the CREATE TABLE deliberately: ADD COLUMN does not inherit
+-- them, and `get_table_info` is what an agent reads to learn the column. A migrated dataset whose
+-- descriptions are blank, or whose finding_type still lists the old seven types, contradicts the
+-- tool description the same agent reads beside it.
+ALTER TABLE `{{BQ_PROJECT}}.@dataset.findings`
+  ADD COLUMN IF NOT EXISTS proposed_answer STRING
+    OPTIONS (description = 'open_question only: the answer the agent would assume if nobody rules. Never authoritative'),
+  ADD COLUMN IF NOT EXISTS resolution STRING
+    OPTIONS (description = 'The human answer to an open question. Written only from Stu — never a write_finding parameter');
+
+ALTER TABLE `{{BQ_PROJECT}}.@dataset.findings`
+  ALTER COLUMN finding_type SET OPTIONS (
+    description = 'theme | sentiment | pain_point | need | behaviour | quote | opportunity | open_question'
+  );
 ```
 
 `status = 'needs_clarification'` is a first-class state, not an error: it's how Lexicon flags a
@@ -505,6 +524,45 @@ the model cannot talk its way around:
 Verified 2026-08-02 against `research_acme` through the real MCP path — a finding citing
 `…:99999` was refused, a finding citing `…:2` was written as `proposed`, and `execute_sql` on
 the read-only source still refuses both an `UPDATE` and a `DELETE`.
+
+### An open question is a finding, not a second table
+
+Sometimes the analysis cannot settle something, and saying so is the useful output. Isabella is
+stored as a nondiver and describes a full entry-level certification course; the honest result is
+that her experience level is unresolved, not a confident guess either way.
+
+**Before `open_question` existed, Analyst had nowhere to say that.** `write_finding` is its only
+writable path, so it wrote the question as an ordinary finding and marked the kind in the title —
+`OPEN QUESTION: she is coded nondiver, but…` typed as `theme`. The type column said one thing and
+the title said another, and nothing could filter, count, or route on the difference. Found in
+`research_padi` on 2026-08-06: 1 of 36 rows, plus one more prefixed `HYPOTHESIS:`.
+
+**A second table was the wrong fix, and `gap_tracker` is not it either.** `gap_tracker` is
+project-grain transcript hygiene — no `conversation_id`, no line-level evidence, only a repeated
+`evidence_interview_ids`. An open question needs exactly what a finding needs: a claim, the lines
+it rests on, and the checked citations that make it reviewable. Verified against `research_padi`
+on 2026-08-06: all 38 `gap_tracker` rows are ingest hygiene and none is an analytical question.
+
+So it is a `finding_type`, and it inherits the whole apparatus for free — mandatory evidence, the
+line-existence gate, `status = 'proposed'`, and the human gate on approval.
+
+Two columns carry what a claim does not need:
+
+- **`proposed_answer`** — what the agent would assume if nobody rules. Optional, and it is not a
+  verdict: a question Analyst judged unresolvable from the transcript should carry none. It is a
+  `write_finding` parameter.
+- **`resolution`** — the human's answer. Stu writes it; the reviewer types one, edits the
+  assumption, or accepts it unchanged, and all three land here.
+
+`status` carries the disposal: `active` is answered, `rejected` is dismissed — a person saying the
+question should not shape the analysis, which is not the same as knowing the answer.
+
+> ⚠️ **`resolution` must never become a `write_finding` parameter, and must never appear in that
+> statement's `WHEN MATCHED THEN UPDATE SET`.** The MERGE re-runs with a stable `finding_id` and
+> overwrites every column it names, so adding `resolution` to it would let a re-analysis erase a
+> human's answer. This is the same rule as `line_edits` and the same reason — see *Human edits
+> survive a re-ingest*. `proposed_answer` is the agent's own value and is safe to overwrite;
+> `resolution` is not.
 
 ### Run accounting — the anti-truncation mechanism
 

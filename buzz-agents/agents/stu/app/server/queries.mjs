@@ -491,6 +491,10 @@ export function createQueries(bq) {
      * `quote` is what the agent claimed was said; `line_text` is what the line actually says
      * now. Returning both is the point — a reviewer compares them without leaving the screen,
      * and a quote that has drifted from its line is visible rather than trusted.
+     *
+     * `document_name` is joined in so the Inbox can group by interview under a name a person
+     * recognises rather than under a `c_…` id. It is NULL for a cross-interview finding, which
+     * is a real state — `conversation_id` is nullable by design — and not a missing join.
      */
     async findings() {
       // Same de-correlation constraint as transcript(): resolve each citation to its live line
@@ -520,14 +524,74 @@ export function createQueries(bq) {
           f.title, f.statement, f.detail, f.tag_ids, f.participant_ids, f.confidence,
           f.status, f.produced_by, f.produced_at, f.reviewed_by, f.reviewed_at,
           f.document_uri, f.notes,
+          -- The agent's assumed answer to an open question, and the human's. Both travel, always
+          -- and separately: which one a reviewer is looking at is the whole question on this row.
+          f.proposed_answer, f.resolution,
+          c.document_name,
           r.evidence
         FROM ${T('findings')} f
         LEFT JOIN resolved r ON r.finding_id = f.finding_id
+        LEFT JOIN ${T('conversations')} c ON c.conversation_id = f.conversation_id
         ORDER BY
           CASE f.status WHEN 'proposed' THEN 0 ELSE 1 END,
           f.confidence DESC,
           f.produced_at DESC
       `)
+    },
+
+    /**
+     * One finding, with the columns a review needs to record what it changed — `notes` among
+     * them, because a reviewer's note is appended to it and the existing text has to be in hand
+     * to append to rather than replace. See `appendNote` in edits.mjs.
+     */
+    async finding(findingId) {
+      const rows = await bq.query(`
+        SELECT finding_id, conversation_id, finding_type, title, status,
+               proposed_answer, resolution, reviewed_by, reviewed_at, notes
+        FROM ${T('findings')}
+        WHERE finding_id = @id
+      `, { id: findingId })
+      return rows[0] ?? null
+    },
+
+    /**
+     * The transcript around one cited line — a citation read in the conversation it came from.
+     *
+     * Bounded on purpose, and the bound is a design constraint rather than a performance one.
+     * `recursica-skill-panels-modals` sends content that induces vertical scrolling out of a
+     * panel and onto a page, so the panel gets a window it can hold; clicking a different quote
+     * re-anchors the window rather than scrolling a whole transcript inside it.
+     *
+     * Reads `lines_current` for the same reason `transcript()` does: a reviewer checking a quote
+     * against the line must see the line as it stands now, corrections included.
+     */
+    async lineContext(conversationId, sequence, radius = 5) {
+      const [lines, conversation] = await Promise.all([
+        bq.query(`
+          SELECT
+            l.line_id,
+            l.line_sequence_number,
+            l.participant_id,
+            p.resolved_name AS participant_name,
+            p.resolved_type AS participant_type,
+            l.time,
+            l.original_text,
+            l.cleaned_text
+          FROM ${T('lines_current')} l
+          LEFT JOIN ${T('participants_current')} p
+            ON p.conversation_id = l.conversation_id AND p.participant_id = l.participant_id
+          WHERE l.conversation_id = @cid
+            AND l.line_sequence_number BETWEEN @lo AND @hi
+          ORDER BY l.line_sequence_number
+        `, { cid: conversationId, lo: sequence - radius, hi: sequence + radius }),
+        bq.query(`
+          SELECT conversation_id, document_name, source_uri, line_count
+          FROM ${T('conversations')}
+          WHERE conversation_id = @cid
+        `, { cid: conversationId }),
+      ])
+
+      return { lines, conversation: conversation[0] ?? null, anchor: sequence, radius }
     },
 
     /** Audit trail. Optionally scoped to one row so a line can show its own history. */

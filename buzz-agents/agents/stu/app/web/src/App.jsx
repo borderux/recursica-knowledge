@@ -88,7 +88,11 @@ export default function App() {
           <Route path="/tags" element={<Tags {...screens} />} />
           <Route path="/tags/:tagId" element={<TagDetail {...screens} />} />
           <Route path="/dictionary" element={<Dictionary {...screens} />} />
-          <Route path="/findings" element={<Findings {...screens} />} />
+          {/* Each tab is its own route, so a tab survives a refresh and works with back and
+              forward — recursica-skill-tabs states it as a house preference. `/findings` has no
+              content of its own; it is the Inbox that has work in it. */}
+          <Route path="/findings" element={<Navigate to="/findings/inbox" replace />} />
+          <Route path="/findings/:tab" element={<Findings {...screens} />} />
           <Route path="/history" element={<History {...screens} />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -15,6 +15,52 @@
 
 import { randomUUID } from 'node:crypto'
 
+/**
+ * An open question is a finding whose `finding_type` says so.
+ *
+ * The title test is a bridge and not a convention to keep. Before `open_question` existed as a
+ * type, Analyst had nowhere to record that a row was a question rather than a claim — its only
+ * writable path is `write_finding` — so it wrote the kind into the title, where nothing could
+ * filter or count it. Rows already carrying that prefix are still answerable here rather than
+ * stranded. The web app applies the same rule in `routes/Findings.jsx`; both should go once
+ * Analyst writes the type.
+ */
+const LEGACY_QUESTION = /^\s*OPEN QUESTIONS?\s*:/i
+
+function isOpenQuestion(finding) {
+  return finding.finding_type === 'open_question' || LEGACY_QUESTION.test(finding.title ?? '')
+}
+
+/**
+ * A reviewer's note goes onto the record, not over it.
+ *
+ * `notes` is where the agent recorded why it wrote the row: on a finding, the confidence
+ * rationale and the caveats — on `f_17uXy2_experience_level_unresolved`, the standing instruction
+ * not to resolve the question from the transcript and the recruiter check that has to happen
+ * first. On a dictionary term it is Lexicon's evidence for the term. Neither column is optional in
+ * practice: all 36 findings and all 220 terms in research_padi carry one, averaging 315 and 880
+ * characters (queried 2026-08-06).
+ *
+ * `SET notes = @note` replaced all of that with the reviewer's sentence, and destroyed it
+ * silently — the audit row for a decision records the status change, so the overwritten note
+ * was in no `edit_log` row and could not be recovered from one. The page that shows a reviewer
+ * the agent's note and then offers them a Note box was the same page that deleted it.
+ *
+ * So the note is appended and marked as the reviewer's. Its text is already stored verbatim in
+ * the `note` column of the decision's own audit row, so the append needs no second log row to be
+ * reconstructible. Same rule the transcript follows: the human value lives beside the AI value,
+ * never on top of it.
+ *
+ * Returns null for "no note given, leave the column alone" — distinct from a note that happens
+ * to be the first one on an empty record.
+ */
+function appendNote(existing, note) {
+  const text = (note ?? '').trim()
+  if (!text) return null
+  const entry = `Review note: ${text}`
+  return existing ? `${existing}\n\n${entry}` : entry
+}
+
 export function createEdits(bq, queries) {
   const T = (name) => bq.table(name)
 
@@ -270,11 +316,15 @@ export function createEdits(bq, queries) {
       }
 
       const rows = await bq.query(
-        `SELECT term_id, canonical_term, status FROM ${T('project_dictionary')} WHERE term_id = @id`,
+        `SELECT term_id, canonical_term, status, notes FROM ${T('project_dictionary')} WHERE term_id = @id`,
         { id: termId },
       )
       if (!rows.length) throw new Error(`dictionary term not found: ${termId}`)
       if (rows[0].status === status) return { changed: false }
+
+      // Same overwrite as findings had, and worse here: a term's `notes` is Lexicon's evidence for
+      // proposing it, which is the thing a reviewer is deciding on.
+      const notes = appendNote(rows[0].notes, note)
 
       await write(actor, {
         targetTable: 'project_dictionary',
@@ -287,9 +337,9 @@ export function createEdits(bq, queries) {
       }, () => bq.execute(`
         UPDATE ${T('project_dictionary')}
         SET status = @status, decided_by = @pubkey, decided_at = CURRENT_TIMESTAMP(),
-            notes = IF(@note IS NULL, notes, @note)
+            notes = IF(@notes IS NULL, notes, @notes)
         WHERE term_id = @id
-      `, { status, pubkey: actor.pubkey, note: note ?? null, id: termId }))
+      `, { status, pubkey: actor.pubkey, notes, id: termId }))
 
       return { changed: true, from: rows[0].status, to: status }
     },
@@ -302,11 +352,13 @@ export function createEdits(bq, queries) {
       }
 
       const rows = await bq.query(
-        `SELECT finding_id, status FROM ${T('findings')} WHERE finding_id = @id`,
+        `SELECT finding_id, status, notes FROM ${T('findings')} WHERE finding_id = @id`,
         { id: findingId },
       )
       if (!rows.length) throw new Error(`finding not found: ${findingId}`)
       if (rows[0].status === status) return { changed: false }
+
+      const notes = appendNote(rows[0].notes, note)
 
       await write(actor, {
         targetTable: 'findings',
@@ -319,11 +371,94 @@ export function createEdits(bq, queries) {
       }, () => bq.execute(`
         UPDATE ${T('findings')}
         SET status = @status, reviewed_by = @pubkey, reviewed_at = CURRENT_TIMESTAMP(),
-            notes = IF(@note IS NULL, notes, @note)
+            notes = IF(@notes IS NULL, notes, @notes)
         WHERE finding_id = @id
-      `, { status, pubkey: actor.pubkey, note: note ?? null, id: findingId }))
+      `, { status, pubkey: actor.pubkey, notes, id: findingId }))
 
       return { changed: true, from: rows[0].status, to: status }
+    },
+
+    /**
+     * Answer an open question, or dismiss it. The human gate again, one step further on: for a
+     * finding, approval is a verdict on someone else's claim; for an open question, it is an
+     * answer the dataset did not contain.
+     *
+     * Three paths, one write, per FR-10 — and deliberately not three functions. The reviewer
+     * types an answer, or edits the agent's assumed one, or accepts that assumption unchanged;
+     * all three arrive here as `answer` text, because which of them happened is a fact about the
+     * reviewer's keystrokes and not about the resulting record. `proposed_answer` stays untouched
+     * beside `resolution`, so "what the agent would have assumed" and "what a person decided"
+     * remain two readable values rather than one that overwrote the other.
+     *
+     * Dismissal is the fourth path and it is a different action: `status = 'rejected'` with no
+     * answer, which is a person saying the question should not shape the analysis — not that they
+     * know what the answer is.
+     */
+    async resolveQuestion(actor, { findingId, answer, dismiss = false, note }) {
+      const before = await queries.finding(findingId)
+      if (!before) throw new Error(`finding not found: ${findingId}`)
+
+      // Enforced here rather than trusted from the caller, like every other rule in this file. A
+      // claim is approved or rejected; only a question gets an answer, and putting one on a claim
+      // would leave a `resolution` nothing in the UI knows how to show.
+      if (!isOpenQuestion(before)) {
+        throw new Error(
+          `${findingId} is a ${before.finding_type ?? 'finding'}, not an open question. ` +
+          `Approve or reject it instead — an answer only means something on a question.`,
+        )
+      }
+
+      const text = dismiss ? null : (answer ?? '').trim()
+      if (!dismiss && !text) {
+        // An empty answer is not a resolution. Dismissal is how a reviewer disposes of a question
+        // without answering it, and it is a separate action so the two never collapse into one.
+        throw new Error(
+          'an answer is required — to close this question without answering it, dismiss it instead',
+        )
+      }
+
+      const status = dismiss ? 'rejected' : 'active'
+      if (before.status === status && (before.resolution ?? null) === text) {
+        return { changed: false }
+      }
+
+      await write(actor, {
+        targetTable: 'findings',
+        targetKey: { finding_id: findingId },
+        conversationId: before.conversation_id,
+        field: 'resolution',
+        action: dismiss ? 'delete' : 'update',
+        oldValue: before.resolution,
+        newValue: text,
+        note,
+      }, () => bq.execute(`
+        UPDATE ${T('findings')}
+        SET resolution = @answer, status = @status,
+            reviewed_by = @pubkey, reviewed_at = CURRENT_TIMESTAMP(),
+            notes = IF(@notes IS NULL, notes, @notes)
+        WHERE finding_id = @id
+      `, {
+        answer: text, status, pubkey: actor.pubkey, id: findingId,
+        notes: appendNote(before.notes, note),
+      }))
+
+      // The status move is its own audit row. History should answer "when was this question
+      // resolved" without a reader having to infer it from a resolution row's timestamp — and a
+      // dismissal writes no answer at all, so without this it would leave only a NULL behind.
+      if (before.status !== status) {
+        await log(actor, {
+          targetTable: 'findings',
+          targetKey: { finding_id: findingId },
+          conversationId: before.conversation_id,
+          field: 'status',
+          action: 'update',
+          oldValue: before.status,
+          newValue: status,
+          note,
+        })
+      }
+
+      return { changed: true, from: before.resolution, to: text, status }
     },
 
     /**

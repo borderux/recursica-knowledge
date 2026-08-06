@@ -69,6 +69,15 @@ const routes = [
     participants: await queries.participants(p.cid),
   })],
 
+  // The window behind the quote-in-context panel. Deliberately not served from the transcript
+  // route: that returns every line of an interview, up to 912 of them, where the panel shows
+  // eleven and re-anchors rather than scrolls.
+  ['GET', '/api/conversations/:cid/context', (p, _b, url) => queries.lineContext(
+    p.cid,
+    Number(url.searchParams.get('seq')),
+    Number(url.searchParams.get('radius') ?? 5),
+  )],
+
   // The consolidation screen's whole payload in one call. Suggestions are computed against the
   // same snapshot the roster is drawn from, so a merge offered is a merge the table can show.
   ['GET', '/api/participants', async () => {
@@ -192,6 +201,19 @@ const routes = [
     const actor = await identity.actor(body.pubkey)
     return edits.decideFinding(actor, {
       findingId: p.findingId, status: body.status, note: body.note,
+    })
+  }],
+
+  // Answering an open question is not the same operation as approving a finding, so it is not the
+  // same route with an extra field. A verdict on a claim and an answer the dataset did not
+  // contain are different acts, and the audit trail should not have to guess which one happened.
+  ['PUT', '/api/findings/:findingId/resolution', async (p, body) => {
+    const actor = await identity.actor(body.pubkey)
+    return edits.resolveQuestion(actor, {
+      findingId: p.findingId,
+      answer: body.answer,
+      dismiss: body.dismiss === true,
+      note: body.note,
     })
   }],
 ]

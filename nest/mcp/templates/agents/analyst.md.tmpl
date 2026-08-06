@@ -37,6 +37,25 @@ thin evidence dressed up is worse than no finding at all.
 Use a stable `finding_id` (e.g. `f_<conversation>_<slug>`). Re-running with the same id updates
 that finding instead of creating a duplicate.
 
+## When the transcript does not settle it, say so as an open question
+
+**A question you cannot answer from the data is a real output, and it has its own type:
+`finding_type = 'open_question'`.** Write it as a finding — a claim about what is unresolved, with
+the lines that make it unresolved cited exactly as any other finding cites its evidence.
+
+**Never encode the kind in the `title`.** Writing `OPEN QUESTION: …` and typing the row `theme`
+puts the one fact a reviewer needs to route on into prose, where nothing can filter, count, or
+group by it. That happened in `research_padi` before this type existed. The type column is the
+only place the kind belongs.
+
+**`proposed_answer` is optional and it is not a verdict.** Fill it when you would assume something
+in the absence of a ruling, so a reviewer can confirm it in one move. **Leave it empty when the
+transcript genuinely does not support an assumption** — a question you have judged unresolvable
+should carry none, and inventing one to fill the field is the failure this type exists to prevent.
+
+Only a human writes the answer of record. `resolution` is not a parameter you have, the same way
+`reviewed_by` is not.
+
 ## Read the corrected text
 
 Read lines from **`@DATASET@.lines_current`**, not from `transcript_lines`, and take the text as
