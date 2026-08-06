@@ -608,12 +608,32 @@ correctly today; a query against the dataset does not, and will read as though t
 landed. Anything counting these before the corpus has been re-analysed needs both halves:
 
 ```sql
-WHERE finding_type = 'open_question'
-   OR REGEXP_CONTAINS(title, r'(?i)^\s*OPEN QUESTIONS?\s*:')
+WHERE finding_type IN ('open_question', 'hypothesis')
+   OR REGEXP_CONTAINS(title, r'(?i)^\s*(OPEN QUESTIONS?|HYPOTHES[EI]S)\s*:')
 ```
 
-Delete the second half once no row matches it — that is the signal the bridge has done its job and
-both the app's prefix readers and this clause can go.
+**Both kinds in one clause, deliberately.** The first version of this query covered only
+`open_question`, in a section that argues a hypothesis is the same problem with the same answer —
+and that omission was worse than a miscount. The cleanup instruction below fires when no row
+matches the prefix arm, which for hypothesis was true from the start because the arm never covered
+it. So the bridge would have read as complete for a type it never bridged, and the prefixed
+hypothesis row would have stayed uncounted through the exact check meant to prove nothing was left.
+`HYPOTHES[EI]S` catches a plural, on the same reasoning as `QUESTIONS?`.
+
+Delete the prefix arm once no row matches it — that is the signal the bridge has done its job and
+both the app's prefix readers and this clause can go. Check it against **both** kinds before
+deleting: a clause that is dead for one and load-bearing for the other looks finished and is not.
+
+Run against `research_padi` on 2026-08-06 — extracted from this file rather than retyped, which is
+how the omission above was found — it returns exactly two rows:
+
+```
+f_17uXy2_experience_level_unresolved   theme       OPEN QUESTION
+f_1qFOG_hyp_safety_info_blindspot      behaviour   HYPOTHESIS
+```
+
+Both still carrying their prose prefix and neither carrying its type, which is the state this
+clause exists for. When it returns nothing, the bridge is finished.
 
 ### Run accounting — the anti-truncation mechanism
 
