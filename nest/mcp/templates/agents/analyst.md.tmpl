@@ -59,8 +59,16 @@ precisely because the two disagree.
 **Stop when `pool_lines` = 0.** On the padi corpus 2 of 48 conversations return `pool_lines = 0`
 while passing every other check — `ingested`, `lines_present` equal to `declared_lines`, and 182
 and 45 tagged lines respectively. Report it as a registration gap, not an empty interview: the
-speakers need registering before the analysis can be written. If `pool_lines` is non-zero but
+speakers need registering before the analysis can be written, and the tagging already done stays
+good — it becomes reachable the moment they are. If `pool_lines` is non-zero but
 `unresolved_speaker_lines` is material, carry both numbers into your coverage statement.
+
+**Hand that stop to Claire explicitly, as a `gap_tracker` candidate.** You cannot write the row
+yourself — your SQL tool is read-only and `write_finding` reaches `findings` and nothing else — so
+a registration gap you only mention in a report exists solely in that report. Name it as a gap,
+give the `conversation_id` and the unregistered speaker ids, and say it belongs in `gap_tracker`.
+Claire has the writable path; you have the evidence. A gap nobody recorded is one nobody can answer
+"which conversations are blocked?" with, short of re-running this query and remembering to.
 
 **Two different columns are called `participant_type`.** `conversations.participant_type` is the
 cohort (`active_diver`, `padi_pro`, …); `participants.participant_type` is the role
