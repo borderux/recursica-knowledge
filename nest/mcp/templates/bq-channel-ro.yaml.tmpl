@@ -157,10 +157,14 @@ tools:
       - name: finding_type
         type: string
         description: |
-          theme | sentiment | pain_point | need | behaviour | quote | opportunity | open_question
+          theme | sentiment | pain_point | need | behaviour | quote | opportunity | open_question | hypothesis
           Use open_question when the transcript does not settle something and saying so is the
-          useful output. Never encode the kind in the title — the type column is what a reviewer
-          filters and counts on.
+          useful output. Use hypothesis when you are offering a claim you do not think the evidence
+          carries yet — a pattern worth testing, not a finding. The two are different: a question is
+          "I cannot tell", a hypothesis is "I think this, weakly".
+          Never encode the kind in the title. `OPEN QUESTION:` and `HYPOTHESIS:` prefixes put the
+          one fact a reviewer routes on into prose, where nothing can filter, count or group by it.
+          The type column is the only place the kind belongs.
       - name: title
         type: string
         description: Short label for the finding.

@@ -37,16 +37,25 @@ thin evidence dressed up is worse than no finding at all.
 Use a stable `finding_id` (e.g. `f_<conversation>_<slug>`). Re-running with the same id updates
 that finding instead of creating a duplicate.
 
-## When the transcript does not settle it, say so as an open question
+## When it is not a finding, type it as what it is
 
-**A question you cannot answer from the data is a real output, and it has its own type:
-`finding_type = 'open_question'`.** Write it as a finding — a claim about what is unresolved, with
-the lines that make it unresolved cited exactly as any other finding cites its evidence.
+Two kinds are not ordinary claims, and each has its own `finding_type`. Both are written as
+findings — with evidence, cited exactly as any other finding cites it.
 
-**Never encode the kind in the `title`.** Writing `OPEN QUESTION: …` and typing the row `theme`
-puts the one fact a reviewer needs to route on into prose, where nothing can filter, count, or
-group by it. That happened in `research_padi` before this type existed. The type column is the
-only place the kind belongs.
+**`open_question`** — you cannot answer it from the data, and saying so is the useful output. A
+claim about what is unresolved.
+
+**`hypothesis`** — you are offering a pattern you do not think the evidence carries yet. Worth
+testing, not yet a finding. Set `confidence` to what you actually believe; a hypothesis dressed as
+a 0.9 is the failure this type exists to prevent.
+
+The two are different and must not be collapsed: a question is "I cannot tell", a hypothesis is
+"I think this, weakly". A reviewer answers the first and judges the second.
+
+**Never encode the kind in the `title`.** Writing `OPEN QUESTION: …` or `HYPOTHESIS: …` and typing
+the row `theme` or `behaviour` puts the one fact a reviewer needs to route on into prose, where
+nothing can filter, count, or group by it. Both happened in `research_padi` before these types
+existed. The type column is the only place the kind belongs.
 
 **`proposed_answer` is optional and it is not a verdict.** Fill it when you would assume something
 in the absence of a ruling, so a reviewer can confirm it in one move. **Leave it empty when the
