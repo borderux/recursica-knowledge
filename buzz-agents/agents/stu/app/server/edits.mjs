@@ -15,6 +15,22 @@
 
 import { randomUUID } from 'node:crypto'
 
+/**
+ * An open question is a finding whose `finding_type` says so.
+ *
+ * The title test is a bridge and not a convention to keep. Before `open_question` existed as a
+ * type, Analyst had nowhere to record that a row was a question rather than a claim — its only
+ * writable path is `write_finding` — so it wrote the kind into the title, where nothing could
+ * filter or count it. Rows already carrying that prefix are still answerable here rather than
+ * stranded. The web app applies the same rule in `routes/Findings.jsx`; both should go once
+ * Analyst writes the type.
+ */
+const LEGACY_QUESTION = /^\s*OPEN QUESTIONS?\s*:/i
+
+function isOpenQuestion(finding) {
+  return finding.finding_type === 'open_question' || LEGACY_QUESTION.test(finding.title ?? '')
+}
+
 export function createEdits(bq, queries) {
   const T = (name) => bq.table(name)
 
@@ -324,6 +340,86 @@ export function createEdits(bq, queries) {
       `, { status, pubkey: actor.pubkey, note: note ?? null, id: findingId }))
 
       return { changed: true, from: rows[0].status, to: status }
+    },
+
+    /**
+     * Answer an open question, or dismiss it. The human gate again, one step further on: for a
+     * finding, approval is a verdict on someone else's claim; for an open question, it is an
+     * answer the dataset did not contain.
+     *
+     * Three paths, one write, per FR-10 — and deliberately not three functions. The reviewer
+     * types an answer, or edits the agent's assumed one, or accepts that assumption unchanged;
+     * all three arrive here as `answer` text, because which of them happened is a fact about the
+     * reviewer's keystrokes and not about the resulting record. `proposed_answer` stays untouched
+     * beside `resolution`, so "what the agent would have assumed" and "what a person decided"
+     * remain two readable values rather than one that overwrote the other.
+     *
+     * Dismissal is the fourth path and it is a different action: `status = 'rejected'` with no
+     * answer, which is a person saying the question should not shape the analysis — not that they
+     * know what the answer is.
+     */
+    async resolveQuestion(actor, { findingId, answer, dismiss = false, note }) {
+      const before = await queries.finding(findingId)
+      if (!before) throw new Error(`finding not found: ${findingId}`)
+
+      // Enforced here rather than trusted from the caller, like every other rule in this file. A
+      // claim is approved or rejected; only a question gets an answer, and putting one on a claim
+      // would leave a `resolution` nothing in the UI knows how to show.
+      if (!isOpenQuestion(before)) {
+        throw new Error(
+          `${findingId} is a ${before.finding_type ?? 'finding'}, not an open question. ` +
+          `Approve or reject it instead — an answer only means something on a question.`,
+        )
+      }
+
+      const text = dismiss ? null : (answer ?? '').trim()
+      if (!dismiss && !text) {
+        // An empty answer is not a resolution. Dismissal is how a reviewer disposes of a question
+        // without answering it, and it is a separate action so the two never collapse into one.
+        throw new Error(
+          'an answer is required — to close this question without answering it, dismiss it instead',
+        )
+      }
+
+      const status = dismiss ? 'rejected' : 'active'
+      if (before.status === status && (before.resolution ?? null) === text) {
+        return { changed: false }
+      }
+
+      await write(actor, {
+        targetTable: 'findings',
+        targetKey: { finding_id: findingId },
+        conversationId: before.conversation_id,
+        field: 'resolution',
+        action: dismiss ? 'delete' : 'update',
+        oldValue: before.resolution,
+        newValue: text,
+        note,
+      }, () => bq.execute(`
+        UPDATE ${T('findings')}
+        SET resolution = @answer, status = @status,
+            reviewed_by = @pubkey, reviewed_at = CURRENT_TIMESTAMP(),
+            notes = IF(@note IS NULL, notes, @note)
+        WHERE finding_id = @id
+      `, { answer: text, status, pubkey: actor.pubkey, note: note ?? null, id: findingId }))
+
+      // The status move is its own audit row. History should answer "when was this question
+      // resolved" without a reader having to infer it from a resolution row's timestamp — and a
+      // dismissal writes no answer at all, so without this it would leave only a NULL behind.
+      if (before.status !== status) {
+        await log(actor, {
+          targetTable: 'findings',
+          targetKey: { finding_id: findingId },
+          conversationId: before.conversation_id,
+          field: 'status',
+          action: 'update',
+          oldValue: before.status,
+          newValue: status,
+          note,
+        })
+      }
+
+      return { changed: true, from: before.resolution, to: text, status }
     },
 
     /**

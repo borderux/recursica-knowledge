@@ -107,11 +107,11 @@ tools:
         ON T.finding_id = S.finding_id
         WHEN NOT MATCHED THEN INSERT (
           finding_id, project_name, conversation_id, scope, finding_type, title, statement,
-          detail, evidence, tag_ids, participant_ids, confidence, status, produced_by,
-          produced_at, document_uri, notes
+          detail, proposed_answer, evidence, tag_ids, participant_ids, confidence, status,
+          produced_by, produced_at, document_uri, notes
         ) VALUES (
           @finding_id, @project_name, @conversation_id, @scope, @finding_type, @title,
-          @statement, @detail,
+          @statement, @detail, @proposed_answer,
           ARRAY(
             SELECT AS STRUCT
               JSON_VALUE(e, '$.conversation_id') AS conversation_id,
@@ -122,10 +122,14 @@ tools:
           @tag_ids, @participant_ids, @confidence, 'proposed', @produced_by,
           CURRENT_TIMESTAMP(), @document_uri, @notes
         )
+        -- resolution is deliberately absent from this list and must stay absent: it holds a
+        -- human's answer to an open question, and a re-analysis re-running with the same
+        -- finding_id would erase it. Same rule as line_edits — see the schema guide, "An open
+        -- question is a finding, not a second table".
         WHEN MATCHED THEN UPDATE SET
           project_name = @project_name, conversation_id = @conversation_id, scope = @scope,
           finding_type = @finding_type, title = @title, statement = @statement,
-          detail = @detail,
+          detail = @detail, proposed_answer = @proposed_answer,
           evidence = ARRAY(
             SELECT AS STRUCT
               JSON_VALUE(e, '$.conversation_id') AS conversation_id,
@@ -152,7 +156,11 @@ tools:
         description: interview | cohort | project
       - name: finding_type
         type: string
-        description: theme | sentiment | pain_point | need | behaviour | quote | opportunity
+        description: |
+          theme | sentiment | pain_point | need | behaviour | quote | opportunity | open_question
+          Use open_question when the transcript does not settle something and saying so is the
+          useful output. Never encode the kind in the title — the type column is what a reviewer
+          filters and counts on.
       - name: title
         type: string
         description: Short label for the finding.
@@ -162,6 +170,13 @@ tools:
       - name: detail
         type: string
         description: Supporting explanation. May be empty.
+      - name: proposed_answer
+        type: string
+        description: |
+          open_question only: the answer you would assume if nobody rules, so a reviewer can
+          confirm it in one move. Leave empty when the transcript genuinely does not support one —
+          an unresolvable question should carry no assumption. Never an approval: only a human
+          writes the answer of record, and they write it through Stu.
       - name: evidence_json
         type: string
         description: |
