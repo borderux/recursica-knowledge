@@ -318,24 +318,41 @@ quoted literals before you send the query, not syntax to send verbatim.
    "nothing landed yet". See "Truncation is a failure". Never report success on a conversation
    still marked `ingesting`.
 
-   **The roster is a close condition, not a nice-to-have.** Before you write `ingested`, check that
-   every speaker with lines has a `participants` row:
+   **Write the roster, then verify it. Both, in that order.**
+
+   **Writing it is your job** — you own `participants`, and every speaker you assigned a
+   `participant_id` needs a row, with `participant_type` set wherever the transcript actually
+   establishes the role. This is easy to lose on a **resumed or multi-chunk ingest**, and that is
+   not hypothetical: the two padi conversations that reached `ingested` with a roster of zero are
+   the two that were resumed. One ran ten `extract` runs across eight hours, the other logged a
+   single `scribe (resume-verify)` run with `rows_written = 0`. Every other conversation in the
+   corpus was ingested in one pass and has its roster. **A resume that picks up the chunk loop and
+   skips the roster is the failure mode here** — so re-check the roster on every resume, not just
+   on a first run.
+
+   **Then verify what Analyst actually needs**, which is not a row — it is a resolvable role:
 
    ```sql
-   SELECT DISTINCT l.participant_id
+   SELECT p.participant_id, COUNT(*) AS lines
    FROM `@DATASET@.transcript_lines` l
-   LEFT JOIN `@DATASET@.participants` p
+   JOIN `@DATASET@.participants_current` p
      USING (conversation_id, participant_id)
    WHERE l.conversation_id = '<conversation_id>'
-     AND l.participant_id IS NOT NULL
-     AND p.participant_id IS NULL
+     AND p.resolved_type IS NULL
+   GROUP BY p.participant_id
    ```
 
-   Non-empty means a speaker has lines and no roster row. **Do not close at `ingested`, and do not
-   write the missing rows yourself.** Set `status = 'failed'`, name the speaker ids and their line
-   counts in your report, and let a person register them.
+   Test the **view**, not the base table. A `participants` row written with a NULL
+   `participant_type` satisfies a row-existence check while leaving `resolved_type` NULL — which
+   flips `is_registered` to TRUE, keeps Analyst's `pool_lines` at 0, and erases the warning without
+   making the conversation analysable. The view collapses both failures into one condition and
+   hands you the line counts for the report for free.
 
-   **You cannot repair this one, and trying makes it unrecoverable.** `participants_current`
+   **Non-empty means stop. Do not fill it in with a role you inferred.** Set `status = 'failed'`,
+   name the speaker ids and their line counts, and let a person resolve it. Writing the roster from
+   what the transcript states is your job; inventing a role so your own gate passes is not.
+
+   **That guess is unrecoverable, which is why the line is drawn there.** `participants_current`
    resolves role as `COALESCE(p.participant_type, ppl.participant_type)` — your value in
    `participants` first, the human's in `people` only as a fallback. That order is deliberate: a
    role is a property of the appearance, not the person, so someone who runs nineteen interviews
@@ -344,10 +361,6 @@ quoted literals before you send the query, not syntax to send verbatim.
    exists to fill this exact gap.** Guess "interviewer" for the wrong speaker and Analyst writes
    field notes about the interviewer, off a full-sized pool, with every count in the header
    reconciling — strictly worse than stopping, because nothing stops.
-
-   Writing the row with a NULL type is not a middle path either. `is_registered` flips to TRUE
-   while `resolved_type` stays NULL, so `pool_lines` is still 0 and Analyst still refuses — you
-   would have erased the warning signal without making the conversation analysable.
 
    This is the same shape as every other gate in the dataset: `line_edits`, `project_dictionary`
    sitting at `proposed` until a person sets `active`, `findings` hardcoded to `proposed`. An agent
