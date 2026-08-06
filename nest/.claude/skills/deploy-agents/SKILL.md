@@ -24,7 +24,8 @@ Ask, and do not guess — the answer changes half the steps:
 
 1. **Joining a client that already exists.** Someone else already created the dataset,
    the service account and the Drive folder. Most common. You need their values, not
-   `gcloud`.
+   `gcloud`. You still run every step, Step 5 included — the cloud side is done, the
+   *machine* side has not been done on this Mac.
 2. **Creating a new client from scratch.** Needs Google Cloud work and `gcloud`.
 3. **Repairing or updating an existing install.** A nest already exists here. The agents
    exist too, so Step 4 is the wrong tool — see *Updating agents that already exist*.
@@ -394,17 +395,50 @@ because a draft can be discarded. So after they tell you they have saved, run th
 more — that pass sees the prompt that actually landed and records the version. Do not tell
 them an update is complete on the strength of `accepted: true`.
 
-## Step 5 — Only for a new client
+## Step 5 — Wire this machine up. Every case, including joining
 
-Skip entirely when joining an existing one.
+**Run this even when joining a client someone else already created.** It used to say to
+skip it, and that was wrong: past the dataset work, this script is the *only* thing that
+does the per-machine half of the install.
 
 ```bash
 ~/.buzz/bin/deploy-claire-channel.sh --slug <slug> --channel-uuid <uuid> \
   --drive-folder <folder-id> --sa-key ~/.buzz/.secrets/claire-<slug>-service-user.json --dry-run
 ```
 
-Run `--dry-run` first and read it. Drop the flag to apply. Google Cloud steps this cannot
-do are in `~/.buzz/GUIDES/CLAIRE_ZERO_TO_RUNNING.md` steps 1–6.
+Run `--dry-run` first and read it. Drop the flag to apply.
+
+| It also does | Which lives nowhere else |
+|---|---|
+| Registers `bq-<slug>`, `bq-<slug>-ro`, `drive-<slug>` | `claude mcp add-json`, user scope, on **this** Mac |
+| Renders `scribe/lexicon/tagger/analyst-<slug>.md` | into `~/.buzz/.claude/agents/` |
+
+Bootstrap ships the *templates* for both and never renders them, so a machine that skips
+this step has Claire, no tools and no subagents. Nothing later catches it: Step 6 drives
+the toolbox binary directly with the key, so it reports `Isolation holds.` on a machine
+with nothing registered at all. The install looks finished and the first ingest fails.
+
+**Joining an existing client**, add `--no-lockdown` and pass only `--sa-key`:
+
+```bash
+~/.buzz/bin/deploy-claire-channel.sh --slug <slug> --channel-uuid <uuid> \
+  --drive-folder <folder-id> --sa-key ~/.buzz/.secrets/claire-<slug>-service-user.json \
+  --no-lockdown
+```
+
+Safe against a live dataset holding another operator's data, by design rather than by
+luck: the script probes for the dataset and drops `CREATE SCHEMA` when it is already
+there, every table is `CREATE TABLE IF NOT EXISTS`, and the tag sync is a `MERGE` on
+`tag`. `--no-lockdown` because the `REVOKE` is the creating operator's job and is already
+done — without the flag you get a warning about grants that were dealt with weeks ago.
+
+**Creating a new client**, do the Google Cloud steps in
+`~/.buzz/GUIDES/CLAIRE_ZERO_TO_RUNNING.md` steps 1–6 first, then run it with
+`--lock-down` and an `--admin-key` that holds `bigquery.datasets.update`.
+
+**Pass a lockdown flag either way.** With neither, the script has a question to ask and no
+terminal to ask it at, so it decides for you and says so in the summary — which is a line
+of output to explain rather than a decision anybody made.
 
 ## Step 6 — Prove the fence, before any client data moves
 
@@ -420,6 +454,18 @@ Healthy output ends with `Isolation holds.` **Anything else, stop** and report i
 ingest a transcript to "see if it works" — that is the exact action the fence exists to
 make safe. `ISOLATION BROKEN` almost always means a project-level BigQuery role; leave only
 `jobUser` on the project and `dataEditor` on the one dataset.
+
+`Isolation holds.` says the key reaches one dataset. It says **nothing** about whether this
+machine can use it, because the check runs the toolbox binary itself rather than the
+registered servers. So confirm the wiring separately, and do it before you report success:
+
+```bash
+claude mcp list | grep -E "bq-<slug>|drive-<slug>"     # expect three
+ls ~/.buzz/.claude/agents/*-<slug>.md                   # expect four
+```
+
+Three servers and four files. Anything short of that means Step 5 did not finish — re-run
+it rather than restarting Buzz, which is the wrong fix for this and wastes their time.
 
 ## Step 7 — Report
 

@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
 #
-# Deploy Claire and her team to a new research channel.
+# Deploy Claire and her team to a research channel, on this machine.
 #
 # One channel == one Drive folder + one BigQuery dataset + one service account.
 # Nothing is shared between channels, because channels are different clients.
+#
+# Run it whether or not the client already exists. The dataset half is idempotent —
+# CREATE SCHEMA is dropped when the dataset is already there, tables are IF NOT
+# EXISTS, the tag sync is a MERGE — and the other half is per-machine and has not
+# been done here yet: registering the three MCP servers and rendering the four
+# subagents. Skipping it leaves an operator with Claire and no tools.
 #
 # Usage:
 #   deploy-claire-channel.sh \
@@ -25,12 +31,27 @@
 # --tag-csv        seed from a CSV instead of the sheet (offline / testing).
 # --skip-tag-sync  leave tag_library empty. Tagger will refuse to tag.
 #
+# Project-wide default grants — pass one of these explicitly:
+# --lock-down      REVOKE the projectEditor/projectViewer grants BigQuery puts on every
+#                  new dataset. Correct for a client you are creating. Needs an identity
+#                  with bigquery.datasets.update, so usually --admin-key.
+# --no-lockdown    leave them. Correct when joining a client someone else created and
+#                  already locked down.
+# Given neither, it asks — and with no terminal to ask at it picks --no-lockdown and
+# says so in the summary. Passing one keeps the choice yours.
+#
+# --dry-run        validate and stop before changing anything.
+#
 set -euo pipefail
 
 BUZZ_HOME="${BUZZ_HOME:-$HOME/.buzz}"
 NODE_BIN="${NODE_BIN:-$(command -v node 2>/dev/null || echo /usr/local/bin/node)}"
 TOOLBOX_BIN="${TOOLBOX_BIN:-$BUZZ_HOME/bin/toolbox}"
-CLAUDE_BIN="${CLAUDE_BIN:-$HOME/.local/bin/claude}"
+# Resolved from PATH the same way NODE_BIN is, because that is what bootstrap's
+# prerequisite check tests. Hardcoding ~/.local/bin/claude meant a Homebrew or npm
+# install passed "✓ claude CLI" at bootstrap and then died here naming a path the
+# operator had never heard of.
+CLAUDE_BIN="${CLAUDE_BIN:-$(command -v claude 2>/dev/null || echo "$HOME/.local/bin/claude")}"
 # Every BigQuery statement this script runs goes through this helper, because neither
 # gcloud nor bq is installed on a Buzz host. Named once so a missing copy is caught in
 # preflight instead of six times at the call sites.
@@ -48,7 +69,7 @@ PROJECT="${BQ_PROJECT:-}"
 PROJECT_TOKEN="$(printf '{{%s}}' BQ_PROJECT)"
 
 SLUG=""; CHANNEL_UUID=""; DRIVE_FOLDER=""; SA_KEY=""; ADMIN_KEY=""
-LOCKDOWN="ask"; DRY_RUN="no"; LOCKDOWN_FAILED="no"
+LOCKDOWN="ask"; DRY_RUN="no"; LOCKDOWN_FAILED="no"; LOCKDOWN_SKIPPED="no"
 
 # The tag dictionary is shared across every project, unlike everything else here.
 TAG_SHEET="${TAG_SHEET:-}"
@@ -76,7 +97,9 @@ while [[ $# -gt 0 ]]; do
     --lock-down)         LOCKDOWN="yes"; shift ;;
     --no-lockdown)       LOCKDOWN="no"; shift ;;
     --dry-run)           DRY_RUN="yes"; shift ;;
-    -h|--help)           sed -n '2,27p' "$0"; exit 0 ;;
+    # The header block, however long it is. It was a literal '2,27p', which silently
+    # stopped covering the whole thing the moment a flag was documented below line 27.
+    -h|--help)           awk 'NR>1 && /^#/ {print; next} NR>1 {exit}' "$0"; exit 0 ;;
     *) die "unknown argument: $1" ;;
   esac
 done
@@ -267,6 +290,22 @@ fi
 # They mean any project-level editor reads every client's data, which defeats the
 # entire per-channel design. Removing them is the difference between real isolation
 # and the appearance of it.
+
+# An agent deploying on its owner's behalf has no terminal, and `read` fails on EOF —
+# which under `set -e` killed the run right here, after the DDL and before the tag
+# library, the rendered configs and the server registration. That is the same
+# "looked deployed, has no tools" outcome the failed-REVOKE path above exists to
+# avoid, reached by a different route. So decide it without asking, and pick the
+# reversible side: an un-revoked grant is two statements to run later and both
+# verify-channel-isolation.py and the summary below say so, whereas a channel that
+# stopped halfway through registration looks finished from the outside.
+if [[ "$LOCKDOWN" == "ask" && ! -t 0 ]]; then
+  LOCKDOWN="no"; LOCKDOWN_SKIPPED="yes"
+  warn "no terminal to ask at — leaving the project-wide default grants in place.
+      Pass --lock-down to revoke them, or --no-lockdown to choose this deliberately.
+      Repeated at the end of this run so it is not lost in the scroll."
+fi
+
 if [[ "$LOCKDOWN" == "ask" ]]; then
   printf '\n  This dataset currently grants access to ANY project-level editor/viewer:\n'
   printf '    roles/bigquery.dataEditor  projectEditor:%s\n' "$PROJECT"
@@ -413,6 +452,28 @@ $(printf '%s\n' "$REVOKE_SQL" | sed 's/^/       /')
 
      Everything else below completed. verify-channel-isolation.py also reports this,
      so it is not on your memory to track.
+EOF
+fi
+
+if [[ "$LOCKDOWN_SKIPPED" == "yes" ]]; then
+  cat <<EOF
+
+  0. NOBODY CHOSE whether to revoke the project-wide default grants, because there
+     was no terminal to ask at, so they were left as they were. Which of these you
+     are looking at depends on the dataset:
+
+       a NEW dataset — it is not isolated yet, and these two statements are what
+       isolate it. Run them as someone who can administer the dataset:
+
+$(printf '%s\n' "$REVOKE_SQL" | sed 's/^/       /')
+
+       a dataset you are JOINING — whoever created it has already done this, and
+       there is nothing for you to run.
+
+     Do not guess which. verify-channel-isolation.py answers it directly, and its
+     answer is about Google's IAM layer rather than about this script:
+
+       $BUZZ_HOME/bin/verify-channel-isolation.py --slug $SLUG --key $SA_KEY
 EOF
 fi
 
