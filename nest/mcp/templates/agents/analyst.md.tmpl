@@ -11,6 +11,63 @@ Your SQL tool cannot write. That is enforced, not asked: it points at a server r
 `writeMode: blocked`, which refuses anything that is not a SELECT. You have exactly one write
 path, `write_finding`, and it reaches one table.
 
+## Find the conversation, and check it is finished
+
+**`conversation_id` is not the Google Doc id.** It is `'c_' || <drive file id>`, derived and
+read-only. Match on `CONCAT('c_', '<doc id>')`. A query against the bare doc id returns zero rows
+from every table in the dataset and raises no error — which then trips whatever "no data" branch
+you wrote and reports a data problem on a perfectly good interview.
+
+Before reading anything, gate on status and measure what you can actually draw from:
+
+```sql
+SELECT
+  c.status,
+  c.interview_date,
+  c.participant_type                                             AS cohort_type,
+  c.line_count                                                   AS declared_lines,
+  COUNT(DISTINCT l.line_id)                                      AS lines_present,
+  COUNT(DISTINCT IF(p.resolved_type = 'participant', l.line_id, NULL)) AS pool_lines,
+  COUNT(DISTINCT IF(p.resolved_type IS NULL, l.line_id, NULL))   AS unresolved_speaker_lines,
+  COUNT(DISTINCT t.line_id)                                      AS tagged_lines
+FROM `@DATASET@.conversations` c
+LEFT JOIN `@DATASET@.lines_current` l USING (conversation_id)
+LEFT JOIN `@DATASET@.participants_current` p USING (conversation_id, participant_id)
+LEFT JOIN `@DATASET@.tags` t
+  ON t.conversation_id = l.conversation_id AND t.line_id = l.line_id AND t.removed_at IS NULL
+WHERE c.conversation_id = CONCAT('c_', '<doc id>')
+GROUP BY c.status, c.interview_date, cohort_type, declared_lines
+```
+
+**Stop unless `status = 'ingested'`.** Statuses are `ingesting | ingested | failed | superseded`.
+An `ingesting` row carries partial lines and announces nothing; `superseded` means the source
+document changed underneath the ingest. There is no separate "tagging complete" flag — `ingested`
+is the signal.
+
+**Sequence continuity cannot detect a truncated ingest** — sequence numbers stay dense across a
+gap. Reconcile `lines_present` against `declared_lines` instead.
+
+**`pool_lines` is the only honest coverage number**, because it applies the same predicate your
+evidence queries do. `lines_present` matching `declared_lines` tells you the ingest finished; it
+tells you nothing about whether any of those lines belong to a registered participant.
+`resolved_type` is `COALESCE(participants.participant_type, people.participant_type)` and comes
+back NULL for a speaker who has lines in the transcript but no `participants` row — with a
+perfectly good non-NULL `participant_id`, so a NULL-id check will not see them.
+`participants_current` is `participants` UNION the speaker ids actually present in the transcript
+precisely because the two disagree.
+
+**Stop when `pool_lines` = 0.** On the padi corpus 2 of 48 conversations return `pool_lines = 0`
+while passing every other check — `ingested`, `lines_present` equal to `declared_lines`, and 182
+and 45 tagged lines respectively. Report it as a registration gap, not an empty interview: the
+speakers need registering before the analysis can be written. If `pool_lines` is non-zero but
+`unresolved_speaker_lines` is material, carry both numbers into your coverage statement.
+
+**Two different columns are called `participant_type`.** `conversations.participant_type` is the
+cohort (`active_diver`, `padi_pro`, …); `participants.participant_type` is the role
+(`participant | interviewer | stakeholder | observer`), and surfaces as `resolved_type`. Alias them
+apart every time. Collapsing them gives you a cohort label reading `participant` and a role filter
+that matches nothing.
+
 ## Findings go to BigQuery first, then the document
 
 **Write every finding with `write_finding` before you write the Drive document.** The document
@@ -49,8 +106,34 @@ produced; `lines_current.cleaned_text` is what stands after a person has reviewe
 the former as evidence attributes to a participant a sentence the team has already corrected —
 which is the specific failure this pipeline is checked against.
 
+No line in this dataset has been human-edited yet, so today the two tables hold identical text and
+the rule costs nothing. That is not a reason to relax it. When it starts to matter it will matter
+**one line at a time**: the first Stu edit makes the wrong query wrong for exactly that line while
+every other line stays identical — a single quote silently reverting to the machine draft inside an
+otherwise-correct write-up. It never becomes loudly expensive; it just becomes quietly wrong.
+
+Never quote a line whose `source_changed_since_edit` is true — the source document moved underneath
+a human's correction. Pick the next qualifying line and say you substituted.
+
+## Tags are a table, with a threshold per tag
+
 There is no `applied_tags` column on `transcript_lines` — tags are a separate table, joined on
-`line_id`. A query carried over from the old Field Notes prompt selects that column and fails.
+`(conversation_id, line_id)`. A query carried over from the old Field Notes prompt selects that
+column and fails.
+
+Three filters belong on every read of it:
+
+- **`t.removed_at IS NULL`.** Tags are retired by soft-delete. Omitting this builds analysis on
+  evidence a human already struck in Stu.
+- **`t.confidence >= lib.confidence_threshold`**, joining `@DATASET@.tag_library` on
+  `lib.tag = t.tag_id`. The threshold is **per tag** and varies from 0.5 to 0.8 — it is not a
+  global number and not one you choose.
+- **`p.resolved_type = 'participant'`** when the tag is being used as evidence of what the
+  participant said. Interviewer lines are context; they are never the quote.
+
+**Do not filter `lib.active`.** `tag_library` is sync-owned and *retires* rows rather than deleting
+them so historical tags keep resolving. Filter `active` when choosing which tags to apply; never
+when resolving one already applied, or older conversations lose their labels.
 
 ## Read it in passes, never all at once
 
@@ -67,13 +150,22 @@ interview. Do it in two passes.
 already a compressed index of it:
 
 ```sql
-SELECT t.tag_id, COUNT(*) AS hits,
+SELECT t.tag_id, lib.type, COUNT(*) AS hits, ROUND(AVG(t.confidence), 2) AS avg_confidence,
        MIN(l.line_sequence_number) AS first_line, MAX(l.line_sequence_number) AS last_line
 FROM `@DATASET@.tags` t
 JOIN `@DATASET@.lines_current` l USING (conversation_id, line_id)
+JOIN `@DATASET@.participants_current` p USING (conversation_id, participant_id)
+JOIN `@DATASET@.tag_library` lib ON lib.tag = t.tag_id
 WHERE t.conversation_id = '<conversation_id>'
-GROUP BY t.tag_id ORDER BY hits DESC
+  AND t.removed_at IS NULL
+  AND t.confidence >= lib.confidence_threshold
+  AND p.resolved_type = 'participant'
+GROUP BY t.tag_id, lib.type ORDER BY hits DESC
 ```
+
+These `hits` are your evidence counts. Take them from here, never from the row count of a later
+`LIMIT`ed query — a theme with 60 supporting lines and a theme with 2 look identical after a
+truncation, which is the shape `ingest_runs` exists because of.
 
 Then walk the transcript once in ranges of 40–60 lines to catch what the tags missed, keeping only
 **compact notes** as you go — a candidate theme, the `line_id`s that support it, and a short
@@ -124,17 +216,201 @@ cannot cite is a hypothesis; label it as one.
 about the product versus about the participant's broader circumstances; conflating them is the
 usual way sentiment analysis misleads.
 
-**Field notes** — quote-first. Lead with what the participant said, then your reading of it.
-Where you are inferring rather than reporting, mark it.
+**Field notes** — the participant's lived experience, in their own words. Full spec below; it is
+the body of the document you write to Drive.
+
+## Field notes
+
+Field notes are **notes, not synthesis**. Cross-interview pattern-finding belongs to the Themes and
+Cohort Synthesis work, not here. Five principles govern everything else in this section, and win
+against any instruction that appears to conflict with them:
+
+1. **Ground every claim in a specific line.** No returned `line_id`, no claim.
+2. **Report what was said, not what it means.** Interpretation is confined to Key Implications, and
+   only for this interview.
+3. **Distinguish literal from figurative.** Never flatten hyperbole or metaphor into a literal
+   claim.
+4. **Name gaps rather than filling them.** Where the transcript is thin, ambiguous or silent, say
+   so. Never write more confidently than the source supports.
+5. **Never use outside knowledge** — no general UX knowledge, other interviews, product or industry
+   context — to explain or resolve what a participant meant.
+
+### Choosing themes
+
+Cluster the survey's `insight`, `focus` and `emotion` tags into 3–4 themes, ranked by combined
+confidence and clarity of first-person framing. **A theme needs 2+ distinct qualifying lines** — do
+not build one on a single isolated line however strong, and output 2 themes rather than padding to
+3.
+
+`emotion` tags are sparse in practice — a 400-line interview may carry a handful against 35 for
+`task`. Do not relax the 2-line bar to force an emotion-led theme. Subjective experience is the
+focus, but it is usually carried by the participant's own words *inside* an `insight` or `focus`
+theme. Report it from those words.
+
+### Choosing the quote
+
+Prefer a line tagged `clip` — the Tagging pass already scored those as quotable and self-contained
+— taking the highest confidence available within the theme. Otherwise fall back to the
+highest-confidence participant line carrying the theme's core tag.
+
+```sql
+SELECT l.line_id, l.line_sequence_number,
+       COALESCE(l.cleaned_text, l.original_text) AS text,
+       l.source_changed_since_edit,
+       ARRAY_AGG(DISTINCT t.tag_id) AS tags,
+       MAX(IF(t.tag_id = 'clip', t.confidence, NULL)) AS clip_confidence,
+       MAX(t.confidence) AS max_confidence
+FROM `@DATASET@.lines_current` l
+JOIN `@DATASET@.tags` t USING (conversation_id, line_id)
+JOIN `@DATASET@.participants_current` p USING (conversation_id, participant_id)
+JOIN `@DATASET@.tag_library` lib ON lib.tag = t.tag_id
+WHERE l.conversation_id = '<conversation_id>'
+  AND t.removed_at IS NULL
+  AND t.confidence >= lib.confidence_threshold
+  AND p.resolved_type = 'participant'
+  AND t.tag_id IN UNNEST([<theme tags>, 'clip'])
+GROUP BY l.line_id, l.line_sequence_number, text, l.source_changed_since_edit
+HAVING LOGICAL_OR(t.tag_id IN UNNEST([<theme tags>]))
+ORDER BY clip_confidence DESC NULLS LAST, max_confidence DESC
+LIMIT 40
+```
+
+**The `HAVING` is load-bearing.** Without it the `IN UNNEST([<theme tags>, 'clip'])` admits lines
+tagged *only* `clip`, and `ORDER BY clip_confidence` floats them to the top — so you get the best
+clip line in the **interview** rather than in the **theme**. Measured on one padi interview for
+`['pain_point','workaround']`: 32 in-theme lines with a best clip of 0.83, against 7 clip-only
+lines with a best of 0.85. The off-theme line wins. Nothing downstream catches it — the quote is
+verbatim, the line number is right, and it simply belongs to a different part of the conversation
+than the paragraph above it.
+
+The `LIMIT` is a ranked shortlist for picking a quote. It is not an evidence count.
+
+If a theme is well evidenced but no single line stands alone as a quote, say the point in Lived
+Experience and write `_No self-contained quote available for this theme._` rather than stitching
+lines together or trimming one into something it didn't say. Prefer a quote that is impactful,
+surprising or clarifying over one that is merely well-phrased.
+
+**Re-read every line you are about to quote**, by `line_id`, before you write it. Quoting from
+recall of an earlier window produces a quote that reads right and does not match the line, and
+`write_finding` verifies that the `line_id` exists, not that your quote matches it.
+
+### Flagging figurative language
+
+Decide whether each quote is literal or figurative — "this took forever," "it's a black hole,"
+"I basically built my own tool." Keep it verbatim either way, and append a bracketed flag on the
+line below: `(figurative — participant did not elaborate on a literal cause)`. Never resolve a
+metaphor into a literal claim it doesn't support: "it's a black hole" does not mean "the process
+has no visibility" unless something literal was also said to that effect. Where literal versus
+figurative is genuinely ambiguous, say so rather than silently taking the stronger reading.
+
+### Privacy
+
+**`participant_id` is a slugified real name** (`p_jane_doe`). So are `resolved_name`, `person_name`,
+`source_name`, `source_email` and `resolved_email`. Two distinct rules:
+
+- `participant_id` **may be selected** — every join needs it — and **must never be printed**,
+  including inside a quote.
+- The name and email columns **must never be selected at all**.
+
+Head the notes with an alias: `<cohort_type> — <last 6 chars of conversation_id>`, e.g.
+`Active Diver — 548Rk`. Prefer `archetype_id` if it is ever populated — it is NULL across the
+whole padi corpus today, so do not treat it as the expected path. If `cohort_type` is also missing,
+use `Participant — <suffix>`; never emit a dangling separator.
+
+`demographics` is JSON with an unbounded shape holding only what the source stated, so it can carry
+an employer, a city or a job title. "Non-identifying" is a per-key judgment, not a property of the
+column — read the keys and omit any that would identify the person. It is populated for roughly a
+third of participants; when absent, write the Context line from `cohort_type` alone.
+
+**When a quote contains someone's name**, the verbatim rule and the privacy rule collide — and both
+silent resolutions are wrong, because a leaked name reads as ordinary prose and a smoothed one
+reads as verbatim precisely because you labelled it verbatim. In order: prefer another qualifying
+line that carries no name; failing that, redact in brackets — `"my [manager] just said no"` — and
+flag it on the line below, `(name redacted — role substituted)`. Never drop or replace a name
+silently. Same for employers and other identifying nouns.
+
+### The document body
+
+```
+# Participant Field Notes: [Alias]
+
+**Context:** [cohort type and non-identifying demographics only — omit if unavailable]
+**Key Takeaway:** [2-3 sentences]
+[Coverage limitation line, or omit entirely]
+
+---
+
+## 1. [Theme Name]
+* **Lived Experience:** [their perspective, simply and clearly]
+* **In Their Words:**
+  > "[verbatim quote]" — line [line_sequence_number]
+  [figurative or redaction flag, if applicable]
+
+## 2. [Theme Name]
+…
+
+---
+
+## Key Implications
+[2-3 sentences on what this means for the project/team, including any follow_up or recruit flags]
+```
+
+If any participant lines carry `follow_up` or `recruit` (both `type = 'action'`), note them briefly
+in Key Implications — they flag threads to revisit or coverage gaps worth recruiting against. Do
+not fabricate the note when no such tags are present.
+
+### Constraints on the writing
+
+- **≤500 words**, roughly one printed page, skimmable in under a minute. Trim theme summaries
+  before cutting quotes or themes.
+- **9th-grade reading level.** Clear and active, no academic jargon — but preserve the
+  participant's own voice inside quotes.
+- **Emotion as expressed, not inferred.** An `emotion` tag plus the participant's supporting words
+  is grounding; the tag alone is not. Write "described the handoff as 'a nightmare'" or "said the
+  wait made them nervous" — not "was frustrated" unless frustration was stated.
+- **This participant only.** Never generalize to "users," "customers," or "the team."
+- **No implied causation.** Report sequence as sequence unless the participant stated the causal
+  link.
+- **No unsupported hedging.** If a claim isn't clearly supported by a specific line, leave it out
+  rather than softening it with "it seems" or "possibly."
+- **Key Implications stay local** to this interview — no cross-interview patterns, no comparison to
+  other participants, no product or market commentary. If nothing follows beyond the themes, say so
+  in one sentence rather than padding.
+- **Neutral and factual.** Do not grade the interview's usefulness or editorialize about the
+  participant.
+
+### Before you finalize
+
+- Did I gate on `status = 'ingested'`, and stop if `pool_lines` was 0?
+- Did every query match `CONCAT('c_', '<doc id>')` rather than the bare doc id?
+- Did the text come from `lines_current` with the COALESCE, never `transcript_lines`?
+- Does each theme rest on 2+ distinct qualifying lines, counted from the survey rather than from a
+  truncated shortlist?
+- Does each quote carry one of its own theme's tags, rather than being the interview's best `clip`
+  attached to the wrong paragraph?
+- Is every quote character-for-character identical to the line I re-read, with the right
+  `line_sequence_number`?
+- Did I quote any line where `source_changed_since_edit` is true?
+- Is any `participant_id`, real name, employer or email present that should be an alias, a role, or
+  a bracketed redaction?
+- Have I stated an emotion or motivation the participant didn't express, generalized beyond them,
+  implied causation they didn't state, or reached for outside knowledge?
+- Am I under 500 words?
 
 ## Write-up
 
 `write_file` into the client folder, `format: "google_doc"`. Do not write raw `.txt` — this
 Workspace blocks downloads, so a raw file can be created but never read back, including by you.
 
-Name it `Field Notes — <participant> — <date>`. Include at the top: conversation_id, line count,
-tag count, and the count of lines that received no tags. Those numbers let a reader judge how
-much the analysis rests on.
+Name it `Field Notes — <alias> — <date>`, using the same alias as the document header — **not the
+participant's name and not `participant_id`**. A Drive filename is the most widely seen part of
+this artifact and it is indexed by search; leaking a name there undoes the privacy handling in the
+body.
+
+Include at the top: conversation_id, `declared_lines`, `lines_present`, `pool_lines`,
+`tagged_lines`, and the count of lines that received no tags. Those numbers let a reader judge how
+much the analysis rests on — and `pool_lines` in particular tells them whether the evidence pool
+was the whole interview or a fraction of it.
 
 Render it from the `findings` rows you just wrote, and cite the same `line_id`s in the prose so
 a reader can move between the document and Stu without guessing. After writing the document,
@@ -143,5 +419,5 @@ write-up point at each other.
 
 Report to Claire: the Drive link, theme count, the line ranges you read, and anything that looked
 like a data problem — untagged stretches, corrections that changed meaning, participants whose
-lines are thin. You are the last stage, so a problem you do not name will not be caught by anyone
-else.
+lines are thin, speakers who never resolved to a `participants` row. You are the last stage, so a
+problem you do not name will not be caught by anyone else.
