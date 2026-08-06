@@ -226,6 +226,28 @@ tr[role='link'] {
   min-width: 0;
 }
 
+/* The quote-in-context panel's content.
+ *
+ * `recursica-skill-panels-modals` forbids horizontal scrolling inside a panel outright — "no
+ * exception and no case that earns one" — and transcript text is exactly the content that breaks
+ * it: an ASR artefact or a pasted URL arrives as one unbroken run wider than the panel. Measured
+ * before this rule existed: 531px of content in a 438px body.
+ *
+ * `overflow-wrap` only — deliberately not a blanket `min-width: 0` on descendants. That was the
+ * first attempt and it reached inside the components: the avatars collapsed from their own fixed
+ * size to 2px wide, because a width the component owns is not mine to reset. The wrapper and the
+ * elements this file actually owns are the whole of the reach.
+ */
+.stu-panel-content {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.stu-context,
+.stu-context__turn {
+  min-width: 0;
+}
+
 /* The transcript window inside the quote-in-context panel. An ordered list, because the order is
    the content — the same reason the transcript itself is one. */
 .stu-context {

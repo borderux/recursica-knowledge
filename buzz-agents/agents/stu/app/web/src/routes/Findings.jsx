@@ -78,7 +78,13 @@ export function Findings({ identity, revision, onChanged }) {
       {/* Tabs, not navigation: both panels are about one subject and either could be looked at
           first. Each carries its own route so it survives a refresh and works with back — a house
           preference stated outright in recursica-skill-tabs. */}
-      <Tabs value={tab} onChange={(next) => navigate(`/findings/${next}`)}>
+      {/* keepMounted={false} because the panels are whole screens, not a few fields. Left at the
+          default, the Inbox's 35 cards and the Confirmed tab's filter bar and live region were all
+          in the DOM at once whichever tab was showing — measured in the running app: 36 card
+          headings and both switchers present on both tabs, and a hidden aria-live region reading
+          "1 confirmed." while the Inbox was open. A live region that is not on screen has no
+          business being able to speak. */}
+      <Tabs value={tab} keepMounted={false} onChange={(next) => navigate(`/findings/${next}`)}>
         <Tabs.List>
           <Tabs.Tab
             value="inbox"
@@ -453,6 +459,24 @@ function Record({ finding, identity, onChanged, onOpenContext }) {
   )
 }
 
+/**
+ * Has the quote drifted from the line it cites?
+ *
+ * Containment, not equality. A quote is a fragment of a line by design — Analyst is told to quote
+ * verbatim from the line, not to quote the whole of it — so testing equality flagged drift on
+ * essentially every citation. Seen in the running app: three of three citations on one finding
+ * carried the warning, all three of them fine. A badge that is always on is not a signal, and this
+ * one is the traceability check the page exists to make, so a false positive on every row is worse
+ * than no badge at all.
+ *
+ * Whitespace is normalised because the stored line wraps and the quote does not.
+ */
+function hasDrifted(e) {
+  if (!e.quote || !e.line_text) return false
+  const flat = (s) => s.replace(/\s+/g, ' ').trim().toLowerCase()
+  return !flat(e.line_text).includes(flat(e.quote))
+}
+
 function Evidence({ evidence, finding, onOpenContext }) {
   return (
     <Stack gap={4}>
@@ -467,14 +491,12 @@ function Evidence({ evidence, finding, onOpenContext }) {
             {evidence.map((e, i) => (
               <li key={`${e.line_id}-${i}`}>
                 <Text variant="body-small">Quoted: “{e.quote}”</Text>
-                {/* What the line says now. If these two have drifted apart, the finding is
+                {/* What the line says now. If the quote is no longer in it, the finding is
                     resting on wording that has since been corrected. */}
                 <Text variant="body-small">
                   Line now: {e.line_text ?? 'this line no longer exists'}
                 </Text>
-                {e.quote && e.line_text && e.quote.trim() !== e.line_text.trim() && (
-                  <Badge variant="warning">quote and line differ</Badge>
-                )}
+                {hasDrifted(e) && <Badge variant="warning">quote is no longer in this line</Badge>}
                 <Group gap="sm" wrap="wrap">
                   {/* A button, because it opens a panel beside this page rather than going
                       anywhere — a panel is invoked, not navigated to, and takes no history entry. */}
