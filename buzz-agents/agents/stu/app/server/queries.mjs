@@ -540,12 +540,14 @@ export function createQueries(bq) {
     },
 
     /**
-     * One finding, with the columns a review needs to record what it replaced.
+     * One finding, with the columns a review needs to record what it changed — `notes` among
+     * them, because a reviewer's note is appended to it and the existing text has to be in hand
+     * to append to rather than replace. See `appendNote` in edits.mjs.
      */
     async finding(findingId) {
       const rows = await bq.query(`
         SELECT finding_id, conversation_id, finding_type, title, status,
-               proposed_answer, resolution, reviewed_by, reviewed_at
+               proposed_answer, resolution, reviewed_by, reviewed_at, notes
         FROM ${T('findings')}
         WHERE finding_id = @id
       `, { id: findingId })

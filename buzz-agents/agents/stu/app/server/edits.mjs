@@ -31,6 +31,36 @@ function isOpenQuestion(finding) {
   return finding.finding_type === 'open_question' || LEGACY_QUESTION.test(finding.title ?? '')
 }
 
+/**
+ * A reviewer's note goes onto the record, not over it.
+ *
+ * `notes` is where the agent recorded why it wrote the row: on a finding, the confidence
+ * rationale and the caveats — on `f_17uXy2_experience_level_unresolved`, the standing instruction
+ * not to resolve the question from the transcript and the recruiter check that has to happen
+ * first. On a dictionary term it is Lexicon's evidence for the term. Neither column is optional in
+ * practice: all 36 findings and all 220 terms in research_padi carry one, averaging 315 and 880
+ * characters (queried 2026-08-06).
+ *
+ * `SET notes = @note` replaced all of that with the reviewer's sentence, and destroyed it
+ * silently — the audit row for a decision records the status change, so the overwritten note
+ * was in no `edit_log` row and could not be recovered from one. The page that shows a reviewer
+ * the agent's note and then offers them a Note box was the same page that deleted it.
+ *
+ * So the note is appended and marked as the reviewer's. Its text is already stored verbatim in
+ * the `note` column of the decision's own audit row, so the append needs no second log row to be
+ * reconstructible. Same rule the transcript follows: the human value lives beside the AI value,
+ * never on top of it.
+ *
+ * Returns null for "no note given, leave the column alone" — distinct from a note that happens
+ * to be the first one on an empty record.
+ */
+function appendNote(existing, note) {
+  const text = (note ?? '').trim()
+  if (!text) return null
+  const entry = `Review note: ${text}`
+  return existing ? `${existing}\n\n${entry}` : entry
+}
+
 export function createEdits(bq, queries) {
   const T = (name) => bq.table(name)
 
@@ -286,11 +316,15 @@ export function createEdits(bq, queries) {
       }
 
       const rows = await bq.query(
-        `SELECT term_id, canonical_term, status FROM ${T('project_dictionary')} WHERE term_id = @id`,
+        `SELECT term_id, canonical_term, status, notes FROM ${T('project_dictionary')} WHERE term_id = @id`,
         { id: termId },
       )
       if (!rows.length) throw new Error(`dictionary term not found: ${termId}`)
       if (rows[0].status === status) return { changed: false }
+
+      // Same overwrite as findings had, and worse here: a term's `notes` is Lexicon's evidence for
+      // proposing it, which is the thing a reviewer is deciding on.
+      const notes = appendNote(rows[0].notes, note)
 
       await write(actor, {
         targetTable: 'project_dictionary',
@@ -303,9 +337,9 @@ export function createEdits(bq, queries) {
       }, () => bq.execute(`
         UPDATE ${T('project_dictionary')}
         SET status = @status, decided_by = @pubkey, decided_at = CURRENT_TIMESTAMP(),
-            notes = IF(@note IS NULL, notes, @note)
+            notes = IF(@notes IS NULL, notes, @notes)
         WHERE term_id = @id
-      `, { status, pubkey: actor.pubkey, note: note ?? null, id: termId }))
+      `, { status, pubkey: actor.pubkey, notes, id: termId }))
 
       return { changed: true, from: rows[0].status, to: status }
     },
@@ -318,11 +352,13 @@ export function createEdits(bq, queries) {
       }
 
       const rows = await bq.query(
-        `SELECT finding_id, status FROM ${T('findings')} WHERE finding_id = @id`,
+        `SELECT finding_id, status, notes FROM ${T('findings')} WHERE finding_id = @id`,
         { id: findingId },
       )
       if (!rows.length) throw new Error(`finding not found: ${findingId}`)
       if (rows[0].status === status) return { changed: false }
+
+      const notes = appendNote(rows[0].notes, note)
 
       await write(actor, {
         targetTable: 'findings',
@@ -335,9 +371,9 @@ export function createEdits(bq, queries) {
       }, () => bq.execute(`
         UPDATE ${T('findings')}
         SET status = @status, reviewed_by = @pubkey, reviewed_at = CURRENT_TIMESTAMP(),
-            notes = IF(@note IS NULL, notes, @note)
+            notes = IF(@notes IS NULL, notes, @notes)
         WHERE finding_id = @id
-      `, { status, pubkey: actor.pubkey, note: note ?? null, id: findingId }))
+      `, { status, pubkey: actor.pubkey, notes, id: findingId }))
 
       return { changed: true, from: rows[0].status, to: status }
     },
@@ -399,9 +435,12 @@ export function createEdits(bq, queries) {
         UPDATE ${T('findings')}
         SET resolution = @answer, status = @status,
             reviewed_by = @pubkey, reviewed_at = CURRENT_TIMESTAMP(),
-            notes = IF(@note IS NULL, notes, @note)
+            notes = IF(@notes IS NULL, notes, @notes)
         WHERE finding_id = @id
-      `, { answer: text, status, pubkey: actor.pubkey, note: note ?? null, id: findingId }))
+      `, {
+        answer: text, status, pubkey: actor.pubkey, id: findingId,
+        notes: appendNote(before.notes, note),
+      }))
 
       // The status move is its own audit row. History should answer "when was this question
       // resolved" without a reader having to infer it from a resolution row's timestamp — and a
