@@ -178,7 +178,7 @@ CREATE TABLE IF NOT EXISTS `{{BQ_PROJECT}}.@dataset.findings` (
   project_name    STRING,
   conversation_id STRING OPTIONS (description = 'NULL for a cross-interview finding; set for a per-interview one'),
   scope           STRING OPTIONS (description = 'interview | cohort | project'),
-  finding_type    STRING OPTIONS (description = 'theme | sentiment | pain_point | need | behaviour | quote | opportunity | open_question'),
+  finding_type    STRING OPTIONS (description = 'theme | sentiment | pain_point | need | behaviour | quote | opportunity | open_question | hypothesis'),
   title           STRING NOT NULL,
   statement       STRING NOT NULL OPTIONS (description = 'The claim itself, in one or two sentences'),
   detail          STRING,
@@ -407,7 +407,7 @@ ALTER TABLE `{{BQ_PROJECT}}.@dataset.findings`
 
 ALTER TABLE `{{BQ_PROJECT}}.@dataset.findings`
   ALTER COLUMN finding_type SET OPTIONS (
-    description = 'theme | sentiment | pain_point | need | behaviour | quote | opportunity | open_question'
+    description = 'theme | sentiment | pain_point | need | behaviour | quote | opportunity | open_question | hypothesis'
   );
 ```
 
@@ -563,6 +563,29 @@ question should not shape the analysis, which is not the same as knowing the ans
 > human's answer. This is the same rule as `line_edits` and the same reason — see *Human edits
 > survive a re-ingest*. `proposed_answer` is the agent's own value and is safe to overwrite;
 > `resolution` is not.
+
+### A hypothesis is the same problem, and gets the same answer
+
+The same sweep found a second prose prefix: `HYPOTHESIS: does not seek safety information when
+researching, and knows it`, typed `behaviour`, confidence 0.45, one citation on an untagged line.
+Same smuggling, different label — and left as prose it would have kept happening, because from
+Analyst's position the alternative is dropping the observation entirely.
+
+So `hypothesis` is a `finding_type` too (project owner, 2026-08-06).
+
+**It is not the same thing as an open question and must not be folded into it.** A question is *I
+cannot tell*; a hypothesis is *I think this, weakly*. A reviewer answers the first and judges the
+second. Collapsing them would throw away the distinction that decides which of those two a reviewer
+is being asked to do.
+
+**It carries no extra columns and takes the ordinary decision.** `proposed_answer` and `resolution`
+belong to questions; a hypothesis is a claim, so it is approved or rejected on its evidence like any
+other. What it gains is a name the dataset can count and a group of its own in the Inbox, so a
+0.45-confidence speculation stops arriving indistinguishable from a finding because both said
+`theme`.
+
+The reviewer-facing consequence is worth stating: approving a hypothesis promotes a guess to a
+finding, and nothing but the evidence on the row stands behind that. Stu says so on the card.
 
 ### Run accounting — the anti-truncation mechanism
 

@@ -27,19 +27,34 @@ import { QuoteContext } from '../shell/QuoteContext.jsx'
 import { formatConfidence } from './Interview.jsx'
 
 /**
- * An open question is a finding whose `finding_type` says so.
+ * The two kinds that are not ordinary claims, each a `finding_type` of its own.
  *
- * The prefix test is a bridge, not a convention to keep. Analyst's only writable surface is
- * `write_finding`, and until `open_question` existed as a type it had nowhere to record that a
- * row was a question rather than a claim — so it wrote the kind into the title, where nothing
- * could filter or count it. Reading the prefix here means the rows already in the dataset land in
- * the right tab today instead of after a re-run. Once Analyst writes the type, this clause stops
- * matching anything and should go.
+ * The prefix tests are a bridge, not a convention to keep. Analyst's only writable surface is
+ * `write_finding`, and until these existed as types it had nowhere to record that a row was
+ * anything other than a claim — so it wrote the kind into the title, where nothing could filter or
+ * count it. Reading the prefixes here means the rows already in the dataset land in the right group
+ * today instead of after a re-run. Once Analyst writes the types, these clauses stop matching
+ * anything and should go.
  */
 const LEGACY_QUESTION = /^\s*OPEN QUESTIONS?\s*:/i
+const LEGACY_HYPOTHESIS = /^\s*HYPOTHES[EI]S\s*:/i
 
 export function isQuestion(finding) {
   return finding.finding_type === 'open_question' || LEGACY_QUESTION.test(finding.title ?? '')
+}
+
+/**
+ * A hypothesis is a claim the analysis is offering tentatively, not a question it could not
+ * settle. That difference is why it is its own type rather than being folded into
+ * `open_question`: conflating them would lose the distinction between "I think this, weakly" and
+ * "I cannot tell", which are different things to a reviewer and want different scrutiny.
+ *
+ * It keeps Approve and Reject rather than the answer form, because it is a claim and a claim is
+ * judged on its evidence. What it gains is a name the dataset can count and a group of its own,
+ * so nobody reads a 0.45-confidence speculation as a finding because both said "theme".
+ */
+export function isHypothesis(finding) {
+  return finding.finding_type === 'hypothesis' || LEGACY_HYPOTHESIS.test(finding.title ?? '')
 }
 
 /** The two tabs, which are also the two routes under `/findings`. */
@@ -235,18 +250,33 @@ function byInterview(rows) {
   return [...groups.values()].sort((a, b) => a.label.localeCompare(b.label))
 }
 
-/** Two groups, because FR-4's "type" means findings against open questions and nothing finer. */
+/**
+ * Grouped by type, in the order a reviewer should meet them: what the analysis could not settle,
+ * then what it is only guessing at, then what it is actually claiming. FR-4 named two groups
+ * because there were two kinds; a hypothesis is a third kind and reads wrong in either of the
+ * others. Empty groups do not render.
+ */
+const KINDS = [
+  { key: 'questions', label: 'Open questions', test: isQuestion },
+  { key: 'hypotheses', label: 'Hypotheses', test: isHypothesis },
+  { key: 'findings', label: 'Findings', test: (f) => !isQuestion(f) && !isHypothesis(f) },
+]
+
 function byKind(rows) {
-  const questions = rows.filter(isQuestion)
-  const findings = rows.filter((f) => !isQuestion(f))
-  return [
-    { key: 'questions', label: 'Open questions', items: questions.sort(byConfidence) },
-    { key: 'findings', label: 'Findings', items: findings.sort(byConfidence) },
-  ].filter((g) => g.items.length > 0)
+  return KINDS
+    .map((k) => ({ key: k.key, label: k.label, items: rows.filter(k.test).sort(byConfidence) }))
+    .filter((g) => g.items.length > 0)
+}
+
+/** Same order inside an interview — FR-4's "sorted by type within the interview". */
+function kindRank(f) {
+  if (isQuestion(f)) return 0
+  if (isHypothesis(f)) return 1
+  return 2
 }
 
 function byKindThenConfidence(a, b) {
-  const kind = Number(isQuestion(b)) - Number(isQuestion(a))
+  const kind = kindRank(a) - kindRank(b)
   return kind !== 0 ? kind : byConfidence(a, b)
 }
 
@@ -414,12 +444,15 @@ function optionsFrom(rows, extract) {
 // ------------------------------------------------------------------------------ record
 
 /**
- * One row, whether it is a claim or a question. What differs is the decision at the bottom: a
- * claim is approved or rejected, a question is answered or dismissed. Everything above — the
- * evidence, the drift check, the provenance — is the same work and reads the same way.
+ * One row, whatever kind it is. What differs is the decision at the bottom: a claim is approved or
+ * rejected, and a question is answered or dismissed. A hypothesis takes the claim's actions — it is
+ * a claim, just a weak one — and is marked instead, because the thing a reviewer needs to know
+ * about it is that the analysis is not asserting it. Everything above the decision — the evidence,
+ * the drift check, the provenance — is the same work and reads the same way for all three.
  */
 function Record({ finding, identity, onChanged, onOpenContext }) {
   const question = isQuestion(finding)
+  const hypothesis = isHypothesis(finding)
   const evidence = finding.evidence ?? []
 
   return (
@@ -430,9 +463,17 @@ function Record({ finding, identity, onChanged, onOpenContext }) {
           <Title order={4}>{finding.title}</Title>
           <Badge variant={statusVariant(finding.status)}>{finding.status}</Badge>
           {question && <Badge variant="warning">open question</Badge>}
+          {hypothesis && <Badge variant="warning">hypothesis</Badge>}
           <Text variant="caption">{finding.finding_type} · {finding.scope}</Text>
           <Text variant="caption">confidence {formatConfidence(finding.confidence)}</Text>
         </Group>
+
+        {hypothesis && (
+          <Text variant="body-small">
+            Offered as a hypothesis, not a claim — approving it promotes a guess to a finding, so
+            the evidence below carries the whole weight of that decision.
+          </Text>
+        )}
 
         <Text variant="body">{finding.statement}</Text>
         {finding.detail && <Text variant="body-small">{finding.detail}</Text>}
