@@ -5,6 +5,13 @@
     "mode     — file permissions. Executables get 0755; nothing here is secret, so",
     "           there is no 0600 entry. The .secrets/ directory itself is created",
     "           0700 by the bootstrap and never populated from this repo.",
+    "           Directories are 0700 across the board. Nothing in ~/.buzz is read by",
+    "           another user or another process — one Mac, one operator — and several",
+    "           of these accumulate client-adjacent material as the agents work:",
+    "           WORK_LOGS and OUTBOX by definition, RESEARCH and .scratch in practice,",
+    "           .claude/agents/ the project and dataset ids. These were 0755, which",
+    "           made a research workspace world-readable from the first bootstrap for",
+    "           no benefit anybody could name.",
     "resolve  — whether {{TOKEN}} markers are replaced with local-values.json values",
     "           on the way in. See $resolveComment below; this is not a blanket yes.",
     "ifAbsent — install only when the target does not exist. For files an operator is",
@@ -97,15 +104,15 @@
 
   "directories": [
     { "path": ".secrets", "mode": "0700" },
-    { "path": ".scratch", "mode": "0755" },
-    { "path": ".claude/agents", "mode": "0755" },
+    { "path": ".scratch", "mode": "0700" },
+    { "path": ".claude/agents", "mode": "0700" },
     { "path": ".claude/skills", "mode": "0700" },
-    { "path": "RESEARCH", "mode": "0755" },
-    { "path": "PLANS", "mode": "0755" },
-    { "path": "GUIDES", "mode": "0755" },
-    { "path": "WORK_LOGS", "mode": "0755" },
-    { "path": "OUTBOX", "mode": "0755" },
-    { "path": "REPOS", "mode": "0755" }
+    { "path": "RESEARCH", "mode": "0700" },
+    { "path": "PLANS", "mode": "0700" },
+    { "path": "GUIDES", "mode": "0700" },
+    { "path": "WORK_LOGS", "mode": "0700" },
+    { "path": "OUTBOX", "mode": "0700" },
+    { "path": "REPOS", "mode": "0700" }
   ],
 
   "files": [
