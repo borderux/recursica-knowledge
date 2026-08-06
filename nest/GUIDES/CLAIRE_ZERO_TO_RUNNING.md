@@ -161,6 +161,13 @@ It names everything downstream:
 
 Project is `{{BQ_PROJECT}}` throughout.
 
+**Pick the slug before Step 2, and keep it.** A service account cannot be renamed once
+created, so shortening the slug afterwards leaves the account named for the old one forever.
+That is survivable — set `sa_slug` on the channel canvas to the account's real name, and pass
+`--sa-slug` to `bin/stu`, which is where the key path is derived. The dataset, the MCP servers
+and the subagents all keep following `slug`. But it is a permanent wart, and picking once
+avoids it.
+
 ---
 
 ## Step 1 — Create the Drive folder

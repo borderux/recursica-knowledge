@@ -98,6 +98,7 @@ the right channel before falling back to asking for everything.
 | Canvas key | Becomes | Notes |
 |---|---|---|
 | `slug` | *not a token* — a `--slug` argument | Lowercase, hyphens. Names the dataset, the key file, the MCP servers |
+| `sa_slug` | *not a token* — a `--sa-slug` argument | Optional. The service account's name when it is not the slug. Lowercase, hyphens |
 | `bq_project` | `BQ_PROJECT` | |
 | `bq_dataset` | *nothing* | Confirmation only. It must equal `research_<slug>` with hyphens as underscores |
 | `drive_folder` | `DRIVE_FOLDER` | |
@@ -113,6 +114,16 @@ channel because a canvas key named it.
 `bq_dataset` is a cross-check rather than an input. If it disagrees with `research_<slug>`,
 stop and ask which is right instead of picking one — the wrong dataset name is a fence that
 fails open.
+
+`sa_slug` exists because **a Google service account cannot be renamed.** An account created
+before the slug settled keeps its original name for the life of the client, so a channel on
+slug `acme` can legitimately be served by `claire-acme-health-service-user`. Set `sa_slug` to
+the account's own name and leave `slug` alone; the key then lives at
+`~/.buzz/.secrets/claire-<sa_slug>-service-user.json` and `bin/stu` takes `--sa-slug`.
+
+Only add it when the two genuinely differ — omitted, everything derives from `slug`, which is
+the normal case. Do not "fix" a mismatch by renaming the account in the console: you cannot,
+and creating a replacement means re-granting the dataset and re-sharing the Drive folder.
 
 **If a value is missing from the canvas, the fix is to add it to the canvas** — not to
 collect it in chat and move on. The next operator hits the identical gap otherwise.
@@ -244,7 +255,7 @@ problem:
 | What differs | What it means |
 |---|---|
 | The **project** part | The key belongs to another client's project. Do not install it — this is precisely the cross-client leak the isolation check exists to catch. |
-| The **slug** part | Probably the wrong client's key, or a key made by hand under a different name. Confirm which client it is for before use. |
+| The **slug** part | Either the wrong client's key, or an account whose name simply never matched the slug. Confirm which client it is for before use, and if the name is legitimate, record it as `sa_slug` on the canvas rather than renaming anything. |
 
 Never print the key's contents, any part of a private key, or the `private_key_id`. The
 `client_email` is an identifier, not a credential, and is the only field to quote.
