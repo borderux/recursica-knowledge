@@ -394,9 +394,21 @@ ALTER TABLE `{{BQ_PROJECT}}.@dataset.tag_library`
   ADD COLUMN IF NOT EXISTS created_by STRING;
 
 -- Open questions. See "An open question is a finding, not a second table" below.
+--
+-- The descriptions are repeated from the CREATE TABLE deliberately: ADD COLUMN does not inherit
+-- them, and `get_table_info` is what an agent reads to learn the column. A migrated dataset whose
+-- descriptions are blank, or whose finding_type still lists the old seven types, contradicts the
+-- tool description the same agent reads beside it.
 ALTER TABLE `{{BQ_PROJECT}}.@dataset.findings`
-  ADD COLUMN IF NOT EXISTS proposed_answer STRING,
-  ADD COLUMN IF NOT EXISTS resolution      STRING;
+  ADD COLUMN IF NOT EXISTS proposed_answer STRING
+    OPTIONS (description = 'open_question only: the answer the agent would assume if nobody rules. Never authoritative'),
+  ADD COLUMN IF NOT EXISTS resolution STRING
+    OPTIONS (description = 'The human answer to an open question. Written only from Stu — never a write_finding parameter');
+
+ALTER TABLE `{{BQ_PROJECT}}.@dataset.findings`
+  ALTER COLUMN finding_type SET OPTIONS (
+    description = 'theme | sentiment | pain_point | need | behaviour | quote | opportunity | open_question'
+  );
 ```
 
 `status = 'needs_clarification'` is a first-class state, not an error: it's how Lexicon flags a
