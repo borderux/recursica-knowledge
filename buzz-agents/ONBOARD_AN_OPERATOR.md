@@ -150,7 +150,10 @@ clients' data — **do not send it.** Almost always a project-level BigQuery rol
 ## The message to send them
 
 It lives in **[NEW_OPERATOR_MESSAGE.md](NEW_OPERATOR_MESSAGE.md)** — copy everything below the
-line in that file, fill in the three placeholders it names, and send.
+line in that file and send it. **There is nothing to fill in**, and that is deliberate: every
+value that differs per person — which client, which channel, what the key file is called — is
+something they ask you for once they are in the channel. Nothing client-specific travels in the
+forwarded message.
 
 It used to be a blockquote here, which was wrong in the way two copies of anything is wrong:
 the version people actually send drifted from the version in the repo, and every fix had to be
@@ -165,10 +168,13 @@ people get stuck:
   work takes minutes — so anyone waiting for a *reply* concludes it is broken and gives up.
   Without a mention there is no reaction at all, which is how you tell the two apart.
 - **Gives one pasteable line for the key**, rather than describing a folder that is invisible
-  in Finder.
+  in Finder. It matches on the `-service-user.json` suffix, so it works whatever the account is
+  called and nobody has to be told the file name.
 
-If the client's service account is not named after its slug, the placeholder table in that file
-is where you say so — and `sa_slug` belongs on the canvas too, per the section above.
+You no longer have to warn them when a client's service account is not named after its slug:
+the message never names the key file, and the Terminal line matches on the
+`-service-user.json` suffix, so there is nothing there to get wrong. `sa_slug` still belongs on
+the canvas, per the section above — the deploy derives from it even though the message does not.
 
 Everything else in that message is either public or theirs. The **key** is the one thing that
 travels out of band, separately, and never in the message.

@@ -7,19 +7,31 @@ Edit it here rather than rewriting it in chat each time — that is the whole po
 a file. [ONBOARD_AN_OPERATOR.md](ONBOARD_AN_OPERATOR.md) is the other half: what you send out
 of band, what you must never send, and how to revoke access later. Read that first.
 
-**Fill in before sending:**
+**Nothing to fill in. Send it as it stands.**
 
-| Placeholder                              | With                                                                       |
-| ---------------------------------------- | -------------------------------------------------------------------------- |
-| `claire-acme-service-user.json`          | The real key filename for the client they are joining. It is the account's own name, which is **not** always `claire-<slug>-service-user` — check `client_email` first, and see ONBOARD_AN_OPERATOR.md |
-| `Sam`                                    | Their first name, in the two example agent names                           |
-| the channel name                         | Say which channel, by name, in step 3                                      |
+That is deliberate, and it is the second thing this file is for. Every value that differs per
+person — which client, which channel, what the key file is called — is now something the new
+operator **asks you for**, in the channel, once they are in it. Nothing client-specific travels
+in the forwarded message.
 
-Substitute the real values as you send. **Do not commit them back into this file** — this is
-a public repo, and a client's key filename names the client.
+Three reasons it is built that way:
 
-Do not paste the service-account key into the message. It travels out of band, separately,
-and the text below already says so.
+1. **A client's key filename names the client.** Substituting it put a client name into a chat
+   message, and from there into anything anyone pasted onward. Removing the substitution
+   removes the whole path.
+2. **The filename was the easiest thing to get wrong.** The service account is not always
+   `claire-<slug>-service-user` — it keeps whatever name it was created with. Someone
+   pre-filling the "obvious" name hands the new operator a mismatch that looks exactly like a
+   security incident on their first day. The Terminal line now matches on the
+   `-service-user.json` suffix instead, so nobody has to know the name at all.
+3. **One channel is one client.** Which channel a person joins depends on the work, so a
+   pre-filled channel name is wrong for everyone except the first reader.
+
+`Sam` appears twice below as an **example** of how agent names come out. It is illustrative,
+not a blank — leave it alone.
+
+Still send out of band and never in the message: the key file itself. The text below says so
+too.
 
 ---
 
@@ -54,32 +66,44 @@ budget.
 
 ### Step 2 — The one file I send you separately
 
-I will send you a file called `claire-acme-service-user.json` through a password manager
-— **not** over chat. It is the key to the client's research data, so treat it like a password.
-**Never paste its contents into a message**, including to an agent.
+I will send you a **key file** through a password manager — **not** over chat. Its name ends
+`-service-user.json`. It is the key to one client's research data, so treat it like a
+password. **Never paste its contents into a message**, including to an agent.
 
 Once it is in your Downloads folder, paste this one line into Terminal and press Return:
 
 ```
-mkdir -p ~/.buzz/.secrets && chmod 700 ~/.buzz/.secrets && mv ~/Downloads/claire-acme-service-user.json ~/.buzz/.secrets/ && chmod 600 ~/.buzz/.secrets/claire-acme-service-user.json && ls -l ~/.buzz/.secrets/
+mkdir -p ~/.buzz/.secrets && chmod 700 ~/.buzz/.secrets && mv ~/Downloads/*-service-user.json ~/.buzz/.secrets/ && chmod 600 ~/.buzz/.secrets/*-service-user.json && ls -l ~/.buzz/.secrets/
 ```
 
 That makes the folder, moves the key in, and locks it down so only you can read it. You should
-see one line ending in the file name and starting with `-rw-------`. That means it worked.
+see one line ending in `-service-user.json` and starting with `-rw-------`. That means it
+worked. You do not need to type the file name anywhere — the line finds it.
 
-**If it says `No such file or directory`,** the file is somewhere other than Downloads. Type
-`mv ` (with a space after it), then drag the file from Finder straight into the Terminal window
-— that fills in the real location for you — then type ` ~/.buzz/.secrets/` and press Return.
+**If it says `no matches found` or `No such file or directory`,** the file is somewhere other
+than Downloads. The folder was still made, so you only need to move the file in. Type `mv `
+(with a space after it), then drag the file from Finder straight into the Terminal window —
+that fills in the real location for you — then type ` ~/.buzz/.secrets/` and press Return.
+
+Then paste this to lock it down and check it, which the line above would have done for you:
+
+```
+chmod 600 ~/.buzz/.secrets/*-service-user.json && ls -l ~/.buzz/.secrets/
+```
 
 The `.buzz` folder is invisible in Finder because its name starts with a dot. That is normal
 and nothing is wrong. To see it, press **Cmd-Shift-.** in any Finder window.
 
 ### Step 3 — Add your Fizz to the channel
 
-I will add you to the client channel. **You then add your own Fizz to that same channel.** She
-is the assistant that comes with Buzz Desktop, and she does the whole setup for you. She cannot
-see a private channel she is not a member of, so this step is not optional — and my being in it
-does not cover her.
+I will add you to a client channel and tell you which one — there is more than one, each is a
+different client, and which you get depends on the work you are joining. If you are not sure
+which channel is yours, ask me rather than guessing; joining the wrong one is a client-data
+problem, not an inconvenience.
+
+**You then add your own Fizz to that same channel.** She is the assistant that comes with Buzz
+Desktop, and she does the whole setup for you. She cannot see a private channel she is not a
+member of, so this step is not optional — and my being in it does not cover her.
 
 ### Step 4 — Ask her to do it, and read this bit twice
 
