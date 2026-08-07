@@ -99,6 +99,10 @@
   },
   "directories": [
     {
+      "path": ".",
+      "mode": "0700"
+    },
+    {
       "path": ".secrets",
       "mode": "0700"
     },
@@ -136,6 +140,14 @@
     },
     {
       "path": "REPOS",
+      "mode": "0700"
+    },
+    {
+      "path": "bin",
+      "mode": "0700"
+    },
+    {
+      "path": "mcp",
       "mode": "0700"
     }
   ],
