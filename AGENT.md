@@ -69,6 +69,36 @@ That setting is shared by every linked worktree, so setting it once in the main 
 covers them all. The check itself needs nothing installed, and it reads the name rules from
 the main worktree when a linked one has no copy of its own.
 
+### The things git has no hook for
+
+A PR title and body, an issue, a release note, a branch name and a tag are all published
+and none of them pass through `commit-msg`. The original incident here put the client name
+in the PR body as well as the commit, and only the commit half was ever catchable.
+
+So a `PreToolUse` hook checks the command **before it runs** — `.claude/settings.json` in
+this checkout, and `nest/.claude/settings.json` for the agents, whose working directory is
+the nest rather than this repository. Both call
+`buzz-agents/scripts/hook-guard-published-text.mjs`, which reads the message-bearing
+arguments (`-m`, `--title`, `--body`, `-F <file>`, `curl -d @<file>`, a new branch or tag
+name) and denies the command if one of them names something it should not.
+
+Two things about it are deliberate and worth not "fixing":
+
+- **It reads the arguments, not the whole command line.** A command routinely contains a
+  path under the operator's home directory, and the operator-name rules match that.
+  Checking the raw string would deny every correct commit — the same mistake that left
+  `commit-msg` switched off for months.
+- **Text piped in on stdin (`git commit -F -`, a heredoc) is warned about, not blocked.**
+  The guard cannot see it. Refusing a legitimate pipe would push people to `--no-verify`,
+  and a guard that gets switched off protects nothing. When you see that warning, run the
+  checker on the text yourself.
+
+**A bare client slug is only caught if your local rules name it.** It is an ordinary word —
+no shape distinguishes one from any other short lowercase word, which is why the composed
+forms (`research_<slug>`, `claire-<slug>-service-user`) are the ones matched structurally. Every
+client you can reach needs a `manual` entry in `local-redactions.json` for the bare slug in
+each casing. One was missing here, and a branch named after that client passed clean.
+
 **The prose is where this leaks, not the diff.** Diffs get read closely; the paragraph
 explaining which client hit the bug does not, and it is the one carrying the name. Both real
 incidents in this repo went out that way.

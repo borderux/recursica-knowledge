@@ -498,11 +498,17 @@ Then a smoke test they run themselves, using the real name:
   one, a participant's name or anything they said, a cloud project id, a Drive or sheet id,
   a channel UUID or a pubkey into a commit message, a branch name, or a PR or issue body.
   Write "the client" or "a participant" instead — the point always survives it. Step 3
-  turns on a hook that refuses a commit message naming one, but it only covers commit
-  messages: **a PR or issue body is yours to check**, by piping it through
-  `node buzz-agents/scripts/check-text-for-names.mjs` before you post it. Exit 2 means
-  rewrite. This has gone wrong for real, in the prose explaining a bug rather than in any
-  diff — that paragraph is the one carrying the name.
+  turns on two checks: a git hook that refuses a commit message naming one, and a
+  `PreToolUse` hook that refuses the command outright — covering a PR title and body, an
+  issue, and a branch or tag name, which git cannot hook at all. If either one stops you,
+  rewrite; do not work around it. Text piped in on stdin is warned about rather than
+  blocked, because the guard cannot read it — pipe that through
+  `node buzz-agents/scripts/check-text-for-names.mjs` yourself. This has gone wrong for
+  real, in the prose explaining a bug rather than in any diff — that paragraph is the one
+  carrying the name.
+- **Add the client's bare slug to `local-redactions.json` when you join a client.** The
+  composed forms are caught by shape; the bare word can only be caught by naming it. A
+  `manual` entry for each casing is what stops it reaching a branch name.
 - **A silent Janice is not a broken Janice.** A clean review produces no message. Do not go
   looking for a fault, and do not tell them it failed.
 - Prefer re-running bootstrap over hand-editing anything inside `~/.buzz`. Hand edits are

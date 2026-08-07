@@ -1,12 +1,4 @@
 {
-  "env": {
-    "MAX_MCP_OUTPUT_TOKENS": "60000"
-  },
-  "permissions": {
-    "allow": [
-      "Agent"
-    ]
-  },
   "hooks": {
     "PreToolUse": [
       {
@@ -14,44 +6,31 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node {{BUZZ_HOME}}/bin/guard-published-text.mjs",
+            "command": "node buzz-agents/scripts/hook-guard-published-text.mjs",
             "if": "Bash(git *)",
             "timeout": 20,
             "statusMessage": "Checking published text for names"
           },
           {
             "type": "command",
-            "command": "node {{BUZZ_HOME}}/bin/guard-published-text.mjs",
+            "command": "node buzz-agents/scripts/hook-guard-published-text.mjs",
             "if": "Bash(gh *)",
             "timeout": 20,
             "statusMessage": "Checking published text for names"
           },
           {
             "type": "command",
-            "command": "node {{BUZZ_HOME}}/bin/guard-published-text.mjs",
+            "command": "node buzz-agents/scripts/hook-guard-published-text.mjs",
             "if": "Bash(buzz *)",
             "timeout": 20,
             "statusMessage": "Checking published text for names"
           },
           {
             "type": "command",
-            "command": "node {{BUZZ_HOME}}/bin/guard-published-text.mjs",
+            "command": "node buzz-agents/scripts/hook-guard-published-text.mjs",
             "if": "Bash(curl *)",
             "timeout": 20,
             "statusMessage": "Checking published text for names"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "{{BUZZ_HOME}}/bin/wake-janice.sh",
-            "async": true,
-            "timeout": 30,
-            "statusMessage": "Waking Janice for review"
           }
         ]
       }

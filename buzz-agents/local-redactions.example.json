@@ -38,14 +38,34 @@
     "        is refused as too collision-prone to be safe.",
     "replace what appears instead.",
     "label   what gets REPORTED when this matches. Never `find` — a leak warning that",
-    "        prints the name it caught is the same exposure with extra steps."
+    "        prints the name it caught is the same exposure with extra steps.",
+    "",
+    "EVERY client you can reach needs a bare-slug rule here, in every casing you might",
+    "type. The composed forms — research_<slug>, claire-<slug>-service-user — are caught",
+    "by shape in placeholders.json and need nothing from you. A BARE slug cannot be:",
+    "it is an ordinary short word, indistinguishable from any other, so the only thing",
+    "that catches it is naming it here. This is not hypothetical — one client had a rule",
+    "and a second did not, and a branch named after the second passed the checker clean.",
+    "Add the rule when you join a client, not when you notice it missing."
   ],
-  "datasets": ["research_<slug>"],
+  "datasets": [
+    "research_<slug>"
+  ],
   "manual": [
     {
       "find": "<client-slug>",
       "replace": "acme",
-      "label": "client slug"
+      "label": "client slug (bare, lower) — one per client, per casing"
+    },
+    {
+      "find": "<Client-Slug>",
+      "replace": "acme",
+      "label": "client slug (bare, title) — a branch name often capitalises"
+    },
+    {
+      "find": "<second-client-slug>",
+      "replace": "acme",
+      "label": "client slug, second client — every client you can reach needs its own"
     },
     {
       "find": "Firstname Lastname",
