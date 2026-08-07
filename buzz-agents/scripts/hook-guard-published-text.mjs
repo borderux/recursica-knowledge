@@ -227,14 +227,31 @@ function check(text) {
   } catch (err) {
     if (err.status !== 2) return null; // usage error or a missing checker: not a finding
     const out = `${err.stdout ?? ""}${err.stderr ?? ""}`;
-    // The checker reports labels only. Keep it that way — printing the matched string
-    // into a transcript is the disclosure the rule exists to prevent.
-    const labels = out
+    /**
+     * Take the label block by position, not by filtering out everything that is not a
+     * label. The checker prints its labels between the "must not be published" line and
+     * the "Matched N redaction rules" line, and nothing else lands in that region.
+     *
+     * Filtering was the first attempt, and it was wrong in the case that matters most: on
+     * a machine with no local rule file the checker warns across two lines, and the second
+     * line does not begin with the "!" the filter keyed on — so "Client and participant
+     * names are NOT being checked" was reported as if it were a finding. That is every new
+     * operator machine, and a deny reason that lists a warning as a rule label is exactly
+     * the confusing output that gets a guard switched off.
+     *
+     * Labels only either way: printing the matched string into a transcript is the
+     * disclosure the rule exists to prevent.
+     */
+    const lines = out
       // eslint-disable-next-line no-control-regex
-      .replace(/\[[0-9;]*m/g, "")
-      .split("\n")
-      .map((l) => l.trim())
-      .filter((l) => l && !l.startsWith("!") && !l.startsWith("✗") && !/^Matched|^Rewrite|^not printed|^gitignored|^\{\{TOKEN|^look the labels/.test(l));
+      .replace(/\x1b\[[0-9;]*m/g, "")
+      .split("\n");
+    const start = lines.findIndex((l) => l.includes("must not be published"));
+    const end = lines.findIndex((l, k) => k > start && /^\s*Matched \d+ redaction rule/.test(l));
+    const labels =
+      start >= 0 && end > start
+        ? lines.slice(start + 1, end).map((l) => l.trim()).filter(Boolean)
+        : [];
     return labels.length ? labels : ["a declared redaction"];
   }
 }
