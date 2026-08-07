@@ -27,28 +27,32 @@ rebuild both fences first.
 | | State |
 |---|---|
 | `portable/claude-code/agents/claire.md` | **Ships.** The orchestrator prompt, generated. |
+| `portable/claude-code/agents/{scribe,lexicon,tagger,analyst}.md` | **Ships.** The four subagents, generated. |
 | `agents/claire/runtime/claude-code.json` | **Ships.** Model, tool allowlist, subagent names. |
-| The four subagent definitions | **Does not ship yet.** See below. |
 | The two fenced MCP servers | **Does not ship.** You build these; see below. |
 | opencode | **Not a target.** See below. |
 
-**This is not a drop-in.** Claire is an orchestrator: on her own she is a prompt with nothing to
-dispatch to. Everything in the "does not ship" rows has to exist before she does anything but
-fail her own pre-flight check — which, correctly, is what she will do.
+**It is still not a drop-in**, because the row that does not ship is the one that matters. All
+five prompts are here; the two fenced MCP servers they name are not, and until those exist
+Claire fails her own pre-flight check — which, correctly, is what she should do.
 
 ### The four subagents
 
-`nest/mcp/templates/agents/{scribe,lexicon,tagger,analyst}.md.tmpl` in this repository. They are
-already Claude subagents in shape — `name` / `description` / `tools` front matter, one file each
-— and they are the bulk of the pipeline: 54 KB against Claire's 20 KB.
+Five files, one substitution. Put `claire.md` and the four subagents in `.claude/agents/`, and
+replace `@SLUG@` with your client's slug in all five. The names have to match: Claire dispatches
+`scribe-@SLUG@`, so the file's `name:` and her `subagents` list must resolve to the same string.
 
-They are not generated into `portable/` yet for one reason: they still say "the `@SLUG@`
-research channel" in nine places, and an artifact in `portable/` that talks about channels is
-not portable, it is just moved. Giving them the same treatment Claire got here — a `SKILL.md`
-core and a small platform fragment — is the next piece of work, not a rename.
+**Their `tools:` line is the whole point, so do not widen it.** Scribe applies dictionary
+corrections and has no write access to `project_dictionary`; Lexicon proposes dictionary terms
+and holds no Drive tools at all. That is what stops the agent making a correction from also
+manufacturing the evidence that justifies it. It is enforced by the allowlist in each file's
+front matter and by nothing else — the prose explains the rule, the allowlist is the rule.
 
-They also use a different templating syntax, `@SLUG@` rather than `{{TOKEN}}`, and **that
-difference is load-bearing rather than an inconsistency to tidy away.** `{{TOKEN}}` values are
+Analyst is the only one bound to the **read-only** BigQuery server (`bq-@SLUG@-ro`). Keep that.
+It writes findings and a Drive document, and it has no business writing transcript rows.
+
+They use `@SLUG@` rather than `{{TOKEN}}`, and **that difference is load-bearing rather than an
+inconsistency to tidy away.** `{{TOKEN}}` values are
 per-community install values that `export-agents.mjs` swaps out bidirectionally, and every value
 declared there is treated as a substring to replace across every prompt — so declaring a client
 slug as a token would silently rewrite unrelated words wherever that short string appeared.
@@ -120,6 +124,16 @@ You can see exactly which 14 in `agents/claire/platform/`. Four of them — `con
 `config-carryover`, `preflight-config`, `sheet-account` — carry a safety rule as well as a
 surface detail, so the two platform files restate that rule rather than sharing it. They must
 be changed together; both files say so at the top.
+
+**The four subagents are barely coupled at all: 9 passages out of 53,828 bytes, 1.89%.** Every
+one of them is the single word "channel" in an otherwise portable line — Scribe and Lexicon have
+one each, Analyst three, Tagger four. Nothing about the SQL, the chunk loop, the tag rules, the
+ownership boundaries or the tool allowlists changes between a Buzz install and a plain session.
+
+That is worth saying because it corrects the impression left by "54 KB of channel". The volume
+is 54 KB; the coupling is a kilobyte of it. The bulk of this pipeline was portable already and
+nobody had measured it — which is the third time on this piece of work that an eyeballed
+estimate came in well above what the extraction actually produced.
 
 ## Rebuilding
 

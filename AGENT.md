@@ -135,6 +135,19 @@ A fragment header in `platform/*.md` is a bare kebab-case slug, matching the mar
 `## ` line that is not one is ordinary content, so a fragment may contain a markdown heading —
 Claire's does.
 
+**Subagents live at `agents/<name>/subagents/<sub>/`** and build to two places: the template
+the deploy renders per client (`nest/mcp/templates/agents/<sub>.md.tmpl`, pinned byte-identical
+like the Buzz prompt) and `portable/claude-code/agents/<sub>.md`. Unlike an agent, a subagent's
+front matter **is** part of the artifact — `name`, `description` and `tools` are what make the
+file a subagent — so it stays in `SKILL.md` and markers work inside it. `tools:` is the
+separation between subagents, not the prose around it; widening one is a real change, not
+tidying.
+
+Both templating syntaxes are now checked. `@SLUG@`-style deploy tokens must be declared under
+`deployTokens` in `buzz-agents/placeholders.json`, the same way `{{TOKEN}}`s are declared under
+`tokens`. **Do not unify the two syntaxes** — a `{{TOKEN}}` value is replaced as a substring
+across every prompt on export, so a client slug declared there rewrites unrelated words.
+
 Not every agent ports, and not every one ports to every platform. `targets:` in the front
 matter narrows which artifacts get built; absent means all of them. Declare it rather than
 shipping an artifact that quietly drops a boundary the platform cannot express — Claire is not
