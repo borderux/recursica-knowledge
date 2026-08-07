@@ -101,6 +101,10 @@ You should see one line for your key, starting with `-rw-------`. That is the wh
 dashes mean nobody but you can read it. If it starts with anything else, tell me before going
 further.
 
+If instead you get `no matches found` or `No such file or directory`, the key never arrived and
+step 2 did not take — nothing is broken, and the file is still wherever it was. Do step 2 again,
+and this time **drag** the file in rather than typing its name.
+
 The `.buzz` folder is invisible in Finder because its name starts with a dot. That is normal
 and nothing is wrong. To see it, press **Cmd-Shift-.** in any Finder window.
 
