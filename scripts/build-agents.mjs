@@ -76,15 +76,27 @@ const ok = (m) => console.log(`  \x1b[32m✓\x1b[0m ${m}`);
 const wrote = (m) => { changed++; console.log(`  \x1b[36m${CHECK ? "would write" : "wrote"}\x1b[0m ${m}`); };
 const bad = (m) => { failed++; console.log(`  \x1b[31m✗\x1b[0m ${m}`); };
 
-/** Split `## name` blocks out of a platform fragment file, ignoring the leading comment. */
+/**
+ * Split `## fragment-name` blocks out of a platform fragment file, ignoring the leading comment.
+ *
+ * A block header must be a bare kebab-case slug — the same shape the `<!-- platform:NAME -->`
+ * marker accepts. Splitting on every `## ` instead would mean no fragment could ever contain a
+ * markdown H2, which is not a limitation anybody would guess at: Claire's scope fragment opens
+ * with a real section heading, and under the looser rule it silently became two fragments, one
+ * of them empty. The build then produced a prompt 478 bytes short with no error at all.
+ */
 function loadFragments(file) {
   const raw = fs.readFileSync(file, "utf8").replace(/^<!--[\s\S]*?-->\s*/, "");
   const out = {};
-  const parts = raw.split(/^## /m).slice(1);
-  for (const part of parts) {
-    const nl = part.indexOf("\n");
-    out[part.slice(0, nl).trim()] = part.slice(nl + 1).trim();
+  let current = null;
+  const buf = [];
+  const flush = () => { if (current) out[current] = buf.join("\n").trim(); buf.length = 0; };
+  for (const line of raw.split("\n")) {
+    const header = /^## ([a-z0-9-]+)$/.exec(line);
+    if (header) { flush(); current = header[1]; continue; }
+    if (current) buf.push(line);
   }
+  flush();
   return out;
 }
 
@@ -133,7 +145,23 @@ for (const name of names) {
   const { meta, body } = parseSkill(path.join(base, "SKILL.md"));
   console.log(`\n\x1b[1m${name}\x1b[0m`);
 
-  for (const [target, spec] of Object.entries(TARGETS)) {
+  /**
+   * `targets:` in the front matter narrows which platforms an agent is built for.
+   *
+   * Absent means all of them, which is the ALAN case. It exists because not every agent can
+   * honestly be built for every target: Claire's subagents each hold a different set of tools
+   * on purpose, and opencode's documented agent model has no per-tool allowlist to express
+   * that with. Shipping an artifact that quietly drops a boundary is worse than shipping no
+   * artifact, so the omission is declared here rather than left to whoever reads the diff.
+   */
+  const wanted = meta.targets ? meta.targets.split(/[\s,]+/).filter(Boolean) : Object.keys(TARGETS);
+  const unknown = wanted.filter((t) => !(t in TARGETS));
+  if (unknown.length) { bad(`unknown target${unknown.length > 1 ? "s" : ""} in front matter: ${unknown.join(", ")}`); continue; }
+  for (const skipped of Object.keys(TARGETS).filter((t) => !wanted.includes(t))) {
+    console.log(`  \x1b[90m—\x1b[0m ${skipped}: not a target for this agent (front matter \`targets:\`)`);
+  }
+
+  for (const [target, spec] of Object.entries(TARGETS).filter(([t]) => wanted.includes(t))) {
     const fragFile = path.join(base, "platform", spec.fragments);
     if (!fs.existsSync(fragFile)) { bad(`${target}: no platform/${spec.fragments}`); continue; }
     const frags = loadFragments(fragFile);

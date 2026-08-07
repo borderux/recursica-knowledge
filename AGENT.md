@@ -128,8 +128,17 @@ Three rules the build enforces so you do not have to remember them:
 - **Every artifact is name-checked before it is written.** Generated files in a public repo
   are the category that gets read least closely.
 
-Not every agent ports. `agents/<name>/PORTING.md` says what one needs and what it cannot
-carry — above all that **a prompt does not carry a data fence**.
+A fragment header in `platform/*.md` is a bare kebab-case slug, matching the marker name. A
+`## ` line that is not one is ordinary content, so a fragment may contain a markdown heading —
+Claire's does.
+
+Not every agent ports, and not every one ports to every platform. `targets:` in the front
+matter narrows which artifacts get built; absent means all of them. Declare it rather than
+shipping an artifact that quietly drops a boundary the platform cannot express — Claire is not
+built for opencode, because opencode has no per-tool allowlist to keep her subagents apart.
+
+`agents/<name>/PORTING.md` says what one needs and what it cannot carry — above all that
+**a prompt does not carry a data fence**.
 
 ## 📖 Project Overview
 
