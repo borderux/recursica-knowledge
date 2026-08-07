@@ -145,6 +145,30 @@ ok "keys present and mode 600"
 
 SA_EMAIL="$("$NODE_BIN" -e "process.stdout.write(require('$SA_KEY').client_email)")"
 ok "channel service account: $SA_EMAIL"
+
+# The runtime identity becomes GOOGLE_APPLICATION_CREDENTIALS for every MCP server this
+# script registers, so whatever is in --sa-key is what all four agents are, permanently.
+#
+# Until now nothing questioned WHICH identity that was. The checks above confirm the key
+# exists and is 0600; the drive and dataset checks confirm it can reach this channel. An
+# over-privileged key passes all of them — it can reach this channel and a great deal else.
+# That is not hypothetical: a key downloaded from the Google console is named after the
+# project and key id, so its filename says nothing about the account inside, and the
+# provisioning identity this script documents for --admin-key has exactly that shape.
+#
+# The runtime account for a channel is claire-<sa_slug>-service-user by convention. A
+# warning rather than a hard failure, because the convention is ours and a legitimate
+# client could be named otherwise — but it should be a deliberate answer, not a silent one.
+case "$SA_EMAIL" in
+  claire-*) ;;
+  *)
+    warn "--sa-key is $SA_EMAIL, which is not a claire-<slug>-service-user account.
+      This key becomes the runtime identity for every agent in this channel. If it is a
+      provisioning or shared account, they inherit rights well beyond this client and
+      nothing later will flag it. Confirm this is the channel's own service account
+      before continuing."
+    ;;
+esac
 ok "dataset: $PROJECT.$DATASET"
 ok "servers: $BQ_SERVER, $DRIVE_SERVER"
 
