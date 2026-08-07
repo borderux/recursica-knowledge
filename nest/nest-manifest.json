@@ -35,7 +35,6 @@
     "  .secrets/*             Service-account keys. Never versioned, never templated.",
     "  .claude/skills/buzz-cli/  Ships with Buzz Desktop; not ours to install or update."
   ],
-
   "$resolveComment": [
     "Token resolution is per file, because 'resolve everything' is wrong twice.",
     "",
@@ -56,7 +55,6 @@
     "at runtime for the channel routing table. An unresolved {{JANICE_CHANNEL}} there is",
     "not a cosmetic problem — she would post findings to a channel named after the token."
   ],
-
   "toolbox": {
     "referenceVersion": "1.8.0",
     "installTo": "bin/toolbox",
@@ -64,9 +62,7 @@
     "checksums": {
       "1.8.0/darwin/arm64": "c69e0b5e25bd5f5f3f3f4d7563d1d8ef0b8ecc922c6654d5db7641f4b0bc4b95"
     },
-
     "sourceUrlTemplate": "https://storage.googleapis.com/mcp-toolbox-for-databases/v{version}/{os}/{arch}/toolbox",
-
     "$comment": [
       "Self-service. The reference binary is 1.8.0",
       "(`toolbox version 1.8.0+binary.darwin.arm64.44d1a05`) and it downloads from",
@@ -101,50 +97,189 @@
       "bin/verify-channel-isolation.py, and only then record the hash."
     ]
   },
-
   "directories": [
-    { "path": ".secrets", "mode": "0700" },
-    { "path": ".scratch", "mode": "0700" },
-    { "path": ".claude/agents", "mode": "0700" },
-    { "path": ".claude/skills", "mode": "0700" },
-    { "path": "RESEARCH", "mode": "0700" },
-    { "path": "PLANS", "mode": "0700" },
-    { "path": "GUIDES", "mode": "0700" },
-    { "path": "WORK_LOGS", "mode": "0700" },
-    { "path": "OUTBOX", "mode": "0700" },
-    { "path": "REPOS", "mode": "0700" }
+    {
+      "path": ".secrets",
+      "mode": "0700"
+    },
+    {
+      "path": ".scratch",
+      "mode": "0700"
+    },
+    {
+      "path": ".claude/agents",
+      "mode": "0700"
+    },
+    {
+      "path": ".claude/skills",
+      "mode": "0700"
+    },
+    {
+      "path": "RESEARCH",
+      "mode": "0700"
+    },
+    {
+      "path": "PLANS",
+      "mode": "0700"
+    },
+    {
+      "path": "GUIDES",
+      "mode": "0700"
+    },
+    {
+      "path": "WORK_LOGS",
+      "mode": "0700"
+    },
+    {
+      "path": "OUTBOX",
+      "mode": "0700"
+    },
+    {
+      "path": "REPOS",
+      "mode": "0700"
+    }
   ],
-
   "files": [
-    { "from": "bin/deploy-claire-channel.sh", "to": "bin/deploy-claire-channel.sh", "mode": "0755", "resolve": true },
-    { "from": "bin/verify-channel-isolation.py", "to": "bin/verify-channel-isolation.py", "mode": "0755", "resolve": true },
-    { "from": "bin/sync-tag-dictionary.mjs", "to": "bin/sync-tag-dictionary.mjs", "mode": "0755", "resolve": true },
-    { "from": "bin/stu", "to": "bin/stu", "mode": "0755", "resolve": true },
-    { "from": "bin/wake-janice.sh", "to": "bin/wake-janice.sh", "mode": "0755", "resolve": true },
-    { "from": "bin/janice-turn-window.py", "to": "bin/janice-turn-window.py", "mode": "0755", "resolve": true },
-
-    { "from": "mcp/bin/bq-exec.mjs", "to": "mcp/bin/bq-exec.mjs", "mode": "0755", "resolve": true },
-
-    { "from": "mcp/drive-fence/server.mjs", "to": "mcp/drive-fence/server.mjs", "mode": "0755", "resolve": true },
-    { "from": "mcp/drive-fence/preflight.mjs", "to": "mcp/drive-fence/preflight.mjs", "mode": "0755", "resolve": true },
-    { "from": "mcp/drive-fence/token.mjs", "to": "mcp/drive-fence/token.mjs", "mode": "0644", "resolve": true },
-
-    { "from": "mcp/templates/bq-channel.yaml.tmpl", "to": "mcp/templates/bq-channel.yaml.tmpl", "mode": "0644", "resolve": true },
-    { "from": "mcp/templates/bq-channel-ro.yaml.tmpl", "to": "mcp/templates/bq-channel-ro.yaml.tmpl", "mode": "0644", "resolve": true },
-    { "from": "mcp/templates/agents/scribe.md.tmpl", "to": "mcp/templates/agents/scribe.md.tmpl", "mode": "0644", "resolve": true },
-    { "from": "mcp/templates/agents/lexicon.md.tmpl", "to": "mcp/templates/agents/lexicon.md.tmpl", "mode": "0644", "resolve": true },
-    { "from": "mcp/templates/agents/tagger.md.tmpl", "to": "mcp/templates/agents/tagger.md.tmpl", "mode": "0644", "resolve": true },
-    { "from": "mcp/templates/agents/analyst.md.tmpl", "to": "mcp/templates/agents/analyst.md.tmpl", "mode": "0644", "resolve": true },
-
-    { "from": "GUIDES/RESEARCH_CHANNEL_DATASET_SCHEMA.md", "to": "GUIDES/RESEARCH_CHANNEL_DATASET_SCHEMA.md", "mode": "0644", "resolve": false },
-    { "from": "GUIDES/JANICE_REVIEW_CHECKLIST.md", "to": "GUIDES/JANICE_REVIEW_CHECKLIST.md", "mode": "0644", "resolve": true },
-    { "from": "GUIDES/CLAIRE_ZERO_TO_RUNNING.md", "to": "GUIDES/CLAIRE_ZERO_TO_RUNNING.md", "mode": "0644", "resolve": true },
-    { "from": "GUIDES/BIGQUERY_MCP_AND_GOOGLE_AUTH_SETUP.md", "to": "GUIDES/BIGQUERY_MCP_AND_GOOGLE_AUTH_SETUP.md", "mode": "0644", "resolve": true },
-
-    { "from": ".claude/settings.json", "to": ".claude/settings.json", "mode": "0644", "resolve": true, "ifAbsent": true },
-    { "from": ".claude/skills/deploy-agents/SKILL.md", "to": ".claude/skills/deploy-agents/SKILL.md", "mode": "0644", "resolve": false }
+    {
+      "from": "bin/deploy-claire-channel.sh",
+      "to": "bin/deploy-claire-channel.sh",
+      "mode": "0755",
+      "resolve": true
+    },
+    {
+      "from": "bin/verify-channel-isolation.py",
+      "to": "bin/verify-channel-isolation.py",
+      "mode": "0755",
+      "resolve": true
+    },
+    {
+      "from": "bin/sync-tag-dictionary.mjs",
+      "to": "bin/sync-tag-dictionary.mjs",
+      "mode": "0755",
+      "resolve": true
+    },
+    {
+      "from": "bin/guard-published-text.mjs",
+      "to": "bin/guard-published-text.mjs",
+      "mode": "0755",
+      "resolve": true
+    },
+    {
+      "from": "bin/stu",
+      "to": "bin/stu",
+      "mode": "0755",
+      "resolve": true
+    },
+    {
+      "from": "bin/wake-janice.sh",
+      "to": "bin/wake-janice.sh",
+      "mode": "0755",
+      "resolve": true
+    },
+    {
+      "from": "bin/janice-turn-window.py",
+      "to": "bin/janice-turn-window.py",
+      "mode": "0755",
+      "resolve": true
+    },
+    {
+      "from": "mcp/bin/bq-exec.mjs",
+      "to": "mcp/bin/bq-exec.mjs",
+      "mode": "0755",
+      "resolve": true
+    },
+    {
+      "from": "mcp/drive-fence/server.mjs",
+      "to": "mcp/drive-fence/server.mjs",
+      "mode": "0755",
+      "resolve": true
+    },
+    {
+      "from": "mcp/drive-fence/preflight.mjs",
+      "to": "mcp/drive-fence/preflight.mjs",
+      "mode": "0755",
+      "resolve": true
+    },
+    {
+      "from": "mcp/drive-fence/token.mjs",
+      "to": "mcp/drive-fence/token.mjs",
+      "mode": "0644",
+      "resolve": true
+    },
+    {
+      "from": "mcp/templates/bq-channel.yaml.tmpl",
+      "to": "mcp/templates/bq-channel.yaml.tmpl",
+      "mode": "0644",
+      "resolve": true
+    },
+    {
+      "from": "mcp/templates/bq-channel-ro.yaml.tmpl",
+      "to": "mcp/templates/bq-channel-ro.yaml.tmpl",
+      "mode": "0644",
+      "resolve": true
+    },
+    {
+      "from": "mcp/templates/agents/scribe.md.tmpl",
+      "to": "mcp/templates/agents/scribe.md.tmpl",
+      "mode": "0644",
+      "resolve": true
+    },
+    {
+      "from": "mcp/templates/agents/lexicon.md.tmpl",
+      "to": "mcp/templates/agents/lexicon.md.tmpl",
+      "mode": "0644",
+      "resolve": true
+    },
+    {
+      "from": "mcp/templates/agents/tagger.md.tmpl",
+      "to": "mcp/templates/agents/tagger.md.tmpl",
+      "mode": "0644",
+      "resolve": true
+    },
+    {
+      "from": "mcp/templates/agents/analyst.md.tmpl",
+      "to": "mcp/templates/agents/analyst.md.tmpl",
+      "mode": "0644",
+      "resolve": true
+    },
+    {
+      "from": "GUIDES/RESEARCH_CHANNEL_DATASET_SCHEMA.md",
+      "to": "GUIDES/RESEARCH_CHANNEL_DATASET_SCHEMA.md",
+      "mode": "0644",
+      "resolve": false
+    },
+    {
+      "from": "GUIDES/JANICE_REVIEW_CHECKLIST.md",
+      "to": "GUIDES/JANICE_REVIEW_CHECKLIST.md",
+      "mode": "0644",
+      "resolve": true
+    },
+    {
+      "from": "GUIDES/CLAIRE_ZERO_TO_RUNNING.md",
+      "to": "GUIDES/CLAIRE_ZERO_TO_RUNNING.md",
+      "mode": "0644",
+      "resolve": true
+    },
+    {
+      "from": "GUIDES/BIGQUERY_MCP_AND_GOOGLE_AUTH_SETUP.md",
+      "to": "GUIDES/BIGQUERY_MCP_AND_GOOGLE_AUTH_SETUP.md",
+      "mode": "0644",
+      "resolve": true
+    },
+    {
+      "from": ".claude/settings.json",
+      "to": ".claude/settings.json",
+      "mode": "0644",
+      "resolve": true,
+      "ifAbsent": true
+    },
+    {
+      "from": ".claude/skills/deploy-agents/SKILL.md",
+      "to": ".claude/skills/deploy-agents/SKILL.md",
+      "mode": "0644",
+      "resolve": false
+    }
   ],
-
   "$settingsComment": [
     ".claude/settings.json is load-bearing for two of the four agents, and was missing",
     "from this manifest until 2026-08-04 — so every operator but the first would have got",
@@ -166,7 +301,6 @@
     "is that changes we make here do not reach an existing nest automatically — bootstrap",
     "says so, with a diff hint, rather than deciding for them."
   ],
-
   "prerequisites": [
     {
       "name": "Buzz Desktop",

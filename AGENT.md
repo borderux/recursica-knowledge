@@ -31,6 +31,81 @@ Welcome! This repository holds the central skills and component documentation fo
 
 **When two skills disagree**, `skills/meta/recursica-skill-design-router/SKILL.md` states the precedence. The short version: a design-rules skill beats a component skill on composition; the component skill wins only on which variants and states actually exist.
 
+## 🔒 Before you commit, branch, or open a PR: this repo is public
+
+Anything you write into git or GitHub is published and permanent. A commit message cannot be
+edited after a push, and force-pushing moves the branch ref **without deleting the objects** —
+they stay fetchable by SHA, and old PR heads stay pinned. So the check happens before the
+write. There is no cleanup afterwards that fully works.
+
+**Never write into a commit message, branch name, PR or issue title or body, or review
+comment:** a client name or slug; a dataset or service-account name built from one
+(`research_<slug>`, `claire-<slug>-service-user`); a research participant's name, anything they
+said, or a detail that identifies them; a cloud project id; a Drive folder or sheet id; a
+channel UUID; a pubkey; any part of a key file.
+
+Write structurally instead — "the client", "a client dataset", "a participant" — or use the
+`{{TOKEN}}`. Examples use `acme`. A sentence that seems to need a real name almost never does.
+
+**Run the checker on the text, not just the diff:**
+
+```bash
+node buzz-agents/scripts/check-text-for-names.mjs <file>   # or pipe on stdin
+git log -1 --format=%B | npm run -s check:names            # what you just committed
+```
+
+Exit 2 means stop and rewrite. It prints labels, never the matched string — keep it that way
+if you quote it.
+
+`.husky/commit-msg` runs it on every commit. **Check that the hook is actually wired before
+you trust it:**
+
+```bash
+git config core.hooksPath        # must print .husky — empty means no hook has ever run
+git config core.hooksPath .husky # what `npm install` does; safe to run by hand
+```
+
+That setting is shared by every linked worktree, so setting it once in the main checkout
+covers them all. The check itself needs nothing installed, and it reads the name rules from
+the main worktree when a linked one has no copy of its own.
+
+### The things git has no hook for
+
+A PR title and body, an issue, a release note, a branch name and a tag are all published
+and none of them pass through `commit-msg`. The original incident here put the client name
+in the PR body as well as the commit, and only the commit half was ever catchable.
+
+So a `PreToolUse` hook checks the command **before it runs** — `.claude/settings.json` in
+this checkout, and `nest/.claude/settings.json` for the agents, whose working directory is
+the nest rather than this repository. Both call
+`buzz-agents/scripts/hook-guard-published-text.mjs`, which reads the message-bearing
+arguments (`-m`, `--title`, `--body`, `-F <file>`, `curl -d @<file>`, a new branch or tag
+name) and denies the command if one of them names something it should not.
+
+Two things about it are deliberate and worth not "fixing":
+
+- **It reads the arguments, not the whole command line.** A command routinely contains a
+  path under the operator's home directory, and the operator-name rules match that.
+  Checking the raw string would deny every correct commit — the same mistake that left
+  `commit-msg` switched off for months.
+- **Text piped in on stdin (`git commit -F -`, a heredoc) is warned about, not blocked.**
+  The guard cannot see it. Refusing a legitimate pipe would push people to `--no-verify`,
+  and a guard that gets switched off protects nothing. When you see that warning, run the
+  checker on the text yourself.
+
+**A bare client slug is only caught if your local rules name it.** It is an ordinary word —
+no shape distinguishes one from any other short lowercase word, which is why the composed
+forms (`research_<slug>`, `claire-<slug>-service-user`) are the ones matched structurally. Every
+client you can reach needs a `manual` entry in `local-redactions.json` for the bare slug in
+each casing. One was missing here, and a branch named after that client passed clean.
+
+**The prose is where this leaks, not the diff.** Diffs get read closely; the paragraph
+explaining which client hit the bug does not, and it is the one carrying the name. Both real
+incidents in this repo went out that way.
+
+If something already pushed names a client or a participant, say so immediately, scrub what
+can still be scrubbed, and state plainly what cannot be undone.
+
 ## 📖 Project Overview
 
 For detailed information on what this project is, what it does, and how it is structured, please read **[README.md](README.md)**.

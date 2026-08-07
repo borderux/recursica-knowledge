@@ -123,7 +123,89 @@ if (failed) {
   process.exit(1);
 }
 
-/* ── 2. values ─────────────────────────────────────────────────────────────── */
+/* ── 2. commit-message name check ──────────────────────────────────────────── */
+
+/**
+ * Wire the commit hook in the checkout this script was run from.
+ *
+ * `.husky/commit-msg` refuses a commit message that names a client or a participant, and
+ * this repository is public. But `core.hooksPath` is per-clone and unset by default, so a
+ * fresh clone has no hook at all and says nothing about it — which is how a client
+ * identifier reached a commit message here, on a machine where the guard was installed and
+ * simply never invoked.
+ *
+ * `npm install` normally sets this through the `prepare` script. A new operator does not
+ * run it: the deploy clones the repository and runs this script, and nothing in that path
+ * installs dependencies. This script is the one thing guaranteed to execute inside their
+ * clone, so it is where the hook gets turned on.
+ *
+ * Safe without dependencies: commit-msg is plain node against files already in the tree,
+ * and pre-commit skips formatting with an explanation when node_modules is absent rather
+ * than failing the commit. An operator who set hooksPath somewhere else on purpose keeps
+ * it — this reports rather than overrides.
+ */
+section("Commit-message name check");
+
+const insideRepo = (() => {
+  try {
+    return (
+      execFileSync("git", ["rev-parse", "--is-inside-work-tree"], {
+        cwd: repoRoot,
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+      }).trim() === "true"
+    );
+  } catch {
+    return false;
+  }
+})();
+
+if (!insideRepo) {
+  warn(
+    `not a git checkout, so the commit-message name check cannot be wired here.\n` +
+      `      Nothing is wrong if you installed the nest from an unpacked copy — but if you\n` +
+      `      intend to commit to this repository, clone it instead.`,
+  );
+} else {
+  let hooksPath = "";
+  try {
+    hooksPath = execFileSync("git", ["config", "core.hooksPath"], {
+      cwd: repoRoot,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+  } catch {
+    hooksPath = ""; // unset: git exits 1, which execFileSync throws on
+  }
+
+  if (hooksPath === ".husky") {
+    ok("commit-message name check is wired (core.hooksPath = .husky)");
+  } else if (hooksPath) {
+    warn(
+      `core.hooksPath is set to "${hooksPath}", not .husky, so the commit-message name\n` +
+        `      check is not running. Left alone in case that is deliberate. To enable it:\n` +
+        `        git -C ${repoRoot} config core.hooksPath .husky`,
+    );
+  } else if (CHECK) {
+    wrote("core.hooksPath = .husky (enables the commit-message name check)");
+  } else {
+    try {
+      execFileSync("git", ["config", "core.hooksPath", ".husky"], {
+        cwd: repoRoot,
+        stdio: "ignore",
+      });
+      wrote("core.hooksPath = .husky — commit messages are now checked for names");
+    } catch {
+      bad(
+        `could not set core.hooksPath, so commit messages are NOT checked for client or\n` +
+          `      participant names. Set it by hand before you commit:\n` +
+          `        git -C ${repoRoot} config core.hooksPath .husky`,
+      );
+    }
+  }
+}
+
+/* ── 3. values ─────────────────────────────────────────────────────────────── */
 
 section("Values");
 
@@ -153,7 +235,7 @@ ok(`STU_APP derived → ${values.STU_APP}`);
 const provided = Object.entries(values).filter(([k, v]) => !k.startsWith("$") && v).length;
 ok(`${provided} value${provided === 1 ? "" : "s"} loaded from ${path.relative(repoRoot, valuesFile) || valuesFile}`);
 
-/* ── 3. directories ────────────────────────────────────────────────────────── */
+/* ── 4. directories ────────────────────────────────────────────────────────── */
 
 section("Directories");
 
@@ -174,7 +256,7 @@ for (const d of manifest.directories ?? []) {
   }
 }
 
-/* ── 4. files ──────────────────────────────────────────────────────────────── */
+/* ── 5. files ──────────────────────────────────────────────────────────────── */
 
 section("Files");
 
@@ -251,7 +333,7 @@ if (unresolvedByFile.size) {
   failed++;
 }
 
-/* ── 5. toolbox ────────────────────────────────────────────────────────────── */
+/* ── 6. toolbox ────────────────────────────────────────────────────────────── */
 
 section("BigQuery toolbox");
 
@@ -321,7 +403,7 @@ if (installedSha && installedSha === wantSha) {
   );
 }
 
-/* ── 6. what this script does not do ───────────────────────────────────────── */
+/* ── 7. what this script does not do ───────────────────────────────────────── */
 
 section("Not done by this script");
 console.log(`  These are separate steps, each with its own tool:

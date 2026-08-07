@@ -121,6 +121,49 @@
       "pattern": "and several links point at `/Users/[^`]+`, which does not exist\\.",
       "replace": "and several links point at absolute paths on a previous maintainer's machine, which no longer resolve.",
       "reason": "Named a person and their local filesystem layout. The instruction only needs the fact that the links are dead."
+    },
+    {
+      "pattern": "\\bresearch_(?!acme\\b|building_claire\\b|<|\\{\\{|@)[a-z][a-z0-9_]*",
+      "reason": "a client dataset name",
+      "structural": true
+    },
+    {
+      "pattern": "\\bclaire-(?!acme\\b|acme-health\\b|<|\\{\\{|@)[a-z0-9][a-z0-9-]*-service-user",
+      "reason": "a client service-account name",
+      "structural": true
     }
+  ],
+
+  "$redactionsComment": [
+    "Two kinds of rule live here, and the difference decides whether the guard works on",
+    "somebody else's machine.",
+    "",
+    "The one-way replacements above are content-specific: a known bad sentence, and the",
+    "text that should stand in its place.",
+    "",
+    "The rules marked `structural: true` match a SHAPE rather than a value. They exist",
+    "because the rules that catch client names by name live in local-redactions.json,",
+    "which is gitignored and rebuilt per machine from whichever datasets that operator",
+    "can read. A slug present in one operator's file is absent from another's — which is",
+    "exactly how a client dataset name reached a commit message in a public repo while",
+    "the checker returned clean. A shape rule needs no local file and no foreknowledge of",
+    "the client, so it holds on a fresh clone.",
+    "",
+    "Client identifiers in this stack are conventional, which is what makes this possible:",
+    "a dataset is research_<slug>, an account is claire-<slug>-service-user. The negative",
+    "lookaheads exempt the documented placeholders — acme, building_claire, <slug>,",
+    "{{TOKEN}} and @dataset — so the guides and templates that must show the shape still",
+    "pass. Add a new example slug to the lookahead rather than deleting the rule.",
+    "",
+    "A rule with `$disabled` is skipped by check-text-for-names.mjs, so a rule that turns",
+    "out to be too broad can be parked with the reason instead of deleted and re-derived.",
+    "One caveat learned the hard way while writing this file: a lookahead is part of the",
+    "pattern and the pattern is committed, so exempting a real client by name puts that",
+    "name in the tree. Exempt the placeholder, never the client. The structural rules",
+    "below caught exactly that mistake in this file on the first sweep.",
+    "",
+    "An MCP-server rule for bq-<slug> and drive-<slug> was tried and withdrawn: bq-channel,",
+    "bq-exec and drive-fence are all legitimate, and the exemption list it needed was where",
+    "the mistake above happened."
   ]
 }

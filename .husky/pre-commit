@@ -1,1 +1,15 @@
-npx lint-staged
+# Formatting is a nicety. The name check in commit-msg is not.
+#
+# A fresh clone and every linked worktree start without node_modules, and this hook used to
+# die there with a bare ENOENT from prettier. A pre-commit hook that hard-fails on a clean
+# checkout teaches exactly one habit: `git commit --no-verify` — which skips commit-msg too,
+# and that is the hook standing between a client name and a public repository.
+#
+# So format when the toolchain is present, say plainly why not when it is absent, and never
+# block a commit over whitespace.
+if [ -x node_modules/.bin/lint-staged ]; then
+  node_modules/.bin/lint-staged
+else
+  echo "husky: no node_modules here, so formatting was skipped. \`npm install\` enables it."
+  echo "husky: the commit-message name check still ran — it needs nothing installed."
+fi

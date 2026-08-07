@@ -6,6 +6,7 @@
  * The real values live in `local-values.json`, which is gitignored.
  */
 
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -15,11 +16,44 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export const buzzAgentsDir = path.join(__dirname, "..");
 export const placeholdersPath = path.join(buzzAgentsDir, "placeholders.json");
-export const localValuesPath = path.join(buzzAgentsDir, "local-values.json");
-export const localRedactionsPath = path.join(
-  buzzAgentsDir,
-  "local-redactions.json",
-);
+
+/**
+ * The local files are gitignored, and a gitignored file does not exist in a linked
+ * worktree — which is where every commit in this repository is actually made.
+ *
+ * So resolving them next to this script means the name rules load in the main checkout
+ * and silently do not load anywhere real work happens. The checker still warned, but a
+ * warning printed on every commit in every worktree is one nobody reads, and the rules
+ * that catch participant names were the ones not running.
+ *
+ * Fall back to the main worktree, which `--git-common-dir` locates from anywhere inside
+ * the clone. Same clone by definition, so this cannot reach another operator's rules.
+ * Any failure — no git, not a repository, an old git — returns null and leaves the
+ * original path in place, so the warning still names somewhere real.
+ */
+function mainWorktreeBuzzAgentsDir() {
+  try {
+    const commonDir = execFileSync(
+      "git",
+      ["rev-parse", "--path-format=absolute", "--git-common-dir"],
+      { cwd: buzzAgentsDir, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] },
+    ).trim();
+    return commonDir ? path.join(path.dirname(commonDir), "buzz-agents") : null;
+  } catch {
+    return null;
+  }
+}
+
+function resolveLocal(name) {
+  const here = path.join(buzzAgentsDir, name);
+  if (fs.existsSync(here)) return here;
+  const mainDir = mainWorktreeBuzzAgentsDir();
+  const there = mainDir && path.join(mainDir, name);
+  return there && there !== here && fs.existsSync(there) ? there : here;
+}
+
+export const localValuesPath = resolveLocal("local-values.json");
+export const localRedactionsPath = resolveLocal("local-redactions.json");
 
 export const TOKEN_PATTERN = /\{\{([A-Z0-9_]+)\}\}/g;
 

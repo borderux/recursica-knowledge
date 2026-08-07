@@ -55,9 +55,25 @@ function read() {
 // A commit message's comment lines are stripped by git before the message is stored, so a
 // name inside one is never published. Checking them anyway would reject the commit for
 // text that git is about to discard — including the diff `git commit -v` appends.
+/**
+ * Git trailers are dropped too.
+ *
+ * `AGENTS.md` requires `Signed-off-by` and `Co-authored-by` on every commit, and both
+ * carry a real person's name and email by definition — that is what a sign-off is. So
+ * the operator-name rules matched every compliant commit message, which made the hook
+ * unusable: enabling it would have rejected 100% of correct commits, and that is why it
+ * sat unwired while client names went out in the prose above it.
+ *
+ * Only the trailer block is exempt, and only for lines that are actually trailers. A name
+ * in the body is still a finding — the exemption is for the metadata git itself asks for,
+ * not for naming people in prose.
+ */
+const TRAILER = /^(?:Signed-off-by|Co-authored-by|Reported-by|Reviewed-by|Tested-by|Acked-by|Helped-by|Suggested-by|Co-developed-by):/i;
+
 const body = read()
   .split("\n")
   .filter((line) => !line.startsWith("#"))
+  .filter((line) => !TRAILER.test(line))
   .join("\n");
 
 const { redactions } = loadPlaceholders();
@@ -96,14 +112,30 @@ if (values === null) {
  * Reported by TOKEN NAME, which is safe — `BQ_PROJECT` is public, its value is the part
  * that is not. Same convention export-agents.mjs already uses.
  */
+/**
+ * Two tokens are exempt, because their values are this repository's own public names.
+ *
+ * KNOWLEDGE_REPO_NAME is the name of the repo the text is being committed to, and
+ * BUILDER_REPO_NAME is a sibling repo named in the guides. Treating those as leaks made
+ * the checker report 50 of ~60 tracked files, including package.json and every component
+ * DOCS.md — noise on that scale is indistinguishable from a broken tool, and it trains
+ * whoever meets it to stop reading the output.
+ *
+ * They are exempt as TOKENS, not as strings: nothing else about the values is special, and
+ * a client identifier that happened to contain one would still be caught by the rules
+ * above.
+ */
+const PUBLIC_REPO_TOKENS = new Set(["KNOWLEDGE_REPO_NAME", "BUILDER_REPO_NAME"]);
+
 const tokenLeaks = values
-  ? findLeaks(body, deriveValues(values)).map(
-      (token) => `the value of {{${token}}}`,
-    )
+  ? findLeaks(body, deriveValues(values))
+      .filter((token) => !PUBLIC_REPO_TOKENS.has(token))
+      .map((token) => `the value of {{${token}}}`)
   : [];
 
 const matched = [
   ...redactions
+    .filter((r) => !r.$disabled)
     .filter((r) => new RegExp(r.pattern, r.flags ?? "g").test(body))
     .map((r) => r.reason ?? "a declared redaction"),
   ...local
