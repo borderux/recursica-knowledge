@@ -69,7 +69,7 @@ owner's side — what to send, what never to send, and how to revoke it later.
 
 |                         | Why                                                                          | Get it                |
 | ----------------------- | ---------------------------------------------------------------------------- | --------------------- |
-| **Buzz Desktop**        | Supplies the `buzz` CLI _and_ `buzz-acp`. Neither is distributed separately. | Install the app       |
+| **Buzz Desktop**        | Supplies the `buzz` CLI _and_ `buzz-acp`. Neither is distributed separately. | Ask whoever invited you for the build — there is no link here to give you |
 | **Claude Code**         | The runtime every agent is configured against                                | `claude` on your PATH |
 | **Node 18+**            | Runs the Drive fence server and these scripts                                | `node` on your PATH   |
 | **`gcloud`**            | Only if you will create a _new_ client dataset                               | Google Cloud SDK      |
@@ -107,6 +107,22 @@ Open it and fill it in. [`placeholders.json`](placeholders.json) says what each 
 and exactly where to find it. `TRANSCRIPT_DIR` you can leave blank — Step 4 derives it.
 
 Ask whoever runs your community for the channel UUIDs; they are the same for everyone in it.
+
+### If your key's filename does not match your slug, that is normal
+
+A Google service account cannot be renamed, so a client whose slug changed after setup keeps
+an account named for the old one. A channel on slug `acme` can legitimately be served by
+`claire-acme-health-service-user`. The name that matters is the one inside the key file:
+
+```bash
+node -e 'console.log(require(process.argv[1]).client_email)' ~/.buzz/.secrets/<your-key>.json
+```
+
+Where the two differ, everything below that says `claire-<slug>-service-user.json` means the
+account's real name instead, and `bin/stu` needs `--sa-slug <that-name>`. The channel canvas
+should carry it as `sa_slug`; if it does not, tell the person who onboarded you — the next
+operator hits the same thing. Do **not** try to rename the account in the console. You
+cannot, and replacing it means re-granting the dataset and re-sharing the Drive folder.
 
 > `local-values.json` is gitignored. Keep it that way — it is the file that would put your
 > project and folder ids into a public repo.

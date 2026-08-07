@@ -35,6 +35,7 @@ inconvenience, not a breach. A DM or a channel message is fine.
 | Value                                                          | Where you get it                                    |
 | -------------------------------------------------------------- | --------------------------------------------------- |
 | `BQ_PROJECT`                                                   | Cloud console → project picker → project **id**     |
+| `sa_slug`                                                      | Only when the account is not named after the slug   |
 | `DRIVE_FOLDER`                                                 | The client Drive folder URL, after `/folders/`      |
 | `TAG_SHEET_ID`                                                 | Tag Dictionary sheet URL, between `/d/` and `/edit` |
 | `CLAIRE_CHANNEL` `STU_CHANNEL` `ALAN_CHANNEL` `JANICE_CHANNEL` | `buzz channels list`                                |
@@ -54,22 +55,48 @@ operator and every one after them.
 Include `TAG_SHEET_ID`. It is the value most often missing from a canvas, it cannot be
 derived from anything else, and it is what a deploy stalls on.
 
+Include `sa_slug` **whenever the service account is not named after the slug** — see the
+section below for how to tell. It is the second value a deploy stalls on, and unlike a
+missing `TAG_SHEET_ID` the stall looks like a key belonging to the wrong client.
+
 `JANICE_PUBKEY` is the exception: it cannot be known in advance. Each operator gets their own
 Janice, whose pubkey does not exist until they save her draft — so it is filled in on a
 second bootstrap run afterwards. Tell them to expect that rather than treating it as a
 failure.
 
-### The service-account identity is derivable — you do not need to send it
+### The service-account identity is usually derivable — check before you rely on it
 
-Both the account and the filename follow a fixed shape, so their Fizz can work out what to
-expect and check the file she is given against it:
+Both the account and the filename normally follow a fixed shape, so their Fizz can work out
+what to expect and check the file she is given against it:
 
 ```
 claire-<slug>-service-user@<BQ_PROJECT>.iam.gserviceaccount.com
 ```
 
-Send the slug and the project id and that is enough. The **key file** is still a secret and
-still travels out of band — see below.
+**Confirm that is actually your account's name before you send nothing but the slug.** A
+Google service account cannot be renamed, so any client whose slug was shortened or changed
+after the account existed still answers to the original name — and then the derivation is
+wrong. Read the real name once:
+
+```bash
+node -e 'console.log(require(process.argv[1]).client_email)' \
+  ~/.buzz/.secrets/claire-<whatever-it-is>-service-user.json
+```
+
+If it does not match the derivation, **put `sa_slug` on the canvas** — the account's own name
+minus the `claire-` prefix and `-service-user` suffix. An account called
+`claire-acme-health-service-user` serving a channel on slug `acme` is `sa_slug: acme-health`.
+
+Leaving it off is not a small omission. The installer derives the expected address, compares
+it to the key you sent, sees a mismatch, and stops — which is the check doing its job, on a
+difference that is entirely legitimate. The operator cannot tell that from the real failure
+it is there to catch, which is a key belonging to another client. So the stall lands on them
+looking like a security problem.
+
+A symlink at the slug-named path makes it work on *your* machine and hides the problem from
+you specifically. That is worth knowing before you conclude the derivation is fine.
+
+The **key file** is still a secret and still travels out of band — see below.
 
 ### The secret — the service-account key, and only that
 
@@ -122,48 +149,29 @@ clients' data — **do not send it.** Almost always a project-level BigQuery rol
 
 ## The message to send them
 
-Fill in the blanks and send. Keep the key out of it.
+It lives in **[NEW_OPERATOR_MESSAGE.md](NEW_OPERATOR_MESSAGE.md)** — copy everything below the
+line in that file, fill in the three placeholders it names, and send.
 
-> You are set up to run your own agents. You need a Mac — there is no Linux or container
-> build.
->
-> 1. Install Buzz Desktop, and have `claude` and `node` on your PATH.
-> 2. Add **your own Fizz** to the channel the agents are for. She cannot see a private
->    channel she is not a member of — not its canvas, not even its name — and the
->    configuration lives in that channel's canvas. Your being a member does not cover her.
-> 3. **In that channel**, send your Fizz this one message, exactly as written — she clones
->    the repo and walks you through the rest:
->
->    ```
->    deploy the buzz agents: clone https://github.com/borderux/recursica-knowledge into ~/.buzz/REPOS/ and follow nest/.claude/skills/deploy-agents/SKILL.md
->    ```
->
->    Asking her _in_ the channel is what lets her read the config from its canvas instead
->    of asking you for each value.
->
->    Prefer doing it by hand? Clone that repo yourself and read
->    `buzz-agents/INSTALL.md`.
->
-> Your values:
->
-> ```
-> BQ_PROJECT     = ____________
-> DRIVE_FOLDER   = ____________
-> TAG_SHEET_ID   = ____________
-> slug           = ____________
-> ```
->
-> Channel UUIDs and Janice's pubkey your Fizz can look up herself.
->
-> The service-account key comes separately, via \***\*\_\_\_\_\*\***. Put it at
-> `~/.buzz/.secrets/claire-<slug>-service-user.json` and `chmod 600` it. Never let it into a
-> git checkout or a chat message.
->
-> You will need your own `ANTHROPIC_API_KEY` — you spend your own budget, not mine.
->
-> Two things nobody can do for you: **saving each of the four agent drafts** in Buzz
-> Desktop, and **restarting Buzz Desktop** afterwards so the MCP servers load. Until you
-> restart, your agents will look broken because they have no tools.
+It used to be a blockquote here, which was wrong in the way two copies of anything is wrong:
+the version people actually send drifted from the version in the repo, and every fix had to be
+made twice or made once and lost. One file, edited in place.
+
+Three things it deliberately does that a shorter note does not, all of them from watching
+people get stuck:
+
+- **Checks for `node` and `claude` before installing anything.** Most Macs that get this
+  message already have both.
+- **Explains the 👀 reaction.** It is the only signal that Fizz received the message, and the
+  work takes minutes — so anyone waiting for a *reply* concludes it is broken and gives up.
+  Without a mention there is no reaction at all, which is how you tell the two apart.
+- **Gives one pasteable line for the key**, rather than describing a folder that is invisible
+  in Finder.
+
+If the client's service account is not named after its slug, the placeholder table in that file
+is where you say so — and `sa_slug` belongs on the canvas too, per the section above.
+
+Everything else in that message is either public or theirs. The **key** is the one thing that
+travels out of band, separately, and never in the message.
 
 ---
 

@@ -7,6 +7,11 @@ branched, reviewed, and rebuilt in a new Buzz community.
 > step-by-step path and it is the only document you need. This file explains how the
 > storage format works, which matters when you are changing it rather than using it.
 >
+> **Handing the agents to someone else?** [ONBOARD_AN_OPERATOR.md](ONBOARD_AN_OPERATOR.md) is
+> your side of it — what to send, what never to send, how to revoke it later — and
+> [NEW_OPERATOR_MESSAGE.md](NEW_OPERATOR_MESSAGE.md) is the message you send them, written for
+> someone who has never seen any of this.
+>
 > The agent definitions here are half of what an agent needs; the scripts, fenced MCP
 > servers and runtime guides are the other half and live in [`../nest/`](../nest/),
 > installed by `scripts/bootstrap-nest.mjs`. An agent without the nest starts and then
