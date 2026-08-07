@@ -493,6 +493,16 @@ Then a smoke test they run themselves, using the real name:
   budget. Never copy one between machines.
 - **Never commit `local-values.json`, `.env`, or anything from `.secrets/`.** If a
   `git status` in that checkout ever shows one, stop and say so.
+- **The checkout is a public repository, and a commit message cannot be edited after a
+  push.** Never write a client name or slug, a dataset or service-account name built from
+  one, a participant's name or anything they said, a cloud project id, a Drive or sheet id,
+  a channel UUID or a pubkey into a commit message, a branch name, or a PR or issue body.
+  Write "the client" or "a participant" instead — the point always survives it. Step 3
+  turns on a hook that refuses a commit message naming one, but it only covers commit
+  messages: **a PR or issue body is yours to check**, by piping it through
+  `node buzz-agents/scripts/check-text-for-names.mjs` before you post it. Exit 2 means
+  rewrite. This has gone wrong for real, in the prose explaining a bug rather than in any
+  diff — that paragraph is the one carrying the name.
 - **A silent Janice is not a broken Janice.** A clean review produces no message. Do not go
   looking for a fault, and do not tell them it failed.
 - Prefer re-running bootstrap over hand-editing anything inside `~/.buzz`. Hand edits are
