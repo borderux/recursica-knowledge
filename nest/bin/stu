@@ -165,8 +165,14 @@ if [[ -z "$PROJECT" ]]; then
   [[ -n "$PROJECT" ]] || die "could not read project_id from $KEY — pass --project <id> or set STU_PROJECT"
 fi
 
+# Deliberately stricter than the app, which also accepts an email as an identity. On this path a
+# pubkey always exists — an agent has the sender's, and it is better than an email because it
+# survives a rename — so anything else in --user is a mistake worth catching at the launcher
+# rather than recording in edit_log. Someone with only an email uses --user-email; the app takes
+# that as the identity on its own. See app/server/actor.mjs.
 if [[ -n "$USER_PUBKEY" && ! "$USER_PUBKEY" =~ ^[0-9a-f]{64}$ ]]; then
-  die "--user must be a 64-character hex pubkey (not an npub): got \"$USER_PUBKEY\""
+  die "--user must be a 64-character hex pubkey (not an npub): got \"$USER_PUBKEY\"
+  If you only have an email address, pass --user-email <you@company.com> and leave --user off."
 fi
 
 ARGS=(--slug "$SLUG" --project "$PROJECT" --port "$PORT")

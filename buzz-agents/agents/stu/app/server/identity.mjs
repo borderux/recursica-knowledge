@@ -12,6 +12,8 @@
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 
+import { ACTOR_ID_EXPECTED, isActorId, isEmail } from './actor.mjs'
+
 const run = promisify(execFile)
 
 export function createIdentity(bq, { channelId, user }) {
@@ -113,10 +115,13 @@ export function createIdentity(bq, { channelId, user }) {
      * identity is itself something a reviewer may need to see.
      */
     async bind({ pubkey, email, displayName }) {
-      if (!/^[0-9a-f]{64}$/.test(pubkey ?? '')) {
-        throw new Error('pubkey must be 64 hex characters')
+      // The single authority on what an identity may be. The browser has its own check, but only
+      // to decide when to enable a button — it is a separate bundle and cannot share this module,
+      // so it must not be the thing relied on. Reject here.
+      if (!isActorId(pubkey)) {
+        throw new Error(ACTOR_ID_EXPECTED)
       }
-      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email ?? '')) {
+      if (!isEmail(email)) {
         throw new Error('a valid email address is required')
       }
 
