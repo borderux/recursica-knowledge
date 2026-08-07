@@ -8,6 +8,10 @@
     "             token; restore-agents.mjs swaps a target community's value back in.",
     "redactions — one-way. Text that should never be stored at all, scrubbed on export",
     "             and never reinstated. Use for anything personal or dead.",
+    "portableOnly — a token that appears only in the artifacts under portable/ and never in a",
+    "             prompt Buzz receives. No operator holds a value for one, so export-agents.mjs",
+    "             leaves it out of the \"no value for\" warning; build-agents.mjs fails if one",
+    "             ever reaches the Buzz prompt, which is what makes that exemption safe.",
     "",
     "Most of these are on the canvas of the channel the install is being run in, which is",
     "where to look before asking anybody for one. nest/.claude/skills/deploy-agents/SKILL.md",
@@ -116,11 +120,13 @@
       "howToFind": "Not on the canvas: each operator runs their own Janice, so this is per-machine, not per-community, and it does not exist until that Janice's draft has been saved. Then: buzz channels members --channel <janice-channel-uuid>, or the agent's profile in Buzz Desktop. Bootstrap therefore runs twice; it is idempotent."
     },
     "WORKSPACE_ROOT": {
-      "description": "Directory holding the repository checkouts an agent works in. On a Buzz install this is ~/.buzz/REPOS; on a plain checkout it is wherever the operator keeps their repos. Portable agent artifacts leave it as a token because the answer is per-installation.",
+      "description": "Directory holding the repository checkouts an agent works in. Appears only in the portable artifacts under portable/ — never in a prompt Buzz receives, which is what portableOnly means. On a Buzz install the equivalent path is written out in full; on a plain checkout it is wherever the operator keeps their repos.",
       "usedBy": [
         "alan"
       ],
-      "example": "~/src"
+      "example": "~/src",
+      "portableOnly": true,
+      "howToFind": "Nothing to find on a Buzz machine — leave it unset. Whoever ports the agent fills it in with their own checkout directory."
     }
   },
   "$redactionsComment": [
