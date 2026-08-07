@@ -19,17 +19,19 @@ the script, so nothing is copied. Re-run bootstrap if you move the clone.
 ## Running it from this directory
 
 ```bash
-cp stu.env.example stu.env      # fill in slug, project, channel
-./start.command                 # first run installs and builds; Ctrl-C stops it
+cp stu.env.example stu.env      # fill in slug and project
+./start.sh                      # first run installs and builds; Ctrl-C stops it
 ```
 
-`start.command` runs Stu out of this folder with no dependency on the `~/.buzz` layout —
-double-click it in Finder, or `./start.command --port 4400`. It runs in the foreground, unlike
-`nest/bin/stu`, which installs a launchd job tied to Buzz Desktop's lifetime.
+`start.sh` runs Stu out of this folder with no dependency on the `~/.buzz` layout, on **macOS or
+Linux**. It runs in the foreground, unlike `nest/bin/stu`, which installs a launchd job tied to
+Buzz Desktop's lifetime — and which is macOS-only for that reason. On macOS, `start.command` is a
+one-line shim that runs `start.sh`, because Finder will double-click a `.command` and not a `.sh`.
+Two names, one script.
 
 Two things it needs that this directory deliberately does not contain:
 
-- **A service-account key.** `start.command` looks in `STU_BQ_KEY`, then
+- **A service-account key.** `start.sh` looks in `STU_BQ_KEY`, then
   `secrets/claire-<slug>-service-user.json` beside this README, then `~/.buzz/.secrets/`.
   Send it through a channel that is not this repository.
 - **A network, once.** No build is committed. `npm install` in `web/` fetches the dependencies
@@ -41,8 +43,10 @@ Two things it needs that this directory deliberately does not contain:
 The server itself installs nothing. It imports only Node builtins — it reaches BigQuery over
 REST and signs its own JWT — so Node 18+ is the whole runtime requirement.
 
-One caveat on a machine without the Buzz CLI: `server/identity.mjs` shells out to `buzz` for the
-channel roster, so edit attribution degrades. Reading and tracing findings work regardless.
+On a machine without the Buzz CLI, the one thing that degrades is the roster picker:
+`server/identity.mjs` shells out to `buzz` to list channel members, and reports why rather than
+failing when it cannot. Identify yourself with `--user-email` instead — off Buzz an email *is* the
+identity, so nothing else is lost. See [`server/actor.mjs`](server/actor.mjs).
 
 ## Nothing here names a client
 
@@ -72,7 +76,8 @@ Where provenance is missing, that absence is displayed as a warning — not hidd
 | `server/bq.mjs` | BigQuery client. Parameterised queries, exhaustive pagination, nested-type decoding. |
 | `server/queries.mjs` | Every read. No caller builds SQL from user input. |
 | `server/edits.mjs` | **Every write.** Each function writes its own `edit_log` row. |
-| `server/identity.mjs` | Email ↔ pubkey binding via channel membership. |
+| `server/actor.mjs` | What counts as an identity — a Buzz pubkey, or an email anywhere else. |
+| `server/identity.mjs` | Binds an email to that identity, and looks up the channel roster where there is one. |
 | `server/config.mjs` | Resolves the one dataset this process may read, once, at startup. |
 | `server/server.mjs` | HTTP API + static host. Binds `127.0.0.1` only. |
 | `web/` | React + Mantine + the Recursica design system. |
@@ -84,7 +89,7 @@ the `bq-<slug>` MCP server, with IAM underneath as the layer that fails safe.
 ## The audit trail
 
 Every change goes through `server/edits.mjs`, and every function there writes an `edit_log` row:
-field, old value, new value, timestamp, and the editor's Buzz pubkey. There is no route that
+field, old value, new value, timestamp, and the editor's identity. There is no route that
 reaches BigQuery with a write and skips it — that is a property of the module layout, not a
 convention to remember.
 
@@ -92,9 +97,15 @@ If the data write succeeds and the log write fails, the caller gets an error nam
 An edit that happened but went unrecorded is worse than one you have to retry.
 
 **Identity is attribution, not authentication.** Anyone who can reach the loopback port can claim
-any channel member's identity. It records who *says* they made a change. The upgrade, when it
-matters: sign each edit with the user's own Nostr key and store the signature alongside the row —
-an addition, not a migration.
+anyone's identity. It records who *says* they made a change. The upgrade, when it matters: sign
+each edit with the user's own Nostr key and store the signature alongside the row — an addition,
+not a migration.
+
+The `users.pubkey` column holds a Buzz hex pubkey where there is one and an email address
+everywhere else. The two shapes cannot be confused — an email always contains `@` — which is what
+lets both live in one column with no discriminator beside it. The consequence, stated because it
+is not obvious: one human reaching the same dataset both through Buzz and from a checkout appears
+as two identities, and nothing merges them.
 
 ## Human edits are sticky
 
@@ -119,6 +130,8 @@ cd web && npm install && npm run build   # the server serves web/dist
 ~/.buzz/bin/stu --slug acme --foreground # server in the foreground
 
 cd web && npm run dev                    # Vite on :5173, proxying /api to :4317
+
+node --test 'server/*.test.mjs'          # no dependency to install
 ```
 
 `npm run build` runs the Recursica PostCSS plugin in strict mode, so a missing or incomplete

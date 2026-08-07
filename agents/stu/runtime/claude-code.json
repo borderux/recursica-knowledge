@@ -1,0 +1,8 @@
+{
+  "$comment": "Claude Code runtime settings for Stu. The prompt is portable/claude-code/agents/stu.md; this file is the config that has no business inside a prompt. Read agents/stu/PORTING.md before wiring any of it up — none of what follows is a data fence.",
+  "model": "opus",
+  "tools": ["Bash", "Read", "mcp__bq-@SLUG@-ro__execute_sql", "mcp__bq-@SLUG@-ro__get_table_info"],
+  "$toolsComment": "The `-ro` is the point of this file. Stu's central rule is that he never edits the data — a person does, through the app, and the change is recorded against them. On Buzz that rule is prose he could ignore. Here it is the read-only BigQuery server, so it is enforced. Do not swap in the read-write server to save configuring a second one; that turns the one guarantee this agent exists to provide back into a sentence.",
+  "$bashComment": "Bash is here to run one command — the app's launcher — and Stu needs nothing else from a shell. Narrow it to that launcher with a permission rule if your setup lets you: he has no reason to run anything a person did not ask for.",
+  "$noWriteComment": "No Write and no Edit, deliberately. Stu reports what needs a human decision and opens the app where a human makes it. He has no file to author."
+}
