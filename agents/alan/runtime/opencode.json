@@ -1,0 +1,14 @@
+{
+  "$comment": "opencode runtime settings for ALAN. Merge the `agent` block into your opencode.json; the prompt is portable/opencode/agents/alan.md and opencode reads it from .opencode/agents/alan.md.",
+  "agent": {
+    "alan": {
+      "mode": "primary",
+      "model": "anthropic/claude-opus-4-20250514",
+      "permission": {
+        "edit": "allow",
+        "bash": "allow"
+      }
+    }
+  },
+  "$permissionComment": "ALAN must not commit or push — that is stated as a hard prohibition in the prompt, not enforced here. opencode's permission model is coarse (allow/ask/deny per tool class), so it cannot express 'bash yes, git push no'. If you need that enforced rather than instructed, set bash to ask."
+}

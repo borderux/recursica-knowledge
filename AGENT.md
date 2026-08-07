@@ -106,6 +106,31 @@ incidents in this repo went out that way.
 If something already pushed names a client or a participant, say so immediately, scrub what
 can still be scrubbed, and state plainly what cannot be undone.
 
+## 🧳 Portable agents
+
+`agents/<name>/` is the source of truth for an agent. `SKILL.md` holds everything portable;
+`platform/*.md` holds only the passages where the surface differs; `runtime/*.json` holds
+settings that never belong in a prompt. Nothing under `buzz-agents/agents/*/SYSTEM_PROMPT.md`
+or `portable/` is edited by hand — those are build outputs.
+
+```bash
+npm run agents:build:check   # report drift, write nothing
+npm run agents:build         # write
+```
+
+Three rules the build enforces so you do not have to remember them:
+
+- **The Buzz prompt must not change.** It is asserted byte-identical to what is committed
+  unless you pass `--accept`. A refactor that alters the shipped prompt is not a refactor.
+- **Every `{{TOKEN}}` reaching an artifact must be declared** in
+  `buzz-agents/placeholders.json`. Portable artifacts keep their tokens on purpose — they are
+  per-installation — but an undeclared one is unanswerable for whoever is porting.
+- **Every artifact is name-checked before it is written.** Generated files in a public repo
+  are the category that gets read least closely.
+
+Not every agent ports. `agents/<name>/PORTING.md` says what one needs and what it cannot
+carry — above all that **a prompt does not carry a data fence**.
+
 ## 📖 Project Overview
 
 For detailed information on what this project is, what it does, and how it is structured, please read **[README.md](README.md)**.

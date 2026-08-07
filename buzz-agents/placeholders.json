@@ -4,9 +4,9 @@
     "{{TOKEN}} in their place, and the value is supplied when the agent is installed",
     "into a Buzz community.",
     "",
-    "tokens     \u2014 bidirectional. export-agents.mjs swaps the local value out for the",
+    "tokens     — bidirectional. export-agents.mjs swaps the local value out for the",
     "             token; restore-agents.mjs swaps a target community's value back in.",
-    "redactions \u2014 one-way. Text that should never be stored at all, scrubbed on export",
+    "redactions — one-way. Text that should never be stored at all, scrubbed on export",
     "             and never reinstated. Use for anything personal or dead.",
     "",
     "Most of these are on the canvas of the channel the install is being run in, which is",
@@ -14,126 +14,115 @@
     "holds the canvas-key-to-token map and the canonical canvas layout.",
     "",
     "Only declared tokens belong in local-values.json. Every value in that file is treated",
-    "as a substring to replace on export, so adding a short one \u2014 a client slug, a person's",
-    "first name \u2014 rewrites unrelated words in prompts that happen to contain it."
+    "as a substring to replace on export, so adding a short one — a client slug, a person's",
+    "first name — rewrites unrelated words in prompts that happen to contain it."
   ],
   "tokens": {
     "BQ_PROJECT": {
       "description": "Google Cloud project holding the BigQuery datasets Claire reads.",
-      "usedBy": ["claire"],
+      "usedBy": [
+        "claire"
+      ],
       "example": "acme-research-123456",
-      "howToFind": "Canvas key `bq_project` in the install channel. Otherwise: Google Cloud console \u2192 project picker \u2192 the project ID (not the display name)."
+      "howToFind": "Canvas key `bq_project` in the install channel. Otherwise: Google Cloud console → project picker → the project ID (not the display name)."
     },
     "BUILDER_REPO": {
       "description": "owner/name of the prototype repository ALAN builds in.",
-      "usedBy": ["alan"],
+      "usedBy": [
+        "alan"
+      ],
       "example": "acme/design-sandbox",
       "howToFind": "Canvas key `builder_repo` in the install channel. Otherwise: the GitHub path of the repo ALAN should build prototypes in."
     },
     "BUILDER_REPO_NAME": {
       "description": "Bare repository name from BUILDER_REPO. Used for checkout paths.",
-      "usedBy": ["alan"],
+      "usedBy": [
+        "alan"
+      ],
       "example": "design-sandbox",
       "howToFind": "The part of BUILDER_REPO after the slash. Derived from canvas key `builder_repo`, not looked up."
     },
     "KNOWLEDGE_REPO_NAME": {
       "description": "Bare name of the design-knowledge repository ALAN promotes findings into and must never edit directly.",
-      "usedBy": ["alan"],
+      "usedBy": [
+        "alan"
+      ],
       "example": "design-knowledge",
       "howToFind": "Canvas key `knowledge_repo` in the install channel. The repository holding the design-rule skills, which ALAN promotes findings into and must never edit directly."
     },
     "TRANSCRIPT_DIR": {
       "description": "Directory holding the agent session transcripts Janice reads as evidence. Contains one <session-id>.jsonl per session.",
-      "usedBy": ["janice"],
+      "usedBy": [
+        "janice"
+      ],
       "example": "/Users/you/.claude/projects/-Users-you--buzz",
-      "howToFind": "Claude Code writes transcripts to ~/.claude/projects/<encoded-cwd>/, where the encoded name is the agent nest's absolute path with each slash and dot replaced by a dash \u2014 /Users/you/.buzz becomes -Users-you--buzz. bootstrap-nest.mjs derives this for you."
+      "howToFind": "Claude Code writes transcripts to ~/.claude/projects/<encoded-cwd>/, where the encoded name is the agent nest's absolute path with each slash and dot replaced by a dash — /Users/you/.buzz becomes -Users-you--buzz. bootstrap-nest.mjs derives this for you."
     },
     "TAG_SHEET_ID": {
       "description": "Google Sheet holding the shared tag dictionary every research channel tags against. Research taxonomy, no client content.",
-      "usedBy": ["nest"],
+      "usedBy": [
+        "nest"
+      ],
       "example": "1AbCdEfGhIjKlMnOpQrStUvWxYz0123456789",
-      "howToFind": "Canvas key `tag_sheet` in the install channel. Otherwise: open the Tag Dictionary sheet; it is the part of the URL between /d/ and /edit. Must be shared as Viewer with the claire-tag-dictionary-reader service account \u2014 see Step 0 of CLAIRE_ZERO_TO_RUNNING.md."
+      "howToFind": "Canvas key `tag_sheet` in the install channel. Otherwise: open the Tag Dictionary sheet; it is the part of the URL between /d/ and /edit. Must be shared as Viewer with the claire-tag-dictionary-reader service account — see Step 0 of CLAIRE_ZERO_TO_RUNNING.md."
     },
     "DRIVE_FOLDER": {
       "description": "Drive folder id for one client. The entire world a channel's Drive service account can see.",
-      "usedBy": ["nest"],
+      "usedBy": [
+        "nest"
+      ],
       "example": "1AbCdEfGhIjKlMnOpQrStUvWxYz_",
       "howToFind": "Canvas key `drive_folder` in the install channel. Otherwise: open the client folder in Drive; it is the part of the URL after /folders/."
     },
     "CLAIRE_CHANNEL": {
       "description": "UUID of the building-claire channel in this community. Janice routes findings about Claire here.",
-      "usedBy": ["nest"],
+      "usedBy": [
+        "nest"
+      ],
       "example": "00000000-0000-0000-0000-000000000000",
       "howToFind": "Canvas key `claire_channel` in the install channel. Otherwise `buzz channels list`, or the channel header in Buzz. This is Janice's routing table, not the channel the install runs in."
     },
     "STU_CHANNEL": {
       "description": "UUID of the building-stu channel in this community. Janice routes findings about Stu here.",
-      "usedBy": ["nest"],
+      "usedBy": [
+        "nest"
+      ],
       "example": "00000000-0000-0000-0000-000000000000",
       "howToFind": "Canvas key `stu_channel` in the install channel. Otherwise `buzz channels list`, or the channel header in Buzz. This is Janice's routing table, not the channel the install runs in."
     },
     "ALAN_CHANNEL": {
       "description": "UUID of the building-alan channel in this community. Janice routes findings about ALAN here.",
-      "usedBy": ["nest"],
+      "usedBy": [
+        "nest"
+      ],
       "example": "00000000-0000-0000-0000-000000000000",
       "howToFind": "Canvas key `alan_channel` in the install channel. Otherwise `buzz channels list`, or the channel header in Buzz. This is Janice's routing table, not the channel the install runs in."
     },
     "JANICE_CHANNEL": {
       "description": "UUID of the building-janice channel in this community. Janice's wake messages land here, and it is the fallback for findings about an agent with no channel of its own.",
-      "usedBy": ["nest", "janice"],
+      "usedBy": [
+        "nest",
+        "janice"
+      ],
       "example": "00000000-0000-0000-0000-000000000000",
       "howToFind": "Canvas key `janice_channel` in the install channel. Otherwise `buzz channels list`, or the channel header in Buzz. This is Janice's routing table, not the channel the install runs in."
     },
     "JANICE_PUBKEY": {
       "description": "Hex pubkey of the Janice instance on this machine, used by the wake hook to address her. One per operator, not one per community.",
-      "usedBy": ["nest"],
+      "usedBy": [
+        "nest"
+      ],
       "example": "0000000000000000000000000000000000000000000000000000000000000000",
       "howToFind": "Not on the canvas: each operator runs their own Janice, so this is per-machine, not per-community, and it does not exist until that Janice's draft has been saved. Then: buzz channels members --channel <janice-channel-uuid>, or the agent's profile in Buzz Desktop. Bootstrap therefore runs twice; it is idempotent."
+    },
+    "WORKSPACE_ROOT": {
+      "description": "Directory holding the repository checkouts an agent works in. On a Buzz install this is ~/.buzz/REPOS; on a plain checkout it is wherever the operator keeps their repos. Portable agent artifacts leave it as a token because the answer is per-installation.",
+      "usedBy": [
+        "alan"
+      ],
+      "example": "~/src"
     }
   },
-  "$redactionsComment": [
-    "Redactions are regular expressions, not literals, so that a rule never has to spell",
-    "out the very text it exists to remove. A literal `find` would put the identifier",
-    "straight back into this file.",
-    "",
-    "NO NAME GOES IN THIS FILE. Not a client's, not a participant's, not an operator's,",
-    "not a live identifier, not one that is 'already in the history anyway'. A pattern",
-    "that cannot describe its subject without naming it does not belong here at all.",
-    "",
-    "This file once carried seven such literals, kept on the argument that the history",
-    "already held them so the working tree cost nothing. It does cost something: the",
-    "working tree is what a person reads, what a clone ships, and what a search engine",
-    "indexes. They were removed, and the guard did not weaken, because there was already",
-    "somewhere better for them to live.",
-    "",
-    "That place is buzz-agents/local-redactions.json — gitignored, and in two halves.",
-    "`redactions` is generated from the live dataset by scripts/refresh-local-redactions.mjs.",
-    "`manual` is hand-written and preserved across regeneration, for the subjects no",
-    "dataset carries: a client slug, an operator's own name, a retired credential",
-    "fragment. Both are literals; neither is versioned. The rule travels with the",
-    "operator who can already see the data, and never with the repository.",
-    "",
-    "The single entry below is the shape that is still allowed: it describes its subject",
-    "structurally and names nobody."
-  ],
-  "redactions": [
-    {
-      "pattern": "and several links point at `/Users/[^`]+`, which does not exist\\.",
-      "replace": "and several links point at absolute paths on a previous maintainer's machine, which no longer resolve.",
-      "reason": "Named a person and their local filesystem layout. The instruction only needs the fact that the links are dead."
-    },
-    {
-      "pattern": "\\bresearch_(?!acme\\b|building_claire\\b|<|\\{\\{|@)[a-z][a-z0-9_]*",
-      "reason": "a client dataset name",
-      "structural": true
-    },
-    {
-      "pattern": "\\bclaire-(?!acme\\b|acme-health\\b|<|\\{\\{|@)[a-z0-9][a-z0-9-]*-service-user",
-      "reason": "a client service-account name",
-      "structural": true
-    }
-  ],
-
   "$redactionsComment": [
     "Two kinds of rule live here, and the difference decides whether the guard works on",
     "somebody else's machine.",
@@ -165,5 +154,22 @@
     "An MCP-server rule for bq-<slug> and drive-<slug> was tried and withdrawn: bq-channel,",
     "bq-exec and drive-fence are all legitimate, and the exemption list it needed was where",
     "the mistake above happened."
+  ],
+  "redactions": [
+    {
+      "pattern": "and several links point at `/Users/[^`]+`, which does not exist\\.",
+      "replace": "and several links point at absolute paths on a previous maintainer's machine, which no longer resolve.",
+      "reason": "Named a person and their local filesystem layout. The instruction only needs the fact that the links are dead."
+    },
+    {
+      "pattern": "\\bresearch_(?!acme\\b|building_claire\\b|<|\\{\\{|@)[a-z][a-z0-9_]*",
+      "reason": "a client dataset name",
+      "structural": true
+    },
+    {
+      "pattern": "\\bclaire-(?!acme\\b|acme-health\\b|<|\\{\\{|@)[a-z0-9][a-z0-9-]*-service-user",
+      "reason": "a client service-account name",
+      "structural": true
+    }
   ]
 }
