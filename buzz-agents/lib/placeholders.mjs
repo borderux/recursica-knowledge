@@ -215,9 +215,26 @@ export function findLiteralLeaks(text, localRedactions) {
     .map((r) => r.label);
 }
 
-/** Redaction patterns that matched nothing — a rule that has silently stopped working. */
+/**
+ * Redaction patterns that matched nothing — a rule that has silently stopped working.
+ *
+ * `structural: true` is exempt, and the distinction is the whole point of the flag.
+ *
+ * A literal redaction targets one known string, so matching nothing means the text moved and the
+ * rule is now pointing at nowhere. Worth reporting: it has stopped working and nobody would know.
+ *
+ * A structural one matches a *shape* — any client dataset, any client service-account name — and
+ * exists to catch a name nobody has written yet. Matching nothing is what success looks like, and
+ * it is the normal state on a clean repository. Reporting it means the warning fires on every run
+ * forever, and a warning that is always there gets read as decoration — which is exactly how the
+ * next one, about a rule that genuinely has broken, gets read too.
+ *
+ * Same reasoning as the `portableOnly` exemption on token warnings. The flag was already declared
+ * on both structural patterns in placeholders.json and read by nothing; this is what it is for.
+ */
 export function findStaleRedactions(text, redactions) {
   return redactions
+    .filter((r) => !r.structural)
     .filter((r) => !new RegExp(r.pattern, r.flags ?? "g").test(text))
     .map((r) => r.pattern);
 }
