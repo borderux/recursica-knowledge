@@ -13,6 +13,12 @@
     "             leaves it out of the \"no value for\" warning; build-agents.mjs fails if one",
     "             ever reaches the Buzz prompt, which is what makes that exemption safe.",
     "",
+    "deployTokens — the OTHER syntax, @SLUG@ rather than {{TOKEN}}. Expanded once by the deploy",
+    "             script and never swapped back, where a {{TOKEN}} is swapped bidirectionally on",
+    "             export. Two lifecycles, which is why there are two syntaxes; do not unify them.",
+    "             Declaring a client slug as a {{TOKEN}} would make it a substring replaced across",
+    "             every prompt, which is the footgun described just below.",
+    "",
     "Most of these are on the canvas of the channel the install is being run in, which is",
     "where to look before asking anybody for one. nest/.claude/skills/deploy-agents/SKILL.md",
     "holds the canvas-key-to-token map and the canonical canvas layout.",
@@ -177,5 +183,17 @@
       "reason": "a client service-account name",
       "structural": true
     }
-  ]
+  ],
+  "deployTokens": {
+    "SLUG": {
+      "description": "Short lowercase name for one client. Expanded into subagent names, MCP server names and prose.",
+      "expandedBy": "nest/bin/deploy-claire-channel.sh, once per client",
+      "example": "acme"
+    },
+    "DATASET": {
+      "description": "Fully-qualified BigQuery dataset for that client, as project.dataset.",
+      "expandedBy": "nest/bin/deploy-claire-channel.sh, once per client",
+      "example": "acme-research-123456.research_acme"
+    }
+  }
 }

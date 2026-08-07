@@ -21,8 +21,18 @@
  *                   whole point is that somebody browsing the public repo can copy the file
  *                   straight into their own project without installing anything of ours.
  *
- * The Buzz output is asserted byte-identical to what is already committed unless --accept
- * is passed. A refactor that changes the shipped prompt is not a refactor.
+ * Subagents live at agents/<name>/subagents/<sub>/ and build to two places:
+ *
+ *   nest          → nest/mcp/templates/agents/<sub>.md.tmpl
+ *                   The template deploy-claire-channel.sh renders per client. Same seam as the
+ *                   Buzz prompt: the deploy already read that path, so the template becoming a
+ *                   build output is invisible to it.
+ *
+ *   claude-code   → portable/claude-code/agents/<sub>.md
+ *
+ * A `pinned` target — the Buzz prompt, the nest template — is asserted byte-identical to what
+ * is already committed unless --accept is passed. A refactor that changes what is already
+ * shipping is not a refactor.
  *
  *   node scripts/build-agents.mjs --check     report drift, write nothing
  *   node scripts/build-agents.mjs             write
@@ -65,9 +75,25 @@ Targets: buzz, claude-code, opencode. See the header of this file for where each
  * identical files is how drift starts. Split them the day they genuinely differ.
  */
 const TARGETS = {
-  buzz: { fragments: "buzz.md", out: (n) => `buzz-agents/agents/${n}/SYSTEM_PROMPT.md`, frontmatter: false },
+  buzz: { fragments: "buzz.md", out: (n) => `buzz-agents/agents/${n}/SYSTEM_PROMPT.md`, frontmatter: false, pinned: true },
   "claude-code": { fragments: "session.md", out: (n) => `portable/claude-code/agents/${n}.md`, frontmatter: "claude-code" },
   opencode: { fragments: "session.md", out: (n) => `portable/opencode/agents/${n}.md`, frontmatter: "opencode" },
+};
+
+/**
+ * Where a subagent's two artifacts land.
+ *
+ * `nest` writes the template `deploy-claire-channel.sh` renders per client. It is pinned for
+ * the same reason the Buzz prompt is, and for the same seam: the deploy already reads that
+ * path, so the template becoming a build output is invisible to it. Nothing in the deploy,
+ * the nest manifest or the installer changes.
+ *
+ * No `frontmatter` key on either — a subagent's front matter is part of the artifact rather
+ * than something rendered around it, so it stays in SKILL.md where the markers can reach it.
+ */
+const SUBAGENT_TARGETS = {
+  nest: { fragments: "nest.md", out: (n) => `nest/mcp/templates/agents/${n}.md.tmpl`, pinned: true },
+  "claude-code": { fragments: "session.md", out: (n) => `portable/claude-code/agents/${n}.md` },
 };
 
 let changed = 0;
@@ -133,7 +159,98 @@ function nameCheck(text, label) {
   }
 }
 
-const declaredTokens = JSON.parse(fs.readFileSync(path.join(repoRoot, "buzz-agents", "placeholders.json"), "utf8")).tokens;
+const placeholders = JSON.parse(fs.readFileSync(path.join(repoRoot, "buzz-agents", "placeholders.json"), "utf8"));
+const declaredTokens = placeholders.tokens;
+const declaredDeployTokens = placeholders.deployTokens ?? {};
+
+/**
+ * Compose one artifact and run every guard over it before it is written.
+ *
+ * Shared by agents and subagents because the guards must not differ between them. A subagent
+ * is where the tool allowlist lives, so it is the last place that should get a cheaper check
+ * than the orchestrator above it.
+ */
+function buildArtifact({ source, base, target, spec, outName, label }) {
+  const fragFile = path.join(base, "platform", spec.fragments);
+  if (!fs.existsSync(fragFile)) { bad(`${target}: no platform/${spec.fragments}`); return; }
+  const frags = loadFragments(fragFile);
+
+  let out = source.body;
+  const markers = [...source.body.matchAll(/<!-- platform:([a-z0-9-]+) -->/g)].map((m) => m[1]);
+  for (const marker of markers) {
+    if (!(marker in frags)) { bad(`${target}: platform/${spec.fragments} has no "## ${marker}" block`); return; }
+    out = out.split(`<!-- platform:${marker} -->`).join(frags[marker]);
+  }
+  if (spec.frontmatter) out = renderFrontmatter(spec.frontmatter, source.meta) + out;
+
+  const rel = spec.out(outName);
+  const outPath = path.join(repoRoot, rel);
+  const prev = fs.existsSync(outPath) ? fs.readFileSync(outPath, "utf8") : null;
+
+  /**
+   * A `pinned` target is one whose artifact something else already consumes — the prompt Buzz
+   * loads, the template the deploy renders. Changing it is a different act from refactoring
+   * how it is stored, so it is asserted byte-identical and `--accept` is the way to say you
+   * meant it.
+   */
+  if (spec.pinned && prev !== null && prev !== out && !ACCEPT) {
+    bad(`${target}: composed output differs from the committed ${rel} (${prev.length} → ${out.length} bytes).\n      A refactor must not change what is already shipping. Diff it, and pass --accept only if\n      the change is deliberate.`);
+    return;
+  }
+  /**
+   * Every {{TOKEN}} that survives into an artifact must be declared.
+   *
+   * A portable artifact SHOULD still carry tokens — the repo checkout, the workspace root
+   * and so on are per-installation and PORTING.md is where they get explained. What must
+   * not happen is a token nobody declared: it reads as configuration, appears in no table,
+   * and the person porting the agent has no way to learn what to put there. Writing this
+   * check is how I caught myself inventing {{WORKSPACE_ROOT}} in the first draft.
+   */
+  const undeclared = [...new Set([...out.matchAll(/\{\{([A-Z0-9_]+)\}\}/g)].map((m) => m[1]))]
+    .filter((t) => !(t in declaredTokens));
+  if (undeclared.length) {
+    bad(`${target}: undeclared token${undeclared.length > 1 ? "s" : ""} ${undeclared.map((t) => "{{" + t + "}}").join(", ")} — declare in buzz-agents/placeholders.json or remove`);
+    return;
+  }
+  /**
+   * The same rule for the OTHER templating syntax.
+   *
+   * `@SLUG@` is expanded once by the deploy script and never swapped back, where `{{TOKEN}}`
+   * is swapped bidirectionally on export — two lifecycles, which is why the repo has two
+   * syntaxes rather than one plus an oversight. But only `{{TOKEN}}` had a declaration check,
+   * so an `@ANYTHING@` could reach a public artifact undocumented and nothing would say so.
+   */
+  const undeclaredDeploy = [...new Set([...out.matchAll(/@([A-Z0-9_]+)@/g)].map((m) => m[1]))]
+    .filter((t) => !(t in declaredDeployTokens));
+  if (undeclaredDeploy.length) {
+    bad(`${target}: undeclared deploy token${undeclaredDeploy.length > 1 ? "s" : ""} ${undeclaredDeploy.map((t) => "@" + t + "@").join(", ")} — declare in buzz-agents/placeholders.json under deployTokens, or remove`);
+    return;
+  }
+  /**
+   * A `portableOnly` token must not reach an artifact something already consumes.
+   *
+   * export-agents.mjs skips those tokens when it reports which values are unset, because no
+   * operator will ever hold one and a warning that always fires is read as decoration. That
+   * exemption is only safe while the claim behind it holds, and nothing was checking it — a
+   * portable-only token moved into a shipped passage would leave `{{TOKEN}}` in a live
+   * prompt with the one warning that would have caught it switched off by hand.
+   */
+  if (spec.pinned) {
+    const leaked = [...new Set([...out.matchAll(/\{\{([A-Z0-9_]+)\}\}/g)].map((m) => m[1]))]
+      .filter((t) => declaredTokens[t]?.portableOnly);
+    if (leaked.length) {
+      bad(`${target}: ${leaked.map((t) => "{{" + t + "}}").join(", ")} is declared portableOnly and must not reach ${rel} — move it into the portable platform fragment, or drop the flag in buzz-agents/placeholders.json`);
+      return;
+    }
+  }
+  if (!nameCheck(out, `${label}/${target}`)) return;
+  if (prev === out) { ok(`${target}: ${rel} up to date`); return; }
+  if (!CHECK) {
+    fs.mkdirSync(path.dirname(outPath), { recursive: true });
+    fs.writeFileSync(outPath, out);
+  }
+  wrote(`${target}: ${rel} (${out.length} bytes)`);
+}
 
 const names = fs.readdirSync(agentsDir, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name);
 if (!names.length) { console.log("No agents/ sources yet."); process.exit(0); }
@@ -162,66 +279,32 @@ for (const name of names) {
   }
 
   for (const [target, spec] of Object.entries(TARGETS).filter(([t]) => wanted.includes(t))) {
-    const fragFile = path.join(base, "platform", spec.fragments);
-    if (!fs.existsSync(fragFile)) { bad(`${target}: no platform/${spec.fragments}`); continue; }
-    const frags = loadFragments(fragFile);
+    buildArtifact({ source: { meta, body }, base, target, spec, outName: name, label: name });
+  }
 
-    let out = body;
-    const markers = [...body.matchAll(/<!-- platform:([a-z0-9-]+) -->/g)].map((m) => m[1]);
-    let unresolved = false;
-    for (const marker of markers) {
-      if (!(marker in frags)) { bad(`${target}: platform/${spec.fragments} has no "## ${marker}" block`); unresolved = true; continue; }
-      out = out.split(`<!-- platform:${marker} -->`).join(frags[marker]);
+  /**
+   * Subagents are built after the agent that dispatches them.
+   *
+   * They are a second level rather than four more top-level agents because they are not
+   * separately useful: Scribe without Claire has nobody to hand it a transcript. Nesting them
+   * under the orchestrator keeps that relationship in the layout instead of a comment.
+   *
+   * Their targets are fixed rather than declarable. Both existing consumers want the same
+   * file — a Claude subagent with `name`, `description` and `tools` — so there is nothing for
+   * a `targets:` line to choose between. Add the mechanism when a target actually differs.
+   */
+  const subDir = path.join(base, "subagents");
+  if (!fs.existsSync(subDir)) continue;
+  for (const sub of fs.readdirSync(subDir, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name)) {
+    const subBase = path.join(subDir, sub);
+    // Read whole. Unlike an agent, a subagent's front matter IS the artifact — `name`,
+    // `description` and `tools` are what make the file a subagent — and both targets want the
+    // same shape, so there is nothing to strip and re-render. Markers work inside it.
+    const raw = fs.readFileSync(path.join(subBase, "SKILL.md"), "utf8");
+    console.log(`  \x1b[1m${sub}\x1b[0m`);
+    for (const [target, spec] of Object.entries(SUBAGENT_TARGETS)) {
+      buildArtifact({ source: { meta: {}, body: raw }, base: subBase, target, spec, outName: sub, label: `${name}/${sub}` });
     }
-    if (unresolved) continue;
-    if (spec.frontmatter) out = renderFrontmatter(spec.frontmatter, meta) + out;
-
-    const outPath = path.join(repoRoot, spec.out(name));
-    const prev = fs.existsSync(outPath) ? fs.readFileSync(outPath, "utf8") : null;
-
-    if (target === "buzz" && prev !== null && prev !== out && !ACCEPT) {
-      bad(`buzz: composed prompt differs from the committed SYSTEM_PROMPT.md (${prev.length} → ${out.length} bytes).\n      A refactor must not change the shipped prompt. Diff it, and pass --accept only if the\n      change is deliberate.`);
-      continue;
-    }
-    /**
-     * Every {{TOKEN}} that survives into an artifact must be declared.
-     *
-     * A portable artifact SHOULD still carry tokens — the repo checkout, the workspace root
-     * and so on are per-installation and PORTING.md is where they get explained. What must
-     * not happen is a token nobody declared: it reads as configuration, appears in no table,
-     * and the person porting the agent has no way to learn what to put there. Writing this
-     * check is how I caught myself inventing {{WORKSPACE_ROOT}} in the first draft.
-     */
-    const undeclared = [...new Set([...out.matchAll(/\{\{([A-Z0-9_]+)\}\}/g)].map((m) => m[1]))]
-      .filter((t) => !(t in declaredTokens));
-    if (undeclared.length) {
-      bad(`${target}: undeclared token${undeclared.length > 1 ? "s" : ""} ${undeclared.map((t) => "{{" + t + "}}").join(", ")} — declare in buzz-agents/placeholders.json or remove`);
-      continue;
-    }
-    /**
-     * A `portableOnly` token must not reach the Buzz prompt.
-     *
-     * export-agents.mjs skips those tokens when it reports which values are unset, because no
-     * operator will ever hold one and a warning that always fires is read as decoration. That
-     * exemption is only safe while the claim behind it holds, and nothing was checking it — a
-     * portable-only token moved into a Buzz-bound passage would leave `{{TOKEN}}` in a live
-     * prompt with the one warning that would have caught it switched off by hand.
-     */
-    if (target === "buzz") {
-      const leaked = [...new Set([...out.matchAll(/\{\{([A-Z0-9_]+)\}\}/g)].map((m) => m[1]))]
-        .filter((t) => declaredTokens[t]?.portableOnly);
-      if (leaked.length) {
-        bad(`buzz: ${leaked.map((t) => "{{" + t + "}}").join(", ")} is declared portableOnly and must not reach the Buzz prompt — move it into platform/session.md, or drop the flag in buzz-agents/placeholders.json`);
-        continue;
-      }
-    }
-    if (!nameCheck(out, `${name}/${target}`)) continue;
-    if (prev === out) { ok(`${target}: ${spec.out(name)} up to date`); continue; }
-    if (!CHECK) {
-      fs.mkdirSync(path.dirname(outPath), { recursive: true });
-      fs.writeFileSync(outPath, out);
-    }
-    wrote(`${target}: ${spec.out(name)} (${out.length} bytes)`);
   }
 }
 
