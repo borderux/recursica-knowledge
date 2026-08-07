@@ -19,11 +19,12 @@ Three reasons it is built that way:
 1. **A client's key filename names the client.** Substituting it put a client name into a chat
    message, and from there into anything anyone pasted onward. Removing the substitution
    removes the whole path.
-2. **The filename was the easiest thing to get wrong.** The service account is not always
-   `claire-<slug>-service-user` — it keeps whatever name it was created with. Someone
-   pre-filling the "obvious" name hands the new operator a mismatch that looks exactly like a
-   security incident on their first day. The Terminal line now matches on the
-   `-service-user.json` suffix instead, so nobody has to know the name at all.
+2. **The filename was the easiest thing to get wrong, and it is not predictable.** A service
+   account keeps whatever name it was created with, and a key downloaded straight from Google
+   is named after the project and key id — `someproject-1a2b3c4d.json` — which says nothing
+   about which identity it holds. So the steps below never mention a filename: the reader
+   drags whatever file they were sent, and **you** confirm it is the right identity in the
+   channel afterwards, by its `client_email` rather than its name.
 3. **One channel is one client.** Which channel a person joins depends on the work, so a
    pre-filled channel name is wrong for everyone except the first reader.
 
@@ -66,30 +67,39 @@ budget.
 
 ### Step 2 — The one file I send you separately
 
-I will send you a **key file** through a password manager — **not** over chat. Its name ends
-`-service-user.json`. It is the key to one client's research data, so treat it like a
-password. **Never paste its contents into a message**, including to an agent.
+I will send you a **key file** — a `.json` — through a password manager, **not** over chat. It
+is the key to one client's research data, so treat it like a password. **Never paste its
+contents into a message**, including to an agent.
 
-Once it is in your Downloads folder, paste this one line into Terminal and press Return:
+Its name varies. Some are named after the account, some come straight out of Google with a
+name like `someproject-1a2b3c4d.json`. **The name does not tell you whether it is the right
+key**, so do not try to read anything into it — I will confirm that with you in the channel
+afterwards. These three steps work whatever it is called.
 
-```
-mkdir -p ~/.buzz/.secrets && chmod 700 ~/.buzz/.secrets && mv ~/Downloads/*-service-user.json ~/.buzz/.secrets/ && chmod 600 ~/.buzz/.secrets/*-service-user.json && ls -l ~/.buzz/.secrets/
-```
+**Do these in Terminal yourself rather than asking an agent to do them.** You want to see the
+output with your own eyes; an agent will summarise it, and the summary is the thing you are
+trying to check.
 
-That makes the folder, moves the key in, and locks it down so only you can read it. You should
-see one line ending in `-service-user.json` and starting with `-rw-------`. That means it
-worked. You do not need to type the file name anywhere — the line finds it.
-
-**If it says `no matches found` or `No such file or directory`,** the file is somewhere other
-than Downloads. The folder was still made, so you only need to move the file in. Type `mv `
-(with a space after it), then drag the file from Finder straight into the Terminal window —
-that fills in the real location for you — then type ` ~/.buzz/.secrets/` and press Return.
-
-Then paste this to lock it down and check it, which the line above would have done for you:
+**1.** Make the folder. Paste this and press Return:
 
 ```
-chmod 600 ~/.buzz/.secrets/*-service-user.json && ls -l ~/.buzz/.secrets/
+mkdir -p ~/.buzz/.secrets && chmod 700 ~/.buzz/.secrets
 ```
+
+**2.** Move the key in. Type `mv ` — the two letters and a space — then **drag the key file
+from Finder straight into the Terminal window**. That fills in its real location for you,
+whatever it is called and wherever it is. Then type a space, then ` ~/.buzz/.secrets/` and
+press Return.
+
+**3.** Lock it down and look at it:
+
+```
+chmod 600 ~/.buzz/.secrets/*.json && ls -l ~/.buzz/.secrets/
+```
+
+You should see one line for your key, starting with `-rw-------`. That is the whole check: the
+dashes mean nobody but you can read it. If it starts with anything else, tell me before going
+further.
 
 The `.buzz` folder is invisible in Finder because its name starts with a dot. That is normal
 and nothing is wrong. To see it, press **Cmd-Shift-.** in any Finder window.

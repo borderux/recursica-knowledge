@@ -167,14 +167,31 @@ people get stuck:
 - **Explains the 👀 reaction.** It is the only signal that Fizz received the message, and the
   work takes minutes — so anyone waiting for a *reply* concludes it is broken and gives up.
   Without a mention there is no reaction at all, which is how you tell the two apart.
-- **Gives one pasteable line for the key**, rather than describing a folder that is invisible
-  in Finder. It matches on the `-service-user.json` suffix, so it works whatever the account is
-  called and nobody has to be told the file name.
+- **Never names the key file.** They make the folder, drag whatever file you sent them into
+  Terminal, then lock it down — three steps that work whatever it is called. That matters more
+  than it sounds: a key downloaded straight from Google is named after the project and key id,
+  like `someproject-1a2b3c4d.json`, so any instruction that assumes a tidy
+  `claire-<slug>-service-user.json` breaks on the most common case.
+- **Tells them to run it themselves rather than asking an agent.** An agent summarises the
+  output — "set to 600" — and the summary is exactly the thing they were meant to verify.
 
 You no longer have to warn them when a client's service account is not named after its slug:
-the message never names the key file, and the Terminal line matches on the
-`-service-user.json` suffix, so there is nothing there to get wrong. `sa_slug` still belongs on
-the canvas, per the section above — the deploy derives from it even though the message does not.
+the message never names the key file at all, so there is nothing there to get wrong. `sa_slug`
+still belongs on the canvas, per the section above — the deploy derives from it even though the
+message does not.
+
+**Check the key before you send it, not after they install it.** A filename proves nothing —
+a raw Google download is named after the project and key id, and could be any identity in that
+project including a provisioning one that can create datasets. Read its `client_email` and
+confirm it is the channel's own service account:
+
+```bash
+node -e 'console.log(require(process.argv[1]).client_email)' <path>   # identify, don't dump
+```
+
+Sending a provisioning identity instead of the channel's runtime one puts project-wide rights
+on a new person's laptop on their first day, and nothing downstream will flag it as wrong —
+the deploy checks that the key matches the channel, not that it is the least-privileged one.
 
 Everything else in that message is either public or theirs. The **key** is the one thing that
 travels out of band, separately, and never in the message.
