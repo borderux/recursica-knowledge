@@ -1,0 +1,8 @@
+{
+  "$comment": "Claude Code runtime settings for Claire. The prompt is portable/claude-code/agents/claire.md; this file is the config that has no business inside a prompt. Read agents/claire/PORTING.md before wiring any of it up — none of what follows is a data fence.",
+  "model": "opus",
+  "tools": ["Read", "Task", "mcp__bq-<slug>__execute_sql", "mcp__bq-<slug>__get_table_info", "mcp__bq-<slug>__list_table_ids", "mcp__drive-<slug>__list_files", "mcp__drive-<slug>__get_file_info"],
+  "$toolsComment": "Claire orchestrates and never reads a transcript herself, so she holds no read_file and no write tools — that is a deliberate omission, not an oversight. `<slug>` is the client slug: one pair of servers per client, named for that client, and Claire's own pre-flight check 1 refuses to work if they are absent. Two MCP servers must exist before any of this runs; see PORTING.md.",
+  "subagents": ["scribe-<slug>", "lexicon-<slug>", "tagger-<slug>", "analyst-<slug>"],
+  "$subagentsComment": "Claire dispatches these four and does the pipeline work through them. Their definitions do NOT yet ship in portable form — they live at nest/mcp/templates/agents/*.md.tmpl in this repository and still carry Buzz vocabulary. Without them this prompt is an orchestrator with nothing to orchestrate."
+}
