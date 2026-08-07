@@ -125,6 +125,9 @@ Three rules the build enforces so you do not have to remember them:
 - **Every `{{TOKEN}}` reaching an artifact must be declared** in
   `buzz-agents/placeholders.json`. Portable artifacts keep their tokens on purpose — they are
   per-installation — but an undeclared one is unanswerable for whoever is porting.
+- **A token marked `portableOnly` must not reach the Buzz prompt.** Those are tokens no
+  operator will ever hold a value for, so `export-agents.mjs` leaves them out of its
+  unset-value warning; the build enforces the claim that exemption rests on.
 - **Every artifact is name-checked before it is written.** Generated files in a public repo
   are the category that gets read least closely.
 

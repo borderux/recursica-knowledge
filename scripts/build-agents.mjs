@@ -198,6 +198,23 @@ for (const name of names) {
       bad(`${target}: undeclared token${undeclared.length > 1 ? "s" : ""} ${undeclared.map((t) => "{{" + t + "}}").join(", ")} — declare in buzz-agents/placeholders.json or remove`);
       continue;
     }
+    /**
+     * A `portableOnly` token must not reach the Buzz prompt.
+     *
+     * export-agents.mjs skips those tokens when it reports which values are unset, because no
+     * operator will ever hold one and a warning that always fires is read as decoration. That
+     * exemption is only safe while the claim behind it holds, and nothing was checking it — a
+     * portable-only token moved into a Buzz-bound passage would leave `{{TOKEN}}` in a live
+     * prompt with the one warning that would have caught it switched off by hand.
+     */
+    if (target === "buzz") {
+      const leaked = [...new Set([...out.matchAll(/\{\{([A-Z0-9_]+)\}\}/g)].map((m) => m[1]))]
+        .filter((t) => declaredTokens[t]?.portableOnly);
+      if (leaked.length) {
+        bad(`buzz: ${leaked.map((t) => "{{" + t + "}}").join(", ")} is declared portableOnly and must not reach the Buzz prompt — move it into platform/session.md, or drop the flag in buzz-agents/placeholders.json`);
+        continue;
+      }
+    }
     if (!nameCheck(out, `${name}/${target}`)) continue;
     if (prev === out) { ok(`${target}: ${spec.out(name)} up to date`); continue; }
     if (!CHECK) {
