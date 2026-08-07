@@ -527,20 +527,20 @@ the read-only source still refuses both an `UPDATE` and a `DELETE`.
 
 ### An open question is a finding, not a second table
 
-Sometimes the analysis cannot settle something, and saying so is the useful output. Isabella is
-stored as a nondiver and describes a full entry-level certification course; the honest result is
-that her experience level is unresolved, not a confident guess either way.
+Sometimes the analysis cannot settle something, and saying so is the useful output. A participant
+may be stored at one experience level while describing something that contradicts it; the honest
+result is that the level is unresolved, not a confident guess either way.
 
 **Before `open_question` existed, Analyst had nowhere to say that.** `write_finding` is its only
 writable path, so it wrote the question as an ordinary finding and marked the kind in the title —
-`OPEN QUESTION: she is coded nondiver, but…` typed as `theme`. The type column said one thing and
-the title said another, and nothing could filter, count, or route on the difference. Found in
-`research_padi` on 2026-08-06: 1 of 36 rows, plus one more prefixed `HYPOTHESIS:`.
+`OPEN QUESTION: …` typed as `theme`. The type column said one thing and
+the title said another, and nothing could filter, count, or route on the difference. Found in a
+client dataset on 2026-08-06: 1 of 36 rows, plus one more prefixed `HYPOTHESIS:`.
 
 **A second table was the wrong fix, and `gap_tracker` is not it either.** `gap_tracker` is
 project-grain transcript hygiene — no `conversation_id`, no line-level evidence, only a repeated
 `evidence_interview_ids`. An open question needs exactly what a finding needs: a claim, the lines
-it rests on, and the checked citations that make it reviewable. Verified against `research_padi`
+it rests on, and the checked citations that make it reviewable. Verified against a client dataset
 on 2026-08-06: all 38 `gap_tracker` rows are ingest hygiene and none is an analytical question.
 
 So it is a `finding_type`, and it inherits the whole apparatus for free — mandatory evidence, the
@@ -589,8 +589,8 @@ finding, and nothing but the evidence on the row stands behind that. Stu says so
 
 ### Counting these types before Analyst has re-run
 
-**A type existing is not the same as a row carrying it, and the gap is visible in SQL.** In
-`research_padi` on 2026-08-06, immediately after both types landed:
+**A type existing is not the same as a row carrying it, and the gap is visible in SQL.** In a
+client dataset on 2026-08-06, immediately after both types landed:
 
 ```
 typed_hypothesis        0     prefixed_hypothesis        1
@@ -624,7 +624,7 @@ Delete the prefix arm once no row matches it — that is the signal the bridge h
 both the app's prefix readers and this clause can go. Check it against **both** kinds before
 deleting: a clause that is dead for one and load-bearing for the other looks finished and is not.
 
-Run against `research_padi` on 2026-08-06 — extracted from this file rather than retyped, which is
+Run against a client dataset on 2026-08-06 — extracted from this file rather than retyped, which is
 how the omission above was found — it returns exactly two rows:
 
 ```

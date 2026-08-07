@@ -362,11 +362,33 @@ elif [[ -f "$DICT_KEY" ]]; then
     --sheet-key "$DICT_KEY" --sheet "$TAG_SHEET" \
     || warn "tag dictionary sync failed — see above; the rest of the deploy is unaffected"
 else
-  warn "no dictionary reader key at $DICT_KEY — tag_library left empty.
-  The tag dictionary sheet is shared across projects, so it needs ONE identity
-  holding Viewer on that one file. Create it, share the sheet with it, then:
-    $BUZZ_HOME/bin/sync-tag-dictionary.mjs --dataset $DATASET \\
-      --bq-key $SA_KEY --sheet-key $DICT_KEY"
+  # Whether a missing reader key matters at all depends on what is already in the table,
+  # and only one of the two cases is a problem. An operator joining a client inherits a
+  # tag_library another operator seeded, needs no reader key of their own, and used to be
+  # told "tag_library left empty" — which was false, alarming, and arrived in the middle
+  # of an otherwise clean deploy. Ask the table instead of assuming the empty case.
+  #
+  # Same one-line extraction idiom as the table count above. A failure of any kind leaves
+  # this empty and falls through to the warning, which is the safe direction: wrongly
+  # reassuring an operator that their tags are fine is worse than one warning too many.
+  set +e
+  EXISTING_TAGS="$("$NODE_BIN" "$BQ_EXEC" --key "$SA_KEY" --project "$PROJECT" \
+    --sql "SELECT COUNT(*) AS n FROM \`$PROJECT.$DATASET.tag_library\`" 2>/dev/null \
+    | "$NODE_BIN" -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>process.stdout.write(String(JSON.parse(s)[0].n)))" 2>/dev/null)"
+  set -e
+
+  if [[ "$EXISTING_TAGS" =~ ^[0-9]+$ ]] && [[ "$EXISTING_TAGS" -gt 0 ]]; then
+    ok "tag_library already holds $EXISTING_TAGS tag(s) — left alone.
+      No dictionary reader key here, so nothing was re-synced from the shared sheet. That
+      is the normal case when joining a client someone else set up: the tags came with the
+      dataset. Tagger has what it needs."
+  else
+    warn "no dictionary reader key at $DICT_KEY — tag_library is empty and Tagger will refuse to tag.
+      The tag dictionary sheet is shared across projects, so it needs ONE identity
+      holding Viewer on that one file. Create it, share the sheet with it, then:
+        $BUZZ_HOME/bin/sync-tag-dictionary.mjs --dataset $DATASET \\
+          --bq-key $SA_KEY --sheet-key $DICT_KEY"
+  fi
 fi
 
 # ─────────────────────────────────────────────────────────── configs

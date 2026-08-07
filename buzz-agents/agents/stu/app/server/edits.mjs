@@ -38,7 +38,7 @@ function isOpenQuestion(finding) {
  * rationale and the caveats — on `f_17uXy2_experience_level_unresolved`, the standing instruction
  * not to resolve the question from the transcript and the recruiter check that has to happen
  * first. On a dictionary term it is Lexicon's evidence for the term. Neither column is optional in
- * practice: all 36 findings and all 220 terms in research_padi carry one, averaging 315 and 880
+ * practice: all 36 findings and all 220 terms in the client dataset carry one, averaging 315 and 880
  * characters (queried 2026-08-06).
  *
  * `SET notes = @note` replaced all of that with the reviewer's sentence, and destroyed it
