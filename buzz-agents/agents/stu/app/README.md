@@ -38,7 +38,12 @@ Two things it needs that this directory deliberately does not contain:
   *and* the Recursica tokens — `@recursica/official-release`'s postinstall writes
   `recursica_variables_scoped.css` and the token JSON into `web/`, which is what
   `web/postcss.config.js` and `web/src/main.jsx` read. Those five files are gitignored: they
-  belong to the Recursica release, and a vendored copy is a stale copy.
+  belong to the Recursica release, and a vendored copy is a stale copy. That postinstall does
+  not always run — npm 11 gates install scripts, and CI runs `--ignore-scripts` — so
+  `web/scripts/ensure-tokens.mjs` places them before every build and dev server, and records
+  which release they came from in `web/.recursica-tokens-version`. Bumping
+  `@recursica/official-release` re-copies them; without that record the old release's files
+  would sit there and the bump would do nothing.
 
 The server itself installs nothing. It imports only Node builtins — it reaches BigQuery over
 REST and signs its own JWT — so Node 18+ is the whole runtime requirement.
