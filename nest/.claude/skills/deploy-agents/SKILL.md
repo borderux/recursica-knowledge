@@ -313,6 +313,14 @@ still one shared `agents/claire/` for everybody.
 Do not hand-rename an agent in Buzz Desktop to achieve this. Use `--owner`, so the name is
 applied the one way the tooling recognises.
 
+**A fifth draft opens, for Loki, and you must tell the operator not to save it.** Every agent
+in the repository is restored — there is no skip list — and Loki generates synthetic
+transcripts. His fence is an environment variable no CLI flag reaches, so until
+`GUIDES/LOKI_SANDBOX_SETUP.md` has been worked through, saving him produces an agent with every
+client Drive and dataset on the machine in reach and a prompt that states they are absent. Say
+that plainly, in the channel, in the same message as the names: discard Loki's draft for now, or
+save it and leave him stopped. He is not part of this install and nothing in it waits on him.
+
 **ALAN registers as `Alan (Alex)`, not `ALAN (Alex)`.** This skill and his own prompt style
 him ALAN; `agents/alan/agent.json` says `Alan`, and that is what Buzz gets. Quote the names
 the script prints, never the ones in this prose — a mention of `@ALAN (Alex)` resolves to
