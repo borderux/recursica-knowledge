@@ -8,7 +8,13 @@ nothing is written.
 
   verify-channel-isolation.py --slug acme \
       --key ~/.buzz/.secrets/claire-acme-service-user.json \
+      [--dataset some_other_name] \
       [--also-allowed research_acme]
+
+--dataset is the channel's own dataset when it is not named research_<slug>. It must
+match what deploy-claire-channel.sh was given, because this script derives the name
+independently: left off, it probes a dataset nobody created, reads the real one as
+foreign, and reports isolation broken when nothing is wrong.
 
 Exit 0 if isolation holds, 1 if any foreign dataset is reachable.
 """
@@ -66,6 +72,8 @@ def main():
     ap.add_argument("--slug", required=True, help="channel slug, e.g. acme")
     ap.add_argument("--key", required=True, help="path to the channel service account JSON key")
     ap.add_argument("--project", default=os.environ.get("BQ_PROJECT", "{{BQ_PROJECT}}"))
+    ap.add_argument("--dataset", default=None,
+                    help="this channel's dataset, if not research_<slug>")
     ap.add_argument("--also-allowed", action="append", default=[],
                     help="another dataset this SA is legitimately granted (repeatable)")
     a = ap.parse_args()
@@ -74,7 +82,7 @@ def main():
     if not os.path.isfile(key):
         sys.exit(f"key not found: {key}")
 
-    own = f"research_{a.slug.replace('-', '_')}"
+    own = a.dataset or f"research_{a.slug.replace('-', '_')}"
     allowed = {own, *a.also_allowed}
 
     ok, listing = call(key, a.project, "list_dataset_ids", {"project": a.project})
@@ -85,6 +93,18 @@ def main():
     print(f"\n{BOLD}Isolation check — {a.slug} / {own}{OFF}")
     print(f"  identity: {os.path.basename(key)}")
     print(f"  datasets this SA can enumerate: {', '.join(reachable) or '(none)'}\n")
+
+    # The name is derived from --slug unless --dataset says otherwise, so a channel
+    # deployed with an override and verified without one probes a dataset that was
+    # never created: own READ and own WRITE both fail, and the real dataset is read as
+    # foreign. Three probes go the wrong way for what is a naming mistake, and the
+    # summary blames IAM. Say it here instead. Only when a listing came back — an SA
+    # that cannot enumerate tells us nothing either way.
+    if not a.dataset and reachable and own not in reachable:
+        print(f"  {YELLOW}!{OFF} {own} is not among them. If this channel was deployed with")
+        print("      --dataset, pass the same value here — the name is derived from")
+        print("      --slug otherwise, and the probes below would be about a dataset")
+        print("      that does not exist.\n")
 
     probes = [
         ("own dataset READ", own, "SELECT 1 FROM `{p}.{d}`.INFORMATION_SCHEMA.TABLES LIMIT 1", True),
@@ -126,7 +146,10 @@ def main():
     if admin_ok and "projectEditor" in privs:
         print(f"  {YELLOW}!{OFF} {own} still carries BigQuery's default projectEditor/projectViewer")
         print("      grants — any project-level editor reads this client's data.")
-        print(f"      Fix: deploy-claire-channel.sh --slug {a.slug} --lock-down")
+        fix = f"deploy-claire-channel.sh --slug {a.slug} --lock-down"
+        if a.dataset:
+            fix += f" --dataset {own}"
+        print(f"      Fix: {fix}")
 
     if failures:
         print(f"\n{RED}{BOLD}ISOLATION BROKEN{OFF} — {failures} probe(s) went the wrong way.")
