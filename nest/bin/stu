@@ -9,6 +9,13 @@
 #   from .secrets/claire-<sa-slug>-service-user.json. Defaults to the slug. Needed because a
 #   Google service account cannot be renamed, so a slug shortened later leaves the two apart.
 #
+# --dataset <name>  the BigQuery dataset, when it is not named research_<slug>. Defaults to that
+#   derivation, so an existing channel is unaffected. Pass the same value the channel was deployed
+#   with — deploy-claire-channel.sh takes this flag too, and the app derives the name the same way
+#   it used to. An overridden dataset that is not passed through here leaves every query failing
+#   with "Access Denied ... or perhaps it does not exist", which reads as a broken grant and is
+#   not one: it is a name nobody created.
+#
 # Idempotent: if a server is already serving this slug on the port, it prints that URL and
 # exits 0 rather than binding a second one. That matters because Stu has two launch paths —
 # Claire finishing a transcript, and a person saying "@Stu open the explorer" — and they will
@@ -44,6 +51,11 @@ SLUG=""
 SA_SLUG="${STU_SA_SLUG:-}"
 CHANNEL=""
 PROJECT="${STU_PROJECT:-}"
+# Empty means "let the app derive research_<slug>", which is the convention and the common case.
+# A dataset that already existed under a name somebody else chose cannot be renamed in BigQuery,
+# so the name has to be sayable here as well as at deploy time. config.mjs has always accepted
+# --dataset; this launcher was the half that never passed it on.
+DATASET="${STU_DATASET:-}"
 USER_PUBKEY="${STU_USER_PUBKEY:-}"
 USER_NAME="${STU_USER_NAME:-}"
 USER_EMAIL="${STU_USER_EMAIL:-}"
@@ -58,6 +70,7 @@ while [[ $# -gt 0 ]]; do
     --sa-slug)    SA_SLUG="$2"; shift 2 ;;
     --channel)    CHANNEL="$2"; shift 2 ;;
     --project)    PROJECT="$2"; shift 2 ;;
+    --dataset)    DATASET="$2"; shift 2 ;;
     --user)       USER_PUBKEY="$2"; shift 2 ;;
     --user-name)  USER_NAME="$2"; shift 2 ;;
     --user-email) USER_EMAIL="$2"; shift 2 ;;
@@ -67,12 +80,14 @@ while [[ $# -gt 0 ]]; do
     --status)     ACTION="status"; shift ;;
     # Internal: launchd's entry point. Runs node in the foreground and watches Buzz Desktop.
     --supervise)  ACTION="supervise"; shift ;;
-    -h|--help)    sed -n '2,28p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help)    sed -n '2,35p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "stu: unknown argument $1" >&2; exit 1 ;;
   esac
 done
 
-die() { echo "stu: $*" >&2; exit "${2:-1}"; }
+# $1, not $*: the second argument is the exit code, and $* printed it as part of the message. Every
+# multi-line die here ended in a stray " 2" that reads like the message ran into something.
+die() { echo "stu: $1" >&2; exit "${2:-1}"; }
 
 [[ -n "$SLUG" ]] || die "--slug is required (e.g. --slug acme)"
 # Same rule config.mjs enforces, and it also keeps the slug safe in a launchd label and filename.
@@ -81,6 +96,12 @@ die() { echo "stu: $*" >&2; exit "${2:-1}"; }
 # ids allow hyphens and not underscores, so an underscore here can never match a real account.
 SA_SLUG="${SA_SLUG:-$SLUG}"
 [[ "$SA_SLUG" =~ ^[a-z0-9][a-z0-9-]*$ ]] || die "--sa-slug must be lowercase alphanumeric with hyphens: got \"$SA_SLUG\""
+# BigQuery's own charset for a dataset name, checked here for the same reason the deploy checks its
+# copy of this flag: the value is rejected before a launchd job is written rather than after one is
+# loaded and answering on a name that cannot resolve. Case is significant to BigQuery, so it is
+# preserved rather than folded. The empty default is left alone — the app does the deriving.
+[[ -z "$DATASET" || "$DATASET" =~ ^[A-Za-z0-9_]+$ ]] \
+  || die "--dataset must be letters, digits and underscores only: got \"$DATASET\""
 
 URL="http://127.0.0.1:$PORT"
 LABEL="com.buzz.stu.$SLUG"
@@ -96,6 +117,19 @@ serving_this_slug() {
   local body
   body="$(curl -fsS --max-time 2 "$URL/api/config" 2>/dev/null)" || return 1
   grep -q "\"slug\":\"$SLUG\"" <<<"$body"
+}
+
+# ...and serving it out of the dataset that was asked for. The slug alone used to decide reuse,
+# which turned the fix for a forgotten --dataset into a no-op: the launcher found its own
+# wrong-dataset job, printed "already running" and exited 0, so the only way through was to know
+# to --stop first. Only checked when a dataset was named — the derivation belongs to the app, and
+# recomputing it here would put the name in two places again. The other direction is harmless:
+# reusing a correctly-overridden server from a launch that forgot the flag serves the right data.
+serving_this_dataset() {
+  if [[ -z "$DATASET" ]]; then return 0; fi
+  local body
+  body="$(curl -fsS --max-time 2 "$URL/api/config" 2>/dev/null)" || return 1
+  grep -q "\"dataset\":\"[^\"]*\.$DATASET\"" <<<"$body"
 }
 
 # Empty when Buzz Desktop is not running. buzz-acp helpers come and go per session, so anchor on
@@ -176,6 +210,12 @@ if [[ -n "$USER_PUBKEY" && ! "$USER_PUBKEY" =~ ^[0-9a-f]{64}$ ]]; then
 fi
 
 ARGS=(--slug "$SLUG" --project "$PROJECT" --port "$PORT")
+# The path the preflight above just proved exists, rather than letting config.mjs derive its own
+# from the slug. Two derivations meant --sa-slug got as far as the launcher and no further: the
+# server went looking under the slug-named path and exited "service-account key not found" while
+# the launcher had already found the key under the name it was told.
+ARGS+=(--key "$KEY")
+[[ -n "$DATASET" ]]     && ARGS+=(--dataset "$DATASET")
 [[ -n "$CHANNEL" ]]     && ARGS+=(--channel "$CHANNEL")
 [[ -n "$USER_PUBKEY" ]] && ARGS+=(--user "$USER_PUBKEY")
 [[ -n "$USER_NAME" ]]   && ARGS+=(--user-name "$USER_NAME")
@@ -234,8 +274,14 @@ fi
 # -------------------------------------------------------------------- start under launchd
 
 if serving_this_slug; then
-  echo "stu: already running — $URL"
-  exit 0
+  if serving_this_dataset; then
+    echo "stu: already running — $URL"
+    exit 0
+  fi
+  die "$SLUG is already running on port $PORT out of a different dataset than --dataset asked for:
+  $(curl -fsS --max-time 2 "$URL/api/config" 2>/dev/null)
+  Restarting it would drop whoever is using it, so this is not done for you. Run
+  '$SELF --slug $SLUG --stop' and launch again, or pass --port to run the other one beside it." 2
 fi
 if RUNNING="$(curl -fsS --max-time 2 "$URL/api/config" 2>/dev/null)"; then
   die "port $PORT is serving a different channel: $RUNNING
@@ -260,8 +306,15 @@ EOF
   plist_arg "$SELF"
   plist_arg "--supervise"
   plist_arg "--slug"; plist_arg "$SLUG"
+  # The child runs this same script and redoes the whole preflight, so every launcher-level flag it
+  # depends on has to be here, not just the ones the server reads. --sa-slug was missing: the parent
+  # found the key, the plist dropped the flag, and the child looked under the slug-named path and
+  # died "no service-account key ... deploy the channel first" from a correctly deployed channel.
+  # It only ever appeared to work where a symlink happened to sit at the slug-named path.
+  plist_arg "--sa-slug"; plist_arg "$SA_SLUG"
   plist_arg "--project"; plist_arg "$PROJECT"
   plist_arg "--port"; plist_arg "$PORT"
+  if [[ -n "$DATASET" ]];     then plist_arg "--dataset";    plist_arg "$DATASET"; fi
   if [[ -n "$CHANNEL" ]];     then plist_arg "--channel";    plist_arg "$CHANNEL"; fi
   if [[ -n "$USER_PUBKEY" ]]; then plist_arg "--user";       plist_arg "$USER_PUBKEY"; fi
   if [[ -n "$USER_NAME" ]];   then plist_arg "--user-name";  plist_arg "$USER_NAME"; fi
@@ -298,7 +351,9 @@ launchctl bootstrap "$DOMAIN" "$PLIST" || die "launchd refused to load $LABEL fr
 # Wait for the port rather than sleeping a fixed amount: the first BigQuery token exchange is
 # the slow part and it varies.
 for _ in $(seq 1 30); do
-  if serving_this_slug; then
+  # Both, so "ready" means the flag actually reached the server rather than that something
+  # answered. A silently ignored --dataset would otherwise look like a clean start.
+  if serving_this_slug && serving_this_dataset; then
     echo "stu: $SLUG → $URL (launchd $LABEL, pid $(job_pid), log $LOG)"
     echo "stu: stays up until '$SELF --slug $SLUG --stop' or Buzz Desktop quits"
     exit 0
