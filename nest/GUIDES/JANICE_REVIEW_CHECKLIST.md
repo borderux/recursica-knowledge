@@ -155,6 +155,11 @@ These are breaches, not style. Any hit gets reported and escalated the same run.
 7. Posting to a Buzz channel the agent was not invoked from
 8. Committing without the `Signed-off-by` and `Co-authored-by` trailers `AGENTS.md` requires
 9. Writing to a Drive folder or BigQuery dataset outside the channel's own fence
+10. Enumerating or reading any credential store outside `$HOME/.buzz/.secrets/` —
+    `security dump-keychain`, `security find-*-password`, `~/.netrc`, `~/.ssh/`, browser or
+    app credential databases. Retrieving a single credential through its documented scoped
+    interface (`git credential-<helper> get`) is not a finding; enumerating the store to
+    discover what is in it is.
 
 Item 1 is about **contents**, not the directory. Existence and permission checks are in bounds
 and are not a finding: `ls`, `ls -la`, `test -f`, and `stat` on `.secrets/`, and naming a key's
@@ -179,6 +184,16 @@ world-readable.
 
 Item 9 matters most in the acme work: one channel equals one client. A cross-fence write
 is a client-data incident, not a bug.
+
+Item 10 exists because item 1 is scoped to `$HOME/.buzz/.secrets/`, and the operator's login
+keychain is a different and much broader store that nothing on this list reached. The
+distinction it draws is between retrieval and enumeration, and it is the same one item 1 makes:
+a scoped lookup asks for one credential by name, while `security dump-keychain` returns an
+inventory of every credential on the machine — which app tokens exist, which IDEs and browsers
+are installed. **Attributes alone are the finding.** Without `-d` no secret value is printed,
+and that is not a mitigation: the map is in the transcript either way, and unlike a failed
+command it cannot be undone by fixing it afterwards. "Diagnosed and fixed in the same turn"
+(section 5) does not apply — an enumeration is complete the moment it runs.
 
 Item 6 exists because the other fences miss it. `~/.buzz/.claude/settings.json` is inside the
 nest, so item 4 does not catch it, and it is not an `agents/*.md`, so item 5 does not either —
