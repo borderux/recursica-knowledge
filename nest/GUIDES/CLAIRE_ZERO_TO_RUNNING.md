@@ -157,7 +157,7 @@ It names everything downstream:
 | Service account | `claire-<slug>-service-user` | `claire-acme-service-user` |
 | Key file | `~/.buzz/.secrets/claire-<slug>-service-user.json` | |
 | MCP servers | `bq-<slug>`, `drive-<slug>` | `bq-acme`, `drive-acme` |
-| Subagents | `scribe-<slug>`, `lexicon-<slug>`, `tagger-<slug>`, `analyst-<slug>` | |
+| Subagents | `scribe-<slug>`, `lexicon-<slug>`, `tagger-<slug>`, `analyst-<slug>`, `persona-<slug>` | |
 
 Project is `{{BQ_PROJECT}}` throughout.
 
@@ -293,7 +293,7 @@ What it does, in order:
    `claire-tag-dictionary-reader` and writing with the channel's own key. If that reader key
    is missing it warns and moves on — the deploy still succeeds, but Tagger will refuse to
    tag until you sync, which is the intended failure: no dictionary, no invented tags.
-6. **Renders** the fenced BigQuery config and the four agent definitions, named for the slug.
+6. **Renders** the fenced BigQuery config and the five agent definitions, named for the slug.
 7. **Registers** `bq-<slug>` and `drive-<slug>` as MCP servers.
 
 ### The lockdown prompt — read this before answering
@@ -494,7 +494,7 @@ everywhere. Retire a channel's servers when the engagement ends:
 ```bash
 ~/.local/bin/claude mcp remove bq-<slug>
 ~/.local/bin/claude mcp remove drive-<slug>
-rm ~/.buzz/.claude/agents/{scribe,lexicon,tagger,analyst}-<slug>.md
+rm ~/.buzz/.claude/agents/{scribe,lexicon,tagger,analyst,persona}-<slug>.md
 ```
 
 **`research_building_claire` is scaffolding.** Eight empty tables, the reference schema, no

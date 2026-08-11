@@ -261,6 +261,12 @@
       "resolve": true
     },
     {
+      "from": "mcp/templates/agents/persona.md.tmpl",
+      "to": "mcp/templates/agents/persona.md.tmpl",
+      "mode": "0644",
+      "resolve": true
+    },
+    {
       "from": "GUIDES/RESEARCH_CHANNEL_DATASET_SCHEMA.md",
       "to": "GUIDES/RESEARCH_CHANNEL_DATASET_SCHEMA.md",
       "mode": "0644",

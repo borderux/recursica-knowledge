@@ -419,7 +419,7 @@ Run `--dry-run` first and read it. Drop the flag to apply.
 | It also does | Which lives nowhere else |
 |---|---|
 | Registers `bq-<slug>`, `bq-<slug>-ro`, `drive-<slug>` | `claude mcp add-json`, user scope, on **this** Mac |
-| Renders `scribe/lexicon/tagger/analyst-<slug>.md` | into `~/.buzz/.claude/agents/` |
+| Renders `scribe/lexicon/tagger/analyst/persona-<slug>.md` | into `~/.buzz/.claude/agents/` |
 
 Bootstrap ships the *templates* for both and never renders them, so a machine that skips
 this step has Claire, no tools and no subagents. Nothing later catches it: Step 6 drives
