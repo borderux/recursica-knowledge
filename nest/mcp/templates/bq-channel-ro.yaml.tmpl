@@ -214,6 +214,134 @@ tools:
         type: string
         description: Anything a reviewer should know. May be empty.
 
+  # Percy's ONE write path, same architecture as write_finding above and for the same reason:
+  # a fixed statement on a source with no general-purpose SQL tool attached, so writeMode: allowed
+  # buys exactly this — never arbitrary writes. Unlike write_finding, this statement also owns
+  # version allocation and superseding: an agent supplies content, never a version number.
+  write_persona_set:
+    kind: bigquery-sql
+    source: bq-channel-findings
+    description: |
+      Write one persona-set version for a population. The tool — not the caller — allocates the
+      version number, flips whatever version was previously current for this population to
+      superseded in the same transaction, and refuses to write if the incoming personas are
+      unchanged from that population's latest version. Always written as 'draft': only a human,
+      through Stu, promotes a version to 'current'.
+    statement: |
+      BEGIN
+        DECLARE ev JSON DEFAULT PARSE_JSON(@evidence_json);
+        DECLARE bad ARRAY<STRING>;
+        DECLARE cur_version INT64;
+        DECLARE cur_personas JSON;
+        DECLARE new_version INT64;
+
+        IF ARRAY_LENGTH(JSON_QUERY_ARRAY(ev)) = 0 THEN
+          RAISE USING MESSAGE =
+            'persona set rejected: evidence is empty. Every version must cite transcript lines.';
+        END IF;
+
+        SET bad = ARRAY(
+          SELECT JSON_VALUE(e, '$.line_id')
+          FROM UNNEST(JSON_QUERY_ARRAY(ev)) AS e
+          WHERE JSON_VALUE(e, '$.line_id') NOT IN (
+            SELECT line_id FROM `@PROJECT@.@DATASET@.transcript_lines`
+          )
+        );
+        IF ARRAY_LENGTH(bad) > 0 THEN
+          RAISE USING MESSAGE = FORMAT(
+            'persona set rejected: line_id(s) not present in transcript_lines: %s',
+            ARRAY_TO_STRING(bad, ', '));
+        END IF;
+
+        -- The population's latest non-superseded row, if one exists. Two separate scalar
+        -- subqueries rather than one tuple assignment: each returns NULL on zero rows (a
+        -- population's first version) rather than erroring, which a tuple form would not do
+        -- as simply.
+        SET cur_version = (
+          SELECT version FROM `@PROJECT@.@DATASET@.persona_sets`
+          WHERE population_id = @population_id AND status != 'superseded'
+          ORDER BY version DESC LIMIT 1
+        );
+        SET cur_personas = (
+          SELECT personas FROM `@PROJECT@.@DATASET@.persona_sets`
+          WHERE population_id = @population_id AND status != 'superseded'
+          ORDER BY version DESC LIMIT 1
+        );
+        SET new_version = COALESCE(cur_version, 0) + 1;
+
+        IF cur_personas IS NOT NULL
+           AND TO_JSON_STRING(PARSE_JSON(@personas_json)) = TO_JSON_STRING(cur_personas) THEN
+          RAISE USING MESSAGE = FORMAT(
+            'persona set rejected: no change from version %d for population %s. A re-run that changed nothing is not a new version.',
+            cur_version, @population_id);
+        END IF;
+
+        IF cur_version IS NOT NULL THEN
+          UPDATE `@PROJECT@.@DATASET@.persona_sets`
+          SET status = 'superseded'
+          WHERE population_id = @population_id AND version = cur_version;
+        END IF;
+
+        INSERT INTO `@PROJECT@.@DATASET@.persona_sets` (
+          population_id, version, status, supersedes, goals_available, run_summary,
+          cohort_alignment, personas, evidence, diff, produced_by, produced_at, document_uri, notes
+        ) VALUES (
+          @population_id, new_version, 'draft', cur_version, @goals_available,
+          PARSE_JSON(@run_summary_json), PARSE_JSON(@cohort_alignment_json),
+          PARSE_JSON(@personas_json),
+          ARRAY(
+            SELECT AS STRUCT
+              JSON_VALUE(e, '$.conversation_id') AS conversation_id,
+              JSON_VALUE(e, '$.line_id')         AS line_id,
+              JSON_VALUE(e, '$.quote')           AS quote
+            FROM UNNEST(JSON_QUERY_ARRAY(ev)) AS e
+          ),
+          PARSE_JSON(@diff_json), @produced_by, CURRENT_TIMESTAMP(), @document_uri, @notes
+        );
+      END;
+    parameters:
+      - name: population_id
+        type: string
+        description: A lookup-resolved population id. Never a raw cohort value — Percy never has a raw one to pass.
+      - name: goals_available
+        type: boolean
+        description: FALSE when this version was clustered with no research-goals input.
+      - name: run_summary_json
+        type: string
+        description: |
+          JSON object: {"interviews":N,"total_participants":N,"placed":N,"singletons":["P-07"],"cluster_count":N}
+      - name: cohort_alignment_json
+        type: string
+        description: |
+          JSON: Pass 1's self-report of whether emergent clusters line up with, cut across, or
+          show no relation to the raw cohort value(s) underneath this population.
+      - name: personas_json
+        type: string
+        description: |
+          JSON array of persona objects — the archetypes themselves. Shape is documented in
+          persona.md.tmpl, not enforced by this statement beyond being valid JSON.
+      - name: evidence_json
+        type: string
+        description: |
+          JSON array, one object per citation, flattened and deduped across every persona in this
+          version: [{"conversation_id":"c_…","line_id":"c_…:12","quote":"what they actually said"}]
+          Must be non-empty and every line_id must exist. Quote the line verbatim.
+      - name: diff_json
+        type: string
+        description: |
+          JSON object — new / changed / dissolved personas and participants who moved clusters,
+          versus the version this one supersedes. Pass the literal string "null" for a
+          population's first version.
+      - name: produced_by
+        type: string
+        description: Agent identity and prompt version that produced this.
+      - name: document_uri
+        type: string
+        description: Drive URL of the write-up rendered from this version. May be empty.
+      - name: notes
+        type: string
+        description: Anything a reviewer should know. May be empty.
+
 # Deliberately omitted:
 #   list_dataset_ids, search_catalog  — project-wide surface; a fenced server should
 #                                       not help an agent discover other channels.
@@ -226,3 +354,4 @@ toolsets:
     - execute_sql
     - get_table_info
     - write_finding
+    - write_persona_set
