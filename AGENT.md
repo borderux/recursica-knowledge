@@ -203,6 +203,47 @@ none: GitHub adds one when a squash merge's author differs from the merger. That
 byproduct of two addresses not matching, it disappears if they ever match, and nobody should
 read it as evidence the trailer was written.
 
+### The third hook: reading source from a checkout nothing runs
+
+`nest/bin/guard-stale-checkout.mjs` denies a `Read`, `Grep`, `Glob` or content-reading Bash
+command aimed at a directory directly under `REPOS/` that has **no `.git`**. Those are
+leftover copies — a pre-move working tree, an unpacked tarball — and they grep and read
+exactly like the live one, so an agent orienting itself cites line numbers from code nothing
+deploys. Two agents did that against the same directory in one week; the second read past a
+literal `fatal: not a git repository` in its own tool output.
+
+Three things about it are deliberate:
+
+- **The signal is git's, not a list.** No inventory of stale directories to maintain, and a
+  copy left behind next month is caught the same way.
+- **Listing, diffing, moving and removing stay allowed**, and so does a `buzz`/`gh`/`curl`
+  command that merely names the path. Reading the content is how the tree gets mistaken for
+  the live one; the rest is how someone works out it is stale and removes it — or reports
+  it. A guard that blocks its own cleanup, or the message describing it, gets switched off.
+- **Quoted data is never commands.** A heredoc body, a `--content` string, a `-c` argument:
+  these are text the command carries, not work it does. Both guards in this nest have now
+  been caught by the same shape — and the specific victim is the report *about* a guard,
+  which quotes the commands it denies. Every finding in this thread was written as
+  `cat > report.md <<'EOF'` with a table of denied commands, so segmenting the body as a
+  command list denied the message saying the guard was broken. Strip heredoc bodies and
+  herestrings before you segment anything. **An unterminated heredoc is not a bypass** —
+  the stripper runs to end of input, so a read written after one disappears, but bash
+  swallows the rest as body for the same reason and it never executes. That case gets
+  constructed by everyone who audits this and it is the one to leave alone.
+- **A command line is judged per segment, never as one string.** The first version tested
+  the whole line with one regex each way and both leaked: `\bbuzz\b`, meant for
+  `buzz messages send`, matched the `.buzz` inside every absolute path in the nest, and
+  `git log` anywhere exempted the rest of the line — which is the incident shape exactly.
+  The verbatim incident command hit both. Each segment is now decided on its own leading
+  verb, and a `cd` into a stale tree carries to the segments after it. This is the same
+  mistake the name guard above documents, arrived at independently; if you touch this file,
+  keep the per-segment property and keep the absolute-path tests that catch losing it.
+- **It is a hook rather than a line in `AGENTS.md`** because that file is read when a
+  session starts and Buzz sessions are pooled and long-lived: a rule added today does not
+  reach a session begun yesterday. Settings are consulted per tool call.
+
+`node --test 'nest/bin/*.test.mjs'` asserts both directions.
+
 ## 🧳 Portable agents
 
 `agents/<name>/` is the source of truth for an agent. `SKILL.md` holds everything portable;
