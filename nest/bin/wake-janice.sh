@@ -43,6 +43,16 @@ WINDOW_TOOL="$NEST/bin/janice-turn-window.py"
 WATERMARK_DIR="$NEST/.scratch/janice-watermarks"
 LOG="$NEST/.scratch/wake-janice.log"
 
+# Issued/reviewed ledger. Holding the watermark until delivery (below) covers a wake that
+# never arrived. It does not cover a wake that arrived and was never finished: once the
+# message is sent the watermark advances, so a review turn that dies mid-scan — session
+# limit, crash — destroys its own window. The next Stop hook computes an empty range and
+# sends nothing, and an unreviewed turn is indistinguishable from a clean one. Every wake
+# appends `issued` here; Janice appends `reviewed` at the end of every review, clean or
+# not, and picks up any issued window with no matching reviewed line. Append-only, one
+# JSON object per line, matched on (session, from).
+LEDGER="$NEST/.scratch/janice-windows.jsonl"
+
 log() { printf '%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" >>"$LOG" 2>/dev/null || true; }
 
 AGENT="${BUZZ_ACP_SESSION_TITLE:-}"
@@ -175,6 +185,10 @@ lines += [
     "",
     "@Janice review this window against your checklist. Post findings in that agent'"'"'s"
     " building- channel only, and stay silent if the turn is clean.",
+    "",
+    "Before starting, check `.scratch/janice-windows.jsonl` for an issued window with no"
+    " reviewed line and take that first. When this review ends — finding or clean — append"
+    " your own reviewed line. Checklist section 7.",
 ]
 print("\n".join(lines))
 ' 2>/dev/null
@@ -184,6 +198,35 @@ if [[ -z "$CONTENT" ]]; then
   log "SKIP $AGENT session=$SESSION_ID could not compose wake message"
   exit 0
 fi
+
+# Record the window as issued before sending. A send that fails now holds the watermark
+# for retry, so that row will be closed by the retry's review — but a row written only on
+# success would miss nothing and a row written before it costs nothing, and this is the
+# file that has to be trustworthy when the review never comes back.
+printf '%s' "$WINDOW" | AGENT="$AGENT" SESSION_ID="$SESSION_ID" TRANSCRIPT="$TRANSCRIPT" \
+  LEDGER="$LEDGER" NOW="$(date -u +%Y-%m-%dT%H:%M:%SZ)" python3 -c '
+import json, os, sys
+
+w = json.load(sys.stdin)
+row = {
+    "ts": os.environ["NOW"],
+    "state": "issued",
+    "agent": os.environ["AGENT"],
+    "session": os.environ["SESSION_ID"],
+    "transcript": os.environ["TRANSCRIPT"],
+    "from": w["from_offset"],
+    "to": w["to_offset"],
+}
+with open(os.environ["LEDGER"], "a") as fh:
+    fh.write(json.dumps(row) + "\n")
+' 2>>"$LOG" || {
+  # Do not send. A wake that goes out with no ledger row is the original hole again for
+  # that one window — nothing would ever know it existed. An un-issued window costs one
+  # delayed review and is re-issued on the next wake, because the watermark only commits
+  # after a send, and the send is what we are skipping.
+  log "FAIL $AGENT session=$SESSION_ID ledger write failed, wake not sent"
+  exit 0
+}
 
 if printf '%s\n' "$CONTENT" | "$BUZZ_BIN" messages send \
       --channel "$JANICE_CHANNEL" \

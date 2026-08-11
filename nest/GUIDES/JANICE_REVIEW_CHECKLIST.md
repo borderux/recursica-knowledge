@@ -24,6 +24,7 @@ The **research team** only — the agents that move client research data:
 |---|---|---|
 | Claire | yes | owns the transcript pipeline |
 | Stu | yes | data explorer over the research datasets |
+| Ivan | yes | his deliverable is a discrepancy report across three repositories; nobody re-runs it, so an unverified claim in it ships as fact |
 | Claire's subagents (Scribe, Tagger, Analyst, Lexicon) | yes, as part of Claire's turn | they perform the Drive and BigQuery writes |
 | ALAN | no | the recursica/design prototype loop, not research — see the building-alan channel description |
 | Janice | never | reviewing yourself is noise |
@@ -269,6 +270,7 @@ channel. Never to `general`, never to the channel where the work happened, never
 | Claire | `building-claire` | `{{CLAIRE_CHANNEL}}` |
 | ALAN | `building-alan` | `{{ALAN_CHANNEL}}` |
 | Stu | `building-stu` | `{{STU_CHANNEL}}` |
+| Ivan | `building-ivan` | `{{IVAN_CHANNEL}}` |
 | anyone else | `building-janice` (fallback — no channel of their own yet) | `{{JANICE_CHANNEL}}` |
 
 Message shape — findings first, ranked most severe first, then the fix:
@@ -292,7 +294,7 @@ Rules for the post:
 
 - `@mention` **Fizz** to carry out the prompt improvement. Fizz owns agent drafts; you do not.
 - `@mention` **the operator** as well for any section-3 guardrail breach, and only for those.
-- **Never `@mention` Claire, ALAN, or Stu.** Mentioning a watched agent wakes it, its turn
+- **Never `@mention` Claire, Stu, Ivan, or ALAN.** Mentioning a watched agent wakes it, its turn
   ends, that wakes you, and you review the turn your own message caused. Name them without
   the `@`.
 - Every finding cites transcript evidence. No inference presented as fact.
@@ -307,5 +309,37 @@ Rules for the post:
   per-session watermark in `.scratch/janice-watermarks/` and advances it every time it wakes
   you, so a window you have already been given never arrives twice. If nothing was appended
   since your last review, no wake is sent at all.
+
+### Close every window in the ledger — especially the clean ones
+
+The watermark advances **at wake time**, before you have read a byte. That is what stops
+duplicate wakes, and it also means a review turn that dies mid-scan destroys its own window:
+the next Stop hook computes an empty range and sends nothing, so the turn stays unreviewed
+forever and nothing anywhere says so. This already happened once — one Claire window was
+issued, the reviewing session hit its limit fifteen seconds in, and no wake would ever have
+re-issued it.
+
+`.scratch/janice-windows.jsonl` closes that hole. The wake hook appends `{"state":"issued",
+"agent","session","transcript","from","to"}` before every send. **You append the matching
+`reviewed` line at the end of every review — including the ones where you post nothing.**
+
+```bash
+python3 - <<'PY'
+import json
+row = {"state": "reviewed", "session": "<session-id>", "from": <from_offset>,
+       "ts": "<utc now, ISO 8601 Z>", "posted": False}   # posted: True if you filed a finding
+with open("{{BUZZ_HOME}}/.scratch/janice-windows.jsonl", "a") as fh:
+    fh.write(json.dumps(row) + "\n")
+PY
+```
+
+Match on `(session, from)`. Start each wake by reading the ledger: any `issued` row with no
+matching `reviewed` row is backlog — review it from its recorded `transcript`, `from`, and
+`to` before the window you were just handed, then close both.
+
+**A clean turn still gets a `reviewed` line.** Silence is the right output for a clean review
+(section 6), but silence in the ledger means "never happened" — skip the line on a quiet day
+and the backlog fills with windows you already cleared, which is the same false-alarm problem
+from the other direction.
 - When a review produces a durable lesson about an agent's failure mode, write it to
   `mem/<agent>-failure-modes` and cite it in later reports.

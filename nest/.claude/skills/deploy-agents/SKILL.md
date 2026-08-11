@@ -66,7 +66,7 @@ identifiers, and they are the same for everyone in the community:
 - `BQ_PROJECT` — the Google Cloud project id
 - `DRIVE_FOLDER` — the client's Drive folder id
 - `TAG_SHEET_ID` — the shared tag dictionary sheet id
-- `CLAIRE_CHANNEL`, `STU_CHANNEL`, `ALAN_CHANNEL`, `JANICE_CHANNEL` — channel UUIDs
+- `CLAIRE_CHANNEL`, `STU_CHANNEL`, `IVAN_CHANNEL`, `ALAN_CHANNEL`, `JANICE_CHANNEL` — channel UUIDs
 - `JANICE_PUBKEY` — this community's Janice, hex
 - `BUILDER_REPO`, `BUILDER_REPO_NAME`, `KNOWLEDGE_REPO_NAME` — only if they want ALAN
 - **their name**, for the agent display names — see below. Ask for the form they want
