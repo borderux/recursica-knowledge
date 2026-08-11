@@ -189,6 +189,12 @@
       "resolve": true
     },
     {
+      "from": "bin/check-agents-md-drift.mjs",
+      "to": "bin/check-agents-md-drift.mjs",
+      "mode": "0755",
+      "resolve": false
+    },
+    {
       "from": "bin/stu",
       "to": "bin/stu",
       "mode": "0755",
