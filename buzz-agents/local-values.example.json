@@ -15,6 +15,7 @@
   "$channels": "This community's channel UUIDs. Janice's routing table needs these resolved — an unresolved token here means she posts findings to a channel named after the token.",
   "CLAIRE_CHANNEL": "",
   "STU_CHANNEL": "",
+  "IVAN_CHANNEL": "",
   "ALAN_CHANNEL": "",
   "JANICE_CHANNEL": "",
   "JANICE_PUBKEY": ""
