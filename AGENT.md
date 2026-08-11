@@ -210,6 +210,14 @@ Three things about it are deliberate:
   command that merely names the path. Reading the content is how the tree gets mistaken for
   the live one; the rest is how someone works out it is stale and removes it — or reports
   it. A guard that blocks its own cleanup, or the message describing it, gets switched off.
+- **A command line is judged per segment, never as one string.** The first version tested
+  the whole line with one regex each way and both leaked: `\bbuzz\b`, meant for
+  `buzz messages send`, matched the `.buzz` inside every absolute path in the nest, and
+  `git log` anywhere exempted the rest of the line — which is the incident shape exactly.
+  The verbatim incident command hit both. Each segment is now decided on its own leading
+  verb, and a `cd` into a stale tree carries to the segments after it. This is the same
+  mistake the name guard above documents, arrived at independently; if you touch this file,
+  keep the per-segment property and keep the absolute-path tests that catch losing it.
 - **It is a hook rather than a line in `AGENTS.md`** because that file is read when a
   session starts and Buzz sessions are pooled and long-lived: a rule added today does not
   reach a session begun yesterday. Settings are consulted per tool call.
