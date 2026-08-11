@@ -14,6 +14,7 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 
 import {
+  commandsToInspect,
   inspectCommand,
   missingTrailers,
   parseCommitCommand,
@@ -184,9 +185,79 @@ describe('the verdict on a commit', () => {
     assert.equal(inspect('git commit --amend --no-edit', { head: 'Subject' }).verdict, 'deny')
   })
 
-  it('leaves anything that is not a git commit alone', () => {
+  it('leaves anything that writes no commit of its own alone', () => {
     assert.equal(inspect('git push --force-with-lease origin main'), null)
     assert.equal(inspect('npm test'), null)
+  })
+
+  // The boundary, mapped against the real git rather than reasoned about. cherry-pick and am
+  // carry the source message so its trailers ride along; merge writes a merge commit, and the
+  // rule is about authored work.
+  describe('the other commit-creating verbs', () => {
+    it('denies git revert, whose generated message has no trailers and takes no --trailer', () => {
+      const v = inspect('git revert abc123')
+      assert.equal(v.verdict, 'deny')
+      assert.equal(v.reason, 'revert')
+      assert.deepEqual(v.missing, ['Co-authored-by', 'Signed-off-by'])
+    })
+
+    it('still denies revert -s — that is the sign-off half only', () => {
+      assert.deepEqual(inspect('git revert -s abc123').missing, ['Co-authored-by'])
+    })
+
+    it('allows revert --no-commit, which stages without committing', () => {
+      assert.equal(inspect('git revert --no-commit abc123'), null)
+      assert.equal(inspect('git revert -n abc123'), null)
+    })
+
+    it('allows the sequencer flags — they finish or discard, they do not start', () => {
+      for (const f of ['--continue', '--abort', '--quit', '--skip']) {
+        assert.equal(inspect(`git revert ${f}`), null, f)
+      }
+    })
+
+    it('does not read revert -m as a message — it names the mainline parent', () => {
+      const v = inspect('git revert -m 1 abc123')
+      assert.equal(v.reason, 'revert')
+    })
+
+    it('leaves cherry-pick, am and merge alone', () => {
+      assert.equal(inspect('git cherry-pick abc123'), null)
+      assert.equal(inspect('git am /tmp/patch.mbox'), null)
+      assert.equal(inspect('git merge --no-ff feature'), null)
+    })
+  })
+
+  // Used by this guard's own author to amend two commits, and it passed through unchecked.
+  describe('commands hiding inside git rebase --exec', () => {
+    const inner = (cmd, opts = {}) =>
+      commandsToInspect(cmd).map((t) =>
+        inspectCommand(t, {
+          email: EMAIL,
+          name: 'An Operator',
+          readFile: () => null,
+          headMessage: () => opts.head ?? null,
+        }),
+      )
+
+    it('sees an untrailered commit inside --exec', () => {
+      const v = inner(`git rebase origin/main --exec "git commit --amend --no-edit"`, { head: 'Subject' })
+      assert.ok(v.some((r) => r?.verdict === 'deny'))
+    })
+
+    it('sees it behind -x and --exec= too', () => {
+      assert.ok(inner(`git rebase main -x "git commit --amend --no-edit"`, { head: 'S' }).some((r) => r?.verdict === 'deny'))
+      assert.ok(inner(`git rebase main --exec="git commit --amend --no-edit"`, { head: 'S' }).some((r) => r?.verdict === 'deny'))
+    })
+
+    it('passes an exec whose commit carries both trailers', () => {
+      const cmd = `git rebase origin/main --exec "git commit --amend --no-edit --trailer '${COA}' --trailer '${SOB}'"`
+      assert.ok(inner(cmd, { head: 'Subject' }).every((r) => r === null || r.verdict === 'ok'))
+    })
+
+    it('leaves a rebase with no exec alone', () => {
+      assert.ok(inner('git rebase origin/main').every((r) => r === null))
+    })
   })
 
   it('leaves --fixup alone — git writes that message and the rebase consumes it', () => {

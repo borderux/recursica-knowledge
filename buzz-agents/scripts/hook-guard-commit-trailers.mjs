@@ -30,7 +30,7 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
-import { inspectCommand, splitCommands } from "../lib/commit-trailers.mjs";
+import { commandsToInspect, inspectCommand } from "../lib/commit-trailers.mjs";
 
 /* ── talking to the repository ─────────────────────────────────────────────── */
 
@@ -71,11 +71,11 @@ try {
 
 const cmd = payload?.tool_input?.command;
 if (payload?.tool_name !== "Bash" || typeof cmd !== "string") process.exit(0);
-if (!/\bgit\b/.test(cmd) || !/\bcommit\b/.test(cmd)) process.exit(0);
+if (!/\bgit\b/.test(cmd) || !/\b(commit|revert)\b/.test(cmd)) process.exit(0);
 
 const shellCwd = typeof payload?.cwd === "string" && payload.cwd ? payload.cwd : process.cwd();
 
-for (const tokens of splitCommands(cmd)) {
+for (const tokens of commandsToInspect(cmd)) {
   /**
    * `git -C <dir>` moves the repository the commit lands in, and with it the `user.email`
    * that counts. Resolved per command rather than once, because a chained command can hop
@@ -110,6 +110,25 @@ for (const tokens of splitCommands(cmd)) {
           `sign off. Nothing has run.\n\n` +
           `AGENTS.md is explicit about this case: stop and ask the human operator for their ` +
           `name and email rather than guessing one or committing without it.`,
+      },
+    });
+    process.exit(0);
+  }
+
+  if (verdict.reason === "revert") {
+    emit({
+      hookSpecificOutput: {
+        hookEventName: "PreToolUse",
+        permissionDecision: "deny",
+        permissionDecisionReason:
+          `This revert would write a commit without the operator's sign-off. Nothing has ` +
+          `run.\n\n` +
+          `\`git revert\` generates its own \`Revert "…"\` message, so it starts with no ` +
+          `trailers, and it takes no \`--trailer\` flag — git parses that as a revision. ` +
+          `Stage the revert and commit it yourself:\n\n` +
+          `  git revert --no-commit <commit>\n` +
+          `  git commit \\\n${trailerFlags}\n\n` +
+          `\`--no-commit\` and \`--continue\`/\`--abort\`/\`--quit\` are not blocked.`,
       },
     });
     process.exit(0);

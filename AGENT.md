@@ -134,6 +134,34 @@ prints hash and subject only, so it structurally cannot show a trailer and will 
 commit that has none. That is exactly how one of the two misses got through a verification
 step that did run.
 
+### What it catches, and what it does not
+
+**A guard believed to be total is worse than one known to be partial.** This table was
+produced by running the installed guard against each command, not by reading the code:
+
+| Command | | |
+|---|---|---|
+| `git commit` with no trailers | **deny** | including `-F <file>`, `-m`, and a piped `-F -` |
+| `git commit --amend` | **deny** | when the resulting message lacks them — HEAD's own message counts |
+| `git -c commit.gpgsign=false commit` | **deny** | global options are walked, not string-matched |
+| `git revert` | **deny** | its generated message has none, and it takes no `--trailer` |
+| `git rebase --exec 'git commit …'` | **deny** | the exec'd command is inspected, one level deep |
+| `git commit --dry-run` | allow | writes nothing |
+| `git commit --fixup` / `--squash` | allow | git writes the message; the rebase consumes it |
+| `git revert --no-commit`, `--continue`/`--abort`/`--quit` | allow | stages, or finishes what was already gated |
+| `git cherry-pick`, `git am` | allow | they carry the source message, so its trailers ride along |
+| `git merge` | allow | a merge commit is not authored work — the forge's own squash commits carry no sign-off either |
+
+Two consequences worth stating plainly:
+
+- **A commit made outside a Claude Code Bash call is not seen at all.** This is a
+  `PreToolUse` hook, not a git hook. That is the intended blast radius — see the last bullet
+  below — but it means the guard is not a guarantee about the repository, only about what
+  agents propose.
+- **`git filter-branch`, `git fast-import`, and a shell function or script wrapping `git
+  commit` all pass through.** Nothing has needed them here; if one starts appearing, the
+  boundary moves.
+
 Three things about the guard are deliberate:
 
 - **It denies rather than warns when it cannot read the message.** The name guard beside it

@@ -106,6 +106,38 @@ export function splitCommands(cmd) {
   return segments.filter((s) => s.length);
 }
 
+/**
+ * Every command this should look at, including the ones hiding inside `git rebase --exec`.
+ *
+ * `git rebase origin/main --exec 'git commit --amend …'` runs a commit per replayed commit,
+ * and the commit is a quoted argument rather than a command in its own right — so a reader
+ * that only splits on `&&` never sees it. This guard's own author used exactly that form to
+ * add trailers to two commits, and it passed through unchecked.
+ *
+ * Depth is capped at 2. An exec inside an exec is not a real shape, and an uncapped recursion
+ * on attacker-shaped input is a worse bug than the one being fixed.
+ */
+export function commandsToInspect(cmd, depth = 0) {
+  const segments = splitCommands(cmd);
+  if (depth >= 2) return segments;
+
+  const out = [];
+  for (const tokens of segments) {
+    out.push(tokens);
+    const argv0 = tokens[0]?.value;
+    if (argv0 !== "git" && !argv0?.endsWith("/git")) continue;
+    if (!tokens.some((t) => t.value === "rebase")) continue;
+    for (let i = 0; i < tokens.length; i += 1) {
+      const eq = splitEq(tokens[i].value);
+      const inner = eq && eq[0] === "--exec" ? eq[1]
+        : (tokens[i].value === "--exec" || tokens[i].value === "-x") ? tokens[i + 1]?.value
+        : null;
+      if (inner) out.push(...commandsToInspect(inner, depth + 1));
+    }
+  }
+  return out;
+}
+
 /* ── which command is this ─────────────────────────────────────────────────── */
 
 /** Options that sit BEFORE the subcommand and take a separate value. */
@@ -171,9 +203,21 @@ function splitEq(value) {
   return eq > 2 ? [value.slice(0, eq), value.slice(eq + 1)] : null;
 }
 
+/** Sequencer control flags — they finish or discard an operation rather than starting one. */
+const SEQUENCER_OPS = new Set(["--continue", "--abort", "--quit", "--skip"]);
+
 /**
- * Pull the commit-relevant arguments out of one command, or return null if it is not a
- * `git commit`.
+ * Pull the commit-relevant arguments out of one command, or return null if it creates no
+ * commit of its own.
+ *
+ * Two verbs qualify. `commit` is the obvious one. `revert` is here because it writes a
+ * commit with a message git generates — `Revert "…"` — which starts with no trailers at all,
+ * and it is the ordinary way to back out a bad commit rather than an exotic corner.
+ *
+ * Deliberately NOT here, having been mapped against the real git rather than reasoned about:
+ * `cherry-pick` and `am` carry the source commit's message, so its trailers ride along;
+ * `merge` writes a merge commit, and the sign-off rule is about authored work — GitHub's own
+ * squash commits carry no sign-off, so denying merges would fight the platform.
  *
  * The subcommand is found by walking past the global options rather than by matching
  * /commit/ against the string. `git -c commit.gpgsign=false commit` — the exact form used
@@ -203,9 +247,11 @@ export function parseCommitCommand(tokens) {
     }
     i += 1;
   }
-  if (tokens[i]?.value !== "commit") return null;
+  const verb = tokens[i]?.value;
+  if (verb !== "commit" && verb !== "revert") return null;
 
   const out = {
+    verb,
     gitDir,
     messages: [],
     files: [],
@@ -216,12 +262,28 @@ export function parseCommitCommand(tokens) {
     reuse: false,
     autoSquash: false,
     dryRun: false,
+    noCommit: false,
+    sequencerOp: false,
   };
 
   for (let k = i + 1; k < tokens.length; k += 1) {
     const raw = tokens[k].value;
     const eq = splitEq(raw);
     const name = eq ? eq[0] : raw;
+
+    /**
+     * `revert` shares almost none of `commit`'s option surface, and reading it as if it did
+     * is actively wrong: `git revert -m 1 <sha>` names the mainline parent, not a message.
+     * So only the handful of flags that decide whether a commit gets written are read here.
+     */
+    if (out.verb === "revert") {
+      if (name === "-n" || name === "--no-commit") out.noCommit = true;
+      else if (name === "-s" || name === "--signoff") out.signoff = true;
+      else if (SEQUENCER_OPS.has(name)) out.sequencerOp = true;
+      else if (name === "-m" || name === "--mainline") k += 1; // its value is a parent number
+      continue;
+    }
+
     const inlineValue = eq ? eq[1] : null;
     const value = inlineValue ?? (COMMIT_WITH_VALUE.has(name) ? tokens[k + 1]?.value : undefined);
     if (inlineValue === null && COMMIT_WITH_VALUE.has(name) && value !== undefined) k += 1;
@@ -320,6 +382,29 @@ export function inspectCommand(tokens, { email, name, readFile, headMessage }) {
    * which is the opposite of the point. Nothing published means nothing to guard.
    */
   if (parsed.dryRun) return null;
+
+  /**
+   * `git revert` writes a commit whose message git generates, so it begins with no trailers
+   * and there is no flag that adds them: verified against git 2.50, `--trailer` is parsed as
+   * a revision and fails with `bad revision`. `-s` adds `Signed-off-by` and nothing else, so
+   * it cannot satisfy the `Co-authored-by` half either.
+   *
+   * That leaves one remedy, which is what the deny reason says: `--no-commit`, then an
+   * ordinary `git commit` carrying both trailers.
+   *
+   * `--no-commit` stages without committing, and the sequencer flags finish or discard an
+   * operation rather than starting one — the commit they produce was already gated when the
+   * revert began.
+   */
+  if (parsed.verb === "revert") {
+    if (parsed.noCommit || parsed.sequencerOp) return null;
+    return {
+      verdict: "deny",
+      reason: "revert",
+      missing: parsed.signoff ? ["Co-authored-by"] : REQUIRED.slice(),
+      gitDir: parsed.gitDir,
+    };
+  }
 
   if (!String(email ?? "").trim()) {
     return { verdict: "deny", reason: "no-identity", gitDir: parsed.gitDir };
