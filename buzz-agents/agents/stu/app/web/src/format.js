@@ -43,14 +43,52 @@ function toDate(value) {
   return Number.isNaN(date.getTime()) ? null : date
 }
 
-/** `Aug 10, 2026`, in the reader's locale and zone. Null when there is nothing to show. */
-export function formatDate(value) {
-  const date = toDate(value)
-  return date && DATE.format(date)
+// Relative time, for the recent end. `recursica-skill-dates-and-currency` prefers it wherever
+// greater specificity does not help the reader — being told an edit happened at 2:23pm when it is
+// now 2:45pm makes the reader do the subtraction to learn the thing they wanted, which is
+// "just now".
+//
+// **The threshold is one week**, decided by the owner on 2026-08-11 and recorded in that skill.
+// It is not a value to re-derive here.
+//
+// The wording comes from `Intl.RelativeTimeFormat`, not from us: `numeric: 'auto'` is what turns
+// -1 day into "yesterday" rather than "1 day ago", and it does it per locale. Writing those
+// strings by hand would be inventing copy in one language.
+const RELATIVE = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' })
+
+const SECOND = 1000
+const MINUTE = 60 * SECOND
+const HOUR = 60 * MINUTE
+const DAY = 24 * HOUR
+const RELATIVE_THRESHOLD = 7 * DAY
+
+function relative(deltaMs) {
+  const magnitude = Math.abs(deltaMs)
+  // Under a minute reads "now". Seconds are deliberately not shown: the skill admits them only
+  // for a set of sub-minute values being compared, and one timestamp is not that.
+  if (magnitude < MINUTE) return RELATIVE.format(0, 'second')
+  if (magnitude < HOUR) return RELATIVE.format(Math.round(deltaMs / MINUTE), 'minute')
+  if (magnitude < DAY) return RELATIVE.format(Math.round(deltaMs / HOUR), 'hour')
+  // Rounding at the top of the range would report "7 days ago" for something 6.9 days old, sitting
+  // next to a value one hour older showing an absolute date. Clamp so the relative form never names
+  // the threshold it is bounded by.
+  const days = Math.min(6, Math.round(magnitude / DAY))
+  return RELATIVE.format(deltaMs < 0 ? -days : days, 'day')
 }
 
-/** `Aug 10, 2026, 4:31 PM`, in the reader's locale and zone. */
-export function formatDateTime(value) {
+/**
+ * When something happened: relative within the last week, the absolute date beyond it.
+ *
+ * @param withTime  Include the clock time in the absolute form. A log of changes wants it; a
+ *                  column headed with a date does not.
+ *
+ * One known limit: the relative string is computed at render and does not tick. Every screen here
+ * refetches on a write, so it is never more stale than the data beside it.
+ */
+export function formatWhen(value, { withTime = false } = {}) {
   const date = toDate(value)
-  return date && DATE_TIME.format(date)
+  if (!date) return null
+  const delta = date.getTime() - Date.now()
+  if (Math.abs(delta) < RELATIVE_THRESHOLD) return relative(delta)
+  return (withTime ? DATE_TIME : DATE).format(date)
 }

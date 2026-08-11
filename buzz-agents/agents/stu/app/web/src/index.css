@@ -173,16 +173,19 @@ body {
   overflow-wrap: anywhere;
 }
 
-/* A value that is absent, in the cell's own disabled text colour.
+/* A value that is absent: `NA`, italic, neutral 500.
  *
- * `recursica-skill-tables` asks for "NA in disabled-looking text", and `disabled` is the one
- * state the kit defines on a cell. Reading that token is how the treatment stays right through
- * a re-theme; the alternative — wrapping the value in a Text component — silently replaces the
- * cell's typeface, which is the bug this file is fixing elsewhere. See the note in DataTable
- * about the gap this works around.
+ * The colour is the brand's neutral 500 token rather than the cell's `text-color-disabled`, which
+ * resolves a step lighter at neutral 400. That is a stated treatment, not a reuse of the disabled
+ * state — recorded in `recursica-skill-tables`, and the reason this reads a palette token instead
+ * of the component's.
+ *
+ * Only the colour and the slant. No family, no size: the cell owns those, and replacing them is
+ * the defect fixed elsewhere in this file.
  */
 .stu-cell--absent {
-  color: var(--recursica_ui-kit_components_table-cell_properties_colors_text-color-disabled);
+  color: var(--recursica_brand_palettes_neutral_500_color_tone);
+  font-style: italic;
 }
 
 /* Sort control in a table header. A button, because it performs an action rather than

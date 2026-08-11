@@ -33,7 +33,7 @@ export function Tags({ identity, revision, onChanged }) {
       key: 'threshold',
       header: 'Confidence floor',
       sortValue: (r) => Number(r.confidence_threshold ?? 0),
-      render: (r) => r.confidence_threshold ?? <Absent>Not set</Absent>,
+      render: (r) => r.confidence_threshold ?? <Absent />,
     },
     {
       key: 'origin',

@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react'
 import { Badge, Text } from '@recursica/mantine-adapter'
 import { api } from '../api.js'
-import { formatDate } from '../format.js'
+import { formatWhen } from '../format.js'
 import { Page } from '../shell/Page.jsx'
 import { Absent, COLUMN_WIDTH, DataTable } from '../shell/DataTable.jsx'
 import { Figures } from '../shell/Figures.jsx'
@@ -45,7 +45,7 @@ export function Interviews({ revision }) {
       header: 'Cohort',
       width: COLUMN_WIDTH.term,
       sortValue: (r) => r.participant_type,
-      render: (r) => r.participant_type ?? <Absent>Not recorded</Absent>,
+      render: (r) => r.participant_type ?? <Absent />,
     },
     {
       key: 'lines',
@@ -162,9 +162,12 @@ export function countMismatch(r) {
   return r.line_count != null && Number(r.line_count) !== Number(r.actual_line_count)
 }
 
+// Relative within the last week, the absolute date beyond it — the threshold the owner set. No
+// clock time: this column is headed with a date, and the hour of an ingest is not what is being
+// compared down the column.
 export function DateOnly({ value }) {
-  const text = formatDate(value)
-  if (!text) return <Absent>Not recorded</Absent>
+  const text = formatWhen(value)
+  if (!text) return <Absent />
   return <>{text}</>
 }
 

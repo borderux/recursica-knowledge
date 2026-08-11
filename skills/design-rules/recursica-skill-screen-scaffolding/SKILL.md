@@ -85,11 +85,20 @@ The filter controls themselves are owned by `recursica-skill-filters`.
 
 **Space beyond it stays empty.** That is the correct outcome, not a gap to fill.
 
-**MUST centre the main content horizontally within the space it has.** Empty space to the right is not the same thing as empty space on both sides. A maximum width with no alignment leaves the content pinned wherever the layout happens to start it — against the left rail — so on a wide display every screen sits in the top-left corner with a third of the monitor blank beside it. That reads as a window that failed to resize, not as deliberate restraint.
+**MUST centre the main content horizontally.** Empty space to the right is not the same thing as empty space on both sides. A maximum width with no alignment leaves the content pinned wherever the layout happens to start it — against the left rail — so on a wide display every screen sits in the top-left corner with a third of the monitor blank beside it. That reads as a window that failed to resize, not as deliberate restraint. **What it is centred within is a choice, made once — see below.**
 
 **This is the rule most often half-implemented**, because a maximum width alone looks correct at the viewport it was built on and only goes wrong on a larger one. **Check it at a viewport well beyond the maximum**, not at the one on your desk.
 
-**Centre the main content area, not the chrome.** A left rail or a header spans the full viewport as before — see above. If centring the main content leaves it visibly detached from a left rail, that is a real tension and the answer is a product decision: ask whether to centre the content in its own region or to centre the whole shell, rail included, as one block.
+**Chrome is not bound by the maximum width** — a left rail or a header spans the full viewport as before, see above.
+
+**Two centrings are both correct, and it is one decision per application:**
+
+- **Centre the main content in the region left over beside the chrome.** The rail keeps the left edge and the content is centred in what remains.
+- **Centre the main content in the whole viewport, ignoring the rail.** The content lands on the display's true centre and the rail overlaps the space to its left.
+
+**Pick one and apply it to every page.** Neither is a compromise and neither needs justifying; what does need justifying is two screens in one application doing it differently — see convention 1 in `recursica-skill-system-conventions`.
+
+**Expect a gap between the rail and the content on a very wide display**, whichever is chosen. That is the maximum width working, not a layout failure, and it is not a reason to stretch the content.
 
 **Stretching content to fill the viewport is the anti-pattern.** It signals a fear of white space and a misunderstanding of how people read: over-long line lengths reduce scannability, and occupying space is not a reason to occupy space. See the line-length calculation in `recursica-skill-typography-semantics`.
 
@@ -212,7 +221,7 @@ The number one indicator, and the rest in order:
 - [ ] Filters are positioned by the width of the content they act on, not by a breakpoint, and a filter rail is not merged with the navigation rail.
 - [ ] Regions are divided by space and headings, with a rule only where space was not enough — and never by cards.
 - [ ] No form field is inside a card.
-- [ ] Content respects the system's maximum width, is centred within the space it has, and leftover space was
+- [ ] Content respects the system's maximum width, is centred — in the region beside the chrome or in the whole viewport, one choice for the application — and leftover space was
       left empty rather than filled — checked at a viewport well beyond the maximum, not only at the one it was built on.
 - [ ] No region is sized to a bare viewport height inside a declared layer; the layer's padding was subtracted by
       reading its token, and a low-content page was measured to confirm the document does not scroll at all.

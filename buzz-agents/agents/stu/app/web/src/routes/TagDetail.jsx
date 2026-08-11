@@ -58,7 +58,7 @@ export function TagDetail({ revision }) {
       // The value carries the cell's own type; the missing case is the absent treatment rather
       // than a smaller size, because "no justification" is a null and not a short answer.
       render: (r) => r.justification
-        ?? <Absent>No justification recorded — this tag cannot be checked.</Absent>,
+        ?? <Absent />,
     },
     {
       key: 'confidence',

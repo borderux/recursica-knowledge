@@ -152,18 +152,20 @@ export function DataTable({ columns, rows, initialSort, rowHref, getRowKey, empt
 }
 
 /**
- * A value that is absent, rendered so it cannot be mistaken for a real one.
- * `recursica-skill-tables`: never let a null read as a value — 0 because the fetch failed is a
- * different claim from "none" — and it asks for the disabled-looking treatment specifically.
+ * A value that is absent. `recursica-skill-tables`: never let a null read as a value — a `0`
+ * because the fetch failed is a different claim from "none" — and it must be text, not an empty
+ * cell, because an empty cell is announced as nothing.
  *
- * This used to be a `Text`, which was wrong twice over: it changed the typeface of the value
- * away from the cell's own, and `body-small` is a size difference rather than the disabled
- * treatment the rule asks for. The kit does define `disabled` on a cell, but only as a state on
- * the whole `td`, and a renderer several components deep cannot reach the `td` it will land in.
- * So the colour is read from the same token the cell's disabled state uses. **A supported way
- * to mark one value absent is a real gap** — `recursica-skill-table` already lists what
- * `disabled` means on a cell as uncovered.
+ * **The text is always `NA`, and it takes no arguments on purpose.** It used to accept per-column
+ * copy — "Not recorded", "No name", "You cleared the correction" — which read as a value rather
+ * than as the absence of one, and gave the same fact five spellings down a table. One string is
+ * the rule.
+ *
+ * Italic and neutral 500, both set by the owner on 2026-08-11 and recorded in
+ * `recursica-skill-tables`. Neutral 500 is deliberately **not** the cell's own
+ * `text-color-disabled`, which resolves a step lighter at neutral 400 — the treatment is a stated
+ * value, not a reuse of the disabled state, and that is why it is worth writing down.
  */
-export function Absent({ children = 'None' }) {
-  return <span className="stu-cell--absent">{children}</span>
+export function Absent() {
+  return <span className="stu-cell--absent">NA</span>
 }

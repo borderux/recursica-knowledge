@@ -115,7 +115,15 @@ Decide in this order:
 
 ## Empty and null cells
 
-**Show "NA" in disabled-looking text.** The reason is precision about what happened: an empty cell, or worse a zero, implies a value was retrieved when it may not have been.
+**Show `NA`, in italics, in neutral 500.** The reason is precision about what happened: an empty cell, or worse a zero, implies a value was retrieved when it may not have been.
+
+**The string is literally `NA`, and it is the same in every column.** Per-column wording — `Not recorded`, `No name`, `Not set`, `None` — is the failure mode here. It reads as a value rather than as the absence of one, and it gives the same fact a different spelling in every column of the same table. **One string, everywhere.**
+
+**Neutral 500, not the component's disabled colour.** They are not the same value — a cell's `text-color-disabled` resolves a step lighter — and this treatment is a stated one rather than a reuse of the disabled state. Take it from the neutral palette token so it re-themes.
+
+**Italic is load-bearing.** It is the second channel: `recursica-skill-system-conventions` forbids carrying meaning in colour alone, and a grey `NA` on its own does exactly that.
+
+**`NA` must be real text in the cell**, not a background, an icon, or an empty cell styled to look absent. An empty cell is announced as nothing at all.
 
 **NEVER let a null read as a real value.** Currency displaying `0` because the fetch failed is a different claim from `NA`, and the difference matters.
 
@@ -229,7 +237,8 @@ Before considering a table done, verify:
 - [ ] Full-size tables fill their container and use infinite scroll; interior tables show five to ten rows and paginate.
 - [ ] No interior table scrolls in either direction.
 - [ ] Header and footer stay fixed; only rows scroll.
-- [ ] Null cells read "NA" in disabled text; no null is displayed as a real value or a zero.
+- [ ] Null cells read the literal string `NA`, italic, in neutral 500 — the same string in every column, as real
+      text rather than styling; no null is displayed as a real value or a zero.
 - [ ] Default sort is on the primary content column, in the direction the data implies.
 - [ ] Multi-sort, if present, is behind long-press; plain click flips direction; unsortable types are excluded.
 - [ ] No row density variants were invented.

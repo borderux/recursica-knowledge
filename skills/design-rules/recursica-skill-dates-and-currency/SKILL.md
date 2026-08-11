@@ -70,7 +70,17 @@ The example that makes this concrete: a log of a break-in that occurred at 11:00
 
 The reason is principle 1: telling someone an event happened at 2:23 p.m. when it is now 2:45 p.m. makes them do arithmetic to learn what they actually wanted to know, which is "recently."
 
-**Above a threshold, switch to the absolute date.** The threshold is a product decision — a few days, a week, a month. With a one-month threshold, `25 days ago` holds until a month has passed, after which the value reads `Jun 24, 2026`.
+**Above a threshold, switch to the absolute date.**
+
+**The threshold is one week.** Inside the last week a value reads relatively — `now`, `5 minutes ago`, `16 hours ago`, `yesterday`, `3 days ago`. At a week and beyond it reads as the absolute date, `Jun 24, 2026`. A product may override it with a stated reason; absent one, a week is the house rule and not a decision to re-open per screen.
+
+**Use the platform's relative formatter, not hand-written strings.** In a browser that is `Intl.RelativeTimeFormat`, and its `numeric: "auto"` setting is what produces `yesterday` rather than `1 day ago` — per locale, which hand-written copy cannot be. Writing those strings yourself localizes the screen into one language.
+
+**Do not let the relative form name its own threshold.** Rounding at the top of the range reports `7 days ago` for a value 6.9 days old, sitting in the same column as a value an hour older showing an absolute date. Clamp the largest relative value below the threshold.
+
+**Seconds do not appear here.** Under a minute reads `now` — the precision-consistency rule below admits seconds only for a set of sub-minute values being compared, and a single timestamp is not that.
+
+**A relative value is computed when it renders and does not tick.** Where a screen is long-lived and never refetches, that is a staleness the reader cannot see. Either refresh it or use the absolute form; do not leave a page claiming `now` an hour later.
 
 ## Currency
 
@@ -168,7 +178,8 @@ Do not pattern-match one of these to a rule above. A wrong convention in a fisca
 - [ ] Times are in the user's own zone, not the tenant's.
 - [ ] A time zone is stated whenever the value is outside the user's zone, or the user's zone is unknown, or the user has switched zones.
 - [ ] Times for events that happened elsewhere are shown in the zone of occurrence, labeled, with a way to convert.
-- [ ] Recent events use relative time; a stated threshold switches to the absolute date.
+- [ ] Recent events use relative time within one week and the absolute date beyond it, produced by the platform's
+      relative formatter, with no relative value naming the threshold and no seconds shown.
 - [ ] Currency is right-aligned, with two decimal places on every value.
 - [ ] The currency symbol sits in the column header, not in each cell.
 - [ ] Any converted currency is labeled in the cell.

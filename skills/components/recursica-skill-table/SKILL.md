@@ -57,7 +57,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.table`, `table-cell`, 
 
 ## Rules for using it
 
-**Null is `NA`, never an empty cell and never `0`.** An empty cell reads as an oversight and a zero reads as a real value. **This rule is owned by `recursica-skill-tables`**, which specifies `NA` in disabled-looking text, and generalized by `recursica-skill-system-conventions`. It is restated here only because it has an accessibility consequence; read the owning skill for the rule itself, and where it differs from this line, it is correct.
+**Null is `NA`, never an empty cell and never `0`.** An empty cell reads as an oversight and a zero reads as a real value. **This rule is owned by `recursica-skill-tables`**, which specifies the string, the italic, and the neutral-500 colour, and generalized by `recursica-skill-system-conventions`. It is restated here only because it has an accessibility consequence; read the owning skill for the rule itself, and where it differs from this line, it is correct.
 
 **Every table has a default sort, and the sorted column always shows its indicator** — including when the sort cannot be changed. The header component provides `sorted-text-style` and the sort icon; your job is making sure one column carries them. A table whose order is invisible makes the reader guess. Owned by `recursica-skill-tables`.
 
@@ -139,9 +139,11 @@ Do not implement, override, or tune any of these — the component owns them:
 - **Row hover.** No hover state is defined, yet a clickable row needs an affordance.
 - **Expandable rows and nested detail.** No tokens, no rule.
 - **What `disabled` means on a cell, a header, or a footer** — an unavailable value, an unsortable column, or something else.
-- **How to mark one value absent.** `recursica-skill-tables` requires `NA` in disabled-looking text, and `disabled`
-  is the one state the kit gives a cell — but only as a state on the whole cell, which a renderer producing just
-  the value cannot reach. There is no supported way to render one value in the cell's disabled treatment.
+- **A supported way to mark one value absent.** The treatment itself is settled — `recursica-skill-tables` specifies
+  the literal string `NA`, italic, in neutral 500 — but the kit exposes no mechanism for it. `disabled` is the one
+  state a cell has, it applies to the whole cell, and a renderer producing just the value cannot reach the cell it
+  will land in. Until there is one, read the neutral palette token; do not reach for the cell's disabled colour,
+  which is a different value.
 - **The empty state**, and the difference between "no records yet" and "no results for these filters". Named as unowned in `recursica-skill-design-router`.
 - **Loading.** No skeleton or determinate loader exists; see `recursica-skill-loader`.
 - **Behavior below desktop.** Named as unowned in `recursica-skill-design-router`.
@@ -151,7 +153,8 @@ Do not implement, override, or tune any of these — the component owns them:
 - [ ] The set is genuinely tabular data, not a small set with a graphic each.
 - [ ] It is a real table with real header cells associated with their columns, and it has an accessible name.
 - [ ] No horizontal scroll region; column count was reduced instead.
-- [ ] Null cells read `NA`, per `recursica-skill-tables`; no empty cells and no misleading zeros.
+- [ ] Null cells read `NA` in the treatment `recursica-skill-tables` specifies — italic, neutral 500, the same
+      string in every column; no empty cells and no misleading zeros.
 - [ ] A deliberate default sort is set, the sorted column shows its indicator even when sort is fixed, and sort state is announced on the header rather than only styled.
 - [ ] Multi-sort has a keyboard path; the column-visibility gear is keyboard reachable and reordering has a non-drag path.
 - [ ] Row checkboxes name their row; select-all is named and exposes its indeterminate state.

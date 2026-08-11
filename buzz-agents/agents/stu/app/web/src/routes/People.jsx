@@ -270,7 +270,7 @@ export function People({ identity, revision, onChanged }) {
                     )
                     : r.source_names.length
                       ? <span>{r.source_names.join(' / ')}</span>
-                      : <Absent>No name</Absent>}
+                      : <Absent />}
                   <Text variant="caption"><code>{r.participant_id}</code></Text>
                 </Stack>
               ),
@@ -281,7 +281,7 @@ export function People({ identity, revision, onChanged }) {
               sortValue: (r) => r.source_types[0] ?? null,
               render: (r) => r.source_types.length
                 ? r.source_types.join(' / ')
-                : <Absent>Not recorded</Absent>,
+                : <Absent />,
             },
             {
               key: 'interviews',
@@ -307,7 +307,7 @@ export function People({ identity, revision, onChanged }) {
                       {warnings.map((w) => <Badge key={w} variant="warning">{w}</Badge>)}
                     </Group>
                   )
-                  : <Absent>None</Absent>
+                  : <Absent />
               },
             },
           ]}

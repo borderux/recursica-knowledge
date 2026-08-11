@@ -7,7 +7,7 @@
 import { useEffect, useState } from 'react'
 import { Text } from '@recursica/mantine-adapter'
 import { api } from '../api.js'
-import { formatDateTime } from '../format.js'
+import { formatWhen } from '../format.js'
 import { Page, Section } from '../shell/Page.jsx'
 import { Absent, DataTable } from '../shell/DataTable.jsx'
 
@@ -44,13 +44,13 @@ export function History({ revision }) {
       key: 'from',
       header: 'From',
       sortValue: (r) => r.old_value ?? '',
-      render: (r) => r.old_value ?? <Absent>Nothing</Absent>,
+      render: (r) => r.old_value ?? <Absent />,
     },
     {
       key: 'to',
       header: 'To',
       sortValue: (r) => r.new_value ?? '',
-      render: (r) => r.new_value ?? <Absent>Nothing</Absent>,
+      render: (r) => r.new_value ?? <Absent />,
     },
   ]
 
@@ -60,7 +60,7 @@ export function History({ revision }) {
       key: 'text',
       header: 'Your correction',
       sortValue: (r) => r.cleaned_text ?? '',
-      render: (r) => r.cleaned_text ?? <Absent>You cleared the correction</Absent>,
+      render: (r) => r.cleaned_text ?? <Absent />,
     },
     {
       key: 'was',
@@ -109,12 +109,12 @@ export function History({ revision }) {
   )
 }
 
-// An edit's timestamp, in the reader's own zone. `recursica-skill-dates-and-currency` prefers
-// relative time for recent occurrences and switches to the absolute date above a threshold — but
-// it also says the threshold itself is a product decision, so this shows the absolute form
-// everywhere rather than inventing one. Raised as a question rather than guessed.
+// An edit's timestamp, in the reader's own zone: relative within the last week, the absolute date
+// and time beyond it. This is a log of recent changes, which is the case relative time exists for —
+// "3 hours ago" is what the reader wanted, and the clock time made them subtract to get it. The
+// one-week threshold is the owner's, recorded in `recursica-skill-dates-and-currency`.
 function Stamp({ value }) {
-  const text = formatDateTime(value)
-  if (!text) return <Absent>Not recorded</Absent>
+  const text = formatWhen(value, { withTime: true })
+  if (!text) return <Absent />
   return <>{text}</>
 }
