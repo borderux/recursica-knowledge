@@ -21,9 +21,14 @@
 
 set -uo pipefail
 
-# Research team only. ALAN is the recursica/design loop, not research — see
-# GUIDES/JANICE_REVIEW_CHECKLIST.md for the roster and the reasoning.
-WATCHED_AGENTS=(Claire Stu)
+# The research team, plus any agent whose turns make cross-repo claims nobody re-runs.
+# Ivan is the second kind: he reports discrepancies across three repositories and the
+# report is the deliverable, so an unchecked claim in it is the whole failure. ALAN stays
+# unwatched — see GUIDES/JANICE_REVIEW_CHECKLIST.md for the roster and the reasoning.
+#
+# An agent added here needs a `building-<name>` channel in the checklist's routing table
+# too, or its findings fall back to building-janice and read as being about Janice.
+WATCHED_AGENTS=(Claire Stu Ivan)
 
 JANICE_CHANNEL="${JANICE_CHANNEL:-}"   # building-janice, in THIS community
 
@@ -90,7 +95,10 @@ if [[ ! -f "$TRANSCRIPT" ]]; then
 fi
 
 WATERMARK="$WATERMARK_DIR/${SESSION_ID}.json"
-WINDOW="$(python3 "$WINDOW_TOOL" --transcript "$TRANSCRIPT" --watermark "$WATERMARK" --update 2>>"$LOG")"
+# No --update here. The watermark is committed further down, only once the wake has
+# actually been delivered — advancing it at this point would move it past a window that
+# a compose error or a relay outage stopped anyone from ever reading.
+WINDOW="$(python3 "$WINDOW_TOOL" --transcript "$TRANSCRIPT" --watermark "$WATERMARK" 2>>"$LOG")"
 STATUS=$?
 
 # Exit 3 means there is nothing new since the last review — Stop also fires on clear,
@@ -133,10 +141,30 @@ lines = [
 ]
 
 subs = w.get("subagent_transcripts") or []
+calls = w.get("agent_calls_in_window", 0)
 if subs:
     lines += ["", "Subagent transcripts for this session (review these too — the"
-              " fence-sensitive Drive and BigQuery writes happen here):"]
+              " fence-sensitive Drive and BigQuery writes happen here). %d Agent call(s)"
+              " in this window, %d transcript(s) matched by spawning tool_use id:"
+              % (calls, len(subs))]
     lines += ["- %s" % s for s in subs]
+elif calls:
+    lines += ["", "Note: %d Agent call(s) in this window and no transcript matched."
+              " Treat the subagent evidence as missing, not absent." % calls]
+
+# A shortfall must be stated. A list that looks complete is the failure mode here.
+gap = w.get("subagents_missing_transcript") or []
+if gap:
+    lines += ["", "Note: %d Agent call(s) in this window have no transcript on disk, so"
+              " that evidence is unavailable rather than clean." % len(gap)]
+if w.get("subagents_matched_by_mtime"):
+    lines += ["", "Note: %d subagent transcript(s) had no readable .meta.json and were"
+              " matched by modification time instead, which can include work from an"
+              " adjacent turn." % len(w["subagents_matched_by_mtime"])]
+if w.get("subagents_unmatchable"):
+    lines += ["", "Note: %d subagent transcript(s) could be matched neither by id nor by"
+              " time and were excluded. If a finding here looks like it has a missing"
+              " step, that is where to look." % len(w["subagents_unmatchable"])]
 
 if w.get("skipped_bytes"):
     lines += ["", "Note: %d bytes between the last review and this turn were skipped so"
@@ -162,8 +190,16 @@ if printf '%s\n' "$CONTENT" | "$BUZZ_BIN" messages send \
       --content - \
       --mention "$JANICE_PUBKEY" >>"$LOG" 2>&1; then
   log "WAKE $AGENT session=$SESSION_ID from=$(printf '%s' "$WINDOW" | python3 -c 'import json,sys; print(json.load(sys.stdin)["from_offset"])' 2>/dev/null)"
+  # Delivered, so this window is spent. Commit from the payload that was sent, not from
+  # a rescan — the transcript has kept growing and a rescan would skip the difference.
+  if ! printf '%s' "$WINDOW" | python3 "$WINDOW_TOOL" \
+        --watermark "$WATERMARK" --commit-watermark 2>>"$LOG"; then
+    log "WARN $AGENT session=$SESSION_ID watermark not advanced — next wake re-reviews"
+  fi
 else
-  log "FAIL $AGENT session=$SESSION_ID send failed"
+  # Deliberately leave the watermark where it is. A duplicate review costs one run; a
+  # window advanced past evidence nobody read cannot be recovered.
+  log "FAIL $AGENT session=$SESSION_ID send failed, watermark held for retry"
 fi
 
 exit 0
