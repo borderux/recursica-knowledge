@@ -11,6 +11,11 @@ metadata:
 
 A file upload is a bordered area for adding files, with a list of the files that have been added below it.
 
+> **Not implemented yet.** Both adapters ship `FileUpload` as a declared stub that renders a
+> placeholder and apply none of the 32 `file-upload` variables the kit exports. Everything below
+> is the intended contract and is correct about the kit, but building against it today produces a
+> placeholder with no error. Raise it rather than working around it.
+
 ## Use it when
 
 - **Uploading is the point of the surface** — an attachments section, a document intake, a submission step. The control earns the space it takes.

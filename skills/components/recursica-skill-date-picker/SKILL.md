@@ -11,6 +11,12 @@ metadata:
 
 A date picker captures a single calendar date, by typing or by picking.
 
+> **Implemented in the Mantine adapter only.** The MUI adapter's `DatePicker.module.css` is a
+> declared placeholder stub containing no CSS — it applies none of the 34 `date-picker` variables
+> the kit exports, while the Mantine adapter applies 31. On MUI this component renders unstyled
+> with no error. Everything below is correct about the kit; check which adapter you are on before
+> relying on the visual contract.
+
 ## Use it when
 
 - **The value is one calendar date** — a due date, a start date, an effective date.

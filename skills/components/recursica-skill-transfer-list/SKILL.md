@@ -11,6 +11,11 @@ metadata:
 
 A transfer list is two lists side by side with controls that move items between them. It is also called a dual listbox.
 
+> **Not implemented yet.** Both adapters ship `TransferList` as a declared stub that renders a
+> placeholder and apply none of the 31 `transfer-list` variables the kit exports. Everything below
+> is the intended contract and is correct about the kit, but building against it today produces a
+> placeholder with no error. Raise it rather than working around it.
+
 ## Use it when
 
 - **The set is large** — well past the 7 ± 2 ceiling that a checkbox group tops out at. See `recursica-skill-working-memory`.
