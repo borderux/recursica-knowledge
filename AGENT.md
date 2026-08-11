@@ -210,6 +210,13 @@ Three things about it are deliberate:
   command that merely names the path. Reading the content is how the tree gets mistaken for
   the live one; the rest is how someone works out it is stale and removes it — or reports
   it. A guard that blocks its own cleanup, or the message describing it, gets switched off.
+- **Quoted data is never commands.** A heredoc body, a `--content` string, a `-c` argument:
+  these are text the command carries, not work it does. Both guards in this nest have now
+  been caught by the same shape — and the specific victim is the report *about* a guard,
+  which quotes the commands it denies. Every finding in this thread was written as
+  `cat > report.md <<'EOF'` with a table of denied commands, so segmenting the body as a
+  command list denied the message saying the guard was broken. Strip heredoc bodies and
+  herestrings before you segment anything.
 - **A command line is judged per segment, never as one string.** The first version tested
   the whole line with one regex each way and both leaked: `\bbuzz\b`, meant for
   `buzz messages send`, matched the `.buzz` inside every absolute path in the nest, and

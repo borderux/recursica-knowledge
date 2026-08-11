@@ -145,7 +145,42 @@ if (tool !== "Bash") {
 
 // ---------------------------------------------------------------------- bash
 
-const command = typeof ti.command === "string" ? ti.command : "";
+const rawCommand = typeof ti.command === "string" ? ti.command : "";
+if (!rawCommand.includes("REPOS/")) process.exit(0);
+
+/**
+ * A heredoc body is data, exactly like a `--content` argument — and the reports about
+ * this guard are written as `cat > report.md <<'EOF'` with a table of the commands it
+ * denies. Segmenting on newline cannot tell that body from a command list, so those lines
+ * were judged as commands and the message explaining the bug was itself denied.
+ *
+ * That is the third form of one mistake: judge what a command *does*, not what its text
+ * *contains*. Quoted data — a heredoc body, a `--content` string, a `-c` argument — is
+ * never commands.
+ *
+ * The `cat > file <<EOF` line itself is left in place: it is a write, and it is judged on
+ * its own verb like anything else.
+ */
+function stripHeredocs(command) {
+  const kept = [];
+  const pending = [];
+  for (const line of command.split("\n")) {
+    if (pending.length) {
+      const end = pending[0].stripTabs ? line.replace(/^\t+/, "") : line;
+      if (end.trim() === pending[0].delim) pending.shift();
+      continue; // body and terminator alike are data
+    }
+    for (const m of line.matchAll(/<<(-?)\s*(["']?)([A-Za-z_][A-Za-z0-9_]*)\2/g)) {
+      // `<<<` is a herestring, not a heredoc; it is stripped in place below.
+      if (line[m.index - 1] === "<" || line[m.index + 2] === "<") continue;
+      pending.push({ delim: m[3], stripTabs: m[1] === "-" });
+    }
+    kept.push(line.replace(/<<<\s*("[^"]*"|'[^']*'|\S+)/g, " "));
+  }
+  return kept.join("\n");
+}
+
+const command = stripHeredocs(rawCommand);
 if (!command.includes("REPOS/")) process.exit(0);
 
 /**

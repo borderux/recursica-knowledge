@@ -152,6 +152,48 @@ describe('a publishing verb speaks only for its own segment', () => {
   })
 })
 
+describe('quoted data is never commands', () => {
+  // Every report about this guard is written as `cat > report.md <<'EOF'` with a table of
+  // the commands it denies. Segmenting on newline made those body lines into commands, so
+  // the message explaining that the guard was broken was itself denied.
+  const report = [
+    `cat > ${home}/.scratch/report.md <<'EOF'`,
+    '| command | |',
+    '|---|---|',
+    `| \`cat ${STALE}/server/edits.mjs\` | DENY |`,
+    `| \`cd ${STALE} && grep -n x file.js\` | DENY |`,
+    '',
+    `Reading source from ${STALE} is denied as of today.`,
+    'EOF',
+  ].join('\n')
+
+  it('allows a heredoc report quoting denied commands', () => {
+    assert.equal(bash(report), 'ALLOW')
+  })
+
+  it('allows writing that report and then sending it', () => {
+    assert.equal(bash(`${report}\nbuzz messages send --channel x --content - < ${home}/.scratch/report.md`), 'ALLOW')
+  })
+
+  it('allows an indented heredoc and a herestring', () => {
+    assert.equal(bash(`cat > ${home}/x <<-EOF\n\tcat ${STALE}/y\n\tEOF`), 'ALLOW')
+    assert.equal(bash(`buzz messages send --content - <<< "grep ${STALE}"`), 'ALLOW')
+  })
+
+  it('allows an inline --content naming a denied command', () => {
+    assert.equal(bash(`buzz messages send --content "cat ${STALE}/x is denied"`), 'ALLOW')
+  })
+
+  // The heredoc must not become a way to launder a real read.
+  it('still denies a real read on the line that opens the heredoc', () => {
+    assert.equal(bash(`grep -n x ${STALE}/web/src/App.jsx > out <<'EOF'\nnote\nEOF`), 'DENY')
+  })
+
+  it('still denies a real read after the heredoc closes', () => {
+    assert.equal(bash(`cat > ${home}/x <<'EOF'\nnote\nEOF\ncat ${STALE}/web/src/App.jsx`), 'DENY')
+  })
+})
+
 describe('fails open', () => {
   it('allows a payload it cannot parse', () => {
     const out = execFileSync(process.execPath, [GUARD], {
