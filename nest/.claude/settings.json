@@ -21,6 +21,13 @@
           },
           {
             "type": "command",
+            "command": "node {{BUZZ_HOME}}/bin/guard-commit-trailers.mjs",
+            "if": "Bash(git *)",
+            "timeout": 20,
+            "statusMessage": "Checking the commit for the operator's sign-off"
+          },
+          {
+            "type": "command",
             "command": "node {{BUZZ_HOME}}/bin/guard-published-text.mjs",
             "if": "Bash(gh *)",
             "timeout": 20,

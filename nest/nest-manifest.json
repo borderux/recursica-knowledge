@@ -177,6 +177,12 @@
       "resolve": true
     },
     {
+      "from": "bin/guard-commit-trailers.mjs",
+      "to": "bin/guard-commit-trailers.mjs",
+      "mode": "0755",
+      "resolve": true
+    },
+    {
       "from": "bin/stu",
       "to": "bin/stu",
       "mode": "0755",
@@ -301,6 +307,11 @@
     "                  that triggers a Janice review. Without it she is installed,",
     "                  healthy, and permanently idle — and silence is also what a clean",
     "                  review looks like, so the failure is invisible.",
+    "  hooks.PreToolUse  guard-published-text.mjs on git/gh/buzz/curl, and",
+    "                  guard-commit-trailers.mjs on git — the latter denies a commit that",
+    "                  would land without the operator's Signed-off-by and Co-authored-by.",
+    "                  AGENTS.md had required both for months and they were missed twice in",
+    "                  two days, so the rule lives here rather than in four prompts.",
     "  permissions     allow: [Agent] — Claire fans out parallel Scribe/Tagger subagents.",
     "  MAX_MCP_OUTPUT_TOKENS  60000. BigQuery result sets truncate at the default.",
     "",
