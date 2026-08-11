@@ -6,14 +6,47 @@
 //
 // Terms are shown with the quotes that produced them, so the decision is made against evidence
 // rather than against a plausible-sounding definition.
+//
+// Lexicon writes two shapes into one table, and they are two different questions:
+//
+//   Spellings    — the term lists variants. "Are all of these genuinely the same thing?" This is
+//                  where an over-merge does damage, because the merge applies to every future
+//                  transcript and erases the distinction in all of them.
+//   Definitions  — the term lists none. "Is this definition right, and grounded in the quotes?"
+//                  No text is unified, so the stakes are lower.
+//
+// They are tabs rather than one list because a reviewer can only hold one of those questions at a
+// time, and because the consequence of approving differs between them — which is the thing this
+// page previously never said at all.
 
-import { useEffect, useState } from 'react'
-import { Link as RouterLink } from 'react-router'
-import { Badge, Button, Group, Layer, Link, Stack, Text, TextField, Title } from '@recursica/mantine-adapter'
+import { useEffect, useMemo, useState } from 'react'
+import { Link as RouterLink, Navigate, useNavigate, useParams } from 'react-router'
+import {
+  Badge, Button, Dropdown, Group, Layer, Link, Stack, Tabs, Text, TextField, Title,
+} from '@recursica/mantine-adapter'
 import { api } from '../api.js'
 import { Empty, Page, Section } from '../shell/Page.jsx'
+import { formatConfidence } from './Interview.jsx'
+
+/** The two tabs, which are also the two routes under `/dictionary`. */
+const TABS = ['spellings', 'definitions']
+
+/**
+ * The split is `variants`, not `term_type`. A term that lists an alternative spelling is a
+ * request to unify text; a term that lists none is a request to record a meaning. `term_type`
+ * cuts across both and is a filter inside a tab rather than a third tab.
+ */
+function unifiesSpelling(term) {
+  return (term.variants?.length ?? 0) > 0
+}
+
+function isWaiting(term) {
+  return term.status === 'proposed' || term.status === 'needs_clarification'
+}
 
 export function Dictionary({ identity, revision, onChanged }) {
+  const { tab = 'spellings' } = useParams()
+  const navigate = useNavigate()
   const [rows, setRows] = useState(null)
   const [error, setError] = useState(null)
 
@@ -21,38 +54,185 @@ export function Dictionary({ identity, revision, onChanged }) {
     api.dictionary().then(setRows).catch((e) => setError(e.message))
   }, [revision])
 
+  // An address that is not one of the tabs is not a location this page has — the same rule the
+  // Findings tabs follow. A tab that survives a refresh is the whole reason these are routes.
+  if (!TABS.includes(tab)) return <Navigate to="/dictionary/spellings" replace />
+
   if (error) return <Page title="Dictionary"><Text>{error}</Text></Page>
   if (!rows) return null
 
-  const waiting = rows.filter((t) => t.status === 'proposed' || t.status === 'needs_clarification')
-  const settled = rows.filter((t) => !waiting.includes(t))
+  const spellings = rows.filter(unifiesSpelling)
+  const definitions = rows.filter((t) => !unifiesSpelling(t))
 
   return (
     <Page title="Dictionary">
-      <Section
-        title="Waiting on you"
-        // Who may decide moved here from the page lede. It is a constraint, not a description of
-        // the heading, and this is the section the act belongs to — recursica-skill-screen-
-        // scaffolding, "the line under a heading" is for what the heading cannot carry.
-        note={waiting.length
-          ? 'Only a person can decide a term, and the decision is recorded against your identity.'
-          : undefined}
-      >
+      {/* keepMounted={false} for the same reason Findings sets it: each panel is a whole screen
+          with its own filter bar and its own live region, and a live region that is not on screen
+          has no business being able to speak. */}
+      <Tabs value={tab} keepMounted={false} onChange={(next) => navigate(`/dictionary/${next}`)}>
+        <Tabs.List>
+          {/* Nouns, not the questions they stand for — recursica-skill-tabs. The count is what is
+              waiting on a person, not the size of the tab: the size is on screen once you are in
+              it, and how much work is behind the label is the one thing worth knowing before
+              clicking. Metadata, never a control. */}
+          <Tabs.Tab value="spellings" rightSection={<Waiting rows={spellings} />}>
+            Spellings
+          </Tabs.Tab>
+          <Tabs.Tab value="definitions" rightSection={<Waiting rows={definitions} />}>
+            Definitions
+          </Tabs.Tab>
+        </Tabs.List>
+
+        <Tabs.Panel value="spellings">
+          <Terms
+            rows={spellings}
+            kind="spellings"
+            empty={rows.length === 0
+              ? 'The dictionary is empty. Lexicon writes terms here as it reads transcripts.'
+              : 'No term proposed so far lists an alternative spelling. Every one of them is a definition.'}
+            waitingNote={
+              'Approving lets Scribe count this term as evidence when it corrects a transcript '
+              + 'from now on — it raises the score behind a correction, it does not force a '
+              + 'replacement, and it does not change lines already ingested. Rejecting means the '
+              + 'term can never license a correction. Only a person can decide, and the decision '
+              + 'is recorded against your identity.'
+            }
+            identity={identity}
+            onChanged={onChanged}
+          />
+        </Tabs.Panel>
+
+        <Tabs.Panel value="definitions">
+          <Terms
+            rows={definitions}
+            kind="definitions"
+            empty={rows.length === 0
+              ? 'The dictionary is empty. Lexicon writes terms here as it reads transcripts.'
+              : 'Every term proposed so far lists an alternative spelling, so all of them are on the Spellings tab.'}
+            waitingNote={
+              'These entries list no alternative spelling, so approving one rewrites no text. It '
+              + 'records the definition as agreed and lets Scribe count the term as evidence when '
+              + 'it corrects. Only a person can decide, and the decision is recorded against your '
+              + 'identity.'
+            }
+            identity={identity}
+            onChanged={onChanged}
+          />
+        </Tabs.Panel>
+      </Tabs>
+    </Page>
+  )
+}
+
+/** The count of terms still waiting, or nothing. Announced with its tab, not beside it. */
+function Waiting({ rows }) {
+  const n = rows.filter(isWaiting).length
+  return n > 0 ? <Badge variant="warning">{n}</Badge> : null
+}
+
+/**
+ * One tab's worth of terms: the filter that narrows them, then the two sections they fall into.
+ *
+ * The filter sits above both sections because it acts on both — recursica-skill-filters, "filters
+ * sit above the collection they act on". `Waiting on you` and `Decided` are two views of one
+ * collection, not two collections.
+ */
+function Terms({ rows, kind, empty, waitingNote, identity, onChanged }) {
+  const [type, setType] = useState(null)
+
+  // Options come from the rows actually present, never from the six types the schema names: a
+  // filter offering a value that matches nothing reads as broken data. Same rule as Findings.
+  const types = useMemo(() => (
+    [...new Set(rows.map((t) => t.term_type).filter(Boolean))]
+      .sort()
+      .map((value) => ({ value, label: value }))
+  ), [rows])
+
+  const visible = useMemo(() => (
+    type ? rows.filter((t) => t.term_type === type) : rows
+  ), [rows, type])
+
+  // A tab with nothing in it at all gets one heading naming what it holds, not `Waiting on you` —
+  // that heading would be claiming work is waiting when none exists. Whether an empty tab should
+  // instead be hidden or disabled is on `recursica-skill-tabs`' uncovered list, so it is asked
+  // rather than decided here: both tabs always render.
+  if (rows.length === 0) {
+    return (
+      <Section title={kind === 'spellings' ? 'Spellings' : 'Definitions'}>
+        <Empty>{empty}</Empty>
+      </Section>
+    )
+  }
+
+  const waiting = visible.filter(isWaiting)
+  const settled = visible.filter((t) => !isWaiting(t))
+
+  return (
+    <>
+      <Layer layer={1}>
+        <Stack gap="md">
+          {/* A noun naming the field, matching what each term shows, and `Any` for the neutral
+              state — the convention the Findings filter bar already set. Person and org under
+              Spellings are the highest-risk group, and this is what isolates them. */}
+          <Group gap="lg" align="flex-end" wrap="wrap">
+            <Dropdown
+              label="Type"
+              placeholder="Any"
+              data={types}
+              value={type}
+              onChange={setType}
+              clearable
+              disabled={types.length === 0}
+            />
+          </Group>
+
+          {/* Filtering moves no focus, so the count is the only thing that tells a screen reader
+              user the collection changed size. Politely, and it is the only live region here. */}
+          <div aria-live="polite">
+            <Text variant="body-small">
+              {type
+                ? `Showing ${visible.length} of ${rows.length} terms. A filter is applied.`
+                : `${rows.length} term${rows.length === 1 ? '' : 's'}.`}
+            </Text>
+          </div>
+        </Stack>
+      </Layer>
+
+      {/* The consequence of approving goes in the section note, not a page lede. The lede was
+          retired on purpose — it is a constraint, not a description of the heading — and this is
+          the section the act belongs to: recursica-skill-screen-scaffolding, "the line under a
+          heading" is for what the heading cannot carry, and `Page`'s own contract names a
+          consequence as one of the four things this slot is for. The note differs per tab
+          because the consequence does: only a term with variants can unify text.
+
+          Grounded, so the copy stays true: approval sets `status = 'active'`, and `active` is the
+          only status that makes Scribe's `C_dictionary` non-zero — but that component scores 0–3
+          against a threshold of 7, so it raises the odds of a correction rather than causing one
+          (agents/claire/subagents/scribe/SKILL.md:358-365). */}
+      <Section title="Waiting on you" note={waiting.length ? waitingNote : undefined}>
         {waiting.length === 0
-          ? <Empty>Nothing is waiting. Every term has been decided.</Empty>
+          ? (
+            <Empty>
+              {/* Filtered to nothing and nothing being waiting are different states with
+                  different next actions, so they do not share a sentence. */}
+              {type
+                ? `No ${type} term is waiting. Clear the filter to see the rest.`
+                : 'Nothing is waiting. Every term has been decided.'}
+            </Empty>
+          )
           : waiting.map((term) => (
-            <Term key={term.term_id} term={term} identity={identity} onChanged={onChanged} />
+            <Term key={term.term_id} term={term} kind={kind} identity={identity} onChanged={onChanged} />
           ))}
       </Section>
 
       <Section title="Decided" note="Still editable — a decision can be revisited, and the change is logged.">
         {settled.length === 0
-          ? <Empty>No term has been decided yet.</Empty>
+          ? <Empty>{type ? `No ${type} term has been decided yet.` : 'No term has been decided yet.'}</Empty>
           : settled.map((term) => (
-            <Term key={term.term_id} term={term} identity={identity} onChanged={onChanged} />
+            <Term key={term.term_id} term={term} kind={kind} identity={identity} onChanged={onChanged} />
           ))}
       </Section>
-    </Page>
+    </>
   )
 }
 
@@ -62,7 +242,7 @@ const DECISIONS = [
   { status: 'needs_clarification', label: 'Unclear' },
 ]
 
-function Term({ term, identity, onChanged }) {
+function Term({ term, kind, identity, onChanged }) {
   const [note, setNote] = useState('')
   const [busy, setBusy] = useState(false)
   const [problem, setProblem] = useState(null)
@@ -85,12 +265,19 @@ function Term({ term, identity, onChanged }) {
           <Badge variant={statusVariant(term.status)}>{term.status}</Badge>
           <Text variant="caption">{term.term_type ?? 'type not recorded'}</Text>
           <Text variant="caption">seen {String(term.occurrence_count ?? 0)}×</Text>
+          {/* Lexicon sets this deliberately and it is the strongest triage signal on the page:
+              0.9+ means a participant spelled the term out or defined it outright, 0.5–0.7 means
+              it was inferred from context. The rows arrive sorted by it. */}
+          <Text variant="caption">confidence {formatConfidence(term.confidence)}</Text>
         </Group>
 
         <Text variant="body">{term.definition ?? 'No definition was recorded for this term.'}</Text>
 
-        {term.variants?.length > 0 && (
-          <Text variant="body-small">Also written: {term.variants.join(', ')}</Text>
+        {kind === 'spellings' && (
+          <Stack gap={2}>
+            <Text variant="body-small">Also written: {term.variants.join(', ')}</Text>
+            <Impact term={term} />
+          </Stack>
         )}
 
         <Stack gap={4}>
@@ -153,6 +340,33 @@ function Term({ term, identity, onChanged }) {
       </Stack>
     </Layer>
     </div>
+  )
+}
+
+/**
+ * How much text this merge is about, so the decision has a size attached rather than being an
+ * abstract yes.
+ *
+ * Counted by the API over `lines_current.original_text` — see `queries.mjs`. Zero is a real and
+ * useful answer, not a missing value: it says the variants proposed for unification appear
+ * nowhere in the corpus as it currently stands, which is worth knowing before agreeing that two
+ * spellings are the same thing.
+ */
+function Impact({ term }) {
+  const n = Number(term.lines_matching ?? 0)
+
+  if (n === 0) {
+    return (
+      <Text variant="caption">
+        No line currently contains any of these spellings.
+      </Text>
+    )
+  }
+
+  return (
+    <Text variant="caption">
+      {n} line{n === 1 ? '' : 's'} currently contain{n === 1 ? 's' : ''} one of these spellings.
+    </Text>
   )
 }
 
