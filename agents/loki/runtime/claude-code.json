@@ -1,0 +1,16 @@
+{
+  "$comment": "Claude Code runtime settings for Loki. The prompt is portable/claude-code/agents/loki.md; this file is the config that has no business inside a prompt. Read agents/loki/PORTING.md before wiring any of it up — a tools list is not a data fence.",
+  "model": "opus",
+  "tools": [
+    "mcp__drive-loki__list_files",
+    "mcp__drive-loki__read_file",
+    "mcp__drive-loki__get_file_info",
+    "mcp__drive-loki__create_folder",
+    "mcp__drive-loki__write_file",
+    "mcp__drive-loki__update_file"
+  ],
+  "$toolsComment": "One Drive server and nothing else. `drive-loki` must be an instance of the fenced Drive server rooted at a sandbox shared drive that no client account can reach and that reaches no client — nest/mcp/drive-fence/, set up per nest/GUIDES/LOKI_SANDBOX_SETUP.md. Naming a server here does not create the fence; the root folder id and the service account do.",
+  "$allowlistComment": "This list is a floor, not the boundary. An allowlist keeps Loki off a client's Drive only while no client Drive server is registered in the same config — a registered one is still reachable the moment somebody widens the list or runs him without it. If your setup has client servers in it, isolate the config rather than trusting this file: that is the whole subject of PORTING.md.",
+  "$noBigQueryComment": "No database server of any kind, deliberately. Loki manufactures data for a pipeline to consume; he never puts it there himself, and an ingest path from the fake side into a real dataset is the failure this agent exists to avoid creating.",
+  "$noWriteComment": "No Write, Edit or Bash. Everything Loki produces is a Google Doc in the sandbox drive. A local filesystem write puts synthetic transcripts somewhere the `Loki_` folder prefix does not reach, which is exactly the confusion the synthetic banner exists to survive."
+}

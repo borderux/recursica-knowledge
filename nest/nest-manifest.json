@@ -285,6 +285,12 @@
       "resolve": true
     },
     {
+      "from": "GUIDES/LOKI_SANDBOX_SETUP.md",
+      "to": "GUIDES/LOKI_SANDBOX_SETUP.md",
+      "mode": "0644",
+      "resolve": true
+    },
+    {
       "from": ".claude/settings.json",
       "to": ".claude/settings.json",
       "mode": "0644",
