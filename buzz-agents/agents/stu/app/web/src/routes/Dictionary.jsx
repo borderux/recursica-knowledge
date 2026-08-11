@@ -28,14 +28,14 @@ export function Dictionary({ identity, revision, onChanged }) {
   const settled = rows.filter((t) => !waiting.includes(t))
 
   return (
-    <Page
-      title="Dictionary"
-      lede="The terms this project has agreed on. Only a person moves a term off 'proposed'."
-    >
+    <Page title="Dictionary">
       <Section
         title="Waiting on you"
+        // Who may decide moved here from the page lede. It is a constraint, not a description of
+        // the heading, and this is the section the act belongs to — recursica-skill-screen-
+        // scaffolding, "the line under a heading" is for what the heading cannot carry.
         note={waiting.length
-          ? 'Each decision is recorded against your identity.'
+          ? 'Only a person can decide a term, and the decision is recorded against your identity.'
           : undefined}
       >
         {waiting.length === 0

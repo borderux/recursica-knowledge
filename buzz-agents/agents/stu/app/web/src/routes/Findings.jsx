@@ -86,10 +86,7 @@ export function Findings({ identity, revision, onChanged }) {
   const waiting = rows.filter((f) => f.status === 'proposed')
 
   return (
-    <Page
-      title="Findings"
-      lede="What the analysis claims, and the lines each claim rests on."
-    >
+    <Page title="Findings">
       {/* Tabs, not navigation: both panels are about one subject and either could be looked at
           first. Each carries its own route so it survives a refresh and works with back — a house
           preference stated outright in recursica-skill-tabs. */}

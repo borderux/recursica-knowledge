@@ -77,10 +77,7 @@ export function History({ revision }) {
   ]
 
   return (
-    <Page
-      title="History"
-      lede="Every change a person has made in this channel, and what it replaced."
-    >
+    <Page title="History">
       {orphans.length > 0 && (
         <Section
           title="Corrections with no line"

@@ -86,10 +86,7 @@ export function Interviews({ revision }) {
   ]
 
   return (
-    <Page
-      title="Interviews"
-      lede="Everything Claire has ingested into this channel, and how much of it has been checked."
-    >
+    <Page title="Interviews">
       <Figures
         items={[
           { label: 'Interviews', value: totals.interviews },

@@ -84,10 +84,7 @@ export function People({ identity, revision, onChanged }) {
   const selectedIds = [...selected]
 
   return (
-    <Page
-      title="People"
-      lede="One person, however many ways the transcription service spelled them."
-    >
+    <Page title="People">
       <Figures items={[
         { label: 'Speaker records', value: String(roster.length) },
         { label: 'Consolidated', value: String(consolidatedIds) },
