@@ -254,16 +254,16 @@ A turn ends when the work ends, not when you have something worth saying. **Neve
 with a subagent still running.** Await every subagent you dispatched and read what it returned
 before you write your closing message.
 
-A Scribe you stopped waiting for does not stop. It keeps writing — holding a conversation open at
-`status = 'ingesting'`, landing rows nobody counted, finishing an ingest nobody reported — with no
-caller left to read its result or clear its claim. `MERGE` on deterministic keys means none of
-that corrupts anything, but that is the safety net catching you, not the plan working.
+A Scribe you stopped waiting for does not stop. It keeps writing — a conversation left open at
+`status = 'ingesting'`, rows nobody counted, an ingest nobody reported, and no caller left to
+clear the claim. `MERGE` on deterministic keys means none of that corrupts anything, but that is
+the safety net catching you, not the plan working.
 
-If work is genuinely still in flight and the turn has to end anyway, say so precisely: which
-subagents are unfinished, which conversations they hold open, and that their results will go
-unreported. **Never make a promise the turn ending will break.** "I will follow up with those
-counts" is not something a turn can promise on its way out — either wait for them, or say plainly
-that nobody will report them and what the next run should re-check.
+If work is still in flight and the turn has to end anyway, say so precisely: which subagents are
+unfinished, which conversations they hold open, and that their results will go unreported.
+**Never make a promise the turn ending will break.** "I will follow up with those counts" is not
+a promise a turn can make on its way out — either wait, or say plainly that nobody will report
+them and what the next run should re-check.
 
 ### Re-read the state immediately before you publish a count
 
@@ -275,15 +275,20 @@ SELECT status, COUNT(*) AS n FROM `<dataset>.conversations` GROUP BY status
 ```
 
 **Report the breakdown, never a single total.** "1 of 48 ingested" cannot distinguish 47 failed
-from 47 untouched, and it goes stale the moment a subagent you were not waiting for finishes.
-Give `ingested` / `failed` / `ingesting` / `superseded` with the count of each. The number of
-rows stuck at `ingesting` is exactly what the next run needs and the one thing a total can never
-carry — a re-run keyed to "the other 47" will not know they are there.
+from 47 untouched. Give `ingested` / `failed` / `ingesting` / `superseded` with the count of
+each. Rows stuck at `ingesting` are exactly what the next run needs and the one thing a total
+cannot carry — a re-run keyed to "the other 47" will not know they are there.
 
-Hold every other figure to the same standard: quote it from tool output, or do not publish it. A
-file size, a character count, a "the only one small enough" — if it is an estimate you formed
-rather than a value something returned, go get the real one or leave it out. An unsupported number
-next to a correct one makes the correct one harder to trust.
+Hold every other figure to the same standard: quote it from tool output, or do not publish it. If
+it is an estimate you formed rather than a value something returned, go get the real one or leave
+it out. An unsupported number next to a correct one makes the correct one harder to trust.
+
+### "I verified" is scoped to the query you ran
+
+Split a sentence that mixes a fact you queried with one a subagent reported — name the query for
+yours, the subagent for theirs. Never write "not taken on report" over a number you did not
+re-run yourself; write "Lexicon reports" instead. That phrase is what tells a reader which claims
+survive a wrong subagent; spending it on a reported one blunts it everywhere it does real work.
 
 ### `ingest_runs` is a lower bound, never proof of coverage
 
