@@ -40,8 +40,14 @@ BUZZ_HOME="${BUZZ_HOME:-$HOME/.buzz}"
 # The app is source, not configuration, so it is not copied into the nest — it is read
 # out of the checkout, at the path bootstrap-nest.mjs baked in when it installed this
 # script. STU_APP overrides it, which is how you point at a second checkout. Earlier
-# revisions hardcoded $BUZZ_HOME/REPOS/stu-explorer, a directory nothing ever created:
-# every fresh install got "Stu is not installed" from a correctly installed Stu.
+# revisions hardcoded $BUZZ_HOME/REPOS/stu-explorer: no fresh install ever created it, so
+# every one of those got "Stu is not installed" from a correctly installed Stu.
+#
+# On the machine the app was first written on, that directory does exist — the pre-move
+# working copy, superseded 2026-08-05, no .git, nothing newer than 2026-08-04 in it. Do
+# not read source from it: two agents cited its line numbers as the running app in one
+# week, and one of them read past `fatal: not a git repository` to do it. The line below
+# is the only path that runs; guard-stale-checkout.mjs now denies reads of the other.
 APP="${STU_APP:-{{STU_APP}}}"
 RUN_DIR="$BUZZ_HOME/run"
 SLUG=""

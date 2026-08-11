@@ -193,6 +193,29 @@ none: GitHub adds one when a squash merge's author differs from the merger. That
 byproduct of two addresses not matching, it disappears if they ever match, and nobody should
 read it as evidence the trailer was written.
 
+### The third hook: reading source from a checkout nothing runs
+
+`nest/bin/guard-stale-checkout.mjs` denies a `Read`, `Grep`, `Glob` or content-reading Bash
+command aimed at a directory directly under `REPOS/` that has **no `.git`**. Those are
+leftover copies — a pre-move working tree, an unpacked tarball — and they grep and read
+exactly like the live one, so an agent orienting itself cites line numbers from code nothing
+deploys. Two agents did that against the same directory in one week; the second read past a
+literal `fatal: not a git repository` in its own tool output.
+
+Three things about it are deliberate:
+
+- **The signal is git's, not a list.** No inventory of stale directories to maintain, and a
+  copy left behind next month is caught the same way.
+- **Listing, diffing, moving and removing stay allowed**, and so does a `buzz`/`gh`/`curl`
+  command that merely names the path. Reading the content is how the tree gets mistaken for
+  the live one; the rest is how someone works out it is stale and removes it — or reports
+  it. A guard that blocks its own cleanup, or the message describing it, gets switched off.
+- **It is a hook rather than a line in `AGENTS.md`** because that file is read when a
+  session starts and Buzz sessions are pooled and long-lived: a rule added today does not
+  reach a session begun yesterday. Settings are consulted per tool call.
+
+`node --test 'nest/bin/*.test.mjs'` asserts both directions.
+
 ## 🧳 Portable agents
 
 `agents/<name>/` is the source of truth for an agent. `SKILL.md` holds everything portable;

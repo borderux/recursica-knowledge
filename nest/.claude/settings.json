@@ -46,6 +46,23 @@
             "if": "Bash(curl *)",
             "timeout": 20,
             "statusMessage": "Checking published text for names"
+          },
+          {
+            "type": "command",
+            "command": "node {{BUZZ_HOME}}/bin/guard-stale-checkout.mjs",
+            "timeout": 20,
+            "statusMessage": "Checking the checkout is a repository"
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Grep|Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node {{BUZZ_HOME}}/bin/guard-stale-checkout.mjs",
+            "timeout": 20,
+            "statusMessage": "Checking the checkout is a repository"
           }
         ]
       }
