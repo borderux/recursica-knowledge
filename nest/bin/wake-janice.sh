@@ -42,12 +42,25 @@ log() { printf '%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" >>"$LOG" 2>/dev/n
 
 AGENT="${BUZZ_ACP_SESSION_TITLE:-}"
 
+# A real session title carries the owner in parentheses — "Stu (<operator>)", not "Stu".
+# Matching the bare name against the full title silently watched nobody: every turn took the
+# exit below, and because that exit did not log, automatic review was off for 45 minutes
+# with no trace anywhere. Strip the suffix before comparing.
+AGENT_NAME="${AGENT%% (*}"
+
 # Not a watched agent — the common case (Fizz, Janice, ALAN, Honey, Bumble, humans).
 matched=0
 for w in "${WATCHED_AGENTS[@]}"; do
-  [[ "$AGENT" == "$w" ]] && matched=1 && break
+  [[ "$AGENT_NAME" == "$w" ]] && matched=1 && break
 done
-[[ $matched -eq 0 ]] && exit 0
+# Log the non-match. This is the ordinary path and it is noisy, but a review rig that goes
+# quiet is indistinguishable from a review rig with nothing to say — which is exactly how
+# this regression, and the commit-msg hook before it, stayed invisible. An empty queue is
+# not evidence of coverage unless something writes a line when it decides not to enqueue.
+if [[ $matched -eq 0 ]]; then
+  log "SKIP ${AGENT:-<no title>} not watched"
+  exit 0
+fi
 
 # Hook payload arrives on stdin.
 INPUT="$(cat 2>/dev/null || true)"
