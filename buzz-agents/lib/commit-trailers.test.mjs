@@ -193,6 +193,14 @@ describe('the verdict on a commit', () => {
     assert.equal(inspect('git commit --fixup HEAD~1'), null)
   })
 
+  // Denying this blocked the one command someone would use to check what they are about to
+  // commit. Nothing is written, so there is nothing to guard.
+  it('leaves --dry-run alone, which writes nothing', () => {
+    assert.equal(inspect('git commit --dry-run -m "probe"'), null)
+    assert.equal(inspect('git commit --dry-run'), null)
+    assert.equal(inspect('true && git commit --dry-run -m "probe"'), null)
+  })
+
   it('stops when the repository has no configured address, as AGENTS.md requires', () => {
     const v = inspect('git commit -m Subject', { email: '' })
     assert.equal(v.verdict, 'deny')
