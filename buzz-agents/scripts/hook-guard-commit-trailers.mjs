@@ -90,6 +90,7 @@ for (const tokens of splitCommands(cmd)) {
 
   const verdict = inspectCommand(tokens, {
     email,
+    name,
     readFile: (p) => readIfSmall(path.resolve(repoCwd, p)),
     headMessage: () => git(repoCwd, ["log", "-1", "--format=%B"]),
   });

@@ -131,13 +131,35 @@ const COMMIT_WITH_VALUE = new Set([
  */
 
 /**
- * Text the shell would have rewritten before git ever saw it.
+ * Resolve the two substitutions this guard can work out for itself.
  *
- * `git commit -m "$(cat msg.txt)"` reaches this hook as the literal nine characters
+ * The documented way to write the trailers is the one that cannot get the address wrong:
+ *
+ *     --trailer "Signed-off-by: $(git config user.name) <$(git config user.email)>"
+ *
+ * That reaches the hook unexpanded, so a naive reader sees no address, finds no matching
+ * trailer, and denies a commit that was not merely correct but written in the recommended
+ * form. This guard did exactly that the first time it ran against a real commit.
+ *
+ * These two substitutions resolve to the same values the check compares against — that is
+ * the whole point of writing them — so expanding them here is not a guess about what the
+ * shell will do. It is the same lookup, done twice.
+ */
+function expandKnown(text, name, email) {
+  const cfg = (key) =>
+    new RegExp(String.raw`(?:\$\(|\x60)\s*git\s+config\s+(?:--get\s+)?${key}\s*(?:\)|\x60)`, "g");
+  return String(text)
+    .replace(cfg(String.raw`user\.email`), email)
+    .replace(cfg(String.raw`user\.name`), name);
+}
+
+/**
+ * Text the shell would still rewrite before git ever saw it, after the two known
+ * substitutions above have been resolved.
+ *
+ * `git commit -m "$(cat msg.txt)"` reaches this hook as the literal fourteen characters
  * `$(cat msg.txt)`. Reading that as the commit message would find no trailers in it and
- * deny a commit that is very likely correct — the one failure mode that gets a guard
- * switched off. Unexpanded text counts as text this cannot see, which downgrades to a
- * warning.
+ * deny over text nobody wrote, so it counts as text this cannot see.
  */
 function isUnexpanded(text) {
   return /\$\(|\$\{|`|\$[A-Za-z_]/.test(text);
@@ -272,12 +294,15 @@ export function missingTrailers(message, email) {
  * The whole verdict for one command.
  *
  * `readFile` and `headMessage` are injected so the decision stays testable without a
- * repository. Both may return null; a message this cannot see becomes a warning rather than
- * a denial, on the same reasoning as the stdin case in the name guard.
+ * repository. Both may return null, which makes the message unreadable rather than absent —
+ * see the deny reasoning below.
+ *
+ * `name` is needed only to expand `$(git config user.name)` inside a trailer; the check
+ * itself turns on the address.
  *
  * Returns null when the command is none of its business.
  */
-export function inspectCommand(tokens, { email, readFile, headMessage }) {
+export function inspectCommand(tokens, { email, name, readFile, headMessage }) {
   const parsed = parseCommitCommand(tokens);
   if (!parsed) return null;
 
@@ -289,11 +314,13 @@ export function inspectCommand(tokens, { email, readFile, headMessage }) {
     return { verdict: "deny", reason: "no-identity", gitDir: parsed.gitDir };
   }
 
+  const expand = (t) => expandKnown(t, name ?? "", email);
   const parts = [];
   let sawText = false;
   let unreadable = false;
 
-  for (const m of parsed.messages) {
+  for (const raw of parsed.messages) {
+    const m = expand(raw);
     if (isUnexpanded(m)) { unreadable = true; continue; }
     parts.push(m);
     sawText = true;
@@ -311,7 +338,7 @@ export function inspectCommand(tokens, { email, readFile, headMessage }) {
     if (head === null || head === undefined) unreadable = true;
     else { parts.push(head); sawText = true; }
   }
-  for (const t of parsed.trailers) parts.push(t);
+  for (const t of parsed.trailers) parts.push(expand(t));
   // `-s` is git adding `Signed-off-by` from the committer identity, which is the same
   // user.name/user.email this checks against.
   if (parsed.signoff) parts.push(`Signed-off-by: <${email}>`);

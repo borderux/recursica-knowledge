@@ -27,9 +27,10 @@ const COA = `Co-authored-by: An Operator <${EMAIL}>`
 const MODEL = 'Co-authored-by: A Model <noreply@example.invalid>'
 
 /** inspectCommand over a raw command line, with the filesystem and HEAD stubbed out. */
-const inspect = (cmd, { files = {}, head = null, email = EMAIL } = {}) =>
+const inspect = (cmd, { files = {}, head = null, email = EMAIL, name = 'An Operator' } = {}) =>
   inspectCommand(splitCommands(cmd).at(-1), {
     email,
+    name,
     readFile: (p) => (p in files ? files[p] : null),
     headMessage: () => head,
   })
@@ -129,6 +130,42 @@ describe('the verdict on a commit', () => {
   it('passes when the trailers come from --trailer instead of the message', () => {
     const v = inspect(`git commit -m Subject --trailer "${COA}" --trailer "${SOB}"`)
     assert.equal(v.verdict, 'ok')
+  })
+
+  // The first time this guard ran against a real commit it denied this exact command. The
+  // substitutions reach the hook unexpanded, so the naive reader saw no address and refused
+  // the form the documentation tells people to use. Regression, not a nicety.
+  describe('the documented $(git config …) form', () => {
+    const both =
+      `--trailer "Co-authored-by: $(git config user.name) <$(git config user.email)>" ` +
+      `--trailer "Signed-off-by: $(git config user.name) <$(git config user.email)>"`
+
+    it('passes when both trailers are written that way', () => {
+      assert.equal(inspect(`git commit -F msg.txt ${both}`, { files: { 'msg.txt': 'Subject' } }).verdict, 'ok')
+    })
+
+    it('passes with the file unreadable too — the flags alone are enough', () => {
+      assert.equal(inspect(`git commit -F - ${both}`).verdict, 'ok')
+    })
+
+    it('accepts the --get spelling and backticks', () => {
+      const alt =
+        '--trailer "Co-authored-by: `git config --get user.name` <`git config --get user.email`>" ' +
+        '--trailer "Signed-off-by: `git config user.name` <`git config --get user.email`>"'
+      assert.equal(inspect(`git commit -m Subject ${alt}`).verdict, 'ok')
+    })
+
+    it('still denies when only one of the two is written that way', () => {
+      const v = inspect('git commit -m Subject --trailer "Signed-off-by: $(git config user.name) <$(git config user.email)>"')
+      assert.equal(v.verdict, 'deny')
+      assert.deepEqual(v.missing, ['Co-authored-by'])
+    })
+
+    it('does not expand a substitution it cannot resolve — that stays unreadable', () => {
+      const v = inspect('git commit -m "$(cat msg.txt)"')
+      assert.equal(v.verdict, 'deny')
+      assert.equal(v.source, 'unreadable')
+    })
   })
 
   it('accepts -s as the sign-off, since git takes it from the same identity', () => {
