@@ -127,24 +127,34 @@ before those, 7 of the 12 commits on `main` carried no `Signed-off-by` — the 6
 consecutively. It is not an unclear rule, it is one that has to be remembered at the moment
 nobody is thinking about it, so it moved out of prose.
 
-Put both trailers in the commit command, where they cannot be lost between committing and
-pushing:
+Put all three trailers in the commit command, where they cannot be lost between committing
+and pushing:
 
 ```bash
 git commit -F <file> \
   --trailer "Co-authored-by: $(git config user.name) <$(git config user.email)>" \
+  --trailer "Co-authored-by: <your model, per your harness> <noreply@anthropic.com>" \
   --trailer "Signed-off-by: $(git config user.name) <$(git config user.email)>"
 ```
 
 **All three trailers coexist** — the operator's `Co-authored-by`, the model's, and the
 operator's `Signed-off-by`. The instruction to credit the model reads like a substitution
 and is not one. GitHub reads `Co-authored-by` for contribution credit and `Signed-off-by`
-alone does not grant it, which is why both are required rather than either.
+alone does not grant it, which is why both are required rather than either. Pass the model's
+as a `--trailer` flag too rather than leaving it at the end of the message body — that is
+what puts it in the right position and what makes it visible in the same place as the other
+two.
 
-Verify with `git log -1 --format='%(trailers)'`. **Not `git log --oneline -1`** — that
-prints hash and subject only, so it structurally cannot show a trailer and will pass on a
-commit that has none. That is exactly how one of the two misses got through a verification
-step that did run.
+**Three flags in, three lines out.** Verify with `git log -1 --format='%(trailers)'` and
+count the lines. **Not `git log --oneline -1`** — that prints hash and subject only, so it
+structurally cannot show a trailer and will pass on a commit that has none. That is exactly
+how one of the two misses got through a verification step that did run.
+
+The count is the point. The next failure was not a missed verification — it was a correct
+one, run with the right command, that read back two trailers and stopped, because two is
+what the block above used to show. Three agents have now shipped commits with the operator's
+two and not the model's. **The guard checks only the operator's two and never will check the
+model's**, so passing it is evidence about two trailers out of three.
 
 ### What it catches, and what it does not
 
