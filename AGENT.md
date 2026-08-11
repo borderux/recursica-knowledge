@@ -216,7 +216,10 @@ Three things about it are deliberate:
   which quotes the commands it denies. Every finding in this thread was written as
   `cat > report.md <<'EOF'` with a table of denied commands, so segmenting the body as a
   command list denied the message saying the guard was broken. Strip heredoc bodies and
-  herestrings before you segment anything.
+  herestrings before you segment anything. **An unterminated heredoc is not a bypass** —
+  the stripper runs to end of input, so a read written after one disappears, but bash
+  swallows the rest as body for the same reason and it never executes. That case gets
+  constructed by everyone who audits this and it is the one to leave alone.
 - **A command line is judged per segment, never as one string.** The first version tested
   the whole line with one regex each way and both leaked: `\bbuzz\b`, meant for
   `buzz messages send`, matched the `.buzz` inside every absolute path in the nest, and

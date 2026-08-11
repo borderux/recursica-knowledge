@@ -192,6 +192,29 @@ describe('quoted data is never commands', () => {
   it('still denies a real read after the heredoc closes', () => {
     assert.equal(bash(`cat > ${home}/x <<'EOF'\nnote\nEOF\ncat ${STALE}/web/src/App.jsx`), 'DENY')
   })
+
+  it('still denies a read before the heredoc, and a heredoc fed to a reader', () => {
+    assert.equal(bash(`cat ${STALE}/web/src/App.jsx; cat > ${home}/x <<'EOF'\nnote\nEOF`), 'DENY')
+    assert.equal(bash(`grep -f - ${STALE}/web/src/App.jsx <<'EOF'\npattern\nEOF`), 'DENY')
+  })
+
+  // Looks like a laundering hole and is not one: the stripper runs to end of input, so a
+  // read written after an unterminated heredoc disappears — but bash swallows the rest of
+  // the command as body for the same reason, so it never executes. Confirmed with a marker
+  // that never printed. Do not turn this into a deny.
+  it('allows an unterminated heredoc, because the shell eats the rest too', () => {
+    assert.equal(bash(`cat > ${home}/x <<'EOF'\nprose\ncat ${STALE}/web/src/App.jsx`), 'ALLOW')
+  })
+
+  it('allows the awkward but legitimate heredoc shapes', () => {
+    assert.equal(bash(`cat > ${home}/x <<EOF\ncat ${STALE}/y\nEOF`), 'ALLOW') // unquoted delimiter
+    assert.equal(bash(`cat > ${home}/x <<'EOF'\ncat ${STALE}/y\nEOF `), 'ALLOW') // trailing space
+    assert.equal(bash(`cat > ${home}/x <<'EOF'\nsay "EOF" inline\ncat ${STALE}/y\nEOF`), 'ALLOW')
+    assert.equal(
+      bash(`cat > ${home}/a <<'A'\ncat ${STALE}/y\nA\ncat > ${home}/b <<'B'\ngrep x ${STALE}\nB`),
+      'ALLOW',
+    ) // two heredocs in one command
+  })
 })
 
 describe('fails open', () => {

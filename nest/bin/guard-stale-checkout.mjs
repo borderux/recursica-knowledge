@@ -160,6 +160,11 @@ if (!rawCommand.includes("REPOS/")) process.exit(0);
  *
  * The `cat > file <<EOF` line itself is left in place: it is a write, and it is judged on
  * its own verb like anything else.
+ *
+ * An UNTERMINATED heredoc looks like a laundering hole and is not one. The stripper runs
+ * to end of input, so a read written after it disappears — but bash swallows the rest of
+ * the command as body for the same reason, and the read never executes either. Verified
+ * with a marker that never printed. Do not "fix" this into a deny.
  */
 function stripHeredocs(command) {
   const kept = [];
