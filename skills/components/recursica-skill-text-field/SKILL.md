@@ -22,7 +22,7 @@ A text field captures free-form text on a single line.
 Each of these has a different component. Switch to it rather than adapting a text field:
 
 | Instead of a text field                                                            | Use                                                                                             |
-| ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ---------- |
 | The value comes from a known set of options                                        | A dropdown, radio group, or autocomplete — see `recursica-skill-selection-controls`             |
 | The answer is yes or no                                                            | A switch or a checkbox                                                                          |
 | The content runs to multiple lines                                                 | `recursica-skill-textarea`                                                                      |
@@ -35,12 +35,16 @@ Each of these has a different component. Switch to it rather than adapting a tex
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.text-field`. **Do not pass a variant or state that is not listed here** — other design systems have field sizes, fluid styles, warning states, success states, and loading states that this component does not.
 
-| Axis      | Options                   |
-| --------- | ------------------------- |
-| `layouts` | `stacked`, `side-by-side` |
-| `states`  | `error`, `disabled`       |
+**The third column is the React prop that sets the axis.** The axis name is the token inventory's; it is not a prop, and passing it as one is dropped silently by React. A blank cell means no single prop carries that axis — it is set by CSS state or by separate props, and the rules below say which.
 
-**`layouts` is the label placement axis.** `side-by-side` — label beside the field — is the house default; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport. See `recursica-skill-forms`.
+| Axis      | Options                   | React prop |
+| --------- | ------------------------- | ---------- |
+| `layouts` | `stacked`, `side-by-side` | `formLayout` |
+| `states`  | `error`, `disabled`       |            |
+
+**`layouts` is the label placement axis, and the React prop that sets it is `formLayout`.** `side-by-side` — label beside the field — is the house rule; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport. See `recursica-skill-forms`.
+
+**`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Omit it and you get the fallback on a wide container, which is the rule inverted. `layouts` is the token axis name and is not a prop — writing `layouts="side-by-side"` is dropped silently by React, leaves the field stacked, and raises no error to tell you. Pass `formLayout="side-by-side"` explicitly on every field.
 
 **Focus and placeholder are not variants.** They are handled by the component: `placeholder-opacity` on this component, and the focused border via `globals.form.field.colors.border-selected`. Do not build them as states.
 
@@ -130,7 +134,7 @@ Never style an unfocused field so that it reads as disabled. An editable field m
 - [ ] The value genuinely cannot come from a predefined set of options.
 - [ ] A visible label is passed, and it reads correctly on its own.
 - [ ] Label placement is side-by-side unless the container is too narrow.
-- [ ] `layouts` matches every other field in the same form — one placement per form at any given breakpoint, with no mixing between fields or sections.
+- [ ] `formLayout` is passed explicitly — `side-by-side` unless the form's container is too narrow — and matches every other field in the same form. One placement per form at any given breakpoint, no mixing between fields or sections. An omitted prop is `stacked`, not the house rule, and `layouts` is not the prop name.
 - [ ] No required information lives in placeholder text.
 - [ ] Assistive text states the rule; on error it is replaced by a message restating that rule.
 - [ ] The error state carries a non-color indicator.

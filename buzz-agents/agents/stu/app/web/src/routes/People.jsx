@@ -84,10 +84,7 @@ export function People({ identity, revision, onChanged }) {
   const selectedIds = [...selected]
 
   return (
-    <Page
-      title="People"
-      lede="One person, however many ways the transcription service spelled them."
-    >
+    <Page title="People">
       <Figures items={[
         { label: 'Speaker records', value: String(roster.length) },
         { label: 'Consolidated', value: String(consolidatedIds) },
@@ -261,7 +258,7 @@ export function People({ identity, revision, onChanged }) {
                   {r.person_name
                     ? (
                       <>
-                        <Text variant="body-small">{r.person_name}</Text>
+                        <span>{r.person_name}</span>
                         {/* The source label never disappears behind the correction. */}
                         <Text variant="caption">
                           transcript says {r.source_names.length ? r.source_names.join(' / ') : 'nothing'}
@@ -269,8 +266,8 @@ export function People({ identity, revision, onChanged }) {
                       </>
                     )
                     : r.source_names.length
-                      ? <Text variant="body-small">{r.source_names.join(' / ')}</Text>
-                      : <Absent>No name</Absent>}
+                      ? <span>{r.source_names.join(' / ')}</span>
+                      : <Absent />}
                   <Text variant="caption"><code>{r.participant_id}</code></Text>
                 </Stack>
               ),
@@ -280,20 +277,20 @@ export function People({ identity, revision, onChanged }) {
               header: 'Role',
               sortValue: (r) => r.source_types[0] ?? null,
               render: (r) => r.source_types.length
-                ? <Text variant="body-small">{r.source_types.join(' / ')}</Text>
-                : <Absent>Not recorded</Absent>,
+                ? r.source_types.join(' / ')
+                : <Absent />,
             },
             {
               key: 'interviews',
               header: 'Interviews',
               sortValue: (r) => r.conversation_count,
-              render: (r) => <Text variant="body-small">{r.conversation_count}</Text>,
+              render: (r) => r.conversation_count,
             },
             {
               key: 'lines',
               header: 'Lines',
               sortValue: (r) => r.line_count,
-              render: (r) => <Text variant="body-small">{r.line_count}</Text>,
+              render: (r) => r.line_count,
             },
             {
               key: 'warnings',
@@ -307,7 +304,7 @@ export function People({ identity, revision, onChanged }) {
                       {warnings.map((w) => <Badge key={w} variant="warning">{w}</Badge>)}
                     </Group>
                   )
-                  : <Absent>None</Absent>
+                  : <Absent />
               },
             },
           ]}
@@ -469,11 +466,13 @@ function Person({ person, identity, onChanged, onAbsorb, absorbCount }) {
           {problem && <Text variant="body-small">{problem}</Text>}
 
           <TextField
+            formLayout="side-by-side"
             label="Name"
             value={name}
             onChange={(e) => setName(e.currentTarget.value)}
           />
           <TextField
+            formLayout="side-by-side"
             label="Note"
             placeholder="Optional — how you know, for whoever reads this next"
             value={note}
@@ -581,6 +580,7 @@ function MergeForm({ proposal, roster, people, identity, onClose, onDone }) {
         </ul>
 
         <TextField
+          formLayout="side-by-side"
           label="Name"
           description="What this person is actually called. Replaces the transcription service's label wherever it is read."
           value={displayName}
@@ -598,6 +598,7 @@ function MergeForm({ proposal, roster, people, identity, onClose, onDone }) {
 
         {roleIsMissing && (
           <Dropdown
+            formLayout="side-by-side"
             label="Role, where the transcript does not say"
             description="Only fills a gap. A role the transcript states is left exactly as it is — the same person can interview one session and observe the next."
             placeholder="Leave unset"
@@ -609,6 +610,7 @@ function MergeForm({ proposal, roster, people, identity, onClose, onDone }) {
         )}
 
         <TextField
+          formLayout="side-by-side"
           label="Email"
           placeholder="Optional"
           value={email}
@@ -616,6 +618,7 @@ function MergeForm({ proposal, roster, people, identity, onClose, onDone }) {
         />
 
         <TextField
+          formLayout="side-by-side"
           label="Note"
           placeholder="Optional — how you know these are the same person"
           value={note}

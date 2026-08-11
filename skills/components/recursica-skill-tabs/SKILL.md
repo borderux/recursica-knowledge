@@ -20,7 +20,7 @@ Tabs switch between parts of one whole — folders in a single file drawer.
 ## Do not use it when
 
 | Instead of tabs                                     | Use                                                                 |
-| --------------------------------------------------- | ------------------------------------------------------------------- |
+| --------------------------------------------------- | ------------------------------------------------------------------- | ---------- |
 | The steps must be completed in order                | A stepper — see `recursica-skill-forms`                             |
 | A form is too long for one screen                   | A stepper. Tabs holding a form is an invalid structure              |
 | The sections are different areas of the application | Navigation — see `recursica-skill-navigation`                       |
@@ -34,10 +34,11 @@ Tabs switch between parts of one whole — folders in a single file drawer.
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.tabs` and `tabs-item`.
 
-| Axis     | Options                       |
-| -------- | ----------------------------- |
-| `styles` | `default`, `pills`, `outline` |
+**The third column is the React prop that sets the axis.** The axis name is the token inventory's; it is not a prop, and passing it as one is dropped silently by React. A blank cell means no single prop carries that axis — it is set by CSS state or by separate props, and the rules below say which.
 
+| Axis     | Options                       | React prop |
+| -------- | ----------------------------- | ---------- |
+| `styles` | `default`, `pills`, `outline` | `variant` |
 **The same three styles exist on `tabs` and on `tabs-item`** — they are one choice applied to the set, not mixed within it.
 
 **Orientation.** The kit defines no orientation axis, but horizontal and vertical tab sets are documented outside the token inventory. Both are sanctioned — see the vertical rule below.

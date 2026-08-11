@@ -21,7 +21,7 @@ A toast reports what just happened, without interrupting the work.
 ## Do not use it when
 
 | Instead of a toast                                          | Use                                                                                |
-| ----------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------- | ---------- |
 | Asking the user to confirm a reversible action              | Perform it and offer undo — `recursica-skill-buttons-links`                        |
 | A validation error on a specific field                      | The field's error state — `recursica-skill-forms`, `recursica-skill-text-field`    |
 | Undoing the delete of one row or one item                   | An undo button in place of the delete affordance — `recursica-skill-buttons-links` |
@@ -39,10 +39,11 @@ A toast reports what just happened, without interrupting the work.
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.toast`. **Do not pass a style that is not listed here.**
 
-| Axis     | Options                       |
-| -------- | ----------------------------- |
-| `styles` | `default`, `success`, `error` |
+**The third column is the React prop that sets the axis.** The axis name is the token inventory's; it is not a prop, and passing it as one is dropped silently by React. A blank cell means no single prop carries that axis — it is set by CSS state or by separate props, and the rules below say which.
 
+| Axis     | Options                       | React prop |
+| -------- | ----------------------------- | ---------- |
+| `styles` | `default`, `success`, `error` | `variant` |
 **There are exactly three styles and there is no warning.** Do not build one, and do not press `error` into service as a warning — an error style says something failed.
 
 **`default` also goes by "Information"** in material documented outside the token inventory. One thing, two names.

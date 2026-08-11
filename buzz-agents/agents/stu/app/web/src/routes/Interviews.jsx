@@ -4,8 +4,9 @@
 import { useEffect, useState } from 'react'
 import { Badge, Text } from '@recursica/mantine-adapter'
 import { api } from '../api.js'
+import { formatCount, formatRatio, formatWhen } from '../format.js'
 import { Page } from '../shell/Page.jsx'
-import { Absent, DataTable } from '../shell/DataTable.jsx'
+import { Absent, COLUMN_WIDTH, DataTable } from '../shell/DataTable.jsx'
 import { Figures } from '../shell/Figures.jsx'
 
 export function Interviews({ revision }) {
@@ -31,38 +32,44 @@ export function Interviews({ revision }) {
     {
       key: 'name',
       header: 'Interview',
+      // No width. This is the sentence column, and it takes whatever the narrow ones leave.
       sortValue: (r) => r.document_name ?? r.conversation_id,
-      render: (r) => <Text variant="body">{r.document_name ?? r.conversation_id}</Text>,
+      // No `Text` wrapper. A cell already carries the kit's `table-cell` text style, and
+      // `recursica-skill-table` lists that style under "Not your decision" — wrapping the value
+      // put this one column in the brand's secondary typeface while every other column stayed
+      // in the primary.
+      render: (r) => r.document_name ?? r.conversation_id,
     },
     {
       key: 'participant_type',
       header: 'Cohort',
+      width: COLUMN_WIDTH.term,
       sortValue: (r) => r.participant_type,
-      render: (r) => r.participant_type ?? <Absent>Not recorded</Absent>,
+      render: (r) => r.participant_type ?? <Absent />,
     },
     {
-      key: 'lines',
-      header: 'Lines',
-      sortValue: (r) => Number(r.actual_line_count ?? 0),
-      render: (r) => Number(r.actual_line_count ?? 0),
-    },
-    {
-      key: 'untagged',
-      header: 'Untagged lines',
-      sortValue: (r) => untagged(r),
-      // How much of the interview the analysis does not rest on. Kept as its own column rather
-      // than folded into a percentage: "45 of 75 untagged" changes what you conclude.
-      render: (r) => untagged(r),
+      key: 'tagged',
+      header: 'Tagged lines',
+      // Was two columns, `Lines` and `Untagged lines`, which made the reader subtract to learn
+      // the one thing the column is for: how much of the interview the analysis rests on. One
+      // column with the arithmetic done — `recursica-skill-naming-terminology`, "a label that
+      // will not compress is usually two labels". Still not a percentage: 11 / 34 and 110 / 340
+      // are the same percentage and are not the same situation.
+      width: COLUMN_WIDTH.ratio,
+      sortValue: (r) => Number(r.tagged_line_count ?? 0),
+      render: (r) => formatRatio(r.tagged_line_count ?? 0, r.actual_line_count ?? 0),
     },
     {
       key: 'edits',
-      header: 'Your corrections',
+      header: 'Corrections',
+      width: COLUMN_WIDTH.count,
       sortValue: (r) => Number(r.edited_line_count ?? 0),
-      render: (r) => Number(r.edited_line_count ?? 0),
+      render: (r) => formatCount(r.edited_line_count),
     },
     {
       key: 'status',
       header: 'Status',
+      width: COLUMN_WIDTH.status,
       // Sort on the word displayed, not on `r.status` — otherwise a row reading "Tagged" sorts
       // among the rows reading "Ingested" and the column disagrees with itself.
       sortValue: (r) => statusLabel(r),
@@ -72,23 +79,21 @@ export function Interviews({ revision }) {
     {
       key: 'ingested_at',
       header: 'Ingested',
+      width: COLUMN_WIDTH.date,
       sortValue: (r) => r.ingested_at?.value ?? r.ingested_at,
       render: (r) => <DateOnly value={r.ingested_at} />,
     },
   ]
 
   return (
-    <Page
-      title="Interviews"
-      lede="Everything Claire has ingested into this channel, and how much of it has been checked."
-    >
+    <Page title="Interviews">
       <Figures
         items={[
           { label: 'Interviews', value: totals.interviews },
           { label: 'Transcript lines', value: totals.lines },
           { label: 'Tagged lines', value: totals.tagged },
-          { label: 'Lines you have corrected', value: totals.edits },
-          { label: 'Corrections needing review', value: totals.conflicts },
+          { label: 'Corrected lines', value: totals.edits },
+          { label: 'Corrections to review', value: totals.conflicts },
         ]}
       />
 
@@ -102,10 +107,6 @@ export function Interviews({ revision }) {
       />
     </Page>
   )
-}
-
-function untagged(r) {
-  return Number(r.actual_line_count ?? 0) - Number(r.tagged_line_count ?? 0)
 }
 
 // The ingest status vocabulary is exactly ingesting | ingested | failed | superseded. A count
@@ -134,7 +135,7 @@ function statusVariant(r) {
  * carrying a tag, and the weaker-looking one is the true one. Tagger tags substantive turns and
  * deliberately leaves backchannel and interviewer turns alone, so the tagged share of a finished
  * transcript runs about a fifth of it and never reaches all of it. Reading "fully tagged" as
- * `untagged === 0` would therefore be a badge that can never appear.
+ * zero untagged lines would therefore be a badge that can never appear.
  *
  * What is being asserted is coverage: a tag run completed, untruncated, over a range spanning the
  * transcript. A transcript with tags on it but no such run does not qualify — tags whose coverage
@@ -150,10 +151,13 @@ export function countMismatch(r) {
   return r.line_count != null && Number(r.line_count) !== Number(r.actual_line_count)
 }
 
+// Relative within the last week, the absolute date beyond it — the threshold the owner set. No
+// clock time: this column is headed with a date, and the hour of an ingest is not what is being
+// compared down the column.
 export function DateOnly({ value }) {
-  const raw = value?.value ?? value
-  if (!raw) return <Absent>Not recorded</Absent>
-  return <>{new Date(raw).toISOString().slice(0, 10)}</>
+  const text = formatWhen(value)
+  if (!text) return <Absent />
+  return <>{text}</>
 }
 
 function sum(rows, key) {

@@ -19,7 +19,7 @@ One component renders both the help text and the error text below a field. The t
 ## Do not use it when
 
 | Instead of an assistive element                | Use                                                         |
-| ---------------------------------------------- | ----------------------------------------------------------- |
+| ---------------------------------------------- | ----------------------------------------------------------- | ---------- |
 | Naming the field                               | `recursica-skill-label`                                     |
 | Showing the shape of a value inside the field  | The field's placeholder                                     |
 | Reporting a whole-form or server-level failure | Form-level error presentation — see `recursica-skill-forms` |
@@ -30,10 +30,11 @@ One component renders both the help text and the error text below a field. The t
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.assistive-element`.
 
-| Axis    | Options         |
-| ------- | --------------- |
-| `types` | `help`, `error` |
+**The third column is the React prop that sets the axis.** The axis name is the token inventory's; it is not a prop, and passing it as one is dropped silently by React. A blank cell means no single prop carries that axis — it is set by CSS state or by separate props, and the rules below say which.
 
+| Axis    | Options         | React prop |
+| ------- | --------------- | ---------- |
+| `types` | `help`, `error` | `assistiveVariant` |
 **Two types, one slot.** This is the mechanism behind the house rule: the error does not appear alongside the help text, it replaces it. Swapping types keeps the field's height stable so the form below does not shift.
 
 **There is no warning type, no success type, and no info type.** Do not invent a third state for a field.

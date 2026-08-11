@@ -17,8 +17,36 @@ import { useNavigate } from 'react-router'
 import { Table, Text } from '@recursica/mantine-adapter'
 
 /**
- * @param columns  `[{ key, header, sortValue, render }]`
+ * Column widths by data type.
+ *
+ * `recursica-skill-tables`: "Set widths by data type, so that truncation is rarely needed —
+ * dates, currency, and statuses are narrow; sentences need room. Fixing widths per content type
+ * is what keeps a table stable as data varies."
+ *
+ * These are the narrow types. The sentence column is deliberately given no width at all: the
+ * automatic layout hands it whatever the narrow ones did not take, which is the behaviour the
+ * rule wants and is stable as the viewport changes. Setting a width on the wide column instead
+ * is the version that fails — it holds its size while the date column wraps around it.
+ */
+export const COLUMN_WIDTH = {
+  count: '6rem',
+  /** A part-of-whole count — `11 / 34`. Two grouped numbers and a separator, so wider than one. */
+  ratio: '8rem',
+  date: '8rem',
+  status: '8rem',
+  /** A short categorical value — a cohort, a role, a type. */
+  term: '13rem',
+}
+
+/**
+ * @param columns  `[{ key, header, sortValue, render, width }]`
  *                 `sortValue(row)` opts a column into sorting. Omit it and the header is inert.
+ *                 `width` is a CSS length for the column, declared in a `colgroup`.
+ *                 `recursica-skill-tables` asks for widths set by data type — dates, counts and
+ *                 statuses narrow, sentences given room — so that wrapping is the exception
+ *                 rather than what every long value does. Without it the automatic layout
+ *                 divides the table by content and the identity column, which is the one that
+ *                 actually needs room, loses to six numeric columns that do not.
  * @param initialSort `{ key, direction }` — required. There is no unsorted state.
  * @param rowHref  `(row) => string`. Provide it and the entire row navigates; provide nothing in
  *                 the cells that also clicks.
@@ -55,6 +83,13 @@ export function DataTable({ columns, rows, initialSort, rowHref, getRowKey, empt
 
   return (
     <Table>
+      {/* Plain HTML, not a Recursica element — the adapter filters styling props off its own
+          components, and a column width is neither a style it owns nor one it exposes. */}
+      {columns.some((c) => c.width) && (
+        <colgroup>
+          {columns.map((c) => <col key={c.key} style={c.width ? { width: c.width } : undefined} />)}
+        </colgroup>
+      )}
       <Table.Thead>
         <Table.Tr>
           {columns.map((c) => {
@@ -102,7 +137,13 @@ export function DataTable({ columns, rows, initialSort, rowHref, getRowKey, empt
               } : undefined}
             >
               {columns.map((c) => (
-                <Table.Td key={c.key}>{c.render(row)}</Table.Td>
+                // Every cell's content goes in the same plain wrapper, which carries no type
+                // and no colour of its own — the cell already has both. It is here so that
+                // wrapping behaves the same in every column, per `recursica-skill-tables`:
+                // prefer a second line to truncating. See `.stu-cell`.
+                <Table.Td key={c.key}>
+                  <span className="stu-cell">{c.render(row)}</span>
+                </Table.Td>
               ))}
             </Table.Tr>
           )
@@ -113,10 +154,20 @@ export function DataTable({ columns, rows, initialSort, rowHref, getRowKey, empt
 }
 
 /**
- * A value that is absent, rendered so it cannot be mistaken for a real one.
- * `recursica-skill-tables`: never let a null read as a value — 0 because the fetch failed is a
- * different claim from "none".
+ * A value that is absent. `recursica-skill-tables`: never let a null read as a value — a `0`
+ * because the fetch failed is a different claim from "none" — and it must be text, not an empty
+ * cell, because an empty cell is announced as nothing.
+ *
+ * **The text is always `NA`, and it takes no arguments on purpose.** It used to accept per-column
+ * copy — "Not recorded", "No name", "You cleared the correction" — which read as a value rather
+ * than as the absence of one, and gave the same fact five spellings down a table. One string is
+ * the rule.
+ *
+ * Italic and neutral 500, both set by the owner on 2026-08-11 and recorded in
+ * `recursica-skill-tables`. Neutral 500 is deliberately **not** the cell's own
+ * `text-color-disabled`, which resolves a step lighter at neutral 400 — the treatment is a stated
+ * value, not a reuse of the disabled state, and that is why it is worth writing down.
  */
-export function Absent({ children = 'None' }) {
-  return <Text variant="body-small" component="span">{children}</Text>
+export function Absent() {
+  return <span className="stu-cell--absent">NA</span>
 }

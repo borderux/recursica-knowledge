@@ -20,7 +20,7 @@ An avatar is a small visual stand-in for a person or entity. It supports identif
 ## Do not use it when
 
 | Instead of an avatar                                    | Use                                                                                       |
-| ------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ---------- |
 | The name alone identifies the record and space is tight | Plain text. At table density a name column beats a picture — see `recursica-skill-tables` |
 | Status, presence, or a count must be shown              | `recursica-skill-badge`, beside the name. This component has no status dot                |
 | Several people must read as one overlapping cluster     | Nothing — the kit defines no avatar group. See the uncovered list                         |
@@ -33,11 +33,12 @@ An avatar is a small visual stand-in for a person or entity. It supports identif
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.avatar`. **Do not pass a style or size that is not listed here.**
 
-| Axis     | Options                     |
-| -------- | --------------------------- |
-| `styles` | `text`, `icon`, `image`     |
-| `sizes`  | `small`, `default`, `large` |
+**The third column is the React prop that sets the axis.** The axis name is the token inventory's; it is not a prop, and passing it as one is dropped silently by React. A blank cell means no single prop carries that axis — it is set by CSS state or by separate props, and the rules below say which.
 
+| Axis     | Options                     | React prop |
+| -------- | --------------------------- | ---------- |
+| `styles` | `text`, `icon`, `image`     |            |
+| `sizes` | `small`, `default`, `large` | `size` |
 **The three styles are three sources of content, and they rank.** `image` is a photograph, `text` is initials, `icon` is a generic person or placeholder. Pick the highest one you actually have data for, and fall back down the list.
 
 **There is no status dot, no presence indicator, and no badge slot.** A badge is a separate component and does not attach to this one.

@@ -21,7 +21,7 @@ A stepper carries the user through one multi-part process and shows where they a
 ## Do not use it when
 
 | Instead of a stepper                                       | Use                                                                                                    |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ---------- |
 | The steps can be completed in any order                    | One page. No checklist component exists — if tasks get marked done, that is `recursica-skill-checkbox` |
 | A short form that fits on one page                         | One page, single column — `recursica-skill-forms`                                                      |
 | An answer only changes a field just below it               | Progressive disclosure on one page — `recursica-skill-forms`                                           |
@@ -37,10 +37,12 @@ A stepper carries the user through one multi-part process and shows where they a
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.stepper`. **Do not pass a variant, size, or state that is not listed here.**
 
-| Axis          | Options                  |
-| ------------- | ------------------------ |
-| `sizes`       | `large`, `small`         |
-| `orientation` | `horizontal`, `vertical` |
+**The third column is the React prop that sets the axis.** The axis name is the token inventory's; it is not a prop, and passing it as one is dropped silently by React. A blank cell means no single prop carries that axis — it is set by CSS state or by separate props, and the rules below say which.
+
+| Axis          | Options                  | React prop |
+| ------------- | ------------------------ | ---------- |
+| `sizes` | `large`, `small`         | `size` |
+| `orientation` | `horizontal`, `vertical` |            |
 
 **A step may carry a second line.** `description-text` exists alongside `label-text`, so a step has a name and an optional short descriptor. It is not a paragraph slot.
 

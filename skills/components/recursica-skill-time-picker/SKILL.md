@@ -22,7 +22,7 @@ A time picker captures a point in the day, by typing or by picking.
 Each of these has a different component. Switch to it rather than adapting a time picker:
 
 | Instead of a time picker                           | Use                                                                                        |
-| -------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------ | ---------- |
 | The user picks an approximate or relative time     | Not a time at all — "in 30 minutes" is an offset, so capture the number and its unit       |
 | The choices are a few preset times                 | A segmented control or a dropdown — see `recursica-skill-selection-controls`               |
 | The value is a length of time, not a point in time | A number input per unit. `3h 20m`, never `3:20` — see `recursica-skill-dates-and-currency` |
@@ -38,12 +38,16 @@ Each of these has a different component. Switch to it rather than adapting a tim
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.time-picker`. **Do not pass a variant or state that is not listed here** — other design systems have sizes, seconds variants, warning states, and inline clocks that this component does not.
 
-| Axis      | Options                   |
-| --------- | ------------------------- |
-| `layouts` | `stacked`, `side-by-side` |
-| `states`  | `error`, `disabled`       |
+**The third column is the React prop that sets the axis.** The axis name is the token inventory's; it is not a prop, and passing it as one is dropped silently by React. A blank cell means no single prop carries that axis — it is set by CSS state or by separate props, and the rules below say which.
 
-**`layouts` is the label placement axis.** `side-by-side` — label beside the field — is the house default; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport. See `recursica-skill-forms`.
+| Axis      | Options                   | React prop |
+| --------- | ------------------------- | ---------- |
+| `layouts` | `stacked`, `side-by-side` | `formLayout` |
+| `states`  | `error`, `disabled`       |            |
+
+**`layouts` is the label placement axis, set by the `formLayout` prop.** `side-by-side` — label beside the field — is the house default; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport. See `recursica-skill-forms`.
+
+**`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Omit it and you get the fallback on a container of any width, which is the rule inverted. `layouts` is the token axis name and is not a prop — `layouts="side-by-side"` is dropped silently by React and leaves the control stacked with no error. Pass `formLayout="side-by-side"` explicitly.
 
 **Focus and placeholder are not variants.** The component handles them: `placeholder-opacity` here, and the focused border via `globals.form.field.colors.border-selected`. Do not build them as states.
 

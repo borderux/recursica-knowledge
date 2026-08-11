@@ -22,7 +22,7 @@ A number input captures a quantity the user types.
 Each of these has a different component. Switch to it rather than adapting a number input:
 
 | Instead of a number input                         | Use                                                                                     |
-| ------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------- | ---------- |
 | The number comes from a small predefined set      | A radio group or a dropdown — see `recursica-skill-selection-controls`                  |
 | The exact value is arbitrary across a large range | `recursica-skill-slider` — the user is choosing a position, not entering a number       |
 | The digits are an identifier, not a quantity      | `recursica-skill-text-field`. Phone numbers, zips, account and card numbers are strings |
@@ -38,12 +38,16 @@ Each of these has a different component. Switch to it rather than adapting a num
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.number-input`. **Do not pass a variant or state that is not listed here** — other design systems have sizes, warning and success states, and content variants that this component does not.
 
-| Axis      | Options                   |
-| --------- | ------------------------- |
-| `layouts` | `stacked`, `side-by-side` |
-| `states`  | `error`, `disabled`       |
+**The third column is the React prop that sets the axis.** The axis name is the token inventory's; it is not a prop, and passing it as one is dropped silently by React. A blank cell means no single prop carries that axis — it is set by CSS state or by separate props, and the rules below say which.
 
-**`layouts` is the label placement axis.** `side-by-side` — label beside the field — is the house default; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport. See `recursica-skill-forms`.
+| Axis      | Options                   | React prop |
+| --------- | ------------------------- | ---------- |
+| `layouts` | `stacked`, `side-by-side` | `formLayout` |
+| `states`  | `error`, `disabled`       |            |
+
+**`layouts` is the label placement axis, and the React prop that sets it is `formLayout`.** `side-by-side` — label beside the field — is the house rule; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport. See `recursica-skill-forms`.
+
+**`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Omit it and you get the fallback on a wide container, which is the rule inverted. `layouts` is the token axis name and is not a prop — writing `layouts="side-by-side"` is dropped silently by React, leaves the field stacked, and raises no error to tell you. Pass `formLayout="side-by-side"` explicitly on every field.
 
 **Focus and placeholder are not variants.** The component handles them: `placeholder-opacity` here, and the focused border via `globals.form.field.colors.border-selected`. Do not build them as states.
 
@@ -149,7 +153,7 @@ Never style an unfocused number input so it reads as disabled. An editable field
 - [ ] The value is a quantity, not an identifier, a duration, or a position on a range.
 - [ ] A visible label is passed, names the object, and names the unit where it is not obvious.
 - [ ] Label placement is side-by-side unless the container is too narrow.
-- [ ] `layouts` matches every other field in the same form — one placement per form at any given breakpoint, with no mixing between fields or sections.
+- [ ] `formLayout` is passed explicitly — `side-by-side` unless the form's container is too narrow — and matches every other field in the same form. One placement per form at any given breakpoint, no mixing between fields or sections. An omitted prop is `stacked`, not the house rule, and `layouts` is not the prop name.
 - [ ] The value is right-aligned, and alignment matches the read-only values on the same screen.
 - [ ] Precision is fixed and identical across every value shown together; currency carries two decimals.
 - [ ] Any currency symbol or unit is an in-field affix, and its meaning is also in the label or help text.

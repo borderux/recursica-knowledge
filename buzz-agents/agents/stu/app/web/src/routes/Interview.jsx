@@ -82,7 +82,7 @@ export function Interview({ identity, revision, onChanged }) {
           { label: 'Transcript lines', value: lines.length },
           { label: 'Tagged lines', value: lines.filter((l) => l.tags?.length).length },
           { label: 'AI corrections', value: corrected },
-          { label: 'Your corrections', value: edited },
+          { label: 'Human corrections', value: edited },
         ]}
       />
 
@@ -326,6 +326,7 @@ function CorrectionForm({ line, cid, identity, onChanged }) {
       </Text>
 
       <TextArea
+        formLayout="side-by-side"
         label="Corrected text"
         value={value}
         autosize
@@ -333,6 +334,7 @@ function CorrectionForm({ line, cid, identity, onChanged }) {
         onChange={(e) => setValue(e.currentTarget.value)}
       />
       <TextField
+        formLayout="side-by-side"
         label="Why"
         placeholder="What the machine got wrong, or why nothing needed changing"
         value={note}
@@ -419,6 +421,7 @@ function TagForm({ line, cid, identity, onChanged }) {
         : <Empty>No tag has been applied to this line.</Empty>}
 
       <Dropdown
+        formLayout="side-by-side"
         label="Add a tag"
         description="Only tags already in the library. A tag id invented on a line cannot be counted or filtered."
         placeholder="Choose a tag"
@@ -428,6 +431,7 @@ function TagForm({ line, cid, identity, onChanged }) {
         searchable
       />
       <TextField
+        formLayout="side-by-side"
         label="Justification"
         description="Quote what in this line supports the tag. Held to the same bar as the agents."
         value={justification}

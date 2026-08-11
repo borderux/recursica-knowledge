@@ -1,8 +1,9 @@
 // The tag library. Many instances of one object, so a table.
 
 import { useEffect, useState } from 'react'
-import { Badge, Button, Dropdown, Group, Layer, Stack, Text, TextField } from '@recursica/mantine-adapter'
+import { Badge, Button, Dropdown, Layer, Stack, Text, TextField } from '@recursica/mantine-adapter'
 import { api } from '../api.js'
+import { formatCount } from '../format.js'
 import { Page, Section } from '../shell/Page.jsx'
 import { Absent, DataTable } from '../shell/DataTable.jsx'
 
@@ -27,13 +28,13 @@ export function Tags({ identity, revision, onChanged }) {
       header: 'Lines tagged',
       sortValue: (r) => Number(r.usage_count ?? 0),
       // An unused tag is a finding too — either the taxonomy is wrong or the tagging missed it.
-      render: (r) => Number(r.usage_count ?? 0),
+      render: (r) => formatCount(r.usage_count),
     },
     {
       key: 'threshold',
       header: 'Confidence floor',
       sortValue: (r) => Number(r.confidence_threshold ?? 0),
-      render: (r) => r.confidence_threshold ?? <Absent>Not set</Absent>,
+      render: (r) => r.confidence_threshold ?? <Absent />,
     },
     {
       key: 'origin',
@@ -50,10 +51,7 @@ export function Tags({ identity, revision, onChanged }) {
   ]
 
   return (
-    <Page
-      title="Tags"
-      lede="The closed vocabulary the tagging rests on. A tag that exists only on a line cannot be looked up, filtered, or counted."
-    >
+    <Page title="Tags">
       <DataTable
         columns={columns}
         rows={rows}
@@ -63,10 +61,7 @@ export function Tags({ identity, revision, onChanged }) {
         emptyMessage="The tag library is empty. Run the dictionary sync before tagging anything."
       />
 
-      <Section
-        title="Add a tag"
-        note="Written as yours, so the shared-sheet sync leaves it alone instead of retiring it on the next deploy."
-      >
+      <Section title="Add a tag">
         <AddTag identity={identity} onChanged={onChanged} />
       </Section>
     </Page>
@@ -94,21 +89,25 @@ function AddTag({ identity, onChanged }) {
     <form onSubmit={submit}>
       <Layer layer={1}>
         <Stack gap="md">
-          <Group gap="md" align="flex-end" wrap="wrap">
-            <TextField
-              label="Tag id"
-              description="lower_snake_case — written verbatim into every tagged line"
-              value={tag}
-              onChange={(e) => setTag(e.currentTarget.value)}
-            />
-            <Dropdown
-              label="Type"
-              data={TYPES.map((t) => ({ value: t, label: t }))}
-              value={type}
-              onChange={setType}
-            />
-          </Group>
+          {/* One field per row, labels beside them — recursica-skill-forms, "Layout" and
+              "Labels". Tag id and Type were on one row: two logical values, so not the
+              compound-control exception. */}
           <TextField
+            formLayout="side-by-side"
+            label="Tag id"
+            description="lower_snake_case — written verbatim into every tagged line"
+            value={tag}
+            onChange={(e) => setTag(e.currentTarget.value)}
+          />
+          <Dropdown
+            formLayout="side-by-side"
+            label="Type"
+            data={TYPES.map((t) => ({ value: t, label: t }))}
+            value={type}
+            onChange={setType}
+          />
+          <TextField
+            formLayout="side-by-side"
             label="Description"
             description="What a line has to be about for this tag to apply"
             value={description}

@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react'
 import { Text } from '@recursica/mantine-adapter'
 import { api } from '../api.js'
+import { formatWhen } from '../format.js'
 import { Page, Section } from '../shell/Page.jsx'
 import { Absent, DataTable } from '../shell/DataTable.jsx'
 
@@ -43,13 +44,13 @@ export function History({ revision }) {
       key: 'from',
       header: 'From',
       sortValue: (r) => r.old_value ?? '',
-      render: (r) => r.old_value ?? <Absent>Nothing</Absent>,
+      render: (r) => r.old_value ?? <Absent />,
     },
     {
       key: 'to',
       header: 'To',
       sortValue: (r) => r.new_value ?? '',
-      render: (r) => r.new_value ?? <Absent>Nothing</Absent>,
+      render: (r) => r.new_value ?? <Absent />,
     },
   ]
 
@@ -57,15 +58,15 @@ export function History({ revision }) {
     { key: 'line_id', header: 'Line', sortValue: (r) => r.line_id, render: (r) => r.line_id },
     {
       key: 'text',
-      header: 'Your correction',
+      header: 'Correction',
       sortValue: (r) => r.cleaned_text ?? '',
-      render: (r) => r.cleaned_text ?? <Absent>You cleared the correction</Absent>,
+      render: (r) => r.cleaned_text ?? <Absent />,
     },
     {
       key: 'was',
-      header: 'The line it was made against',
+      header: 'Line',
       sortValue: (r) => r.original_text_at_edit ?? '',
-      render: (r) => <Text variant="body-small">{r.original_text_at_edit}</Text>,
+      render: (r) => r.original_text_at_edit,
     },
     {
       key: 'edited_at',
@@ -76,10 +77,7 @@ export function History({ revision }) {
   ]
 
   return (
-    <Page
-      title="History"
-      lede="Every change a person has made in this channel, and what it replaced."
-    >
+    <Page title="History">
       {orphans.length > 0 && (
         <Section
           title="Corrections with no line"
@@ -108,8 +106,12 @@ export function History({ revision }) {
   )
 }
 
+// An edit's timestamp, in the reader's own zone: relative within the last week, the absolute date
+// and time beyond it. This is a log of recent changes, which is the case relative time exists for —
+// "3 hours ago" is what the reader wanted, and the clock time made them subtract to get it. The
+// one-week threshold is the owner's, recorded in `recursica-skill-dates-and-currency`.
 function Stamp({ value }) {
-  const raw = value?.value ?? value
-  if (!raw) return <Absent>Not recorded</Absent>
-  return <>{new Date(raw).toISOString().replace('T', ' ').slice(0, 16)}</>
+  const text = formatWhen(value, { withTime: true })
+  if (!text) return <Absent />
+  return <>{text}</>
 }
