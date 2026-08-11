@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-screen-scaffolding
-description: House rules for composing a page in enterprise web applications — the header, left rail, and footer, how the number of navigation items decides between a top nav and a rail, where the page title and breadcrumb sit, the bottom-right primary action and the tension it creates, positioning filters by content width rather than by breakpoint, dividing regions with space rather than containers, maximum content width, what a page shows while loading, and the layering ladder from no container to layer to card. Use when laying out a page, deciding where a region begins and ends, placing application chrome, or deciding whether something needs a container. Trigger on "page layout", "scaffolding", "header", "left rail", "footer", "breadcrumb", "primary action", "max width", "skeleton", "loading state", "layer", "container", or "does this need a box". Do NOT use for whether a card is right — that is recursica-skill-card.
+description: House rules for composing a page in enterprise web applications — the header, left rail, and footer, how the number of navigation items decides between a top nav and a rail, where the page title and breadcrumb sit, the bottom-right primary action, positioning filters by content width rather than by breakpoint, dividing regions with space rather than containers, maximum content width and centring the main content within it, never sizing a region to a bare viewport height inside a layer, what a page shows while loading, and the layering ladder. Use when laying out a page, deciding where a region begins and ends, placing application chrome, or deciding whether something needs a container. Trigger on "page layout", "scaffolding", "header", "left rail", "footer", "breadcrumb", "max width", "centered", "wide screen", "100vh", "full height", "unwanted scrollbar", "skeleton", "loading state", "layer", or "container". Do NOT use for whether a card is right — that is recursica-skill-card.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -50,6 +50,18 @@ House rules for how a page is composed and what each region sits on. These are o
 
 **Its job is scent** — showing where the user came from and how to get back up. **It matters most on a deep link**, where someone arrives several layers down from a dashboard with no idea where they are.
 
+## The line under a heading
+
+**A page title and a section heading each have a slot beneath them, and its default state is empty.** A well-named heading has already said what the region is. A line that says it again is not context — it is the heading a second time in smaller type, and every reader pays for it on every visit.
+
+**The slot is for what the heading cannot carry**: an ordering, a constraint, a consequence, or a state the reader would otherwise infer wrongly. `Newest first. Append-only: nothing here is ever rewritten.` under **Changes** earns its place — sort order and immutability are not derivable from the word. `The closed vocabulary the tagging rests on.` under **Tags** does not; it defines the heading.
+
+**The test is subtraction, and it takes one reading.** Delete the line. If the only thing lost is a restatement of the heading, it was noise and stays deleted. If a reader would now get something wrong, keep it — and cut it back to only that.
+
+**A slot in the component is not a brief to fill it.** A `lede` or `note` prop exists because some headings need one. A prop that accepts a string is the single most common reason an explanation gets written that nobody asked for, so passing nothing is the normal case, not the unfinished one.
+
+**If the heading cannot stand without its gloss, the heading is wrong.** Fixing it is owned by `recursica-skill-naming-terminology`, whose rule against defining a term next to itself covers a page title and a section heading, not only a field label.
+
 ## The primary action
 
 **The page's primary action goes bottom right.** This is a starting position rather than a law — begin there, and let the user move it.
@@ -84,6 +96,21 @@ The filter controls themselves are owned by `recursica-skill-filters`.
 **Page-level content has a maximum width, and it comes from the design system's layout rule.** It is not yours to set. **The house default is 1200**, and it applies to the **main content area only** — headers, footers, and other sticky chrome are not bound by it and may span the full viewport. Owned by `recursica-skill-responsive-behavior`, which also carries the tablet and small-device breakpoints.
 
 **Space beyond it stays empty.** That is the correct outcome, not a gap to fill.
+
+**MUST centre the main content horizontally.** Empty space to the right is not the same thing as empty space on both sides. A maximum width with no alignment leaves the content pinned wherever the layout happens to start it — against the left rail — so on a wide display every screen sits in the top-left corner with a third of the monitor blank beside it. That reads as a window that failed to resize, not as deliberate restraint. **What it is centred within is a choice, made once — see below.**
+
+**This is the rule most often half-implemented**, because a maximum width alone looks correct at the viewport it was built on and only goes wrong on a larger one. **Check it at a viewport well beyond the maximum**, not at the one on your desk.
+
+**Chrome is not bound by the maximum width** — a left rail or a header spans the full viewport as before, see above.
+
+**Two centrings are both correct, and it is one decision per application:**
+
+- **Centre the main content in the region left over beside the chrome.** The rail keeps the left edge and the content is centred in what remains.
+- **Centre the main content in the whole viewport, ignoring the rail.** The content lands on the display's true centre and the rail overlaps the space to its left.
+
+**Pick one and apply it to every page.** Neither is a compromise and neither needs justifying; what does need justifying is two screens in one application doing it differently — see convention 1 in `recursica-skill-system-conventions`.
+
+**Expect a gap between the rail and the content on a very wide display**, whichever is chosen. That is the maximum width working, not a layout failure, and it is not a reason to stretch the content.
 
 **Stretching content to fill the viewport is the anti-pattern.** It signals a fear of white space and a misunderstanding of how people read: over-long line lengths reduce scannability, and occupying space is not a reason to occupy space. See the line-length calculation in `recursica-skill-typography-semantics`.
 
@@ -141,6 +168,18 @@ The filter controls themselves are owned by `recursica-skill-filters`.
 
 **The application has one scrollbar.** Sticky regions stay put while the page scrolls beneath them, and **no inner scrolling region is ever built.** Beyond a sticky header, sticky footer, and persistent nav rail, at most one further sticky element. Owned by `recursica-skill-screen-priority`.
 
+**One scrollbar also means it does not appear when the content fits.** A page whose content is shorter than the viewport must not scroll at all. A few dozen pixels of travel on an otherwise-empty page is the same defect as a scrolling region, and it is more likely, because it comes from arithmetic rather than from a decision.
+
+### Never size a region to the viewport from inside a layer
+
+**A full-height shell, rail, or panel MUST NOT be given a bare viewport height** — `100vh` and its variants — **when it sits inside a declared layer.**
+
+**A layer carries padding from the theme**, and `recursica-skill-layers` puts that padding beyond your reach on purpose. So a region asserting the full viewport height inside one comes out as the viewport *plus* that padding, top and bottom, and the page scrolls by exactly that much on every screen. The nav rail is where this shows up first, because a rail is the region most likely to be told to fill the height.
+
+**Subtract the layer's own padding by reading its token, and never by measuring the rendered value.** A number read off the screen today is wrong after a re-theme, and hardcoding one is what `recursica-skill-layers` forbids — reading the token is what it expects.
+
+**This is easy to miss in review and easy to catch by measurement.** Compare the document's scroll height against the viewport height on a page with little content: any positive difference is this bug. It also arrives without a code change, the moment the design system starts declaring a layer that was previously the caller's job — which is how it appeared here.
+
 ## Summary figures
 
 **A group of summary figures is a set of peers** and gets one consistent treatment across all of them.
@@ -159,7 +198,7 @@ The number one indicator, and the rest in order:
 2. **No ample white space above headings and subheadings**, so nothing owns what follows it.
 3. **No layout grid underneath.** It is obvious when elements do not align to an eight- or twelve-column grid, and when gutters vary.
 4. **Line lengths long for no reason.**
-5. **Explanatory text standing in for a good label.**
+5. **Explanatory text standing in for a good heading or label** — most often a line beneath a page title or section heading that only restates it.
 
 ## Not your decision
 
@@ -189,12 +228,16 @@ The number one indicator, and the rest in order:
 - [ ] A left rail puts navigation at the top and profile and settings at the bottom.
 - [ ] Every page has a footer.
 - [ ] The page title sits in the page; repeating the navigation label was not treated as a defect.
+- [ ] Every line under a page title or section heading survived deletion — it carries an ordering, constraint, consequence or state the heading cannot, and no `lede` or `note` was filled just because the prop exists.
 - [ ] A breadcrumb appears on every page below the top level, and nowhere above it.
 - [ ] The primary action sits bottom right unless the user moved it.
 - [ ] Filters are positioned by the width of the content they act on, not by a breakpoint, and a filter rail is not merged with the navigation rail.
 - [ ] Regions are divided by space and headings, with a rule only where space was not enough — and never by cards.
 - [ ] No form field is inside a card.
-- [ ] Content respects the system's maximum width, and leftover space was left empty rather than filled.
+- [ ] Content respects the system's maximum width, is centred — in the region beside the chrome or in the whole viewport, one choice for the application — and leftover space was
+      left empty rather than filled — checked at a viewport well beyond the maximum, not only at the one it was built on.
+- [ ] No region is sized to a bare viewport height inside a declared layer; the layer's padding was subtracted by
+      reading its token, and a low-content page was measured to confirm the document does not scroll at all.
 - [ ] A loading page shows nothing — no skeleton, no ghost text, and a spinner only past roughly three seconds or for lagging regions of an otherwise-loaded page.
 - [ ] Layer 0 is declared once on the root and never re-declared; every region was tried with space first; a surface was added only where regions genuinely blurred, and a region without peers took a layer rather than a card.
 - [ ] No surface was painted with raw CSS or the library's tokens; a missing `Layer` was raised.

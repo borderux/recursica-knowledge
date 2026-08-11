@@ -21,7 +21,7 @@ A transfer list is two lists side by side with controls that move items between 
 ## Do not use it when
 
 | Instead of a transfer list                            | Use                                                                                        |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------ | ---------- |
 | There are only a handful of items                     | A checkbox group — see `recursica-skill-checkbox` and `recursica-skill-selection-controls` |
 | Exactly one value is chosen                           | `recursica-skill-dropdown`, or a radio group                                               |
 | Zero-to-many, but the unselected set is uninteresting | A multi-select dropdown — see `recursica-skill-selection-controls`                         |
@@ -36,12 +36,16 @@ A transfer list is two lists side by side with controls that move items between 
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.transfer-list`. **Do not pass a variant, size, or state that is not listed here.**
 
-| Axis      | Options                   |
-| --------- | ------------------------- |
-| `layouts` | `stacked`, `side-by-side` |
-| `states`  | `error`, `disabled`       |
+**The third column is the React prop that sets the axis.** The axis name is the token inventory's; it is not a prop, and passing it as one is dropped silently by React. A blank cell means no single prop carries that axis — it is set by CSS state or by separate props, and the rules below say which.
 
-**`layouts` is the label placement axis, not the arrangement of the two lists.** `side-by-side` — label beside the control — is the house default; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport. The two lists themselves are always two columns.
+| Axis      | Options                   | React prop |
+| --------- | ------------------------- | ---------- |
+| `layouts` | `stacked`, `side-by-side` | `formLayout` |
+| `states`  | `error`, `disabled`       |            |
+
+**`layouts` is the label placement axis, set by the `formLayout` prop, not the arrangement of the two lists.** `side-by-side` — label beside the control — is the house default; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport. The two lists themselves are always two columns.
+
+**`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Omit it and you get the fallback on a container of any width, which is the rule inverted. `layouts` is the token axis name and is not a prop — `layouts="side-by-side"` is dropped silently by React and leaves the control stacked with no error. Pass `formLayout="side-by-side"` explicitly.
 
 **This field's `layouts` value is not an independent choice.** `recursica-skill-forms` requires **one label placement per form — side-by-side or stacked, never both at the same breakpoint.** The container-width test is applied once, to the form, and its answer governs every field in it, including short fields that would have fit. Match every other field in the same form. A whole form may switch placement across breakpoints; a section never gets its own. See `recursica-skill-forms`.
 

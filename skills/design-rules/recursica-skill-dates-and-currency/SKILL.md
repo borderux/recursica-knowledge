@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-dates-and-currency
-description: House rules for formatting dates, times, currency, and numeric values in enterprise web applications — whose locale wins, the disambiguated date format, when to state a time zone, when not to localize a time at all, relative vs. absolute time and the switchover threshold, right-aligned currency, two-decimal precision, the currency symbol in the column header, accounting parentheses, precision consistency across rows, rounding and abbreviation, date and value ranges, 12- vs 24-hour time, duration formatting, and the format-follows-focus rule for editable fields. Use whenever a date, time, timestamp, money amount, or number is displayed or entered. Trigger on "date format", "timestamp", "time zone", "relative time", "ago", "duration", "elapsed", "currency", "money", "decimal", "precision", "rounding", "date range", or "align the numbers". Do NOT use for table structure — that is recursica-skill-tables, which this skill supplies the cell formatting for.
+description: House rules for formatting dates, times, currency, and numeric values in enterprise web applications — whose locale wins, the disambiguated date format, deriving the value from a formatting API rather than slicing a UTC serialisation, when to state a time zone, when not to localize a time at all, relative vs. absolute time and the switchover threshold, right-aligned currency, two-decimal precision, the currency symbol in the column header, accounting parentheses, precision consistency across rows, rounding and abbreviation, date and value ranges, 12- vs 24-hour time, duration formatting, and the format-follows-focus rule. Use whenever a date, time, timestamp, money amount, or number is displayed or entered. Trigger on "date format", "timestamp", "time zone", "relative time", "ago", "duration", "toISOString", "UTC", "currency", "money", "decimal", "precision", "rounding", "date range", or "align the numbers". Do NOT use for table structure — that is recursica-skill-tables.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -33,6 +33,21 @@ This is the single date format, and its purpose is disambiguation: it reads corr
 
 **This is the single biggest pet peeve in this topic.** A screen showing numeric slash-or-hyphen dates reads as lazy, because the disambiguated alternative costs nothing.
 
+### Derive the value, never slice a serialisation
+
+**MUST build the displayed value from a date-formatting API in the reader's locale and zone.** In a browser that is `Intl.DateTimeFormat` with **no locale argument** — passing one names a locale the reader did not choose, which is the tenant's locale winning, forbidden above.
+
+**NEVER produce a displayed date by cutting characters out of a machine serialisation.** `toISOString().slice(0, 10)` and its variants are the shape to look for. One line of it breaks two separate rules at once:
+
+- **It is the numeric hyphen form** — `2026-08-10` — which is the format this section prohibits.
+- **It is UTC, not the reader's zone.** So it is not merely formatted wrong, it is **the wrong day**: an entry made at 6pm on the 10th west of Greenwich displays as the 11th. Nobody reviewing the screen sees a bug, because a plausible date is showing.
+
+**The second failure is the dangerous one**, and it survives a fix to the first. Reformatting the same UTC string into `Aug 10, 2026` still shows the wrong day. **Correct the source of the value and the format together.**
+
+**Format once, in one place.** A formatter defined per call site is how a screen ends up with three date formats, and building one per row of a table is measurably slow. Construct the formatters once and export them.
+
+**A date-only value is not a timestamp.** Where the stored value carries no time — a birth date, a due date, an accounting period — converting it to the reader's zone shifts it by a day in one direction or the other. Zone conversion applies to instants. If it is not clear which one a field holds, that is a question to ask rather than a default to pick.
+
 ## Time zones
 
 **State the time zone explicitly whenever the time shown is not in the user's own zone**, as determined by the browser.
@@ -55,7 +70,17 @@ The example that makes this concrete: a log of a break-in that occurred at 11:00
 
 The reason is principle 1: telling someone an event happened at 2:23 p.m. when it is now 2:45 p.m. makes them do arithmetic to learn what they actually wanted to know, which is "recently."
 
-**Above a threshold, switch to the absolute date.** The threshold is a product decision — a few days, a week, a month. With a one-month threshold, `25 days ago` holds until a month has passed, after which the value reads `Jun 24, 2026`.
+**Above a threshold, switch to the absolute date.**
+
+**The threshold is one week.** Inside the last week a value reads relatively — `now`, `5 minutes ago`, `16 hours ago`, `yesterday`, `3 days ago`. At a week and beyond it reads as the absolute date, `Jun 24, 2026`. A product may override it with a stated reason; absent one, a week is the house rule and not a decision to re-open per screen.
+
+**Use the platform's relative formatter, not hand-written strings.** In a browser that is `Intl.RelativeTimeFormat`, and its `numeric: "auto"` setting is what produces `yesterday` rather than `1 day ago` — per locale, which hand-written copy cannot be. Writing those strings yourself localizes the screen into one language.
+
+**Do not let the relative form name its own threshold.** Rounding at the top of the range reports `7 days ago` for a value 6.9 days old, sitting in the same column as a value an hour older showing an absolute date. Clamp the largest relative value below the threshold.
+
+**Seconds do not appear here.** Under a minute reads `now` — the precision-consistency rule below admits seconds only for a set of sub-minute values being compared, and a single timestamp is not that.
+
+**A relative value is computed when it renders and does not tick.** Where a screen is long-lived and never refetches, that is a staleness the reader cannot see. Either refresh it or use the absolute form; do not leave a page claiming `now` an hour later.
 
 ## Currency
 
@@ -81,7 +106,13 @@ The reason is principle 1: telling someone an event happened at 2:23 p.m. when i
 
 **The only override is an explicit human instruction.**
 
-**Rounding and abbreviation are acceptable when shortening is the intent** — `952` below a thousand, `1.2K` above it. Apply it deliberately, not as a default.
+**MUST group digits once a value reaches four figures.** `2,046`, never `2046`. This applies to every quantity a reader might compare or read aloud — counts, totals, row tallies — not only to money. An ungrouped four-figure number is read digit by digit, and two of them in a column cannot be compared at a glance, which is the entire reason the column is right-aligned.
+
+**The separator is the locale's, so let the platform choose it.** `Intl.NumberFormat` or `toLocaleString` — a comma in one locale, a period or a thin space in another. Never hand-roll a regex that inserts commas: it produces the wrong separator everywhere the locale is not yours, and it is the same class of error as slicing a date serialisation.
+
+**NEVER group an identifier.** A year, a version, a port, an account or record number, a postcode: `2026`, not `2,026`. Grouping says "this is a quantity you may compare"; on an identifier that claim is false and the reader briefly believes it. If arithmetic on the value is meaningless, it is not a number for this purpose.
+
+**Rounding and abbreviation are acceptable when shortening is the intent** — `952` below a thousand, `1.2K` above it. Apply it deliberately, not as a default. Grouping is the default; abbreviating is the deliberate choice.
 
 ## Ranges
 
@@ -146,10 +177,16 @@ Do not pattern-match one of these to a rule above. A wrong convention in a fisca
 
 - [ ] Dates use a three-letter month, one-to-two-digit day, and four-digit year.
 - [ ] No read-only date appears as numbers separated by slashes or hyphens.
+- [ ] Every displayed date and time is built by a formatting API in the reader's locale and zone — no value is cut
+      out of a machine serialisation, and no `toISOString()` slice reaches a screen.
+- [ ] Formatters are constructed once and shared, not per call site or per row.
+- [ ] Any field holding a date with no time was identified as such and not shifted by a zone conversion.
 - [ ] Times are in the user's own zone, not the tenant's.
 - [ ] A time zone is stated whenever the value is outside the user's zone, or the user's zone is unknown, or the user has switched zones.
 - [ ] Times for events that happened elsewhere are shown in the zone of occurrence, labeled, with a way to convert.
-- [ ] Recent events use relative time; a stated threshold switches to the absolute date.
+- [ ] Recent events use relative time within one week and the absolute date beyond it, produced by the platform's
+      relative formatter, with no relative value naming the threshold and no seconds shown.
+- [ ] Every quantity of four figures or more is digit-grouped by a formatting API in the reader's locale — no bare `2046`, no hand-rolled comma regex — and no identifier, year, version or port was grouped.
 - [ ] Currency is right-aligned, with two decimal places on every value.
 - [ ] The currency symbol sits in the column header, not in each cell.
 - [ ] Any converted currency is labeled in the cell.

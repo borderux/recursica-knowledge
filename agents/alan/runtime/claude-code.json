@@ -1,0 +1,6 @@
+{
+  "$comment": "Claude Code runtime settings for ALAN. The prompt is portable/claude-code/agents/alan.md; this file is the config that has no business inside a prompt.",
+  "model": "opus",
+  "tools": ["Read", "Write", "Edit", "Bash", "Glob", "Grep", "WebFetch"],
+  "$toolsComment": "ALAN reads a repo, writes TEST.md/PLAN.md/FINDINGS.md/EVAL_REPORT.md, and runs npm. It needs no MCP server at all — which is why it is the first agent to port."
+}

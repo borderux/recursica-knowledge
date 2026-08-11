@@ -1,0 +1,8 @@
+{
+  "$comment": "Claude Code runtime settings for Claire. The prompt is portable/claude-code/agents/claire.md; this file is the config that has no business inside a prompt. Read agents/claire/PORTING.md before wiring any of it up — none of what follows is a data fence.",
+  "model": "opus",
+  "tools": ["Read", "Task", "mcp__bq-@SLUG@__execute_sql", "mcp__bq-@SLUG@__get_table_info", "mcp__bq-@SLUG@__list_table_ids", "mcp__drive-@SLUG@__list_files", "mcp__drive-@SLUG@__get_file_info"],
+  "$toolsComment": "Claire orchestrates and never reads a transcript herself, so she holds no read_file and no write tools — that is a deliberate omission, not an oversight. `@SLUG@` is the client slug, substituted once per client; one pair of MCP servers per client, named for that client, and Claire's own pre-flight check 1 refuses to work if they are absent.",
+  "subagents": ["scribe-@SLUG@", "lexicon-@SLUG@", "tagger-@SLUG@", "analyst-@SLUG@"],
+  "$subagentsComment": "Claire dispatches these four and does the pipeline work through them. They ship at portable/claude-code/agents/{scribe,lexicon,tagger,analyst}.md and each carries its own `tools` allowlist — that allowlist is the separation, not the prose. Substitute @SLUG@ in all five files with the same value."
+}

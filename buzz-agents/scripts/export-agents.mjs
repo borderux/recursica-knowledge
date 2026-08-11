@@ -237,8 +237,13 @@ if (!checkOnly && Object.keys(tokens).length > 0 && localValues === null) {
 // TRANSCRIPT_DIR is not among the values, tokenize() leaves it alone and findLeaks() has
 // no value to look for either — so the export would commit someone's real home path into
 // a public repository, with both guards reporting clean.
+//
+// `portableOnly` tokens are excluded. They appear only in the artifacts under `portable/`,
+// never in a prompt Buzz receives, so no operator will ever have a value for one and this
+// warning would fire on every export forever. A warning that is always present is read as
+// decoration, and the next one — the one about a real missing value — gets read the same way.
 const values = deriveValues(localValues ?? {});
-const unset = Object.keys(tokens).filter((t) => !values[t]);
+const unset = Object.keys(tokens).filter((t) => !values[t] && !tokens[t].portableOnly);
 if (unset.length) {
   console.warn(
     `  ! local-values.json has no value for: ${unset.join(", ")} — those tokens cannot be applied.`,

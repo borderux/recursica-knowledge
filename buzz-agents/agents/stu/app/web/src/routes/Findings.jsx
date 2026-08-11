@@ -86,10 +86,7 @@ export function Findings({ identity, revision, onChanged }) {
   const waiting = rows.filter((f) => f.status === 'proposed')
 
   return (
-    <Page
-      title="Findings"
-      lede="What the analysis claims, and the lines each claim rests on."
-    >
+    <Page title="Findings">
       {/* Tabs, not navigation: both panels are about one subject and either could be looked at
           first. Each carries its own route so it survives a refresh and works with back — a house
           preference stated outright in recursica-skill-tabs. */}
@@ -590,6 +587,7 @@ function Decision({ finding, identity, onChanged }) {
       {problem && <Text variant="body-small">{problem}</Text>}
 
       <TextField
+        formLayout="side-by-side"
         label="Note"
         placeholder="Optional — why you decided this way"
         value={note}
@@ -673,6 +671,7 @@ function Resolution({ finding, identity, onChanged }) {
       )}
 
       <TextArea
+        formLayout="side-by-side"
         label="Answer"
         description={assumed
           ? 'Pre-filled with the assumption. Save it as it stands to confirm it, or change it first.'
@@ -683,6 +682,7 @@ function Resolution({ finding, identity, onChanged }) {
         onChange={(e) => setAnswer(e.currentTarget.value)}
       />
       <TextField
+        formLayout="side-by-side"
         label="Note"
         placeholder="Optional — where the answer came from"
         value={note}

@@ -23,7 +23,7 @@ A read-only field shows a label and its value inside a form. It renders no input
 Each of these is a different thing. Switch to it rather than adapting a read-only field:
 
 | Instead of a read-only field                           | Use                                                                                          |
-| ------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------- | ---------- |
 | The user can edit the value here                       | The matching input — `recursica-skill-text-field`, `recursica-skill-number-input`, and so on |
 | The value is unavailable now but could become operable | A disabled input on the real component — see `recursica-skill-selection-controls`            |
 | Nobody edits this data in any context                  | Plain text. A form control's shell implies a form's semantics                                |
@@ -38,11 +38,14 @@ Each of these is a different thing. Switch to it rather than adapting a read-onl
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.read-only-field`.
 
-| Axis      | Options                   |
-| --------- | ------------------------- |
-| `layouts` | `stacked`, `side-by-side` |
+**The third column is the React prop that sets the axis.** The axis name is the token inventory's; it is not a prop, and passing it as one is dropped silently by React. A blank cell means no single prop carries that axis — it is set by CSS state or by separate props, and the rules below say which.
 
-**`layouts` is the label placement axis, and it is the same axis every field carries.** `side-by-side` is the house default; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport. Set it to match the fields around it — a read-only field placed among stacked fields stacks too.
+| Axis      | Options                   | React prop |
+| --------- | ------------------------- | ---------- |
+| `layouts` | `stacked`, `side-by-side` | `formLayout` |
+**`layouts` is the label placement axis, set by the `formLayout` prop, and it is the same axis every field carries.** `side-by-side` is the house default; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport. Set it to match the fields around it — a read-only field placed among stacked fields stacks too.
+
+**`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Omit it and you get the fallback on a container of any width, which is the rule inverted. `layouts` is the token axis name and is not a prop — `layouts="side-by-side"` is dropped silently by React and leaves the control stacked with no error. Pass `formLayout="side-by-side"` explicitly.
 
 **There are no states. None.** No `error`, no `disabled`, no focus, no hover. This component is not a control, so it has nothing to be in an invalid or inoperable state about. Do not pass one, and do not simulate one.
 

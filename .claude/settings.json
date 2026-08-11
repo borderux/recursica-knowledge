@@ -13,6 +13,13 @@
           },
           {
             "type": "command",
+            "command": "node buzz-agents/scripts/hook-guard-commit-trailers.mjs",
+            "if": "Bash(git *)",
+            "timeout": 20,
+            "statusMessage": "Checking the commit for the operator's sign-off"
+          },
+          {
+            "type": "command",
             "command": "node buzz-agents/scripts/hook-guard-published-text.mjs",
             "if": "Bash(gh *)",
             "timeout": 20,

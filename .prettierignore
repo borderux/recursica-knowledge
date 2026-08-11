@@ -8,6 +8,18 @@ package-lock.json
 # and makes `export-agents.mjs --check` report drift on every run.
 buzz-agents/agents/
 
+# The same rule, one build step earlier. `agents/<name>/SKILL.md` and its platform
+# fragments ARE the prompt above — the Buzz artifact is asserted byte-identical to what
+# is committed, so reformatting the source either fails the build or, with --accept,
+# quietly changes a live agent's instructions. `portable/` is the generated half.
+#
+# This is not hypothetical and it is not only Loki: with prettier 3, seven prompt
+# sources and four portable artifacts in this tree today get rewritten. Tables are
+# padded and blank lines inserted. The hook has only ever been quiet because these
+# checkouts have no node_modules, so `npm install` in one of them is all it takes.
+agents/
+portable/
+
 # The nest is byte-for-byte operational tooling for the same reason. Its guides are
 # read at runtime (Janice loads JANICE_REVIEW_CHECKLIST.md every review) and its
 # schema guide is the DDL source that deploy-claire-channel.sh runs through sed —

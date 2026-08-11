@@ -6,3 +6,6 @@ recursica_brand.json
 recursica_tokens.json
 recursica_ui-kit.json
 recursica.json
+# Which release the five files above came from, so a version bump re-copies them instead of
+# leaving the old ones in place. Written by scripts/ensure-tokens.mjs.
+.recursica-tokens-version

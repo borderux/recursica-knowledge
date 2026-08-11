@@ -21,7 +21,7 @@ A dropdown is a form field that hides its options until opened, and returns one 
 ## Do not use it when
 
 | Instead of a dropdown                                              | Use                                                                            |
-| ------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------ | ---------- |
 | There are fewer than four options                                  | `recursica-skill-radio-button`. Never a dropdown below four                    |
 | The options must stay visible while the user decides               | `recursica-skill-radio-button`, or `recursica-skill-checkbox` for zero-to-many |
 | The set is large and the user knows the values well enough to type | `recursica-skill-autocomplete`                                                 |
@@ -38,12 +38,15 @@ A dropdown is a form field that hides its options until opened, and returns one 
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.dropdown`. **Do not pass a variant, size, or state that is not listed here.**
 
-| Axis      | Options                   |
-| --------- | ------------------------- |
-| `states`  | `error`, `disabled`       |
-| `layouts` | `stacked`, `side-by-side` |
+**The third column is the React prop that sets the axis.** The axis name is the token inventory's; it is not a prop, and passing it as one is dropped silently by React. A blank cell means no single prop carries that axis — it is set by CSS state or by separate props, and the rules below say which.
 
-**`layouts` is the label-placement axis.** `side-by-side` — label beside the field — is the house default; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport. See `recursica-skill-forms`.
+| Axis      | Options                   | React prop |
+| --------- | ------------------------- | ---------- |
+| `states`  | `error`, `disabled`       |            |
+| `layouts` | `stacked`, `side-by-side` | `formLayout` |
+**`layouts` is the label placement axis, and the React prop that sets it is `formLayout`.** `side-by-side` — label beside the field — is the house rule; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport. See `recursica-skill-forms`.
+
+**`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Omit it and you get the fallback on a wide container, which is the rule inverted. `layouts` is the token axis name and is not a prop — writing `layouts="side-by-side"` is dropped silently by React, leaves the field stacked, and raises no error to tell you. Pass `formLayout="side-by-side"` explicitly on every field.
 
 **Placeholder and valued are not variants.** Both are documented outside the token inventory as content; in the kit they are the same `text` property with different content, which is why there is no placeholder axis. The field's `colors` cover both.
 
@@ -166,7 +169,7 @@ Never style an unfocused dropdown so that it reads as disabled. An editable fiel
 - [ ] Where there is no default, placeholder text is used and carries no required information.
 - [ ] A real label is passed, it reads correctly alone, and the placeholder is not doing its job.
 - [ ] Label placement is side-by-side unless the container is too narrow.
-- [ ] `layouts` matches every other field in the same form — one placement per form at any given breakpoint, with no mixing between fields or sections.
+- [ ] `formLayout` is passed explicitly — `side-by-side` unless the form's container is too narrow — and matches every other field in the same form. One placement per form at any given breakpoint, no mixing between fields or sections. An omitted prop is `stacked`, not the house rule, and `layouts` is not the prop name.
 - [ ] The menu is not clipped by the viewport, a panel, a modal, or any scrolling ancestor.
 - [ ] Selection rules are in assistive text; on error it is replaced by a message restating the rule, with a non-color indicator.
 - [ ] Assistive text and error text are passed through the component, not rendered beside it.

@@ -20,7 +20,7 @@ An autocomplete is a text field whose value comes from a defined set. The user t
 ## Do not use it when
 
 | Instead of an autocomplete                                    | Use                                                                            |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------ | ---------- |
 | The set is small enough to show at once                       | `recursica-skill-radio-button`, or `recursica-skill-checkbox` for zero-to-many |
 | The set is large but the user is not familiar with the values | `recursica-skill-dropdown`, so the options can be read rather than recalled    |
 | The value is unpredictable free-form text                     | `recursica-skill-text-field`                                                   |
@@ -34,12 +34,15 @@ An autocomplete is a text field whose value comes from a defined set. The user t
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.autocomplete`. **Do not pass a variant, size, or state that is not listed here.**
 
-| Axis      | Options                   |
-| --------- | ------------------------- |
-| `states`  | `error`, `disabled`       |
-| `layouts` | `stacked`, `side-by-side` |
+**The third column is the React prop that sets the axis.** The axis name is the token inventory's; it is not a prop, and passing it as one is dropped silently by React. A blank cell means no single prop carries that axis — it is set by CSS state or by separate props, and the rules below say which.
 
-**`layouts` is the label-placement axis.** `side-by-side` — label beside the field — is the house default; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport. See `recursica-skill-forms`.
+| Axis      | Options                   | React prop |
+| --------- | ------------------------- | ---------- |
+| `states`  | `error`, `disabled`       |            |
+| `layouts` | `stacked`, `side-by-side` | `formLayout` |
+**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — label beside the field — is the house default; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport. See `recursica-skill-forms`.
+
+**`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Omit it and you get the fallback on a container of any width, which is the rule inverted. `layouts` is the token axis name and is not a prop — `layouts="side-by-side"` is dropped silently by React and leaves the control stacked with no error. Pass `formLayout="side-by-side"` explicitly.
 
 **Placeholder is not a variant.** It is `placeholder-opacity` on this component, the same as on a text field.
 
@@ -56,7 +59,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.autocomplete`. **Do no
 **Documented outside the token inventory**, under the component's former name "Search":
 
 | Section    | Options                  |
-| ---------- | ------------------------ |
+| ---------- | ------------------------ | ---------- |
 | `State`    | Default, Focused, Valued |
 | `Behavior` | Suggestions (optional)   |
 

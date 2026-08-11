@@ -8,6 +8,8 @@ import { existsSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 
+import { ACTOR_ID_EXPECTED, actorIdKind, isActorId } from './actor.mjs'
+
 const BUZZ_HOME = process.env.BUZZ_HOME || join(homedir(), '.buzz')
 
 const arg = (name) => {
@@ -41,15 +43,21 @@ export function loadConfig() {
   //
   // Presented, not proven: see identity.mjs. This decides who the app *offers* to record as the
   // editor, and the person still confirms it on screen.
-  const userPubkey = arg('user') || process.env.STU_USER_PUBKEY || null
-  if (userPubkey && !/^[0-9a-f]{64}$/.test(userPubkey)) {
-    fail(`--user must be a 64-character hex pubkey (not an npub): got "${userPubkey}"`)
+  //
+  // Off Buzz there are no pubkeys, so --user-email doubles as the identity when no --user is
+  // given. A pubkey wins where both are present: it survives an email change, and on Buzz one
+  // always exists. See actor.mjs for why the two shapes can share one column.
+  const email = arg('user-email') || process.env.STU_USER_EMAIL || null
+  const actorId = arg('user') || process.env.STU_USER_PUBKEY || email || null
+  if (actorId && !isActorId(actorId)) {
+    fail(`--user is not a usable identity: got "${actorId}"\n  ${ACTOR_ID_EXPECTED}`)
   }
-  const user = userPubkey
+  const user = actorId
     ? {
-        pubkey: userPubkey,
+        pubkey: actorId,
         display_name: arg('user-name') || process.env.STU_USER_NAME || null,
-        email: arg('user-email') || process.env.STU_USER_EMAIL || null,
+        // An email-shaped identity is its own email, so the gate has nothing left to ask for.
+        email: email ?? (actorIdKind(actorId) === 'email' ? actorId : null),
       }
     : null
 

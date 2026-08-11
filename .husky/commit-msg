@@ -1,4 +1,9 @@
 # A commit message is published exactly as typed and cannot be edited after a push, so it
 # gets the same name check the export path has always had. Labels only — see
 # buzz-agents/scripts/check-text-for-names.mjs.
-node buzz-agents/scripts/check-text-for-names.mjs "$1"
+#
+# --commit-msg is what makes the `#` exemption apply. A commit message is the only input
+# where a `#` line is discarded before publication, so it is the only one that gets it —
+# everywhere else, a comment is prose and is read. Do not drop this flag, and do not add it
+# to any other caller.
+node buzz-agents/scripts/check-text-for-names.mjs --commit-msg "$1"

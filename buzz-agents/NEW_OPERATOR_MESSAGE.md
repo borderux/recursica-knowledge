@@ -7,19 +7,32 @@ Edit it here rather than rewriting it in chat each time — that is the whole po
 a file. [ONBOARD_AN_OPERATOR.md](ONBOARD_AN_OPERATOR.md) is the other half: what you send out
 of band, what you must never send, and how to revoke access later. Read that first.
 
-**Fill in before sending:**
+**Nothing to fill in. Send it as it stands.**
 
-| Placeholder                              | With                                                                       |
-| ---------------------------------------- | -------------------------------------------------------------------------- |
-| `claire-acme-service-user.json`          | The real key filename for the client they are joining. It is the account's own name, which is **not** always `claire-<slug>-service-user` — check `client_email` first, and see ONBOARD_AN_OPERATOR.md |
-| `Sam`                                    | Their first name, in the two example agent names                           |
-| the channel name                         | Say which channel, by name, in step 3                                      |
+That is deliberate, and it is the second thing this file is for. Every value that differs per
+person — which client, which channel, what the key file is called — is now something the new
+operator **asks you for**, in the channel, once they are in it. Nothing client-specific travels
+in the forwarded message.
 
-Substitute the real values as you send. **Do not commit them back into this file** — this is
-a public repo, and a client's key filename names the client.
+Three reasons it is built that way:
 
-Do not paste the service-account key into the message. It travels out of band, separately,
-and the text below already says so.
+1. **A client's key filename names the client.** Substituting it put a client name into a chat
+   message, and from there into anything anyone pasted onward. Removing the substitution
+   removes the whole path.
+2. **The filename was the easiest thing to get wrong, and it is not predictable.** A service
+   account keeps whatever name it was created with, and a key downloaded straight from Google
+   is named after the project and key id — `someproject-1a2b3c4d.json` — which says nothing
+   about which identity it holds. So the steps below never mention a filename: the reader
+   drags whatever file they were sent, and **you** confirm it is the right identity in the
+   channel afterwards, by its `client_email` rather than its name.
+3. **One channel is one client.** Which channel a person joins depends on the work, so a
+   pre-filled channel name is wrong for everyone except the first reader.
+
+`Sam` appears twice below as an **example** of how agent names come out. It is illustrative,
+not a blank — leave it alone.
+
+Still send out of band and never in the message: the key file itself. The text below says so
+too.
 
 ---
 
@@ -54,32 +67,57 @@ budget.
 
 ### Step 2 — The one file I send you separately
 
-I will send you a file called `claire-acme-service-user.json` through a password manager
-— **not** over chat. It is the key to the client's research data, so treat it like a password.
-**Never paste its contents into a message**, including to an agent.
+I will send you a **key file** — a `.json` — through a password manager, **not** over chat. It
+is the key to one client's research data, so treat it like a password. **Never paste its
+contents into a message**, including to an agent.
 
-Once it is in your Downloads folder, paste this one line into Terminal and press Return:
+Its name varies. Some are named after the account, some come straight out of Google with a
+name like `someproject-1a2b3c4d.json`. **The name does not tell you whether it is the right
+key**, so do not try to read anything into it — I will confirm that with you in the channel
+afterwards. These three steps work whatever it is called.
+
+**Do these in Terminal yourself rather than asking an agent to do them.** You want to see the
+output with your own eyes; an agent will summarise it, and the summary is the thing you are
+trying to check.
+
+**1.** Make the folder. Paste this and press Return:
 
 ```
-mkdir -p ~/.buzz/.secrets && chmod 700 ~/.buzz/.secrets && mv ~/Downloads/claire-acme-service-user.json ~/.buzz/.secrets/ && chmod 600 ~/.buzz/.secrets/claire-acme-service-user.json && ls -l ~/.buzz/.secrets/
+mkdir -p ~/.buzz/.secrets && chmod 700 ~/.buzz/.secrets
 ```
 
-That makes the folder, moves the key in, and locks it down so only you can read it. You should
-see one line ending in the file name and starting with `-rw-------`. That means it worked.
+**2.** Move the key in. Type `mv ` — the two letters and a space — then **drag the key file
+from Finder straight into the Terminal window**. That fills in its real location for you,
+whatever it is called and wherever it is. Then type a space, then ` ~/.buzz/.secrets/` and
+press Return.
 
-**If it says `No such file or directory`,** the file is somewhere other than Downloads. Type
-`mv ` (with a space after it), then drag the file from Finder straight into the Terminal window
-— that fills in the real location for you — then type ` ~/.buzz/.secrets/` and press Return.
+**3.** Lock it down and look at it:
+
+```
+chmod 600 ~/.buzz/.secrets/*.json && ls -l ~/.buzz/.secrets/
+```
+
+You should see one line for your key, starting with `-rw-------`. That is the whole check: the
+dashes mean nobody but you can read it. If it starts with anything else, tell me before going
+further.
+
+If instead you get `no matches found` or `No such file or directory`, the key never arrived and
+step 2 did not take — nothing is broken, and the file is still wherever it was. Do step 2 again,
+and this time **drag** the file in rather than typing its name.
 
 The `.buzz` folder is invisible in Finder because its name starts with a dot. That is normal
 and nothing is wrong. To see it, press **Cmd-Shift-.** in any Finder window.
 
 ### Step 3 — Add your Fizz to the channel
 
-I will add you to the client channel. **You then add your own Fizz to that same channel.** She
-is the assistant that comes with Buzz Desktop, and she does the whole setup for you. She cannot
-see a private channel she is not a member of, so this step is not optional — and my being in it
-does not cover her.
+I will add you to a client channel and tell you which one — there is more than one, each is a
+different client, and which you get depends on the work you are joining. If you are not sure
+which channel is yours, ask me rather than guessing; joining the wrong one is a client-data
+problem, not an inconvenience.
+
+**You then add your own Fizz to that same channel.** She is the assistant that comes with Buzz
+Desktop, and she does the whole setup for you. She cannot see a private channel she is not a
+member of, so this step is not optional — and my being in it does not cover her.
 
 ### Step 4 — Ask her to do it, and read this bit twice
 

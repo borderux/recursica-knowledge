@@ -15,8 +15,10 @@ import { Breadcrumb, Link, Stack, Text, Title } from '@recursica/mantine-adapter
  * @param trail  Ancestors only, `[{ label, to }]`. The current page is the H1 and is added as
  *               plain text — a breadcrumb whose last crumb links to where you already are is
  *               navigation that does nothing.
- * @param lede   One line under the title. Never a definition of the title: if the title needs
- *               explaining, `recursica-skill-naming-terminology` says fix the title.
+ * @param lede   One line under the title, and usually absent. Never a definition of the title:
+ *               `recursica-skill-screen-scaffolding`, "the line under a heading", says delete it
+ *               and keep it deleted unless a reader would then get something wrong. If the title
+ *               needs explaining, `recursica-skill-naming-terminology` says fix the title.
  * @param action The page's primary action. Rendered bottom right by `Page.Footer` below.
  */
 export function Page({ title, trail = [], lede, children }) {
@@ -48,6 +50,10 @@ export function Page({ title, trail = [], lede, children }) {
 /**
  * A named region inside a page. A heading with space above it is the primary divider, so this is
  * a heading and a gap — deliberately not a container.
+ *
+ * @param note Same contract as `Page`'s `lede`, and the same default of absent: an ordering, a
+ *             constraint, a consequence, or a state the reader would infer wrongly — never a
+ *             restatement of `title`. `recursica-skill-screen-scaffolding` owns the slot.
  */
 export function Section({ title, note, children }) {
   return (

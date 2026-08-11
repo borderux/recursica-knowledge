@@ -10,33 +10,48 @@
  * scaffolding` says it comes from the layout rule and is not ours to set.
  */
 
-@import url("https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap");
+/* The brand names three typefaces and the theme uses all three — primary on table cells and
+   titles, secondary on body text, tertiary elsewhere. Loading only the primary is not "one font
+   missing": the browser silently substitutes a default for the other two, so components render
+   in a face the theme never asked for and the screen looks like two design systems. */
+@import url("https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&family=Bellota+Text:wght@300;400;700&family=Quattrocento:wght@400;700&display=swap");
 
 :root {
   --stu-gutter: var(--recursica_brand_dimensions_gutters_horizontal, 24px);
   --stu-gutter-y: var(--recursica_brand_dimensions_gutters_vertical, 24px);
   --stu-max-width: calc(var(--recursica_brand_layout-grids_desktop_max-width, 1280) * 1px);
   --stu-rail-width: 232px;
+  /* A layer carries padding from the theme, and `RecursicaThemeProvider` wraps the whole app in
+     a layer-0 one. Anything sized to the viewport inside it overflows by that padding on both
+     sides. Read the token rather than measuring it: the value is the theme's and can change. */
+  --stu-layer-inset: var(--recursica_brand_layer_0_properties_padding, 0px);
+  --stu-viewport-height: calc(100vh - var(--stu-layer-inset) * 2);
 }
 
 body {
   margin: 0;
+  /* The base family, so that everything the design system does not paint itself — the rail's
+     links, plain text in a cell — is still in the brand's typeface rather than the operating
+     system's UI font. This is consuming the token, not authoring a value. */
+  font-family: var(--recursica_brand_fonts_primary);
 }
 
 /* One scrollbar for the application. `recursica-skill-screen-priority` forbids an inner
    scrolling region, so the rail is sticky rather than independently scrollable and the page
-   itself is the only thing that scrolls. */
+   itself is the only thing that scrolls — and it only scrolls when the content is genuinely
+   taller than the space, which is why these are the viewport minus the layer inset and not
+   a bare 100vh. */
 .stu-shell {
   display: grid;
   grid-template-columns: var(--stu-rail-width) minmax(0, 1fr);
   align-items: start;
-  min-height: 100vh;
+  min-height: var(--stu-viewport-height);
 }
 
 .stu-rail {
   position: sticky;
   top: 0;
-  height: 100vh;
+  height: var(--stu-viewport-height);
   box-sizing: border-box;
 }
 
@@ -97,8 +112,12 @@ body {
 
 .stu-page {
   box-sizing: border-box;
-  /* Space beyond the maximum stays empty. That is the correct outcome, not a gap to fill. */
+  /* Space beyond the maximum stays empty. That is the correct outcome, not a gap to fill —
+     but empty space is not the same as empty space on one side. Left unset, the page pins
+     itself against the rail and a wide monitor puts every screen in the top-left corner with
+     a third of the display blank beside it. Centred within what is left of the viewport. */
   max-width: var(--stu-max-width);
+  margin-inline: auto;
   padding: var(--stu-gutter-y) var(--stu-gutter);
 }
 
@@ -136,6 +155,37 @@ body {
 .stu-record + .stu-record,
 .stu-notice + .stu-notice {
   margin-top: var(--stu-gutter-y);
+}
+
+/* Cell content.
+ *
+ * Nothing here sets type or colour — the cell already carries both, and `recursica-skill-table`
+ * lists a cell's text style among the things that are not ours. This wrapper exists for one
+ * reason: `recursica-skill-tables` prefers wrapping to a second line over truncating, and a
+ * value with no spaces in it cannot wrap on its own. An underscored filename is exactly that
+ * case, and without this it runs straight across the column beside it.
+ *
+ * The kit's own answer, `max-width` on the cell, does not reach this: the automatic table
+ * layout algorithm treats a cell max-width as advisory, so a 200px maximum measured 257px.
+ */
+.stu-cell {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+/* A value that is absent: `NA`, italic, neutral 500.
+ *
+ * The colour is the brand's neutral 500 token rather than the cell's `text-color-disabled`, which
+ * resolves a step lighter at neutral 400. That is a stated treatment, not a reuse of the disabled
+ * state — recorded in `recursica-skill-tables`, and the reason this reads a palette token instead
+ * of the component's.
+ *
+ * Only the colour and the slant. No family, no size: the cell owns those, and replacing them is
+ * the defect fixed elsewhere in this file.
+ */
+.stu-cell--absent {
+  color: var(--recursica_brand_palettes_neutral_500_color_tone);
+  font-style: italic;
 }
 
 /* Sort control in a table header. A button, because it performs an action rather than

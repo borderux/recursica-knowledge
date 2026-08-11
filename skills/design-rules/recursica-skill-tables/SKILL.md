@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-tables
-description: House rules for tables and data grids in enterprise web applications — what earns a column, the prohibition on horizontal scrolling, stacked cell text, column widths by data type, alignment including right-aligned currency, truncate vs. wrap, infinite scroll vs. pagination, fixed headers and footers, null cells, default sort and multi-sort, when a row may be clickable, inline editing, totals, column visibility, grouped rows, and frozen columns. Use whenever building, reviewing, or refactoring a table, data grid, list view, or any tabular display. Trigger on "table", "data grid", "columns", "rows", "sort", "pagination", "infinite scroll", "sticky header", "truncate", "inline edit", "row actions", "totals row", or a request to display many records. Do NOT use for row action buttons and links — that is recursica-skill-buttons-links. Do NOT use for row selection checkboxes — that is recursica-skill-selection-controls.
+description: House rules for tables and data grids in enterprise web applications — what earns a column, the prohibition on horizontal scrolling, stacked cell text, column widths by data type including widthing the narrow types and leaving the sentence column unset, alignment including right-aligned currency, truncate vs. wrap and why a value with no spaces must break inside a word, infinite scroll vs. pagination, fixed headers and footers, null cells, default sort and multi-sort, when a row may be clickable, inline editing, totals, column visibility, grouped rows, and frozen columns. Use whenever building, reviewing, or refactoring a table, data grid, or list view. Trigger on "table", "data grid", "columns", "rows", "sort", "pagination", "infinite scroll", "truncate", "wrap", "column width", "overflowing cell", or "inline edit". Do NOT use for row action buttons and links — that is recursica-skill-buttons-links. Do NOT use for row selection checkboxes — that is recursica-skill-selection-controls.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -59,6 +59,17 @@ It is occasionally unavoidable when a client insists every field occupy its own 
 
 **A maximum column width is set by the design system**, and values are truncated when they reach it. The exact character count or pixel threshold is the system's, varies by implementation, and **is not a design decision.**
 
+**Width the narrow types and leave the wide one unset.** This is the part that decides whether the rule actually works:
+
+- **Give an explicit width to every column whose data type is narrow** — counts, dates, statuses, currency, short categorical terms.
+- **Give the sentence column no width at all.** It takes whatever the narrow columns did not, which is what "sentences need room" means in practice, and it stays right as the viewport changes.
+
+**Doing it the other way round is the failure.** Fixing a width on the wide column instead holds that column's size while everything beside it is squeezed, so the date column wraps `Aug 10,` onto one line and `2026` onto the next — a wrapped date beside a comfortable sentence is the signature of this mistake.
+
+**Setting no widths at all is the other failure.** Left alone, the layout divides the table by content, and the identity column — the one the reader scans — loses to however many numeric columns are to its right. A long value there then collides with its neighbour instead of wrapping inside its own column.
+
+**Widths belong to the data type, not to the screen.** Define them once for the application so that a count column is the same width in every table, and reference that definition. Per-table pixel values drift apart immediately.
+
 ## Alignment
 
 | Content                    | Alignment                              |
@@ -82,6 +93,12 @@ Decide in this order:
 2. **With no secondary text, prefer wrapping to a second line over truncating.** Truncation is a last resort.
 3. **If the value will not fit in two lines, it does not belong in the table.** Move it to a detail view.
 
+**A value with no spaces in it cannot wrap, and by default it does not try.** An identifier, a filename, a slug, a URL — anything joined by underscores or dots — is one word as far as text layout is concerned, so it does not break at the edge of its column: it runs straight across the columns beside it. The reader sees two values collide and reads it as a rendering bug, which it is.
+
+**So wrapping has to be permitted to break inside a word, and it has to be set for every cell rather than the one column where the problem was noticed.** It is the table's behaviour, not a property of one column, and the next dataset puts a long value somewhere else.
+
+**Getting the widths right is what keeps this rare.** Breaking mid-word is the safety net for the value that is long anyway, not the mechanism for fitting a column that was never given room.
+
 ## Rows, scrolling, and pagination
 
 **Two table sizes behave differently:**
@@ -98,7 +115,15 @@ Decide in this order:
 
 ## Empty and null cells
 
-**Show "NA" in disabled-looking text.** The reason is precision about what happened: an empty cell, or worse a zero, implies a value was retrieved when it may not have been.
+**Show `NA`, in italics, in neutral 500.** The reason is precision about what happened: an empty cell, or worse a zero, implies a value was retrieved when it may not have been.
+
+**The string is literally `NA`, and it is the same in every column.** Per-column wording — `Not recorded`, `No name`, `Not set`, `None` — is the failure mode here. It reads as a value rather than as the absence of one, and it gives the same fact a different spelling in every column of the same table. **One string, everywhere.**
+
+**Neutral 500, not the component's disabled colour.** They are not the same value — a cell's `text-color-disabled` resolves a step lighter — and this treatment is a stated one rather than a reuse of the disabled state. Take it from the neutral palette token so it re-themes.
+
+**Italic is load-bearing.** It is the second channel: `recursica-skill-system-conventions` forbids carrying meaning in colour alone, and a grey `NA` on its own does exactly that.
+
+**`NA` must be real text in the cell**, not a background, an icon, or an empty cell styled to look absent. An empty cell is announced as nothing at all.
 
 **NEVER let a null read as a real value.** Currency displaying `0` because the fetch failed is a different claim from `NA`, and the difference matters.
 
@@ -201,13 +226,19 @@ Before considering a table done, verify:
 - [ ] The table fits the primary desktop dimensions with no horizontal scrolling.
 - [ ] No cell holds more than two values, and the column header explains both.
 - [ ] No unrelated values were combined into one column.
-- [ ] Widths are set by data type; truncation relies on the system's maximum, not an invented threshold.
+- [ ] Widths are set by data type: an explicit width on every narrow column — counts, dates, statuses, currency,
+      short terms — and none on the sentence column, which takes the remainder. Widths are defined once for the
+      application rather than per table.
+- [ ] Wrapping is allowed to break inside a word, set for every cell, so a value with no spaces in it wraps in its
+      own column instead of running across the next one.
+- [ ] Truncation relies on the system's maximum, not an invented threshold.
 - [ ] Currency is right-aligned; text is left; icons, checkboxes, and buttons are centered.
 - [ ] Cells with secondary text truncate; cells without prefer wrapping to a second line; nothing longer than two lines is in the table at all.
 - [ ] Full-size tables fill their container and use infinite scroll; interior tables show five to ten rows and paginate.
 - [ ] No interior table scrolls in either direction.
 - [ ] Header and footer stay fixed; only rows scroll.
-- [ ] Null cells read "NA" in disabled text; no null is displayed as a real value or a zero.
+- [ ] Null cells read the literal string `NA`, italic, in neutral 500 — the same string in every column, as real
+      text rather than styling; no null is displayed as a real value or a zero.
 - [ ] Default sort is on the primary content column, in the direction the data implies.
 - [ ] Multi-sort, if present, is behind long-press; plain click flips direction; unsortable types are excluded.
 - [ ] No row density variants were invented.

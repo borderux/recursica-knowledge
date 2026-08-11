@@ -59,7 +59,23 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 
 **Cut words that add nothing.** `Total pending requests` says exactly what `Pending requests` says, so _total_ is noise on a screen someone reads every day. Concision is the priority; a word earns its place by adding accuracy.
 
+**A label is a noun phrase, not a sentence about the noun.** Two or three words, one qualifier at most. The shape to reach for is **adjective + noun**:
+
+| Instead of | Write | What was cut |
+| --- | --- | --- |
+| `Lines you have corrected` | `Corrected lines` | a relative clause standing in for an adjective |
+| `Corrections needing review` | `Corrections to review` | a participle where an infinitive is shorter |
+| `Your corrections` | `Corrections` | a possessive that repeats the screen's context |
+
+**NEVER address the reader in a label.** `Your`, `you`, `my` and `I` are the most common padding of all: a screen already belongs to whoever is looking at it, and the possessive claims a distinction that only exists if the same screen also shows somebody else's. Where it genuinely does, the distinction is the qualifier and it names the other party — `Corrections` beside `Team corrections`, not `Your corrections` beside `All corrections`.
+
+**A label that will not compress is usually two labels, or a column that should be one.** `Lines` next to `Untagged lines` reads as two facts and forces the reader to subtract; `Tagged lines` showing `11 / 34` is one column, one heading, and the arithmetic already done. Reach for that before reaching for a longer heading.
+
+**This applies hardest to table headers**, which are read more often than any other label on the screen and have the least room. Owned jointly with `recursica-skill-tables`.
+
 **NEVER define a term next to itself.** A label followed by a gloss explaining what it means — `Overdue — past the start date` — is an admission that the label failed. **Fix the label.** If the concept genuinely needs explaining beyond a good name, that is a tooltip or help content, never a subtitle sitting under the thing it defines.
+
+**This covers every named thing on the screen, not only a field label** — a page title, a section heading, a column header, a navigation item. The most common breach is not a label at all: it is a page or section whose heading is restated as prose directly beneath it, in the slot a scaffold prop offers for exactly that purpose. `recursica-skill-screen-scaffolding` owns what may go in that slot; the rule against defining a term next to itself is why it is usually empty.
 
 ## Navigation labels name objects, not actions
 
@@ -113,7 +129,9 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 
 - [ ] Every label is a noun with its noun present — no verbs outside buttons, no bare adjectives.
 - [ ] No filler words; every word in a label adds accuracy.
-- [ ] No label is glossed by a definition beside it.
+- [ ] Every label and table header is a noun phrase of two or three words with at most one qualifier — no relative clause, no sentence, and no `Your`/`you`/`my` unless the same screen shows another party's and names them.
+- [ ] Two columns the reader would have to subtract were combined into one with the arithmetic done, rather than given longer headings.
+- [ ] No label, heading or page title is glossed by a definition beside it — including the line beneath a page title or section heading.
 - [ ] Every object is named in the users' vocabulary, not the business's or the data model's.
 - [ ] The data model's term appears only where the concept is not conversationally known to the user.
 - [ ] A client-imposed term was used as insisted and flagged for usability testing rather than quietly corrected.

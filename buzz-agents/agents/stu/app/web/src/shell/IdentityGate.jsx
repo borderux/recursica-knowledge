@@ -1,4 +1,6 @@
-// Launch gate. Confirms who is editing and binds that person to a channel member's pubkey.
+// Launch gate. Confirms who is editing and binds that person to an identity — a Buzz pubkey where
+// there is one, an email address anywhere else. `server/actor.mjs` decides which are acceptable;
+// nothing in this file re-states that rule.
 //
 // It says plainly on screen that this is attribution and not authentication, because a tool whose
 // entire job is verifying provenance should not misrepresent its own.
@@ -8,7 +10,7 @@
 //   1. The launcher passed --user. Show that person and ask them to confirm. This is the
 //      ordinary case and it needs nothing from the network.
 //   2. It did not, but the channel roster is readable. Pick from the roster, as before.
-//   3. Neither. Accept a pubkey by hand, and say why the roster is missing.
+//   3. Neither. Accept an identity by hand, and say why the roster is missing.
 //
 // Path 2 used to be the only one, which made the whole app unreachable whenever the roster
 // lookup failed — and it fails for every launch that is not an agent process, because the buzz
@@ -25,6 +27,7 @@ export function IdentityGate({ config, onBound }) {
   const [pubkey, setPubkey] = useState(null)
   const [typedPubkey, setTypedPubkey] = useState('')
   const [email, setEmail] = useState('')
+  const [emailTouched, setEmailTouched] = useState(false)
   const [ready, setReady] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
@@ -63,17 +66,26 @@ export function IdentityGate({ config, onBound }) {
     }
   }, [])
 
-  // Typing a pubkey by hand: fill in the email already on file for it, so the manual path is
+  // Typing an identity by hand: fill in the email already on file for it, so the manual path is
   // still one field for anyone who has used the app before.
+  //
+  // There is deliberately no validity check here. `server/actor.mjs` is the single authority on
+  // what an identity may be, this is a separate bundle that cannot import it, and a second copy
+  // of the rule is how the two drift apart. The test below only decides when it is worth *asking*
+  // the server — it carries no claim about what is acceptable, and submitting is what finds out.
   async function lookupTyped(next) {
     setTypedPubkey(next)
-    if (!/^[0-9a-f]{64}$/.test(next)) return
-    setPubkey(next)
+    setPubkey(next || null)
+    // When the identity *is* an email, the field below is asking the same question twice. Fill it
+    // in and let them move on — unless they have edited it themselves, in which case what they
+    // typed wins. Binding a different email to an identity is legitimate and the server logs it.
+    if (!emailTouched && next.includes('@')) setEmail(next)
+    if (!next.includes('@') && next.length !== 64) return
     try {
       const stored = await api.knownIdentity(next)
-      if (stored?.email) setEmail(stored.email)
+      if (stored?.email && !emailTouched) setEmail(stored.email)
     } catch {
-      // A pubkey with nothing on file is the normal first-run case, not a problem.
+      // An identity with nothing on file is the normal first-run case, not a problem.
     }
   }
 
@@ -96,7 +108,11 @@ export function IdentityGate({ config, onBound }) {
   // Nothing until we know which path we are on — no spinner, per the scaffolding rule on loading.
   if (!ready) return null
 
-  const label = presented?.display_name ?? `${presented?.pubkey?.slice(0, 12)}…`
+  // An email is short and is itself the recognisable thing, so truncating it helps nobody; a
+  // 64-character pubkey is unreadable whole. Only abbreviate the one that needs it.
+  const identity = presented?.pubkey ?? ''
+  const label =
+    presented?.display_name ?? (identity.includes('@') ? identity : `${identity.slice(0, 12)}…`)
 
   return (
     <main className="stu-page stu-page--narrow">
@@ -117,16 +133,18 @@ export function IdentityGate({ config, onBound }) {
               <Text variant="body">
                 <strong>{label}</strong>
               </Text>
-              <Text variant="body-small">{presented.pubkey}</Text>
+              {/* Redundant when the identity is the email itself, and the label already shows it. */}
+              {label !== identity && <Text variant="body-small">{identity}</Text>}
               {!presented.recognised && (
                 <Text variant="body-small">
-                  First time on this channel — the email below is what future changes are
+                  First time on this project — the email below is what future changes are
                   attributed to.
                 </Text>
               )}
             </Stack>
           ) : roster?.length ? (
             <Dropdown
+              formLayout="side-by-side"
               label="You are"
               description={`Members of the ${config.slug} channel`}
               data={roster.map((m) => ({
@@ -143,27 +161,33 @@ export function IdentityGate({ config, onBound }) {
           ) : (
             <Stack gap="xs">
               <TextField
-                label="Your Buzz pubkey"
-                description="64 hex characters. Buzz Desktop → your profile."
-                placeholder="0000000000000000000000000000000000000000000000000000000000000000"
+                formLayout="side-by-side"
+                label="Email or pubkey"
+                description="An email address, or 64 hex characters from Buzz Desktop → your profile."
+                placeholder="you@company.com"
                 value={typedPubkey}
                 onChange={(e) => lookupTyped(e.currentTarget.value.trim())}
               />
               <Text variant="body-small">
-                The channel roster is unavailable
-                {unavailable ? ` — ${unavailable}` : ''}. Relaunch with{' '}
-                <code>--user &lt;pubkey&gt;</code> to skip this next time.
+                Nobody was named at launch
+                {unavailable ? ` and the channel roster is unavailable — ${unavailable}` : ''}.
+                Relaunch with <code>--user-email &lt;you@company.com&gt;</code> to skip this next
+                time.
               </Text>
             </Stack>
           )}
 
           <TextField
+            formLayout="side-by-side"
             label="Email"
-            description="Tied to your Buzz pubkey in the users table"
+            description="Tied to your identity in the users table"
             placeholder="you@company.com"
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.currentTarget.value)}
+            onChange={(e) => {
+              setEmailTouched(true)
+              setEmail(e.currentTarget.value)
+            }}
           />
 
           <Text variant="body-small">

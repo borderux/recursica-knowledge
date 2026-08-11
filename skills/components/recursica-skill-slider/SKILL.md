@@ -21,7 +21,7 @@ A slider selects a value from a bounded range by moving a thumb along a track.
 ## Do not use it when
 
 | Instead of a slider                              | Use                                                                                             |
-| ------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------- | ---------- |
 | The user already has an exact number in mind     | `recursica-skill-number-input`                                                                  |
 | The range is unbounded or open-ended             | `recursica-skill-number-input` — a track needs two ends to exist                                |
 | There are only a few discrete values             | `recursica-skill-segmented-control` or a radio group — see `recursica-skill-selection-controls` |
@@ -35,12 +35,16 @@ A slider selects a value from a bounded range by moving a thumb along a track.
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.slider`. **Do not pass a variant, size, or state that is not listed here.**
 
-| Axis      | Options                       |
-| --------- | ----------------------------- |
-| `layouts` | `stacked`, `side-by-side`     |
-| `states`  | `error`, `disabled`, `active` |
+**The third column is the React prop that sets the axis.** The axis name is the token inventory's; it is not a prop, and passing it as one is dropped silently by React. A blank cell means no single prop carries that axis — it is set by CSS state or by separate props, and the rules below say which.
 
-**`layouts` is the label placement axis.** `side-by-side` — label beside the control — is the house default; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport.
+| Axis      | Options                       | React prop |
+| --------- | ----------------------------- | ---------- |
+| `layouts` | `stacked`, `side-by-side`     | `formLayout` |
+| `states`  | `error`, `disabled`, `active` |            |
+
+**`layouts` is the label placement axis, set by the `formLayout` prop.** `side-by-side` — label beside the control — is the house default; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport.
+
+**`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Omit it and you get the fallback on a container of any width, which is the rule inverted. `layouts` is the token axis name and is not a prop — `layouts="side-by-side"` is dropped silently by React and leaves the control stacked with no error. Pass `formLayout="side-by-side"` explicitly.
 
 **This field's `layouts` value is not an independent choice.** `recursica-skill-forms` requires **one label placement per form — side-by-side or stacked, never both at the same breakpoint.** The container-width test is applied once, to the form, and its answer governs every field in it, including short fields that would have fit. Match every other field in the same form. A whole form may switch placement across breakpoints; a section never gets its own. See `recursica-skill-forms`.
 

@@ -24,6 +24,18 @@
 #              script, never registered as a tool. If omitted, --sa-key is tried
 #              and will fail unless it holds project-level dataset-create rights.
 #
+# --dataset    the BigQuery dataset to use, when it is not named research_<slug>.
+#              Defaults to that, so every existing channel is unaffected. Pass it
+#              when the dataset already exists under a name somebody else chose, or
+#              when the client's naming does not match ours — a dataset name is a
+#              thing operators need to be able to pick, and deriving it from --slug
+#              made the only way to use a differently-named dataset "rename it".
+#              The slug stays the identity: it names the MCP servers, the rendered
+#              subagents and the Drive fence label, which is what ties a channel's
+#              canvas to its tools. Only the dataset name comes loose.
+#              verify-channel-isolation.py takes the same flag and must be given it
+#              too — it derives the expected dataset independently.
+#
 # Tag dictionary — the one asset shared across all projects:
 # --dict-key       identity holding Viewer on the shared tag dictionary sheet.
 #                  Defaults to ~/.buzz/.secrets/claire-tag-dictionary-reader.json.
@@ -68,7 +80,7 @@ PROJECT="${BQ_PROJECT:-}"
 # substitution silently matched nothing.
 PROJECT_TOKEN="$(printf '{{%s}}' BQ_PROJECT)"
 
-SLUG=""; CHANNEL_UUID=""; DRIVE_FOLDER=""; SA_KEY=""; ADMIN_KEY=""
+SLUG=""; CHANNEL_UUID=""; DRIVE_FOLDER=""; SA_KEY=""; ADMIN_KEY=""; DATASET_ARG=""
 LOCKDOWN="ask"; DRY_RUN="no"; LOCKDOWN_FAILED="no"; LOCKDOWN_SKIPPED="no"
 
 # The tag dictionary is shared across every project, unlike everything else here.
@@ -85,6 +97,7 @@ warn() { printf '  \033[33m!\033[0m %s\n' "$*"; }
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --slug)              SLUG="$2"; shift 2 ;;
+    --dataset)           DATASET_ARG="$2"; shift 2 ;;
     --channel-uuid)      CHANNEL_UUID="$2"; shift 2 ;;
     --drive-folder)      DRIVE_FOLDER="$2"; shift 2 ;;
     --sa-key)            SA_KEY="$2"; shift 2 ;;
@@ -111,7 +124,21 @@ done
 [[ "$SLUG" =~ ^[a-z0-9][a-z0-9-]*$ ]] || die "--slug must be lowercase alphanumeric with hyphens: got '$SLUG'"
 
 ADMIN_KEY="${ADMIN_KEY:-$SA_KEY}"
-DATASET="research_${SLUG//-/_}"
+DATASET="${DATASET_ARG:-research_${SLUG//-/_}}"
+# Checked even though the default cannot fail it, because this value is interpolated
+# into DDL as a bare identifier, into a sed replacement and into two YAML files. The
+# charset is BigQuery's own for dataset names — letters, digits, underscores — so the
+# check costs nothing and a name that would be rejected halfway through provisioning
+# is rejected here instead, with the dataset half untouched. Case is significant to
+# BigQuery, so it is preserved rather than folded.
+[[ "$DATASET" =~ ^[A-Za-z0-9_]+$ ]] \
+  || die "--dataset must be letters, digits and underscores only: got '$DATASET'"
+# Built once so the copy this script tells an operator to run cannot drift from the
+# dataset it actually deployed. verify-channel-isolation.py derives the name the same
+# way this script used to, so an overridden dataset has to be passed through or the
+# check probes a dataset nobody created and reports isolation broken.
+VERIFY_CMD="$BUZZ_HOME/bin/verify-channel-isolation.py --slug $SLUG --key $SA_KEY"
+[[ -z "$DATASET_ARG" ]] || VERIFY_CMD="$VERIFY_CMD --dataset $DATASET"
 BQ_SERVER="bq-${SLUG}"
 # Analyst reads and never writes. A second server over the same dataset with
 # writeMode: blocked is what makes that a fact rather than a prompt instruction.
@@ -145,6 +172,30 @@ ok "keys present and mode 600"
 
 SA_EMAIL="$("$NODE_BIN" -e "process.stdout.write(require('$SA_KEY').client_email)")"
 ok "channel service account: $SA_EMAIL"
+
+# The runtime identity becomes GOOGLE_APPLICATION_CREDENTIALS for every MCP server this
+# script registers, so whatever is in --sa-key is what all four agents are, permanently.
+#
+# Until now nothing questioned WHICH identity that was. The checks above confirm the key
+# exists and is 0600; the drive and dataset checks confirm it can reach this channel. An
+# over-privileged key passes all of them — it can reach this channel and a great deal else.
+# That is not hypothetical: a key downloaded from the Google console is named after the
+# project and key id, so its filename says nothing about the account inside, and the
+# provisioning identity this script documents for --admin-key has exactly that shape.
+#
+# The runtime account for a channel is claire-<sa_slug>-service-user by convention. A
+# warning rather than a hard failure, because the convention is ours and a legitimate
+# client could be named otherwise — but it should be a deliberate answer, not a silent one.
+case "$SA_EMAIL" in
+  claire-*) ;;
+  *)
+    warn "--sa-key is $SA_EMAIL, which is not a claire-<slug>-service-user account.
+      This key becomes the runtime identity for every agent in this channel. If it is a
+      provisioning or shared account, they inherit rights well beyond this client and
+      nothing later will flag it. Confirm this is the channel's own service account
+      before continuing."
+    ;;
+esac
 ok "dataset: $PROJECT.$DATASET"
 ok "servers: $BQ_SERVER, $DRIVE_SERVER"
 
@@ -499,7 +550,7 @@ $(printf '%s\n' "$REVOKE_SQL" | sed 's/^/       /')
      Do not guess which. verify-channel-isolation.py answers it directly, and its
      answer is about Google's IAM layer rather than about this script:
 
-       $BUZZ_HOME/bin/verify-channel-isolation.py --slug $SLUG --key $SA_KEY
+       $VERIFY_CMD
 EOF
 fi
 

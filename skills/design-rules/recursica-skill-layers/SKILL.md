@@ -85,6 +85,11 @@ The shell's structure — header, rail, footer, titles — is owned by `recursic
 
 **Never hardcode a value read from the theme.** A color read in light mode is wrong in dark mode; a radius read today is wrong after a re-theme. That is the entire point of the token.
 
+**A layer's padding has a consequence outside the layer: nothing inside it may be sized to a bare viewport height.**
+A region asserting `100vh` inside a padded layer comes out taller than the viewport by that padding, top and bottom,
+and the page scrolls by exactly that much. Subtract it by reading the padding token — the rule and the reason are in
+`recursica-skill-screen-scaffolding`, under application chrome and the single scrollbar.
+
 **Never hand-paint a layer.** A background color and a border drawn with raw CSS to imitate a layer does not re-theme, does not switch between light and dark, and gives the components inside it no layer scope at all. If the layer you need cannot be declared, that is a gap to raise — see `recursica-skill-design-router`.
 
 ## The token contract

@@ -19,6 +19,12 @@
  * Usage:
  *   node buzz-agents/scripts/check-text-for-names.mjs <file>
  *   … | node buzz-agents/scripts/check-text-for-names.mjs
+ *   node buzz-agents/scripts/check-text-for-names.mjs --commit-msg <file>
+ *
+ * `--commit-msg` says the text is a commit message, which is the ONLY case where a `#` line
+ * is not published. Without it every line is read. See the comment on COMMENT below — that
+ * distinction was missing, and it made the documented `<file>` form skip every comment in a
+ * shell script, a Dockerfile, or a YAML file.
  *
  * Exit: 0 clean, 1 usage, 2 a rule matched.
  */
@@ -34,7 +40,9 @@ import {
   deriveValues,
 } from "../lib/placeholders.mjs";
 
-const file = process.argv[2];
+const argv = process.argv.slice(2);
+const commitMsgMode = argv.includes("--commit-msg");
+const file = argv.find((a) => !a.startsWith("--"));
 
 function read() {
   if (file) {
@@ -52,9 +60,26 @@ function read() {
   }
 }
 
-// A commit message's comment lines are stripped by git before the message is stored, so a
-// name inside one is never published. Checking them anyway would reject the commit for
-// text that git is about to discard — including the diff `git commit -v` appends.
+/**
+ * A `#` line is only unpublished in a COMMIT MESSAGE.
+ *
+ * Git strips those before storing the message — including the diff `git commit -v` appends —
+ * so checking them would reject a commit over text nobody will ever see. That is why the
+ * exemption exists.
+ *
+ * It used to apply to every input, and that was a hole. Pointed at a file — the form
+ * `AGENT.md` documents, and the form the build uses on generated artifacts — it silently
+ * skipped every comment in a shell script, a Python file, a Dockerfile or a YAML file.
+ * Demonstrated minimally: `# operator note: <name>` in a `.sh` passed, while the same text
+ * on stdin was caught. Comments are prose, and prose is where this leaks; the diff gets read
+ * closely and the paragraph explaining it does not.
+ *
+ * So the exemption is now opt-in via `--commit-msg`, which only `.husky/commit-msg` passes.
+ * A markdown `# Heading` in a PR body or a generated prompt is published text and is now
+ * read as such.
+ */
+const COMMENT = /^#/;
+
 /**
  * Git trailers are dropped too.
  *
@@ -70,11 +95,32 @@ function read() {
  */
 const TRAILER = /^(?:Signed-off-by|Co-authored-by|Reported-by|Reviewed-by|Tested-by|Acked-by|Helped-by|Suggested-by|Co-developed-by):/i;
 
-const body = read()
-  .split("\n")
-  .filter((line) => !line.startsWith("#"))
-  .filter((line) => !TRAILER.test(line))
-  .join("\n");
+const allLines = read().split("\n");
+const kept = [];
+let skippedComments = 0;
+let skippedTrailers = 0;
+for (const line of allLines) {
+  if (commitMsgMode && COMMENT.test(line)) { skippedComments += 1; continue; }
+  if (TRAILER.test(line)) { skippedTrailers += 1; continue; }
+  kept.push(line);
+}
+const body = kept.join("\n");
+
+/**
+ * Say what was not read, always, even on a clean run.
+ *
+ * `exit 0` after skipping forty lines looks identical to `exit 0` after reading them, and
+ * that is the failure mode this repository keeps meeting: a guard that goes quiet is
+ * indistinguishable from a guard with nothing to say. The `commit-msg` name check sat
+ * switched off for months, the review rig watched nobody for 45 minutes, and this exemption
+ * skipped every comment in every file — each one silent, each one reading as safety.
+ */
+if (skippedComments || skippedTrailers) {
+  const parts = [];
+  if (skippedComments) parts.push(`${skippedComments} comment line(s) — commit-msg mode`);
+  if (skippedTrailers) parts.push(`${skippedTrailers} trailer line(s)`);
+  console.error(`  · not checked: ${parts.join(", ")}`);
+}
 
 const { redactions } = loadPlaceholders();
 const local = loadLocalRedactions();

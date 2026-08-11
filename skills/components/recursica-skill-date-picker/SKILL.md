@@ -22,7 +22,7 @@ A date picker captures a single calendar date, by typing or by picking.
 Each of these has a different component. Switch to it rather than adapting a date picker:
 
 | Instead of a date picker                               | Use                                                                                 |
-| ------------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------- | ---------- |
 | The value is a time of day                             | `recursica-skill-time-picker`                                                       |
 | The user already knows the date by heart               | A text field with the format stated in help text — see `recursica-skill-text-field` |
 | The date is far in the past — a birth date             | A text field. Never make the user page a calendar back through decades              |
@@ -38,12 +38,16 @@ Each of these has a different component. Switch to it rather than adapting a dat
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.date-picker`. **Do not pass a variant or state that is not listed here** — other design systems have sizes, range variants, warning states, and inline calendars that this component does not.
 
-| Axis      | Options                   |
-| --------- | ------------------------- |
-| `layouts` | `stacked`, `side-by-side` |
-| `states`  | `error`, `disabled`       |
+**The third column is the React prop that sets the axis.** The axis name is the token inventory's; it is not a prop, and passing it as one is dropped silently by React. A blank cell means no single prop carries that axis — it is set by CSS state or by separate props, and the rules below say which.
 
-**`layouts` is the label placement axis.** `side-by-side` — label beside the field — is the house default; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport. See `recursica-skill-forms`.
+| Axis      | Options                   | React prop |
+| --------- | ------------------------- | ---------- |
+| `layouts` | `stacked`, `side-by-side` | `formLayout` |
+| `states`  | `error`, `disabled`       |            |
+
+**`layouts` is the label placement axis, set by the `formLayout` prop.** `side-by-side` — label beside the field — is the house default; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport. See `recursica-skill-forms`.
+
+**`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Omit it and you get the fallback on a container of any width, which is the rule inverted. `layouts` is the token axis name and is not a prop — `layouts="side-by-side"` is dropped silently by React and leaves the control stacked with no error. Pass `formLayout="side-by-side"` explicitly.
 
 **Focus and placeholder are not variants.** The component handles them: `placeholder-opacity` here, and the focused border via `globals.form.field.colors.border-selected`. Do not build them as states.
 

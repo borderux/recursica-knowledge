@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-typography-semantics
-description: House rules for typography and semantic markup in enterprise web applications — always using the real element rather than styling a div into one, one H1 per page even when hidden, type styles from tokens, never custom values, when a heading is hidden but kept for screen readers, why vertical spacing between headings is contextual, em and strong over visual emphasis, abbreviations written out on first use, and AP style. Use when adding, reviewing, or refactoring headings, body copy, emphasis, abbreviations, a heading outline, or the markup beneath a visual hierarchy. Trigger on "typography", "type style", "heading", "H1", "semantic HTML", "screen reader only", "visually hidden", "em", "strong", "abbreviation", "eyebrow text", "line length", "measure", "max-width", "AP style", or a question about which element to use. Do NOT use for announcing dynamic updates — that is recursica-skill-feedback-messaging. Do NOT use for what things are called — that is recursica-skill-naming-terminology.
+description: House rules for typography and semantic markup in enterprise web applications — always using the real element rather than styling a div into one, one H1 per page even when hidden, type styles from tokens and never custom values, loading every typeface the brand names and setting the base family from a token, when a heading is hidden but kept for screen readers, why vertical spacing between headings is contextual, em and strong over visual emphasis, abbreviations written out on first use, and AP style. Use when adding, reviewing, or refactoring headings, body copy, emphasis, abbreviations, or the markup beneath a visual hierarchy. Trigger on "typography", "type style", "heading", "H1", "semantic HTML", "visually hidden", "em", "strong", "abbreviation", "line length", "measure", "font family", "typeface", "webfont", or "AP style". Do NOT use for announcing dynamic updates — that is recursica-skill-feedback-messaging. Do NOT use for what things are called — that is recursica-skill-naming-terminology.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -44,6 +44,18 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 **Never define a custom font size, line height, or letter spacing** to fit a particular case.
 
 **The one exception: no type style exists for what is needed.** This should be very rare. When it happens, say so rather than quietly inventing a value — the gap belongs in the design system, not in the component.
+
+### Load every typeface the brand names, and set the base family from a token
+
+**The brand names more than one typeface** — a primary, a secondary, a tertiary — **and the theme uses all of them.** Different components resolve to different ones.
+
+**MUST load all of them.** Loading only the primary is not "one webfont missing": the browser silently substitutes a default for the others, so a component renders in a face the theme never asked for and nobody sees an error. The result is a screen that looks like two design systems, which is exactly how it gets reported — "the fonts are not the ones in the theme" — rather than as a missing asset.
+
+**MUST set the document's base font family from the brand's primary token.** Anything the design system does not paint itself inherits it: a plain string in a table cell, a navigation link written to inherit its type, a bare list item. With no base family those fall through to the browser default, which on most machines is the operating system's UI font or a serif — so the navigation ends up in a different typeface from the page title beside it.
+
+**Reading the token to set the base is not authoring a value**, and it is not an override: the elements it reaches are the application's own, not the system's. Hardcoding the font name instead is the thing to avoid.
+
+**Check it by computing, not by looking.** Compare the resolved font family on the document body, on a navigation link, and inside a component. All three should name the same brand face, and a mismatch is the defect above.
 
 ## Vertical spacing between headings is contextual
 
@@ -210,6 +222,9 @@ W_max = 44 × 12.48                 = 555px
 
 ## Pre-flight checklist
 
+- [ ] Every typeface the brand names is actually loaded, not only the primary.
+- [ ] The document's base font family is set from the brand's primary token, and the resolved family on the body,
+      on a navigation link, and inside a component all name the same face.
 - [ ] Every interactive element is the real platform element; no `div` carries an `onclick` or a `role="button"`.
 - [ ] Emphasis uses `em` or `strong`, never a visual style substituting for one.
 - [ ] Exactly one H1 exists on the page, present in the markup even if hidden by CSS.
