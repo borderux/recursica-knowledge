@@ -57,6 +57,18 @@ git log -1 --format=%B | npm run -s check:names            # what you just commi
 Exit 2 means stop and rewrite. It prints labels, never the matched string — keep it that way
 if you quote it.
 
+**Every line is read, including comments.** A `#` line is only exempt with `--commit-msg`,
+which `.husky/commit-msg` passes and nothing else should — a commit message is the one input
+where git discards those lines before publication. Everywhere else a comment is prose, and
+prose is where this leaks. That exemption used to apply to every input, which meant the
+`<file>` form above silently skipped every comment in a shell script, a Dockerfile or a YAML
+file. **It also now prints what it did not read**, on every run including a clean one, so
+`exit 0` after skipping forty lines no longer looks identical to `exit 0` after reading them.
+
+One tracked file fails this check by design: `buzz-agents/lib/placeholders.test.mjs` contains
+a fixture matching the structural `research_<slug>` rule, because that is the rule it tests.
+That predates the comment fix and is not a regression from it.
+
 `.husky/commit-msg` runs it on every commit. **Check that the hook is actually wired before
 you trust it:**
 
