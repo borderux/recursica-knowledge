@@ -406,7 +406,11 @@ sed -e "s/@SLUG@/$SLUG/g" -e "s/@DATASET@/$DATASET/g" \
     "$TEMPLATES/bq-channel-ro.yaml.tmpl" > "$BQ_YAML_RO"
 ok "wrote $BQ_YAML_RO"
 
-for role in scribe lexicon tagger analyst; do
+# persona-$SLUG.md's prompt calls for a `write_persona_set` tool and a population lookup, neither
+# of which bq-channel-ro.yaml.tmpl carries yet — that's separate, DB-owned follow-up work (new
+# persona tables, the write tool, and per-client population mapping). Rendering it here is safe
+# either way: the prompt itself tells the agent to stop rather than run if those aren't in place.
+for role in scribe lexicon tagger analyst persona; do
   sed -e "s/@SLUG@/$SLUG/g" -e "s|@DATASET@|$PROJECT.$DATASET|g" \
       -e "s/@PROJECT@/$PROJECT/g" -e "s/@CHANNEL_UUID@/$CHANNEL_UUID/g" \
       "$TEMPLATES/agents/$role.md.tmpl" > "$AGENTS_DIR/$role-$SLUG.md"
@@ -522,6 +526,6 @@ cat <<EOF
     dataset  $PROJECT.$DATASET
     folder   $DRIVE_FOLDER
     servers  $BQ_SERVER, $BQ_SERVER_RO, $DRIVE_SERVER
-    agents   scribe-$SLUG, lexicon-$SLUG, tagger-$SLUG, analyst-$SLUG
+    agents   scribe-$SLUG, lexicon-$SLUG, tagger-$SLUG, analyst-$SLUG, persona-$SLUG
 
 EOF
