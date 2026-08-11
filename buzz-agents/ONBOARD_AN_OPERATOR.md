@@ -38,7 +38,7 @@ inconvenience, not a breach. A DM or a channel message is fine.
 | `sa_slug`                                                      | Only when the account is not named after the slug   |
 | `DRIVE_FOLDER`                                                 | The client Drive folder URL, after `/folders/`      |
 | `TAG_SHEET_ID`                                                 | Tag Dictionary sheet URL, between `/d/` and `/edit` |
-| `CLAIRE_CHANNEL` `STU_CHANNEL` `ALAN_CHANNEL` `JANICE_CHANNEL` | `buzz channels list`                                |
+| `CLAIRE_CHANNEL` `STU_CHANNEL` `IVAN_CHANNEL` `ALAN_CHANNEL` `JANICE_CHANNEL` | `buzz channels list`                  |
 | `JANICE_PUBKEY`                                                | `buzz channels members --channel <janice-uuid>`     |
 | `BUILDER_REPO` `BUILDER_REPO_NAME` `KNOWLEDGE_REPO_NAME`       | Only if they want ALAN                              |
 
