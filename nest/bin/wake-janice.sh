@@ -21,9 +21,14 @@
 
 set -uo pipefail
 
-# Research team only. ALAN is the recursica/design loop, not research — see
-# GUIDES/JANICE_REVIEW_CHECKLIST.md for the roster and the reasoning.
-WATCHED_AGENTS=(Claire Stu)
+# The research team, plus any agent whose turns make cross-repo claims nobody re-runs.
+# Ivan is the second kind: his deliverable is a discrepancy report across three
+# repositories, and nothing downstream re-derives it, so an unverified line in it ships as
+# fact. ALAN stays unwatched — see GUIDES/JANICE_REVIEW_CHECKLIST.md for the roster.
+#
+# An agent added here needs a row in that guide's routing table too, or its findings fall
+# back to building-janice and read as findings about Janice.
+WATCHED_AGENTS=(Claire Stu Ivan)
 
 JANICE_CHANNEL="${JANICE_CHANNEL:-}"   # building-janice, in THIS community
 

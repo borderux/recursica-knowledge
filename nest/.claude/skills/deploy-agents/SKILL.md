@@ -66,7 +66,7 @@ identifiers, and they are the same for everyone in the community:
 - `BQ_PROJECT` — the Google Cloud project id
 - `DRIVE_FOLDER` — the client's Drive folder id
 - `TAG_SHEET_ID` — the shared tag dictionary sheet id
-- `CLAIRE_CHANNEL`, `STU_CHANNEL`, `ALAN_CHANNEL`, `JANICE_CHANNEL` — channel UUIDs
+- `CLAIRE_CHANNEL`, `STU_CHANNEL`, `ALAN_CHANNEL`, `IVAN_CHANNEL`, `JANICE_CHANNEL` — channel UUIDs
 - `JANICE_PUBKEY` — this community's Janice, hex
 - `BUILDER_REPO`, `BUILDER_REPO_NAME`, `KNOWLEDGE_REPO_NAME` — only if they want ALAN
 - **their name**, for the agent display names — see below. Ask for the form they want
@@ -104,11 +104,11 @@ the right channel before falling back to asking for everything.
 | `bq_dataset` | *nothing* | Confirmation only. It must equal `research_<slug>` with hyphens as underscores |
 | `drive_folder` | `DRIVE_FOLDER` | |
 | `tag_sheet` | `TAG_SHEET_ID` | |
-| `claire_channel`, `stu_channel`, `alan_channel`, `janice_channel` | the four `*_CHANNEL` tokens | Janice's routing table, **not** the channel you are installing in |
+| `claire_channel`, `stu_channel`, `alan_channel`, `ivan_channel`, `janice_channel` | the five `*_CHANNEL` tokens | Janice's routing table, **not** the channel you are installing in |
 | `builder_repo` | `BUILDER_REPO`, and `BUILDER_REPO_NAME` = the part after the slash | ALAN only |
 | `knowledge_repo` | `KNOWLEDGE_REPO_NAME` | ALAN only |
 
-Those four routing UUIDs are a common trap: they are where Janice files findings, and none of
+Those five routing UUIDs are a common trap: they are where Janice files findings, and none of
 them is the channel this install is running in. Do not point `--channel` at a `building-*`
 channel because a canvas key named it.
 
@@ -146,6 +146,7 @@ whole document, so it has to carry what was already there.
 - claire_channel: 00000000-0000-0000-0000-000000000000
 - stu_channel: 00000000-0000-0000-0000-000000000000
 - alan_channel: 00000000-0000-0000-0000-000000000000
+- ivan_channel: 00000000-0000-0000-0000-000000000000
 - janice_channel: 00000000-0000-0000-0000-000000000000
 
 ## ALAN — omit this section if the community has no ALAN

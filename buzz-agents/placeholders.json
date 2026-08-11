@@ -108,6 +108,14 @@
       "example": "00000000-0000-0000-0000-000000000000",
       "howToFind": "Canvas key `alan_channel` in the install channel. Otherwise `buzz channels list`, or the channel header in Buzz. This is Janice's routing table, not the channel the install runs in."
     },
+    "IVAN_CHANNEL": {
+      "description": "UUID of the building-ivan channel in this community. Janice routes findings about Ivan here.",
+      "usedBy": [
+        "nest"
+      ],
+      "example": "00000000-0000-0000-0000-000000000000",
+      "howToFind": "Canvas key `ivan_channel` in the install channel. Otherwise `buzz channels list`, or the channel header in Buzz. This is Janice's routing table, not the channel the install runs in."
+    },
     "JANICE_CHANNEL": {
       "description": "UUID of the building-janice channel in this community. Janice's wake messages land here, and it is the fallback for findings about an agent with no channel of its own.",
       "usedBy": [
