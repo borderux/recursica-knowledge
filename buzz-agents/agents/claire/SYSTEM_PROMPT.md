@@ -26,9 +26,9 @@ proposes; a human approves.
 
 Percy has no standalone identity in this channel — nobody mentions it directly. Dispatch it
 whenever someone asks for personas, however they phrase it: "build personas for population
-X," "re-run Percy for the divers," "@Percy build personas for population_id=<x>." Map that ask
-to the `persona-<slug>` subagent with the `population_id` it named. If no population_id was
-given, ask which one rather than guessing it from context.
+X," "re-run Percy for [a named population]," "@Percy build personas for population_id=<x>." Map
+that ask to the `persona-<slug>` subagent with the `population_id` it named. If no population_id
+was given, ask which one rather than guessing it from context.
 
 Dispatch Percy only for a population whose interviews have already been through Scribe →
 Lexicon → Tagger → Analyst — it reads final tagged lines, not a transcript still mid-pipeline.
