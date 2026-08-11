@@ -58,10 +58,15 @@ function aboveMarker(text) {
 function templateFromBinary() {
   if (!fs.existsSync(BINARY)) return null;
   const buf = fs.readFileSync(BINARY);
-  const m = /# Buzz Nest\n[\s\S]{0,20000}?<!-- END BUZZ MANAGED -->\n/.exec(
-    buf.toString("utf8"),
-  );
-  return m ? aboveMarker(m[0]) : null;
+  // Byte-level search, not a regex over the decoded file. This runs on every turn end, and
+  // decoding a 14 MB executable into a JS string to match against costs about a second —
+  // Buffer.indexOf costs a few milliseconds. A check that makes every turn noticeably slower
+  // is a check someone eventually unhooks.
+  const start = buf.indexOf("# Buzz Nest\n");
+  if (start === -1) return null;
+  const end = buf.indexOf("<!-- END BUZZ MANAGED -->", start);
+  if (end === -1 || end - start > 20000) return null;
+  return aboveMarker(buf.toString("utf8", start, end));
 }
 
 /**
@@ -98,14 +103,45 @@ function main() {
     ? fs.readFileSync(VERSION_FILE, "utf8").trim()
     : "unknown";
 
-  // Loss check first: it is the failure, and it is measured against our own last-known-good
-  // rather than against the template, so it stays true whatever the app ships.
-  let lost = [];
-  if (fs.existsSync(BACKUP)) {
-    lost = linesMissingFrom(fs.readFileSync(BACKUP, "utf8"), current).filter(
-      (l) => l.trim() !== "",
+  const template = templateFromBinary();
+  const exposure =
+    template === null ? null : linesMissingFrom(current, template);
+  const exposedNonBlank =
+    exposure === null ? null : exposure.filter((l) => l.trim() !== "").length;
+
+  /*
+   * No baseline means no comparison is possible, and saying "ok" here would be a lie of the
+   * worst available kind: the run that discovers a missing baseline is exactly the run that
+   * happens *after* a wipe, when someone finally checks. Reporting ok would then record the
+   * post-wipe section as the baseline and permanently destroy the evidence.
+   *
+   * So this path never prints ok. It seeds and says what it could not check. When the section
+   * is also byte-identical to the shipped template, that is called out separately — a fresh
+   * nest and a just-wiped nest are genuinely indistinguishable from one file, and the right
+   * move is to name the ambiguity rather than resolve it in the reassuring direction.
+   */
+  if (!fs.existsSync(BACKUP)) {
+    fs.writeFileSync(BACKUP, current);
+    console.log(
+      `check-agents-md-drift: baseline seeded at ${BACKUP}. No prior state existed, so ` +
+        `any replacement before now is undetectable — this run verified nothing.`,
     );
+    if (exposedNonBlank === 0) {
+      console.warn(
+        `  warning: the section above the marker is identical to the template in the ` +
+          `installed app. On a new nest that is expected. On a nest that had its own rules, ` +
+          `it is what a completed refresh looks like (installed version: ${version}).`,
+      );
+    }
+    process.exit(0);
   }
+
+  // Loss is measured against our own last-known-good rather than against the template, so it
+  // stays true whatever the app ships.
+  const lost = linesMissingFrom(
+    fs.readFileSync(BACKUP, "utf8"),
+    current,
+  ).filter((l) => l.trim() !== "");
 
   if (lost.length > 0) {
     console.error(
@@ -123,17 +159,14 @@ function main() {
     process.exit(1);
   }
 
-  const template = templateFromBinary();
-  if (template === null) {
+  if (exposure === null) {
     console.log(
-      `check-agents-md-drift: ok (no Buzz.app found; exposure not measured, backup refreshed)`,
+      `check-agents-md-drift: ok (no Buzz.app found; exposure not measured, baseline refreshed)`,
     );
   } else {
-    const exposure = linesMissingFrom(current, template);
-    const nonBlank = exposure.filter((l) => l.trim() !== "").length;
     console.log(
       `check-agents-md-drift: ok — ${exposure.length} line(s) above the marker ` +
-        `(${nonBlank} non-blank) exist only locally and would be lost on the next ` +
+        `(${exposedNonBlank} non-blank) exist only locally and would be lost on the next ` +
         `NEST_AGENTS_VERSION bump. Installed version: ${version}.`,
     );
   }

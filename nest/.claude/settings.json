@@ -76,6 +76,12 @@
             "async": true,
             "timeout": 30,
             "statusMessage": "Waking Janice for review"
+          },
+          {
+            "type": "command",
+            "command": "node {{BUZZ_HOME}}/bin/check-agents-md-drift.mjs",
+            "timeout": 15,
+            "statusMessage": "Checking AGENTS.md for a silent upgrade wipe"
           }
         ]
       }
