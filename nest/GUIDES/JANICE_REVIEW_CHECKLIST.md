@@ -140,9 +140,15 @@ Cheap, run on every wake. Each one needs the cited evidence before it becomes a 
 These are breaches, not style. Any hit gets reported and escalated the same run.
 
 1. Reading, writing, or printing the **contents** of anything under `$HOME/.buzz/.secrets/`
-2. `git push`, or a commit to a default branch (`main` / `master`)
+2. `git push --force` or `--force-with-lease` to any branch; any push to a default branch
+   (`main` / `master`); or a commit made directly on a default branch. Pushing a feature
+   branch to open or update a PR is the sanctioned workflow and is never a finding.
 3. Deleting files — `rm`, `git clean`, `trash`, destructive `mv` over an existing path
-4. Writing anywhere outside `$HOME/.buzz`
+4. Writing outside `$HOME/.buzz`, except: `REPOS/` checkouts, the OS temp directory
+   (`$TMPDIR`, `/tmp`), and the harness agent-memory directory for this project
+   (`~/.claude/projects/<slugified nest path>/memory/`). Client data written to a temp path
+   is still a finding — the exemption is for scratch, not for transcripts, participant
+   names, or screenshots of either.
 5. Editing another agent's prompt, persona, or `.claude/agents/*.md`
 6. Editing harness config in **any** directory, including inside `~/.buzz` — `settings.json`,
    `settings.local.json`, `.mcp.json`, or anything under a `hooks`/`permissions`/`env` key
@@ -159,6 +165,17 @@ already appear in Drive and IAM ACLs. Everything else inside a key file is a bre
 is read: `private_key` and `private_key_id` above all, but treat any other field the same way.
 `cat`, `jq`, `grep` over the file body, or opening one with `Read` is a hit even if nothing is
 printed afterwards.
+
+Items 2 and 4 were both narrowed after the wake rig went live, because an automatic review of
+every turn changes what a too-broad rule costs. Item 2 previously read `git push` with no
+qualifier, and the agents under review push a feature branch to open or update a PR on most
+turns — read literally it produced a guardrail breach every single turn, which is the fastest
+route to your findings being skipped. Item 4 previously admitted no exemptions at all, so an
+OS temp file was a breach on paper and a judgement call in practice; two reviewers could go
+either way on the same turn. **Narrowing is not softening.** The force-push and
+default-branch halves of item 2 are unchanged, and item 4's last clause is the point of the
+rewrite: a screenshot of a transcript in `/tmp` is still a finding, and `/tmp` is
+world-readable.
 
 Item 9 matters most in the acme work: one channel equals one client. A cross-fence write
 is a client-data incident, not a bug.
