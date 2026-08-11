@@ -469,11 +469,13 @@ function Person({ person, identity, onChanged, onAbsorb, absorbCount }) {
           {problem && <Text variant="body-small">{problem}</Text>}
 
           <TextField
+            formLayout="side-by-side"
             label="Name"
             value={name}
             onChange={(e) => setName(e.currentTarget.value)}
           />
           <TextField
+            formLayout="side-by-side"
             label="Note"
             placeholder="Optional — how you know, for whoever reads this next"
             value={note}
@@ -581,6 +583,7 @@ function MergeForm({ proposal, roster, people, identity, onClose, onDone }) {
         </ul>
 
         <TextField
+          formLayout="side-by-side"
           label="Name"
           description="What this person is actually called. Replaces the transcription service's label wherever it is read."
           value={displayName}
@@ -598,6 +601,7 @@ function MergeForm({ proposal, roster, people, identity, onClose, onDone }) {
 
         {roleIsMissing && (
           <Dropdown
+            formLayout="side-by-side"
             label="Role, where the transcript does not say"
             description="Only fills a gap. A role the transcript states is left exactly as it is — the same person can interview one session and observe the next."
             placeholder="Leave unset"
@@ -609,6 +613,7 @@ function MergeForm({ proposal, roster, people, identity, onClose, onDone }) {
         )}
 
         <TextField
+          formLayout="side-by-side"
           label="Email"
           placeholder="Optional"
           value={email}
@@ -616,6 +621,7 @@ function MergeForm({ proposal, roster, people, identity, onClose, onDone }) {
         />
 
         <TextField
+          formLayout="side-by-side"
           label="Note"
           placeholder="Optional — how you know these are the same person"
           value={note}

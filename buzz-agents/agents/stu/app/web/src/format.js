@@ -92,3 +92,30 @@ export function formatWhen(value, { withTime = false } = {}) {
   if (Math.abs(delta) < RELATIVE_THRESHOLD) return relative(delta)
   return (withTime ? DATE_TIME : DATE).format(date)
 }
+
+// Digit grouping for counts — `recursica-skill-dates-and-currency`, "Numeric values": a quantity
+// of four figures or more is grouped, in the reader's locale, by the platform. `2,046`, not `2046`.
+// Built once for the same reason the date formatters are: a table renders hundreds of cells.
+//
+// No locale argument, so the separator is the reader's — a comma here, a period or a thin space
+// elsewhere. A hand-rolled comma regex would be right in one locale and wrong in the rest.
+const COUNT = new Intl.NumberFormat()
+
+/**
+ * A quantity. Not for identifiers: the skill forbids grouping a year, a version, a port or a
+ * record number, because grouping claims the value is comparable and on an identifier that is
+ * false.
+ */
+export function formatCount(value) {
+  const n = Number(value ?? 0)
+  return Number.isFinite(n) ? COUNT.format(n) : String(value ?? '')
+}
+
+/**
+ * Part of a whole, as one value — `11 / 34`. Two columns the reader would otherwise subtract
+ * become one with the arithmetic done, per `recursica-skill-naming-terminology`. Both halves are
+ * grouped; the divisor is a quantity too.
+ */
+export function formatRatio(part, whole) {
+  return `${formatCount(part)} / ${formatCount(whole)}`
+}

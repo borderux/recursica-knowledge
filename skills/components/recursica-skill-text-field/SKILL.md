@@ -40,7 +40,9 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.text-field`. **Do not 
 | `layouts` | `stacked`, `side-by-side` |
 | `states`  | `error`, `disabled`       |
 
-**`layouts` is the label placement axis.** `side-by-side` — label beside the field — is the house default; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport. See `recursica-skill-forms`.
+**`layouts` is the label placement axis, and the React prop that sets it is `formLayout`.** `side-by-side` — label beside the field — is the house rule; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport. See `recursica-skill-forms`.
+
+**`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Omit it and you get the fallback on a wide container, which is the rule inverted. `layouts` is the token axis name and is not a prop — writing `layouts="side-by-side"` is dropped silently by React, leaves the field stacked, and raises no error to tell you. Pass `formLayout="side-by-side"` explicitly on every field.
 
 **Focus and placeholder are not variants.** They are handled by the component: `placeholder-opacity` on this component, and the focused border via `globals.form.field.colors.border-selected`. Do not build them as states.
 
@@ -130,7 +132,7 @@ Never style an unfocused field so that it reads as disabled. An editable field m
 - [ ] The value genuinely cannot come from a predefined set of options.
 - [ ] A visible label is passed, and it reads correctly on its own.
 - [ ] Label placement is side-by-side unless the container is too narrow.
-- [ ] `layouts` matches every other field in the same form — one placement per form at any given breakpoint, with no mixing between fields or sections.
+- [ ] `formLayout` is passed explicitly — `side-by-side` unless the form's container is too narrow — and matches every other field in the same form. One placement per form at any given breakpoint, no mixing between fields or sections. An omitted prop is `stacked`, not the house rule, and `layouts` is not the prop name.
 - [ ] No required information lives in placeholder text.
 - [ ] Assistive text states the rule; on error it is replaced by a message restating that rule.
 - [ ] The error state carries a non-color indicator.

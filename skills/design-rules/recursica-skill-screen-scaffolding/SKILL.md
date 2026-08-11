@@ -50,6 +50,18 @@ House rules for how a page is composed and what each region sits on. These are o
 
 **Its job is scent** — showing where the user came from and how to get back up. **It matters most on a deep link**, where someone arrives several layers down from a dashboard with no idea where they are.
 
+## The line under a heading
+
+**A page title and a section heading each have a slot beneath them, and its default state is empty.** A well-named heading has already said what the region is. A line that says it again is not context — it is the heading a second time in smaller type, and every reader pays for it on every visit.
+
+**The slot is for what the heading cannot carry**: an ordering, a constraint, a consequence, or a state the reader would otherwise infer wrongly. `Newest first. Append-only: nothing here is ever rewritten.` under **Changes** earns its place — sort order and immutability are not derivable from the word. `The closed vocabulary the tagging rests on.` under **Tags** does not; it defines the heading.
+
+**The test is subtraction, and it takes one reading.** Delete the line. If the only thing lost is a restatement of the heading, it was noise and stays deleted. If a reader would now get something wrong, keep it — and cut it back to only that.
+
+**A slot in the component is not a brief to fill it.** A `lede` or `note` prop exists because some headings need one. A prop that accepts a string is the single most common reason an explanation gets written that nobody asked for, so passing nothing is the normal case, not the unfinished one.
+
+**If the heading cannot stand without its gloss, the heading is wrong.** Fixing it is owned by `recursica-skill-naming-terminology`, whose rule against defining a term next to itself covers a page title and a section heading, not only a field label.
+
 ## The primary action
 
 **The page's primary action goes bottom right.** This is a starting position rather than a law — begin there, and let the user move it.
@@ -186,7 +198,7 @@ The number one indicator, and the rest in order:
 2. **No ample white space above headings and subheadings**, so nothing owns what follows it.
 3. **No layout grid underneath.** It is obvious when elements do not align to an eight- or twelve-column grid, and when gutters vary.
 4. **Line lengths long for no reason.**
-5. **Explanatory text standing in for a good label.**
+5. **Explanatory text standing in for a good heading or label** — most often a line beneath a page title or section heading that only restates it.
 
 ## Not your decision
 
@@ -216,6 +228,7 @@ The number one indicator, and the rest in order:
 - [ ] A left rail puts navigation at the top and profile and settings at the bottom.
 - [ ] Every page has a footer.
 - [ ] The page title sits in the page; repeating the navigation label was not treated as a defect.
+- [ ] Every line under a page title or section heading survived deletion — it carries an ordering, constraint, consequence or state the heading cannot, and no `lede` or `note` was filled just because the prop exists.
 - [ ] A breadcrumb appears on every page below the top level, and nowhere above it.
 - [ ] The primary action sits bottom right unless the user moved it.
 - [ ] Filters are positioned by the width of the content they act on, not by a breakpoint, and a filter rail is not merged with the navigation rail.

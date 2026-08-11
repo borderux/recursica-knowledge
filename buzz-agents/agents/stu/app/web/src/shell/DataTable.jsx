@@ -30,6 +30,8 @@ import { Table, Text } from '@recursica/mantine-adapter'
  */
 export const COLUMN_WIDTH = {
   count: '6rem',
+  /** A part-of-whole count — `11 / 34`. Two grouped numbers and a separator, so wider than one. */
+  ratio: '8rem',
   date: '8rem',
   status: '8rem',
   /** A short categorical value — a cohort, a role, a type. */

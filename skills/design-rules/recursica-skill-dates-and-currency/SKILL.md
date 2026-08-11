@@ -106,7 +106,13 @@ The reason is principle 1: telling someone an event happened at 2:23 p.m. when i
 
 **The only override is an explicit human instruction.**
 
-**Rounding and abbreviation are acceptable when shortening is the intent** — `952` below a thousand, `1.2K` above it. Apply it deliberately, not as a default.
+**MUST group digits once a value reaches four figures.** `2,046`, never `2046`. This applies to every quantity a reader might compare or read aloud — counts, totals, row tallies — not only to money. An ungrouped four-figure number is read digit by digit, and two of them in a column cannot be compared at a glance, which is the entire reason the column is right-aligned.
+
+**The separator is the locale's, so let the platform choose it.** `Intl.NumberFormat` or `toLocaleString` — a comma in one locale, a period or a thin space in another. Never hand-roll a regex that inserts commas: it produces the wrong separator everywhere the locale is not yours, and it is the same class of error as slicing a date serialisation.
+
+**NEVER group an identifier.** A year, a version, a port, an account or record number, a postcode: `2026`, not `2,026`. Grouping says "this is a quantity you may compare"; on an identifier that claim is false and the reader briefly believes it. If arithmetic on the value is meaningless, it is not a number for this purpose.
+
+**Rounding and abbreviation are acceptable when shortening is the intent** — `952` below a thousand, `1.2K` above it. Apply it deliberately, not as a default. Grouping is the default; abbreviating is the deliberate choice.
 
 ## Ranges
 
@@ -180,6 +186,7 @@ Do not pattern-match one of these to a rule above. A wrong convention in a fisca
 - [ ] Times for events that happened elsewhere are shown in the zone of occurrence, labeled, with a way to convert.
 - [ ] Recent events use relative time within one week and the absolute date beyond it, produced by the platform's
       relative formatter, with no relative value naming the threshold and no seconds shown.
+- [ ] Every quantity of four figures or more is digit-grouped by a formatting API in the reader's locale — no bare `2046`, no hand-rolled comma regex — and no identifier, year, version or port was grouped.
 - [ ] Currency is right-aligned, with two decimal places on every value.
 - [ ] The currency symbol sits in the column header, not in each cell.
 - [ ] Any converted currency is labeled in the cell.

@@ -58,13 +58,13 @@ export function History({ revision }) {
     { key: 'line_id', header: 'Line', sortValue: (r) => r.line_id, render: (r) => r.line_id },
     {
       key: 'text',
-      header: 'Your correction',
+      header: 'Correction',
       sortValue: (r) => r.cleaned_text ?? '',
       render: (r) => r.cleaned_text ?? <Absent />,
     },
     {
       key: 'was',
-      header: 'The line it was made against',
+      header: 'Line',
       sortValue: (r) => r.original_text_at_edit ?? '',
       render: (r) => r.original_text_at_edit,
     },

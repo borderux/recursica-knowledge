@@ -590,6 +590,7 @@ function Decision({ finding, identity, onChanged }) {
       {problem && <Text variant="body-small">{problem}</Text>}
 
       <TextField
+        formLayout="side-by-side"
         label="Note"
         placeholder="Optional — why you decided this way"
         value={note}
@@ -673,6 +674,7 @@ function Resolution({ finding, identity, onChanged }) {
       )}
 
       <TextArea
+        formLayout="side-by-side"
         label="Answer"
         description={assumed
           ? 'Pre-filled with the assumption. Save it as it stands to confirm it, or change it first.'
@@ -683,6 +685,7 @@ function Resolution({ finding, identity, onChanged }) {
         onChange={(e) => setAnswer(e.currentTarget.value)}
       />
       <TextField
+        formLayout="side-by-side"
         label="Note"
         placeholder="Optional — where the answer came from"
         value={note}

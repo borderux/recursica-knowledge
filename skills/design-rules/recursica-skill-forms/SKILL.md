@@ -58,6 +58,11 @@ This is not a cosmetic preference. Mixing the two placements inside one form:
 
 **Sections do not get their own placement either.** A form's sections are parts of one form; a section that stacks while the section above it sits side by side is the same defect.
 
+**In code, side-by-side is the value you have to pass.** The prop is `formLayout` on every field component, and it **defaults to `stacked`** — so a field with no `formLayout` renders the fallback on a container of any width, which is this rule inverted. Passing nothing is not "take the default"; it is the defect. Two ways this fails silently and neither raises an error:
+
+- **The prop is `formLayout`, not `layouts`.** `layouts` is the token axis name. React drops an unknown prop without complaint, so `layouts="side-by-side"` leaves the field stacked and looks like the rule was applied.
+- **A form is only compliant if every field carries it.** Grep the form for the field components and count — the prop is per field, so one missed field is the mixed-placement defect from the rule above.
+
 **Label copy:** always name the object explicitly. Labels must never infer intent or context from surrounding content — a screen reader user hears the label alone. If a verb is involved, make the verb explicit and active. No passive verbs, no linking verbs.
 
 ## Single page vs. multi-step
@@ -236,6 +241,7 @@ Before considering a form done, verify:
 
 - [ ] One field per row, single column, top to bottom — at every container width. Compound controls are the only shared rows.
 - [ ] Labels left of fields, right-aligned — stacked above only when the container is too narrow for both.
+- [ ] `formLayout="side-by-side"` is passed on every field, counted against a grep of the form's field components rather than assumed. An omitted prop renders `stacked`, and `layouts` is not the prop name.
 - [ ] One label placement across the whole form at any given breakpoint: every field side-by-side, or every field stacked. No mixing, including between sections.
 - [ ] No custom spacing between fields; component spacing only.
 - [ ] No form, form section, or form control is inside a card.

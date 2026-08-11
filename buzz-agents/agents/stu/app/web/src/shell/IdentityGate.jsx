@@ -144,6 +144,7 @@ export function IdentityGate({ config, onBound }) {
             </Stack>
           ) : roster?.length ? (
             <Dropdown
+              formLayout="side-by-side"
               label="You are"
               description={`Members of the ${config.slug} channel`}
               data={roster.map((m) => ({
@@ -160,7 +161,8 @@ export function IdentityGate({ config, onBound }) {
           ) : (
             <Stack gap="xs">
               <TextField
-                label="Your email, or your Buzz pubkey"
+                formLayout="side-by-side"
+                label="Email or pubkey"
                 description="An email address, or 64 hex characters from Buzz Desktop → your profile."
                 placeholder="you@company.com"
                 value={typedPubkey}
@@ -176,6 +178,7 @@ export function IdentityGate({ config, onBound }) {
           )}
 
           <TextField
+            formLayout="side-by-side"
             label="Email"
             description="Tied to your identity in the users table"
             placeholder="you@company.com"

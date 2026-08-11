@@ -128,6 +128,7 @@ function Term({ term, identity, onChanged }) {
         {problem && <Text variant="body-small">{problem}</Text>}
 
         <TextField
+          formLayout="side-by-side"
           label="Note"
           placeholder="Optional — why you decided this way"
           value={note}
