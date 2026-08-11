@@ -470,18 +470,58 @@ export function createQueries(bq) {
       `, { tag: tagId })
     },
 
-    /** Dictionary terms with their evidence. Evidence is ARRAY<STRUCT> and decodes to objects. */
+    /**
+     * Dictionary terms with their evidence. Evidence is ARRAY<STRUCT> and decodes to objects.
+     *
+     * `lines_matching` is the impact of approving a rewrite: how many lines presently contain one
+     * of the term's variants, and would therefore be reconsidered by a correction pass. It turns
+     * "is this the same thing?" into a decision with a size attached — including the 8 terms in
+     * one live dictionary whose variants match nothing at all, where approving changes no line
+     * that exists today.
+     *
+     * Counted over `variants` only, never the canonical term: replacing the canonical spelling
+     * with itself is a no-op, so including it would inflate every count by the term's own
+     * occurrences. A term with no variants therefore scores 0 by construction, which is correct —
+     * it lists no spelling to replace.
+     *
+     * Counted against `lines_current.original_text`, per the same rule the rest of this file
+     * follows: the raw table would count text a human has already struck out.
+     */
     async dictionary() {
       return bq.query(`
+        WITH impact AS (
+          SELECT d.term_id, COUNT(DISTINCT l.line_id) AS lines_matching
+          FROM ${T('project_dictionary')} d,
+          UNNEST(d.variants) AS variant
+          JOIN ${T('lines_current')} l
+            -- Bounded on both sides by a non-alphanumeric, rather than \\b: a variant may begin or
+            -- end with punctuation ("P&L", "C.A.C."), and \\b requires a word character on the
+            -- inside edge, so it silently fails to match exactly the terms most worth unifying.
+            -- The variant is escaped first — it is data, and an unescaped "(" is a syntax error
+            -- rather than a miss.
+            ON REGEXP_CONTAINS(
+                 l.original_text,
+                 CONCAT(
+                   r'(?i)(^|[^[:alnum:]])',
+                   REGEXP_REPLACE(variant, r'([\\\\.\\+\\*\\?\\(\\)\\|\\[\\]\\{\\}\\^\\$])', r'\\\\\\1'),
+                   r'($|[^[:alnum:]])'))
+          GROUP BY d.term_id
+        )
         SELECT
-          term_id, canonical_term, variants, definition, term_type, status, confidence,
-          evidence, first_seen_conversation_id, occurrence_count,
-          proposed_by, proposed_at, decided_by, decided_at, notes
-        FROM ${T('project_dictionary')}
+          t.term_id, t.canonical_term, t.variants, t.definition, t.term_type, t.status,
+          t.confidence, t.evidence, t.first_seen_conversation_id, t.occurrence_count,
+          t.proposed_by, t.proposed_at, t.decided_by, t.decided_at, t.notes,
+          IFNULL(i.lines_matching, 0) AS lines_matching
+        FROM ${T('project_dictionary')} t
+        LEFT JOIN impact i USING (term_id)
         ORDER BY
-          CASE status WHEN 'proposed' THEN 0 WHEN 'needs_clarification' THEN 1 ELSE 2 END,
-          occurrence_count DESC,
-          canonical_term
+          CASE t.status WHEN 'proposed' THEN 0 WHEN 'needs_clarification' THEN 1 ELSE 2 END,
+          -- Confidence ahead of recurrence so the well-evidenced terms clear first. A term seen
+          -- 100 times that Lexicon is unsure of is a worse thing to decide first than a term seen
+          -- twice that a participant spelled out.
+          t.confidence DESC,
+          t.occurrence_count DESC,
+          t.canonical_term
       `)
     },
 
