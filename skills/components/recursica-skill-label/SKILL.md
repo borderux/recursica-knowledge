@@ -19,7 +19,7 @@ The label names the field. It is a real component, not text you place beside an 
 ## Do not use it when
 
 | Instead of a label                      | Use                                                        |
-| --------------------------------------- | ---------------------------------------------------------- |
+| --------------------------------------- | ---------------------------------------------------------- | ---------- |
 | Titling a section or a page             | A heading. A label belongs to a control                    |
 | Explaining the rule for a field         | `recursica-skill-assistive-element` with type `help`       |
 | Showing the shape of an expected value  | The field's placeholder — which never replaces the label   |
@@ -31,11 +31,14 @@ The label names the field. It is a real component, not text you place beside an 
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.label`.
 
-| Axis      | Options                   |
-| --------- | ------------------------- |
-| `layouts` | `stacked`, `side-by-side` |
+**The third column is the React prop that sets the axis.** The axis name is the token inventory's; it is not a prop, and passing it as one is dropped silently by React. A blank cell means no single prop carries that axis — it is set by CSS state or by separate props, and the rules below say which.
 
-**`layouts` is the placement axis, and it is the same axis every field carries.** Set it consistently: the label's layout and its field's layout are one decision, not two — and that decision belongs to the form, not to this label. See the placement rule below.
+| Axis      | Options                   | React prop |
+| --------- | ------------------------- | ---------- |
+| `layouts` | `stacked`, `side-by-side` | `formLayout` |
+**`layouts` is the placement axis, set by the `formLayout` prop, and it is the same axis every field carries.** Set it consistently: the label's layout and its field's layout are one decision, not two — and that decision belongs to the form, not to this label. See the placement rule below.
+
+**`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Omit it and you get the fallback on a container of any width, which is the rule inverted. `layouts` is the token axis name and is not a prop — `layouts="side-by-side"` is dropped silently by React and leaves the control stacked with no error. Pass `formLayout="side-by-side"` explicitly.
 
 **The kit provides a required indicator and an optional text**, with their own gaps and an opacity for the optional text. Both mechanisms exist — which one you use is decided by the form, not the field.
 

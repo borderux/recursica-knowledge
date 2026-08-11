@@ -21,7 +21,7 @@ A dropdown is a form field that hides its options until opened, and returns one 
 ## Do not use it when
 
 | Instead of a dropdown                                              | Use                                                                            |
-| ------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------ | ---------- |
 | There are fewer than four options                                  | `recursica-skill-radio-button`. Never a dropdown below four                    |
 | The options must stay visible while the user decides               | `recursica-skill-radio-button`, or `recursica-skill-checkbox` for zero-to-many |
 | The set is large and the user knows the values well enough to type | `recursica-skill-autocomplete`                                                 |
@@ -38,11 +38,12 @@ A dropdown is a form field that hides its options until opened, and returns one 
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.dropdown`. **Do not pass a variant, size, or state that is not listed here.**
 
-| Axis      | Options                   |
-| --------- | ------------------------- |
-| `states`  | `error`, `disabled`       |
-| `layouts` | `stacked`, `side-by-side` |
+**The third column is the React prop that sets the axis.** The axis name is the token inventory's; it is not a prop, and passing it as one is dropped silently by React. A blank cell means no single prop carries that axis — it is set by CSS state or by separate props, and the rules below say which.
 
+| Axis      | Options                   | React prop |
+| --------- | ------------------------- | ---------- |
+| `states`  | `error`, `disabled`       |            |
+| `layouts` | `stacked`, `side-by-side` | `formLayout` |
 **`layouts` is the label placement axis, and the React prop that sets it is `formLayout`.** `side-by-side` — label beside the field — is the house rule; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport. See `recursica-skill-forms`.
 
 **`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Omit it and you get the fallback on a wide container, which is the rule inverted. `layouts` is the token axis name and is not a prop — writing `layouts="side-by-side"` is dropped silently by React, leaves the field stacked, and raises no error to tell you. Pass `formLayout="side-by-side"` explicitly on every field.

@@ -22,7 +22,7 @@ A number input captures a quantity the user types.
 Each of these has a different component. Switch to it rather than adapting a number input:
 
 | Instead of a number input                         | Use                                                                                     |
-| ------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------- | ---------- |
 | The number comes from a small predefined set      | A radio group or a dropdown — see `recursica-skill-selection-controls`                  |
 | The exact value is arbitrary across a large range | `recursica-skill-slider` — the user is choosing a position, not entering a number       |
 | The digits are an identifier, not a quantity      | `recursica-skill-text-field`. Phone numbers, zips, account and card numbers are strings |
@@ -38,10 +38,12 @@ Each of these has a different component. Switch to it rather than adapting a num
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.number-input`. **Do not pass a variant or state that is not listed here** — other design systems have sizes, warning and success states, and content variants that this component does not.
 
-| Axis      | Options                   |
-| --------- | ------------------------- |
-| `layouts` | `stacked`, `side-by-side` |
-| `states`  | `error`, `disabled`       |
+**The third column is the React prop that sets the axis.** The axis name is the token inventory's; it is not a prop, and passing it as one is dropped silently by React. A blank cell means no single prop carries that axis — it is set by CSS state or by separate props, and the rules below say which.
+
+| Axis      | Options                   | React prop |
+| --------- | ------------------------- | ---------- |
+| `layouts` | `stacked`, `side-by-side` | `formLayout` |
+| `states`  | `error`, `disabled`       |            |
 
 **`layouts` is the label placement axis, and the React prop that sets it is `formLayout`.** `side-by-side` — label beside the field — is the house rule; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport. See `recursica-skill-forms`.
 
