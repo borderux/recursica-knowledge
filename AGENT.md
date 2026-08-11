@@ -106,6 +106,81 @@ incidents in this repo went out that way.
 If something already pushed names a client or a participant, say so immediately, scrub what
 can still be scrubbed, and state plainly what cannot be undone.
 
+### The operator's sign-off
+
+A second `PreToolUse` hook, `buzz-agents/scripts/hook-guard-commit-trailers.mjs`, denies a
+`git commit` that would land without the human operator's two trailers. `AGENTS.md` in the
+nest has required them for months; they were missed on two consecutive pieces of work, and
+before those, 7 of the 12 commits on `main` carried no `Signed-off-by` — the 6 most recent
+consecutively. It is not an unclear rule, it is one that has to be remembered at the moment
+nobody is thinking about it, so it moved out of prose.
+
+Put both trailers in the commit command, where they cannot be lost between committing and
+pushing:
+
+```bash
+git commit -F <file> \
+  --trailer "Co-authored-by: $(git config user.name) <$(git config user.email)>" \
+  --trailer "Signed-off-by: $(git config user.name) <$(git config user.email)>"
+```
+
+**All three trailers coexist** — the operator's `Co-authored-by`, the model's, and the
+operator's `Signed-off-by`. The instruction to credit the model reads like a substitution
+and is not one. GitHub reads `Co-authored-by` for contribution credit and `Signed-off-by`
+alone does not grant it, which is why both are required rather than either.
+
+Verify with `git log -1 --format='%(trailers)'`. **Not `git log --oneline -1`** — that
+prints hash and subject only, so it structurally cannot show a trailer and will pass on a
+commit that has none. That is exactly how one of the two misses got through a verification
+step that did run.
+
+### What it catches, and what it does not
+
+**A guard believed to be total is worse than one known to be partial.** This table was
+produced by running the installed guard against each command, not by reading the code:
+
+| Command | | |
+|---|---|---|
+| `git commit` with no trailers | **deny** | including `-F <file>`, `-m`, and a piped `-F -` |
+| `git commit --amend` | **deny** | when the resulting message lacks them — HEAD's own message counts |
+| `git -c commit.gpgsign=false commit` | **deny** | global options are walked, not string-matched |
+| `git revert` | **deny** | its generated message has none, and it takes no `--trailer` |
+| `git rebase --exec 'git commit …'` | **deny** | the exec'd command is inspected, one level deep |
+| `git commit --dry-run` | allow | writes nothing |
+| `git commit --fixup` / `--squash` | allow | git writes the message; the rebase consumes it |
+| `git revert --no-commit`, `--continue`/`--abort`/`--quit` | allow | stages, or finishes what was already gated |
+| `git cherry-pick`, `git am` | allow | they carry the source message, so its trailers ride along |
+| `git merge` | allow | a merge commit is not authored work — the forge's own squash commits carry no sign-off either |
+
+Two consequences worth stating plainly:
+
+- **A commit made outside a Claude Code Bash call is not seen at all.** This is a
+  `PreToolUse` hook, not a git hook. That is the intended blast radius — see the last bullet
+  below — but it means the guard is not a guarantee about the repository, only about what
+  agents propose.
+- **`git filter-branch`, `git fast-import`, and a shell function or script wrapping `git
+  commit` all pass through.** Nothing has needed them here; if one starts appearing, the
+  boundary moves.
+
+Three things about the guard are deliberate:
+
+- **It denies rather than warns when it cannot read the message.** The name guard beside it
+  warns on a piped `-F -`, because nothing the author can do makes a piped message
+  inspectable. Here there is: `--trailer` is an argument, so it is visible whatever the
+  message does, and `git commit -F - --trailer ... --trailer ...` passes. A pipe is not
+  blocked; a pipe with no visible trailers is.
+- **It checks the address in the working repository's `git config`, not the commit author.**
+  A squash merge is authored by the GitHub account rather than the operator, so a check keyed
+  on the landed commit would compare against the wrong address.
+- **It is a `PreToolUse` hook, not a `commit-msg` one.** `commit-msg` fires for the
+  operator's own commits too, and asking someone to sign off on their own work is friction
+  with nothing behind it. `PreToolUse` fires only on commands an agent proposes.
+
+The operator's `Co-authored-by` currently appears on `main` even where the branch commit had
+none: GitHub adds one when a squash merge's author differs from the merger. That is a
+byproduct of two addresses not matching, it disappears if they ever match, and nobody should
+read it as evidence the trailer was written.
+
 ## 🧳 Portable agents
 
 `agents/<name>/` is the source of truth for an agent. `SKILL.md` holds everything portable;
