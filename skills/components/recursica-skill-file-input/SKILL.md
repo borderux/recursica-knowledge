@@ -11,6 +11,13 @@ metadata:
 
 A file input is a single-line field that lets the user pick a file from their own device. It looks and behaves like a text field.
 
+> **Not implemented yet.** Both adapters ship `FileInput` as a declared stub that renders a
+> placeholder — `mantine-adapter/src/components/FileInput/FileInput.module.css` and the MUI
+> equivalent apply none of the 40 `file-input` variables the kit exports. Everything below is the
+> intended contract, and it is correct about what the kit defines, but building against it today
+> produces a placeholder with no error. Use `recursica-skill-text-field` and a real `<input
+> type="file">` until this lands, and raise it rather than working around it.
+
 ## Use it when
 
 - **A file is one field among many.** An attachment on a support ticket, a document on a submission, an avatar on a profile — the file is a property of the object, not the point of the screen.

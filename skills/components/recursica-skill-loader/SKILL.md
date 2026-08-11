@@ -47,7 +47,11 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.loader`. **Do not pass
 
 **There is no skeleton, no shimmer, no progress bar, and no type axis — and skeletons are not merely absent, they are prohibited.** Grey bars standing in for text are a spinner in another costume: they add cognitive work to decode and return nothing. `recursica-skill-screen-scaffolding` settles it — **a loading page shows nothing until it shows content.**
 
-**Three loader types are documented outside the token inventory, with no tokens behind them** — Oval, Bars, and Dots — along with sizes named xs, sm, and md against the kit's `small`, `default`, `large`. **Do not assume they are available.** A track representing total progress and an indicator showing percentage of completion are documented there too; no determinate variant exists to support either. See the uncovered list.
+**Three loader types have no tokens behind them, but both adapters do implement them.** Oval, Bars and Dots are absent from the token inventory — the kit defines only `indicator-color` and the three sizes — yet both adapters expose them as a real `variant` prop and style each one. So they are available; they are simply not token-backed, which means their appearance is the adapter's, not the kit's, and it may differ between Mantine and MUI. `oval` is the default in both. Prefer the default unless you have a reason, and do not treat a type as a semantic signal.
+
+**The sizes are `small`, `default`, `large`.** Sizes named xs, sm and md are documented outside the token inventory; `sm`, `md` and `lg` are additionally accepted by both adapters as aliases for the three kit names. Write the kit names — an alias that works today is still not the vocabulary this system is specified in.
+
+**A track representing total progress and an indicator showing percentage of completion** are documented outside the token inventory too; no determinate variant exists to support either. See the uncovered list.
 
 ## Rules for using it
 
@@ -113,7 +117,7 @@ Do not implement, override, or tune any of these — the component owns them for
 
 - **Progress indication.** There is no determinate variant, no percentage, and no track that fills — **and no separate progress component exists anywhere in this system.** A wait of known duration therefore has nothing to express it. This is a gap for the human to close, not a surface to assemble, and not a component to name as though it were available. If progress must be shown, ask — do not build one.
 - **Whether the loader may carry a label.** No text slot exists, so the accompanying text is yours to place, and its position relative to the spinner is unset.
-- **Three loader types are documented outside the token inventory, with no tokens behind them.** Oval, Bars, and Dots, plus sizes xs, sm, and md, against a kit that defines only `small`, `default`, `large` with `indicator-color`. A progress track is documented there as well. **Do not assume they are available**, and do not rely on this without asking.
+- **Whether the three adapter loader types are sanctioned.** Oval, Bars and Dots exist as a `variant` prop in both adapters with no tokens behind them, so nothing in the kit governs how they look or when each is used. A progress track is documented outside the token inventory as well, with no determinate variant to support it. Ask before relying on a type other than the default.
 - **When a page-level spinner is warranted rather than an empty page.** Roughly three seconds is the threshold, and a lagging region of an otherwise-loaded page is the clearest case — but the boundary between "a region" and "the page" is a judgment.
 - **Loading and error states for a table**, including partial failure — listed as unowned in `recursica-skill-tables`.
 - **Pending state on a non-submit action** — listed as unowned in `recursica-skill-buttons-links`.

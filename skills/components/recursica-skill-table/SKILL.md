@@ -11,6 +11,12 @@ metadata:
 
 A table shows many instances of one object so the reader can compare values down a column.
 
+> **Token styling is Mantine-only.** The MUI adapter's `Table.module.css` references none of the
+> 101 variables the kit exports across `table`, `table-cell`, `table-header` and `table-footer`;
+> the Mantine adapter applies all of them. On MUI the table renders, but none of its spacing,
+> type, or color comes from the design system, and nothing errors. Everything below is correct
+> about the kit.
+
 ## Use it when
 
 - **Plurality is high, unbounded, or growing.** This is the default for repeating records, with no exception.
