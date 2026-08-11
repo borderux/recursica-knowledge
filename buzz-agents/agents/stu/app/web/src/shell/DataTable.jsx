@@ -17,8 +17,34 @@ import { useNavigate } from 'react-router'
 import { Table, Text } from '@recursica/mantine-adapter'
 
 /**
- * @param columns  `[{ key, header, sortValue, render }]`
+ * Column widths by data type.
+ *
+ * `recursica-skill-tables`: "Set widths by data type, so that truncation is rarely needed —
+ * dates, currency, and statuses are narrow; sentences need room. Fixing widths per content type
+ * is what keeps a table stable as data varies."
+ *
+ * These are the narrow types. The sentence column is deliberately given no width at all: the
+ * automatic layout hands it whatever the narrow ones did not take, which is the behaviour the
+ * rule wants and is stable as the viewport changes. Setting a width on the wide column instead
+ * is the version that fails — it holds its size while the date column wraps around it.
+ */
+export const COLUMN_WIDTH = {
+  count: '6rem',
+  date: '8rem',
+  status: '8rem',
+  /** A short categorical value — a cohort, a role, a type. */
+  term: '13rem',
+}
+
+/**
+ * @param columns  `[{ key, header, sortValue, render, width }]`
  *                 `sortValue(row)` opts a column into sorting. Omit it and the header is inert.
+ *                 `width` is a CSS length for the column, declared in a `colgroup`.
+ *                 `recursica-skill-tables` asks for widths set by data type — dates, counts and
+ *                 statuses narrow, sentences given room — so that wrapping is the exception
+ *                 rather than what every long value does. Without it the automatic layout
+ *                 divides the table by content and the identity column, which is the one that
+ *                 actually needs room, loses to six numeric columns that do not.
  * @param initialSort `{ key, direction }` — required. There is no unsorted state.
  * @param rowHref  `(row) => string`. Provide it and the entire row navigates; provide nothing in
  *                 the cells that also clicks.
@@ -55,6 +81,13 @@ export function DataTable({ columns, rows, initialSort, rowHref, getRowKey, empt
 
   return (
     <Table>
+      {/* Plain HTML, not a Recursica element — the adapter filters styling props off its own
+          components, and a column width is neither a style it owns nor one it exposes. */}
+      {columns.some((c) => c.width) && (
+        <colgroup>
+          {columns.map((c) => <col key={c.key} style={c.width ? { width: c.width } : undefined} />)}
+        </colgroup>
+      )}
       <Table.Thead>
         <Table.Tr>
           {columns.map((c) => {
@@ -102,7 +135,13 @@ export function DataTable({ columns, rows, initialSort, rowHref, getRowKey, empt
               } : undefined}
             >
               {columns.map((c) => (
-                <Table.Td key={c.key}>{c.render(row)}</Table.Td>
+                // Every cell's content goes in the same plain wrapper, which carries no type
+                // and no colour of its own — the cell already has both. It is here so that
+                // wrapping behaves the same in every column, per `recursica-skill-tables`:
+                // prefer a second line to truncating. See `.stu-cell`.
+                <Table.Td key={c.key}>
+                  <span className="stu-cell">{c.render(row)}</span>
+                </Table.Td>
               ))}
             </Table.Tr>
           )
@@ -115,8 +154,16 @@ export function DataTable({ columns, rows, initialSort, rowHref, getRowKey, empt
 /**
  * A value that is absent, rendered so it cannot be mistaken for a real one.
  * `recursica-skill-tables`: never let a null read as a value — 0 because the fetch failed is a
- * different claim from "none".
+ * different claim from "none" — and it asks for the disabled-looking treatment specifically.
+ *
+ * This used to be a `Text`, which was wrong twice over: it changed the typeface of the value
+ * away from the cell's own, and `body-small` is a size difference rather than the disabled
+ * treatment the rule asks for. The kit does define `disabled` on a cell, but only as a state on
+ * the whole `td`, and a renderer several components deep cannot reach the `td` it will land in.
+ * So the colour is read from the same token the cell's disabled state uses. **A supported way
+ * to mark one value absent is a real gap** — `recursica-skill-table` already lists what
+ * `disabled` means on a cell as uncovered.
  */
 export function Absent({ children = 'None' }) {
-  return <Text variant="body-small" component="span">{children}</Text>
+  return <span className="stu-cell--absent">{children}</span>
 }

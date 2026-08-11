@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-tables
-description: House rules for tables and data grids in enterprise web applications — what earns a column, the prohibition on horizontal scrolling, stacked cell text, column widths by data type, alignment including right-aligned currency, truncate vs. wrap, infinite scroll vs. pagination, fixed headers and footers, null cells, default sort and multi-sort, when a row may be clickable, inline editing, totals, column visibility, grouped rows, and frozen columns. Use whenever building, reviewing, or refactoring a table, data grid, list view, or any tabular display. Trigger on "table", "data grid", "columns", "rows", "sort", "pagination", "infinite scroll", "sticky header", "truncate", "inline edit", "row actions", "totals row", or a request to display many records. Do NOT use for row action buttons and links — that is recursica-skill-buttons-links. Do NOT use for row selection checkboxes — that is recursica-skill-selection-controls.
+description: House rules for tables and data grids in enterprise web applications — what earns a column, the prohibition on horizontal scrolling, stacked cell text, column widths by data type including widthing the narrow types and leaving the sentence column unset, alignment including right-aligned currency, truncate vs. wrap and why a value with no spaces must break inside a word, infinite scroll vs. pagination, fixed headers and footers, null cells, default sort and multi-sort, when a row may be clickable, inline editing, totals, column visibility, grouped rows, and frozen columns. Use whenever building, reviewing, or refactoring a table, data grid, or list view. Trigger on "table", "data grid", "columns", "rows", "sort", "pagination", "infinite scroll", "truncate", "wrap", "column width", "overflowing cell", or "inline edit". Do NOT use for row action buttons and links — that is recursica-skill-buttons-links. Do NOT use for row selection checkboxes — that is recursica-skill-selection-controls.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -59,6 +59,17 @@ It is occasionally unavoidable when a client insists every field occupy its own 
 
 **A maximum column width is set by the design system**, and values are truncated when they reach it. The exact character count or pixel threshold is the system's, varies by implementation, and **is not a design decision.**
 
+**Width the narrow types and leave the wide one unset.** This is the part that decides whether the rule actually works:
+
+- **Give an explicit width to every column whose data type is narrow** — counts, dates, statuses, currency, short categorical terms.
+- **Give the sentence column no width at all.** It takes whatever the narrow columns did not, which is what "sentences need room" means in practice, and it stays right as the viewport changes.
+
+**Doing it the other way round is the failure.** Fixing a width on the wide column instead holds that column's size while everything beside it is squeezed, so the date column wraps `Aug 10,` onto one line and `2026` onto the next — a wrapped date beside a comfortable sentence is the signature of this mistake.
+
+**Setting no widths at all is the other failure.** Left alone, the layout divides the table by content, and the identity column — the one the reader scans — loses to however many numeric columns are to its right. A long value there then collides with its neighbour instead of wrapping inside its own column.
+
+**Widths belong to the data type, not to the screen.** Define them once for the application so that a count column is the same width in every table, and reference that definition. Per-table pixel values drift apart immediately.
+
 ## Alignment
 
 | Content                    | Alignment                              |
@@ -81,6 +92,12 @@ Decide in this order:
 1. **If the cell has secondary text, it cannot wrap.** Two lines is the ceiling for a cell, and the stack already uses both. Truncate the single line.
 2. **With no secondary text, prefer wrapping to a second line over truncating.** Truncation is a last resort.
 3. **If the value will not fit in two lines, it does not belong in the table.** Move it to a detail view.
+
+**A value with no spaces in it cannot wrap, and by default it does not try.** An identifier, a filename, a slug, a URL — anything joined by underscores or dots — is one word as far as text layout is concerned, so it does not break at the edge of its column: it runs straight across the columns beside it. The reader sees two values collide and reads it as a rendering bug, which it is.
+
+**So wrapping has to be permitted to break inside a word, and it has to be set for every cell rather than the one column where the problem was noticed.** It is the table's behaviour, not a property of one column, and the next dataset puts a long value somewhere else.
+
+**Getting the widths right is what keeps this rare.** Breaking mid-word is the safety net for the value that is long anyway, not the mechanism for fitting a column that was never given room.
 
 ## Rows, scrolling, and pagination
 
@@ -201,7 +218,12 @@ Before considering a table done, verify:
 - [ ] The table fits the primary desktop dimensions with no horizontal scrolling.
 - [ ] No cell holds more than two values, and the column header explains both.
 - [ ] No unrelated values were combined into one column.
-- [ ] Widths are set by data type; truncation relies on the system's maximum, not an invented threshold.
+- [ ] Widths are set by data type: an explicit width on every narrow column — counts, dates, statuses, currency,
+      short terms — and none on the sentence column, which takes the remainder. Widths are defined once for the
+      application rather than per table.
+- [ ] Wrapping is allowed to break inside a word, set for every cell, so a value with no spaces in it wraps in its
+      own column instead of running across the next one.
+- [ ] Truncation relies on the system's maximum, not an invented threshold.
 - [ ] Currency is right-aligned; text is left; icons, checkboxes, and buttons are centered.
 - [ ] Cells with secondary text truncate; cells without prefer wrapping to a second line; nothing longer than two lines is in the table at all.
 - [ ] Full-size tables fill their container and use infinite scroll; interior tables show five to ten rows and paginate.

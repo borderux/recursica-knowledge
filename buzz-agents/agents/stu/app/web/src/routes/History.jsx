@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react'
 import { Text } from '@recursica/mantine-adapter'
 import { api } from '../api.js'
+import { formatDateTime } from '../format.js'
 import { Page, Section } from '../shell/Page.jsx'
 import { Absent, DataTable } from '../shell/DataTable.jsx'
 
@@ -65,7 +66,7 @@ export function History({ revision }) {
       key: 'was',
       header: 'The line it was made against',
       sortValue: (r) => r.original_text_at_edit ?? '',
-      render: (r) => <Text variant="body-small">{r.original_text_at_edit}</Text>,
+      render: (r) => r.original_text_at_edit,
     },
     {
       key: 'edited_at',
@@ -108,8 +109,12 @@ export function History({ revision }) {
   )
 }
 
+// An edit's timestamp, in the reader's own zone. `recursica-skill-dates-and-currency` prefers
+// relative time for recent occurrences and switches to the absolute date above a threshold — but
+// it also says the threshold itself is a product decision, so this shows the absolute form
+// everywhere rather than inventing one. Raised as a question rather than guessed.
 function Stamp({ value }) {
-  const raw = value?.value ?? value
-  if (!raw) return <Absent>Not recorded</Absent>
-  return <>{new Date(raw).toISOString().replace('T', ' ').slice(0, 16)}</>
+  const text = formatDateTime(value)
+  if (!text) return <Absent>Not recorded</Absent>
+  return <>{text}</>
 }

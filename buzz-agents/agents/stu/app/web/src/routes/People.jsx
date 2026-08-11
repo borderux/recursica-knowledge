@@ -261,7 +261,7 @@ export function People({ identity, revision, onChanged }) {
                   {r.person_name
                     ? (
                       <>
-                        <Text variant="body-small">{r.person_name}</Text>
+                        <span>{r.person_name}</span>
                         {/* The source label never disappears behind the correction. */}
                         <Text variant="caption">
                           transcript says {r.source_names.length ? r.source_names.join(' / ') : 'nothing'}
@@ -269,7 +269,7 @@ export function People({ identity, revision, onChanged }) {
                       </>
                     )
                     : r.source_names.length
-                      ? <Text variant="body-small">{r.source_names.join(' / ')}</Text>
+                      ? <span>{r.source_names.join(' / ')}</span>
                       : <Absent>No name</Absent>}
                   <Text variant="caption"><code>{r.participant_id}</code></Text>
                 </Stack>
@@ -280,20 +280,20 @@ export function People({ identity, revision, onChanged }) {
               header: 'Role',
               sortValue: (r) => r.source_types[0] ?? null,
               render: (r) => r.source_types.length
-                ? <Text variant="body-small">{r.source_types.join(' / ')}</Text>
+                ? r.source_types.join(' / ')
                 : <Absent>Not recorded</Absent>,
             },
             {
               key: 'interviews',
               header: 'Interviews',
               sortValue: (r) => r.conversation_count,
-              render: (r) => <Text variant="body-small">{r.conversation_count}</Text>,
+              render: (r) => r.conversation_count,
             },
             {
               key: 'lines',
               header: 'Lines',
               sortValue: (r) => r.line_count,
-              render: (r) => <Text variant="body-small">{r.line_count}</Text>,
+              render: (r) => r.line_count,
             },
             {
               key: 'warnings',

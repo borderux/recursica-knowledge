@@ -8,7 +8,7 @@ import { Link as RouterLink, useParams } from 'react-router'
 import { Link, Text } from '@recursica/mantine-adapter'
 import { api } from '../api.js'
 import { Page } from '../shell/Page.jsx'
-import { DataTable } from '../shell/DataTable.jsx'
+import { Absent, DataTable } from '../shell/DataTable.jsx'
 import { formatConfidence } from './Interview.jsx'
 
 export function TagDetail({ revision }) {
@@ -49,15 +49,16 @@ export function TagDetail({ revision }) {
       key: 'text',
       header: 'What was said',
       sortValue: (r) => r.cleaned_text ?? r.original_text,
-      render: (r) => <Text variant="body-small">{r.cleaned_text ?? r.original_text}</Text>,
+      render: (r) => r.cleaned_text ?? r.original_text,
     },
     {
       key: 'justification',
       header: 'Why this tag',
       sortValue: (r) => r.justification ?? '',
+      // The value carries the cell's own type; the missing case is the absent treatment rather
+      // than a smaller size, because "no justification" is a null and not a short answer.
       render: (r) => r.justification
-        ? <Text variant="body-small">{r.justification}</Text>
-        : <Text variant="body-small">No justification recorded — this tag cannot be checked.</Text>,
+        ?? <Absent>No justification recorded — this tag cannot be checked.</Absent>,
     },
     {
       key: 'confidence',

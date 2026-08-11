@@ -4,8 +4,9 @@
 import { useEffect, useState } from 'react'
 import { Badge, Text } from '@recursica/mantine-adapter'
 import { api } from '../api.js'
+import { formatDate } from '../format.js'
 import { Page } from '../shell/Page.jsx'
-import { Absent, DataTable } from '../shell/DataTable.jsx'
+import { Absent, COLUMN_WIDTH, DataTable } from '../shell/DataTable.jsx'
 import { Figures } from '../shell/Figures.jsx'
 
 export function Interviews({ revision }) {
@@ -31,24 +32,32 @@ export function Interviews({ revision }) {
     {
       key: 'name',
       header: 'Interview',
+      // No width. This is the sentence column, and it takes whatever the narrow ones leave.
       sortValue: (r) => r.document_name ?? r.conversation_id,
-      render: (r) => <Text variant="body">{r.document_name ?? r.conversation_id}</Text>,
+      // No `Text` wrapper. A cell already carries the kit's `table-cell` text style, and
+      // `recursica-skill-table` lists that style under "Not your decision" — wrapping the value
+      // put this one column in the brand's secondary typeface while every other column stayed
+      // in the primary.
+      render: (r) => r.document_name ?? r.conversation_id,
     },
     {
       key: 'participant_type',
       header: 'Cohort',
+      width: COLUMN_WIDTH.term,
       sortValue: (r) => r.participant_type,
       render: (r) => r.participant_type ?? <Absent>Not recorded</Absent>,
     },
     {
       key: 'lines',
       header: 'Lines',
+      width: COLUMN_WIDTH.count,
       sortValue: (r) => Number(r.actual_line_count ?? 0),
       render: (r) => Number(r.actual_line_count ?? 0),
     },
     {
       key: 'untagged',
       header: 'Untagged lines',
+      width: COLUMN_WIDTH.count,
       sortValue: (r) => untagged(r),
       // How much of the interview the analysis does not rest on. Kept as its own column rather
       // than folded into a percentage: "45 of 75 untagged" changes what you conclude.
@@ -57,12 +66,14 @@ export function Interviews({ revision }) {
     {
       key: 'edits',
       header: 'Your corrections',
+      width: COLUMN_WIDTH.count,
       sortValue: (r) => Number(r.edited_line_count ?? 0),
       render: (r) => Number(r.edited_line_count ?? 0),
     },
     {
       key: 'status',
       header: 'Status',
+      width: COLUMN_WIDTH.status,
       // Sort on the word displayed, not on `r.status` — otherwise a row reading "Tagged" sorts
       // among the rows reading "Ingested" and the column disagrees with itself.
       sortValue: (r) => statusLabel(r),
@@ -72,6 +83,7 @@ export function Interviews({ revision }) {
     {
       key: 'ingested_at',
       header: 'Ingested',
+      width: COLUMN_WIDTH.date,
       sortValue: (r) => r.ingested_at?.value ?? r.ingested_at,
       render: (r) => <DateOnly value={r.ingested_at} />,
     },
@@ -151,9 +163,9 @@ export function countMismatch(r) {
 }
 
 export function DateOnly({ value }) {
-  const raw = value?.value ?? value
-  if (!raw) return <Absent>Not recorded</Absent>
-  return <>{new Date(raw).toISOString().slice(0, 10)}</>
+  const text = formatDate(value)
+  if (!text) return <Absent>Not recorded</Absent>
+  return <>{text}</>
 }
 
 function sum(rows, key) {

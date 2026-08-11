@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-dates-and-currency
-description: House rules for formatting dates, times, currency, and numeric values in enterprise web applications — whose locale wins, the disambiguated date format, when to state a time zone, when not to localize a time at all, relative vs. absolute time and the switchover threshold, right-aligned currency, two-decimal precision, the currency symbol in the column header, accounting parentheses, precision consistency across rows, rounding and abbreviation, date and value ranges, 12- vs 24-hour time, duration formatting, and the format-follows-focus rule for editable fields. Use whenever a date, time, timestamp, money amount, or number is displayed or entered. Trigger on "date format", "timestamp", "time zone", "relative time", "ago", "duration", "elapsed", "currency", "money", "decimal", "precision", "rounding", "date range", or "align the numbers". Do NOT use for table structure — that is recursica-skill-tables, which this skill supplies the cell formatting for.
+description: House rules for formatting dates, times, currency, and numeric values in enterprise web applications — whose locale wins, the disambiguated date format, deriving the value from a formatting API rather than slicing a UTC serialisation, when to state a time zone, when not to localize a time at all, relative vs. absolute time and the switchover threshold, right-aligned currency, two-decimal precision, the currency symbol in the column header, accounting parentheses, precision consistency across rows, rounding and abbreviation, date and value ranges, 12- vs 24-hour time, duration formatting, and the format-follows-focus rule. Use whenever a date, time, timestamp, money amount, or number is displayed or entered. Trigger on "date format", "timestamp", "time zone", "relative time", "ago", "duration", "toISOString", "UTC", "currency", "money", "decimal", "precision", "rounding", "date range", or "align the numbers". Do NOT use for table structure — that is recursica-skill-tables.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -32,6 +32,21 @@ This is the single date format, and its purpose is disambiguation: it reads corr
 **NEVER display a date as numbers separated by slashes or hyphens outside a focused input.** `01/07/2026` is ambiguous — a reader cannot tell the month from the day whenever both values could plausibly be either. A spelled month removes the ambiguity entirely, which is why there is no reason to use the numeric form.
 
 **This is the single biggest pet peeve in this topic.** A screen showing numeric slash-or-hyphen dates reads as lazy, because the disambiguated alternative costs nothing.
+
+### Derive the value, never slice a serialisation
+
+**MUST build the displayed value from a date-formatting API in the reader's locale and zone.** In a browser that is `Intl.DateTimeFormat` with **no locale argument** — passing one names a locale the reader did not choose, which is the tenant's locale winning, forbidden above.
+
+**NEVER produce a displayed date by cutting characters out of a machine serialisation.** `toISOString().slice(0, 10)` and its variants are the shape to look for. One line of it breaks two separate rules at once:
+
+- **It is the numeric hyphen form** — `2026-08-10` — which is the format this section prohibits.
+- **It is UTC, not the reader's zone.** So it is not merely formatted wrong, it is **the wrong day**: an entry made at 6pm on the 10th west of Greenwich displays as the 11th. Nobody reviewing the screen sees a bug, because a plausible date is showing.
+
+**The second failure is the dangerous one**, and it survives a fix to the first. Reformatting the same UTC string into `Aug 10, 2026` still shows the wrong day. **Correct the source of the value and the format together.**
+
+**Format once, in one place.** A formatter defined per call site is how a screen ends up with three date formats, and building one per row of a table is measurably slow. Construct the formatters once and export them.
+
+**A date-only value is not a timestamp.** Where the stored value carries no time — a birth date, a due date, an accounting period — converting it to the reader's zone shifts it by a day in one direction or the other. Zone conversion applies to instants. If it is not clear which one a field holds, that is a question to ask rather than a default to pick.
 
 ## Time zones
 
@@ -146,6 +161,10 @@ Do not pattern-match one of these to a rule above. A wrong convention in a fisca
 
 - [ ] Dates use a three-letter month, one-to-two-digit day, and four-digit year.
 - [ ] No read-only date appears as numbers separated by slashes or hyphens.
+- [ ] Every displayed date and time is built by a formatting API in the reader's locale and zone — no value is cut
+      out of a machine serialisation, and no `toISOString()` slice reaches a screen.
+- [ ] Formatters are constructed once and shared, not per call site or per row.
+- [ ] Any field holding a date with no time was identified as such and not shifted by a zone conversion.
 - [ ] Times are in the user's own zone, not the tenant's.
 - [ ] A time zone is stated whenever the value is outside the user's zone, or the user's zone is unknown, or the user has switched zones.
 - [ ] Times for events that happened elsewhere are shown in the zone of occurrence, labeled, with a way to convert.
