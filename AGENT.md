@@ -411,6 +411,12 @@ can edit `skills/` can resolve a violation by softening the rule. See
 [agents/barb/PORTING.md](agents/barb/PORTING.md), and note the two leaks it names even on Claude
 Code — `Bash` is a write path, and per-subagent `tools:` lines only hold if the platform honours them.
 
+**She is built for Buzz as well**, so `restore-agents.mjs` deploys her with the others and any agent
+building a Recursica app can ask her for a review in a channel. A Buzz agent has no `tools:` line at
+all, though, so that property arrives as prose and the two mechanisms that look like they would fix
+it — `agent_args`, a per-agent `CLAUDE_CODE_EXECUTABLE` — are both recorded failures. Her PORTING.md
+has the one that works, what it is worth, and what it costs.
+
 Which skills apply to a screen is **computed, not judged**:
 
 ```bash

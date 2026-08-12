@@ -62,6 +62,50 @@ reason Claire is not built for opencode.
    `tools:` lines, and those lines are the boundary. If your platform ignores per-subagent tools and
    grants them the parent's set, or the session's, they can write. Check rather than assume.
 
+## On Buzz, where there is no tool allowlist at all
+
+She is deployable with the rest — `buzz-agents/agents/barb/` holds her prompt and settings, and
+`restore-agents.mjs` opens her draft alongside Claire's and Stu's. She needs no credential, no
+values file entry and no dataset, so there is nothing in the install that is hers alone.
+
+**Her one property does not come with her, and three of the four ways to carry it do not work.**
+A Buzz agent has no `tools:` line: it inherits whatever the session holds. Two mechanisms that
+look like they would fix that are recorded as failures in
+[`nest/GUIDES/LOKI_SANDBOX_SETUP.md`](../../nest/GUIDES/LOKI_SANDBOX_SETUP.md) — `agent_args` is
+dropped before it reaches the CLI, and a per-agent `CLAUDE_CODE_EXECUTABLE` is overwritten by
+Buzz after per-agent config, so a wrapper script silently loses. Neither says anything when it
+fails.
+
+**What works is `CLAUDE_CONFIG_DIR`,** which Buzz does not set. Point it at a directory of her
+own holding a `settings.json` with:
+
+```json
+{ "permissions": { "deny": ["Write", "Edit", "NotebookEdit"] } }
+```
+
+Verified by asking a session through that settings file to write a file: it reports the tool as
+unavailable and *"disabled for this session, in subagents as well as here"*, and no file appears.
+That last clause matters — it closes the leak a front-matter allowlist leaves open, where a
+general-purpose subagent comes with write tools the parent does not have. On this surface she is
+better fenced than on the one she was designed for, not worse.
+
+The same directory is where an empty MCP registry goes, and `disableClaudeAiConnectors: true`
+with it. The registry is per machine, so by default a Buzz session sees every client's dataset
+and Drive server, and the account-level Drive connector is unfenced regardless of the registry.
+None of it is anything a design reviewer should be able to reach.
+
+**The price is the operator's to weigh, not ours to hide.** An isolated config directory is not
+read from the Keychain, so the login token has to be written into a file in that directory — the
+same trade-off, and the same reasoning, as the Loki guide sets out. For an agent whose entire
+risk is editing a git checkout, an operator may reasonably decide the prose fence plus code
+review is the better deal.
+
+**If they do decide that, her prompt is honest about it.** The Buzz fragment tells her she is
+holding write tools, forbids the two paths that survive any fence (`Bash`, and dispatching a
+general-purpose agent), and tells her to say so in her report if she can see `Write` — because
+nobody else is positioned to notice, and an unenforced guarantee that everyone believes is
+enforced is the worst of the three states.
+
 ## What breaks quietly
 
 **The manifest is version-coupled to the adapter.** `ADAPTER_COMPONENTS` in the script is a copy of
