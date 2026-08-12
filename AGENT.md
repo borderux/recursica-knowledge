@@ -148,9 +148,19 @@ two.
 **Three flags in — verify by kind, not by counting lines:**
 
 ```bash
-git log -1 --format='%(trailers)' | grep -cE '^Co-authored-by:'   # must print 2
-git log -1 --format='%(trailers)' | grep -cE '^Signed-off-by:'    # must print 1
+git log -1 --format='%(trailers)' | grep -ciE '^Co-authored-by:'  # must print 2
+git log -1 --format='%(trailers)' | grep -ciE '^Signed-off-by:'   # must print 1
+git log -1 --format='%(trailers:key=Co-authored-by,valueonly=true)'  # operator, then model
 ```
+
+**`-ciE`, not `-cE`.** Git treats trailer keys case-insensitively and grep does not, so a
+lowercase `co-authored-by:` is a real trailer that an exact-case count misses — reading 1 on a
+commit that is correct. Fail-safe, but it stops good work.
+
+**The third command is not redundant.** `2` and `1` also passes when both `Co-authored-by`
+lines name the same party — two model lines and no operator, or the reverse. That is exactly
+the composition the paragraph above is about, and no count can see it. The counts catch a
+missing line; the identities catch a wrong pair.
 
 **Not `git log --oneline -1`** — that prints hash and subject only, so it structurally cannot
 show a trailer and will pass on a commit that has none. That is exactly how one of the two
@@ -168,6 +178,12 @@ same instrument.
 **Two counts rather than one**, because a single `grep -cE '^(Co-authored-by|Signed-off-by):'`
 prints 3 for three `Co-authored-by` lines and no sign-off. The failure this verifies against
 is a wrong *composition*, so a recipe that cannot see composition verifies nothing.
+
+**Keep an example trailer out of a commit message's final paragraph.** Git decides trailers
+from the last paragraph, so a bare `Co-authored-by: EXAMPLE <x@x>` line there is a genuine
+trailer and the count reads 3 where 2 is required. The same line one paragraph earlier is
+correctly ignored. No recipe can distinguish them, which makes this a writing rule — and the
+commits most likely to contain such a line are the commits about trailers.
 
 The count is the point. The next failure was not a missed verification — it was a correct
 one, run with the right command, that read back two trailers and stopped, because two is
