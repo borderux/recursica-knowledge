@@ -51,6 +51,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
+import { leadingWords, statementsOf, stripHeredocs } from "./lib/shell-command.mjs";
+
 const BUZZ_HOME = process.env.BUZZ_HOME || path.join(os.homedir(), ".buzz");
 const REPOS = path.join(BUZZ_HOME, "REPOS");
 
@@ -72,9 +74,6 @@ const PUBLISHERS = new Set(["buzz", "gh", "curl", "wget", "echo", "printf"]);
 
 /** git is a publisher only for the subcommands that emit or record prose. */
 const GIT_PUBLISHES = new Set(["commit", "log", "show", "diff", "tag", "push", "remote"]);
-
-/** Wrappers that delegate: the verb that matters is the next word. */
-const WRAPPERS = new Set(["sudo", "env", "time", "nohup", "command", "xargs", "nice", "stdbuf"]);
 
 function deny(reason) {
   process.stdout.write(
@@ -166,25 +165,6 @@ if (!rawCommand.includes("REPOS/")) process.exit(0);
  * the command as body for the same reason, and the read never executes either. Verified
  * with a marker that never printed. Do not "fix" this into a deny.
  */
-function stripHeredocs(command) {
-  const kept = [];
-  const pending = [];
-  for (const line of command.split("\n")) {
-    if (pending.length) {
-      const end = pending[0].stripTabs ? line.replace(/^\t+/, "") : line;
-      if (end.trim() === pending[0].delim) pending.shift();
-      continue; // body and terminator alike are data
-    }
-    for (const m of line.matchAll(/<<(-?)\s*(["']?)([A-Za-z_][A-Za-z0-9_]*)\2/g)) {
-      // `<<<` is a herestring, not a heredoc; it is stripped in place below.
-      if (line[m.index - 1] === "<" || line[m.index + 2] === "<") continue;
-      pending.push({ delim: m[3], stripTabs: m[1] === "-" });
-    }
-    kept.push(line.replace(/<<<\s*("[^"]*"|'[^']*'|\S+)/g, " "));
-  }
-  return kept.join("\n");
-}
-
 const command = stripHeredocs(rawCommand);
 if (!command.includes("REPOS/")) process.exit(0);
 
@@ -192,21 +172,14 @@ if (!command.includes("REPOS/")) process.exit(0);
  * Statements run in sequence; a `cd` in one is still in effect for the next. Command
  * substitution is opened up too, so `echo "$(cat <stale>/x)"` is not a way through.
  */
-const statements = command
-  .replace(/\$\(|`/g, "\n")
-  .split(/&&|\|\||;|\n/)
-  .map((s) => s.trim())
-  .filter(Boolean);
+const statements = statementsOf(command);
 
-/** Leading verb, past environment assignments and delegating wrappers. */
+/** Leading verb, with git specialised by the subcommand that follows it. */
 function verbOf(segment) {
-  const words = segment.split(/\s+/).filter(Boolean);
-  let i = 0;
-  while (i < words.length && /^[A-Za-z_][A-Za-z0-9_]*=/.test(words[i])) i++;
-  while (i < words.length && WRAPPERS.has(path.basename(words[i] ?? ""))) i++;
-  const verb = path.basename((words[i] ?? "").replace(/^["'(]+/, ""));
+  const words = leadingWords(segment);
+  const verb = path.basename((words[0] ?? "").replace(/^["'(]+/, ""));
   if (verb === "git") {
-    const sub = words.slice(i + 1).find((w) => !w.startsWith("-"));
+    const sub = words.slice(1).find((w) => !w.startsWith("-"));
     return GIT_PUBLISHES.has(sub ?? "") ? "\0publish" : "git";
   }
   return verb;

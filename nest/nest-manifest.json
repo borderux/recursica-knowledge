@@ -147,6 +147,10 @@
       "mode": "0700"
     },
     {
+      "path": "bin/lib",
+      "mode": "0700"
+    },
+    {
       "path": "mcp",
       "mode": "0700"
     }
@@ -186,6 +190,26 @@
       "from": "bin/guard-stale-checkout.mjs",
       "to": "bin/guard-stale-checkout.mjs",
       "mode": "0755",
+      "resolve": true
+    },
+    {
+      "$comment": [
+        "The credential guard, and the command-reading helpers both it and the stale-checkout",
+        "guard use. Registered in .claude/settings.json with NO `if` key, unlike its siblings:",
+        "on the day it was written Bash(git *) fired with git not leading and Bash(curl *) did",
+        "not fire with curl leading, unexplained by anyone. A guardrail behind a mechanism",
+        "nobody can explain is not a guardrail. The command test lives in the script, where",
+        "guard-credential-store.test.mjs asserts it in both directions."
+      ],
+      "from": "bin/guard-credential-store.mjs",
+      "to": "bin/guard-credential-store.mjs",
+      "mode": "0755",
+      "resolve": true
+    },
+    {
+      "from": "bin/lib/shell-command.mjs",
+      "to": "bin/lib/shell-command.mjs",
+      "mode": "0644",
       "resolve": true
     },
     {

@@ -244,6 +244,41 @@ Three things about it are deliberate:
 
 `node --test 'nest/bin/*.test.mjs'` asserts both directions.
 
+### The fourth hook: enumerating the operator's credential store
+
+`nest/bin/guard-credential-store.mjs` denies `security dump-keychain` and
+`security find-*-password`, and denies reading `~/.netrc` or anything under `~/.ssh/`.
+Retrieving one credential through `git credential-<helper> get` is untouched — that is the
+sanctioned interface and the deny message points at it.
+
+`AGENTS.md` has said all of this for months, in a `## Credentials` section naming all three
+subcommands individually. **On 2026-08-12 two agents ran them anyway, four minutes apart, and
+one was the reviewer whose own checklist makes it a guardrail breach.** Neither had ignored the
+rule; neither had read it. That is the same argument the stale-checkout guard already rests
+on — `AGENTS.md` binds when a session starts, and Buzz sessions are pooled and long-lived.
+
+Two things about it differ from its siblings on purpose:
+
+- **It is registered with no `if` key.** Every other hook in `nest/.claude/settings.json`
+  carries one, and on the day this was written `Bash(git *)` denied a command with `git` not
+  leading while `Bash(curl *)` failed to deny one with `curl` leading — verified four ways by
+  two agents independently and explained by neither. A guardrail behind a mechanism nobody can
+  explain is not a guardrail. The one hook that fires reliably is the one with no `if`.
+- **`security` has too many spellings for a leading-command glob anyway.**
+  `/usr/bin/security`, `FOO=1 security`, `sudo security`, `cd … && security` all reach the same
+  syscall. The per-segment test inside the script sees them; a glob sees none of them.
+
+`nest/bin/lib/shell-command.mjs` holds the heredoc stripping, statement splitting and verb
+extraction both guards need. It was extracted from `guard-stale-checkout.mjs` rather than
+copied, and that guard's 26 tests passing unchanged is the evidence the extraction is
+behaviour-preserving. A hand-copied second version of this logic is exactly the second source
+of truth this repo keeps being bitten by.
+
+**Installing the script does not register it.** `.claude/settings.json` is `ifAbsent` in the
+manifest, so `bootstrap-nest.mjs` reports a diff and leaves the operator's copy alone. Both
+hook entries have to be added to `~/.buzz/.claude/settings.json` by hand, and until they are
+the guard is present and never invoked.
+
 ## 🧳 Portable agents
 
 `agents/<name>/` is the source of truth for an agent. `SKILL.md` holds everything portable;
