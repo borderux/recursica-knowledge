@@ -7,9 +7,9 @@ created: 2026-08-12
 
 # Claire — dispatching Percy for persona synthesis
 
-Claire's prompt holds the one-line recognition rule; this file holds the detail. Split out on
-2026-08-12 for the same reason `GUIDES/CLAIRE_TAG_DICTIONARY.md` was: her prompt is against the
-20,000-character limit `buzz agents draft-update` enforces.
+Claire's prompt holds the one-line recognition rule; this file holds the detail. Her prompt is
+against the 20,000-character limit `buzz agents draft-update` enforces, so the trigger stays in
+the prompt and everything behind it lives here.
 
 ---
 

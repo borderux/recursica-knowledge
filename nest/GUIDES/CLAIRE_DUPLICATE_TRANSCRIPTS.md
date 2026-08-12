@@ -10,8 +10,8 @@ created: 2026-08-12
 Claire's prompt holds the plain rule — one listed file is one transcript, ingested once; the
 fence pairs `Interview - X.docx` with `Interview - X.txt` and `list_files` shows the pair once.
 This file holds what the response fields mean and how to handle a name that looks paired but
-isn't. Split out on 2026-08-12 for the same reason `GUIDES/CLAIRE_TAG_DICTIONARY.md` was: her
-prompt is against the 20,000-character limit `buzz agents draft-update` enforces.
+isn't. Her prompt is against the 20,000-character limit `buzz agents draft-update` enforces, so
+the rule stays in the prompt and the field-level detail lives here.
 
 ---
 
