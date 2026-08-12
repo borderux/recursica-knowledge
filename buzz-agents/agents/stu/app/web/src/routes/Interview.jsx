@@ -75,7 +75,6 @@ export function Interview({ identity, revision, onChanged }) {
     <Page
       title={title}
       trail={TRAIL}
-      lede={`${meta?.participant_type ?? 'participant'} · ${lines.length} lines · ${data.participants.length} people`}
     >
       <Figures
         items={[
@@ -105,7 +104,6 @@ export function Interview({ identity, revision, onChanged }) {
 
       <Section
         title="Transcript"
-        note="Original text on the left of every correction. Nothing here hides what the machine changed."
       >
         <Layer layer={1}>
           <Group gap="lg" align="flex-end" wrap="wrap">

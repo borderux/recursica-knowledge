@@ -92,12 +92,7 @@ export function People({ identity, revision, onChanged }) {
         { label: 'Suggested merges', value: String(pairs.length + personMatches.length) },
       ]} />
 
-      <Section
-        title="Suggested"
-        note={pairs.length + personMatches.length > 0
-          ? 'Each suggestion says why it was made. None of them has been applied — the merge is yours.'
-          : undefined}
-      >
+      <Section title="Suggested">
         {pairs.length + personMatches.length === 0
           ? <Empty>
               Nothing looks like a duplicate right now. New transcripts can introduce more, so this
@@ -132,13 +127,7 @@ export function People({ identity, revision, onChanged }) {
       </Section>
 
       {unnamed.length > 0 && (
-        <Section
-          title="Speakers with no name"
-          note={
-            'The transcription service gave these records no name at all. The transcript they ' +
-            'appear in usually says who they are.'
-          }
-        >
+        <Section title="Speakers with no name">
           <Stack gap="sm">
             {unnamed.map((row) => (
               <div className="stu-record" key={row.participant_id}>
@@ -179,10 +168,7 @@ export function People({ identity, revision, onChanged }) {
         </Section>
       )}
 
-      <Section
-        title="Consolidated people"
-        note="A name here overrides the transcription service's everywhere it is read."
-      >
+      <Section title="Consolidated people">
         {people.length === 0
           ? <Empty>Nobody has been consolidated yet.</Empty>
           : (
@@ -201,13 +187,7 @@ export function People({ identity, revision, onChanged }) {
           )}
       </Section>
 
-      <Section
-        title="Every speaker"
-        note={
-          'One row per speaker id, totalled across every interview it appears in. Select two or ' +
-          'more to combine them; select one to correct its name.'
-        }
-      >
+      <Section title="Every speaker">
         <Layer layer={1}>
           <div className="stu-filters">
             <Group gap="sm" align="center" wrap="wrap">
@@ -312,14 +292,7 @@ export function People({ identity, revision, onChanged }) {
       </Section>
 
       {unattributed.length > 0 && (
-        <Section
-          title="Lines with no speaker"
-          note={
-            'These cannot be consolidated — there is no speaker label to attach to anyone. They are ' +
-            'listed because they are transcript with its provenance missing, which is worth ' +
-            'knowing rather than rounding away.'
-          }
-        >
+        <Section title="Lines with no speaker">
           <Text variant="body-small">
             {unattributedLines} line{unattributedLines === 1 ? '' : 's'} across{' '}
             {unattributed.length} interview{unattributed.length === 1 ? '' : 's'}:

@@ -69,13 +69,18 @@ export function TagDetail({ revision }) {
   ]
 
   return (
-    <Page
-      title={tagId}
-      trail={TRAIL}
-      lede={weak
-        ? `${rows.length} lines carry this tag, and ${weak} of them have no justification.`
-        : `${rows.length} lines carry this tag, each with a stated reason.`}
-    >
+    <Page title={tagId} trail={TRAIL}>
+      {/* Half of what used to be a page lede here was the table's own row count, which the table
+          already shows. The half worth keeping is the number with no justification — a reader who
+          does not see it will assume every row has one, which is the "state the reader would infer
+          wrongly" case. So it stays, as content, and only when it is non-zero: an all-clear is not
+          worth a line. */}
+      {weak > 0 && (
+        <Text variant="body-small">
+          {weak} of these lines carry the tag with no justification.
+        </Text>
+      )}
+
       {/* A row here already contains a link to the line, so the row itself must not also
           navigate — one click target per row. */}
       <DataTable

@@ -90,12 +90,11 @@ export function Dictionary({ identity, revision, onChanged }) {
             empty={rows.length === 0
               ? 'The dictionary is empty. Lexicon writes terms here as it reads transcripts.'
               : 'No term proposed so far lists an alternative spelling. Every one of them is a definition.'}
-            waitingNote={
+            approvalConsequence={
               'Approving lets Scribe count this term as evidence when it corrects a transcript '
               + 'from now on — it raises the score behind a correction, it does not force a '
               + 'replacement, and it does not change lines already ingested. Rejecting means the '
-              + 'term can never license a correction. Only a person can decide, and the decision '
-              + 'is recorded against your identity.'
+              + 'term can never license a correction.'
             }
             identity={identity}
             onChanged={onChanged}
@@ -109,11 +108,10 @@ export function Dictionary({ identity, revision, onChanged }) {
             empty={rows.length === 0
               ? 'The dictionary is empty. Lexicon writes terms here as it reads transcripts.'
               : 'Every term proposed so far lists an alternative spelling, so all of them are on the Spellings tab.'}
-            waitingNote={
+            approvalConsequence={
               'These entries list no alternative spelling, so approving one rewrites no text. It '
               + 'records the definition as agreed and lets Scribe count the term as evidence when '
-              + 'it corrects. Only a person can decide, and the decision is recorded against your '
-              + 'identity.'
+              + 'it corrects.'
             }
             identity={identity}
             onChanged={onChanged}
@@ -137,7 +135,7 @@ function Waiting({ rows }) {
  * sit above the collection they act on". `Waiting on you` and `Decided` are two views of one
  * collection, not two collections.
  */
-function Terms({ rows, kind, empty, waitingNote, identity, onChanged }) {
+function Terms({ rows, kind, empty, approvalConsequence, identity, onChanged }) {
   const [type, setType] = useState(null)
 
   // Options come from the rows actually present, never from the six types the schema names: a
@@ -198,18 +196,26 @@ function Terms({ rows, kind, empty, waitingNote, identity, onChanged }) {
         </Stack>
       </Layer>
 
-      {/* The consequence of approving goes in the section note, not a page lede. The lede was
-          retired on purpose — it is a constraint, not a description of the heading — and this is
-          the section the act belongs to: recursica-skill-screen-scaffolding, "the line under a
-          heading" is for what the heading cannot carry, and `Page`'s own contract names a
-          consequence as one of the four things this slot is for. The note differs per tab
-          because the consequence does: only a term with variants can unify text.
+      {/* This one line survived the removal of every other piece of sub-text in the app, and it is
+          worth saying why. It states what approving *does* — an irreversible-feeling act whose
+          actual effect is much narrower than it looks — which is a consequence, not a description
+          of the heading, and it is the stated exception in
+          recursica-skill-screen-scaffolding's "the line under a heading". It was added deliberately
+          in its own change, so deleting it with the rest would have undone that.
+
+          What did go is its closing reassurance that only a person can decide: that is the whole
+          app's premise, repeated on every screen, and the heading "Waiting on you" already says it.
+
+          It is content in the region now rather than a `note` prop, so it reads as a deliberate
+          addition instead of a slot somebody filled. The text differs per tab because the
+          consequence does: only a term with variants can unify text.
 
           Grounded, so the copy stays true: approval sets `status = 'active'`, and `active` is the
           only status that makes Scribe's `C_dictionary` non-zero — but that component scores 0–3
           against a threshold of 7, so it raises the odds of a correction rather than causing one
           (agents/claire/subagents/scribe/SKILL.md:358-365). */}
-      <Section title="Waiting on you" note={waiting.length ? waitingNote : undefined}>
+      <Section title="Waiting on you">
+        {waiting.length > 0 && <Text variant="body-small">{approvalConsequence}</Text>}
         {waiting.length === 0
           ? (
             <Empty>
@@ -225,7 +231,7 @@ function Terms({ rows, kind, empty, waitingNote, identity, onChanged }) {
           ))}
       </Section>
 
-      <Section title="Decided" note="Still editable — a decision can be revisited, and the change is logged.">
+      <Section title="Decided">
         {settled.length === 0
           ? <Empty>{type ? `No ${type} term has been decided yet.` : 'No term has been decided yet.'}</Empty>
           : settled.map((term) => (
