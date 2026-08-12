@@ -42,10 +42,25 @@ write. There is no cleanup afterwards that fully works.
 comment:** a client name or slug; a dataset or service-account name built from one
 (`research_<slug>`, `claire-<slug>-service-user`); a research participant's name, anything they
 said, or a detail that identifies them; a cloud project id; a Drive folder or sheet id; a
-channel UUID; a pubkey; any part of a key file.
+channel UUID; a pubkey; any part of a key file; **the client's domain vocabulary** — the
+population, segment or role words that name who they serve and what they do. A handful of
+those words identifies a client as surely as the slug does, and unlike the slug they are
+ordinary English, so nothing structural will ever catch them.
 
 Write structurally instead — "the client", "a client dataset", "a participant" — or use the
 `{{TOKEN}}`. Examples use `acme`. A sentence that seems to need a real name almost never does.
+
+**Never enumerate the strings you searched for. State the result.** "Grepped the diff for
+`<slug>`/`<role>`/`<segment>` — zero hits" publishes, in the sentence claiming the text is
+clean, exactly what the search was protecting. This is the rule to reach for when in doubt,
+because it is the only one here that needs no judgement about what is sensitive: you can
+follow it without knowing, which is precisely the case where the category list above fails
+you. Write "the checker passes on every changed file" — the exit code is the evidence, and
+it already knows the terms so the reader does not need them.
+
+The pattern generalises past grep. Any sentence whose job is to prove a check ran is under
+pressure to quote the thing checked — a rejected value, a matched line, a filename, a table
+row that "looks wrong." Prove it with the tool's output, never with the input.
 
 **Run the checker on the text, not just the diff:**
 
