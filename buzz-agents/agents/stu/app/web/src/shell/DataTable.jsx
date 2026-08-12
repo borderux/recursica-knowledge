@@ -12,7 +12,7 @@
 // It never scrolls horizontally. `recursica-skill-tables` says there is no exception to that, so
 // a table that would need it is a table with too many columns.
 
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Checkbox, Table, Text } from '@recursica/mantine-adapter'
 
@@ -68,9 +68,24 @@ export const COLUMN_WIDTH = {
  *
  *                 Selection feeds bulk actions and nothing else. It is not a way to open, focus, or
  *                 edit one record — see `recursica-skill-tables`.
+ * @param expandable `{ render: (row) => node, canExpand?: (row) => bool, label?: (row) => string }`.
+ *                 Gives each row a disclosure control that reveals sub-detail in place.
+ *
+ *                 **One level, and it does not nest.** `recursica-skill-tables` avoids grouped rows
+ *                 and asks for a single expand/collapse on the row instead, so what is revealed
+ *                 must not itself be expandable.
+ *
+ *                 This is how a record shows what it is made of without a second screen — and, for
+ *                 a row awaiting a decision, how the reader inspects the proposal before approving
+ *                 and inspects the result afterwards. The skill requires the same affordance to
+ *                 survive approval, with the undo inside it, because approval is the moment the
+ *                 reader most needs to check what happened.
  */
-export function DataTable({ columns, rows, initialSort, rowHref, getRowKey, emptyMessage, selection }) {
+export function DataTable({
+  columns, rows, initialSort, rowHref, getRowKey, emptyMessage, selection, expandable,
+}) {
   const [sort, setSort] = useState(initialSort)
+  const [expanded, setExpanded] = useState(() => new Set())
   const navigate = useNavigate()
 
   // Two click targets in one row means the reader cannot predict what a click does, and
@@ -80,6 +95,15 @@ export function DataTable({ columns, rows, initialSort, rowHref, getRowKey, empt
     throw new Error(
       'DataTable: selection and rowHref are mutually exclusive — a row with a checkbox must not '
       + 'also navigate. Put the link on the record\'s identifying value instead.',
+    )
+  }
+  // Same rule, second instance: a disclosure button is an interactive element in the row, so the
+  // row cannot navigate either. The skill lists an expansion control among the things that remove
+  // the possibility, alongside a checkbox and a menu.
+  if (expandable && rowHref) {
+    throw new Error(
+      'DataTable: expandable and rowHref are mutually exclusive — a row with a disclosure control '
+      + 'must not also navigate.',
     )
   }
 
@@ -133,9 +157,18 @@ export function DataTable({ columns, rows, initialSort, rowHref, getRowKey, empt
     selection.onChange(next)
   }
 
+  function toggleExpanded(key) {
+    setExpanded((current) => {
+      const next = new Set(current)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+  }
+
   // The selection column is prepended here, so a caller cannot ship rows of checkboxes with no
   // header control. `recursica-skill-badges-chips` also reserves column one for exactly this.
-  const allColumns = selection
+  const withSelect = selection
     ? [{
       key: '__select',
       width: COLUMN_WIDTH.select,
@@ -158,6 +191,43 @@ export function DataTable({ columns, rows, initialSort, rowHref, getRowKey, empt
       ),
     }, ...columns]
     : columns
+
+  /**
+   * The disclosure column, appended last.
+   *
+   * `recursica-skill-tables` allows **one level** of expand/collapse for a row's sub-detail and
+   * rejects grouped rows, so this is deliberately not nestable: a row is open or shut, and what it
+   * reveals cannot itself expand.
+   *
+   * It sits at the end rather than the start because the left edge is the strongest scan position
+   * and belongs to selection and identity. A control the reader uses occasionally does not outrank
+   * the value they came to read.
+   */
+  const allColumns = expandable
+    ? [...withSelect, {
+      key: '__expand',
+      width: COLUMN_WIDTH.select,
+      header: '',
+      render: (row) => {
+        const key = getRowKey(row)
+        if (!expandable.canExpand?.(row) && expandable.canExpand) return null
+        const open = expanded.has(key)
+        return (
+          <button
+            type="button"
+            className="stu-disclose"
+            aria-expanded={open}
+            aria-controls={`stu-detail-${key}`}
+            // Named for what it reveals, because the icon alone is a direction and not a subject.
+            aria-label={`${open ? 'Hide' : 'Show'} what makes up ${expandable.label?.(row) ?? key}`}
+            onClick={() => toggleExpanded(key)}
+          >
+            <span aria-hidden="true">{open ? '▾' : '▸'}</span>
+          </button>
+        )
+      },
+    }]
+    : withSelect
 
   return (
     <Table>
@@ -203,9 +273,11 @@ export function DataTable({ columns, rows, initialSort, rowHref, getRowKey, empt
       <Table.Tbody>
         {sorted.map((row) => {
           const href = rowHref?.(row)
+          const key = getRowKey(row)
+          const open = expandable && expanded.has(key)
           return (
+            <Fragment key={key}>
             <Table.Tr
-              key={getRowKey(row)}
               onClick={href ? () => navigate(href) : undefined}
               // A row that navigates is reachable by keyboard, or it is only navigable by mouse.
               tabIndex={href ? 0 : undefined}
@@ -224,6 +296,17 @@ export function DataTable({ columns, rows, initialSort, rowHref, getRowKey, empt
                 </Table.Td>
               ))}
             </Table.Tr>
+            {/* The detail sits in its own row spanning every column, which is what keeps it aligned
+                under the row it belongs to. `recursica-skill-tables` rejects grouped rows and asks
+                for one level of expansion instead, so nothing in here expands again. */}
+            {open && (
+              <Table.Tr>
+                <Table.Td colSpan={allColumns.length} id={`stu-detail-${key}`}>
+                  <div className="stu-detail-row">{expandable.render(row)}</div>
+                </Table.Td>
+              </Table.Tr>
+            )}
+            </Fragment>
           )
         })}
       </Table.Tbody>
