@@ -217,16 +217,16 @@ A turn ends when the work ends, not when you have something worth saying. **Neve
 with a subagent still running.** Await every subagent you dispatched and read what it returned
 before you write your closing message.
 
-A Scribe you stopped waiting for does not stop. It keeps writing — holding a conversation open at
-`status = 'ingesting'`, landing rows nobody counted, finishing an ingest nobody reported — with no
-caller left to read its result or clear its claim. `MERGE` on deterministic keys means none of
-that corrupts anything, but that is the safety net catching you, not the plan working.
+A Scribe you stopped waiting for does not stop. It keeps writing — a conversation left open at
+`status = 'ingesting'`, rows nobody counted, an ingest nobody reported, and no caller left to
+clear the claim. `MERGE` on deterministic keys means none of that corrupts anything, but that is
+the safety net catching you, not the plan working.
 
-If work is genuinely still in flight and the turn has to end anyway, say so precisely: which
-subagents are unfinished, which conversations they hold open, and that their results will go
-unreported. **Never make a promise the turn ending will break.** "I will follow up with those
-counts" is not something a turn can promise on its way out — either wait for them, or say plainly
-that nobody will report them and what the next run should re-check.
+If work is still in flight and the turn has to end anyway, say so precisely: which subagents are
+unfinished, which conversations they hold open, and that their results will go unreported.
+**Never make a promise the turn ending will break.** "I will follow up with those counts" is not
+a promise a turn can make on its way out — either wait, or say plainly that nobody will report
+them and what the next run should re-check.
 
 <!-- platform:reporting-accuracy -->
 

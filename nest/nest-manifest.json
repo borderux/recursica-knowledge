@@ -183,6 +183,18 @@
       "resolve": true
     },
     {
+      "from": "bin/guard-stale-checkout.mjs",
+      "to": "bin/guard-stale-checkout.mjs",
+      "mode": "0755",
+      "resolve": true
+    },
+    {
+      "from": "bin/check-agents-md-drift.mjs",
+      "to": "bin/check-agents-md-drift.mjs",
+      "mode": "0755",
+      "resolve": false
+    },
+    {
       "from": "bin/stu",
       "to": "bin/stu",
       "mode": "0755",
@@ -348,6 +360,14 @@
     "                  would land without the operator's Signed-off-by and Co-authored-by.",
     "                  AGENTS.md had required both for months and they were missed twice in",
     "                  two days, so the rule lives here rather than in four prompts.",
+    "                  guard-stale-checkout.mjs on Bash/Read/Grep/Glob denies reading source",
+    "                  from a REPOS/ directory with no .git — a leftover copy nothing runs.",
+    "                  Two agents cited one as the live app in a week, the second after its",
+    "                  own tool printed 'fatal: not a git repository'. Prose could not fix",
+    "                  it: AGENTS.md is read at session start and sessions are pooled, so a",
+    "                  rule added today misses every session already running. Settings are",
+    "                  consulted per tool call. Listing, diffing, moving and removing such a",
+    "                  directory stay allowed — that is how it gets cleaned up.",
     "  permissions     allow: [Agent] — Claire fans out parallel Scribe/Tagger subagents.",
     "  MAX_MCP_OUTPUT_TOKENS  60000. BigQuery result sets truncate at the default.",
     "",

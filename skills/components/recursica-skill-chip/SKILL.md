@@ -38,14 +38,19 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.chip`. **Do not pass a
 | Axis               | Options                  |
 | ------------------ | ------------------------ |
 | `selection-states` | `unselected`, `selected` |
+| `states`           | `error`                  |
 
-**Selected and unselected are the only states in the kit.** There is no size axis, no style axis, and no disabled state.
+**`states` is nested under `selection-states`** — the kit defines `error` separately for an unselected chip and for a selected one, so error and selection are independent axes that combine.
+
+**There is no size axis, no style axis, and no disabled state.**
 
 **Two configurations documented outside the token inventory:** a selectable chip, and a removable chip with a close icon. The kit defines a `close-icon-size` and `close-icon-color`, which is what a removable chip uses; it also defines a `leading-icon-color` for an optional icon before the label.
 
 **A chip has a `min-width` and a `max-width`.** Long values are constrained by the component, which is another reason a chip is not for phrases.
 
-**Error and error-selected states are documented outside the token inventory; the kit defines neither, and a chip never carries an error condition anyway.** Do not reach for them. Where a chip group can genuinely be in error — required, nothing selected — the message goes below the group, not into a chip; see the rules below.
+**The error state exists in the kit and in both adapters, and the house rule forbids using it.** Both facts are true and neither cancels the other. The kit defines seven error colors for each selection state — background, border, text, icon, leading icon, selected icon, and close icon — and both adapters expose an `error` prop that applies them. "Error-selected" is not a fourth state; it is `error` combined with `selected`, which is why the axis is nested.
+
+**Do not pass it.** `recursica-skill-badges-chips` states it plainly: do not use a chip to indicate an error, ever. A required chip group with nothing selected is a form validation error that the **group** reports below itself, and no chip changes appearance to report it. The axis is listed above so that you recognise it rather than assume a stray `error` prop is a typo — not so that you reach for it.
 
 ## Rules for using it
 

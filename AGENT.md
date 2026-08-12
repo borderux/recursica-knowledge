@@ -127,24 +127,34 @@ before those, 7 of the 12 commits on `main` carried no `Signed-off-by` — the 6
 consecutively. It is not an unclear rule, it is one that has to be remembered at the moment
 nobody is thinking about it, so it moved out of prose.
 
-Put both trailers in the commit command, where they cannot be lost between committing and
-pushing:
+Put all three trailers in the commit command, where they cannot be lost between committing
+and pushing:
 
 ```bash
 git commit -F <file> \
   --trailer "Co-authored-by: $(git config user.name) <$(git config user.email)>" \
+  --trailer "Co-authored-by: <your model, per your harness> <noreply@anthropic.com>" \
   --trailer "Signed-off-by: $(git config user.name) <$(git config user.email)>"
 ```
 
 **All three trailers coexist** — the operator's `Co-authored-by`, the model's, and the
 operator's `Signed-off-by`. The instruction to credit the model reads like a substitution
 and is not one. GitHub reads `Co-authored-by` for contribution credit and `Signed-off-by`
-alone does not grant it, which is why both are required rather than either.
+alone does not grant it, which is why both are required rather than either. Pass the model's
+as a `--trailer` flag too rather than leaving it at the end of the message body — that is
+what puts it in the right position and what makes it visible in the same place as the other
+two.
 
-Verify with `git log -1 --format='%(trailers)'`. **Not `git log --oneline -1`** — that
-prints hash and subject only, so it structurally cannot show a trailer and will pass on a
-commit that has none. That is exactly how one of the two misses got through a verification
-step that did run.
+**Three flags in, three lines out.** Verify with `git log -1 --format='%(trailers)'` and
+count the lines. **Not `git log --oneline -1`** — that prints hash and subject only, so it
+structurally cannot show a trailer and will pass on a commit that has none. That is exactly
+how one of the two misses got through a verification step that did run.
+
+The count is the point. The next failure was not a missed verification — it was a correct
+one, run with the right command, that read back two trailers and stopped, because two is
+what the block above used to show. Three agents have now shipped commits with the operator's
+two and not the model's. **The guard checks only the operator's two and never will check the
+model's**, so passing it is evidence about two trailers out of three.
 
 ### What it catches, and what it does not
 
@@ -192,6 +202,47 @@ The operator's `Co-authored-by` currently appears on `main` even where the branc
 none: GitHub adds one when a squash merge's author differs from the merger. That is a
 byproduct of two addresses not matching, it disappears if they ever match, and nobody should
 read it as evidence the trailer was written.
+
+### The third hook: reading source from a checkout nothing runs
+
+`nest/bin/guard-stale-checkout.mjs` denies a `Read`, `Grep`, `Glob` or content-reading Bash
+command aimed at a directory directly under `REPOS/` that has **no `.git`**. Those are
+leftover copies — a pre-move working tree, an unpacked tarball — and they grep and read
+exactly like the live one, so an agent orienting itself cites line numbers from code nothing
+deploys. Two agents did that against the same directory in one week; the second read past a
+literal `fatal: not a git repository` in its own tool output.
+
+Three things about it are deliberate:
+
+- **The signal is git's, not a list.** No inventory of stale directories to maintain, and a
+  copy left behind next month is caught the same way.
+- **Listing, diffing, moving and removing stay allowed**, and so does a `buzz`/`gh`/`curl`
+  command that merely names the path. Reading the content is how the tree gets mistaken for
+  the live one; the rest is how someone works out it is stale and removes it — or reports
+  it. A guard that blocks its own cleanup, or the message describing it, gets switched off.
+- **Quoted data is never commands.** A heredoc body, a `--content` string, a `-c` argument:
+  these are text the command carries, not work it does. Both guards in this nest have now
+  been caught by the same shape — and the specific victim is the report *about* a guard,
+  which quotes the commands it denies. Every finding in this thread was written as
+  `cat > report.md <<'EOF'` with a table of denied commands, so segmenting the body as a
+  command list denied the message saying the guard was broken. Strip heredoc bodies and
+  herestrings before you segment anything. **An unterminated heredoc is not a bypass** —
+  the stripper runs to end of input, so a read written after one disappears, but bash
+  swallows the rest as body for the same reason and it never executes. That case gets
+  constructed by everyone who audits this and it is the one to leave alone.
+- **A command line is judged per segment, never as one string.** The first version tested
+  the whole line with one regex each way and both leaked: `\bbuzz\b`, meant for
+  `buzz messages send`, matched the `.buzz` inside every absolute path in the nest, and
+  `git log` anywhere exempted the rest of the line — which is the incident shape exactly.
+  The verbatim incident command hit both. Each segment is now decided on its own leading
+  verb, and a `cd` into a stale tree carries to the segments after it. This is the same
+  mistake the name guard above documents, arrived at independently; if you touch this file,
+  keep the per-segment property and keep the absolute-path tests that catch losing it.
+- **It is a hook rather than a line in `AGENTS.md`** because that file is read when a
+  session starts and Buzz sessions are pooled and long-lived: a rule added today does not
+  reach a session begun yesterday. Settings are consulted per tool call.
+
+`node --test 'nest/bin/*.test.mjs'` asserts both directions.
 
 ## 🧳 Portable agents
 

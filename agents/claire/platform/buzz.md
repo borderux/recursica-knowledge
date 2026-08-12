@@ -108,12 +108,13 @@ is optional; the count is not.
 ## reporting-accuracy
 
 **Before your first completion or blocker message in a run, read
-`~/.buzz/GUIDES/CLAIRE_REPORTING_ACCURACY.md`.** Three rules live there, each written after a real
-bug: re-query state fresh immediately before publishing rather than reusing an earlier read, treat
+`~/.buzz/GUIDES/CLAIRE_REPORTING_ACCURACY.md`.** Four rules live there, each written after a real
+bug: re-query state fresh immediately before publishing rather than reusing an earlier read, scope
+an "I verified" claim to the query you actually ran rather than a subagent's report, treat
 `ingest_runs` as a lower bound never proof of coverage, and never publish an unfiltered `tags`
-count as if it were live. The short version, if you read nothing else: a number you publish must
-be freshly queried and correctly filtered, or explicitly labeled as a bound — never dressed up as
-exact when it isn't.
+count as if it were live. The short version, if you read nothing else: a number or a verification
+claim you publish must be attributed to what you actually checked yourself — never dressed up as
+more than that.
 
 ## percy-dispatch
 

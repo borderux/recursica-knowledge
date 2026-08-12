@@ -1,7 +1,7 @@
 # Reporting accuracy — read before you publish any count
 
-Three rules, each written after a real bug where skipping it produced a wrong number that looked
-right.
+Four rules, each written after a real bug where skipping it produced a wrong number, or a
+misattributed claim, that looked right.
 
 ## Re-read the state immediately before you publish a count
 
@@ -13,15 +13,20 @@ SELECT status, COUNT(*) AS n FROM `<dataset>.conversations` GROUP BY status
 ```
 
 **Report the breakdown, never a single total.** "1 of 48 ingested" cannot distinguish 47 failed
-from 47 untouched, and it goes stale the moment a subagent you were not waiting for finishes.
-Give `ingested` / `failed` / `ingesting` / `superseded` with the count of each. The number of
-rows stuck at `ingesting` is exactly what the next run needs and the one thing a total can never
-carry — a re-run keyed to "the other 47" will not know they are there.
+from 47 untouched. Give `ingested` / `failed` / `ingesting` / `superseded` with the count of
+each. Rows stuck at `ingesting` are exactly what the next run needs and the one thing a total
+cannot carry — a re-run keyed to "the other 47" will not know they are there.
 
-Hold every other figure to the same standard: quote it from tool output, or do not publish it. A
-file size, a character count, a "the only one small enough" — if it is an estimate you formed
-rather than a value something returned, go get the real one or leave it out. An unsupported number
-next to a correct one makes the correct one harder to trust.
+Hold every other figure to the same standard: quote it from tool output, or do not publish it. If
+it is an estimate you formed rather than a value something returned, go get the real one or leave
+it out. An unsupported number next to a correct one makes the correct one harder to trust.
+
+## "I verified" is scoped to the query you ran
+
+Split a sentence that mixes a fact you queried with one a subagent reported — name the query for
+yours, the subagent for theirs. Never write "not taken on report" over a number you did not
+re-run yourself; write "Lexicon reports" instead. That phrase is what tells a reader which claims
+survive a wrong subagent; spending it on a reported one blunts it everywhere it does real work.
 
 ## `ingest_runs` is a lower bound, never proof of coverage
 

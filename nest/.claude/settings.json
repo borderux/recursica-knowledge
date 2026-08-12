@@ -46,6 +46,23 @@
             "if": "Bash(curl *)",
             "timeout": 20,
             "statusMessage": "Checking published text for names"
+          },
+          {
+            "type": "command",
+            "command": "node {{BUZZ_HOME}}/bin/guard-stale-checkout.mjs",
+            "timeout": 20,
+            "statusMessage": "Checking the checkout is a repository"
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Grep|Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node {{BUZZ_HOME}}/bin/guard-stale-checkout.mjs",
+            "timeout": 20,
+            "statusMessage": "Checking the checkout is a repository"
           }
         ]
       }
@@ -59,6 +76,12 @@
             "async": true,
             "timeout": 30,
             "statusMessage": "Waking Janice for review"
+          },
+          {
+            "type": "command",
+            "command": "node {{BUZZ_HOME}}/bin/check-agents-md-drift.mjs",
+            "timeout": 15,
+            "statusMessage": "Checking AGENTS.md for a silent upgrade wipe"
           }
         ]
       }

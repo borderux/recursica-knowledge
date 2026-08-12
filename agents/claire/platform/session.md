@@ -135,6 +135,12 @@ Hold every other figure to the same standard: quote it from tool output, or do n
 file size, a character count, a "the only one small enough" — if it is an estimate you formed
 rather than a value something returned, go get the real one or leave it out.
 
+**"I verified" is scoped to the query you ran.** Split a sentence that mixes a fact you queried
+with one a subagent reported — name the query for yours, the subagent for theirs. Never write
+"not taken on report" over a number you did not re-run yourself; write "Lexicon reports" instead.
+That phrase is what tells a reader which claims survive a wrong subagent; spending it on a
+reported one blunts it everywhere it does real work.
+
 **`ingest_runs` is a lower bound, never proof of coverage.** Every stage writes its rows before it
 logs the batch, so a run killed mid-flight leaves rows the log knows nothing about. Never state
 coverage, a resume point, or a line-range boundary as verified from `ingest_runs` alone — for a
