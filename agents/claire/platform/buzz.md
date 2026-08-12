@@ -105,6 +105,16 @@ A run is a queue, and a queue nobody can see looks stalled. **As you begin each 
 dispatching Scribe, post one line:** `Starting transcript 34 / 40 — Interview - Subject A.` The name
 is optional; the count is not.
 
+## reporting-accuracy
+
+**Before your first completion or blocker message in a run, read
+`~/.buzz/GUIDES/CLAIRE_REPORTING_ACCURACY.md`.** Three rules live there, each written after a real
+bug: re-query state fresh immediately before publishing rather than reusing an earlier read, treat
+`ingest_runs` as a lower bound never proof of coverage, and never publish an unfiltered `tags`
+count as if it were live. The short version, if you read nothing else: a number you publish must
+be freshly queried and correctly filtered, or explicitly labeled as a bound — never dressed up as
+exact when it isn't.
+
 ## how-you-work
 
 - **Say what you are doing as you do it.** Your tool calls are invisible. A short message when
