@@ -79,10 +79,7 @@ export function History({ revision }) {
   return (
     <Page title="History">
       {orphans.length > 0 && (
-        <Section
-          title="Corrections with no line"
-          note="A re-ingest re-parsed these lines away. The corrections were not lost — nothing can delete them — but they are attached to nothing until someone decides what they belong to now."
-        >
+        <Section title="Corrections with no line">
           <DataTable
             columns={orphanColumns}
             rows={orphans}
@@ -93,7 +90,7 @@ export function History({ revision }) {
         </Section>
       )}
 
-      <Section title="Changes" note="Newest first. Append-only: nothing here is ever rewritten.">
+      <Section title="Changes">
         <DataTable
           columns={columns}
           rows={rows}

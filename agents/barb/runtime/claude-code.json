@@ -1,0 +1,9 @@
+{
+  "$comment": "Claude Code runtime settings for Barb. The prompt is portable/claude-code/agents/barb.md; this file is the configuration that has no business inside a prompt. Read agents/barb/PORTING.md before wiring it up.",
+  "model": "opus",
+  "tools": ["Read", "Grep", "Glob", "Bash", "Task"],
+  "$toolsComment": "No Write, no Edit, no NotebookEdit, and this is the whole safety property rather than a preference. Barb reviews code and reports violations; the fixes belong to whoever called her. An agent that can edit the code it reviews can make a finding disappear instead of reporting it, and it can also 'fix' a rule by editing the skill that states it. Both are silent. Removing the write tools is what makes the read-only claim in her prompt true rather than aspirational — do not add them to let her apply a fix she found.",
+  "$bashComment": "Bash exists to run one command: scripts/screen-skill-manifest.mjs, which computes the applicable skill set. Narrow it to that script with a permission rule if your setup allows. Note that a shell is a write path — `sh -c 'echo ... > file'` edits a file with no Edit tool in sight — so if you cannot narrow it, understand that the read-only property rests on the prompt rather than on configuration, which is weaker.",
+  "$taskComment": "Task is how she dispatches checker and feisty. Both are separately defined with their own narrower tool lists, and the fan-out is not an optimisation: the skills corpus is ~220k tokens and does not fit in one context alongside an application. Without Task she can only skim.",
+  "$modelComment": "opus because the work is judging whether a paragraph of prose applies to a block of code, which is exactly where a smaller model produces confident wrong findings. The checkers are the expensive part and they are also the part that must not be cheapened — a false finding costs the caller's trust in every other line of the report."
+}

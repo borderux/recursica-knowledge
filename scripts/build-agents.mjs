@@ -126,10 +126,32 @@ function loadFragments(file) {
   return out;
 }
 
-/** Front matter, per target. Kept out of SKILL.md so each platform gets only its own keys. */
-function renderFrontmatter(kind, meta) {
+/**
+ * Front matter, per target. Kept out of SKILL.md so each platform gets only its own keys.
+ *
+ * The claude-code artifact carries `model:` and `tools:` from `runtime/claude-code.json`
+ * rather than leaving them for whoever reads PORTING.md. A file in `.claude/agents/` is a
+ * dispatchable agent, and its front matter is the only place a tool allowlist can live: drop
+ * one in without a `tools:` line and it inherits the session's tools instead.
+ *
+ * That is a documentation gap for most of these agents and a broken safety property for one.
+ * Barb's whole guarantee is that she cannot write — an agent that can edit the code it reviews
+ * can make a finding disappear instead of reporting it, and one that can edit `skills/` can
+ * resolve a violation by softening the rule. Both are silent. Her runtime file said `Read,
+ * Grep, Glob, Bash, Task`; her artifact said nothing, so ALAN dispatching that artifact would
+ * have got a reviewer holding `Write` and `Edit` with no warning anywhere. Her own PORTING.md
+ * names per-subagent tools as a thing to check rather than assume, and this build was the
+ * thing not honouring it.
+ *
+ * Derived from the runtime file rather than declared a second time in the front matter: a
+ * hand-kept copy of a tool list is a second source of truth, and it goes stale silently.
+ */
+function renderFrontmatter(kind, meta, runtime) {
   if (kind === "claude-code") {
-    return `---\nname: ${meta.name}\ndescription: ${meta.description}\n---\n\n`;
+    const lines = [`name: ${meta.name}`, `description: ${meta.description}`];
+    if (runtime?.model) lines.push(`model: ${runtime.model}`);
+    if (runtime?.tools?.length) lines.push(`tools: ${runtime.tools.join(", ")}`);
+    return `---\n${lines.join("\n")}\n---\n\n`;
   }
   // opencode: `mode` is required to say this is a primary agent rather than a subagent,
   // and it has no `name` key at all — the filename is the identifier.
@@ -181,7 +203,13 @@ function buildArtifact({ source, base, target, spec, outName, label }) {
     if (!(marker in frags)) { bad(`${target}: platform/${spec.fragments} has no "## ${marker}" block`); return; }
     out = out.split(`<!-- platform:${marker} -->`).join(frags[marker]);
   }
-  if (spec.frontmatter) out = renderFrontmatter(spec.frontmatter, source.meta) + out;
+  if (spec.frontmatter) {
+    // Only claude-code reads a runtime file here, and only for the two keys its front matter
+    // has. `$`-prefixed keys in those files are commentary for a human and are ignored.
+    const runtimeFile = path.join(base, "runtime", `${target}.json`);
+    const runtime = fs.existsSync(runtimeFile) ? JSON.parse(fs.readFileSync(runtimeFile, "utf8")) : null;
+    out = renderFrontmatter(spec.frontmatter, source.meta, runtime) + out;
+  }
 
   const rel = spec.out(outName);
   const outPath = path.join(repoRoot, rel);
@@ -289,9 +317,15 @@ for (const name of names) {
    * separately useful: Scribe without Claire has nobody to hand it a transcript. Nesting them
    * under the orchestrator keeps that relationship in the layout instead of a comment.
    *
-   * Their targets are fixed rather than declarable. Both existing consumers want the same
-   * file — a Claude subagent with `name`, `description` and `tools` — so there is nothing for
-   * a `targets:` line to choose between. Add the mechanism when a target actually differs.
+   * `targets:` narrows which artifacts a subagent produces, the same way it does for an agent.
+   * It exists because a case finally differed: Claire's subagents are per-client and belong in
+   * the nest template the deploy renders, and Barb's are not client-scoped at all — a reviewer
+   * reads a design system and an app, with no dataset and no channel — so writing them into the
+   * per-client deploy would ship a client four agents that have nothing to do with their data.
+   *
+   * Unlike an agent, a subagent's front matter IS the artifact, so `targets:` is stripped from
+   * what gets written: it is an instruction to this script, not something a subagent runtime
+   * should ever see.
    */
   const subDir = path.join(base, "subagents");
   if (!fs.existsSync(subDir)) continue;
@@ -301,9 +335,32 @@ for (const name of names) {
     // `description` and `tools` are what make the file a subagent — and both targets want the
     // same shape, so there is nothing to strip and re-render. Markers work inside it.
     const raw = fs.readFileSync(path.join(subBase, "SKILL.md"), "utf8");
+    // `targets:` is build metadata, so it is read off the front matter and then removed from the
+    // text that gets written. Matched only inside the leading front-matter block, so a `targets:`
+    // appearing in the prose below it is left alone.
+    const fm = raw.match(/^---\n([\s\S]*?)\n---\n/);
+    const declared = fm?.[1].match(/^targets:[ \t]*(.*)$/m)?.[1] ?? null;
+    // Trailing newlines are trimmed after the removal: when `targets:` is the last line of the
+    // block, dropping it otherwise leaves the newline that preceded it and the artifact ships with
+    // a blank line before its closing `---`.
+    const body = declared === null ? raw
+      : raw.slice(0, fm.index + 4)
+        + fm[1].replace(/^targets:[ \t]*.*\n?/m, "").replace(/\n+$/, "")
+        + raw.slice(fm.index + 4 + fm[1].length);
+
+    const wantedSubs = declared ? declared.split(/[\s,]+/).filter(Boolean) : Object.keys(SUBAGENT_TARGETS);
+    const unknownSubs = wantedSubs.filter((t) => !(t in SUBAGENT_TARGETS));
     console.log(`  \x1b[1m${sub}\x1b[0m`);
-    for (const [target, spec] of Object.entries(SUBAGENT_TARGETS)) {
-      buildArtifact({ source: { meta: {}, body: raw }, base: subBase, target, spec, outName: sub, label: `${name}/${sub}` });
+    if (unknownSubs.length) {
+      console.log(`    \x1b[31m✗\x1b[0m unknown target${unknownSubs.length > 1 ? "s" : ""}: ${unknownSubs.join(", ")}`);
+      failed++;
+      continue;
+    }
+    for (const skipped of Object.keys(SUBAGENT_TARGETS).filter((t) => !wantedSubs.includes(t))) {
+      console.log(`    \x1b[90m—\x1b[0m ${skipped}: not a target for this subagent (front matter \`targets:\`)`);
+    }
+    for (const [target, spec] of Object.entries(SUBAGENT_TARGETS).filter(([t]) => wantedSubs.includes(t))) {
+      buildArtifact({ source: { meta: {}, body }, base: subBase, target, spec, outName: sub, label: `${name}/${sub}` });
     }
   }
 }
@@ -312,3 +369,16 @@ console.log("");
 if (failed) { console.log(`\x1b[31m✗ ${failed} problem${failed > 1 ? "s" : ""}.\x1b[0m\n`); process.exit(1); }
 console.log(CHECK ? `\x1b[1m--check complete.\x1b[0m ${changed} change${changed === 1 ? "" : "s"} pending.\n`
                   : `\x1b[32m✓ Built.\x1b[0m ${changed} change${changed === 1 ? "" : "s"}.\n`);
+
+/**
+ * `--check` exits non-zero when an artifact has drifted from its source.
+ *
+ * It used to exit 0 in every case a human would call a failure: the drift was printed and the
+ * status code said fine. That is invisible while a person is reading the output and fatal the
+ * moment anything automated consumes it — a CI step running this would have gone green on
+ * exactly the drift it was added to catch.
+ *
+ * Only under --check. A build that writes the changes has resolved them, so a non-zero exit
+ * there would mean "I did my job".
+ */
+if (CHECK && changed) process.exit(1);

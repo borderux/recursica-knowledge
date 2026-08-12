@@ -23,8 +23,6 @@ export function TagDetail({ revision }) {
   if (error) return <Page title={tagId} trail={TRAIL}><Text>{error}</Text></Page>
   if (!rows) return null
 
-  const weak = rows.filter((r) => !r.justification?.trim()).length
-
   const columns = [
     {
       key: 'line',
@@ -69,13 +67,13 @@ export function TagDetail({ revision }) {
   ]
 
   return (
-    <Page
-      title={tagId}
-      trail={TRAIL}
-      lede={weak
-        ? `${rows.length} lines carry this tag, and ${weak} of them have no justification.`
-        : `${rows.length} lines carry this tag, each with a stated reason.`}
-    >
+    <Page title={tagId} trail={TRAIL}>
+      {/* No count of unjustified citations above the table. It was the last piece of sub-text in
+          the app and the owner removed it with the rest, and on inspection the table was already
+          saying it better: the Justification column renders `NA` for exactly those rows, so sorting
+          on it groups them and the reader gets the individual lines rather than a number. A prose
+          aggregate above a table that contains the same fact per row is the weaker of the two. */}
+
       {/* A row here already contains a link to the line, so the row itself must not also
           navigate — one click target per row. */}
       <DataTable

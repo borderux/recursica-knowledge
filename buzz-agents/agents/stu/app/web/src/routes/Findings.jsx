@@ -188,10 +188,7 @@ function Inbox({ rows, identity, onChanged, onOpenContext }) {
   }
 
   return (
-    <Section
-      title="Waiting on you"
-      note="Each decision is recorded against your identity, and nothing here is applied automatically."
-    >
+    <Section title="Waiting on you">
       <Layer layer={1}>
         {/* A view switcher, not a filter — it hides nothing and narrows nothing. That is what a
             segmented control is for, and why this is not in a filter bar. */}
@@ -325,12 +322,7 @@ function Confirmed({ rows, identity, onChanged, onOpenContext }) {
   const elsewhere = decided.filter((f) => f.status !== 'active' && f.status !== 'rejected')
 
   return (
-    <Section
-      title={view === 'active' ? 'Confirmed' : 'Rejected'}
-      note={view === 'active'
-        ? 'Approved by a person. Still revisitable — a decision can change, and the change is logged.'
-        : 'Kept, not deleted, with the reason where one was given. Here for the record.'}
-    >
+    <Section title={view === 'active' ? 'Confirmed' : 'Rejected'}>
       {/* The view switcher sits outside the filter bar on purpose. It does not narrow a
           collection — it chooses which collection is on screen — so folding it in would break the
           filter bar's one convention for "not filtering". */}

@@ -157,8 +157,13 @@ for (const tokens of commandsToInspect(cmd)) {
         `\`--trailer\` is an argument, so it works alongside any message source — a piped ` +
         `\`-F -\` with both flags passes. The model's own \`Co-authored-by\` may stay; all ` +
         `three trailers coexist, and the operator's is the one GitHub reads for credit.\n\n` +
-        `Verify with \`git log -1 --format='%(trailers)'\`. Not \`git log --oneline -1\` — ` +
-        `that prints hash and subject only, so it passes on a commit with no trailers at all.`,
+        `Verify by kind, not by counting lines — \`%(trailers)\` emits a stray blank line on ` +
+        `some commits, and any body line shaped like \`Key: value\` in the final paragraph is ` +
+        `parsed as a real trailer:\n\n` +
+        `  git log -1 --format='%(trailers)' | grep -ciE '^Co-authored-by:'  # 2\n` +
+        `  git log -1 --format='%(trailers)' | grep -ciE '^Signed-off-by:'   # 1\n\n` +
+        `Not \`git log --oneline -1\` — that prints hash and subject only, so it passes on a ` +
+        `commit with no trailers at all.`,
     },
   });
   process.exit(0);

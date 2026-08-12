@@ -1,31 +1,45 @@
-// Participant consolidation.
+// Participant consolidation, in one table.
 //
 // The transcription service names the same person differently in every transcript, so one
 // interviewer arrives as `p_int` in one document and `p_int_smith` in ten others, and a name comes
 // through with their employer attached or a first name only. This screen is where a person says
 // which records are one human being and what that human being is called.
 //
-// Two things it is careful to keep visible, because both are the difference between a tool you can
-// audit and one you have to trust:
+// Two things it keeps visible, because both are the difference between a tool you can audit and one
+// you have to trust:
 //
 //   1. **The transcription service's own label never disappears.** A consolidated record shows the
 //      corrected name and the source name together, the same way a corrected line shows
 //      `original_text` beside `cleaned_text`. The difference between them is the correction.
 //   2. **A merge is a layer, not a rewrite.** Nothing here edits `participants` or
-//      `transcript_lines.participant_id` — that id is what tags and findings cite. Said in words on
-//      the screen, because a user deciding whether to merge is entitled to know what it costs.
+//      `transcript_lines.participant_id` — that id is what tags and findings cite.
 //
-// Suggestions are offered, never applied. Every one of them carries the reason it was made.
+// ## Why this is one table
+//
+// It used to be four regions stacked down the page: `Suggested`, `Speakers with no name`,
+// `Consolidated people`, `Every speaker`. Every one of those headings named a *state*, which means
+// the page had taken a filter and built structure out of it. `recursica-skill-tables` now rejects
+// that outright, and the reasons showed up immediately in the data:
+//
+//   - **The count was unanswerable.** "How many people are there" needed three row counts added
+//     together, and a record could appear in two regions at once.
+//   - **Three of the four regions were empty** on a real dataset — eleven speakers, no suggestions,
+//     nobody consolidated — so the screen was mostly headings over nothing.
+//
+// One table, status as a column, and a row that needs a decision carries it. A suggested merge is
+// shown **as though it were already consolidated, marked as awaiting approval**, because a reader
+// can judge a result but has to assemble a proposal. The expansion shows what went into it, and it
+// stays after approval with the undo inside it — approval is the moment the reader most needs to
+// see what happened, so removing the view at that moment is what makes a merge unauditable.
 
 import { useEffect, useMemo, useState } from 'react'
 import { Link as RouterLink } from 'react-router'
 import {
-  Badge, Button, Checkbox, Dropdown, Group, Layer, Link, Modal, Stack, Text, TextField, Title,
+  Button, Dropdown, Group, Link, Modal, Stack, Text, TextField,
 } from '@recursica/mantine-adapter'
 import { api } from '../api.js'
-import { Absent, DataTable } from '../shell/DataTable.jsx'
-import { Empty, Page, Section } from '../shell/Page.jsx'
-import { Figures } from '../shell/Figures.jsx'
+import { Absent, COLUMN_WIDTH, DataTable } from '../shell/DataTable.jsx'
+import { Page, Section } from '../shell/Page.jsx'
 
 // A person's role is a property of the appearance, not of the person — the same researcher runs
 // nineteen interviews and observes the twentieth. So this only ever fills a gap for a record whose
@@ -36,8 +50,6 @@ export function People({ identity, revision, onChanged }) {
   const [data, setData] = useState(null)
   const [error, setError] = useState(null)
   const [selected, setSelected] = useState(() => new Set())
-  // The merge form, or null when it is closed. Holds the ids being combined and, when absorbing
-  // into someone who already exists, the person they are joining.
   const [proposal, setProposal] = useState(null)
 
   useEffect(() => {
@@ -49,21 +61,7 @@ export function People({ identity, revision, onChanged }) {
 
   const { roster, people, pairs, personMatches, unattributed } = data
   const byId = new Map(roster.map((r) => [r.participant_id, r]))
-
-  // No name from anywhere — neither the transcript's nor a person's. Testing only the source name
-  // would leave a speaker sitting in "needs a name" after it had just been given one.
-  const unnamed = roster.filter((r) => !r.source_names.length && !r.person_name)
-  const consolidatedIds = roster.filter((r) => r.person_id).length
-  const unattributedLines = unattributed.reduce((n, u) => n + u.line_count, 0)
-
-  function toggle(participantId) {
-    setSelected((current) => {
-      const next = new Set(current)
-      if (next.has(participantId)) next.delete(participantId)
-      else next.add(participantId)
-      return next
-    })
-  }
+  const rows = buildRows({ roster, people, pairs, personMatches })
 
   /** Open the form for a set of ids, prefilled from whichever record carries the most transcript. */
   function propose(participantIds, personId = null) {
@@ -73,257 +71,122 @@ export function People({ identity, revision, onChanged }) {
     setProposal({
       participantIds,
       personId,
-      // The name from the record with the most lines is the best guess available, and it is only
-      // ever a default — the field is editable and the point of the screen is correcting it.
       displayName: person?.display_name ?? heaviest?.source_names[0] ?? '',
       role: person?.participant_type ?? '',
       email: person?.email ?? heaviest?.source_emails[0] ?? '',
     })
   }
 
-  const selectedIds = [...selected]
+  // What the one bulk action can act on.
+  //
+  // Resolved through the rows rather than by pattern-matching the selected keys. A row's key is not
+  // always a speaker id — a consolidated person is `p:<person_id>` and a suggested merge is
+  // `s:<a>+<b>` — so filtering the keys by prefix and passing them on handed the merge form an id
+  // that is not in the roster, and it opened with nothing in it. Only a `Separate` row is a
+  // candidate: a pending row is approved from its own expansion and a consolidated one is taken
+  // apart there, and neither is a combine.
+  const combinable = rows
+    .filter((r) => selected.has(r.id) && r.status === 'Separate')
+    .flatMap((r) => r.participantIds)
+
+  // A status column only when the data varies. With no suggestion and nothing consolidated every
+  // row reads `Separate`, and a column repeating one value down eleven rows is the empty column
+  // `recursica-skill-tables` rejects — it takes width from the columns the reader came for and
+  // tells them nothing. Same test the figure group has to pass, applied to a column.
+  const statuses = new Set(rows.map((r) => r.status))
+  const showStatus = statuses.size > 1
+
+  const columns = [
+    {
+      key: 'name',
+      header: 'Person',
+      // No width: this is the sentence column and takes whatever the narrow ones leave.
+      sortValue: (r) => r.name ?? r.id,
+      render: (r) => <Identity row={r} onEdit={() => propose(r.participantIds, r.personId)} />,
+    },
+    ...(showStatus ? [{
+      key: 'status',
+      header: 'Status',
+      // `term`, not `status`. Widths follow the data type, and the longest value here is
+      // `Awaiting approval` — a two-word phrase, not a one-word state. At the narrow status width
+      // it wrapped onto two lines, which is the same defect the skill describes as a wrapped date
+      // beside a comfortable sentence: a width set for data that is not this shape.
+      width: COLUMN_WIDTH.term,
+      // Pending first: it is the only value that asks the reader for something.
+      sortValue: (r) => (r.status === 'Awaiting approval' ? 0 : 1),
+      render: (r) => r.status,
+    }] : []),
+    {
+      key: 'role',
+      header: 'Role',
+      width: COLUMN_WIDTH.term,
+      sortValue: (r) => r.roles[0] ?? null,
+      render: (r) => (r.roles.length ? r.roles.join(' / ') : <Absent />),
+    },
+    {
+      key: 'interviews',
+      header: 'Interviews',
+      width: COLUMN_WIDTH.count,
+      sortValue: (r) => r.conversationCount,
+      render: (r) => r.conversationCount,
+    },
+    {
+      key: 'lines',
+      header: 'Lines',
+      width: COLUMN_WIDTH.count,
+      sortValue: (r) => r.lineCount,
+      render: (r) => r.lineCount,
+    },
+  ]
 
   return (
     <Page title="People">
-      <Figures items={[
-        { label: 'Speaker records', value: String(roster.length) },
-        { label: 'Consolidated', value: String(consolidatedIds) },
-        { label: 'People', value: String(people.length) },
-        { label: 'Suggested merges', value: String(pairs.length + personMatches.length) },
-      ]} />
+      {/* No figure group. Four counts sat here and three of them read zero on real data —
+          `Consolidated`, `People`, `Suggested merges` — while the fourth, `Speaker records`, was the
+          row count of the table directly below. `recursica-skill-screen-scaffolding` now gates a
+          figure on the dataset being large enough that the content does not already show its shape,
+          on the number moving, and on it guiding an action. With eleven rows none of the four
+          passes, so there is no figure group rather than a padded one. */}
 
       <Section
-        title="Suggested"
-        note={pairs.length + personMatches.length > 0
-          ? 'Each suggestion says why it was made. None of them has been applied — the merge is yours.'
-          : undefined}
+        title="Speakers"
+        action={(
+          // Bulk region: controls only. No count of what is selected, no list of the selected
+          // names, no separate clear, and nothing at all when the selection is empty — the ticked
+          // boxes already say which rows, and the parenthetical says how many.
+          combinable.length > 1
+            ? (
+              <Button variant="solid" onClick={() => propose(combinable)}>
+                {`Combine (${combinable.length})`}
+              </Button>
+            )
+            : null
+        )}
       >
-        {pairs.length + personMatches.length === 0
-          ? <Empty>
-              Nothing looks like a duplicate right now. New transcripts can introduce more, so this
-              is worth another look after an ingest.
-            </Empty>
-          : (
-            <Stack gap="sm">
-              {pairs.map((pair) => (
-                <Suggestion
-                  key={`${pair.a_participant_id}+${pair.b_participant_id}`}
-                  reasons={pair.reasons}
-                  records={[
-                    { id: pair.a_participant_id, name: pair.a_source_name, lines: pair.a_line_count, interviews: pair.a_conversation_count },
-                    { id: pair.b_participant_id, name: pair.b_source_name, lines: pair.b_line_count, interviews: pair.b_conversation_count },
-                  ]}
-                  onReview={() => propose([pair.a_participant_id, pair.b_participant_id])}
-                />
-              ))}
-              {personMatches.map((match) => (
-                <Suggestion
-                  key={`${match.participant_id}+${match.person_id}`}
-                  reasons={match.reasons}
-                  into={match.person_name}
-                  records={[
-                    { id: match.participant_id, name: match.source_name, lines: match.line_count, interviews: match.conversation_count },
-                  ]}
-                  onReview={() => propose([match.participant_id], match.person_id)}
-                />
-              ))}
-            </Stack>
-          )}
-      </Section>
-
-      {unnamed.length > 0 && (
-        <Section
-          title="Speakers with no name"
-          note={
-            'The transcription service gave these records no name at all. The transcript they ' +
-            'appear in usually says who they are.'
-          }
-        >
-          <Stack gap="sm">
-            {unnamed.map((row) => (
-              <div className="stu-record" key={row.participant_id}>
-                <Layer layer={1}>
-                  <Stack gap="xs">
-                    <Group gap="sm" align="baseline" wrap="wrap">
-                      <Title order={3}><code>{row.participant_id}</code></Title>
-                      <Text variant="caption">
-                        {row.line_count} line{row.line_count === 1 ? '' : 's'}
-                        {' · '}
-                        {row.conversation_count} interview{row.conversation_count === 1 ? '' : 's'}
-                      </Text>
-                      {row.unregistered_count > 0 && (
-                        <Badge variant="warning">not in the roster</Badge>
-                      )}
-                    </Group>
-                    <Text variant="body-small">Speaks in:</Text>
-                    <ul className="stu-quotes">
-                      {row.appearances.map((a) => (
-                        <li key={a.conversation_id}>
-                          <Link component={RouterLink} to={`/interviews/${encodeURIComponent(a.conversation_id)}`}>
-                            {a.document_name ?? a.conversation_id}
-                          </Link>
-                          <Text variant="caption"> — {a.line_count} lines</Text>
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="stu-actions">
-                      <Button variant="solid" size="small" onClick={() => propose([row.participant_id])}>
-                        Give this speaker a name
-                      </Button>
-                    </div>
-                  </Stack>
-                </Layer>
-              </div>
-            ))}
-          </Stack>
-        </Section>
-      )}
-
-      <Section
-        title="Consolidated people"
-        note="A name here overrides the transcription service's everywhere it is read."
-      >
-        {people.length === 0
-          ? <Empty>Nobody has been consolidated yet.</Empty>
-          : (
-            <Stack gap="sm">
-              {people.map((person) => (
-                <Person
-                  key={person.person_id}
-                  person={person}
-                  identity={identity}
-                  onChanged={onChanged}
-                  onAbsorb={() => propose(selectedIds.filter((id) => !byId.get(id)?.person_id), person.person_id)}
-                  absorbCount={selectedIds.filter((id) => !byId.get(id)?.person_id).length}
-                />
-              ))}
-            </Stack>
-          )}
-      </Section>
-
-      <Section
-        title="Every speaker"
-        note={
-          'One row per speaker id, totalled across every interview it appears in. Select two or ' +
-          'more to combine them; select one to correct its name.'
-        }
-      >
-        <Layer layer={1}>
-          <div className="stu-filters">
-            <Group gap="sm" align="center" wrap="wrap">
-              <Text variant="body-small">
-                {selectedIds.length === 0
-                  ? 'Nothing selected.'
-                  : `${selectedIds.length} selected: ${selectedIds.join(', ')}`}
-              </Text>
-              {selectedIds.length > 0 && (
-                <>
-                  <Button variant="solid" size="small" onClick={() => propose(selectedIds)}>
-                    {selectedIds.length === 1 ? 'Correct this name' : `Combine ${selectedIds.length} records`}
-                  </Button>
-                  <Button variant="text" size="small" onClick={() => setSelected(new Set())}>
-                    Clear
-                  </Button>
-                </>
-              )}
-            </Group>
-          </div>
-        </Layer>
-
         <DataTable
-          rows={roster}
-          getRowKey={(r) => r.participant_id}
+          rows={rows}
+          columns={columns}
+          getRowKey={(r) => r.id}
           initialSort={{ key: 'lines', direction: 'desc' }}
           emptyMessage="This channel has no transcripts with speakers yet."
-          columns={[
-            {
-              key: 'select',
-              header: 'Combine',
-              render: (r) => (
-                <Checkbox
-                  // Named for a screen reader but not on screen: the id it selects is already in
-                  // the very next cell, and repeating it visibly turns the column into noise.
-                  aria-label={`Select ${r.participant_id}`}
-                  checked={selected.has(r.participant_id)}
-                  onChange={() => toggle(r.participant_id)}
-                />
-              ),
-            },
-            {
-              key: 'speaker',
-              header: 'Speaker',
-              sortValue: (r) => r.person_name ?? r.source_names[0] ?? r.participant_id,
-              render: (r) => (
-                <Stack gap={2}>
-                  {r.person_name
-                    ? (
-                      <>
-                        <span>{r.person_name}</span>
-                        {/* The source label never disappears behind the correction. */}
-                        <Text variant="caption">
-                          transcript says {r.source_names.length ? r.source_names.join(' / ') : 'nothing'}
-                        </Text>
-                      </>
-                    )
-                    : r.source_names.length
-                      ? <span>{r.source_names.join(' / ')}</span>
-                      : <Absent />}
-                  <Text variant="caption"><code>{r.participant_id}</code></Text>
-                </Stack>
-              ),
-            },
-            {
-              key: 'role',
-              header: 'Role',
-              sortValue: (r) => r.source_types[0] ?? null,
-              render: (r) => r.source_types.length
-                ? r.source_types.join(' / ')
-                : <Absent />,
-            },
-            {
-              key: 'interviews',
-              header: 'Interviews',
-              sortValue: (r) => r.conversation_count,
-              render: (r) => r.conversation_count,
-            },
-            {
-              key: 'lines',
-              header: 'Lines',
-              sortValue: (r) => r.line_count,
-              render: (r) => r.line_count,
-            },
-            {
-              key: 'warnings',
-              header: 'Warnings',
-              sortValue: (r) => warningsFor(r).length,
-              render: (r) => {
-                const warnings = warningsFor(r)
-                return warnings.length
-                  ? (
-                    <Group gap={4} wrap="wrap">
-                      {warnings.map((w) => <Badge key={w} variant="warning">{w}</Badge>)}
-                    </Group>
-                  )
-                  : <Absent />
-              },
-            },
-          ]}
+          // Selection feeds the one bulk action and nothing else. Correcting a single name is
+          // reached from that person's name, never by ticking their row.
+          selection={{ selected, onChange: setSelected }}
+          expandable={{
+            canExpand: (r) => r.participantIds.length > 1 || r.status !== 'Separate',
+            label: (r) => r.name ?? r.id,
+            render: (r) => (
+              <Composition row={r} identity={identity} onChanged={onChanged} onApprove={() => propose(r.participantIds, r.personId)} />
+            ),
+          }}
         />
       </Section>
 
+      {/* Lines with no speaker are a genuinely different object type — transcript lines, not
+          people — with different columns and nothing to compare down a column against the table
+          above. That is the one split `recursica-skill-tables` allows, so it stays a region. */}
       {unattributed.length > 0 && (
-        <Section
-          title="Lines with no speaker"
-          note={
-            'These cannot be consolidated — there is no speaker label to attach to anyone. They are ' +
-            'listed because they are transcript with its provenance missing, which is worth ' +
-            'knowing rather than rounding away.'
-          }
-        >
-          <Text variant="body-small">
-            {unattributedLines} line{unattributedLines === 1 ? '' : 's'} across{' '}
-            {unattributed.length} interview{unattributed.length === 1 ? '' : 's'}:
-          </Text>
+        <Section title="Lines with no speaker">
           <ul className="stu-quotes">
             {unattributed.map((u) => (
               <li key={u.conversation_id}>
@@ -352,14 +215,130 @@ export function People({ identity, revision, onChanged }) {
 }
 
 /**
- * What is wrong with a record, in the user's words rather than the schema's. Only ever additive:
- * a row with nothing wrong says "None" instead of leaving the cell blank, because an empty cell
- * and a cell meaning "no problems" are different claims.
+ * One row per person-or-speaker, which is what makes this one table instead of four regions.
+ *
+ * Three kinds of thing become the same shape:
+ *
+ *   - a consolidated person, whose folded speaker ids are its composition
+ *   - a suggested merge, shown **as if consolidated** with a pending status. Nothing is written to
+ *     `participant_links` until a human approves, so this is a read-side synthesis and the row
+ *     disappears if the suggestion does
+ *   - an unconsolidated speaker record, on its own
+ *
+ * A record that is already part of a person does not also appear alone, which is the double-count
+ * the stacked-section version had no way to avoid.
  */
-function warningsFor(row) {
+export function buildRows({ roster, people, pairs, personMatches }) {
+  const byId = new Map(roster.map((r) => [r.participant_id, r]))
+  const spokenFor = new Set()
+  const rows = []
+
+  const totals = (ids) => {
+    const records = ids.map((id) => byId.get(id)).filter(Boolean)
+    return {
+      lineCount: records.reduce((n, r) => n + Number(r.line_count ?? 0), 0),
+      conversationCount: new Set(
+        records.flatMap((r) => (r.appearances ?? []).map((a) => a.conversation_id)),
+      ).size,
+      roles: [...new Set(records.flatMap((r) => r.source_types ?? []))],
+      sourceNames: [...new Set(records.flatMap((r) => r.source_names ?? []))],
+      records,
+    }
+  }
+
+  for (const person of people) {
+    const ids = person.participant_ids ?? []
+    ids.forEach((id) => spokenFor.add(id))
+    const t = totals(ids)
+    rows.push({
+      id: `p:${person.person_id}`,
+      personId: person.person_id,
+      participantIds: ids,
+      name: person.display_name,
+      sourceNames: t.sourceNames,
+      roles: person.participant_type ? [person.participant_type] : t.roles,
+      lineCount: t.lineCount || Number(person.line_count ?? 0),
+      conversationCount: t.conversationCount || Number(person.conversation_count ?? 0),
+      status: 'Consolidated',
+      notes: person.notes,
+      warnings: [],
+    })
+  }
+
+  // A suggested pair, presented as the consolidated record it would become. The name shown is the
+  // one the merge form would default to — the heaviest record's — so the row is the actual outcome
+  // rather than a description of one.
+  for (const pair of pairs) {
+    const ids = [pair.a_participant_id, pair.b_participant_id]
+    if (ids.some((id) => spokenFor.has(id))) continue
+    ids.forEach((id) => spokenFor.add(id))
+    const t = totals(ids)
+    const heaviest = [...t.records].sort((a, b) => b.line_count - a.line_count)[0]
+    rows.push({
+      id: `s:${ids.join('+')}`,
+      personId: null,
+      participantIds: ids,
+      name: heaviest?.source_names[0] ?? ids[0],
+      sourceNames: t.sourceNames,
+      roles: t.roles,
+      lineCount: t.lineCount,
+      conversationCount: t.conversationCount,
+      status: 'Awaiting approval',
+      reasons: pair.reasons ?? [],
+      warnings: [],
+    })
+  }
+
+  // A record the system thinks belongs to a person who already exists.
+  for (const match of personMatches) {
+    if (spokenFor.has(match.participant_id)) continue
+    spokenFor.add(match.participant_id)
+    const t = totals([match.participant_id])
+    rows.push({
+      id: `m:${match.participant_id}+${match.person_id}`,
+      personId: match.person_id,
+      participantIds: [match.participant_id],
+      name: match.person_name,
+      sourceNames: t.sourceNames,
+      roles: t.roles,
+      lineCount: t.lineCount,
+      conversationCount: t.conversationCount,
+      status: 'Awaiting approval',
+      reasons: match.reasons ?? [],
+      warnings: [],
+    })
+  }
+
+  for (const r of roster) {
+    if (spokenFor.has(r.participant_id)) continue
+    const t = totals([r.participant_id])
+    rows.push({
+      id: r.participant_id,
+      personId: r.person_id ?? null,
+      participantIds: [r.participant_id],
+      name: r.person_name ?? r.source_names[0] ?? null,
+      sourceNames: t.sourceNames,
+      roles: t.roles,
+      lineCount: t.lineCount,
+      conversationCount: t.conversationCount,
+      status: 'Separate',
+      warnings: warningsFor(r),
+    })
+  }
+
+  return rows
+}
+
+/**
+ * What is wrong with a record, in the user's words rather than the schema's.
+ *
+ * These used to be a `Warnings` column, which was empty for every one of eleven rows — rare by
+ * construction, so a column of `NA` with an occasional badge in it. `recursica-skill-tables` now
+ * rejects a column for an exception: it attaches to the object instead.
+ */
+export function warningsFor(row) {
   const warnings = []
-  // A record a person has named is named, even though the transcript never named it.
-  if (!row.source_names.length && !row.person_name) warnings.push('no name')
+  if (!row.source_names.length && !row.person_name) warnings.push('no name in the transcript')
   if (row.unregistered_count > 0) {
     warnings.push(row.unregistered_count === row.record_count
       ? 'not in the roster'
@@ -371,140 +350,99 @@ function warningsFor(row) {
   return warnings
 }
 
-/** One offered merge, with the reason it is being offered. */
-function Suggestion({ reasons, records, into, onReview }) {
+/**
+ * The identity cell: the name, what the transcript called it, and any exception.
+ *
+ * **The name is the way in.** `recursica-skill-tables` settled that a single-record action is
+ * reached from the object itself — usually its name — and never by selecting the row. Ticking a
+ * checkbox used to reveal `Correct this name` at one selection and `Combine` at two, which made the
+ * checkbox mean two unrelated things.
+ *
+ * An exception rides here as an icon beside the name rather than in a column of its own, which is
+ * both what the tables rule asks and where `recursica-skill-icon-semantics` requires a
+ * non-interactive icon to sit — it never sits alone in a cell.
+ */
+function Identity({ row, onEdit }) {
   return (
-    <div className="stu-record">
-      <Layer layer={1}>
-        <Stack gap="xs">
-          <Group gap="sm" align="baseline" wrap="wrap">
-            {records.map((r) => (
-              <Text key={r.id} variant="subtitle-small">
-                {r.name ?? 'unnamed'} <Text variant="caption" component="span"><code>{r.id}</code></Text>
-              </Text>
-            ))}
-            {into && <Text variant="body-small">→ {into}</Text>}
-          </Group>
-          <Group gap={4} wrap="wrap">
-            {reasons.map((reason) => <Badge key={reason} variant="warning">{reason}</Badge>)}
-          </Group>
-          <Text variant="body-small">
-            {records.map((r) => `${r.name ?? r.id}: ${r.lines} lines in ${r.interviews} interview${r.interviews === 1 ? '' : 's'}`).join(' · ')}
-          </Text>
-          <div className="stu-actions">
-            <Button variant="solid" size="small" onClick={onReview}>Review</Button>
-          </div>
-        </Stack>
-      </Layer>
-    </div>
-  )
-}
-
-/** A consolidated person: what they are called, what was folded in, and how to undo it. */
-function Person({ person, identity, onChanged, onAbsorb, absorbCount }) {
-  const [name, setName] = useState(person.display_name)
-  const [note, setNote] = useState('')
-  const [busy, setBusy] = useState(false)
-  const [problem, setProblem] = useState(null)
-
-  async function rename() {
-    setBusy(true); setProblem(null)
-    try {
-      await api.updatePerson(person.person_id, {
-        pubkey: identity.pubkey, display_name: name, note: note || null,
-      })
-      setNote('')
-      onChanged()
-    } catch (e) { setProblem(e.message) } finally { setBusy(false) }
-  }
-
-  async function detach(participantId) {
-    setBusy(true); setProblem(null)
-    try {
-      await api.detachParticipant(participantId, { pubkey: identity.pubkey, note: note || null })
-      onChanged()
-    } catch (e) { setProblem(e.message) } finally { setBusy(false) }
-  }
-
-  return (
-    <div className="stu-record">
-      <Layer layer={1}>
-        <Stack gap="sm">
-          <Group gap="sm" align="baseline" wrap="wrap">
-            <Title order={3}>{person.display_name}</Title>
-            {person.participant_type && <Badge variant="default">{person.participant_type}</Badge>}
-            <Text variant="caption">
-              {person.record_count} record{person.record_count === 1 ? '' : 's'}
-              {' · '}
-              {person.conversation_count} interview{person.conversation_count === 1 ? '' : 's'}
-              {' · '}
-              {person.line_count} lines
-            </Text>
-          </Group>
-
-          {person.source_names.length > 0 && (
-            <Text variant="body-small">
-              The transcription service called them: {person.source_names.join(', ')}
-            </Text>
-          )}
-
-          <Stack gap={4}>
-            <Text variant="caption">Speaker ids folded in</Text>
-            <Group gap="sm" wrap="wrap">
-              {person.participant_ids.map((id) => (
-                <Group key={id} gap={4} align="center">
-                  <Text variant="body-small"><code>{id}</code></Text>
-                  <Button variant="text" size="small" loading={busy} onClick={() => detach(id)}>
-                    Separate
-                  </Button>
-                </Group>
-              ))}
-            </Group>
-          </Stack>
-
-          {person.notes && <Text variant="body-small">{person.notes}</Text>}
-          {problem && <Text variant="body-small">{problem}</Text>}
-
-          <TextField
-            formLayout="side-by-side"
-            label="Name"
-            value={name}
-            onChange={(e) => setName(e.currentTarget.value)}
-          />
-          <TextField
-            formLayout="side-by-side"
-            label="Note"
-            placeholder="Optional — how you know, for whoever reads this next"
-            value={note}
-            onChange={(e) => setNote(e.currentTarget.value)}
-          />
-
-          <div className="stu-actions">
-            {absorbCount > 0 && (
-              <Button variant="outline" size="small" onClick={onAbsorb}>
-                Add {absorbCount} selected
-              </Button>
-            )}
-            <Button
-              variant="solid"
-              size="small"
-              loading={busy}
-              disabled={name.trim() === person.display_name || !name.trim()}
-              onClick={rename}
-            >
-              Save name
-            </Button>
-          </div>
-        </Stack>
-      </Layer>
-    </div>
+    <Stack gap={2}>
+      <Group gap={4} align="center" wrap="nowrap">
+        {row.name
+          ? <Link component="button" type="button" onClick={onEdit}>{row.name}</Link>
+          : <Link component="button" type="button" onClick={onEdit}><code>{row.id}</code></Link>}
+        {row.warnings.length > 0 && (
+          // An icon, not a badge. `recursica-skill-badges-chips` makes the badge the earned
+          // exception and the icon the default, because a badge is heavy enough that a scattering
+          // of them down a table pulls the eye off the data. The title carries the words.
+          <span className="stu-flag" title={row.warnings.join('; ')} aria-label={row.warnings.join('; ')} role="img">⚠</span>
+        )}
+      </Group>
+      {/* The source label never disappears behind the correction. */}
+      {row.name && row.sourceNames.length > 0 && row.sourceNames[0] !== row.name && (
+        <Text variant="caption">transcript says {row.sourceNames.join(' / ')}</Text>
+      )}
+    </Stack>
   )
 }
 
 /**
- * The merge form. Deliberately shows the records being combined and their weight before the
- * button that does it — a merge across 3,000 lines of transcript and one across 40 are different
- * decisions, and the numbers are what tell them apart.
+ * What a row is made of, revealed in place — and the decision, where the row is awaiting one.
+ *
+ * The same affordance serves before and after approval, which `recursica-skill-tables` requires:
+ * approving is when the reader most needs to see what was combined, so the view that showed the
+ * proposal is the view that shows the result, and **the undo lives in it.**
+ */
+function Composition({ row, identity, onChanged, onApprove }) {
+  const [busy, setBusy] = useState(false)
+  const [problem, setProblem] = useState(null)
+
+  async function detach(participantId) {
+    setBusy(true); setProblem(null)
+    try {
+      await api.detachParticipant(participantId, { pubkey: identity.pubkey, note: null })
+      onChanged()
+    } catch (e) { setProblem(e.message) } finally { setBusy(false) }
+  }
+
+  const pending = row.status === 'Awaiting approval'
+
+  return (
+    <Stack gap="sm">
+      {pending && row.reasons?.length > 0 && (
+        <Text variant="body-small">Matched on {row.reasons.join(', ')}.</Text>
+      )}
+
+      <Stack gap={4}>
+        <Text variant="caption">Speaker ids</Text>
+        <ul className="stu-quotes">
+          {row.participantIds.map((id) => (
+            <li key={id}>
+              <Text variant="body-small"><code>{id}</code></Text>
+              {!pending && row.participantIds.length > 1 && (
+                <Button variant="text" size="small" loading={busy} onClick={() => detach(id)}>
+                  Separate this one
+                </Button>
+              )}
+            </li>
+          ))}
+        </ul>
+      </Stack>
+
+      {row.notes && <Text variant="body-small">{row.notes}</Text>}
+      {problem && <Text variant="body-small">{problem}</Text>}
+
+      {pending && (
+        <div className="stu-actions">
+          <Button variant="solid" size="small" onClick={onApprove}>Approve this consolidation</Button>
+        </div>
+      )}
+    </Stack>
+  )
+}
+
+/**
+ * The merge form. Shows the records being combined and their weight before the button that does it
+ * — a merge across 3,000 lines of transcript and one across 40 are different decisions, and the
+ * numbers are what tell them apart.
  */
 function MergeForm({ proposal, roster, people, identity, onClose, onDone }) {
   const [displayName, setDisplayName] = useState(proposal.displayName)
@@ -518,12 +456,8 @@ function MergeForm({ proposal, roster, people, identity, onClose, onDone }) {
   const person = people.find((p) => p.person_id === proposal.personId)
   const totalLines = records.reduce((n, r) => n + r.line_count, 0)
   const totalInterviews = new Set(records.flatMap((r) => r.appearances.map((a) => a.conversation_id))).size
-  // Only offer the role field when it can do something: it fills a gap, so if every record's
-  // transcript already states a role there is nothing for it to fill.
   const roleIsMissing = records.some((r) => !r.source_types.length)
 
-  // The suggested names, so correcting one is a click rather than retyping. Sorted heaviest first
-  // because that is usually the fullest spelling.
   const candidates = useMemo(() => {
     const seen = new Map()
     for (const r of [...records].sort((a, b) => b.line_count - a.line_count)) {
@@ -620,16 +554,10 @@ function MergeForm({ proposal, roster, people, identity, onClose, onDone }) {
         <TextField
           formLayout="side-by-side"
           label="Note"
-          placeholder="Optional — how you know these are the same person"
+          description="How you know these are the same person."
           value={note}
           onChange={(e) => setNote(e.currentTarget.value)}
         />
-
-        <Text variant="caption">
-          Recorded in <code>participant_links</code>, which no agent writes, so a re-ingest cannot
-          undo it. Nothing is deleted: the speaker ids stay exactly as they are, so every tag and
-          finding that cites one still resolves. Separating them again is one click.
-        </Text>
 
         {problem && <Text variant="body-small">{problem}</Text>}
       </Stack>

@@ -75,7 +75,6 @@ export function Interview({ identity, revision, onChanged }) {
     <Page
       title={title}
       trail={TRAIL}
-      lede={`${meta?.participant_type ?? 'participant'} · ${lines.length} lines · ${data.participants.length} people`}
     >
       <Figures
         items={[
@@ -105,7 +104,6 @@ export function Interview({ identity, revision, onChanged }) {
 
       <Section
         title="Transcript"
-        note="Original text on the left of every correction. Nothing here hides what the machine changed."
       >
         <Layer layer={1}>
           <Group gap="lg" align="flex-end" wrap="wrap">
@@ -320,14 +318,17 @@ function CorrectionForm({ line, cid, identity, onChanged }) {
   return (
     <Stack gap="sm">
       <Text variant="subtitle">Correct this line</Text>
-      <Text variant="body-small">
-        Saved to <code>line_edits</code>, which no agent writes. A re-ingest cannot revert it.
-        Leave the box empty to record that the source text was fine as it stood.
-      </Text>
 
+      {/* The paragraph that used to sit here went with every other piece of sub-text in the app.
+          Two of its three sentences were reassurance about where the edit is stored, which is not
+          something the person making it has to act on. The third told them what an empty box means,
+          and that is a rule about this field — so it moved onto the field, which is where
+          `recursica-skill-forms` puts a control's own rules and where it is still legible at the
+          moment of typing rather than three elements above it. */}
       <TextArea
         formLayout="side-by-side"
         label="Corrected text"
+        description="Empty records that the source text was right as it stood."
         value={value}
         autosize
         minRows={2}

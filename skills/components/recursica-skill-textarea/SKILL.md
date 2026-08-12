@@ -17,6 +17,8 @@ A textarea captures plain text across multiple lines.
 - **The user is composing, not identifying** — comments, feedback, messages, support-ticket detail.
 - **Line breaks are part of the value.** If the user needs paragraphs, this is the control.
 
+**The label is usually the tell, and it is the fastest check available.** `Description`, `Notes`, `Comments`, `Justification`, `Reason`, `Summary`, `Details` all promise the user room to write. **A prose label over a single-line field is a mismatch the user discovers by running out of space** — and by then they have typed into a box that scrolls sideways, where they cannot see what they wrote. If the label implies prose, the control is a textarea; if it does not, reconsider the label.
+
 ## Do not use it when
 
 Each of these has a different component. Switch to it rather than adapting a textarea:
@@ -152,6 +154,8 @@ Never style an unfocused textarea so it reads as disabled. An editable field mus
 ## Pre-flight checklist
 
 - [ ] The expected answer genuinely runs past one line, and a single-line field would be wrong.
+- [ ] No field whose label promises prose — `Description`, `Notes`, `Comments`, `Justification`,
+      `Reason`, `Summary`, `Details` — was built as a single-line text field.
 - [ ] A visible label is passed and reads correctly on its own.
 - [ ] Label placement is side-by-side unless the container is too narrow.
 - [ ] `layouts` matches every other field in the same form — one placement per form at any given breakpoint, with no mixing between fields or sections, and this field was not stacked on its own because it is tall.

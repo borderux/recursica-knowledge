@@ -42,10 +42,25 @@ write. There is no cleanup afterwards that fully works.
 comment:** a client name or slug; a dataset or service-account name built from one
 (`research_<slug>`, `claire-<slug>-service-user`); a research participant's name, anything they
 said, or a detail that identifies them; a cloud project id; a Drive folder or sheet id; a
-channel UUID; a pubkey; any part of a key file.
+channel UUID; a pubkey; any part of a key file; **the client's domain vocabulary** — the
+population, segment or role words that name who they serve and what they do. A handful of
+those words identifies a client as surely as the slug does, and unlike the slug they are
+ordinary English, so nothing structural will ever catch them.
 
 Write structurally instead — "the client", "a client dataset", "a participant" — or use the
 `{{TOKEN}}`. Examples use `acme`. A sentence that seems to need a real name almost never does.
+
+**Never enumerate the strings you searched for. State the result.** "Grepped the diff for
+`<slug>`/`<role>`/`<segment>` — zero hits" publishes, in the sentence claiming the text is
+clean, exactly what the search was protecting. This is the rule to reach for when in doubt,
+because it is the only one here that needs no judgement about what is sensitive: you can
+follow it without knowing, which is precisely the case where the category list above fails
+you. Write "the checker passes on every changed file" — the exit code is the evidence, and
+it already knows the terms so the reader does not need them.
+
+The pattern generalises past grep. Any sentence whose job is to prove a check ran is under
+pressure to quote the thing checked — a rejected value, a matched line, a filename, a table
+row that "looks wrong." Prove it with the tool's output, never with the input.
 
 **Run the checker on the text, not just the diff:**
 
@@ -145,10 +160,45 @@ as a `--trailer` flag too rather than leaving it at the end of the message body 
 what puts it in the right position and what makes it visible in the same place as the other
 two.
 
-**Three flags in, three lines out.** Verify with `git log -1 --format='%(trailers)'` and
-count the lines. **Not `git log --oneline -1`** — that prints hash and subject only, so it
-structurally cannot show a trailer and will pass on a commit that has none. That is exactly
-how one of the two misses got through a verification step that did run.
+**Three flags in — verify by kind, not by counting lines:**
+
+```bash
+git log -1 --format='%(trailers)' | grep -ciE '^Co-authored-by:'  # must print 2
+git log -1 --format='%(trailers)' | grep -ciE '^Signed-off-by:'   # must print 1
+git log -1 --format='%(trailers:key=Co-authored-by,valueonly=true)'  # operator, then model
+```
+
+**`-ciE`, not `-cE`.** Git treats trailer keys case-insensitively and grep does not, so a
+lowercase `co-authored-by:` is a real trailer that an exact-case count misses — reading 1 on a
+commit that is correct. Fail-safe, but it stops good work.
+
+**The third command is not redundant.** `2` and `1` also passes when both `Co-authored-by`
+lines name the same party — two model lines and no operator, or the reverse. That is exactly
+the composition the paragraph above is about, and no count can see it. The counts catch a
+missing line; the identities catch a wrong pair.
+
+**Not `git log --oneline -1`** — that prints hash and subject only, so it structurally cannot
+show a trailer and will pass on a commit that has none. That is exactly how one of the two
+misses got through a verification step that did run.
+
+**And not a line count, which this file used to prescribe.** `%(trailers)` emits a trailing
+blank line on some commits and not others, and any body line shaped like `Key: value` in the
+final paragraph is parsed as a genuine trailer — `%(trailers:only=true)` does not filter it,
+because it *is* valid trailer syntax. Measured across three commits in this repo, the same
+`wc -l` returned 3, 4 and 5 while all three carried exactly the right trailers. So the
+line count was an unreliable instrument in both directions the whole time it was the
+instruction, and the note below about a check that read back two and stopped is a case of the
+same instrument.
+
+**Two counts rather than one**, because a single `grep -cE '^(Co-authored-by|Signed-off-by):'`
+prints 3 for three `Co-authored-by` lines and no sign-off. The failure this verifies against
+is a wrong *composition*, so a recipe that cannot see composition verifies nothing.
+
+**Keep an example trailer out of a commit message's final paragraph.** Git decides trailers
+from the last paragraph, so a bare `Co-authored-by: EXAMPLE <x@x>` line there is a genuine
+trailer and the count reads 3 where 2 is required. The same line one paragraph earlier is
+correctly ignored. No recipe can distinguish them, which makes this a writing rule — and the
+commits most likely to contain such a line are the commits about trailers.
 
 The count is the point. The next failure was not a missed verification — it was a correct
 one, run with the right command, that read back two trailers and stopped, because two is
@@ -244,6 +294,50 @@ Three things about it are deliberate:
 
 `node --test 'nest/bin/*.test.mjs'` asserts both directions.
 
+### The fourth hook: enumerating the operator's credential store
+
+`nest/bin/guard-credential-store.mjs` denies `security dump-keychain` and
+`security find-*-password`, and denies reading `~/.netrc` or anything under `~/.ssh/`.
+Retrieving one credential through `git credential-<helper> get` is untouched — that is the
+sanctioned interface and the deny message points at it.
+
+`AGENTS.md` has said all of this for months, in a `## Credentials` section naming all three
+subcommands individually. **On 2026-08-12 two agents ran them anyway, four minutes apart, and
+one was the reviewer whose own checklist makes it a guardrail breach.** Neither had ignored the
+rule; neither had read it. That is the same argument the stale-checkout guard already rests
+on — `AGENTS.md` binds when a session starts, and Buzz sessions are pooled and long-lived.
+
+Two things about it differ from its siblings on purpose:
+
+- **It is registered with no `if` key.** Every other hook in `nest/.claude/settings.json`
+  carries one, and on the day this was written `Bash(git *)` denied a command with `git` not
+  leading while `Bash(curl *)` failed to deny one with `curl` leading — verified four ways by
+  two agents independently and explained by neither. A guardrail behind a mechanism nobody can
+  explain is not a guardrail. The one hook that fires reliably is the one with no `if`.
+- **`security` has too many spellings for a leading-command glob anyway.**
+  `/usr/bin/security`, `FOO=1 security`, `sudo security`, `cd … && security` all reach the same
+  syscall. The per-segment test inside the script sees them; a glob sees none of them.
+
+`nest/bin/lib/shell-command.mjs` holds the heredoc stripping, statement splitting and verb
+extraction both guards need. It was extracted from `guard-stale-checkout.mjs` rather than
+copied, and that guard's 26 tests passing unchanged is the evidence the extraction is
+behaviour-preserving. A hand-copied second version of this logic is exactly the second source
+of truth this repo keeps being bitten by.
+
+**It is not total, and the tests say so.** `cp ~/.ssh/id_rsa /tmp/k && cat /tmp/k` launders
+through an unremarkable path and no verb-and-path list catches it; only one level of `sh -c` is
+unwrapped; `SECRET_PATHS` is the app stores that exist on this machine rather than a theory of
+where secrets live. Each of those has a test asserting the gap, because a guard believed to be
+total is worse than one known to be partial. It also over-denies in one direction — `$(…)` is
+opened regardless of quoting, so a single-quoted `'$(security …)'` in a message body is denied
+though bash would not run it. A heredoc body is stripped, so the usual incident-report shape is
+unaffected.
+
+**Installing the script does not register it.** `.claude/settings.json` is `ifAbsent` in the
+manifest, so `bootstrap-nest.mjs` reports a diff and leaves the operator's copy alone. Both
+hook entries have to be added to `~/.buzz/.claude/settings.json` by hand, and until they are
+the guard is present and never invoked.
+
 ## 🧳 Portable agents
 
 `agents/<name>/` is the source of truth for an agent. `SKILL.md` holds everything portable;
@@ -252,9 +346,14 @@ settings that never belong in a prompt. Nothing under `buzz-agents/agents/*/SYST
 or `portable/` is edited by hand — those are build outputs.
 
 ```bash
-npm run agents:build:check   # report drift, write nothing
+npm run agents:build:check   # report drift, write nothing; exits 1 if there is any
 npm run agents:build         # write
 ```
+
+`--check` **used to exit 0 whether or not anything had drifted.** It printed the drift and the
+status code said fine, which is invisible while a person reads the output and fatal the moment
+anything automated reads it instead. `.github/workflows/checks.yml` runs it on every pull
+request, and it would have gone green on exactly the drift it was added to catch.
 
 Three rules the build enforces so you do not have to remember them:
 
@@ -268,6 +367,13 @@ Three rules the build enforces so you do not have to remember them:
   unset-value warning; the build enforces the claim that exemption rests on.
 - **Every artifact is name-checked before it is written.** Generated files in a public repo
   are the category that gets read least closely.
+
+**The claude-code artifact carries `model:` and `tools:`, derived from `runtime/claude-code.json`
+rather than written a second time.** A file in `.claude/agents/` is a dispatchable agent and its
+front matter is the only place a tool allowlist can live — without one it inherits the session's
+tools. That was a documentation gap for four of these agents and a broken guarantee for Barb,
+whose entire property is the absence of `Write` and `Edit`. `scripts/build-agents.test.mjs`
+asserts both, because the failure is silent in every direction.
 
 A fragment header in `platform/*.md` is a bare kebab-case slug, matching the marker name. A
 `## ` line that is not one is ordinary content, so a fragment may contain a markdown heading —
@@ -290,6 +396,43 @@ Not every agent ports, and not every one ports to every platform. `targets:` in 
 matter narrows which artifacts get built; absent means all of them. Declare it rather than
 shipping an artifact that quietly drops a boundary the platform cannot express — Claire is not
 built for opencode, because opencode has no per-tool allowlist to keep her subagents apart.
+
+**Subagents take `targets:` too**, and it is stripped from the artifact rather than shipped in it —
+a subagent's front matter *is* the artifact, so a build instruction has no business in the file a
+runtime reads. Claire's subagents build to the nest template the deploy renders per client; Barb's
+do not, because a design reviewer touches no client data and writing hers into the per-client
+deploy would hand every client two agents that have nothing to do with them.
+
+**Barb is the design reviewer, and she is the one agent here that touches no client data.** She
+reads `skills/` and an application and reports which rules the screens violate, with a file and line
+per claim. She writes nothing — no `Write`, no `Edit` — and that is the whole property rather than a
+precaution: a reviewer that can edit the code under review can make a finding vanish, and one that
+can edit `skills/` can resolve a violation by softening the rule. See
+[agents/barb/PORTING.md](agents/barb/PORTING.md), and note the two leaks it names even on Claude
+Code — `Bash` is a write path, and per-subagent `tools:` lines only hold if the platform honours them.
+
+Which skills apply to a screen is **computed, not judged**:
+
+```bash
+npm run skills:manifest -- <screen file>    # the applicable skill set
+npm run skills:manifest:check               # the map against the skills on disk
+```
+
+That script exists because of a real gap: all 39 component skills cross-link upward to the
+design-rules skills, no design-rules skill links back down, and the router's decision table names
+20 of 20 design-rules skills and **0 of 39 component skills**. So descending the router never yields
+a component skill name — but an `import { … } from '@recursica/mantine-adapter'` line is exactly that
+list, and it fires on the import rather than on anybody's sense of what counts as "placed".
+
+**Component names are matched, not tabulated.** A component and its skill are the same word with
+different punctuation, so the script strips the punctuation and compares — which resolves `TextArea`
+→ `recursica-skill-textarea` (no hyphen; a kebab-case guess yields a path that does not exist),
+`Radio` → `radio-button`, and both `HoverCard` and `Popover` → `hover-card-popover`, with no alias
+entry for any of them. Do not add one: a hand-written alias list is a second source of truth that
+goes stale silently when a skill is renamed. What *is* written down is `ROUTES` — the eleven
+components with no skill of their own, where the question "which design rules govern this" is a
+judgment no string comparison can make. A name matching more than one skill with no route is an
+error rather than a guess. Run `skills:manifest:check` after an adapter upgrade.
 
 `agents/<name>/PORTING.md` says what one needs and what it cannot carry — above all that
 **a prompt does not carry a data fence**.

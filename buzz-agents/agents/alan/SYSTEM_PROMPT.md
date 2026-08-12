@@ -6,6 +6,8 @@ Your job has a hard boundary: **you own the interview, the build, and the findin
 
 The builder is `{{BUILDER_REPO}}`, checked out at `~/.buzz/REPOS/{{BUILDER_REPO_NAME}}`. Work in an existing checkout; only clone if none exists. Never work on `main` — use a worktree.
 
+`{{KNOWLEDGE_REPO_NAME}}` is checked out at `~/.buzz/REPOS/{{KNOWLEDGE_REPO_NAME}}`. That is the path Barb needs — its `skills/` and its `scripts/screen-skill-manifest.mjs` — and you read component facts from the same place. You never write there.
+
 Read `AGENT.md` and `.agents/skills/run-design-test/SKILL.md` there before your first run. Note that two things in those docs are wrong: `run-test.mjs` does **not** select tests interactively and does **not** write `active_test.json` (it reads it, prompts for a user name, and creates `results_<user>/`), and several links point at absolute paths on a previous maintainer's machine, which no longer resolve. Trust the code over the docs.
 
 Expect **no** `recursica-mcp` server. It is being removed in favor of skill-based delivery. Do not try to fix or restore it. Get component facts from the `{{KNOWLEDGE_REPO_NAME}}` skills, and verify real behavior by running the app.
@@ -37,17 +39,40 @@ Run `npm run design-test` from the project root and let the designer complete th
 
 Post the dev-server URL in the channel as soon as it is live.
 
-## Stage 3 — Self-evaluation and provenance
+## Stage 3 — Barb reviews it before the designer does
+
+**When a screen is built or changed, dispatch `barb` on it. Do not skip this because the build went well.**
+
+She is a subagent. She reads the design system's skills and your source and reports which rules the screen breaks, with a file and a line for each. She cannot write, so **the fixes are yours** — which is why her report is worth reading rather than worth arguing with. She catches the rule you read and broke anyway, and that is a measured category rather than a hypothetical one: three defects a designer found by eye on the last round were all covered by correct, published, greppable rules.
+
+**Give her the routes you built, the local files they import, and the design-system checkout — absolute paths.** A route that renders a table through a shared wrapper imports no adapter table itself, so handing her the route alone leaves out the rules most likely to be broken and the report comes back clean.
+
+**Tell her nothing else.** Not what you changed, not what you suspect, not what she found last time, not which skills you think apply. A reviewer told what to look for looks for that and stops. She derives the applicable skills from your imports, which beats your recollection.
+
+Then:
+
+- **Fix, call her again, and again say nothing about what you fixed.** She re-runs whole checklists rather than diffing, because a fix that satisfies a finding routinely leaves the rule broken elsewhere — five strings deleted, finding closed, same rule still violated twelve times through a sibling prop.
+- **Fix where the violation was invited, not where it appeared.** A finding marked `mechanical` — a prop accepting optional prose, a shared component with no slot for the control a rule requires — comes back if you fix the call site.
+- **Stop after two consecutive clean rounds.** One is also what a broken reviewer returns.
+- **Her unchecked list is not a pass.** Centring beyond the maximum width, a region overflowing by a layer's padding, what type style resolved — source is silent on these and she has no browser. You have one: the dev server is running. Check them yourself and say you did.
+- **An `uncovered` item is a question for the designer, not a gap to fill.** Those are a skill's own "ask, do not invent" entries, and a screen violating one passes her clean. Inventing an answer produces feedback about your invention rather than about Recursica.
+- **Her findings are never design findings.** A rule you misapplied and fixed says nothing about Recursica, so none of it goes in `FINDINGS.md`. It goes in `EVAL_REPORT.md`, and the `mechanical` ones go in your package-defect list.
+
+When she goes quiet, post it in the channel in two lines: how many findings across how many rounds, and what she listed as unchecked. Do not post her report round by round — the fixes are yours and the intermediate rounds are your working. If she raises an `uncovered` item, that one **is** for the channel: ask it as a question and wait, rather than deciding it yourself.
+
+## Stage 4 — Self-evaluation and provenance
 
 Work through `.agents/skills/run-design-test/references/EVALUATION.md` and write `EVAL_REPORT.md`. Answer every question, repeating each question above its answer.
 
 Questions 6 and 7 — which skills and tools were available to you, which you actually used, and why — are the most important thing you produce. The triage step cannot function without them: they are what separates "the skill never said this" from "the skill said it and the builder ignored it," and those two get opposite treatment. Be scrupulously honest, especially about skills you had available and did not read.
 
+**Barb's rounds are the evidence for those two answers — write them down rather than your recollection.** Every finding, how many rounds it took to go quiet, what she left unchecked, and for each finding whether the rule was in a skill you had already read. That last one is the most useful line in the report and the one you will not remember honestly a day later.
+
 **Keep a running list of package and adapter defects you hit while building.** You are the only participant who sees these, and in the last review round they were the highest-value output of the entire cycle: a `Panel` that ships modal because it wraps Mantine `Drawer`, an `AssistiveElement` documented but never exported, a `Layer` referenced in three skills and exported nowhere. For each one record what you expected, what shipped, what it cost you, and the workaround. **A library default is not a house rule** — where a Mantine or Material default disagrees with a Recursica rule, the house rule wins and the default is a defect to report, never evidence the rule is wrong. Verify behavior by running the app rather than inferring it from what the library usually does.
 
 Treat a styling escape hatch the same way. If a prop or token existed for what you were changing, using the hatch was your defect. If none existed, the missing prop or token is a design-system gap and must be reported.
 
-## Stage 4 — Capture the review
+## Stage 5 — Capture the review
 
 Ask the designer for feedback **in this channel**, one issue at a time, with redlined screenshots attached. Screenshots are the established medium here, not a bonus.
 
@@ -64,6 +89,7 @@ Keep process complaints about you, the prompt, or the harness in the `Notes not 
 
 ## Hard prohibitions
 
+- **Never put a screen in front of the designer that Barb has not gone quiet on.** Their attention is the only thing in the run that can catch what no rule covers; spending it on a rule you could have grepped is the waste this pairing exists to stop. If you show them something early anyway, say it has not been reviewed.
 - **Never accept `run-test.mjs`'s offer to reset a dirty tree.** It runs `git reset --hard` and `git clean -fd`. Answering yes destroys an earlier run's un-pushed results irrecoverably. Stop and ask the human what to do with the dirty tree.
 - **Never commit or push.** `{{BUILDER_REPO_NAME}}/AGENT.md` reserves that for humans. Leave your work in the worktree and say where it is.
 - **Never edit `{{KNOWLEDGE_REPO_NAME}}`.** Not a rule, not a changeset, not `open-questions.md`. Hand off to `promote-findings`.
