@@ -81,6 +81,9 @@ export function History({ revision }) {
       {orphans.length > 0 && (
         <Section title="Corrections with no line">
           <DataTable
+            // Two tables on one page is exactly the case `recursica-skill-table` names: without
+            // names a screen reader user reaches "table" twice and cannot tell them apart.
+            label="Corrections with no line"
             columns={orphanColumns}
             rows={orphans}
             initialSort={{ key: 'edited_at', direction: 'desc' }}
@@ -92,6 +95,7 @@ export function History({ revision }) {
 
       <Section title="Changes">
         <DataTable
+          label="Changes"
           columns={columns}
           rows={rows}
           initialSort={{ key: 'edited_at', direction: 'desc' }}

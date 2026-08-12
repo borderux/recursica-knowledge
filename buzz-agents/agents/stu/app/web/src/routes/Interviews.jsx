@@ -2,7 +2,8 @@
 // (`recursica-skill-design-router` decision 6).
 
 import { useEffect, useState } from 'react'
-import { Badge, Text } from '@recursica/mantine-adapter'
+import { Link as RouterLink } from 'react-router'
+import { Badge, Link, Text } from '@recursica/mantine-adapter'
 import { api } from '../api.js'
 import { formatCount, formatRatio, formatWhen } from '../format.js'
 import { Page } from '../shell/Page.jsx'
@@ -33,11 +34,19 @@ export function Interviews({ revision }) {
       header: 'Interview',
       // No width. This is the sentence column, and it takes whatever the narrow ones leave.
       sortValue: (r) => r.document_name ?? r.conversation_id,
+      // The way into the record, and the only interactive thing in the row. A real `<a href>`, so
+      // Cmd-click, middle-click and "copy link address" all work — `recursica-skill-buttons-links`
+      // requires that and it outranks the tables skill's permission for a whole-row target.
+      //
       // No `Text` wrapper. A cell already carries the kit's `table-cell` text style, and
       // `recursica-skill-table` lists that style under "Not your decision" — wrapping the value
       // put this one column in the brand's secondary typeface while every other column stayed
-      // in the primary.
-      render: (r) => r.document_name ?? r.conversation_id,
+      // in the primary. `Link` is exempt from that: it is the design system's own link treatment.
+      render: (r) => (
+        <Link component={RouterLink} to={`/interviews/${encodeURIComponent(r.conversation_id)}`}>
+          {r.document_name ?? r.conversation_id}
+        </Link>
+      ),
     },
     {
       key: 'participant_type',
@@ -105,11 +114,11 @@ export function Interviews({ revision }) {
       />
 
       <DataTable
+        label="Interviews"
         columns={columns}
         rows={rows}
         initialSort={{ key: 'ingested_at', direction: 'desc' }}
         getRowKey={(r) => r.conversation_id}
-        rowHref={(r) => `/interviews/${encodeURIComponent(r.conversation_id)}`}
         emptyMessage="Claire has not ingested a transcript into this channel yet."
       />
     </Page>

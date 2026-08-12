@@ -77,6 +77,7 @@ export function TagDetail({ revision }) {
       {/* A row here already contains a link to the line, so the row itself must not also
           navigate — one click target per row. */}
       <DataTable
+        label={`Lines tagged ${tagId}`}
         columns={columns}
         rows={rows}
         initialSort={{ key: 'confidence', direction: 'desc' }}

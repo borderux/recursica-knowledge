@@ -164,9 +164,14 @@ export function People({ identity, revision, onChanged }) {
         )}
       >
         <DataTable
+          label="Speakers"
           rows={rows}
           columns={columns}
           getRowKey={(r) => r.id}
+          // The person, not the key. A key here is `p:<person_id>` or `s:<a>+<b>`, and naming the
+          // checkbox and the disclosure control from it announced that string to a screen reader
+          // instead of the speaker.
+          rowLabel={(r) => r.name ?? r.id}
           initialSort={{ key: 'lines', direction: 'desc' }}
           emptyMessage="This channel has no transcripts with speakers yet."
           // Selection feeds the one bulk action and nothing else. Correcting a single name is
@@ -174,7 +179,6 @@ export function People({ identity, revision, onChanged }) {
           selection={{ selected, onChange: setSelected }}
           expandable={{
             canExpand: (r) => r.participantIds.length > 1 || r.status !== 'Separate',
-            label: (r) => r.name ?? r.id,
             render: (r) => (
               <Composition row={r} identity={identity} onChanged={onChanged} onApprove={() => propose(r.participantIds, r.personId)} />
             ),
@@ -488,7 +492,15 @@ function MergeForm({ proposal, roster, people, identity, onClose, onDone }) {
     : records.length > 1 ? 'Combine these records' : 'Correct this name'
 
   return (
-    <Modal opened onClose={onClose} title={title}>
+    // Neither Mantine nor the adapter labels the close control, so without `closeButtonProps` it
+    // is a button announced as nothing. Named after this form's own title, because the form is
+    // three different acts depending on what was selected.
+    <Modal
+      opened
+      onClose={onClose}
+      title={title}
+      closeButtonProps={{ 'aria-label': `Close without saving — ${title}` }}
+    >
       <Stack gap="sm">
         <Text variant="body-small">
           {records.length} speaker id{records.length === 1 ? '' : 's'} · {totalInterviews} interview
@@ -513,10 +525,13 @@ function MergeForm({ proposal, roster, people, identity, onClose, onDone }) {
           ))}
         </ul>
 
+        {/* `assistiveText` and not `description` on every TextField here — the adapter's TextField
+            drops `description` silently, help text and `aria-describedby` with it. See the note in
+            `shell/IdentityGate.jsx`. The `Dropdown` below keeps `description`, which works. */}
         <TextField
           formLayout="side-by-side"
           label="Name"
-          description="What this person is actually called. Replaces the transcription service's label wherever it is read."
+          assistiveText="What this person is actually called. Replaces the transcription service's label wherever it is read."
           value={displayName}
           onChange={(e) => setDisplayName(e.currentTarget.value)}
         />
@@ -554,7 +569,7 @@ function MergeForm({ proposal, roster, people, identity, onClose, onDone }) {
         <TextField
           formLayout="side-by-side"
           label="Note"
-          description="How you know these are the same person."
+          assistiveText="How you know these are the same person."
           value={note}
           onChange={(e) => setNote(e.currentTarget.value)}
         />

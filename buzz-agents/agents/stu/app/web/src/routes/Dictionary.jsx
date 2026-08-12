@@ -28,6 +28,7 @@ import {
 } from '@recursica/mantine-adapter'
 import { api } from '../api.js'
 import { Empty, Page, Section } from '../shell/Page.jsx'
+import { UnsavedWork, useUnsavedWork } from '../shell/UnsavedWork.jsx'
 import { formatConfidence } from './Interview.jsx'
 
 /** The two tabs, which are also the two routes under `/dictionary`. */
@@ -70,45 +71,58 @@ export function Dictionary({ identity, revision, onChanged }) {
     <Page title="Dictionary">
       {/* keepMounted={false} for the same reason Findings sets it: each panel is a whole screen
           with its own filter bar and its own live region, and a live region that is not on screen
-          has no business being able to speak. */}
-      <Tabs value={tab} keepMounted={false} onChange={(next) => navigate(`/dictionary/${next}`)}>
-        <Tabs.List>
-          {/* Nouns, not the questions they stand for — recursica-skill-tabs. The count is what is
-              waiting on a person, not the size of the tab: the size is on screen once you are in
-              it, and how much work is behind the label is the one thing worth knowing before
-              clicking. Metadata, never a control. */}
-          <Tabs.Tab value="spellings" rightSection={<Waiting rows={spellings} />}>
-            Spellings
-          </Tabs.Tab>
-          <Tabs.Tab value="definitions" rightSection={<Waiting rows={definitions} />}>
-            Definitions
-          </Tabs.Tab>
-        </Tabs.List>
+          has no business being able to speak.
 
-        <Tabs.Panel value="spellings">
-          <Terms
-            rows={spellings}
-            kind="spellings"
-            empty={rows.length === 0
-              ? 'The dictionary is empty. Lexicon writes terms here as it reads transcripts.'
-              : 'No term proposed so far lists an alternative spelling. Every one of them is a definition.'}
-            identity={identity}
-            onChanged={onChanged}
-          />
-        </Tabs.Panel>
+          Which is also why a tab switch used to destroy a half-typed note without asking — the
+          panel unmounts and the local state goes with it. `UnsavedWork` puts the prompt
+          `recursica-skill-navigation` requires in front of that, rather than keeping the panel
+          mounted and reintroducing the live region that can speak from off screen. */}
+      <UnsavedWork>
+        {(guard) => (
+          <Tabs
+            value={tab}
+            keepMounted={false}
+            onChange={(next) => guard(() => navigate(`/dictionary/${next}`))}
+          >
+            <Tabs.List>
+              {/* Nouns, not the questions they stand for — recursica-skill-tabs. The count is what
+                  is waiting on a person, not the size of the tab: the size is on screen once you
+                  are in it, and how much work is behind the label is the one thing worth knowing
+                  before clicking. Metadata, never a control. */}
+              <Tabs.Tab value="spellings" rightSection={<Waiting rows={spellings} />}>
+                Spellings
+              </Tabs.Tab>
+              <Tabs.Tab value="definitions" rightSection={<Waiting rows={definitions} />}>
+                Definitions
+              </Tabs.Tab>
+            </Tabs.List>
 
-        <Tabs.Panel value="definitions">
-          <Terms
-            rows={definitions}
-            kind="definitions"
-            empty={rows.length === 0
-              ? 'The dictionary is empty. Lexicon writes terms here as it reads transcripts.'
-              : 'Every term proposed so far lists an alternative spelling, so all of them are on the Spellings tab.'}
-            identity={identity}
-            onChanged={onChanged}
-          />
-        </Tabs.Panel>
-      </Tabs>
+            <Tabs.Panel value="spellings">
+              <Terms
+                rows={spellings}
+                kind="spellings"
+                empty={rows.length === 0
+                  ? 'The dictionary is empty. Lexicon writes terms here as it reads transcripts.'
+                  : 'No term proposed so far lists an alternative spelling. Every one of them is a definition.'}
+                identity={identity}
+                onChanged={onChanged}
+              />
+            </Tabs.Panel>
+
+            <Tabs.Panel value="definitions">
+              <Terms
+                rows={definitions}
+                kind="definitions"
+                empty={rows.length === 0
+                  ? 'The dictionary is empty. Lexicon writes terms here as it reads transcripts.'
+                  : 'Every term proposed so far lists an alternative spelling, so all of them are on the Spellings tab.'}
+                identity={identity}
+                onChanged={onChanged}
+              />
+            </Tabs.Panel>
+          </Tabs>
+        )}
+      </UnsavedWork>
     </Page>
   )
 }
@@ -232,6 +246,10 @@ function Term({ term, kind, identity, onChanged }) {
   const [note, setNote] = useState('')
   const [busy, setBusy] = useState(false)
   const [problem, setProblem] = useState(null)
+
+  // A note nobody has typed into is not unsaved work, so switching tabs past an untouched form
+  // asks nothing. Cleared on save, which is what takes the prompt back down.
+  useUnsavedWork(note.trim().length > 0)
 
   async function decide(status) {
     setBusy(true); setProblem(null)

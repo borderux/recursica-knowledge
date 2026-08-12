@@ -24,6 +24,7 @@ import {
 import { api } from '../api.js'
 import { Empty, Page, Section } from '../shell/Page.jsx'
 import { QuoteContext } from '../shell/QuoteContext.jsx'
+import { UnsavedWork, useUnsavedWork } from '../shell/UnsavedWork.jsx'
 import { formatConfidence } from './Interview.jsx'
 
 /**
@@ -95,38 +96,51 @@ export function Findings({ identity, revision, onChanged }) {
           in the DOM at once whichever tab was showing — measured in the running app: 36 card
           headings and both switchers present on both tabs, and a hidden aria-live region reading
           "1 confirmed." while the Inbox was open. A live region that is not on screen has no
-          business being able to speak. */}
-      <Tabs value={tab} keepMounted={false} onChange={(next) => navigate(`/findings/${next}`)}>
-        <Tabs.List>
-          <Tabs.Tab
-            value="inbox"
-            // The count is metadata on the tab, not a control: it says how much work is behind
-            // the label, which is the one thing a reviewer wants before clicking.
-            rightSection={waiting.length > 0 ? <Badge variant="warning">{waiting.length}</Badge> : null}
+          business being able to speak.
+
+          Which is also why a tab switch used to destroy a half-typed answer without asking — the
+          panel unmounts and the local state goes with it. `UnsavedWork` puts the prompt
+          `recursica-skill-navigation` requires in front of that, rather than keeping the panel
+          mounted and reintroducing the live region that can speak from off screen. */}
+      <UnsavedWork>
+        {(guard) => (
+          <Tabs
+            value={tab}
+            keepMounted={false}
+            onChange={(next) => guard(() => navigate(`/findings/${next}`))}
           >
-            Inbox
-          </Tabs.Tab>
-          <Tabs.Tab value="confirmed">Confirmed</Tabs.Tab>
-        </Tabs.List>
+            <Tabs.List>
+              <Tabs.Tab
+                value="inbox"
+                // The count is metadata on the tab, not a control: it says how much work is behind
+                // the label, which is the one thing a reviewer wants before clicking.
+                rightSection={waiting.length > 0 ? <Badge variant="warning">{waiting.length}</Badge> : null}
+              >
+                Inbox
+              </Tabs.Tab>
+              <Tabs.Tab value="confirmed">Confirmed</Tabs.Tab>
+            </Tabs.List>
 
-        <Tabs.Panel value="inbox">
-          <Inbox
-            rows={waiting}
-            identity={identity}
-            onChanged={onChanged}
-            onOpenContext={setContext}
-          />
-        </Tabs.Panel>
+            <Tabs.Panel value="inbox">
+              <Inbox
+                rows={waiting}
+                identity={identity}
+                onChanged={onChanged}
+                onOpenContext={setContext}
+              />
+            </Tabs.Panel>
 
-        <Tabs.Panel value="confirmed">
-          <Confirmed
-            rows={rows}
-            identity={identity}
-            onChanged={onChanged}
-            onOpenContext={setContext}
-          />
-        </Tabs.Panel>
-      </Tabs>
+            <Tabs.Panel value="confirmed">
+              <Confirmed
+                rows={rows}
+                identity={identity}
+                onChanged={onChanged}
+                onOpenContext={setContext}
+              />
+            </Tabs.Panel>
+          </Tabs>
+        )}
+      </UnsavedWork>
 
       <QuoteContext
         citation={context?.citation ?? null}
@@ -365,7 +379,10 @@ function Confirmed({ rows, identity, onChanged, onOpenContext }) {
               // four of them, which that skill lists as uncovered ("whether a filter may ever be a
               // text search across several fields at once, and how that is labelled"). The
               // description says which, rather than leaving the scope to be guessed at.
-              description="Title, statement, detail, and any answer recorded"
+              // `assistiveText` and not `description` — the adapter's TextField drops `description`
+              // silently, help text and `aria-describedby` with it. See the note in
+              // `shell/IdentityGate.jsx`. The `TextArea` in `Resolution` keeps `description`.
+              assistiveText="Title, statement, detail, and any answer recorded"
               value={text}
               onChange={(e) => setText(e.currentTarget.value)}
             />
@@ -563,6 +580,10 @@ function Decision({ finding, identity, onChanged }) {
   const [busy, setBusy] = useState(false)
   const [problem, setProblem] = useState(null)
 
+  // A note nobody has typed into is not unsaved work, so switching tabs past an untouched form
+  // asks nothing.
+  useUnsavedWork(note.trim().length > 0)
+
   async function decide(status) {
     setBusy(true); setProblem(null)
     try {
@@ -616,14 +637,20 @@ function Decision({ finding, identity, onChanged }) {
  * agent would have assumed remains checkable after a person has decided otherwise.
  */
 function Resolution({ finding, identity, onChanged }) {
-  const [answer, setAnswer] = useState(finding.resolution ?? finding.proposed_answer ?? '')
+  const prefill = finding.resolution ?? finding.proposed_answer ?? ''
+  const [answer, setAnswer] = useState(prefill)
   const [note, setNote] = useState('')
   const [busy, setBusy] = useState(false)
   const [problem, setProblem] = useState(null)
 
   useEffect(() => {
-    setAnswer(finding.resolution ?? finding.proposed_answer ?? '')
-  }, [finding.resolution, finding.proposed_answer])
+    setAnswer(prefill)
+  }, [prefill])
+
+  // The answer box arrives pre-filled with the agent's proposal, so "not empty" is not the test —
+  // unsaved work here is text that differs from what the box was handed. Confirming the assumption
+  // unchanged is a real act, but it is one click and nothing is lost by switching away from it.
+  useUnsavedWork(answer.trim() !== prefill.trim() || note.trim().length > 0)
 
   async function send(body) {
     setBusy(true); setProblem(null)

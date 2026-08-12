@@ -51,6 +51,9 @@ export function QuoteContext({ citation, siblings = [], onAnchor, onClose }) {
   const [data, setData] = useState(null)
   const [error, setError] = useState(null)
   const heading = useRef(null)
+  // What was focused when the panel opened, so closing can put focus back. Captured here rather
+  // than left to Mantine — see `restoreFocus` below.
+  const opener = useRef(null)
 
   const cid = citation?.conversation_id
   const seq = citation?.line_sequence_number
@@ -70,18 +73,46 @@ export function QuoteContext({ citation, siblings = [], onAnchor, onClose }) {
   }, [cid, seq])
 
   // Opening must be perceivable, which follows from focus moving into the panel — the slide-in is
-  // not allowed to be the only signal. Focus returns to the trigger on close via Mantine's
-  // `returnFocus`, which restores whatever was focused before the panel opened.
+  // not allowed to be the only signal.
   //
   // Deferred behind the open transition rather than called in the same commit. The panel is
   // `keepMounted`, so at the moment `citation` arrives the content is still display:none and
   // `focus()` on a hidden element silently does nothing — measured in the running app: focus
   // stayed on BODY. The delay clears Mantine's transition.
+  //
+  // The element that was focused when the panel opened is stashed on the way in, because the panel
+  // is what takes focus away from it — see `restoreFocus`.
   useEffect(() => {
     if (!citation) return
+    opener.current = document.activeElement
     const t = setTimeout(() => heading.current?.focus(), 250)
     return () => clearTimeout(t)
   }, [citation])
+
+  /**
+   * Put focus back where it came from, and then close.
+   *
+   * **Mantine will not do this here, and the comment that used to sit above claiming it would was
+   * simply wrong.** `useModal` computes `useFocusReturn({ opened, shouldReturnFocus: trapFocus &&
+   * returnFocus })` (`ModalBase/use-modal.mjs`), so the restore is gated on *both*. This panel
+   * passes `trapFocus={false}` — `recursica-skill-panel` requires it, because a panel is non-modal
+   * and a focus trap is what makes it modal in practice. So the house rule for panels switches off
+   * the house rule for focus return, and `returnFocus` on the component below is inert. It is also
+   * redundant: Drawer already defaults it true. Removing it would change nothing, and leaving it
+   * reads as though something is handling this, so it is gone.
+   *
+   * Every path out has to go through here, not just the ones with a button on them: Escape and the
+   * close control both reach `onClose` on the component, which is why this is what gets passed.
+   */
+  function restoreFocus() {
+    const back = opener.current
+    opener.current = null
+    onClose()
+    // After the close commit, so the panel is not still holding focus when we move it.
+    setTimeout(() => {
+      if (back instanceof HTMLElement && document.contains(back)) back.focus()
+    }, 0)
+  }
 
   // The house rule is that a panel is non-modal, and Mantine hardcodes `aria-modal` on the dialog
   // with no prop to turn it off — it is written after the prop spread, so it cannot be overridden
@@ -107,13 +138,20 @@ export function QuoteContext({ citation, siblings = [], onAnchor, onClose }) {
   return (
     <Panel
       opened={Boolean(citation)}
-      onClose={onClose}
+      onClose={restoreFocus}
       title={name}
       placement="right"
-      returnFocus
+      // Neither Mantine nor the adapter gives the close control a label, so without this it is a
+      // button announced as nothing. `recursica-skill-panel` requires the dismiss control to be
+      // named; "Close" alone would be one of several unnamed close buttons on the page.
+      closeButtonProps={{ 'aria-label': 'Close the quote context panel' }}
       // The house rule is that a panel is non-modal; the adapter's Mantine Drawer defaults to the
       // opposite on all four counts. Delete these when the adapter's defaults are fixed rather
       // than carrying them forever — recursica-skill-panel calls it a tracked defect.
+      //
+      // `trapFocus={false}` is the one with a second consequence: it also disables Mantine's focus
+      // return. That is handled explicitly in `restoreFocus` above rather than by passing
+      // `returnFocus`, which does nothing while this is false.
       withOverlay={false}
       closeOnClickOutside={false}
       trapFocus={false}

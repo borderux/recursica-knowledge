@@ -45,13 +45,29 @@ export function Page({ title, trail = [], action, children }) {
       <Stack gap="lg">
         <Stack gap="xs">
           {trail.length > 0 && (
-            <Breadcrumb>
+            /* A named navigation landmark. The page already has a second one — the rail's
+               `<nav aria-label="Sections">` in `App.jsx` — and two unnamed nav regions are two
+               entries reading "navigation" in a landmark list, which is the case `aria-label` is
+               for. Both props reach the DOM: neither `component` nor `aria-label` is in the
+               adapter's BLOCKED_STYLING_KEYS, so `filterStylingProps` passes them through to
+               Mantine's polymorphic Box.
+
+               **The `ul`/`li` half of this rule is not fixable from here.** Mantine's Breadcrumbs
+               flattens its children into one Box with separators interleaved, so no list markup can
+               be produced through the component and hand-rolling one around it would be an override
+               of the thing that owns the structure. That is an adapter gap, logged rather than
+               worked around. */
+            <Breadcrumb component="nav" aria-label="Breadcrumb">
               {trail.map((crumb) => (
                 <Link key={crumb.to} component={RouterLink} to={crumb.to}>
                   {crumb.label}
                 </Link>
               ))}
-              <Text variant="body-small" component="span">{title}</Text>
+              {/* The current page. `aria-current="page"` is what says so — position and a smaller
+                  type size are a visual convention and carry nothing to a screen reader. It stays a
+                  span rather than a link, because a crumb linking to where you already are is
+                  navigation that does nothing. */}
+              <Text variant="body-small" component="span" aria-current="page">{title}</Text>
             </Breadcrumb>
           )}
           {/* Exactly one H1 per page — recursica-skill-typography-semantics. */}

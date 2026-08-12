@@ -8,6 +8,24 @@
  * Where a dimension is the design system's to decide, it is read from a Recursica variable
  * instead of chosen here. The page max width is the clearest case: `recursica-skill-screen-
  * scaffolding` says it comes from the layout rule and is not ours to set.
+ *
+ * ## This application is desktop only, and that is a decision
+ *
+ * **Set by the owner on 2026-08-12.** There is no `@media` rule in this file, and no
+ * `useMediaQuery`, `matchMedia`, `hiddenFrom` or `visibleFrom` anywhere in `src/`, because none was
+ * asked for — not because nobody got to it. `--stu-rail-width` is a fixed grid column at every
+ * width on purpose.
+ *
+ * `recursica-skill-responsive-behavior` requires the below-desktop commitment to be *established*
+ * rather than assumed, which is the whole reason this paragraph exists: the absence of responsive
+ * handling looks identical whether it was chosen or overlooked, and the next person to read this
+ * file is entitled to know which. Stu runs on localhost under launchd, on the machine of the person
+ * checking the research. Nothing about it suggests a phone.
+ *
+ * So: **do not add a breakpoint, a hamburger, or a narrow-table treatment here** without the owner
+ * deciding otherwise first. Below desktop the panel and both modals stay overlays and the six- and
+ * seven-column tables render unconditionally; those are the known consequences and they were
+ * accepted, not missed.
  */
 
 /* The brand names three typefaces and the theme uses all three — primary on table cells and
@@ -249,7 +267,11 @@ body {
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  /* The kit owns the gap between a header's label and its sort mark — `recursica-skill-table`
+     lists `label-sort-gap` under "Not your decision". It is declared on `:root`, so consuming it
+     is a `var()` away and the 6px that used to sit here was a value invented beside a token that
+     already had the answer. */
+  gap: var(--recursica_ui-kit_components_table-header_properties_label-sort-gap);
 }
 
 .stu-sort__mark {
@@ -257,12 +279,10 @@ body {
   min-width: 0.7em;
 }
 
-/* A row that navigates. Selected on the role rather than a class, because a Recursica component
-   drops `className` — see BLOCKED_STYLING_KEYS in the adapter. The role is load-bearing anyway:
-   it is what tells a screen reader the row is a link. */
-tr[role='link'] {
-  cursor: pointer;
-}
+/* No rule for a navigating row. There used to be one, selecting `tr[role='link']`, and both the
+   rule and the role are gone: a row that navigates without an anchor takes Cmd-click, middle-click
+   and "copy link address" away from the reader, which `recursica-skill-buttons-links` forbids
+   outright. The link is on the record's identifying value now — see `shell/DataTable.jsx`. */
 
 /* The transcript. An ordered list, because the order is the content. */
 .stu-lines {

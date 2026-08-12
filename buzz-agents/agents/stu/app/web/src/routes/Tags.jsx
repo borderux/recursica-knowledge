@@ -15,8 +15,9 @@
 //      on screen at once and no answer to "did that save?".
 
 import { useEffect, useState } from 'react'
+import { Link as RouterLink } from 'react-router'
 import {
-  Badge, Button, Dropdown, Modal, Stack, Text, TextArea, TextField,
+  Badge, Button, Dropdown, Link, Modal, Stack, Text, TextArea, TextField,
 } from '@recursica/mantine-adapter'
 import { api } from '../api.js'
 import { formatCount } from '../format.js'
@@ -38,7 +39,17 @@ export function Tags({ identity, revision, onChanged }) {
   if (!rows) return null
 
   const columns = [
-    { key: 'tag', header: 'Tag', sortValue: (r) => r.tag, render: (r) => r.tag },
+    {
+      key: 'tag',
+      header: 'Tag',
+      sortValue: (r) => r.tag,
+      // The way into the record, and the only interactive thing in the row — a real `<a href>`, so
+      // the browser's own link behaviour works. `recursica-skill-buttons-links` requires that and
+      // outranks the tables skill's permission for whole-row navigation.
+      render: (r) => (
+        <Link component={RouterLink} to={`/tags/${encodeURIComponent(r.tag)}`}>{r.tag}</Link>
+      ),
+    },
     { key: 'type', header: 'Type', sortValue: (r) => r.type, render: (r) => r.type },
     {
       key: 'usage',
@@ -75,11 +86,11 @@ export function Tags({ identity, revision, onChanged }) {
       action={<Button variant="solid" onClick={() => setAdding(true)}>Add a tag</Button>}
     >
       <DataTable
+        label="Tag library"
         columns={columns}
         rows={rows}
         initialSort={{ key: 'usage', direction: 'desc' }}
         getRowKey={(r) => r.tag}
-        rowHref={(r) => `/tags/${encodeURIComponent(r.tag)}`}
         emptyMessage="The tag library is empty. Run the dictionary sync before tagging anything."
       />
 
@@ -111,16 +122,26 @@ function AddTag({ identity, onClose, onDone }) {
   }
 
   return (
-    <Modal opened onClose={onClose} title="Add a tag">
+    // Neither Mantine nor the adapter labels the close control, so without `closeButtonProps` it
+    // is a button announced as nothing.
+    <Modal
+      opened
+      onClose={onClose}
+      title="Add a tag"
+      closeButtonProps={{ 'aria-label': 'Close without adding a tag' }}
+    >
       <form onSubmit={submit}>
         <Stack gap="md">
           {/* One field per row, labels beside them — recursica-skill-forms, "Layout" and
               "Labels". Tag id and Type were on one row: two logical values, so not the
               compound-control exception. */}
+          {/* `assistiveText` and not `description` — the adapter's TextField drops `description`
+              silently, help text and `aria-describedby` with it. See the long note in
+              `shell/IdentityGate.jsx`. The `TextArea` below keeps `description`, which works. */}
           <TextField
             formLayout="side-by-side"
             label="Tag id"
-            description="lower_snake_case — written verbatim into every tagged line"
+            assistiveText="lower_snake_case — written verbatim into every tagged line"
             value={tag}
             onChange={(e) => setTag(e.currentTarget.value)}
           />

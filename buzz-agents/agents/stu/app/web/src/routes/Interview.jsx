@@ -66,8 +66,24 @@ export function Interview({ identity, revision, onChanged }) {
   if (!data) return null
 
   const title = meta?.document_name ?? cid
-  const corrected = lines.filter((l) => l.cleaned_text).length
+
+  // **Three counts, and they are three different claims.** They were two, and one of the two was
+  // measuring the wrong column:
+  //
+  //   aiCorrected  — the machine changed this line. `ai_cleaned_text` is the AI-only column, so
+  //                  this is the AI's work whether or not a person later overrode it.
+  //   edited       — a person changed this line.
+  //   withCurrent  — the line currently reads differently from its source. `lines_current` resolves
+  //                  `cleaned_text` to the human's edit where one exists and to the AI's otherwise,
+  //                  so this is the union, and it is what the filter below actually selects.
+  //
+  // `AI corrections` used to be counted off `cleaned_text`, which meant it counted the human's
+  // edits as the machine's — and wrong in the other direction too, because clearing an edit nulls
+  // `cleaned_text`, so an AI correction a person overrode dropped out of the AI count entirely. The
+  // two figures were labelled as if they partitioned the transcript and did not.
+  const aiCorrected = lines.filter((l) => l.ai_cleaned_text).length
   const edited = lines.filter((l) => l.is_human_edited).length
+  const withCurrent = lines.filter((l) => l.cleaned_text).length
   const conflicts = lines.filter((l) => l.source_changed_since_edit)
   const filtering = onlyTagged || onlyCorrected || search.trim()
 
@@ -80,7 +96,7 @@ export function Interview({ identity, revision, onChanged }) {
         items={[
           { label: 'Transcript lines', value: lines.length },
           { label: 'Tagged lines', value: lines.filter((l) => l.tags?.length).length },
-          { label: 'AI corrections', value: corrected },
+          { label: 'AI corrections', value: aiCorrected },
           { label: 'Human corrections', value: edited },
         ]}
       />
@@ -112,11 +128,17 @@ export function Interview({ identity, revision, onChanged }) {
               checked={onlyTagged}
               onChange={(e) => setOnlyTagged(e.currentTarget.checked)}
             />
+            {/* The number in the label is the number of lines this checkbox reveals, counted with
+                the same test the filter uses (`cleaned_text` is set). It used to read
+                `corrected + edited`, adding two overlapping sets — so a line the AI corrected and a
+                person then re-corrected was counted twice, and the label promised more lines than
+                ticking the box ever produced. A count beside a control has to be that control's
+                count. */}
             <Checkbox
-              label={`Only corrected lines (${corrected + edited})`}
+              label={`Only corrected lines (${withCurrent})`}
               checked={onlyCorrected}
               onChange={(e) => setOnlyCorrected(e.currentTarget.checked)}
-              disabled={corrected + edited === 0}
+              disabled={withCurrent === 0}
             />
             <TextField
               label="Search this transcript"
@@ -196,12 +218,30 @@ function Line({ line, cid, open, onToggle, identity, onChanged }) {
           <Group gap="xs" wrap="wrap">
             {line.tags.map((t) => (
               // A tag is one of several metadata values on the object, so it is a chip, not a
-              // badge. The tooltip carries the justification — a tag whose reasoning you cannot
-              // reach in one move is a tag you have to take on trust.
-              <Tooltip key={t.tag_id} label={t.justification || 'No justification was recorded'} multiline w={340}>
-                <Chip checked readOnly error={!t.justification}>
-                  {t.tag_id} · {formatConfidence(t.confidence)}
-                </Chip>
+              // badge. The tooltip carries the confidence and the justification — a tag whose
+              // reasoning you cannot reach in one move is a tag you have to take on trust.
+              //
+              // **The chip label is the tag id and nothing else.** `recursica-skill-chip`: "The
+              // label is a noun, one or two words. No verbs, no sentences, no counts inside the
+              // label" — and the confidence was a count inside the label. It moved into the tooltip
+              // beside the justification, which is where the rest of a tag's provenance already is,
+              // and it is in the expansion below in full.
+              //
+              // **And no `error` prop.** `recursica-skill-badges-chips` is absolute: "Do not use a
+              // chip to indicate an error. Ever." `recursica-skill-chip` names this exact prop and
+              // says do not pass it, and it was not inert — the adapter sets `data-error` and the
+              // kit resolves seven error colours off it. A missing justification is a real defect
+              // and it still says so, in the tooltip and in the expansion's own sentence. What is
+              // *not* built here is a new at-a-glance treatment for it: badges-chips says to design
+              // a purpose-built one rather than reach for a badge, and designing one is the owner's
+              // call, not a fix. Asked rather than invented.
+              <Tooltip
+                key={t.tag_id}
+                label={`Confidence ${formatConfidence(t.confidence)} — ${t.justification || 'no justification was recorded, so this tag cannot be checked'}`}
+                multiline
+                w={340}
+              >
+                <Chip checked readOnly>{t.tag_id}</Chip>
               </Tooltip>
             ))}
           </Group>
@@ -431,10 +471,13 @@ function TagForm({ line, cid, identity, onChanged }) {
         onChange={setTagId}
         searchable
       />
+      {/* `assistiveText` and not `description` — the adapter's TextField drops `description`
+          silently, help text and `aria-describedby` with it. See the note in
+          `shell/IdentityGate.jsx`. The `Dropdown` above keeps `description`, which works. */}
       <TextField
         formLayout="side-by-side"
         label="Justification"
-        description="Quote what in this line supports the tag. Held to the same bar as the agents."
+        assistiveText="Quote what in this line supports the tag. Held to the same bar as the agents."
         value={justification}
         onChange={(e) => setJustification(e.currentTarget.value)}
       />

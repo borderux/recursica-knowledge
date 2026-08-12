@@ -160,10 +160,38 @@ export function IdentityGate({ config, onBound }) {
             />
           ) : (
             <Stack gap="xs">
+              {/* `assistiveText`, not `description`, and the difference is not cosmetic.
+                  **The adapter's `TextField` never destructures `description`**, so it falls
+                  through `filterStylingProps` onto the bare Mantine `Input` and lands on the DOM
+                  `<input>` as an unknown attribute — no help text at all. It type-checks and
+                  vanishes at runtime, which is why it survived seven call sites. `assistiveText`
+                  is the prop the adapter actually forwards: `FormControlWrapper` resolves
+                  `assistiveText || description` and renders an `AssistiveElement` from it.
+
+                  **That restores the help text and not the `aria-describedby`, and the second half
+                  is not fixable from here.** Measured in the running app: the assistive element is
+                  present with id `recursica-fc-<n>-assistive`, and the `<input>` carries no
+                  `aria-describedby` at all. `FormControlWrapper` does clone the child with one —
+                  but the child is Mantine's bare `Input`, which builds
+                  `ariaAttributes = { …, 'aria-describedby': ctx?.describedBy }` and spreads it
+                  *after* `...rest` (`@mantine/core` `Input.mjs`). With no `Input.Wrapper` above it
+                  `ctx` is null, so the clone's value is overwritten with `undefined` on every
+                  render. The only call-site lever is `withAria={false}`, which switches off that
+                  whole block and takes `aria-invalid` with it — a worse trade, so it is not taken.
+
+                  Two upstream items, then, not one: forward `description` from `TextField`, and
+                  give the input its describedby (`Input.Wrapper`, or `withAria={false}` plus the
+                  adapter setting the aria itself). Note the first alone would not fix the second.
+
+                  `TextArea` and `Dropdown` keep `description` on purpose, and theirs is wired
+                  correctly — measured: `aria-describedby` present and resolving. They reach
+                  Mantine's own `Input.Wrapper`, which is exactly the `ctx` that `TextField` lacks.
+                  Two spellings in one app is not tidy; changing the two that work to match the five
+                  that did not would be churn against a defect that belongs upstream. */}
               <TextField
                 formLayout="side-by-side"
                 label="Email or pubkey"
-                description="An email address, or 64 hex characters from Buzz Desktop → your profile."
+                assistiveText="An email address, or 64 hex characters from Buzz Desktop → your profile."
                 placeholder="you@company.com"
                 value={typedPubkey}
                 onChange={(e) => lookupTyped(e.currentTarget.value.trim())}
@@ -180,7 +208,7 @@ export function IdentityGate({ config, onBound }) {
           <TextField
             formLayout="side-by-side"
             label="Email"
-            description="Tied to your identity in the users table"
+            assistiveText="Tied to your identity in the users table"
             placeholder="you@company.com"
             type="email"
             value={email}

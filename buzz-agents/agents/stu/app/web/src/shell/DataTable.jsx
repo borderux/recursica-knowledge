@@ -2,18 +2,29 @@
 // behaviour to be consistent across it: if tables sort, they all sort; if rows navigate, they all
 // navigate the same way.
 //
-// The two rules it exists to make unbreakable:
+// The three rules it exists to make unbreakable:
 //   1. **Every table is sorted and the sorted column is visibly indicated** — including tables
 //      whose order cannot be changed. A fixed order is still an order and the reader is entitled
 //      to know which column produced it, in which direction.
-//   2. **One click target per row.** Either the whole row navigates or nothing in it does. Two
-//      competing targets means the user cannot predict what a click does.
+//   2. **One click target per row.** Two competing targets means the user cannot predict what a
+//      click does. `recursica-skill-tables` names two correct modes and says to pick one and use
+//      it in every table in the application; this one is the identifying value carrying a real
+//      link, so the row itself is never interactive.
+//   3. **Every table has an accessible name.** It is a required prop rather than an optional one
+//      — `recursica-skill-table`: "A page with three tables and no names is unnavigable", and
+//      History is a page with two.
 //
 // It never scrolls horizontally. `recursica-skill-tables` says there is no exception to that, so
 // a table that would need it is a table with too many columns.
+//
+// **There is deliberately no `rowHref`.** The row used to navigate through `role="link"` plus an
+// `onClick`, with no anchor anywhere — so Cmd/Ctrl/Shift-click navigated in place, middle-click
+// did nothing, and there was no "copy link address". `recursica-skill-buttons-links` is a
+// design-rules skill and its rule is absolute — "Links MUST render a real `href`" — so it outranks
+// the tables skill's *permission* for whole-row navigation. The prop is gone rather than fixed,
+// because a prop that spells "the whole row navigates" has no correct implementation here.
 
 import { Fragment, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
 import { Checkbox, Table, Text } from '@recursica/mantine-adapter'
 
 /**
@@ -50,8 +61,23 @@ export const COLUMN_WIDTH = {
  *                 divides the table by content and the identity column, which is the one that
  *                 actually needs room, loses to six numeric columns that do not.
  * @param initialSort `{ key, direction }` — required. There is no unsorted state.
- * @param rowHref  `(row) => string`. Provide it and the entire row navigates; provide nothing in
- *                 the cells that also clicks.
+ * @param label    **Required.** The table's accessible name — what these records are, as a noun
+ *                 phrase. `recursica-skill-table` requires one on every table, and the reason it
+ *                 is required rather than optional is `History.jsx`, which puts two tables on one
+ *                 page: with no name, a screen reader user reaches "table" twice and has no way to
+ *                 tell the audit trail from the orphaned corrections. It is not rendered visibly —
+ *                 every table here already sits under a heading that says the same thing, and a
+ *                 caption would print it twice.
+ *
+ *                 Getting into a record is the identifying value's link, in every table in this
+ *                 application — see the note at the top of this file. Put it in that column's
+ *                 `render`.
+ * @param rowLabel `(row) => string`. What one row is called, for the controls in it that a screen
+ *                 reader reaches without their column. **Required once a row carries a checkbox or
+ *                 a disclosure control**, because `getRowKey` is not a name: People's keys are
+ *                 `p:<person_id>` and `s:<a>+<b>`, so a select checkbox named from the key
+ *                 announced a synthetic string instead of the person. `recursica-skill-table`:
+ *                 "Select invoice 1043", not five identical "Select" controls.
  * @param selection `{ selected: Set, onChange: (next: Set) => void }`. Opts the table into row
  *                 selection.
  *
@@ -68,8 +94,10 @@ export const COLUMN_WIDTH = {
  *
  *                 Selection feeds bulk actions and nothing else. It is not a way to open, focus, or
  *                 edit one record — see `recursica-skill-tables`.
- * @param expandable `{ render: (row) => node, canExpand?: (row) => bool, label?: (row) => string }`.
- *                 Gives each row a disclosure control that reveals sub-detail in place.
+ * @param expandable `{ render: (row) => node, canExpand?: (row) => bool }`. Gives each row a
+ *                 disclosure control that reveals sub-detail in place. What the control is named
+ *                 after comes from `rowLabel`, which the checkbox column uses too — one answer to
+ *                 "what is this row called" rather than two that can disagree.
  *
  *                 **One level, and it does not nest.** `recursica-skill-tables` avoids grouped rows
  *                 and asks for a single expand/collapse on the row instead, so what is revealed
@@ -82,28 +110,21 @@ export const COLUMN_WIDTH = {
  *                 reader most needs to check what happened.
  */
 export function DataTable({
-  columns, rows, initialSort, rowHref, getRowKey, emptyMessage, selection, expandable,
+  columns, rows, initialSort, label, rowLabel, getRowKey, emptyMessage, selection, expandable,
 }) {
   const [sort, setSort] = useState(initialSort)
   const [expanded, setExpanded] = useState(() => new Set())
-  const navigate = useNavigate()
 
-  // Two click targets in one row means the reader cannot predict what a click does, and
-  // `recursica-skill-tables` states there are no exceptions. This combination is decided by props
-  // rather than by data, so it either throws on the first render of a route or it never can.
-  if (selection && rowHref) {
-    throw new Error(
-      'DataTable: selection and rowHref are mutually exclusive — a row with a checkbox must not '
-      + 'also navigate. Put the link on the record\'s identifying value instead.',
-    )
+  // Both names are decided by props rather than by data, so these either throw on the first render
+  // of a route or they never can. Same shape as the mutually-exclusive checks this replaced: the
+  // point of putting them here is that a table cannot reach a reader unnamed.
+  if (!label) {
+    throw new Error('DataTable: `label` is required — every table needs an accessible name.')
   }
-  // Same rule, second instance: a disclosure button is an interactive element in the row, so the
-  // row cannot navigate either. The skill lists an expansion control among the things that remove
-  // the possibility, alongside a checkbox and a menu.
-  if (expandable && rowHref) {
+  if ((selection || expandable) && !rowLabel) {
     throw new Error(
-      'DataTable: expandable and rowHref are mutually exclusive — a row with a disclosure control '
-      + 'must not also navigate.',
+      'DataTable: `rowLabel` is required once a row carries a checkbox or a disclosure control — '
+      + 'those controls are named after the row, and `getRowKey` is a key, not a name.',
     )
   }
 
@@ -183,8 +204,9 @@ export function DataTable({
       render: (row) => (
         <Checkbox
           // Named for a screen reader but not on screen: the row's identity is in the next cell,
-          // and repeating it visibly turns the column into noise.
-          aria-label={`Select ${getRowKey(row)}`}
+          // and repeating it visibly turns the column into noise. Named from `rowLabel` and never
+          // from `getRowKey` — a key is not a name.
+          aria-label={`Select ${rowLabel(row)}`}
           checked={selection.selected.has(getRowKey(row))}
           onChange={() => toggleRow(getRowKey(row))}
         />
@@ -219,7 +241,7 @@ export function DataTable({
             aria-expanded={open}
             aria-controls={`stu-detail-${key}`}
             // Named for what it reveals, because the icon alone is a direction and not a subject.
-            aria-label={`${open ? 'Hide' : 'Show'} what makes up ${expandable.label?.(row) ?? key}`}
+            aria-label={`${open ? 'Hide' : 'Show'} what makes up ${rowLabel(row)}`}
             onClick={() => toggleExpanded(key)}
           >
             <span aria-hidden="true">{open ? '▾' : '▸'}</span>
@@ -230,7 +252,10 @@ export function DataTable({
     : withSelect
 
   return (
-    <Table>
+    // `aria-label` is not in the adapter's BLOCKED_STYLING_KEYS, so it survives `filterStylingProps`
+    // and lands on the real `<table>`. Not a `Table.Caption`: the caption would repeat the section
+    // heading directly above it on every one of these tables.
+    <Table aria-label={label}>
       {/* Plain HTML, not a Recursica element — the adapter filters styling props off its own
           components, and a column width is neither a style it owns nor one it exposes. */}
       {allColumns.some((c) => c.width) && (
@@ -272,20 +297,13 @@ export function DataTable({
       </Table.Thead>
       <Table.Tbody>
         {sorted.map((row) => {
-          const href = rowHref?.(row)
           const key = getRowKey(row)
           const open = expandable && expanded.has(key)
           return (
             <Fragment key={key}>
-            <Table.Tr
-              onClick={href ? () => navigate(href) : undefined}
-              // A row that navigates is reachable by keyboard, or it is only navigable by mouse.
-              tabIndex={href ? 0 : undefined}
-              role={href ? 'link' : undefined}
-              onKeyDown={href ? (e) => {
-                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(href) }
-              } : undefined}
-            >
+            {/* The row carries no role, no tabIndex and no click handler. Whatever is interactive
+                in it is a real control in a cell — see the note at the top of this file. */}
+            <Table.Tr>
               {allColumns.map((c) => (
                 // Every cell's content goes in the same plain wrapper, which carries no type
                 // and no colour of its own — the cell already has both. It is here so that
