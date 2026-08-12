@@ -12,7 +12,7 @@ read-only tool set.**
 | The skills corpus | `skills/` from this repository — 62 `SKILL.md` files. She reads them; she never writes them. |
 | The manifest script | `scripts/screen-skill-manifest.mjs`, plus a Node 20+ runtime to run it. |
 | The application | A checkout of the app being reviewed, built on `@recursica/mantine-adapter`. |
-| Subagent dispatch | `barb-checker` and `barb-refuter` must be registered, and the platform must support one agent spawning another. |
+| Subagent dispatch | `checker` and `feisty` must be registered, and the platform must support one agent spawning another. |
 
 Nothing else. There is no credential to provision and nothing to fence.
 
@@ -37,7 +37,7 @@ reason Claire is not built for opencode.
    sight. She needs a shell for exactly one command — the manifest script — so narrow the permission
    to that script if your setup allows it. If it does not, the read-only property rests on the
    prompt after all, which is worth knowing rather than discovering.
-2. **Subagents inherit nothing automatically.** `barb-checker` and `barb-refuter` carry their own
+2. **Subagents inherit nothing automatically.** `checker` and `feisty` carry their own
    `tools:` lines, and those lines are the boundary. If your platform ignores per-subagent tools and
    grants them the parent's set, or the session's, they can write. Check rather than assume.
 
@@ -47,13 +47,26 @@ reason Claire is not built for opencode.
 `RECURSICA_COMPONENTS` from `@recursica/adapter-common`. A new component in a newer adapter is not in
 that list, so nothing maps it and nothing complains — it is simply absent from the review. Run
 `node scripts/screen-skill-manifest.mjs --self-check` after any adapter upgrade; it verifies every
-component resolves to a skill that exists on disk, every override names a real export, and every
-skill has a checklist.
+component resolves to a skill that exists on disk, every route names a real export, and every skill
+has a checklist.
 
-**The override table is coupled to skill names.** Fifteen adapter exports do not map to
-`recursica-skill-<kebab-case>`, and one of them is a trap worth repeating: `TextArea` maps to
-`recursica-skill-textarea`, with no hyphen, so a kebab-case guess finds nothing. Renaming a skill
-breaks the table, and `--self-check` is what catches it.
+**Names are matched, not tabulated — keep it that way.** A component and its skill are the same word
+with different punctuation, so `skillFor` compares them with the punctuation stripped. That resolves
+`TextArea` → `recursica-skill-textarea` (no hyphen, where a kebab-case guess yields the non-existent
+`text-area`), `Radio` → `radio-button`, and both `HoverCard` and `Popover` → `hover-card-popover`,
+with no entry for any of them. An earlier version hardcoded all four and that was the wrong instinct:
+a hand-written alias list is a second source of truth that goes stale the first time a skill is
+renamed, and it goes stale silently.
+
+**`ROUTES` is the eleven components with no skill of their own** — layout primitives, type, form
+scaffolding — and every entry is a judgment about which design rules govern them. That is not
+derivable from a string, which is why it is written down. `--self-check` fails if a route names a
+component that now has its own skill, so the table cannot quietly outlive its reason.
+
+**Ambiguity is reported, never resolved by guessing.** `Text` matches both `textarea` and
+`text-field` on a substring, and picking either would be wrong in a way nothing downstream could
+detect. A name that matches more than one skill and has no route is an error in `--self-check` and
+an `ambiguousImports` entry in a report.
 
 **A screen is not one file.** She reviews a route *and* the local files it imports, because a route
 rendering a table through a shared wrapper imports no adapter table itself. If you wire her to a

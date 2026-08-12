@@ -316,9 +316,17 @@ That script exists because of a real gap: all 39 component skills cross-link upw
 design-rules skills, no design-rules skill links back down, and the router's decision table names
 20 of 20 design-rules skills and **0 of 39 component skills**. So descending the router never yields
 a component skill name — but an `import { … } from '@recursica/mantine-adapter'` line is exactly that
-list, and it fires on the import rather than on anybody's sense of what counts as "placed". Run
-`skills:manifest:check` after an adapter upgrade: fifteen exports do not map to
-`recursica-skill-<kebab-case>` and one is a trap — `TextArea` is `recursica-skill-textarea`, no hyphen.
+list, and it fires on the import rather than on anybody's sense of what counts as "placed".
+
+**Component names are matched, not tabulated.** A component and its skill are the same word with
+different punctuation, so the script strips the punctuation and compares — which resolves `TextArea`
+→ `recursica-skill-textarea` (no hyphen; a kebab-case guess yields a path that does not exist),
+`Radio` → `radio-button`, and both `HoverCard` and `Popover` → `hover-card-popover`, with no alias
+entry for any of them. Do not add one: a hand-written alias list is a second source of truth that
+goes stale silently when a skill is renamed. What *is* written down is `ROUTES` — the eleven
+components with no skill of their own, where the question "which design rules govern this" is a
+judgment no string comparison can make. A name matching more than one skill with no route is an
+error rather than a guess. Run `skills:manifest:check` after an adapter upgrade.
 
 `agents/<name>/PORTING.md` says what one needs and what it cannot carry — above all that
 **a prompt does not carry a data fence**.

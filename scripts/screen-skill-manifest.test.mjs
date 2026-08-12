@@ -13,7 +13,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { adapterImports, resolveImport, manifest, localGraph } from "./screen-skill-manifest.mjs";
+import { adapterImports, resolveImport, manifest, localGraph, skillFor } from "./screen-skill-manifest.mjs";
 
 test("adapterImports reads a multi-line import and ignores other packages", () => {
   const source = `
@@ -34,20 +34,51 @@ test("adapterImports keeps the imported name, not the local alias", () => {
 
 test("a component whose skill slug matches its name resolves straight through", () => {
   assert.deepEqual(resolveImport("Badge"), {
-    name: "Badge", kind: "component", skills: ["recursica-skill-badge"],
+    name: "Badge", kind: "component", skills: ["recursica-skill-badge"], match: "exact",
   });
 });
 
 test("TextArea resolves to recursica-skill-textarea, not recursica-skill-text-area", () => {
-  // The kebab-case guess is `text-area` and there is no such skill. This is the mismatch the
-  // OVERRIDES table exists for, and the same off-by-one spelling was written into app source.
+  // The kebab-case guess is `text-area` and there is no such skill. Resolved by normalising both
+  // sides rather than by an alias entry — the same off-by-one spelling was written into app source
+  // and only a failing build caught it, whereas a missing skill would have failed silently.
   const r = resolveImport("TextArea");
   assert.equal(r.kind, "component");
   assert.deepEqual(r.skills, ["recursica-skill-textarea"]);
+  assert.equal(skillFor("TextArea").match, "exact");
 });
 
-test("HoverCard and Popover share one skill", () => {
-  assert.deepEqual(resolveImport("HoverCard").skills, resolveImport("Popover").skills);
+test("Radio, HoverCard and Popover resolve by matching, with no alias table", () => {
+  // Each of these differs from its skill's slug by more than punctuation, and all three resolve
+  // without an entry anywhere. The assertion that matters is `match: "partial"` — it is the proof
+  // that comparison did the work, so re-adding a hardcoded alias would fail this test.
+  assert.deepEqual(resolveImport("Radio").skills, ["recursica-skill-radio-button"]);
+  assert.equal(skillFor("Radio").match, "partial");
+
+  assert.deepEqual(resolveImport("HoverCard").skills, ["recursica-skill-hover-card-popover"]);
+  assert.deepEqual(resolveImport("Popover").skills, ["recursica-skill-hover-card-popover"]);
+  assert.equal(skillFor("Popover").match, "partial", "matches the tail of the slug");
+});
+
+test("an ambiguous name is reported rather than guessed at", () => {
+  // `Text` is a substring of both `textarea` and `text-field`. Picking either would be wrong in a
+  // way nothing downstream could detect, so matching refuses and a route answers it instead.
+  const m = skillFor("Text");
+  assert.equal(m.match, "ambiguous");
+  assert.ok(m.slugs.length > 1, "more than one candidate");
+
+  // And the route is what resolves it, to neither candidate.
+  const r = resolveImport("Text");
+  assert.equal(r.kind, "design");
+  assert.deepEqual(r.skills, ["recursica-skill-typography-semantics"]);
+});
+
+test("a name matching nothing and having no route surfaces in uncovered", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "barb-"));
+  const file = path.join(dir, "Screen.jsx");
+  fs.writeFileSync(file, `import { Zzyzx } from '@recursica/mantine-adapter'\n`);
+  assert.deepEqual(manifest([file]).uncovered.unmappedImports, ["Zzyzx"]);
+  fs.rmSync(dir, { recursive: true, force: true });
 });
 
 test("a layout primitive resolves to a design-rules skill rather than being dropped", () => {

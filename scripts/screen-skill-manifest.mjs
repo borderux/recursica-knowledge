@@ -47,42 +47,45 @@ const ADAPTER_COMPONENTS = [
 ];
 
 /**
- * The 15 exports whose skill is not `recursica-skill-<kebab-case-name>`.
+ * Where a component goes when **no component skill of that name exists at all.**
  *
- * A naive kebab transform maps 33 of the 48 and leaves these, so the map is not decoration — and
- * **`TextArea` is the one to look at.** Kebab-casing it gives `text-area`; the skill is
- * `recursica-skill-textarea`, no hyphen. An agent that guessed the path would find nothing and
- * conclude the component has no skill. That is not hypothetical: the same off-by-one spelling
- * (`Textarea` for `TextArea`) was written into this app's source in the change that added this
- * file, and a build caught it only because an undefined import fails loudly. A missing *skill*
- * fails silently.
+ * These are routing decisions, not spellings. Every entry answers "this component has no skill of
+ * its own — which design rules govern it?", which is a judgment nobody can derive from a string.
+ *
+ * **Deliberately not a spelling table.** An earlier version of this file hardcoded four more
+ * entries so that `TextArea` would find `recursica-skill-textarea`, `Radio` would find
+ * `radio-button`, and `HoverCard` and `Popover` would both find `hover-card-popover`. That was the
+ * wrong instinct: those are name variations of the same thing, and matching them is a job for
+ * comparison rather than for a lookup table somebody has to maintain. `skillFor` below normalises
+ * both sides and resolves all four without an entry here. Keep it that way — a hand-maintained
+ * alias list goes stale the first time a skill is renamed, and it goes stale silently.
  *
  * `kind` is what the reviewer does with it:
- *   component  — load this component skill
- *   design     — no component skill exists; these design-rules skills own it instead
- *   none       — infrastructure or a primitive with no rules of its own. Deliberately not a gap.
+ *   design — no component skill exists; these design-rules skills own it instead
  */
-const OVERRIDES = {
-  // Two components, one skill: the skill covers the pair because the choice between them is the
-  // decision it exists to settle.
-  HoverCard: { kind: "component", skills: ["recursica-skill-hover-card-popover"] },
-  Popover: { kind: "component", skills: ["recursica-skill-hover-card-popover"] },
-
-  Radio: { kind: "component", skills: ["recursica-skill-radio-button"] },
-  TextArea: { kind: "component", skills: ["recursica-skill-textarea"] },
-
+const ROUTES = {
   // Layout primitives. No component skill by design — how regions are divided is a composition
   // question, so the rules live in the design-rules layer.
   Group: { kind: "design", skills: ["recursica-skill-screen-scaffolding"] },
   Stack: { kind: "design", skills: ["recursica-skill-screen-scaffolding"] },
   Flex: { kind: "design", skills: ["recursica-skill-screen-scaffolding"] },
-  Grid: { kind: "design", skills: ["recursica-skill-screen-scaffolding"] },
   Container: { kind: "design", skills: ["recursica-skill-screen-scaffolding"] },
+
+  // `Grid` also lands on scaffolding, but note that the layout grid itself is on that skill's
+  // own "uncovered — ask, do not invent" list: eight or twelve columns is named as the thing
+  // pages must align to and explicitly deferred to a skill that does not exist yet. So this
+  // route is the closest owner rather than a complete answer, and a screen leaning on the grid
+  // is a question for a person.
+  Grid: { kind: "design", skills: ["recursica-skill-screen-scaffolding"] },
 
   // A layer is its own system with four levels and token-owned properties.
   Layer: { kind: "design", skills: ["recursica-skill-layers"] },
 
   // Type. Which element and which variant is a semantics question, not a component one.
+  //
+  // `Text` needs to be here for a second reason: normalised matching finds both `textarea` and
+  // `text-field` for it and correctly refuses to guess. An explicit route is the answer to a
+  // genuine ambiguity, which is what this table is for.
   Text: { kind: "design", skills: ["recursica-skill-typography-semantics"] },
   Title: { kind: "design", skills: ["recursica-skill-typography-semantics"] },
 
@@ -116,10 +119,6 @@ const ALWAYS = [
 
 const CATEGORIES = ["components", "design-rules", "meta", "psychology"];
 
-function kebab(name) {
-  return name.replace(/(?<=[a-z0-9])(?=[A-Z])/g, "-").toLowerCase();
-}
-
 /** Where a skill slug lives, or null if no such skill is on disk. */
 function locate(slug) {
   for (const category of CATEGORIES) {
@@ -143,11 +142,56 @@ export function adapterImports(source) {
   return [...found].sort();
 }
 
+/** Every component skill slug on disk, with punctuation stripped for comparison. */
+function componentSkills() {
+  const dir = path.join(SKILLS, "components");
+  return fs.readdirSync(dir)
+    .filter((slug) => fs.existsSync(path.join(dir, slug, "SKILL.md")))
+    .map((slug) => ({ slug, flat: slug.replace("recursica-skill-", "").replace(/-/g, "") }));
+}
+
+/**
+ * The component skill for an export name, matched rather than looked up.
+ *
+ * A component name and its skill's slug are the same word with different punctuation, so compare
+ * them with the punctuation removed instead of maintaining a table of spellings. This resolves the
+ * four that a kebab-case guess misses, with no entry for any of them:
+ *
+ *   TextArea   → textarea            (exact, once the hyphen stops mattering)
+ *   Radio      → radio-button        (the skill name is longer)
+ *   HoverCard  → hover-card-popover  (ditto)
+ *   Popover    → hover-card-popover  (matches the tail)
+ *
+ * **Returns `ambiguous` rather than guessing when more than one skill matches.** `Text` hits both
+ * `textarea` and `text-field`, and picking either would be wrong in a way nothing downstream could
+ * detect. A name that lands here needs a human decision, which is what `ROUTES` records.
+ */
+export function skillFor(name) {
+  const flat = name.toLowerCase();
+  const skills = componentSkills();
+
+  const exact = skills.filter((s) => s.flat === flat);
+  if (exact.length === 1) return { match: "exact", slugs: [exact[0].slug] };
+
+  // A skill whose name extends the component's — `Radio` inside `radio-button` — or ends with it,
+  // as `Popover` does in `hover-card-popover`.
+  const partial = skills.filter((s) => s.flat.startsWith(flat) || s.flat.endsWith(flat));
+  if (partial.length === 1) return { match: "partial", slugs: [partial[0].slug] };
+  if (partial.length > 1) return { match: "ambiguous", slugs: partial.map((s) => s.slug).sort() };
+
+  return { match: "none", slugs: [] };
+}
+
 /** What one imported name resolves to. */
 export function resolveImport(name) {
-  if (OVERRIDES[name]) return { name, ...OVERRIDES[name] };
-  const slug = `recursica-skill-${kebab(name)}`;
-  if (locate(slug)) return { name, kind: "component", skills: [slug] };
+  // A route wins over a match: it is a decision somebody made, including for the ambiguous cases
+  // that matching deliberately refuses to resolve.
+  if (ROUTES[name]) return { name, ...ROUTES[name] };
+
+  const { match, slugs } = skillFor(name);
+  if (match === "exact" || match === "partial") return { name, kind: "component", skills: slugs, match };
+  // Reported, never guessed at. An ambiguous name is a gap in ROUTES, and it says so.
+  if (match === "ambiguous") return { name, kind: "ambiguous", skills: [], candidates: slugs };
   return { name, kind: "unmapped", skills: [] };
 }
 
@@ -223,6 +267,8 @@ export function manifest(entries) {
 
   const resolved = [...imports].sort().map(resolveImport);
   const unmapped = resolved.filter((r) => r.kind === "unmapped").map((r) => r.name);
+  const ambiguous = resolved.filter((r) => r.kind === "ambiguous")
+    .map((r) => `${r.name} (could be ${r.candidates.join(" or ")})`);
 
   // Breadth-first over `## Load these too`, so a skill reached only through another still lands.
   const seen = new Set();
@@ -246,7 +292,11 @@ export function manifest(entries) {
     // Never a silent drop. An import nobody mapped and a skill named by a cross-link but absent
     // from disk are both reported: a reviewer that quietly skips a component reads exactly like
     // one that cleared it.
-    uncovered: { unmappedImports: unmapped, missingSkills: [...new Set(missing)].sort() },
+    uncovered: {
+      unmappedImports: unmapped,
+      ambiguousImports: ambiguous,
+      missingSkills: [...new Set(missing)].sort(),
+    },
   };
 }
 
@@ -256,12 +306,16 @@ function selfCheck() {
 
   for (const name of ADAPTER_COMPONENTS) {
     const r = resolveImport(name);
-    if (r.kind === "unmapped") problems.push(`${name}: no skill and no entry in OVERRIDES`);
+    if (r.kind === "unmapped") problems.push(`${name}: no skill matched and no entry in ROUTES`);
+    if (r.kind === "ambiguous") problems.push(`${name}: matches ${r.candidates.join(" and ")} — needs a ROUTES entry`);
     for (const slug of r.skills) if (!locate(slug)) problems.push(`${name} -> ${slug}: no such skill on disk`);
   }
   for (const slug of ALWAYS) if (!locate(slug)) problems.push(`ALWAYS names ${slug}, which is not on disk`);
-  for (const name of Object.keys(OVERRIDES)) {
-    if (!ADAPTER_COMPONENTS.includes(name)) problems.push(`OVERRIDES has ${name}, which the adapter does not export`);
+  for (const name of Object.keys(ROUTES)) {
+    if (!ADAPTER_COMPONENTS.includes(name)) problems.push(`ROUTES has ${name}, which the adapter does not export`);
+    // A route for a component that *does* have its own skill is a route that should not exist.
+    const m = skillFor(name);
+    if (m.match === "exact") problems.push(`ROUTES has ${name}, but ${m.slugs[0]} matches it exactly — drop the route`);
   }
 
   // Every skill must have a checklist, because that is what a checker walks. A skill with none
@@ -299,7 +353,7 @@ function selfCheck() {
     process.exit(2);
   }
   console.log(`✓ ${ADAPTER_COMPONENTS.length} adapter components all resolve.`);
-  console.log(`✓ ${Object.keys(OVERRIDES).length} overrides, ${ALWAYS.length} always-on skills.`);
+  console.log(`✓ ${Object.keys(ROUTES).length} routes for components with no skill of their own, ${ALWAYS.length} always-on skills.`);
   console.log(`✓ ${items} pre-flight checklist items across every skill.`);
   console.log(`✓ ${links} cross-links parsed from the 39 component skills.`);
 }
@@ -329,15 +383,18 @@ if (!invokedDirectly) {
     console.log(`reads ${result.files.length} local file${result.files.length === 1 ? "" : "s"}: ${result.files.map((f) => path.basename(f)).join(", ")}\n`);
     console.log(`imports (${result.imports.length}):`);
     for (const i of result.imports) {
-      const tail = i.kind === "unmapped" ? "UNMAPPED" : `${i.kind} → ${i.skills.join(", ")}`;
+      const tail = i.kind === "unmapped" ? "UNMAPPED"
+        : i.kind === "ambiguous" ? `AMBIGUOUS — ${i.candidates.join(" or ")}`
+        : `${i.kind} → ${i.skills.join(", ")}${i.match === "partial" ? " (matched)" : ""}`;
       console.log(`  ${i.name.padEnd(20)} ${tail}`);
     }
     console.log(`\nskills to load (${result.skills.length}):`);
     for (const s of result.skills) console.log(`  ${s.slug}`);
-    const { unmappedImports, missingSkills } = result.uncovered;
-    if (unmappedImports.length || missingSkills.length) {
+    const { unmappedImports, ambiguousImports, missingSkills } = result.uncovered;
+    if (unmappedImports.length || ambiguousImports.length || missingSkills.length) {
       console.log("\nuncovered — reported rather than skipped:");
       for (const u of unmappedImports) console.log(`  import with no skill: ${u}`);
+      for (const a of ambiguousImports) console.log(`  import matching several skills: ${a}`);
       for (const m of missingSkills) console.log(`  cross-link to a missing skill: ${m}`);
     }
   }

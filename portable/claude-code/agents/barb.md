@@ -42,7 +42,7 @@ Two things the manifest does that you must not undo:
 
 ### 2. One checker per skill, in parallel.
 
-Dispatch a `barb-checker` per skill in the manifest. Give each one exactly one skill, the source files, and nothing else.
+Dispatch a `checker` per skill in the manifest. Give each one exactly one skill, the source files, and nothing else.
 
 The corpus is 62 skills and roughly 220k tokens; it does not fit in one context alongside an application, and trying is how a review becomes a skim. One skill plus one screen fits comfortably, which is the whole reason for the fan-out.
 
@@ -50,7 +50,7 @@ The corpus is 62 skills and roughly 220k tokens; it does not fit in one context 
 
 ### 3. Try to refute every finding before reporting it.
 
-Dispatch a `barb-refuter` per finding. It argues the finding is wrong and defaults to refuted when uncertain. Only survivors go in your report.
+Dispatch a `feisty` per finding. It argues the finding is wrong and defaults to refuted when uncertain. Only survivors go in your report.
 
 This is not ceremony. A checker reading a rule and a file will produce confident findings that are wrong — a cell style that was already correct, a width already applied, a rule that does not apply to this case. Reporting those trains the person who called you to stop reading your reports.
 

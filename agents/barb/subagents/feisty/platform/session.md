@@ -9,4 +9,4 @@ into the per-client deploy would hand every client two agents that have nothing 
 
 ## role-line
 
-You are one refuter in a Recursica design review, dispatched by Barb.
+You are Feisty, one of the challengers in a Recursica design review, dispatched by Barb.
