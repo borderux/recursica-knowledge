@@ -26,6 +26,7 @@ Work through these in order:
 | Ask                                                                                    | If yes                                           |
 | -------------------------------------------------------------------------------------- | ------------------------------------------------ |
 | Must the user interact with this, or make a decision here, before doing anything else? | A **modal**                                      |
+| Does the work change the contents of the thing behind it — adding to or editing a row of the list on the page? | A **modal** or a **panel**, never inline on the page. See below |
 | Does the work need information from the page — or does the page need the panel's work? | A **panel**                                      |
 | Can the user do all of it without the page's context?                                  | A **page**. Simpler, and it has room             |
 | Does the content induce scrolling inside the panel?                                    | A **page**, even if context is needed. See below |
@@ -38,6 +39,16 @@ Work through these in order:
 **When that context is not necessary, a page is simpler.** If the user can do all the work without anything from the page behind, there is no reason to constrain it to a narrow surface.
 
 **A modal is only for when the user truly needs to interact or decide inside it.** The mode is the cost; something has to justify it.
+
+### Work that changes what is behind it
+
+**A form that adds to or edits the collection on the page belongs on a surface that opens and closes — never inline on the page beside it.** Creating a row in the table, editing a record in the list: both go in a modal or a panel.
+
+**The reason is the commit, not the size of the form.** The list has to visibly change when the work succeeds, and **closing the surface is what says it is done** — the reader looks up and the row is there. An inline form leaves them looking at a form and a list at the same time with no signal which state either is in, and no answer to "did that save?" beyond re-reading the list to check.
+
+**Which of the two follows the ordinary test above.** A create form usually needs nothing from the page, so if it were only about context it would be a page — but it is small, it is occasional, and the reader wants to return to exactly where they were, which is what these surfaces are for. Where the form genuinely needs to read the list while it is open — picking rows to combine, comparing against what exists — that mutual dependence is a panel.
+
+**Where the trigger sits is the list's own rule**, not this skill's: at the header of the table, to the right. See `recursica-skill-tables`, and `recursica-skill-screen-priority` on why an occasional form does not hold permanent space.
 
 ## A panel is semi-modal, and never shaded
 
@@ -186,6 +197,8 @@ A panel earns its shape from sitting beside the page it depends on. Below the wi
 - [ ] The surface was chosen by mode and context, not by how hard or how big the task is.
 - [ ] Every modal exists because the user must interact or decide there before continuing.
 - [ ] Every panel's work genuinely depends on the page beside it, or the page on the panel's work.
+- [ ] No form that adds to or edits the collection on the page sits inline beside it; each opens in a
+      modal or panel, so that closing the surface is what confirms the list changed.
 - [ ] No panel scrolls horizontally, under any circumstances.
 - [ ] Nothing in a panel induces vertical scrolling; anything that did was moved to a page.
 - [ ] Every panel is flush to the left or right viewport edge and runs full height, top to bottom.

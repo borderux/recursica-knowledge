@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-tables
-description: House rules for tables and data grids in enterprise web applications — what earns a column, the prohibition on horizontal scrolling, stacked cell text, column widths by data type including widthing the narrow types and leaving the sentence column unset, alignment including right-aligned currency, truncate vs. wrap and why a value with no spaces must break inside a word, infinite scroll vs. pagination, fixed headers and footers, null cells, default sort and multi-sort, when a row may be clickable, inline editing, totals, column visibility, grouped rows, and frozen columns. Use whenever building, reviewing, or refactoring a table, data grid, or list view. Trigger on "table", "data grid", "columns", "rows", "sort", "pagination", "infinite scroll", "truncate", "wrap", "column width", "overflowing cell", or "inline edit". Do NOT use for row action buttons and links — that is recursica-skill-buttons-links. Do NOT use for row selection checkboxes — that is recursica-skill-selection-controls.
+description: House rules for tables and data grids in enterprise web applications — one table per object type with status as a column, not a section per state, rows awaiting approval and undo after it, what earns a column including that it must be populated and that an exception never gets one, no horizontal scrolling, stacked cell text, column widths by data type, alignment, truncate vs. wrap, infinite scroll vs. pagination, null cells, sorting, how a record is opened, where the add affordance sits, what the bulk region may hold, inline editing, totals, and frozen columns. Use when building or reviewing a table, data grid, or list view. Trigger on "table", "data grid", "columns", "sort", "pagination", "truncate", "column width", "inline edit", "status section", "pending approval", "empty column", "warnings column", "add button", or "bulk action". Do NOT use for row action buttons — that is recursica-skill-buttons-links. Do NOT use for row selection checkboxes — that is recursica-skill-selection-controls.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -18,6 +18,7 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 1. **A table is a high-level view with a way in, not a spreadsheet.** Clients frequently ask for a table because they were using a spreadsheet outside the application and want to reproduce it. That is the wrong target. Show enough to understand and act, and put the rest behind an expansion, a panel, or a detail page.
 2. **Fit the screen.** Every column-width, stacking, and truncation decision exists to keep the table inside the primary desktop dimensions. Horizontal scrolling is the failure state, not a layout option.
 3. **One interaction model per row, and per application.** A row is clickable only when nothing else in it is. Inline editing is on for every table or none, because the user cannot see which mode a cell is in.
+4. **One object type, one table.** Status is a column. A screen that stacks a section per state has taken a filter and built page structure out of it.
 
 ## Table or cards?
 
@@ -27,9 +28,45 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 - **Purely textual and numeric data → table**, however few the records. A table shows the same values in less space and lets the reader compare down a column. `recursica-skill-card` allows an occasional aesthetic exception here for a small, finite set — invoked deliberately and stated, never as the default.
 - **Small, finite, and graphical → cards.** See `recursica-skill-card`.
 
+## One table per object type
+
+**All instances of one object type belong in one table. NEVER partition them into sections by status.** A screen running `Suggested` over `Consolidated people` over `Every speaker` presents one object type three times, and the reader has to add three row counts together to answer "how many people are there" — a question one table answers by existing.
+
+**Status is a column, not a heading.** That is the whole mechanism. One table with a status column can be sorted and filtered by state, and the proportion in each state is visible at a glance instead of inferred from the lengths of three separate lists.
+
+**The signature of the mistake is a heading that names a state.** `Suggested`, `Pending`, `Archived`, `Needs review`, `Everything else` — each one is a value that got promoted to page structure. **A section heading names a kind of thing; a status names what happened to one.** If the heading would be a legitimate value in a status column, it is a filter and it belongs inside the table.
+
+**Two tables of the same shape is the tell.** Splitting is legitimate only for a genuinely different object type, with different columns, that the reader would never want to compare down a column. Same columns twice means it was always one table.
+
+**This is also what keeps the count honest.** Sections by status double-count anything in two states and silently drop anything in none, and neither is visible to the reader. See the reconciliation rule in `recursica-skill-screen-scaffolding`.
+
+### A row awaiting a decision
+
+**Show the proposed outcome as though it were applied, and mark the row as awaiting approval.** The reader judges a result, which they can do, rather than assembling one from a proposal, which is work. A suggested consolidation appears as the consolidated record with a pending status on it.
+
+**What went into it is revealed in place** — one level of expand/collapse on the row, a side panel, or a modal. Which of the three is `recursica-skill-panels-modals`; the constraint here is that it is one of them and **never another section on the page.** This is the same single-level expansion the grouped-rows rule below requires.
+
+**MUST keep that affordance after approval, and put undo in it.** Approval does not end the reader's interest in what was combined — it is the moment they most need to check it. The affordance that showed the proposal shows the result, and the reversal lives where the decision was made, per `recursica-skill-buttons-links`. **A screen where approving removes the only view of what happened has made the decision unauditable.**
+
 ## What earns a column
 
 **Decide from what the user is doing:** taking action on these records, or understanding them at a high level. Anything that serves neither does not need a column.
+
+**A column also has to earn its place by being populated.** Judge it against the data as it actually is, not against the schema. A field present for a minority of rows renders as a stripe of `NA` down the screen, and it took its width from the columns the reader came for.
+
+**NEVER dedicate a column to an exception.** Warnings, errors, flags, conflicts, anomalies — these are rare by definition, so the column is empty by construction and no amount of data will change that. A `Warnings` header over thirty italic `NA`s and four badges is the shape to recognize.
+
+**An exception attaches to the object instead**, as a marker beside its identifying value, where it reads as a fact about that row rather than as a field every row was meant to have.
+
+**That marker is an icon, not a badge.** A badge is a filled, bordered, coloured box carrying a word, and it is heavy enough that a scattering of them down a table pulls the eye off the data. **Prefer an icon and reach for a badge only where something genuinely needs that weight** — the default is the icon. Owned by `recursica-skill-badges-chips`; the icon itself is `recursica-skill-icon-semantics`.
+
+**The icon is beside the identifying value, in that cell — not alone in a cell of its own.** `recursica-skill-icon-semantics` forbids a non-interactive icon sitting by itself with no other information, and a column of bare icons is both that and the empty column this rule just rejected. Beside the name it has the name for company, which is the whole point of putting it there.
+
+**A status every row has is a different thing and does get its column.** The distinction is coverage, not subject matter: `Status` where every record is `active` or `archived` is populated data. Same column, and the rule flips on how much of it is filled.
+
+**Filtering is what actually serves the exception.** A reader who wants the four flagged rows wants those four and not a column to scan for them.
+
+**Data that does not fit belongs somewhere else** — an expandable area inside the table, a side panel, or a drill-down page.
 
 **Data that does not fit belongs somewhere else** — an expandable area inside the table, a side panel, or a drill-down page.
 
@@ -165,6 +202,36 @@ The indicator is part of the column header component; see `recursica-skill-table
 
 **There are no exceptions.** Two competing click targets in one row means the user cannot predict what a click does.
 
+## Getting into a record
+
+**The object's own identifying value is the way in.** The name, the title, the label — whatever the reader would point at to mean "that one" — is the link. It costs no column, and it is where the reader already tries to click.
+
+**Where the row holds nothing else interactive, the whole row may carry it instead**, per the rule above. Both are correct. **Pick one and use it in every table in the application**, because the reader cannot see which mode a table is in.
+
+**A dedicated edit or view action on the row is the third option**, for an object with no single identifying value to hang a link on, or where the action is editing rather than navigating. Its presentation is `recursica-skill-buttons-links`.
+
+**NEVER invoke a single-record action by selecting the record.** A row checkbox means "include this in what the bulk action does", and it means only that. A table where ticking one row offers `Correct this name` and ticking two offers `Combine` has made selection mean two unrelated things and taught the reader neither. **Editing one record is reached from that record** — its name, or its own row action. See `recursica-skill-selection-controls`.
+
+## Adding a record
+
+**The add affordance sits at the table's header, to the right. NEVER below the table.**
+
+**A table has an undefined number of rows, so below it is nowhere.** Whatever is under the last row is at a position no one can predict — one screen down on a short table, twenty on a long one — and a reader who does not already know it is there has no reason to scroll to the end of a list to look for it. **Anything below a variable-length list may never be seen at all.** The header is the one part of a table whose position is fixed, and it is already where the eye starts.
+
+**A form that changes the table's rows MUST NOT sit inline on the page.** Open it in a modal or a panel, per `recursica-skill-panels-modals`. The reason is the commit: the table has to visibly change when the form succeeds, and an inline form leaves the reader looking at a form and a table at once with no idea which state either is in. **Closing the surface is what says the work is done, and the changed table behind it is the confirmation.**
+
+**A rarely-used action does not hold permanent screen space.** Creating a record is occasional; the table is why the reader came. A permanently mounted create form spends the most valuable region of the screen on the least frequent task — see `recursica-skill-screen-priority`.
+
+## Bulk actions
+
+**How many there are, when they appear, and how the count rides in the label are owned by `recursica-skill-buttons-links`.** Three constraints belong to the table:
+
+**They sit directly above the table, and never inside the filter bar.** A filter changes what is shown; a bulk action changes the data. See `recursica-skill-filters`.
+
+**The region holds controls and nothing else. NEVER report the selection back in it.** The ticked checkboxes already say which rows are selected, and the count already rides in the button label. Listing the selected records' names restates it in the weaker form and makes the region's height depend on how many rows are ticked, so the table moves down the page as the reader works.
+
+**No separate clear or deselect control.** The header checkbox is the deselect-all affordance — that is what it is for, per `recursica-skill-selection-controls` — and a second control that does the same thing in a different place is one more thing to read and a second answer to "how do I start over".
+
 ## Inline editing
 
 **Prefer editing the whole record on a page over editing cells in place.** Inline editing is a form problem: if a lot of data is being saved at once, cell-level editing is the wrong mechanism.
@@ -205,8 +272,8 @@ No house rule covers these yet. **Ask the human rather than choosing** — see t
 
 - **Which data types are unsortable.** The rule excludes types with no logical sequence; the list has not been enumerated.
 - **Loading and error states for a table**, including partial failure.
-- **Where the detail link lives.** A row may not be clickable when it holds an interactive element, so which column carries the way in is unset.
-- **Bulk action placement relative to the table** — above it, in a toolbar, or elsewhere.
+- **The coverage threshold at which a sparse column stops earning its place.** "Populated for most rows" is the rule; the fraction is a judgment call and has not been given a number.
+- **How a pending row's status reads once several rows are pending for different reasons.** One pending state per table is covered; distinguishing kinds of pending is not.
 
 ## Out of scope
 
@@ -222,7 +289,15 @@ Before considering a table done, verify:
 
 - [ ] The sorted column is visibly indicated, including on tables whose sort cannot be changed.
 - [ ] A loading table shows nothing rather than skeleton rows.
+- [ ] One object type is in one table. No section heading on the page names a status, a state, or a
+      filter value — every one of those is a column value instead.
+- [ ] A row awaiting a decision shows the proposed outcome with a pending status, reveals its inputs
+      through one expansion, panel, or modal, and keeps that same affordance — with undo in it —
+      after approval.
 - [ ] Every column serves either acting on the records or understanding them; the rest moved to expansion, panel, or detail page.
+- [ ] Every column is populated for most rows. No column exists for an exception — warnings, errors,
+      flags, conflicts — those attach beside the object's identifying value as an icon, not a badge,
+      and never alone in a cell of their own.
 - [ ] The table fits the primary desktop dimensions with no horizontal scrolling.
 - [ ] No cell holds more than two values, and the column header explains both.
 - [ ] No unrelated values were combined into one column.
@@ -243,9 +318,16 @@ Before considering a table done, verify:
 - [ ] Multi-sort, if present, is behind long-press; plain click flips direction; unsortable types are excluded.
 - [ ] No row density variants were invented.
 - [ ] The row is clickable only if it contains no other interactive element.
+- [ ] The way into a record is its own identifying value, the whole row, or a dedicated row action —
+      one of the three, chosen once for the application. No single-record action is invoked by
+      selecting the record.
+- [ ] The add affordance is at the table header, to its right — never below the table — and the
+      create form opens in a modal or panel rather than sitting inline on the page.
+- [ ] The bulk region holds controls only: no list of the selected records, and no separate clear
+      control competing with the header checkbox.
 - [ ] Inline editing matches the rest of the application — all tables or none.
 - [ ] Totals sit in the fixed footer, and a paginated table's totals state their scope.
 - [ ] Column visibility and reordering sit behind an unadvertised settings affordance, with a non-drag mechanism available.
 - [ ] No grouped rows; sub-detail uses one level of expand/collapse.
 - [ ] At most one frozen column, never more than three.
-- [ ] Nothing in the uncovered list — unsortable types, loading and error states, detail-link placement, bulk action placement — was decided without asking.
+- [ ] Nothing in the uncovered list — unsortable types, loading and error states, the sparse-column threshold, kinds of pending — was decided without asking.

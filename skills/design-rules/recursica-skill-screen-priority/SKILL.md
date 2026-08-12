@@ -113,6 +113,18 @@ Color is not available as a hierarchy device — meaning never rides on it alone
 
 **No whimsical or decorative content.** Cat imagery and the like will never appear in a business application here.
 
+## Frequency decides what holds permanent space
+
+**Rank by how often the reader needs it, not by how much it matters when they do.** An occasional task can be important and still not deserve a permanent region — importance argues for making it easy to find, which is what a well-placed trigger does.
+
+**A rarely-used form MUST NOT be mounted permanently on the screen.** Creating a record, importing, configuring: each is occasional, each is large, and each spends continuous space on something almost every visit does not need. **The trigger stays visible; the form opens on demand** in a modal or panel — see `recursica-skill-panels-modals`.
+
+**The tell is a screen where the frequent thing has to share with the rare one.** A table the reader came for, with a create form permanently under it, has given the rare task the same standing as the common one.
+
+**This is not the same as the removal test** in the tenets above, which asks whether something is needed at all. Here it is needed — the question is only whether it is needed *now*, on arrival, every time.
+
+**Anything below a variable-length region is effectively not on the screen.** The bottom of a table with an unknown number of rows is at an unpredictable position, and a reader who does not already know something is there has no reason to scroll a list to its end looking. Put it above the region, or in a surface that opens over it. Owned with `recursica-skill-tables`.
+
 ## Progressive disclosure
 
 **What appears immediately versus what is disclosed is a real lever**, and the system has components for it: accordions, trees, tabs, steppers, and revealing functionality based on a form selection. All exist.
@@ -199,6 +211,9 @@ Collapsing the two leaves the user unable to tell whether to change their filter
 - [ ] Labels and phrasing were simplified as the final step.
 - [ ] Hierarchy is carried by typography, position, white space, and width — never by color alone.
 - [ ] No whimsical or decorative content.
+- [ ] Nothing rarely used holds permanent screen space. Occasional forms — create, import, configure —
+      open from a visible trigger into a modal or panel rather than sitting mounted on the page.
+- [ ] Nothing the reader must find was placed below a region of variable length.
 - [ ] Progressive disclosure uses an existing component, and a long form was preferred over a stepper where information is cross-referential.
 - [ ] Beyond header, footer, and nav rail, at most one sticky element.
 - [ ] There is one scrollbar; no inner scrolling region was built.

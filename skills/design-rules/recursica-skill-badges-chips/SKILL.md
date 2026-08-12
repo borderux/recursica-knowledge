@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-badges-chips
-description: House rules for badges vs. chips in enterprise web applications — status and metadata display vs. selection, the one-badge-per-object rule, tags, pills, dismissible and toggleable chips, placement in table rows, cards, tabs, headings and sidebar navigation, chip group counts, error states, data density, and keyboard behavior. Use whenever labeling an object with status, counts, tags, or metadata, or when building filter bars and chip groups. Trigger on "badge or chip", "tag", "pill", "status indicator", "status column", "filter chips", "dismissible chip", "selectable chip", "count badge", or any question about how to mark an object's state. Do NOT use to choose between form controls like checkbox vs. radio — that is recursica-skill-selection-controls, though selectable chips inherit its rules. Do NOT use for buttons or links.
+description: House rules for badges vs. chips in enterprise web applications — why a badge is heavy enough that an icon is the default and a badge the earned exception, status and metadata display vs. selection, the one-badge-per-object rule, tags, pills, dismissible and toggleable chips, when a status earns a table column at all, placement in rows, cards, tabs, headings and sidebar navigation, chip group counts, error states, data density, and keyboard behavior. Use whenever labeling an object with status, counts, tags, or metadata, or when building filter bars and chip groups. Trigger on "badge or chip", "icon or badge", "tag", "pill", "status indicator", "status column", "filter chips", "dismissible chip", "selectable chip", "count badge", or any question about how to mark an object's state. Do NOT use to choose between form controls like checkbox vs. radio — that is recursica-skill-selection-controls, though selectable chips inherit its rules. Do NOT use for buttons or links.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -18,6 +18,7 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 1. **Interactivity decides the component.** A badge is displayed; a chip is operated. Status is something the system reports, selection is something the user does — and a status the user can click is a category error, not a design variant.
 2. **A badge is singular; chips are plural.** One object carries at most one badge. The moment you need more than one value, they are chips.
 3. **Association is positional.** The object comes first and its status immediately after, on the same line, close enough to read as a sentence.
+4. **A badge is heavy, so it is not the default.** Prefer an icon and spend a badge only where something genuinely needs that weight. This gate comes before the badge-vs-chip question below.
 
 ## The core distinction
 
@@ -43,6 +44,22 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 
 **When both are static and unselectable, choosing between them is a stylistic call** — they simply look different. The rules above bind whenever interactivity or cardinality is in play.
 
+## Before either: does this need a badge at all?
+
+**Prefer an icon. A badge is the exception that has to earn its weight.**
+
+**A badge is cognitively heavy** — a filled, bordered, coloured box with a word in it, sized to be noticed. That is the right instrument for one important thing. It is the wrong instrument for eight, and a screen scattered with them costs the reader attention at every one while the data they came for recedes. **Weight only works when it is scarce.**
+
+**So the default is an icon**, which carries the same fact at a fraction of the cost and leaves the badge available for when something genuinely must be noticed. `recursica-skill-icon-semantics` owns the icon and its meaning.
+
+**What still earns a badge:** the object's one primary status, where the reader's next decision depends on it, and where a word rather than a symbol is what makes it unambiguous. One per object, as principle 2 already requires.
+
+**What does not:** a rare exception or warning, a role or type that is really just a field value, a count, or anything present on most rows — those are an icon, a column, or plain text.
+
+**An icon replacing a badge goes beside the object's identifying value, not alone in a cell.** `recursica-skill-icon-semantics` forbids a non-interactive icon sitting by itself with no other information, and `recursica-skill-tables` forbids a column that is empty for most rows. Beside the name it is neither.
+
+**Do not resolve this by shrinking the badge.** The weight is the component, not its size, and a small badge is a badge that is now also hard to read.
+
 ## Pills
 
 **Recursica has no pill component.** There are chips and badges. "Pill" is an interchangeable word from other systems, so translate it: if they mean a chip, use a chip; if they mean a badge, use a badge. All the rules here apply unchanged.
@@ -63,6 +80,8 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 **NEVER a dismissible badge.**
 
 ## Placement in table rows
+
+**A status earns its own column only when most rows have one.** That is the gate, and it comes first — `recursica-skill-tables` rejects a column that is empty for most rows, so a rare exception never gets one. **A sparse exception is an icon beside the object's identifying value, inside that cell.** Everything below applies to a status the whole table carries.
 
 **Put status near the left edge**, because left-to-right reading makes the left edge the strongest scan position. In practice that is **the second or third column**.
 
@@ -143,13 +162,18 @@ No house rule covers these yet. **Ask the human rather than choosing** — see t
 
 Before considering status and metadata treatment done, verify:
 
+- [ ] Every badge on the screen was justified against an icon and earned its weight — a primary
+      status the reader's next decision turns on. Nothing rare, no role or type that is really a
+      field value, and no count is wearing a badge.
+- [ ] An icon standing in for a badge sits beside the object's identifying value, never alone in a
+      cell and never in a column that is empty for most rows.
 - [ ] No badge is interactive, selectable, or dismissible.
 - [ ] Each object carries at most one badge; multiple values are chips.
 - [ ] No status is rendered as an actionable chip.
 - [ ] Tags are chips, not badges.
 - [ ] "Pill" in a spec was translated to a chip or a badge.
 - [ ] Dismissible chips are only those the user added; toggled chips behave like checkboxes.
-- [ ] In tables, status sits in the second or third column, beside the object's identifying information, with column one left to bulk selection.
+- [ ] A status column exists only where most rows carry a status; in tables it sits in the second or third column, beside the object's identifying information, with column one left to bulk selection.
 - [ ] Badges sit immediately after their object on the same line — never stacked, except under a real space constraint.
 - [ ] No object has competing status elements above and below it.
 - [ ] Card badges use the component's upper-right position; card chips sit in the content area.
