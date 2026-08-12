@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 """Compute the slice of a session transcript that Janice should review.
 
+THE INSTALLED COPY IS GENERATED. scripts/bootstrap-nest.mjs installs this file into
+~/.buzz/bin/. Edit it here, in nest/bin/ — an edit made to the installed copy is destroyed
+by the next bootstrap, with no diff and no log line to notice it by. That has happened to
+Janice's scripts twice. It was recorded in GUIDES/JANICE_REVIEW_CHECKLIST.md by dc48597 and
+happened again anyway, which is the argument for stating it in the file being edited rather
+than in a guide the editor is not reading at the time.
+
 The problem this solves: a pooled agent session appends every turn to one .jsonl file
 for hours. The largest in this nest is 4.4 MB, and the newest turn in it is 244 KB.
 Reviewing the whole file re-analyses work that was already reviewed and drowns Janice's
@@ -181,6 +188,23 @@ def main():
     # calls share one record, so counting records undercounts the turn's work.
     tool_calls = sum(r[6] for r in window)
     errors = sum(1 for r in window if r[4])
+
+    # A turn that called no tool published nothing and mutated nothing. Posting to a channel,
+    # writing a file and querying BigQuery are all tool calls, so with none of them there is
+    # no claim to check against the transcript and no fence that could have been crossed —
+    # the reviewable surface is empty, not clean. Conversational turns are most of the wake
+    # volume, so treat this like "nothing appended" and spend no review run on it.
+    #
+    # This exits before the caller writes its ledger row, which is correct: an unreviewable
+    # window must not be recorded as issued-and-unreviewed, or it queues forever.
+    if tool_calls == 0:
+        print(json.dumps({
+            "nothing_new": True,
+            "from_offset": from_offset,
+            "to_offset": size,
+            "reason": "no tool calls in window — nothing published or mutated",
+        }))
+        return 3
 
     # Subagent transcripts hold the fence-sensitive writes (Drive, BigQuery), so they
     # are part of the same turn's evidence.

@@ -323,6 +323,89 @@ for (const f of manifest.files ?? []) {
   wrote(`${f.to}${!exists ? " (new)" : same ? " (mode)" : ""}`);
 }
 
+/* Installing a hook script is not registering it. Every guard in nest/bin/ is invoked from
+   .claude/settings.json, and that file is `ifAbsent` in the manifest — an operator who
+   already has one never receives the registration, and the branch above deliberately leaves
+   it alone. The result is a guard that is present, executable and current, and never called.
+   Auditing coverage with `ls bin/` concludes it is on. AGENT.md documents this for the
+   credential-store guard specifically; the check below is what makes it apply to every hook
+   without anyone having to remember.
+
+   An artifact that looks installed and does nothing is the exact shape that left the
+   commit-msg hook switched off for months, so say it out loud and print what to paste.
+
+   Deliberately a warning, not fatal: the operator's settings.json is theirs to edit, and a
+   bootstrap that dies on it cannot be re-run to fix anything else. */
+{
+  const settingsRel = ".claude/settings.json";
+  const declared = manifest.files?.find((f) => f.to === settingsRel);
+  const installedPath = path.join(NEST, settingsRel);
+
+  /* Keyed on event + matcher + command, not on the command alone and not on the whole hook
+     object. The command alone is not enough: guard-stale-checkout.mjs and
+     guard-credential-store.mjs are each registered twice, under `Bash` and again under
+     `Read|Grep|Glob`, so a settings.json holding only the Bash half would pass a
+     command-only comparison while half the guard was unregistered. The whole object is too
+     much — it reports drift for a reordered key or an added timeout. Where a hook fires is
+     the property being checked, so the key is exactly that. */
+  const key = (event, matcher, command) => `${event} ${matcher ?? ""} ${command}`;
+  const commandsIn = (settings) => {
+    const found = [];
+    for (const [event, groups] of Object.entries(settings?.hooks ?? {})) {
+      for (const group of groups ?? []) {
+        for (const hook of group.hooks ?? []) {
+          if (hook.command) found.push({ event, matcher: group.matcher, hook });
+        }
+      }
+    }
+    return found;
+  };
+
+  if (declared && fs.existsSync(installedPath)) {
+    try {
+      const source = JSON.parse(
+        detokenize(fs.readFileSync(path.join(nestSrc, declared.from), "utf8"), values).text,
+      );
+      const installed = JSON.parse(fs.readFileSync(installedPath, "utf8"));
+      const have = new Set(
+        commandsIn(installed).map((c) => key(c.event, c.matcher, c.hook.command)),
+      );
+      const missing = [];
+      const seen = new Set();
+      for (const c of commandsIn(source)) {
+        const k = key(c.event, c.matcher, c.hook.command);
+        // The source registers guard-published-text.mjs several times under one matcher.
+        // Those are the same registration, so report it once rather than four times.
+        if (have.has(k) || seen.has(k)) continue;
+        seen.add(k);
+        missing.push(c);
+      }
+
+      if (missing.length) {
+        warn(
+          `${settingsRel} is missing ${missing.length} hook registration${missing.length > 1 ? "s" : ""}.\n` +
+            `      The script${missing.length > 1 ? "s are" : " is"} installed and will never be called.\n` +
+            `      Add the following to ${installedPath}, under the event named for each:\n\n` +
+            missing
+              .map(
+                (c) =>
+                  `        ${c.event}${c.matcher ? ` / matcher "${c.matcher}"` : ""}\n` +
+                  JSON.stringify(c.hook, null, 2)
+                    .split("\n")
+                    .map((l) => `        ${l}`)
+                    .join("\n"),
+              )
+              .join("\n\n"),
+        );
+      } else {
+        ok(`${settingsRel} registers every hook this branch ships`);
+      }
+    } catch (e) {
+      warn(`${settingsRel} could not be compared against the branch: ${e.message}`);
+    }
+  }
+}
+
 /* Unresolved tokens are fatal. A script carrying a literal {{BQ_PROJECT}} goes looking
    for a project by that name; Janice's routing table carrying one posts findings into a
    channel that does not exist. Same fail-closed rule restore-agents.mjs uses on prompts. */

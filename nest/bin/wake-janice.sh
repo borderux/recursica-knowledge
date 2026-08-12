@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 # Wake Janice when a research-team agent finishes a turn.
 #
+# THE INSTALLED COPY IS GENERATED. scripts/bootstrap-nest.mjs installs this file into
+# ~/.buzz/bin/. Edit it here, in nest/bin/ — an edit made to the installed copy is destroyed
+# by the next bootstrap, with no diff and no log line to notice it by. That has happened to
+# Janice's scripts twice; dc48597 recorded it in GUIDES/JANICE_REVIEW_CHECKLIST.md and it
+# happened again, which is why it is stated here instead.
+#
 # Wired as a Stop hook in ~/.buzz/.claude/settings.json. Every agent in this nest shares
 # that project directory, so the hook fires for ALL of them — WATCHED_AGENTS below is the
 # only thing that decides whose turns get reviewed.
@@ -55,6 +61,23 @@ LEDGER="$NEST/.scratch/janice-windows.jsonl"
 
 log() { printf '%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" >>"$LOG" 2>/dev/null || true; }
 
+# The not-watched SKIP below fires on every Stop of every agent in the nest, which is the
+# point — an empty queue is only evidence of coverage if something logs the decision not to
+# enqueue. The cost is that this file grows without bound. Trim to the newest 2000 lines once
+# it passes 1 MB. Best-effort throughout: a log that cannot be rotated must not fail a turn.
+rotate_log() {
+  local bytes
+  mkdir -p "$(dirname "$LOG")" 2>/dev/null || true
+  [[ -f "$LOG" ]] || return 0
+  bytes=$(wc -c <"$LOG" 2>/dev/null || echo 0)
+  (( bytes > 1048576 )) || return 0
+  # $$-suffixed: every agent in the nest runs this hook, so two Stops can land together and
+  # a shared temp name would interleave two tails into one file before either mv.
+  tail -n 2000 "$LOG" >"$LOG.$$.tmp" 2>/dev/null && mv "$LOG.$$.tmp" "$LOG" 2>/dev/null
+  rm -f "$LOG.$$.tmp" 2>/dev/null || true
+}
+rotate_log
+
 AGENT="${BUZZ_ACP_SESSION_TITLE:-}"
 
 # A real session title carries the owner in parentheses — "Stu (<operator>)", not "Stu".
@@ -100,7 +123,7 @@ if [[ -z "${TRANSCRIPT:-}" || ! -f "${TRANSCRIPT:-}" ]]; then
 fi
 
 if [[ ! -f "$TRANSCRIPT" ]]; then
-  log "SKIP $AGENT session=$SESSION_ID no transcript found"
+  log "SKIP $AGENT_NAME session=$SESSION_ID no transcript found"
   exit 0
 fi
 
@@ -114,16 +137,24 @@ STATUS=$?
 # Exit 3 means there is nothing new since the last review — Stop also fires on clear,
 # resume, and compact, and those must not spend a Janice run.
 if [[ $STATUS -eq 3 ]]; then
-  log "NOOP $AGENT session=$SESSION_ID nothing new to review"
+  # Log the tool's own reason rather than one sentence for every case. "Nothing appended"
+  # and "appended, but no tool calls" are different facts about coverage, and a single
+  # message makes the second look like the first.
+  NOOP_REASON="$(printf '%s' "$WINDOW" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("reason",""))' 2>/dev/null)"
+  log "NOOP $AGENT_NAME session=$SESSION_ID ${NOOP_REASON:-nothing new to review}"
   exit 0
 fi
 if [[ $STATUS -ne 0 || -z "$WINDOW" ]]; then
-  log "SKIP $AGENT session=$SESSION_ID window tool failed (exit $STATUS)"
+  log "SKIP $AGENT_NAME session=$SESSION_ID window tool failed (exit $STATUS)"
   exit 0
 fi
 
+# AGENT_NAME, not AGENT, in the two blocks below. This composes a message that gets published
+# to the relay, and a session title carries the owner in a parenthesised suffix — so the full
+# title put a person's name into every wake message. The bare name is also the key Janice
+# matches against the routing table in GUIDES/JANICE_REVIEW_CHECKLIST.md.
 CONTENT="$(
-  printf '%s' "$WINDOW" | AGENT="$AGENT" SESSION_ID="$SESSION_ID" TRANSCRIPT="$TRANSCRIPT" python3 -c '
+  printf '%s' "$WINDOW" | AGENT="$AGENT_NAME" SESSION_ID="$SESSION_ID" TRANSCRIPT="$TRANSCRIPT" python3 -c '
 import json, os, sys
 
 w = json.load(sys.stdin)
@@ -195,7 +226,7 @@ print("\n".join(lines))
 )"
 
 if [[ -z "$CONTENT" ]]; then
-  log "SKIP $AGENT session=$SESSION_ID could not compose wake message"
+  log "SKIP $AGENT_NAME session=$SESSION_ID could not compose wake message"
   exit 0
 fi
 
@@ -203,7 +234,7 @@ fi
 # for retry, so that row will be closed by the retry's review — but a row written only on
 # success would miss nothing and a row written before it costs nothing, and this is the
 # file that has to be trustworthy when the review never comes back.
-printf '%s' "$WINDOW" | AGENT="$AGENT" SESSION_ID="$SESSION_ID" TRANSCRIPT="$TRANSCRIPT" \
+printf '%s' "$WINDOW" | AGENT="$AGENT_NAME" SESSION_ID="$SESSION_ID" TRANSCRIPT="$TRANSCRIPT" \
   LEDGER="$LEDGER" NOW="$(date -u +%Y-%m-%dT%H:%M:%SZ)" python3 -c '
 import json, os, sys
 
@@ -224,7 +255,7 @@ with open(os.environ["LEDGER"], "a") as fh:
   # that one window — nothing would ever know it existed. An un-issued window costs one
   # delayed review and is re-issued on the next wake, because the watermark only commits
   # after a send, and the send is what we are skipping.
-  log "FAIL $AGENT session=$SESSION_ID ledger write failed, wake not sent"
+  log "FAIL $AGENT_NAME session=$SESSION_ID ledger write failed, wake not sent"
   exit 0
 }
 
@@ -232,17 +263,17 @@ if printf '%s\n' "$CONTENT" | "$BUZZ_BIN" messages send \
       --channel "$JANICE_CHANNEL" \
       --content - \
       --mention "$JANICE_PUBKEY" >>"$LOG" 2>&1; then
-  log "WAKE $AGENT session=$SESSION_ID from=$(printf '%s' "$WINDOW" | python3 -c 'import json,sys; print(json.load(sys.stdin)["from_offset"])' 2>/dev/null)"
+  log "WAKE $AGENT_NAME session=$SESSION_ID from=$(printf '%s' "$WINDOW" | python3 -c 'import json,sys; print(json.load(sys.stdin)["from_offset"])' 2>/dev/null)"
   # Delivered, so this window is spent. Commit from the payload that was sent, not from
   # a rescan — the transcript has kept growing and a rescan would skip the difference.
   if ! printf '%s' "$WINDOW" | python3 "$WINDOW_TOOL" \
         --watermark "$WATERMARK" --commit-watermark 2>>"$LOG"; then
-    log "WARN $AGENT session=$SESSION_ID watermark not advanced — next wake re-reviews"
+    log "WARN $AGENT_NAME session=$SESSION_ID watermark not advanced — next wake re-reviews"
   fi
 else
   # Deliberately leave the watermark where it is. A duplicate review costs one run; a
   # window advanced past evidence nobody read cannot be recovered.
-  log "FAIL $AGENT session=$SESSION_ID send failed, watermark held for retry"
+  log "FAIL $AGENT_NAME session=$SESSION_ID send failed, watermark held for retry"
 fi
 
 exit 0
