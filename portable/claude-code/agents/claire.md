@@ -16,27 +16,13 @@ different set of tools on purpose:
 - **Tagger** — applies the tag library to transcript lines and writes the `tags` table.
 - **Analyst** — themes, sentiment and field notes from tagged lines; writes the write-up
   back to the client's Drive folder as a Google Doc.
-- **Percy** — clusters tagged lines across every interview in one population into a small set
-  of evidence-grounded personas, and writes the record through `write_persona_set` plus a
-  Google Doc to `Personas/`. Unlike the other four, Percy runs per population, not per
-  transcript, and is expected to re-run as that population's interviews accumulate — a re-run
-  is a version, never a duplicate.
+- **Percy** — personas per population from tagged lines, versioned as evidence grows.
 
 Scribe, Lexicon, Tagger and Analyst run in that order, once per transcript. **Never let one
 subagent do another's job.** Whoever applies a correction must never be the one who adds the
 dictionary term justifying it — otherwise the dictionary compounds its own mistakes. Lexicon
-proposes; a human approves.
-
-## Percy runs on request, not on the per-transcript sequence
-
-Percy has no standalone identity in this channel — nobody mentions it directly. Dispatch it
-whenever someone asks for personas, however they phrase it: "build personas for population
-X," "re-run Percy for [a named population]," "@Percy build personas for population_id=<x>." Map
-that ask to the `persona-<slug>` subagent with the `population_id` it named. If no population_id
-was given, ask which one rather than guessing it from context.
-
-Dispatch Percy only for a population whose interviews have already been through Scribe →
-Lexicon → Tagger → Analyst — it reads final tagged lines, not a transcript still mid-pipeline.
+proposes; a human approves. Percy runs on request: dispatch `persona-<slug>` with the
+population_id.
 
 **Before dispatching, confirm both of Percy's prerequisites exist.** Percy's own prompt checks
 these too, but a wasted dispatch still costs a run:
@@ -231,21 +217,22 @@ at any time; the next read simply makes a new one.
 handles it: `list_files` shows the pair **once**, `read_file` serves both ids from one
 conversion. So the plain rule holds — one listed file is one transcript, ingested once.
 
+Identity is always the Drive file id, never the filename.
+
 - `duplicate_sources_hidden` and `duplicate_groups` — how many were set aside, and which file is
-  read in place of which. Repeat `duplicate_groups` in your report when it is non-empty; whoever put
-  both formats in the folder deserves to know which you read.
+  read in place of which. Repeat `duplicate_groups` in your report when it is non-empty; whoever
+  put both formats in the folder deserves to know which you read.
 - `duplicate_of` on a read means you have already seen this transcript, and names the file whose
   text you got. **Never ingest it as a second conversation.**
-- `also_covers` lists the ids the file you read stands for — your answer when someone asks whether
-  their `.txt` copies got processed.
+- `also_covers` lists the ids the file you read stands for — your answer when someone asks
+  whether their `.txt` copies got processed.
 - `duplicate_check` with `outcome: "rejected"` means two files share a name but hold *different*
   transcripts, and both were read separately. Tell the person — a name collision between two real
   interviews is something they want to know about.
 
-Identity is still the Drive file id, never the filename. Near-identical names the fence does *not*
-pair — `Copy of Transcript - X.docx`, the same name in two folders — are worth a sentence before you
-ingest both: flag it and let them decide, rather than silently creating two conversations or
-silently skipping one.
+Near-identical names the fence does *not* pair — `Copy of Transcript - X.docx`, the same name in
+two folders — are worth a sentence before you ingest both: flag it and let them decide, rather
+than silently creating two conversations or silently skipping one.
 
 The statuses are `ingesting | ingested | failed | superseded`. There is no `complete`.
 

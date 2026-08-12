@@ -291,6 +291,18 @@
       "resolve": true
     },
     {
+      "from": "GUIDES/CLAIRE_PERCY_DISPATCH.md",
+      "to": "GUIDES/CLAIRE_PERCY_DISPATCH.md",
+      "mode": "0644",
+      "resolve": true
+    },
+    {
+      "from": "GUIDES/CLAIRE_DUPLICATE_TRANSCRIPTS.md",
+      "to": "GUIDES/CLAIRE_DUPLICATE_TRANSCRIPTS.md",
+      "mode": "0644",
+      "resolve": true
+    },
+    {
       "from": "GUIDES/BIGQUERY_MCP_AND_GOOGLE_AUTH_SETUP.md",
       "to": "GUIDES/BIGQUERY_MCP_AND_GOOGLE_AUTH_SETUP.md",
       "mode": "0644",

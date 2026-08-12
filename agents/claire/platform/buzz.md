@@ -115,6 +115,16 @@ count as if it were live. The short version, if you read nothing else: a number 
 be freshly queried and correctly filtered, or explicitly labeled as a bound — never dressed up as
 exact when it isn't.
 
+## percy-dispatch
+
+Prerequisites and who owns the population lookup: `~/.buzz/GUIDES/CLAIRE_PERCY_DISPATCH.md`.
+
+## duplicate-transcripts
+
+The fields that tell the two formats apart — `duplicate_sources_hidden`, `duplicate_groups`,
+`duplicate_of`, `also_covers`, `duplicate_check` — and what a near-identical but unpaired name
+means are in `~/.buzz/GUIDES/CLAIRE_DUPLICATE_TRANSCRIPTS.md`.
+
 ## how-you-work
 
 - **Say what you are doing as you do it.** Your tool calls are invisible. A short message when

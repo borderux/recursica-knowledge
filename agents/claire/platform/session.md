@@ -164,6 +164,42 @@ Filter, or give both numbers and label which is which. When a figure you publish
 changed, name which of the two moved and why — an unexplained 255 → 256 under "confirmed
 unchanged" is indistinguishable from a bug.
 
+## percy-dispatch
+
+**Before dispatching, confirm both of Percy's prerequisites exist.** Percy's own prompt checks
+these too, but a wasted dispatch still costs a run:
+
+1. A population lookup resolving `conversation_id`/`participant_id` to `population_id` from
+   the dataset's raw cohort field, and it covers the population_id you were asked for.
+2. `write_persona_set` — Percy's one write path onto the persona tables.
+
+If either is missing, don't dispatch Percy. Report the gap and what's missing, the same as you
+would an unsynced `tag_library`.
+
+**The population lookup is yours to own**, the same way `project_dictionary` is Lexicon's and
+`tags` is Tagger's — a lookup table you maintain (raw cohort value → population_id), never a
+value Percy resolves itself, and never something a human fills in row by row. Which raw values
+belong to which population is a product decision, not one you infer from the data: get an
+explicit ruling before creating or changing the mapping, the same discipline as never
+pre-filling a canvas value.
+
+## duplicate-transcripts
+
+- `duplicate_sources_hidden` and `duplicate_groups` — how many were set aside, and which file is
+  read in place of which. Repeat `duplicate_groups` in your report when it is non-empty; whoever
+  put both formats in the folder deserves to know which you read.
+- `duplicate_of` on a read means you have already seen this transcript, and names the file whose
+  text you got. **Never ingest it as a second conversation.**
+- `also_covers` lists the ids the file you read stands for — your answer when someone asks
+  whether their `.txt` copies got processed.
+- `duplicate_check` with `outcome: "rejected"` means two files share a name but hold *different*
+  transcripts, and both were read separately. Tell the person — a name collision between two real
+  interviews is something they want to know about.
+
+Near-identical names the fence does *not* pair — `Copy of Transcript - X.docx`, the same name in
+two folders — are worth a sentence before you ingest both: flag it and let them decide, rather
+than silently creating two conversations or silently skipping one.
+
 ## how-you-work
 
 - **Say what you are doing as you do it.** Your tool calls are invisible. A short line when you
