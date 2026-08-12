@@ -1,0 +1,65 @@
+# What runs before a pull request can be merged.
+#
+# Until now nothing did. `release.yml` fires on `workflow_dispatch` and on push to `main`, so
+# the first automated look at a change happened after it had landed; `pre-commit` runs
+# formatting and degrades to a warning without `node_modules`; `commit-msg` runs the name
+# check. Every other check in this repository — the tests, the agent build — was a command
+# somebody had to remember at the moment nobody was thinking about it.
+#
+# `pull_request` rather than a local hook, deliberately. A `pre-push` hook fires when
+# something is pushed from a clone, so a conflict resolved in GitHub's merge box never reaches
+# it — and a build artifact resolved by picking a side, which silently discards the other
+# side's change, is exactly the failure this is here to catch. Same boundary AGENT.md already
+# draws about the PreToolUse guards: those are a claim about what agents propose, not about
+# the repository. This is the one that covers the repository.
+#
+# `push: main` as well, for the commit that never was a pull request.
+
+name: Checks
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+# Read-only. Nothing here comments, labels, or writes.
+permissions:
+  contents: read
+
+# A new push to the same branch supersedes the run in flight.
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Tests and agent build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - run: npm ci
+
+      # Bare `node --test`, not the glob list in package.json's `test` script.
+      #
+      # Node discovers every *.test.mjs in the tree and skips node_modules — verified with a
+      # fixture rather than taken from the documentation, because a runner that descended into
+      # node_modules would turn this job into thousands of other people's tests.
+      #
+      # Discovery also means a new test file is picked up by having been written, with no
+      # second list to remember. The glob list currently misses
+      # buzz-agents/agents/stu/app/server/actor.test.mjs — 19 passing tests that run nowhere.
+      - name: Tests
+        run: node --test
+
+      # The artifacts under portable/ and buzz-agents/ are generated. This asserts they are
+      # what their sources compose to, which is the only thing that catches a change reverted
+      # rather than a rule broken — the shape of a badly resolved conflict in a build output.
+      - name: Agent artifacts match their sources
+        run: npm run agents:build:check
