@@ -242,7 +242,7 @@ agents have no tools.
 
 **Everyone runs this, including if you are joining a client that already exists.** Past the
 dataset work, it is the only thing that registers your MCP servers (`bq-<slug>`,
-`bq-<slug>-ro`, `drive-<slug>`) and writes your four subagents into
+`bq-<slug>-ro`, `drive-<slug>`) and writes your five subagents into
 `~/.buzz/.claude/agents/`. Step 4 installs the *templates* for those and never renders
 them, so skipping this leaves you with Claire, no tools and no subagents — and nothing
 downstream notices.

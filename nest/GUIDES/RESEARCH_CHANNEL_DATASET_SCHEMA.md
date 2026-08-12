@@ -204,6 +204,36 @@ PARTITION BY DATE(produced_at)
 CLUSTER BY status, conversation_id;
 
 -- ─────────────────────────────────────────────────────────────
+-- Persona synthesis — Percy's one write surface, per population, versioned
+-- ─────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS `{{BQ_PROJECT}}.@dataset.persona_sets` (
+  population_id     STRING NOT NULL OPTIONS (description = 'A lookup-resolved population, never a raw cohort value'),
+  version            INT64 NOT NULL,
+  status             STRING NOT NULL OPTIONS (description = 'draft | current | superseded. write_persona_set always inserts draft; only a human, through Stu, promotes draft to current. Never a write_persona_set parameter'),
+  supersedes         INT64 OPTIONS (description = 'The version this one replaces. NULL for a population\'s first version'),
+  goals_available    BOOL NOT NULL OPTIONS (description = 'FALSE means this version was clustered with no research-goals input — an honest result, not a degraded one'),
+  run_summary        JSON OPTIONS (description = 'interviews, total_participants, placed, singletons, cluster_count'),
+  cohort_alignment   JSON OPTIONS (description = 'Pass 1 self-report: whether emergent clusters line up with, cut across, or show no relation to the raw cohort value(s) underneath this population'),
+  personas           JSON NOT NULL OPTIONS (description = 'The archetype array — id, name, summary, status, distinguishing_axis, participant_ids, goals/behaviors/pain_points with type+support+evidence, mental_model, representative_quotes, gaps. Shape lives in persona.md.tmpl, not enforced here'),
+  evidence           ARRAY<STRUCT<
+                       conversation_id STRING,
+                       line_id         STRING,
+                       quote           STRING
+                     >> OPTIONS (description = 'Every line cited anywhere inside personas, flattened and deduped. Same shape as findings.evidence on purpose — one citation type across the pipeline. A version with no evidence rows is not a version — the write tool refuses it'),
+  diff               JSON OPTIONS (description = 'new / changed / dissolved personas and participants who moved clusters, vs. supersedes. NULL only for a population\'s first version'),
+  reviewed_by        STRING OPTIONS (description = 'Human pubkey — set from Stu, never by an agent'),
+  reviewed_at        TIMESTAMP,
+  resolution         STRING OPTIONS (description = 'The human verdict on this version. Written only from Stu — never a write_persona_set parameter'),
+  produced_by        STRING OPTIONS (description = 'Agent identity + prompt version that produced this'),
+  produced_at        TIMESTAMP,
+  document_uri       STRING OPTIONS (description = 'The Drive write-up rendered from this version'),
+  notes              STRING
+)
+PARTITION BY DATE(produced_at)
+CLUSTER BY population_id, status;
+
+-- ─────────────────────────────────────────────────────────────
 -- Human identity and the audit trail — what Stu writes through
 -- ─────────────────────────────────────────────────────────────
 
@@ -409,6 +439,37 @@ ALTER TABLE `{{BQ_PROJECT}}.@dataset.findings`
   ALTER COLUMN finding_type SET OPTIONS (
     description = 'theme | sentiment | pain_point | need | behaviour | quote | opportunity | open_question | hypothesis'
   );
+
+-- ─────────────────────────────────────────────────────────────
+-- Population lookup — Percy's read-only input, Claire's write surface
+-- ─────────────────────────────────────────────────────────────
+
+-- Which populations exist and what raw conversations.participant_type values belong to each is
+-- a product decision, never one Percy or Claire infers from the data. This table holds that
+-- decision so it is a data edit to change, not a template edit — same reasoning as tag_library.
+-- Starts empty on every new channel; a human rules on the mapping per client, same as they rule
+-- on the tag dictionary's contents.
+CREATE TABLE IF NOT EXISTS `{{BQ_PROJECT}}.@dataset.population_map` (
+  raw_value     STRING    NOT NULL OPTIONS (description = 'A conversations.participant_type value this maps from. One row per raw value — never a wildcard or a regex'),
+  population_id STRING    NOT NULL OPTIONS (description = 'The population this raw value belongs to. Client-specific vocabulary, decided by a human, never inferred'),
+  notes         STRING             OPTIONS (description = 'Why this raw value maps here, especially when two raw values collapse into one population'),
+  decided_by    STRING             OPTIONS (description = 'Buzz pubkey of the human who ruled on this row'),
+  decided_at    TIMESTAMP
+)
+CLUSTER BY raw_value;
+
+-- Percy's read path: never conversations.participant_type directly, always this. A raw value
+-- with no row here resolves to a NULL population_id rather than failing the join, so an
+-- unmapped conversation is visible (and excludable) rather than silently absent — the same
+-- reasoning as participants_current UNIONing speakers no roster row claims.
+CREATE OR REPLACE VIEW `{{BQ_PROJECT}}.@dataset.conversation_populations` AS
+SELECT
+  c.conversation_id,
+  c.participant_type AS raw_value,
+  m.population_id
+FROM `{{BQ_PROJECT}}.@dataset.conversations` c
+LEFT JOIN `{{BQ_PROJECT}}.@dataset.population_map` m
+  ON m.raw_value = c.participant_type;
 ```
 
 `status = 'needs_clarification'` is a first-class state, not an error: it's how Lexicon flags a
@@ -496,6 +557,22 @@ Two properties worth stating because they are easy to get wrong:
 speaker Scribe wrote no roster row for — 598 such lines in `research_acme` on 2026-08-03, two of
 them speakers with 100 and 389 lines. Sourcing the view from `participants` alone would leave
 those speakers unnamed *and* invisible to the screen that exists to name them.
+
+**`population_map` / `conversation_populations`.** The same arrangement, one layer up: Percy
+groups interviews into populations (client-specific vocabulary, decided per engagement), and
+which raw `conversations.participant_type` value belongs to which population is a human ruling,
+not something Percy or Claire infers from the data. `population_map` holds that ruling;
+`conversation_populations` is Percy's actual read path, resolving `conversation_id` to
+`population_id` through it. A raw value the table doesn't cover yet resolves to
+`population_id = NULL` rather than failing the join — visible and excludable, not silently
+dropped, the same choice `participants_current` makes for an unregistered speaker.
+
+**Two raw values can be one population, and one raw value can be a data-hygiene fix rather than
+a real distinction.** Verified against a live client dataset before this table existed: what
+looked like an extra distinct raw cohort value turned out to be the same role written two ways
+upstream, not two roles. `population_map` maps both raw spellings to the same `population_id`
+and the `notes` column says why, so the collapse is documented rather than just... true and
+unexplained if anyone re-derives it later.
 
 ---
 
@@ -634,6 +711,48 @@ f_1qFOG_hyp_safety_info_blindspot      behaviour   HYPOTHESIS
 
 Both still carrying their prose prefix and neither carrying its type, which is the state this
 clause exists for. When it returns nothing, the bridge is finished.
+
+## Persona sets version instead of overwriting, and citations are checked the same way
+
+`persona_sets` does not carry a `scope` column the way `findings` does. `findings.scope` exists
+because one table holds three different grains (`interview | cohort | project`) and needs a
+column to tell them apart; `persona_sets` has exactly one grain — population — so there is
+nothing for a discriminator to discriminate. Checked live against a client dataset before writing
+this: `findings.scope` has never actually been written as anything but `interview` (`cohort` and
+`project` are 0 rows), so there is no existing meaning to collide with, either.
+
+`personas` and the other `JSON`-typed columns hold shapes documented in the subagent prompt, not
+in this DDL, the same reasoning as `demographics JSON` on `participants` — Percy's persona shape
+is still settling and a schema migration for every field it adds would be the wrong cost to pay
+this early. `evidence` stays a typed `ARRAY<STRUCT>` because `write_persona_set` must check every
+citation against `transcript_lines` before it writes, the same anti-hallucination gate as
+`write_finding`, and that check is over this flat column — not something a query would want to do
+by reaching into nested `JSON`.
+
+`persona_sets` is Percy's only write path, through `write_persona_set` (defined in
+`mcp/templates/bq-channel-ro.yaml.tmpl`, alongside `write_finding`, for the same reason: fixed SQL
+on a source with no general `bigquery-execute-sql` tool attached, so `writeMode: allowed` buys
+exactly this one statement). The statement owns three things an agent must not:
+
+1. **Version allocation.** The next version for a `population_id` is `MAX(version) + 1`, computed
+   by the statement, never supplied by the caller — the same reason `finding_id` collision
+   handling lives in SQL rather than being trusted to whatever the model generates.
+2. **Superseding the prior version.** In the same transaction as the insert, whatever row was
+   `status = 'current'` for this `population_id` flips to `superseded`. This happens at write
+   time, not at review time: the moment a new version exists, the old one stops being presented
+   as current, even before a human has looked at the new one. There can be a real gap where a
+   population has no `current` row — a fresh `draft` pending review, and the version before it
+   already retired. That is honest, not a bug: the old version genuinely is stale the moment new
+   evidence landed.
+3. **Refusing an empty-diff re-run.** Before writing anything, the statement compares the
+   canonicalized incoming `personas` JSON against the population's latest version. Identical
+   content raises and writes nothing — a re-run that changed nothing is not a new version.
+
+Exactly like `write_finding`, `status` is hardcoded (`draft`, always, on insert) and
+`reviewed_by` / `reviewed_at` / `resolution` are not parameters the tool accepts — an agent has no
+reachable path to promoting its own persona set to `current`. `evidence_json` is checked the same
+way `write_finding` checks it: empty evidence is refused, and any cited `line_id` absent from
+`transcript_lines` refuses the whole write.
 
 ### Run accounting — the anti-truncation mechanism
 

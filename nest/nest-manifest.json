@@ -273,6 +273,12 @@
       "resolve": true
     },
     {
+      "from": "mcp/templates/agents/persona.md.tmpl",
+      "to": "mcp/templates/agents/persona.md.tmpl",
+      "mode": "0644",
+      "resolve": true
+    },
+    {
       "from": "GUIDES/RESEARCH_CHANNEL_DATASET_SCHEMA.md",
       "to": "GUIDES/RESEARCH_CHANNEL_DATASET_SCHEMA.md",
       "mode": "0644",
@@ -287,6 +293,30 @@
     {
       "from": "GUIDES/CLAIRE_ZERO_TO_RUNNING.md",
       "to": "GUIDES/CLAIRE_ZERO_TO_RUNNING.md",
+      "mode": "0644",
+      "resolve": true
+    },
+    {
+      "from": "GUIDES/CLAIRE_TAG_DICTIONARY.md",
+      "to": "GUIDES/CLAIRE_TAG_DICTIONARY.md",
+      "mode": "0644",
+      "resolve": true
+    },
+    {
+      "from": "GUIDES/CLAIRE_REPORTING_ACCURACY.md",
+      "to": "GUIDES/CLAIRE_REPORTING_ACCURACY.md",
+      "mode": "0644",
+      "resolve": true
+    },
+    {
+      "from": "GUIDES/CLAIRE_PERCY_DISPATCH.md",
+      "to": "GUIDES/CLAIRE_PERCY_DISPATCH.md",
+      "mode": "0644",
+      "resolve": true
+    },
+    {
+      "from": "GUIDES/CLAIRE_DUPLICATE_TRANSCRIPTS.md",
+      "to": "GUIDES/CLAIRE_DUPLICATE_TRANSCRIPTS.md",
       "mode": "0644",
       "resolve": true
     },
