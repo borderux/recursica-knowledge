@@ -285,6 +285,12 @@
       "resolve": true
     },
     {
+      "from": "GUIDES/CLAIRE_TAG_DICTIONARY.md",
+      "to": "GUIDES/CLAIRE_TAG_DICTIONARY.md",
+      "mode": "0644",
+      "resolve": true
+    },
+    {
       "from": "GUIDES/CLAIRE_REPORTING_ACCURACY.md",
       "to": "GUIDES/CLAIRE_REPORTING_ACCURACY.md",
       "mode": "0644",
