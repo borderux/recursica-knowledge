@@ -145,10 +145,29 @@ as a `--trailer` flag too rather than leaving it at the end of the message body 
 what puts it in the right position and what makes it visible in the same place as the other
 two.
 
-**Three flags in, three lines out.** Verify with `git log -1 --format='%(trailers)'` and
-count the lines. **Not `git log --oneline -1`** — that prints hash and subject only, so it
-structurally cannot show a trailer and will pass on a commit that has none. That is exactly
-how one of the two misses got through a verification step that did run.
+**Three flags in — verify by kind, not by counting lines:**
+
+```bash
+git log -1 --format='%(trailers)' | grep -cE '^Co-authored-by:'   # must print 2
+git log -1 --format='%(trailers)' | grep -cE '^Signed-off-by:'    # must print 1
+```
+
+**Not `git log --oneline -1`** — that prints hash and subject only, so it structurally cannot
+show a trailer and will pass on a commit that has none. That is exactly how one of the two
+misses got through a verification step that did run.
+
+**And not a line count, which this file used to prescribe.** `%(trailers)` emits a trailing
+blank line on some commits and not others, and any body line shaped like `Key: value` in the
+final paragraph is parsed as a genuine trailer — `%(trailers:only=true)` does not filter it,
+because it *is* valid trailer syntax. Measured across three commits in this repo, the same
+`wc -l` returned 3, 4 and 5 while all three carried exactly the right trailers. So the
+line count was an unreliable instrument in both directions the whole time it was the
+instruction, and the note below about a check that read back two and stopped is a case of the
+same instrument.
+
+**Two counts rather than one**, because a single `grep -cE '^(Co-authored-by|Signed-off-by):'`
+prints 3 for three `Co-authored-by` lines and no sign-off. The failure this verifies against
+is a wrong *composition*, so a recipe that cannot see composition verifies nothing.
 
 The count is the point. The next failure was not a missed verification — it was a correct
 one, run with the right command, that read back two trailers and stopped, because two is
