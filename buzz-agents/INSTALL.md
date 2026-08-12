@@ -29,6 +29,13 @@ nothing here depends on him: he needs a sandbox Drive of his own before he is sa
 that is [`nest/GUIDES/LOKI_SANDBOX_SETUP.md`](../nest/GUIDES/LOKI_SANDBOX_SETUP.md). Step 5 says
 what to do with his draft in the meantime.
 
+And a sixth — **Barb**, who reviews screens built on Recursica against the design system's own
+rules. She is the odd one out in a useful way: no key, no dataset, no values-file entry, nothing
+client-shaped anywhere near her. Save her draft whenever you like. The one thing to read first is
+the Buzz section of [`agents/barb/PORTING.md`](../agents/barb/PORTING.md), because her read-only
+guarantee — the whole point of her — is prose on this surface until you give her a config
+directory of her own.
+
 ---
 
 ## The short way: ask Fizz
