@@ -21,7 +21,6 @@ export function Interviews({ revision }) {
   if (!rows) return null
 
   const totals = {
-    interviews: rows.length,
     lines: sum(rows, 'actual_line_count'),
     tagged: sum(rows, 'tagged_line_count'),
     edits: sum(rows, 'edited_line_count'),
@@ -87,9 +86,17 @@ export function Interviews({ revision }) {
 
   return (
     <Page title="Interviews">
+      {/* `Interviews` used to lead this row and it was the row count of the table directly below —
+          the reader can already see how many interviews there are, so the box restated the table's
+          own length in a bigger font. `recursica-skill-screen-scaffolding` now gates a figure on
+          the content not already showing its shape.
+
+          The four that remain are sums across rows, which a table of per-row values genuinely does
+          not show: you cannot read a total off a column by eye. Each of them also moves on every
+          ingest, and the last one names work waiting for a person. They reconcile as nested
+          subsets — tagged, corrected and conflicting are all subsets of transcript lines. */}
       <Figures
         items={[
-          { label: 'Interviews', value: totals.interviews },
           { label: 'Transcript lines', value: totals.lines },
           { label: 'Tagged lines', value: totals.tagged },
           { label: 'Corrected lines', value: totals.edits },

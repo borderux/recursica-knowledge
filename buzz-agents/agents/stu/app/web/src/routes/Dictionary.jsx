@@ -16,8 +16,10 @@
 //                  No text is unified, so the stakes are lower.
 //
 // They are tabs rather than one list because a reviewer can only hold one of those questions at a
-// time, and because the consequence of approving differs between them — which is the thing this
-// page previously never said at all.
+// time, and because the consequence of approving differs between them. The page used to spell that
+// consequence out in a paragraph above each list; the owner removed all such text, so the split
+// itself now carries it and the tab a reviewer is standing in is what says which question they are
+// answering.
 
 import { useEffect, useMemo, useState } from 'react'
 import { Link as RouterLink, Navigate, useNavigate, useParams } from 'react-router'
@@ -90,13 +92,6 @@ export function Dictionary({ identity, revision, onChanged }) {
             empty={rows.length === 0
               ? 'The dictionary is empty. Lexicon writes terms here as it reads transcripts.'
               : 'No term proposed so far lists an alternative spelling. Every one of them is a definition.'}
-            waitingNote={
-              'Approving lets Scribe count this term as evidence when it corrects a transcript '
-              + 'from now on — it raises the score behind a correction, it does not force a '
-              + 'replacement, and it does not change lines already ingested. Rejecting means the '
-              + 'term can never license a correction. Only a person can decide, and the decision '
-              + 'is recorded against your identity.'
-            }
             identity={identity}
             onChanged={onChanged}
           />
@@ -109,12 +104,6 @@ export function Dictionary({ identity, revision, onChanged }) {
             empty={rows.length === 0
               ? 'The dictionary is empty. Lexicon writes terms here as it reads transcripts.'
               : 'Every term proposed so far lists an alternative spelling, so all of them are on the Spellings tab.'}
-            waitingNote={
-              'These entries list no alternative spelling, so approving one rewrites no text. It '
-              + 'records the definition as agreed and lets Scribe count the term as evidence when '
-              + 'it corrects. Only a person can decide, and the decision is recorded against your '
-              + 'identity.'
-            }
             identity={identity}
             onChanged={onChanged}
           />
@@ -137,7 +126,7 @@ function Waiting({ rows }) {
  * sit above the collection they act on". `Waiting on you` and `Decided` are two views of one
  * collection, not two collections.
  */
-function Terms({ rows, kind, empty, waitingNote, identity, onChanged }) {
+function Terms({ rows, kind, empty, identity, onChanged }) {
   const [type, setType] = useState(null)
 
   // Options come from the rows actually present, never from the six types the schema names: a
@@ -198,18 +187,15 @@ function Terms({ rows, kind, empty, waitingNote, identity, onChanged }) {
         </Stack>
       </Layer>
 
-      {/* The consequence of approving goes in the section note, not a page lede. The lede was
-          retired on purpose — it is a constraint, not a description of the heading — and this is
-          the section the act belongs to: recursica-skill-screen-scaffolding, "the line under a
-          heading" is for what the heading cannot carry, and `Page`'s own contract names a
-          consequence as one of the four things this slot is for. The note differs per tab
-          because the consequence does: only a term with variants can unify text.
+      {/* No sub-text here. This region used to carry a paragraph explaining what approving a term
+          does; the owner ruled it out along with every other piece of explanatory text in the app,
+          having been told it was the one exception. Prose above a list is a poor place to explain an
+          action regardless of whether the rule technically permits it — nobody reads it at the
+          moment they act, which is the moment it would matter.
 
-          Grounded, so the copy stays true: approval sets `status = 'active'`, and `active` is the
-          only status that makes Scribe's `C_dictionary` non-zero — but that component scores 0–3
-          against a threshold of 7, so it raises the odds of a correction rather than causing one
-          (agents/claire/subagents/scribe/SKILL.md:358-365). */}
-      <Section title="Waiting on you" note={waiting.length ? waitingNote : undefined}>
+          If that consequence needs saying, it belongs at the point of the decision rather than
+          above the collection. Not built here, because it was not asked for. */}
+      <Section title="Waiting on you">
         {waiting.length === 0
           ? (
             <Empty>
@@ -225,7 +211,7 @@ function Terms({ rows, kind, empty, waitingNote, identity, onChanged }) {
           ))}
       </Section>
 
-      <Section title="Decided" note="Still editable — a decision can be revisited, and the change is logged.">
+      <Section title="Decided">
         {settled.length === 0
           ? <Empty>{type ? `No ${type} term has been decided yet.` : 'No term has been decided yet.'}</Empty>
           : settled.map((term) => (

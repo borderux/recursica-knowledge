@@ -14,7 +14,7 @@
 
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { Table, Text } from '@recursica/mantine-adapter'
+import { Checkbox, Table, Text } from '@recursica/mantine-adapter'
 
 /**
  * Column widths by data type.
@@ -29,6 +29,8 @@ import { Table, Text } from '@recursica/mantine-adapter'
  * is the version that fails — it holds its size while the date column wraps around it.
  */
 export const COLUMN_WIDTH = {
+  /** The selection column. Owned by `DataTable`, never declared by a caller. */
+  select: '3.5rem',
   count: '6rem',
   /** A part-of-whole count — `11 / 34`. Two grouped numbers and a separator, so wider than one. */
   ratio: '8rem',
@@ -50,10 +52,36 @@ export const COLUMN_WIDTH = {
  * @param initialSort `{ key, direction }` — required. There is no unsorted state.
  * @param rowHref  `(row) => string`. Provide it and the entire row navigates; provide nothing in
  *                 the cells that also clicks.
+ * @param selection `{ selected: Set, onChange: (next: Set) => void }`. Opts the table into row
+ *                 selection.
+ *
+ *                 **The checkbox column is built here and cannot be supplied by a caller.** That is
+ *                 the point: `recursica-skill-selection-controls` has always required a header
+ *                 checkbox beside the row checkboxes, and this app shipped without one because
+ *                 every page hand-rolled its own checkbox column and there was nowhere for a header
+ *                 control to live. A rule with no slot to occupy is a rule that loses. Now the only
+ *                 way to get row selection is to get the header with it.
+ *
+ *                 Header mechanics are the skill's, exactly: indeterminate resolves to fully
+ *                 checked on click and is never a state the header is clicked *into* — it is
+ *                 reachable only by picking rows individually.
+ *
+ *                 Selection feeds bulk actions and nothing else. It is not a way to open, focus, or
+ *                 edit one record — see `recursica-skill-tables`.
  */
-export function DataTable({ columns, rows, initialSort, rowHref, getRowKey, emptyMessage }) {
+export function DataTable({ columns, rows, initialSort, rowHref, getRowKey, emptyMessage, selection }) {
   const [sort, setSort] = useState(initialSort)
   const navigate = useNavigate()
+
+  // Two click targets in one row means the reader cannot predict what a click does, and
+  // `recursica-skill-tables` states there are no exceptions. This combination is decided by props
+  // rather than by data, so it either throws on the first render of a route or it never can.
+  if (selection && rowHref) {
+    throw new Error(
+      'DataTable: selection and rowHref are mutually exclusive — a row with a checkbox must not '
+      + 'also navigate. Put the link on the record\'s identifying value instead.',
+    )
+  }
 
   const sorted = useMemo(() => {
     const column = columns.find((c) => c.key === sort.key)
@@ -81,18 +109,68 @@ export function DataTable({ columns, rows, initialSort, rowHref, getRowKey, empt
       : { key: column.key, direction: 'asc' })
   }
 
+  const keys = rows.map(getRowKey)
+  const selectedHere = selection ? keys.filter((k) => selection.selected.has(k)) : []
+  const allSelected = selection && keys.length > 0 && selectedHere.length === keys.length
+  // Only ever reached by selecting rows one at a time, never by clicking the header.
+  const someSelected = selection && selectedHere.length > 0 && !allSelected
+
+  function toggleRow(key) {
+    const next = new Set(selection.selected)
+    if (next.has(key)) next.delete(key)
+    else next.add(key)
+    selection.onChange(next)
+  }
+
+  /**
+   * Fully checked → cleared. Everything else, **including indeterminate → fully checked.** The
+   * skill is explicit that indeterminate never resolves to unchecked.
+   */
+  function toggleAll() {
+    const next = new Set(selection.selected)
+    if (allSelected) keys.forEach((k) => next.delete(k))
+    else keys.forEach((k) => next.add(k))
+    selection.onChange(next)
+  }
+
+  // The selection column is prepended here, so a caller cannot ship rows of checkboxes with no
+  // header control. `recursica-skill-badges-chips` also reserves column one for exactly this.
+  const allColumns = selection
+    ? [{
+      key: '__select',
+      width: COLUMN_WIDTH.select,
+      header: (
+        <Checkbox
+          aria-label={allSelected ? 'Deselect all rows' : 'Select all rows'}
+          checked={allSelected}
+          indeterminate={someSelected}
+          onChange={toggleAll}
+        />
+      ),
+      render: (row) => (
+        <Checkbox
+          // Named for a screen reader but not on screen: the row's identity is in the next cell,
+          // and repeating it visibly turns the column into noise.
+          aria-label={`Select ${getRowKey(row)}`}
+          checked={selection.selected.has(getRowKey(row))}
+          onChange={() => toggleRow(getRowKey(row))}
+        />
+      ),
+    }, ...columns]
+    : columns
+
   return (
     <Table>
       {/* Plain HTML, not a Recursica element — the adapter filters styling props off its own
           components, and a column width is neither a style it owns nor one it exposes. */}
-      {columns.some((c) => c.width) && (
+      {allColumns.some((c) => c.width) && (
         <colgroup>
-          {columns.map((c) => <col key={c.key} style={c.width ? { width: c.width } : undefined} />)}
+          {allColumns.map((c) => <col key={c.key} style={c.width ? { width: c.width } : undefined} />)}
         </colgroup>
       )}
       <Table.Thead>
         <Table.Tr>
-          {columns.map((c) => {
+          {allColumns.map((c) => {
             const active = sort.key === c.key
             return (
               <Table.Th
@@ -136,7 +214,7 @@ export function DataTable({ columns, rows, initialSort, rowHref, getRowKey, empt
                 if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(href) }
               } : undefined}
             >
-              {columns.map((c) => (
+              {allColumns.map((c) => (
                 // Every cell's content goes in the same plain wrapper, which carries no type
                 // and no colour of its own — the cell already has both. It is here so that
                 // wrapping behaves the same in every column, per `recursica-skill-tables`:
