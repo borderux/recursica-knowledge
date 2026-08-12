@@ -42,7 +42,10 @@
     "agents:restore": "node buzz-agents/scripts/restore-agents.mjs",
     "check:names": "node buzz-agents/scripts/check-text-for-names.mjs",
     "agents:build": "node scripts/build-agents.mjs",
-    "agents:build:check": "node scripts/build-agents.mjs --check"
+    "agents:build:check": "node scripts/build-agents.mjs --check",
+    "skills:manifest": "node scripts/screen-skill-manifest.mjs",
+    "skills:manifest:check": "node scripts/screen-skill-manifest.mjs --self-check",
+    "test": "node --test 'nest/bin/*.test.mjs' 'scripts/*.test.mjs' 'buzz-agents/lib/*.test.mjs'"
   },
   "packageManager": "npm@10.9.0",
   "engines": {
