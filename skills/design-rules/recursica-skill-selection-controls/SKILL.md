@@ -86,6 +86,12 @@ Work down this list; the first match wins.
 
 **Row selection is a checkbox in the leftmost cell, with a checkbox in the table header.** Table structure itself is `recursica-skill-tables`.
 
+**The header checkbox is not optional.** Any table with checkboxes in its rows has one. Without it there is no way to take or release the whole set, and the reader is left clicking down a list to undo a selection they made by accident.
+
+**A row checkbox means one thing: include this row in what the bulk action does.** It is not a way to focus a record, open it, or reveal actions for it. **NEVER let selecting a single row invoke a single-record action** — a table offering `Correct this name` at one selection and `Combine` at two has made the checkbox mean two unrelated things, and the reader learns neither. Editing one record is reached from that record; see `recursica-skill-tables`.
+
+**No separate clear or deselect-all control.** The header checkbox already is that affordance — click it from checked or indeterminate and the set resolves. A second control doing the same job somewhere else is one more thing to read and a second answer to "how do I start over".
+
 **Header checkbox mechanics — MUST behave this way:**
 
 - Indeterminate (a mix of selected and unselected rows) + click → **always goes to fully checked.** Never to unchecked.
@@ -180,7 +186,10 @@ Before considering a set of selection controls done, verify:
 - [ ] Sets above the ceiling use a dropdown, and the set is predictable enough that the user knows what's inside before opening it.
 - [ ] No radio value is pre-selected unless the default is right for nearly everyone.
 - [ ] Select all appears only where the group is genuinely long, and the group exposes an indeterminate state.
-- [ ] Table row selection is a leftmost checkbox with a header checkbox; clicking an indeterminate header selects all.
+- [ ] Table row selection is a leftmost checkbox with a header checkbox — present on every table that
+      has row checkboxes; clicking an indeterminate header selects all.
+- [ ] Selecting rows only feeds bulk actions. No single-record action is invoked by selecting one row,
+      and there is no separate clear or deselect-all control beside the header checkbox.
 - [ ] No switches in table rows.
 - [ ] Checkboxes and radios are stacked vertically — never horizontal. Horizontal needs use a segmented control (single select) or selectable chips (multi-select).
 - [ ] The form commits as one batch behind a submit button; no field-level instant writes anywhere in it.

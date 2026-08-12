@@ -114,6 +114,16 @@ The rule underneath: **a constant label can become an icon; a varying label must
 
 **Bulk controls never sit inside the filter bar.** They act on the data, not on what is shown. See `recursica-skill-filters`.
 
+**The bulk region holds controls and nothing else.**
+
+**NEVER report the selection back inside it.** The ticked checkboxes already say which rows are selected and the parenthetical already carries how many, so a list of the selected records' names is the same fact a third time, in the weakest form of the three. It also makes the region's height depend on the selection, so the table slides down the page as the reader works — and the thing they are selecting from moves while they select.
+
+**Do not add a clear or deselect-all control.** The header checkbox is that affordance, per `recursica-skill-selection-controls`. A second control doing the same job in a different place is one more thing to read and a second answer to the same question.
+
+**No "nothing selected" placeholder either.** An empty region is the correct rendering of an empty selection: with one bulk action there is nothing there yet, and with several they are present and disabled. A sentence explaining that nothing is selected occupies the space the controls will need and tells the reader what the checkboxes already told them.
+
+**A single-record action never lives here.** Selection feeds bulk operations only; editing one record is invoked from that record. See `recursica-skill-tables`.
+
 ## Destructive actions and confirmation
 
 **Do not design the page defensively against accidental clicks.** Keep the page simple; accidental triggers are rare. Confirmation is the mechanism, not layout gymnastics.
@@ -189,6 +199,8 @@ Before considering a set of triggers done, verify:
 - [ ] One primary action per row; additional row actions live in an ellipsis menu.
 - [ ] Row actions with a constant label are icon-only with tooltips; varying labels are text.
 - [ ] Bulk actions are visible-but-disabled until a row is selected, or revealed on first selection where space is tight.
+- [ ] The bulk region holds only controls: no list of the selected records, no clear or deselect-all
+      competing with the header checkbox, no "nothing selected" placeholder, and no single-record action.
 - [ ] Confirmation modals appear only for irreversible, hard-to-recreate destruction — everything reversible executes immediately.
 - [ ] Cancel in a confirmation modal is the secondary button.
 - [ ] Single-item deletes swap the delete affordance for an undo button; whole-object destruction confirms up front instead.

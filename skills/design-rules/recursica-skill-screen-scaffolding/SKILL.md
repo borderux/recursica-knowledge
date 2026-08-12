@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-screen-scaffolding
-description: House rules for composing a page in enterprise web applications — the header, left rail, and footer, how the number of navigation items decides between a top nav and a rail, where the page title and breadcrumb sit, the bottom-right primary action, positioning filters by content width rather than by breakpoint, dividing regions with space rather than containers, maximum content width and centring the main content within it, never sizing a region to a bare viewport height inside a layer, what a page shows while loading, and the layering ladder. Use when laying out a page, deciding where a region begins and ends, placing application chrome, or deciding whether something needs a container. Trigger on "page layout", "scaffolding", "header", "left rail", "footer", "breadcrumb", "max width", "centered", "wide screen", "100vh", "full height", "unwanted scrollbar", "skeleton", "loading state", "layer", or "container". Do NOT use for whether a card is right — that is recursica-skill-card.
+description: House rules for composing a page in enterprise web applications — the header, left rail, and footer, top nav vs. left rail by navigation item count, where the page title and breadcrumb sit, the empty slot under a heading and why an unused prose prop is deleted rather than left empty, whether a summary figure group is warranted at all, the primary action, positioning filters by content width not breakpoint, dividing regions with space not containers, maximum content width and centring within it, never sizing a region to a bare viewport height inside a layer, loading, and the layering ladder. Use when laying out a page, placing application chrome, or deciding whether something needs a container. Trigger on "page layout", "scaffolding", "header", "left rail", "footer", "breadcrumb", "max width", "centered", "100vh", "unwanted scrollbar", "skeleton", "loading state", "layer", "container", "summary figures", "count boxes", or "sub-text". Do NOT use for whether a card is right — that is recursica-skill-card.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -59,6 +59,10 @@ House rules for how a page is composed and what each region sits on. These are o
 **The test is subtraction, and it takes one reading.** Delete the line. If the only thing lost is a restatement of the heading, it was noise and stays deleted. If a reader would now get something wrong, keep it — and cut it back to only that.
 
 **A slot in the component is not a brief to fill it.** A `lede` or `note` prop exists because some headings need one. A prop that accepts a string is the single most common reason an explanation gets written that nobody asked for, so passing nothing is the normal case, not the unfinished one.
+
+**This rule loses to the prop unless the prop goes.** It has been stated, read, and then broken across a dozen call sites in one application, because writing a sentence into an available string prop is the path of least resistance every single time and remembering a rule is not. **So when this defect is found, delete the prop, not just the strings.** A page or section heading component that takes no optional prose cannot grow it back next week; one that takes it will. Where a genuine exception appears later, add the slot back for that case and let it be the deliberate act the rule always intended.
+
+**The same reasoning applies to any optional-prose slot** — a field description, a card subtitle, an empty-state paragraph. If the component offers somewhere to explain, something will be explained there.
 
 **If the heading cannot stand without its gloss, the heading is wrong.** Fixing it is owned by `recursica-skill-naming-terminology`, whose rule against defining a term next to itself covers a page title and a section heading, not only a field label.
 
@@ -182,6 +186,24 @@ The filter controls themselves are owned by `recursica-skill-filters`.
 
 ## Summary figures
 
+### First: does the screen need them at all?
+
+**A figure group is not free furniture at the top of a page.** It takes the strongest region of the screen — above the content, first in reading order — so it has to be worth more than what it displaced. Most pages do not need one.
+
+**Three gates, and it needs all three:**
+
+1. **The dataset is large enough that its shape is not visible.** A count earns its place by telling the reader something the content cannot. **With eleven rows in a table below it, the table has already said it** — the reader can see eleven. Ask what the ceiling realistically is, not what it could theoretically be: if the answer is dozens, the table is sufficient.
+2. **The number moves.** A figure exists to be re-read on the next visit and found different. One that reports the same value every time is a label pretending to be data.
+3. **It guides the next action.** The reader should be able to do something differently because of it.
+
+**NEVER show a figure that is structurally always zero.** A count of a state nothing ever reaches is not a reassuring zero, it is a permanent hole in the layout that the reader learns to skip — and having learned to skip it, they skip the box beside it too. **A zero that will one day be non-zero belongs in the content**, where its arrival is visible in context.
+
+**Two or three figures that pass is a better screen than six where three are always zero.** The failure is not the count of boxes; it is that padding the row teaches the reader the whole row is decoration.
+
+**A count that only ever restates a row count is the commonest instance.** `Speaker records: 11` above a table of eleven speakers is the table's own length in a box. Delete it — the subtraction test under "The line under a heading" applies here unchanged.
+
+### Then: how they are built
+
 **A group of summary figures is a set of peers** and gets one consistent treatment across all of them.
 
 **Each is named by a noun phrase saying what is counted** — `Pending requests`, not `Total pending requests`; `Overdue requests`, not `Overdue`. See `recursica-skill-naming-terminology`.
@@ -228,7 +250,7 @@ The number one indicator, and the rest in order:
 - [ ] A left rail puts navigation at the top and profile and settings at the bottom.
 - [ ] Every page has a footer.
 - [ ] The page title sits in the page; repeating the navigation label was not treated as a defect.
-- [ ] Every line under a page title or section heading survived deletion — it carries an ordering, constraint, consequence or state the heading cannot, and no `lede` or `note` was filled just because the prop exists.
+- [ ] Every line under a page title or section heading survived deletion — it carries an ordering, constraint, consequence or state the heading cannot, and no `lede` or `note` was filled just because the prop exists. Where the defect was found across several call sites, the prop itself was removed rather than only its strings.
 - [ ] A breadcrumb appears on every page below the top level, and nowhere above it.
 - [ ] The primary action sits bottom right unless the user moved it.
 - [ ] Filters are positioned by the width of the content they act on, not by a breakpoint, and a filter rail is not merged with the navigation rail.
@@ -242,6 +264,10 @@ The number one indicator, and the rest in order:
 - [ ] Layer 0 is declared once on the root and never re-declared; every region was tried with space first; a surface was added only where regions genuinely blurred, and a region without peers took a layer rather than a card.
 - [ ] No surface was painted with raw CSS or the library's tokens; a missing `Layer` was raised.
 - [ ] Application chrome sits in the header or rail, never in the content area.
+- [ ] Every summary figure passed all three gates — the dataset is large enough that the content does
+      not already show its shape, the number moves, and it guides an action. None is structurally
+      always zero, and none merely restates the row count of a table below it. Where none passed,
+      there is no figure group.
 - [ ] Summary figures share one treatment, are named as noun phrases, and reconcile with each other.
 - [ ] White space is consistent, headings have room above them, and elements align to a grid.
 - [ ] Nothing in the uncovered list was invented.
