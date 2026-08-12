@@ -130,6 +130,44 @@ body {
   margin-top: calc(var(--stu-gutter-y) * 1.5);
 }
 
+/* An exception marker beside an object's name. Not a badge: `recursica-skill-badges-chips` makes
+   the icon the default and the badge the earned exception, because a badge is a filled, bordered,
+   coloured box sized to be noticed and that only works while it is scarce.
+ *
+ * The colour token is layer-scoped, and that is not incidental — `recursica-skill-layers` says
+ * every element resolves its colours from the layer it sits on, and the palette has no
+ * layer-independent warning tone to reach for. This table is on layer 0, so this is the layer-0
+ * token. **Wrap this table in a layer and the token has to change with it.** The first attempt here
+ * invented `palettes_alert_500_color_tone`, which does not exist; the postcss plugin failed the
+ * build rather than emitting a colour that silently fell back to inherited text.
+ *
+ * The meaning never rests on the colour: the glyph carries it and the accessible name carries the
+ * words, which is what `recursica-skill-system-conventions` requires. */
+.stu-flag {
+  color: var(--recursica_brand_layer_0_elements_text_warning);
+  cursor: help;
+  line-height: 1;
+}
+
+/* The row disclosure control. Colour, type and focus ring are inherited rather than set: this is a
+   plain button carrying a glyph, and the cell it sits in already resolves both from its layer. */
+.stu-disclose {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  line-height: 1;
+}
+
+/* Sub-detail revealed under a row. Indented to the identity column so it reads as belonging to the
+   row above rather than as a row of its own — the alignment the grouped-rows rule asks for when a
+   row carries sub-detail. */
+.stu-detail-row {
+  padding: var(--stu-gutter-y) 0 var(--stu-gutter-y) var(--stu-gutter);
+}
+
 /* A section heading and the region's own action share a line, so the action reads as belonging to
    this region rather than to the page. `recursica-skill-tables` puts a table's add affordance at
    the header and never below the table, where an unknown number of rows makes the position
