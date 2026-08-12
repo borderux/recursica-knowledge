@@ -16,8 +16,10 @@
 //                  No text is unified, so the stakes are lower.
 //
 // They are tabs rather than one list because a reviewer can only hold one of those questions at a
-// time, and because the consequence of approving differs between them — which is the thing this
-// page previously never said at all.
+// time, and because the consequence of approving differs between them. The page used to spell that
+// consequence out in a paragraph above each list; the owner removed all such text, so the split
+// itself now carries it and the tab a reviewer is standing in is what says which question they are
+// answering.
 
 import { useEffect, useMemo, useState } from 'react'
 import { Link as RouterLink, Navigate, useNavigate, useParams } from 'react-router'
@@ -90,12 +92,6 @@ export function Dictionary({ identity, revision, onChanged }) {
             empty={rows.length === 0
               ? 'The dictionary is empty. Lexicon writes terms here as it reads transcripts.'
               : 'No term proposed so far lists an alternative spelling. Every one of them is a definition.'}
-            approvalConsequence={
-              'Approving lets Scribe count this term as evidence when it corrects a transcript '
-              + 'from now on — it raises the score behind a correction, it does not force a '
-              + 'replacement, and it does not change lines already ingested. Rejecting means the '
-              + 'term can never license a correction.'
-            }
             identity={identity}
             onChanged={onChanged}
           />
@@ -108,11 +104,6 @@ export function Dictionary({ identity, revision, onChanged }) {
             empty={rows.length === 0
               ? 'The dictionary is empty. Lexicon writes terms here as it reads transcripts.'
               : 'Every term proposed so far lists an alternative spelling, so all of them are on the Spellings tab.'}
-            approvalConsequence={
-              'These entries list no alternative spelling, so approving one rewrites no text. It '
-              + 'records the definition as agreed and lets Scribe count the term as evidence when '
-              + 'it corrects.'
-            }
             identity={identity}
             onChanged={onChanged}
           />
@@ -135,7 +126,7 @@ function Waiting({ rows }) {
  * sit above the collection they act on". `Waiting on you` and `Decided` are two views of one
  * collection, not two collections.
  */
-function Terms({ rows, kind, empty, approvalConsequence, identity, onChanged }) {
+function Terms({ rows, kind, empty, identity, onChanged }) {
   const [type, setType] = useState(null)
 
   // Options come from the rows actually present, never from the six types the schema names: a
@@ -196,26 +187,15 @@ function Terms({ rows, kind, empty, approvalConsequence, identity, onChanged }) 
         </Stack>
       </Layer>
 
-      {/* This one line survived the removal of every other piece of sub-text in the app, and it is
-          worth saying why. It states what approving *does* — an irreversible-feeling act whose
-          actual effect is much narrower than it looks — which is a consequence, not a description
-          of the heading, and it is the stated exception in
-          recursica-skill-screen-scaffolding's "the line under a heading". It was added deliberately
-          in its own change, so deleting it with the rest would have undone that.
+      {/* No sub-text here. This region used to carry a paragraph explaining what approving a term
+          does; the owner ruled it out along with every other piece of explanatory text in the app,
+          having been told it was the one exception. Prose above a list is a poor place to explain an
+          action regardless of whether the rule technically permits it — nobody reads it at the
+          moment they act, which is the moment it would matter.
 
-          What did go is its closing reassurance that only a person can decide: that is the whole
-          app's premise, repeated on every screen, and the heading "Waiting on you" already says it.
-
-          It is content in the region now rather than a `note` prop, so it reads as a deliberate
-          addition instead of a slot somebody filled. The text differs per tab because the
-          consequence does: only a term with variants can unify text.
-
-          Grounded, so the copy stays true: approval sets `status = 'active'`, and `active` is the
-          only status that makes Scribe's `C_dictionary` non-zero — but that component scores 0–3
-          against a threshold of 7, so it raises the odds of a correction rather than causing one
-          (agents/claire/subagents/scribe/SKILL.md:358-365). */}
+          If that consequence needs saying, it belongs at the point of the decision rather than
+          above the collection. Not built here, because it was not asked for. */}
       <Section title="Waiting on you">
-        {waiting.length > 0 && <Text variant="body-small">{approvalConsequence}</Text>}
         {waiting.length === 0
           ? (
             <Empty>
