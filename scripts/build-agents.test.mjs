@@ -7,6 +7,7 @@
  */
 
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import test from "node:test";
@@ -66,6 +67,26 @@ test("Barb and her checkers hold no write tool", () => {
 });
 
 /**
+ * The same assertion, generalised, because the missing-allowlist bug was found by reading one
+ * file rather than by anything checking. A subagent's front matter is written by hand rather
+ * than rendered, so nothing has ever guaranteed the `tools:` line is in it — and a subagent
+ * without one holds whatever the session holds, which for the ones here means a client's data.
+ */
+test("every subagent artifact declares a tool allowlist", () => {
+  const subagentDirs = agentNames.flatMap((name) => {
+    const dir = path.join(agentsDir, name, "subagents");
+    if (!fs.existsSync(dir)) return [];
+    return fs.readdirSync(dir, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name);
+  });
+  assert.ok(subagentDirs.length > 0, "found no subagents — this test is checking nothing");
+  for (const sub of subagentDirs) {
+    const artifact = path.join(artifactDir, `${sub}.md`);
+    if (!fs.existsSync(artifact)) continue; // narrowed by `targets:` — the drift test covers that
+    assert.ok(toolsOf(artifact).length > 0, `${sub}.md declares no tools — it would inherit the session's`);
+  }
+});
+
+/**
  * ALAN dispatches Barb, so he needs Task; Barb dispatches checker and feisty, so she needs it
  * too. Without it she can only read the corpus one context at a time, which is a skim.
  */
@@ -85,6 +106,34 @@ test("the nest manifest installs Barb with both of her checkers", () => {
     assert.ok(entry, `${name} is not installed into .claude/agents/`);
     assert.equal(entry.fromRoot, true, `${name} is read from nest/, where its artifact does not live`);
   }
+});
+
+/**
+ * The committed artifacts must match what their sources compose to.
+ *
+ * `npm run agents:build:check` has always reported this, and it runs nowhere automatically —
+ * not in CI, not in a hook, not in `npm test`. Which makes it a step somebody has to remember
+ * at the moment nobody is thinking about it, and the failure is silent in the direction that
+ * matters: an artifact is a build output, so the obvious way to resolve a merge conflict in
+ * one is to pick a side. Pick the wrong side and the other side's change is gone, with a green
+ * test run over the top of it. Verified before writing this: mangling a description in a built
+ * artifact passes all other tests here.
+ *
+ * The other tests in this file assert properties of an artifact. This one asserts it is the
+ * artifact its source produces, which is the only thing that catches a change reverted rather
+ * than a rule broken.
+ */
+test("no committed artifact has drifted from its source", () => {
+  const out = execFileSync(process.execPath, [path.join(repoRoot, "scripts", "build-agents.mjs"), "--check"], {
+    cwd: repoRoot,
+    encoding: "utf8",
+  });
+  // --check writes nothing, so a failure here is a report, never a repair.
+  assert.match(
+    out.replace(/\x1b\[[0-9;]*m/g, ""),
+    /--check complete\. 0 changes pending\./,
+    "artifacts differ from what their sources compose to — run `npm run agents:build`",
+  );
 });
 
 /** A manifest entry naming a file that is not there installs nothing and says so only at run time. */
