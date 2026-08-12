@@ -30,7 +30,10 @@
     "  mcp/bq-<slug>.yaml     Generated per channel by deploy-claire-channel.sh from",
     "                         mcp/templates/. Versioning rendered output invites edits",
     "                         to the copy instead of the template.",
-    "  .claude/agents/*-<slug>.md  Same — rendered from mcp/templates/agents/.",
+    "  .claude/agents/*-<slug>.md  Same — rendered from mcp/templates/agents/. The three",
+    "                         agents/*.md without a slug ARE in this manifest: Barb and her",
+    "                         two checkers are identical for every operator, so there is",
+    "                         nothing to render. They use fromRoot — see that entry.",
     "  drive-fence/diag-export.mjs  A one-off investigation into a Drive 403, not runtime.",
     "  .secrets/*             Service-account keys. Never versioned, never templated.",
     "  .claude/skills/buzz-cli/  Ships with Buzz Desktop; not ours to install or update."
@@ -344,6 +347,45 @@
       "to": ".claude/skills/deploy-agents/SKILL.md",
       "mode": "0644",
       "resolve": false
+    },
+    {
+      "$comment": [
+        "Barb and her two checkers, installed for every operator rather than rendered per",
+        "client. A subagent is reachable only if its file sits in .claude/agents/, and these",
+        "three are the same for everybody: a design reviewer touches no dataset, no Drive",
+        "folder and no channel, so there is nothing to render and nothing to fence.",
+        "",
+        "All three or none. Barb without checker and feisty still runs, and what she does",
+        "instead is skim — the skills corpus is ~220k tokens and the fan-out is how it gets",
+        "read rather than sampled. A partial install fails silently and looks like a clean",
+        "review.",
+        "",
+        "fromRoot because these are build outputs of scripts/build-agents.mjs, whose source is",
+        "agents/barb/. Run `npm run agents:build` before bootstrapping if they are missing.",
+        "",
+        "resolve:false — they carry no {{TOKEN}}. Barb is told where the checkout is by",
+        "whoever dispatches her, which is what lets the same file serve a Buzz agent and a",
+        "plain session."
+      ],
+      "from": "portable/claude-code/agents/barb.md",
+      "to": ".claude/agents/barb.md",
+      "mode": "0644",
+      "resolve": false,
+      "fromRoot": true
+    },
+    {
+      "from": "portable/claude-code/agents/checker.md",
+      "to": ".claude/agents/checker.md",
+      "mode": "0644",
+      "resolve": false,
+      "fromRoot": true
+    },
+    {
+      "from": "portable/claude-code/agents/feisty.md",
+      "to": ".claude/agents/feisty.md",
+      "mode": "0644",
+      "resolve": false,
+      "fromRoot": true
     }
   ],
   "$settingsComment": [

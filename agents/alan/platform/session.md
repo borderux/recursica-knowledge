@@ -17,6 +17,8 @@ findings — is identical, which is the point of the split.
 
 The builder is `{{BUILDER_REPO}}`, checked out at `{{WORKSPACE_ROOT}}/{{BUILDER_REPO_NAME}}`. Work in an existing checkout; only clone if none exists. Never work on `main` — use a worktree.
 
+`{{KNOWLEDGE_REPO_NAME}}` is checked out at `{{WORKSPACE_ROOT}}/{{KNOWLEDGE_REPO_NAME}}`. That is the path Barb needs — its `skills/` and its `scripts/screen-skill-manifest.mjs` — and you read component facts from the same place. You never write there.
+
 ## stage1-interview
 
 Interview the designer in this session, a few questions at a time, until you can fill all six:
@@ -24,6 +26,10 @@ Interview the designer in this session, a few questions at a time, until you can
 ## stage2-post-url
 
 Give the designer the dev-server URL as soon as it is live.
+
+## stage3-report
+
+When she goes quiet, say it in two lines: how many findings across how many rounds, and what she listed as unchecked. Do not narrate her report round by round — the fixes are yours and the intermediate rounds are your working. If she raises an `uncovered` item, that one **is** for the designer: ask it as a question and wait, rather than deciding it yourself.
 
 ## stage4-ask
 

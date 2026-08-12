@@ -264,11 +264,21 @@ const sha = (buf) => crypto.createHash("sha256").update(buf).digest("hex");
 const unresolvedByFile = new Map();
 
 for (const f of manifest.files ?? []) {
-  const src = path.join(nestSrc, f.from);
+  /**
+   * `fromRoot` reads the source from the repository root instead of nest/.
+   *
+   * It exists for the portable agent artifacts. `portable/claude-code/agents/*.md` is already
+   * exactly what a Claude Code install needs — front matter, tool allowlist, prompt — and it is
+   * a build output of `scripts/build-agents.mjs`. Copying those into nest/ so the manifest could
+   * reach them would fork the tree the first time somebody edited the copy, which is the same
+   * reason Stu's app is deliberately not in this manifest.
+   */
+  const srcRoot = f.fromRoot ? repoRoot : nestSrc;
+  const src = path.join(srcRoot, f.from);
   const dst = path.join(NEST, f.to);
 
   if (!fs.existsSync(src)) {
-    bad(`${f.from} missing from nest/ — manifest and tree disagree`);
+    bad(`${f.from} missing from ${f.fromRoot ? "the repository root" : "nest/"} — manifest and tree disagree${f.fromRoot ? ". If it is a build output, run `npm run agents:build` first" : ""}`);
     continue;
   }
 

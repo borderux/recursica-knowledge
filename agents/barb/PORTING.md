@@ -16,6 +16,27 @@ read-only tool set.**
 
 Nothing else. There is no credential to provision and nothing to fence.
 
+## Who calls her
+
+Anyone building on Recursica. **ALAN calls her by default** — his Stage 3 dispatches her on
+every screen before the designer sees it, fixes what she reports, and calls her again until she
+goes quiet twice. Nothing about her is ALAN-specific; he is the first caller, not the owner.
+
+Two properties of that arrangement are worth stating because they are easy to erode:
+
+- **The builder does not get to narrow the review.** ALAN is told to hand her the files and
+  nothing else — no summary of what changed, no list of skills he thinks apply. Her prompt
+  now says to ignore such a hint and report that she got one, because a rule enforced on only
+  one side of a hand-off is enforced nowhere.
+- **She has no way to make a finding go away, and the builder has no way to make the rule go
+  away.** She cannot write; ALAN cannot edit the knowledge repository. Neither half is
+  sufficient alone.
+
+On Buzz, `scripts/bootstrap-nest.mjs` installs all three files into `~/.buzz/.claude/agents/`
+from `portable/claude-code/agents/` — statically, not rendered per client, because there is
+nothing client-shaped in a design reviewer. Run `npm run agents:build` first if they are
+missing; they are build outputs.
+
 ## The one property that has to survive the port
 
 **She must not be able to write.**
