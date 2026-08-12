@@ -291,6 +291,35 @@ matter narrows which artifacts get built; absent means all of them. Declare it r
 shipping an artifact that quietly drops a boundary the platform cannot express — Claire is not
 built for opencode, because opencode has no per-tool allowlist to keep her subagents apart.
 
+**Subagents take `targets:` too**, and it is stripped from the artifact rather than shipped in it —
+a subagent's front matter *is* the artifact, so a build instruction has no business in the file a
+runtime reads. Claire's subagents build to the nest template the deploy renders per client; Barb's
+do not, because a design reviewer touches no client data and writing hers into the per-client
+deploy would hand every client two agents that have nothing to do with them.
+
+**Barb is the design reviewer, and she is the one agent here that touches no client data.** She
+reads `skills/` and an application and reports which rules the screens violate, with a file and line
+per claim. She writes nothing — no `Write`, no `Edit` — and that is the whole property rather than a
+precaution: a reviewer that can edit the code under review can make a finding vanish, and one that
+can edit `skills/` can resolve a violation by softening the rule. See
+[agents/barb/PORTING.md](agents/barb/PORTING.md), and note the two leaks it names even on Claude
+Code — `Bash` is a write path, and per-subagent `tools:` lines only hold if the platform honours them.
+
+Which skills apply to a screen is **computed, not judged**:
+
+```bash
+npm run skills:manifest -- <screen file>    # the applicable skill set
+npm run skills:manifest:check               # the map against the skills on disk
+```
+
+That script exists because of a real gap: all 39 component skills cross-link upward to the
+design-rules skills, no design-rules skill links back down, and the router's decision table names
+20 of 20 design-rules skills and **0 of 39 component skills**. So descending the router never yields
+a component skill name — but an `import { … } from '@recursica/mantine-adapter'` line is exactly that
+list, and it fires on the import rather than on anybody's sense of what counts as "placed". Run
+`skills:manifest:check` after an adapter upgrade: fifteen exports do not map to
+`recursica-skill-<kebab-case>` and one is a trap — `TextArea` is `recursica-skill-textarea`, no hyphen.
+
 `agents/<name>/PORTING.md` says what one needs and what it cannot carry — above all that
 **a prompt does not carry a data fence**.
 

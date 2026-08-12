@@ -289,9 +289,15 @@ for (const name of names) {
    * separately useful: Scribe without Claire has nobody to hand it a transcript. Nesting them
    * under the orchestrator keeps that relationship in the layout instead of a comment.
    *
-   * Their targets are fixed rather than declarable. Both existing consumers want the same
-   * file — a Claude subagent with `name`, `description` and `tools` — so there is nothing for
-   * a `targets:` line to choose between. Add the mechanism when a target actually differs.
+   * `targets:` narrows which artifacts a subagent produces, the same way it does for an agent.
+   * It exists because a case finally differed: Claire's subagents are per-client and belong in
+   * the nest template the deploy renders, and Barb's are not client-scoped at all — a reviewer
+   * reads a design system and an app, with no dataset and no channel — so writing them into the
+   * per-client deploy would ship a client four agents that have nothing to do with their data.
+   *
+   * Unlike an agent, a subagent's front matter IS the artifact, so `targets:` is stripped from
+   * what gets written: it is an instruction to this script, not something a subagent runtime
+   * should ever see.
    */
   const subDir = path.join(base, "subagents");
   if (!fs.existsSync(subDir)) continue;
@@ -301,9 +307,32 @@ for (const name of names) {
     // `description` and `tools` are what make the file a subagent — and both targets want the
     // same shape, so there is nothing to strip and re-render. Markers work inside it.
     const raw = fs.readFileSync(path.join(subBase, "SKILL.md"), "utf8");
+    // `targets:` is build metadata, so it is read off the front matter and then removed from the
+    // text that gets written. Matched only inside the leading front-matter block, so a `targets:`
+    // appearing in the prose below it is left alone.
+    const fm = raw.match(/^---\n([\s\S]*?)\n---\n/);
+    const declared = fm?.[1].match(/^targets:[ \t]*(.*)$/m)?.[1] ?? null;
+    // Trailing newlines are trimmed after the removal: when `targets:` is the last line of the
+    // block, dropping it otherwise leaves the newline that preceded it and the artifact ships with
+    // a blank line before its closing `---`.
+    const body = declared === null ? raw
+      : raw.slice(0, fm.index + 4)
+        + fm[1].replace(/^targets:[ \t]*.*\n?/m, "").replace(/\n+$/, "")
+        + raw.slice(fm.index + 4 + fm[1].length);
+
+    const wantedSubs = declared ? declared.split(/[\s,]+/).filter(Boolean) : Object.keys(SUBAGENT_TARGETS);
+    const unknownSubs = wantedSubs.filter((t) => !(t in SUBAGENT_TARGETS));
     console.log(`  \x1b[1m${sub}\x1b[0m`);
-    for (const [target, spec] of Object.entries(SUBAGENT_TARGETS)) {
-      buildArtifact({ source: { meta: {}, body: raw }, base: subBase, target, spec, outName: sub, label: `${name}/${sub}` });
+    if (unknownSubs.length) {
+      console.log(`    \x1b[31m✗\x1b[0m unknown target${unknownSubs.length > 1 ? "s" : ""}: ${unknownSubs.join(", ")}`);
+      failed++;
+      continue;
+    }
+    for (const skipped of Object.keys(SUBAGENT_TARGETS).filter((t) => !wantedSubs.includes(t))) {
+      console.log(`    \x1b[90m—\x1b[0m ${skipped}: not a target for this subagent (front matter \`targets:\`)`);
+    }
+    for (const [target, spec] of Object.entries(SUBAGENT_TARGETS).filter(([t]) => wantedSubs.includes(t))) {
+      buildArtifact({ source: { meta: {}, body }, base: subBase, target, spec, outName: sub, label: `${name}/${sub}` });
     }
   }
 }
