@@ -52,6 +52,13 @@
             "command": "node {{BUZZ_HOME}}/bin/guard-stale-checkout.mjs",
             "timeout": 20,
             "statusMessage": "Checking the checkout is a repository"
+          },
+          {
+            "$comment": "No `if` key, deliberately. Every entry above has one, and on 2026-08-12 `Bash(git *)` denied a command with git not leading while `Bash(curl *)` failed to deny one with curl leading — verified independently by two agents, explained by neither. This guard is registered the way the one hook that fires reliably is registered, and does its own per-segment command test in guard-credential-store.mjs, which has tests. `security` also has too many spellings for a leading-command glob: /usr/bin/security, `FOO=1 security`, `sudo security`, `cd … && security`.",
+            "type": "command",
+            "command": "node {{BUZZ_HOME}}/bin/guard-credential-store.mjs",
+            "timeout": 20,
+            "statusMessage": "Checking for credential-store enumeration"
           }
         ]
       },
@@ -63,6 +70,12 @@
             "command": "node {{BUZZ_HOME}}/bin/guard-stale-checkout.mjs",
             "timeout": 20,
             "statusMessage": "Checking the checkout is a repository"
+          },
+          {
+            "type": "command",
+            "command": "node {{BUZZ_HOME}}/bin/guard-credential-store.mjs",
+            "timeout": 20,
+            "statusMessage": "Checking for credential-store enumeration"
           }
         ]
       }
