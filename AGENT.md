@@ -252,9 +252,14 @@ settings that never belong in a prompt. Nothing under `buzz-agents/agents/*/SYST
 or `portable/` is edited by hand — those are build outputs.
 
 ```bash
-npm run agents:build:check   # report drift, write nothing
+npm run agents:build:check   # report drift, write nothing; exits 1 if there is any
 npm run agents:build         # write
 ```
+
+`--check` **used to exit 0 whether or not anything had drifted.** It printed the drift and the
+status code said fine, which is invisible while a person reads the output and fatal the moment
+anything automated reads it instead. `.github/workflows/checks.yml` runs it on every pull
+request, and it would have gone green on exactly the drift it was added to catch.
 
 Three rules the build enforces so you do not have to remember them:
 

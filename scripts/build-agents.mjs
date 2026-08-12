@@ -369,3 +369,16 @@ console.log("");
 if (failed) { console.log(`\x1b[31m✗ ${failed} problem${failed > 1 ? "s" : ""}.\x1b[0m\n`); process.exit(1); }
 console.log(CHECK ? `\x1b[1m--check complete.\x1b[0m ${changed} change${changed === 1 ? "" : "s"} pending.\n`
                   : `\x1b[32m✓ Built.\x1b[0m ${changed} change${changed === 1 ? "" : "s"}.\n`);
+
+/**
+ * `--check` exits non-zero when an artifact has drifted from its source.
+ *
+ * It used to exit 0 in every case a human would call a failure: the drift was printed and the
+ * status code said fine. That is invisible while a person is reading the output and fatal the
+ * moment anything automated consumes it — a CI step running this would have gone green on
+ * exactly the drift it was added to catch.
+ *
+ * Only under --check. A build that writes the changes has resolved them, so a non-zero exit
+ * there would mean "I did my job".
+ */
+if (CHECK && changed) process.exit(1);
