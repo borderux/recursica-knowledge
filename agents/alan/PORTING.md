@@ -23,6 +23,7 @@ the research pipeline without rebuilding the fence.
 |---|---|
 | `portable/claude-code/agents/alan.md` | Claude Code — drop into `.claude/agents/` |
 | `portable/opencode/agents/alan.md` | opencode — drop into `.opencode/agents/` |
+| `portable/claude-code/agents/{barb,checker,feisty}.md` | Barb, who reviews what ALAN builds — same directory, all three |
 | `agents/alan/runtime/claude-code.json` | model and tool allowlist |
 | `agents/alan/runtime/opencode.json` | merge the `agent` block into your `opencode.json` |
 
@@ -44,6 +45,30 @@ values, and guessing them for you would be wrong:
 
 Every token in an artifact is declared in `buzz-agents/placeholders.json`; the build fails on
 one that is not, so this table cannot silently fall behind.
+
+## Barb comes with him now, and she is not optional scaffolding
+
+Stage 3 dispatches `barb` on every screen ALAN builds, before the designer sees it. Install
+all three files — `barb.md`, `checker.md`, `feisty.md` — into the same `.claude/agents/`
+directory. **A partial install fails silently:** Barb without her checkers still runs, and what
+she does instead is skim a 220k-token corpus in one context, which returns a clean report.
+
+Two things the platform has to be true of, and both are worth checking rather than assuming:
+
+- **An agent must be able to dispatch an agent that dispatches an agent.** ALAN → Barb →
+  checker is two levels. Verified on Claude Code 2.1.220; if your platform flattens or caps
+  that, Barb loses her fan-out and you are back to the skim.
+- **Per-agent `tools:` lines must be honoured.** Barb's read-only guarantee is the absence of
+  `Write` and `Edit` from her front matter, nothing else. See `agents/barb/PORTING.md` for the
+  two leaks that survive even where they are honoured.
+
+Where you cannot have both, ALAN still runs — say out loud that his screens are unreviewed
+rather than letting Stage 3 quietly become a no-op.
+
+ALAN reads the design system's skills anyway, so Barb adds no checkout he did not already
+need. What she does add is the requirement that he **tell her where it is**: her manifest
+script and the corpus are in that repository, his source is in another, and his working
+directory is usually neither.
 
 ## What does not come with it
 

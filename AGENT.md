@@ -269,6 +269,13 @@ Three rules the build enforces so you do not have to remember them:
 - **Every artifact is name-checked before it is written.** Generated files in a public repo
   are the category that gets read least closely.
 
+**The claude-code artifact carries `model:` and `tools:`, derived from `runtime/claude-code.json`
+rather than written a second time.** A file in `.claude/agents/` is a dispatchable agent and its
+front matter is the only place a tool allowlist can live — without one it inherits the session's
+tools. That was a documentation gap for four of these agents and a broken guarantee for Barb,
+whose entire property is the absence of `Write` and `Edit`. `scripts/build-agents.test.mjs`
+asserts both, because the failure is silent in every direction.
+
 A fragment header in `platform/*.md` is a bare kebab-case slug, matching the marker name. A
 `## ` line that is not one is ordinary content, so a fragment may contain a markdown heading —
 Claire's does.

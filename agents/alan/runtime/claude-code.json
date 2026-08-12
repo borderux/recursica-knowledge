@@ -1,6 +1,9 @@
 {
   "$comment": "Claude Code runtime settings for ALAN. The prompt is portable/claude-code/agents/alan.md; this file is the config that has no business inside a prompt.",
   "model": "opus",
-  "tools": ["Read", "Write", "Edit", "Bash", "Glob", "Grep", "WebFetch"],
-  "$toolsComment": "ALAN reads a repo, writes TEST.md/PLAN.md/FINDINGS.md/EVAL_REPORT.md, and runs npm. It needs no MCP server at all — which is why it is the first agent to port."
+  "tools": ["Read", "Write", "Edit", "Bash", "Glob", "Grep", "WebFetch", "Task"],
+  "$toolsComment": "ALAN reads a repo, writes TEST.md/PLAN.md/FINDINGS.md/EVAL_REPORT.md, and runs npm. It needs no MCP server at all — which is why it is the first agent to port. `Task` is how it dispatches Barb, and it is the only thing ALAN uses Task for.",
+  "subagents": ["barb"],
+  "$subagentsComment": "Barb reviews what ALAN built against the design system's own rules, before the designer sees the screen. She brings `checker` and `feisty` with her — all three files have to be installed, because Barb without the fan-out can only skim a 220k-token corpus. ALAN dispatches Barb; he never dispatches checker or feisty himself, and the reason is not tidiness: the builder deciding which skills to check is the judgment call Barb exists to take away from him.",
+  "$notGrantedComment": "ALAN is NOT given a way to make Barb's report go away, and there is nothing to configure for that — she has no write tools and he cannot edit the knowledge repository. Do not 'help' by letting ALAN edit skills/ when a finding looks wrong. A builder that can soften the rule it broke is the failure this pairing exists to catch."
 }

@@ -126,10 +126,32 @@ function loadFragments(file) {
   return out;
 }
 
-/** Front matter, per target. Kept out of SKILL.md so each platform gets only its own keys. */
-function renderFrontmatter(kind, meta) {
+/**
+ * Front matter, per target. Kept out of SKILL.md so each platform gets only its own keys.
+ *
+ * The claude-code artifact carries `model:` and `tools:` from `runtime/claude-code.json`
+ * rather than leaving them for whoever reads PORTING.md. A file in `.claude/agents/` is a
+ * dispatchable agent, and its front matter is the only place a tool allowlist can live: drop
+ * one in without a `tools:` line and it inherits the session's tools instead.
+ *
+ * That is a documentation gap for most of these agents and a broken safety property for one.
+ * Barb's whole guarantee is that she cannot write — an agent that can edit the code it reviews
+ * can make a finding disappear instead of reporting it, and one that can edit `skills/` can
+ * resolve a violation by softening the rule. Both are silent. Her runtime file said `Read,
+ * Grep, Glob, Bash, Task`; her artifact said nothing, so ALAN dispatching that artifact would
+ * have got a reviewer holding `Write` and `Edit` with no warning anywhere. Her own PORTING.md
+ * names per-subagent tools as a thing to check rather than assume, and this build was the
+ * thing not honouring it.
+ *
+ * Derived from the runtime file rather than declared a second time in the front matter: a
+ * hand-kept copy of a tool list is a second source of truth, and it goes stale silently.
+ */
+function renderFrontmatter(kind, meta, runtime) {
   if (kind === "claude-code") {
-    return `---\nname: ${meta.name}\ndescription: ${meta.description}\n---\n\n`;
+    const lines = [`name: ${meta.name}`, `description: ${meta.description}`];
+    if (runtime?.model) lines.push(`model: ${runtime.model}`);
+    if (runtime?.tools?.length) lines.push(`tools: ${runtime.tools.join(", ")}`);
+    return `---\n${lines.join("\n")}\n---\n\n`;
   }
   // opencode: `mode` is required to say this is a primary agent rather than a subagent,
   // and it has no `name` key at all — the filename is the identifier.
@@ -181,7 +203,13 @@ function buildArtifact({ source, base, target, spec, outName, label }) {
     if (!(marker in frags)) { bad(`${target}: platform/${spec.fragments} has no "## ${marker}" block`); return; }
     out = out.split(`<!-- platform:${marker} -->`).join(frags[marker]);
   }
-  if (spec.frontmatter) out = renderFrontmatter(spec.frontmatter, source.meta) + out;
+  if (spec.frontmatter) {
+    // Only claude-code reads a runtime file here, and only for the two keys its front matter
+    // has. `$`-prefixed keys in those files are commentary for a human and are ignored.
+    const runtimeFile = path.join(base, "runtime", `${target}.json`);
+    const runtime = fs.existsSync(runtimeFile) ? JSON.parse(fs.readFileSync(runtimeFile, "utf8")) : null;
+    out = renderFrontmatter(spec.frontmatter, source.meta, runtime) + out;
+  }
 
   const rel = spec.out(outName);
   const outPath = path.join(repoRoot, rel);
