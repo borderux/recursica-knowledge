@@ -274,6 +274,15 @@ copied, and that guard's 26 tests passing unchanged is the evidence the extracti
 behaviour-preserving. A hand-copied second version of this logic is exactly the second source
 of truth this repo keeps being bitten by.
 
+**It is not total, and the tests say so.** `cp ~/.ssh/id_rsa /tmp/k && cat /tmp/k` launders
+through an unremarkable path and no verb-and-path list catches it; only one level of `sh -c` is
+unwrapped; `SECRET_PATHS` is the app stores that exist on this machine rather than a theory of
+where secrets live. Each of those has a test asserting the gap, because a guard believed to be
+total is worse than one known to be partial. It also over-denies in one direction — `$(…)` is
+opened regardless of quoting, so a single-quoted `'$(security …)'` in a message body is denied
+though bash would not run it. A heredoc body is stripped, so the usual incident-report shape is
+unaffected.
+
 **Installing the script does not register it.** `.claude/settings.json` is `ifAbsent` in the
 manifest, so `bootstrap-nest.mjs` reports a diff and leaves the operator's copy alone. Both
 hook entries have to be added to `~/.buzz/.claude/settings.json` by hand, and until they are

@@ -55,6 +55,30 @@ describe('enumerating the keychain', () => {
     assert.ok(denied(bash('ls | xargs security dump-keychain')), 'later in a pipeline')
   })
 
+  // `security(1)` is `security [-hilqv] [-p prompt] [command]`, so the subcommand is not
+  // always word 2. A positional read let `security -v dump-keychain` through, and `-v` is a
+  // flag somebody types for their own reasons rather than to evade anything.
+  it('denies it behind a global flag, which is not where the subcommand is', () => {
+    assert.ok(denied(bash('security -v dump-keychain')))
+    assert.ok(denied(bash('security -q dump-keychain')))
+    assert.ok(denied(bash('security -i find-generic-password -s x -w')))
+    assert.ok(denied(bash('security -p prompt find-generic-password -s x -w')))
+  })
+
+  // `statementsOf` opens `$(…)` up, so the segment's last word arrives as `dump-keychain)"`.
+  // An anchored test on that misses; the punctuation has to come off first.
+  it('denies it inside command substitution', () => {
+    assert.ok(denied(bash('echo "$(security dump-keychain)"')))
+    assert.ok(denied(bash('security dump-keychain)"')), 'the isolated cause')
+    assert.ok(denied(bash('TOKEN=$(security find-generic-password -s x -w)')))
+  })
+
+  it('unwraps one level of sh -c, as the trailer guard does for --exec', () => {
+    assert.ok(denied(bash('bash -c "security dump-keychain"')))
+    assert.ok(denied(bash("sh -c 'security find-generic-password -s x -w'")))
+    assert.ok(denied(bash('zsh -c "cd /tmp && security dump-keychain"')))
+  })
+
   it('leaves security subcommands that answer for one item alone', () => {
     assert.equal(denied(bash('security find-certificate -c example.com')), false)
   })
@@ -80,9 +104,47 @@ describe('reading credential files', () => {
     assert.equal(denied(bash('find ~/.ssh -type f')), false)
   })
 
+  // AGENTS.md says "~/.netrc, ~/.ssh/, and browser or app credential databases". These are the
+  // app stores on this machine. `hosts.yml` is a GitHub token store, which is what everyone was
+  // hunting on the day this guard was written.
+  it('denies the app credential stores, not just the two obvious paths', () => {
+    assert.ok(denied(bash('cat ~/.config/gh/hosts.yml')))
+    assert.ok(denied(bash('cat ~/.aws/credentials')))
+    assert.ok(denied(bash('cat ~/.npmrc')))
+    assert.ok(denied(run({ tool_name: 'Read', tool_input: { file_path: `${HOME}/.config/gh/hosts.yml` } })))
+  })
+
+  // Scoped to the credential file, not the directory. A guard that denies reading ordinary
+  // settings beside a secret teaches people to work around it.
+  it('leaves the ordinary settings beside them alone', () => {
+    assert.equal(denied(bash('cat ~/.aws/config')), false)
+    assert.equal(denied(bash('cat ~/.config/gh/config.yml')), false)
+  })
+
+  it('denies the quieter read verbs too', () => {
+    assert.ok(denied(bash('cut -d" " -f2 ~/.netrc')))
+    assert.ok(denied(bash(`open ${HOME}/.ssh/id_rsa`)))
+    assert.ok(denied(bash('tr -d "\\n" < ~/.npmrc')))
+  })
+
   it('leaves ordinary files alone', () => {
     assert.equal(denied(bash('cat ~/.buzz/AGENTS.md')), false)
     assert.equal(denied(run({ tool_name: 'Read', tool_input: { file_path: `${HOME}/notes.md` } })), false)
+  })
+})
+
+describe('what it does not catch, asserted so nobody reads it as total', () => {
+  // No verb-and-path list catches laundering through an unremarkable path. Recorded here
+  // rather than left for someone to discover and report as a defect.
+  it('does not catch a copy to a neutral path and a read of that', () => {
+    assert.equal(denied(bash(`cp ${HOME}/.ssh/id_rsa /tmp/k && cat /tmp/k`)), false)
+  })
+
+  // Inherited from statementsOf, which opens `$(…)` regardless of quoting. The sibling guard
+  // has the same property. A heredoc body is stripped, so the usual incident-report shape is
+  // unaffected — this costs one phrasing.
+  it('over-denies a single-quoted substitution bash would not run', () => {
+    assert.ok(denied(bash("buzz messages send --content 'we ran $(security dump-keychain)'")))
   })
 })
 

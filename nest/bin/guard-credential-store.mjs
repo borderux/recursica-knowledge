@@ -39,6 +39,22 @@
  * guard was needed. The sibling guard has already been caught by exactly that, twice, and this
  * one is written knowing it.
  *
+ * WHAT IT DOES NOT CATCH, STATED SO NOBODY READS IT AS TOTAL:
+ *
+ *   `cp ~/.ssh/id_rsa /tmp/k && cat /tmp/k` — laundering through an unremarkable path. No
+ *   verb-and-path list catches this and pretending otherwise is worse than saying so.
+ *
+ *   Two levels of `sh -c`. One is unwrapped, the way the trailer guard unwraps `--exec`.
+ *
+ *   A credential store not in `SECRET_PATHS`. That list is the app stores that exist on this
+ *   machine, not a general theory of where secrets live.
+ *
+ * And one thing it over-denies: `$(…)` is opened up regardless of quoting, so a *single-quoted*
+ * `'$(security dump-keychain)'` in a message body is denied even though bash would not run it.
+ * That is inherited from `statementsOf`, the sibling guard has the same property, and the cost
+ * is one report phrasing out of many — a heredoc body is stripped, so the usual way of writing
+ * an incident report is unaffected.
+ *
  * Fails OPEN on anything it cannot parse.
  */
 
@@ -46,7 +62,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { leadingWords, statementsOf, stripHeredocs, verbOf } from "./lib/shell-command.mjs";
+import { leadingWords, statementsOf, stripHeredocs } from "./lib/shell-command.mjs";
 
 const HOME = os.homedir();
 
@@ -57,10 +73,14 @@ const ENUMERATING = /^(dump-keychain|find-(generic|internet)-password|list-keych
 const CONTENT = new Set([
   "cat", "bat", "grep", "egrep", "fgrep", "rg", "ag", "ack", "head", "tail", "less", "more",
   "sed", "awk", "perl", "node", "npm", "python", "python3", "ruby", "strings", "xxd", "od",
+  "cut", "tr", "dd", "open",
 ]);
 
 /** Naming a path or a command in published text is not running or reading it. */
 const PUBLISHERS = new Set(["buzz", "gh", "curl", "wget", "echo", "printf"]);
+
+/** Shells that take a command as a string argument. Unwrapped one level, like the trailer guard. */
+const SHELLS = new Set(["sh", "bash", "zsh", "dash", "ksh"]);
 
 const HELPER_LINE = "printf 'protocol=https\\nhost=github.com\\n' | git credential-osxkeychain get";
 
@@ -92,14 +112,32 @@ const SECRET_FILE_REASON =
   `For GitHub, ask the credential helper for the one credential:\n\n    ${HELPER_LINE}\n\n` +
   `Listing these paths is still allowed — it is reading them that discloses.`;
 
+const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/**
+ * Credential-bearing paths. `AGENTS.md` names `~/.netrc`, `~/.ssh/` and "browser or app
+ * credential databases"; these are the app stores that exist on this machine.
+ *
+ * `(?:/|\b)` on a directory so the directory itself matches as well as a file in it —
+ * `grep -r . ~/.ssh/` names nothing after the slash and reads every key in there.
+ *
+ * Scoped to the file that holds the credential rather than the whole directory: `~/.aws/config`
+ * and `~/.config/gh/config.yml` are ordinary settings, and a guard that denies reading those
+ * teaches people to work around it.
+ */
+const SECRET_PATHS = [
+  [/(^|[\s="'])[^\s"']*\.netrc\b/, "~/.netrc"],
+  [new RegExp(`${esc(HOME)}/\\.ssh(?:/|\\b)`), "~/.ssh/"],
+  [new RegExp(`${esc(HOME)}/\\.config/gh/hosts\\.ya?ml\\b`), "~/.config/gh/hosts.yml"],
+  [new RegExp(`${esc(HOME)}/\\.aws/credentials\\b`), "~/.aws/credentials"],
+  [new RegExp(`${esc(HOME)}/\\.npmrc\\b`), "~/.npmrc"],
+];
+
 /** Secret-bearing paths, matched however the path was written. */
 function secretPathIn(text) {
   const expanded = text.replace(/(^|[\s="'])~(?=\/)/g, `$1${HOME}`);
-  if (/(^|[\s="'])[^\s"']*\.netrc\b/.test(expanded)) return "~/.netrc";
-  // `(?:/|\b)` so the directory itself matches as well as a file in it — `grep -r . ~/.ssh/`
-  // names nothing after the slash and reads every key in there.
-  const ssh = expanded.match(new RegExp(`${HOME.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/\\.ssh(?:/|\\b)`));
-  return ssh ? "~/.ssh/" : null;
+  for (const [re, label] of SECRET_PATHS) if (re.test(expanded)) return label;
+  return null;
 }
 
 let input;
@@ -127,24 +165,51 @@ if (tool !== "Bash") {
 const rawCommand = typeof ti.command === "string" ? ti.command : "";
 const command = stripHeredocs(rawCommand);
 
-for (const statement of statementsOf(command)) {
-  for (const segment of statement.split("|").map((s) => s.trim()).filter(Boolean)) {
-    const verb = verbOf(segment);
+/** Shell punctuation a word can pick up from being spliced out of a substitution or a quote. */
+const bare = (w) => (w ?? "").replace(/^[)"'(]+|[)"';,]+$/g, "");
 
-    // A segment that publishes text may name any of this. It is a report, not a run.
-    if (PUBLISHERS.has(verb)) continue;
+const queue = statementsOf(command).flatMap((s) => s.split("|").map((x) => x.trim())).filter(Boolean);
 
-    if (verb === "security") {
-      const [, sub] = leadingWords(segment);
-      if (ENUMERATING.test(path.basename(sub ?? ""))) deny(ENUMERATE_REASON);
-      continue;
-    }
+// One level of unwrapping, the way the trailer guard unwraps `git rebase --exec`. Two levels
+// is not the boundary anybody has needed; if it starts appearing, the boundary moves.
+for (const segment of [...queue]) {
+  const words = leadingWords(segment);
+  if (!SHELLS.has(path.basename(bare(words[0])))) continue;
+  const i = words.findIndex((w) => w === "-c" || w === "-lc");
+  if (i === -1) continue;
+  const inner = words.slice(i + 1).join(" ").replace(/^["']|["']$/g, "");
+  queue.push(...statementsOf(inner).flatMap((s) => s.split("|").map((x) => x.trim())).filter(Boolean));
+}
 
-    // `git credential-osxkeychain get` and `git credential fill` are the sanctioned interface.
-    if (verb === "git") continue;
+for (const segment of queue) {
+  const words = leadingWords(segment);
+  const verb = path.basename(bare(words[0]));
 
-    if (CONTENT.has(verb) && secretPathIn(segment)) deny(SECRET_FILE_REASON);
+  // A segment that publishes text may name any of this. It is a report, not a run.
+  if (PUBLISHERS.has(verb)) continue;
+
+  if (verb === "security") {
+    /**
+     * Any word, not word 2. `security(1)` is `security [-hilqv] [-p prompt] [command]`, so a
+     * global flag moves the subcommand along — `security -v dump-keychain` walked straight
+     * through a positional read, and `-v` is a flag somebody types for their own reasons
+     * rather than to evade anything.
+     *
+     * Reading every word also closes the substitution form. `statementsOf` opens `$(…)` up,
+     * so `echo "$(security dump-keychain)"` yields a segment whose last word is
+     * `dump-keychain)"` — an anchored test on that misses. `bare()` takes the punctuation off.
+     *
+     * A false positive needs somebody to pass `dump-keychain` to `security` as an argument
+     * rather than as the subcommand, which is not a thing.
+     */
+    if (words.slice(1).some((w) => ENUMERATING.test(path.basename(bare(w))))) deny(ENUMERATE_REASON);
+    continue;
   }
+
+  // `git credential-osxkeychain get` and `git credential fill` are the sanctioned interface.
+  if (verb === "git") continue;
+
+  if (CONTENT.has(verb) && secretPathIn(segment)) deny(SECRET_FILE_REASON);
 }
 
 process.exit(0);
