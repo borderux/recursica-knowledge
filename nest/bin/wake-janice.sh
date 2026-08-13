@@ -208,9 +208,11 @@ if w.get("subagents_unmatchable"):
               " step, that is where to look." % len(w["subagents_unmatchable"])]
 
 if w.get("skipped_bytes"):
-    lines += ["", "Note: %d bytes between the last review and this turn were skipped so"
-              " this stays scoped to the current turn. Mention it if a finding here looks"
-              " like it started earlier." % w["skipped_bytes"]]
+    lines += ["", "Note: %d bytes (%d-%d) between the last review and this turn were skipped"
+              " so this stays scoped to the current turn. **Do not read them now** — they are"
+              " entered in the ledger as a separate issued window, so they reach you as"
+              " backlog on their own terms. Mention it if a finding here looks like it"
+              " started earlier." % (w["skipped_bytes"], w["skipped_from"], w["skipped_to"])]
 
 lines += [
     "",
@@ -234,22 +236,38 @@ fi
 # for retry, so that row will be closed by the retry's review — but a row written only on
 # success would miss nothing and a row written before it costs nothing, and this is the
 # file that has to be trustworthy when the review never comes back.
+#
+# A skipped stretch gets its OWN issued row, ahead of the current one. Reporting the byte
+# count in the wake message was announcing an orphan rather than queueing it: 204,937 bytes
+# of a Stu session went unreviewed because both agents hit a session limit, the next wake
+# said so in one sentence, and nothing anywhere held the range afterwards. That is the exact
+# hole this ledger exists to close, arriving through the one path that bypassed it. The
+# skipped row's `from` is the old watermark, so it can never collide with the current
+# window's key — and the watermark commits past both, so a range is issued once.
 printf '%s' "$WINDOW" | AGENT="$AGENT_NAME" SESSION_ID="$SESSION_ID" TRANSCRIPT="$TRANSCRIPT" \
   LEDGER="$LEDGER" NOW="$(date -u +%Y-%m-%dT%H:%M:%SZ)" python3 -c '
 import json, os, sys
 
 w = json.load(sys.stdin)
-row = {
+base = {
     "ts": os.environ["NOW"],
     "state": "issued",
     "agent": os.environ["AGENT"],
     "session": os.environ["SESSION_ID"],
     "transcript": os.environ["TRANSCRIPT"],
-    "from": w["from_offset"],
-    "to": w["to_offset"],
 }
+rows = []
+if w.get("skipped_bytes"):
+    # `origin` marks it as never handed over in a wake message, so a reviewer reading the
+    # ledger knows why there is a row it was never told about.
+    rows.append({**base, "from": w["skipped_from"], "to": w["skipped_to"],
+                 "origin": "skipped-before-turn"})
+rows.append({**base, "from": w["from_offset"], "to": w["to_offset"]})
+# One open() for both rows: a failure here aborts the send, and a half-written pair would
+# put an unreviewable orphan in the file that the abort is meant to prevent.
 with open(os.environ["LEDGER"], "a") as fh:
-    fh.write(json.dumps(row) + "\n")
+    for row in rows:
+        fh.write(json.dumps(row) + "\n")
 ' 2>>"$LOG" || {
   # Do not send. A wake that goes out with no ledger row is the original hole again for
   # that one window — nothing would ever know it existed. An un-issued window costs one
