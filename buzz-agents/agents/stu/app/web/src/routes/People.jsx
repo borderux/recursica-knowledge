@@ -32,7 +32,7 @@
 // stays after approval with the undo inside it — approval is the moment the reader most needs to
 // see what happened, so removing the view at that moment is what makes a merge unauditable.
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link as RouterLink } from 'react-router'
 import {
   Button, Dropdown, Group, Link, Modal, Stack, Text, TextField,
@@ -204,16 +204,17 @@ export function People({ identity, revision, onChanged }) {
         </Section>
       )}
 
-      {proposal && (
-        <MergeForm
-          proposal={proposal}
-          roster={byId}
-          people={people}
-          identity={identity}
-          onClose={() => setProposal(null)}
-          onDone={() => { setProposal(null); setSelected(new Set()); onChanged() }}
-        />
-      )}
+      {/* Mounted always, opened by the presence of a proposal — **not** `{proposal && <MergeForm/>}`.
+          Mounting it on the click made Mantine's `opened` a literal `true` for the component's whole
+          life, and the focus return is gated on that value *changing*. See `MergeForm` itself. */}
+      <MergeForm
+        proposal={proposal}
+        roster={byId}
+        people={people}
+        identity={identity}
+        onClose={() => setProposal(null)}
+        onDone={() => { setProposal(null); setSelected(new Set()); onChanged() }}
+      />
     </Page>
   )
 }
@@ -458,15 +459,43 @@ function Composition({ row, identity, onChanged, onApprove }) {
  * numbers are what tell them apart.
  */
 function MergeForm({ proposal, roster, people, identity, onClose, onDone }) {
-  const [displayName, setDisplayName] = useState(proposal.displayName)
-  const [role, setRole] = useState(proposal.role)
-  const [email, setEmail] = useState(proposal.email)
+  const [displayName, setDisplayName] = useState('')
+  const [role, setRole] = useState('')
+  const [email, setEmail] = useState('')
   const [note, setNote] = useState('')
   const [busy, setBusy] = useState(false)
   const [problem, setProblem] = useState(null)
 
-  const records = proposal.participantIds.map((id) => roster.get(id)).filter(Boolean)
-  const person = people.find((p) => p.person_id === proposal.personId)
+  // **This component stays mounted whether or not there is a proposal**, so that `opened` below is a
+  // binding that transitions rather than a literal `true`. Mantine returns focus to the trigger
+  // through `useFocusReturn({ opened, … })`, which is wrapped in `useDidUpdate` — it skips the first
+  // run and fires only when `opened` changes. Mounting the modal on the click made that effect body
+  // unreachable, so the trigger was never captured and closing dropped focus.
+  //
+  // Two consequences, both handled here rather than by the caller:
+  //
+  //   `active` — the modal animates shut *after* `proposal` goes null, so the last one is held to
+  //   render against. Without it the content blanks out mid-transition, and every derivation below
+  //   would have to be null-guarded twice over.
+  const last = useRef(null)
+  if (proposal) last.current = proposal
+  const active = proposal ?? last.current
+
+  //   The fields no longer initialise from props at mount, because mount happens once now. They are
+  //   seeded when a proposal arrives instead — which also reseeds them correctly when a second
+  //   record is opened without the page reloading.
+  useEffect(() => {
+    if (!proposal) return
+    setDisplayName(proposal.displayName)
+    setRole(proposal.role)
+    setEmail(proposal.email)
+    setNote('')
+    setProblem(null)
+    setBusy(false)
+  }, [proposal])
+
+  const records = (active?.participantIds ?? []).map((id) => roster.get(id)).filter(Boolean)
+  const person = people.find((p) => p.person_id === active?.personId)
   const totalLines = records.reduce((n, r) => n + r.line_count, 0)
   const totalInterviews = new Set(records.flatMap((r) => r.appearances.map((a) => a.conversation_id))).size
   const roleIsMissing = records.some((r) => !r.source_types.length)
@@ -485,8 +514,8 @@ function MergeForm({ proposal, roster, people, identity, onClose, onDone }) {
     try {
       await api.mergeParticipants({
         pubkey: identity.pubkey,
-        participant_ids: proposal.participantIds,
-        person_id: proposal.personId,
+        participant_ids: active.participantIds,
+        person_id: active.personId,
         display_name: displayName,
         participant_type: role || null,
         email: email || null,
@@ -505,7 +534,7 @@ function MergeForm({ proposal, roster, people, identity, onClose, onDone }) {
     // is a button announced as nothing. Named after this form's own title, because the form is
     // three different acts depending on what was selected.
     <Modal
-      opened
+      opened={Boolean(proposal)}
       onClose={onClose}
       title={title}
       closeButtonProps={{ 'aria-label': `Close without saving — ${title}` }}
@@ -538,6 +567,11 @@ function MergeForm({ proposal, roster, people, identity, onClose, onDone }) {
             drops `description` silently, help text and `aria-describedby` with it. See the note in
             `shell/IdentityGate.jsx`. The `Dropdown` below keeps `description`, which works. */}
         <TextField
+          // Opening focus goes to the first field. Without `data-autofocus` Mantine's focus trap
+          // takes the first tabbable node, and the adapter renders the header before the body — so
+          // it landed on the close button, which `recursica-skill-modal:78` allows only when
+          // nothing else is focusable.
+          data-autofocus
           formLayout="side-by-side"
           label="Name"
           assistiveText="What this person is actually called. Replaces the transcription service's label wherever it is read."

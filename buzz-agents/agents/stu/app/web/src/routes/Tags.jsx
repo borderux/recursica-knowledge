@@ -26,6 +26,10 @@ import { Absent, DataTable } from '../shell/DataTable.jsx'
 
 const TYPES = ['insight', 'focus', 'tool', 'participant', 'action', 'emotion']
 
+// The submit button lives in the footer, which has to be a direct child of `Modal` and is therefore
+// outside the `<form>`. This is what still connects them — see the footer's own note.
+const FORM_ID = 'stu-add-tag'
+
 export function Tags({ identity, revision, onChanged }) {
   const [rows, setRows] = useState(null)
   const [error, setError] = useState(null)
@@ -94,23 +98,43 @@ export function Tags({ identity, revision, onChanged }) {
         emptyMessage="The tag library is empty. Run the dictionary sync before tagging anything."
       />
 
-      {adding && (
-        <AddTag
-          identity={identity}
-          onClose={() => setAdding(false)}
-          onDone={() => { setAdding(false); onChanged() }}
-        />
-      )}
+      {/* Mounted always, opened by a prop — **not** `{adding && <AddTag/>}`. Mantine returns focus
+          to the trigger through `useFocusReturn({ opened, … })`, which is wrapped in `useDidUpdate`:
+          it skips the first run and only fires when `opened` *changes*. Mounting the modal on the
+          click meant `opened` was a literal `true` for the component's whole life, so the effect
+          body never ran, the trigger was never captured, and closing dropped focus. The binding is
+          the fix; see `AddTag` for how the form still starts empty. */}
+      <AddTag
+        opened={adding}
+        identity={identity}
+        onClose={() => setAdding(false)}
+        onDone={() => { setAdding(false); onChanged() }}
+      />
     </Page>
   )
 }
 
-function AddTag({ identity, onClose, onDone }) {
+/**
+ * The form itself is the modal's only content, so the `<form>` and the footer are **siblings**
+ * rather than the footer sitting inside the form — see the note on `Modal.Footer` below.
+ *
+ * @param opened Bound, never a literal. The component stays mounted so that this can transition,
+ *               which is the only thing that makes Mantine return focus to the trigger.
+ */
+function AddTag({ opened, identity, onClose, onDone }) {
   const [tag, setTag] = useState('')
   const [type, setType] = useState(null)
   const [description, setDescription] = useState('')
   const [busy, setBusy] = useState(false)
   const [problem, setProblem] = useState(null)
+
+  // Staying mounted is what costs this: the form used to arrive empty because the whole component
+  // was thrown away on close. Cleared on the way in instead, so opening `Add a tag` is still a
+  // blank form and does not resume someone's abandoned half-entry from ten minutes ago.
+  useEffect(() => {
+    if (!opened) return
+    setTag(''); setType(null); setDescription(''); setProblem(null); setBusy(false)
+  }, [opened])
 
   async function submit(event) {
     event.preventDefault()
@@ -125,12 +149,12 @@ function AddTag({ identity, onClose, onDone }) {
     // Neither Mantine nor the adapter labels the close control, so without `closeButtonProps` it
     // is a button announced as nothing.
     <Modal
-      opened
+      opened={opened}
       onClose={onClose}
       title="Add a tag"
       closeButtonProps={{ 'aria-label': 'Close without adding a tag' }}
     >
-      <form onSubmit={submit}>
+      <form id={FORM_ID} onSubmit={submit}>
         <Stack gap="md">
           {/* One field per row, labels beside them — recursica-skill-forms, "Layout" and
               "Labels". Tag id and Type were on one row: two logical values, so not the
@@ -138,7 +162,12 @@ function AddTag({ identity, onClose, onDone }) {
           {/* `assistiveText` and not `description` — the adapter's TextField drops `description`
               silently, help text and `aria-describedby` with it. See the long note in
               `shell/IdentityGate.jsx`. The `TextArea` below keeps `description`, which works. */}
+          {/* `data-autofocus` puts the opening focus on the first field. Without it Mantine's focus
+              trap takes the first tabbable node in the DOM, and the adapter renders the header
+              before the body — so focus landed on the close button, which
+              `recursica-skill-modal:78` allows only when nothing else is focusable. */}
           <TextField
+            data-autofocus
             formLayout="side-by-side"
             label="Tag id"
             assistiveText="lower_snake_case — written verbatim into every tagged line"
@@ -171,19 +200,30 @@ function AddTag({ identity, onClose, onDone }) {
           />
           {problem && <Text variant="body-small">{problem}</Text>}
         </Stack>
-
-        <Modal.Footer>
-          <Button variant="outline" onClick={onClose} disabled={busy}>Cancel</Button>
-          <Button
-            type="submit"
-            variant="solid"
-            loading={busy}
-            disabled={!tag.trim() || !type || !description.trim()}
-          >
-            Add to library
-          </Button>
-        </Modal.Footer>
       </form>
+
+      {/* **A direct child of `Modal`, and it has to be.** The adapter pulls the footer out of the
+          scrolling body with `React.Children.forEach` over `Modal`'s own children, so it only ever
+          sees direct ones. This sat inside the `<form>` above, where nothing found it — it stayed
+          in the scroll area and took that container's padding on top of its own, doubling an inset
+          that `recursica-skill-modal` lists under "Not your decision".
+
+          Which is why the submit button reaches its form by `form={FORM_ID}` instead. Moving the
+          footer out here moved it out of the form too, and a `type="submit"` button outside its
+          form does nothing at all — Mantine portals the modal, so wrapping the whole `Modal` in the
+          form is not available either. The id attribute is the one shape that keeps both. */}
+      <Modal.Footer>
+        <Button variant="outline" onClick={onClose} disabled={busy}>Cancel</Button>
+        <Button
+          type="submit"
+          form={FORM_ID}
+          variant="solid"
+          loading={busy}
+          disabled={!tag.trim() || !type || !description.trim()}
+        >
+          Add to library
+        </Button>
+      </Modal.Footer>
     </Modal>
   )
 }

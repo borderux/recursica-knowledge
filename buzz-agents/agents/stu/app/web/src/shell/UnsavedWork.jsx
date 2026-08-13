@@ -54,6 +54,7 @@ export function UnsavedWork({ children }) {
   }
 
   function discard() {
+    if (!pending) return
     const { go } = pending
     setPending(null)
     // The panels unmount on the way out and their cleanups clear the registry, but the switch
@@ -66,15 +67,27 @@ export function UnsavedWork({ children }) {
     <UnsavedContext.Provider value={registry}>
       {children(guard)}
 
-      {pending && (
-        <Modal
-          opened
-          onClose={() => setPending(null)}
-          title="You have not saved what you typed"
-          closeButtonProps={{ 'aria-label': 'Close and stay on this tab' }}
-        >
+      {/* **Mounted always, opened by a binding.** It used to be `{pending && <Modal opened …>}`, so
+          `opened` was a literal `true` for as long as the modal existed. Mantine returns focus to
+          the trigger through `useFocusReturn({ opened, … })`, which is wrapped in `useDidUpdate`:
+          the first run is skipped and the body only runs when a dependency changes. With `opened`
+          never changing, the element that had focus was never captured — so there was nothing to
+          return to, on any close path. Mounting the modal on the click was the single cause. */}
+      <Modal
+        opened={Boolean(pending)}
+        onClose={() => setPending(null)}
+        title="You have not saved what you typed"
+        closeButtonProps={{ 'aria-label': 'Close and stay on this tab' }}
+      >
+          {/* Opening focus goes here rather than to a button. `recursica-skill-modal:78` wants the
+              first meaningful element — "the first field, or the modal container itself" — and this
+              modal has no field, only the two actions. Without `data-autofocus` Mantine's trap takes
+              the first tabbable node, which is the close button the same rule rules out. Putting it
+              on either action instead would arm Enter: on `Discard` that throws the typing away on a
+              keypress, and on `Stay` it silently prefers one answer to a question the reader is
+              being asked. So it lands on the sentence that asks it. */}
           <Stack gap="sm">
-            <Text variant="body">
+            <Text variant="body" component="div" tabIndex={-1} data-autofocus>
               Moving to the other tab closes this one, and text you have typed and not saved goes
               with it. Nothing here has been written to the dataset yet.
             </Text>
@@ -101,8 +114,7 @@ export function UnsavedWork({ children }) {
             <Button variant="outline" onClick={() => setPending(null)}>Stay here</Button>
             <Button variant="solid" onClick={discard}>Discard it and switch</Button>
           </Modal.Footer>
-        </Modal>
-      )}
+      </Modal>
     </UnsavedContext.Provider>
   )
 }
