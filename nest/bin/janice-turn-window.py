@@ -23,7 +23,10 @@ Two mechanisms, and the later of the two wins:
 
 Taking max() of the two bounds a review to the current turn and guarantees nothing is
 read twice. When that skips material (Janice was down for a turn), it is reported in
-`skipped_bytes` rather than dropped silently.
+`skipped_bytes` rather than dropped silently — and `skipped_from`/`skipped_to` name the
+range, so the caller can enter it in its own ledger as backlog. Reporting the size alone
+was not enough: the skip was announced once in a wake message and then existed nowhere,
+which is the same orphan the ledger was built to catch.
 
 Exit 0 with JSON on stdout. Exit 3 when there is nothing new to review.
 """
@@ -273,6 +276,11 @@ def main():
                             else "turn-start",
         "previous_review_ts": prev_ts,
         "skipped_bytes": skipped,
+        # The range, not just its size. `None` when nothing was skipped, so a caller can
+        # test these directly rather than re-deriving the bounds and getting `0` — a
+        # legitimate offset — for "no skip".
+        "skipped_from": prev_offset if skipped else None,
+        "skipped_to": last_turn_offset if skipped else None,
         "subagent_transcripts": subagents,
         # The invariant a reviewer can check: one Agent call in the window should have
         # one transcript on disk. A shortfall names the transcripts that are missing

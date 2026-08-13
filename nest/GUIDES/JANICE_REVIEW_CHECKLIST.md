@@ -80,7 +80,10 @@ difference between a focused review and re-litigating a day of history.
 
 The window is computed by `bin/janice-turn-window.py` from a per-session watermark plus the
 last turn boundary, whichever is later. If the wake says bytes were skipped, you may
-mention that a finding looks like it began earlier, but still do not go read that stretch.
+mention that a finding looks like it began earlier, but still do not go read that stretch
+**on this wake** — the hook has entered it as its own `issued` row, so it reaches you as
+backlog with its own `from` and `to`. Reading it now would attribute two windows' findings
+to one review and leave the row looking unclosed.
 
 ### Subagent transcripts
 
@@ -347,6 +350,16 @@ PY
 Match on `(session, from)`. Start each wake by reading the ledger: any `issued` row with no
 matching `reviewed` row is backlog — review it from its recorded `transcript`, `from`, and
 `to` before the window you were just handed, then close both.
+
+**A row carrying `"origin": "skipped-before-turn"` is a range no wake message ever handed
+you.** When the watermark falls behind a turn boundary — both agents cut off by a session
+limit is how it happened — the hook bounds the review to the current turn and used to report
+the skipped size in one sentence and nothing else. 204,937 bytes of a Stu session went
+unreviewed that way, announced once and held nowhere. The range now gets its own `issued`
+row, so it queues instead. Two things follow: review it like any other backlog row, and
+expect some of them to be genuinely empty — a skipped stretch is not filtered for tool calls
+the way a live window is, so it can contain nothing reviewable. Close it with a `reviewed`
+line and `posted: false` rather than treating an empty range as a broken row.
 
 **A clean turn still gets a `reviewed` line.** Silence is the right output for a clean review
 (section 6), but silence in the ledger means "never happened" — skip the line on a quiet day
