@@ -41,7 +41,12 @@ export function TagDetail({ revision }) {
       key: 'speaker',
       header: 'Speaker',
       sortValue: (r) => r.participant_name,
-      render: (r) => r.participant_name ?? 'Unattributed',
+      // `<Absent />`, not the word `Unattributed`. The name arrives through a LEFT JOIN, so a null
+      // here is a genuine absence, and `recursica-skill-tables` names per-column wording as the
+      // failure mode by itself — one string for absence everywhere, which is why `Absent` takes no
+      // arguments. `Unattributed` stays where it is not a table cell: in the transcript and the
+      // quote panel it is a speaker's standing label, not a missing value.
+      render: (r) => r.participant_name ?? <Absent />,
     },
     {
       key: 'text',

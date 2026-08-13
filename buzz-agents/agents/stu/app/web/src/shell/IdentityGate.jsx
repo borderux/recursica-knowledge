@@ -176,8 +176,13 @@ export function IdentityGate({ config, onBound }) {
                   `ariaAttributes = { …, 'aria-describedby': ctx?.describedBy }` and spreads it
                   *after* `...rest` (`@mantine/core` `Input.mjs`). With no `Input.Wrapper` above it
                   `ctx` is null, so the clone's value is overwritten with `undefined` on every
-                  render. The only call-site lever is `withAria={false}`, which switches off that
-                  whole block and takes `aria-invalid` with it — a worse trade, so it is not taken.
+                  render.
+
+                  The only call-site lever is `withAria={false}`, and it is a worse trade than it
+                  first looks. That block is `{ required, disabled, 'aria-invalid', 'aria-describedby',
+                  id: ctx?.inputId || id }` — so switching it off drops the input's **id**, which is
+                  what the label points at. It would trade a missing description for a broken label.
+                  Not taken.
 
                   Two upstream items, then, not one: forward `description` from `TextField`, and
                   give the input its describedby (`Input.Wrapper`, or `withAria={false}` plus the

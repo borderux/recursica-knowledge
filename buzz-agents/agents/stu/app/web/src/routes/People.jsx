@@ -362,6 +362,15 @@ export function warningsFor(row) {
  * checkbox used to reveal `Correct this name` at one selection and `Combine` at two, which made the
  * checkbox mean two unrelated things.
  *
+ * **A text button, not a link.** This one is the identifying value in every other table too, and
+ * there it is a `Link` — but there it *navigates*, to a route, through a real `href`. Here it opens
+ * a modal and writes a name: an action on this object, with nowhere to go. It was a
+ * `Link component="button"`, which is the exact shape `recursica-skill-buttons-links` refuses —
+ * "the component follows the intent, not the appearance", a link must render a real `href`, and
+ * "if you don't want it to look like a button, use a text button — that is what the text variant
+ * exists for". The two cases looking alike is the trap, and the anchor-on-the-identifying-value
+ * fix everywhere else is what made this one easy to read as already correct.
+ *
  * An exception rides here as an icon beside the name rather than in a column of its own, which is
  * both what the tables rule asks and where `recursica-skill-icon-semantics` requires a
  * non-interactive icon to sit — it never sits alone in a cell.
@@ -371,8 +380,8 @@ function Identity({ row, onEdit }) {
     <Stack gap={2}>
       <Group gap={4} align="center" wrap="nowrap">
         {row.name
-          ? <Link component="button" type="button" onClick={onEdit}>{row.name}</Link>
-          : <Link component="button" type="button" onClick={onEdit}><code>{row.id}</code></Link>}
+          ? <Button variant="text" onClick={onEdit}>{row.name}</Button>
+          : <Button variant="text" onClick={onEdit}><code>{row.id}</code></Button>}
         {row.warnings.length > 0 && (
           // An icon, not a badge. `recursica-skill-badges-chips` makes the badge the earned
           // exception and the icon the default, because a badge is heavy enough that a scattering

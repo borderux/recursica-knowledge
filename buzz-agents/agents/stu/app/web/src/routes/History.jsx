@@ -64,9 +64,18 @@ export function History({ revision }) {
     },
     {
       key: 'was',
-      header: 'Line',
+      // Renamed from `Line`, which is what the id column beside it is called — two columns under
+      // one heading in one table. No rule requires distinct headers and the reviewer withdrew it as
+      // a finding; it is changed because it is confusing, which is reason enough. `Source text` is
+      // what this value is called everywhere else in the app.
+      header: 'Source text',
       sortValue: (r) => r.original_text_at_edit ?? '',
-      render: (r) => r.original_text_at_edit,
+      // `?? <Absent />`, like both siblings above. The column is nullable — the schema declares it
+      // with no NOT NULL — and the `sortValue` one line up already guarded it, which is the tell
+      // that the render was the half that got missed. Without it a null is an empty cell, and
+      // `recursica-skill-tables` makes that an accessibility failure rather than a cosmetic one: an
+      // empty cell is announced as nothing at all.
+      render: (r) => r.original_text_at_edit ?? <Absent />,
     },
     {
       key: 'edited_at',

@@ -79,10 +79,21 @@ export function Interviews({ revision }) {
       header: 'Status',
       width: COLUMN_WIDTH.status,
       // Sort on the word displayed, not on `r.status` — otherwise a row reading "Tagged" sorts
-      // among the rows reading "Ingested" and the column disagrees with itself.
+      // among the rows reading "Ingested" and the column disagrees with itself. A row with no
+      // status sorts as a null, which `DataTable` already puts last in both directions.
       sortValue: (r) => statusLabel(r),
       // One badge per row — recursica-skill-badges-chips forbids stacking several on one object.
-      render: (r) => <Badge variant={statusVariant(r)}>{statusLabel(r)}</Badge>,
+      //
+      // **`<Absent />` replaces the badge rather than filling it.** A row whose status is null used
+      // to read `Unknown`, which is per-column wording for an absence and the exact failure
+      // `recursica-skill-tables` names — the rule is one string everywhere, which is why `Absent`
+      // takes no arguments. It cannot go *inside* a badge: the treatment is italic neutral-500 text
+      // and a badge has its own variant colours, so a badge reading `NA` would be an absence
+      // dressed as a value. So the cell holds one or the other.
+      render: (r) => {
+        const label = statusLabel(r)
+        return label ? <Badge variant={statusVariant(r)}>{label}</Badge> : <Absent />
+      },
     },
     {
       key: 'ingested_at',
@@ -132,10 +143,12 @@ export function Interviews({ revision }) {
 // version of Scribe tested for a `status = 'complete'` that no writer ever set, and the lesson
 // was to keep derived claims out of the column. It is derived per read from `fullyTagged`, and it
 // outranks the plain ingest status because by the time it holds, the ingest status is old news.
+// Null when there is no status, rather than the word `Unknown` — see the column's own note. The
+// caller renders the absence; this only says whether there is one.
 function statusLabel(r) {
   if (countMismatch(r)) return 'Line count mismatch'
   if (fullyTagged(r)) return 'Tagged'
-  return r.status ?? 'Unknown'
+  return r.status ?? null
 }
 
 function statusVariant(r) {

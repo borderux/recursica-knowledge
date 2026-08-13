@@ -51,8 +51,8 @@ export function QuoteContext({ citation, siblings = [], onAnchor, onClose }) {
   const [data, setData] = useState(null)
   const [error, setError] = useState(null)
   const heading = useRef(null)
-  // What was focused when the panel opened, so closing can put focus back. Captured here rather
-  // than left to Mantine — see `restoreFocus` below.
+  // What was focused when the panel opened, so closing can put focus back. Captured on the
+  // closed→open transition only — see the effect below — and given back by `restoreFocus`.
   const opener = useRef(null)
 
   const cid = citation?.conversation_id
@@ -72,19 +72,36 @@ export function QuoteContext({ citation, siblings = [], onAnchor, onClose }) {
     return () => { live = false }
   }, [cid, seq])
 
+  /**
+   * Stash what the panel is taking focus *from*, for `restoreFocus` to give it back to.
+   *
+   * **Keyed on whether the panel is open, not on which line it is anchored to, and that distinction
+   * is the whole bug.** It used to live in the effect below, which re-runs on every `citation`
+   * change — including `onAnchor`, where the reader moves the window to a sibling citation from
+   * inside the panel. React commits DOM mutations before a passive effect runs, so by then the
+   * in-panel button they clicked is already detached and `document.activeElement` is `document.body`.
+   * The capture was overwritten with `body`, and closing put focus there instead of on the trigger
+   * out on the page. One re-anchor was enough to lose it.
+   *
+   * The `document.contains` guard in `restoreFocus` does not catch that: `body` is in the document,
+   * so it passes. It is not the failing step and it is not what changed.
+   */
+  const isOpen = Boolean(citation)
+  useEffect(() => {
+    if (!isOpen) return
+    opener.current = document.activeElement
+  }, [isOpen])
+
   // Opening must be perceivable, which follows from focus moving into the panel — the slide-in is
-  // not allowed to be the only signal.
+  // not allowed to be the only signal. Re-anchoring moves it again, which is why this one *is*
+  // keyed on the citation: the panel's content changed under the reader.
   //
   // Deferred behind the open transition rather than called in the same commit. The panel is
   // `keepMounted`, so at the moment `citation` arrives the content is still display:none and
   // `focus()` on a hidden element silently does nothing — measured in the running app: focus
   // stayed on BODY. The delay clears Mantine's transition.
-  //
-  // The element that was focused when the panel opened is stashed on the way in, because the panel
-  // is what takes focus away from it — see `restoreFocus`.
   useEffect(() => {
     if (!citation) return
-    opener.current = document.activeElement
     const t = setTimeout(() => heading.current?.focus(), 250)
     return () => clearTimeout(t)
   }, [citation])

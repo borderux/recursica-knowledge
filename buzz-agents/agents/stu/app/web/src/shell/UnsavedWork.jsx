@@ -81,10 +81,25 @@ export function UnsavedWork({ children }) {
           </Stack>
 
           <Modal.Footer>
-            {/* Staying is the safe path and the one most people want, so it is the solid button.
-                Discarding is the destructive one and it says what it destroys. */}
-            <Button variant="outline" onClick={discard}>Discard it and switch</Button>
-            <Button variant="solid" onClick={() => setPending(null)}>Stay here</Button>
+            {/* **`Stay here` is cancel, so it is the secondary button** — `buttons-links:205`,
+                "Cancel in a confirmation modal is the secondary button", which has no exception.
+                Which of the two is "cancel" is not a matter of tone: it is whatever `onClose` does,
+                and staying is what `onClose` does above, what Escape does, and what the close
+                control labelled "Close and stay on this tab" does. Three routes to it already.
+
+                This shipped the other way round, with staying solid, on the reasoning that it is
+                the safer path and the one most people want. That is a defensible position and it is
+                not a house rule, and the rule does not bend for it. `Tags.jsx` and `People.jsx` both
+                order their modals correctly, so this was one wrong instance beside two right ones —
+                which is exactly how a reader learns nothing from either.
+
+                The discard button carries the weight instead, and its label says what it destroys
+                rather than agreeing to something. Nothing here has been written, so this is not the
+                irreversible destruction that `buttons-links:131` reserves confirmation for — the
+                prompt exists because `navigation:150` requires it on a tab click, not because the
+                act is grave. */}
+            <Button variant="outline" onClick={() => setPending(null)}>Stay here</Button>
+            <Button variant="solid" onClick={discard}>Discard it and switch</Button>
           </Modal.Footer>
         </Modal>
       )}
