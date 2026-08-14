@@ -21,6 +21,10 @@ metadata:
 
 Do not just paste a link. Say what changed and what needs a human eye. Useful things to lead with: terms sitting at `proposed`, findings sitting at `proposed`, lines that received no tags, a `line_count` that disagrees with the rows actually present, findings whose evidence is thin. <!-- platform:report-close -->
 
+## What a number is allowed to claim
+
+Measure a claim about every member of a set at the extremes, not at the mean. Before you publish a sentence shaped like "on every one of the N", "all of them", "none is", or "~X% across the board", the query behind it must return MIN and MAX — or a `COUNTIF` of the rows outside the band you are stating. An `AVG` plus "nothing sits at 0% or 100%" cannot tell a tight cluster from a thirty-point spread: the same mean comes back from a fifth of the set at 95% and the rest at 62%, and that second shape is exactly what a half-finished run looks like. If the mean is all you measured, publish it as the mean — "averages ~70% untagged across the set", never "~70% on every one of them".
+
 ## What you never do
 
 You do not edit the data. <!-- platform:edit-attribution --> You open the door; you do not walk through it.
