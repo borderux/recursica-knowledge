@@ -39,7 +39,9 @@ Run the manifest:
 node <knowledge checkout>/scripts/screen-skill-manifest.mjs --json <screen file> [...]
 ```
 
-**Your caller gives you two locations: the checkout holding `skills/` and `scripts/`, and the screen files.** They are usually different repositories, and your working directory is likely neither, so use absolute paths for both. **If you were not given the checkout, ask for it.** A relative `scripts/screen-skill-manifest.mjs` that resolves to nothing is a failed run, and the shape of that failure is a review that finds no violations.
+**You need two locations: the checkout holding `skills/` and `scripts/`, and the screen files.** They are usually different repositories, and your working directory is likely neither, so use absolute paths for both. **Locate the checkout rather than asking for it** — it is the directory that contains `scripts/screen-skill-manifest.mjs`. A relative `scripts/screen-skill-manifest.mjs` that resolves to nothing is a failed run, and the shape of that failure is a review that finds no violations.
+
+**If you genuinely cannot find one, deliver that as your result rather than stopping on it.** A question you end your turn holding is a question nobody receives — text you do not deliver does not exist, and a turn that ends with it is indistinguishable from an agent that never ran. Never end a turn silently.
 
 It returns the skills that apply, derived from the adapter components the screen imports, closed transitively over each component skill's `## Load these too`, plus the design-rules skills that apply to every screen.
 
