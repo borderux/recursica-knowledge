@@ -418,8 +418,9 @@ Run `--dry-run` first and read it. Drop the flag to apply.
 
 | It also does | Which lives nowhere else |
 |---|---|
-| Registers `bq-<slug>`, `bq-<slug>-ro`, `drive-<slug>` | `claude mcp add-json`, user scope, on **this** Mac |
+| Registers `bq-<slug>`, `bq-<slug>-ro`, `bq-<slug>-explore`, `drive-<slug>` | `claude mcp add-json`, user scope, on **this** Mac |
 | Renders `scribe/lexicon/tagger/analyst/persona-<slug>.md` | into `~/.buzz/.claude/agents/` |
+| Writes a per-client fence and launcher for Claire and for Stu | into `~/.buzz/proxy/` — see Step 5b |
 
 Bootstrap ships the *templates* for both and never renders them, so a machine that skips
 this step has Claire, no tools and no subagents. Nothing later catches it: Step 6 drives
@@ -448,6 +449,39 @@ done — without the flag you get a warning about grants that were dealt with we
 terminal to ask it at, so it decides for you and says so in the summary — which is a line
 of output to explain rather than a decision anybody made.
 
+## Step 5b — One Claire and one Stu **per client channel**
+
+Step 5 wrote two launchers. Point a **new** agent identity at each, in Buzz Desktop:
+
+| Field | Value |
+|---|---|
+| Runtime | `claude` |
+| Agent command | `~/.buzz/proxy/agent-claire-<slug>.sh` — and `agent-stu-<slug>.sh` for Stu |
+
+**Set both fields in one save.** Runtime alone, saved first, is the unfenced state: the agent
+starts, reads the user-scope registry, and holds every client on this machine.
+
+**Do not reuse a Claire or Stu that already sits in another client's channel.** This is the
+mistake to expect, it looks entirely reasonable, and it fails silently. The fence is
+`CLAUDE_CONFIG_DIR`, which is fixed when the agent's process starts and cannot vary per
+channel — so one identity holds one client whichever channel it happens to be answering in.
+Two client channels means two identities.
+
+**IAM does not save you here, and the evidence that it does is misleading.** Each client's
+service account really is locked to its own dataset and folder: every cross-client attempt
+with the wrong key is refused, on BigQuery and on Drive. But an identity holding two clients'
+servers holds two *correct* keys, and both crossings are authorised. IAM answers "may this
+credential read this data" and never "should this session be touching this client". The
+second question is answered only by which servers the session loaded. So a clean isolation
+report in Step 6 is necessary and not sufficient — it is about keys, not about sessions.
+
+**Do not fall back on the prompt.** Claire's and Stu's prompts both say they serve one client,
+and a small local model asked to read another client's table did it on the first attempt and
+named the other client's tool in its answer. Prompt discipline is not a control.
+
+If Buzz Desktop has no agent-command field on this build, stop and report it rather than
+saving runtime on its own — that combination is the unfenced state, not a partial install.
+
 ## Step 6 — Prove the fence, before any client data moves
 
 **Not optional, and not a formality.** It tests Google's IAM layer rather than our config,
@@ -468,12 +502,28 @@ machine can use it, because the check runs the toolbox binary itself rather than
 registered servers. So confirm the wiring separately, and do it before you report success:
 
 ```bash
-claude mcp list | grep -E "bq-<slug>|drive-<slug>"     # expect three
+claude mcp list | grep -E "bq-<slug>|drive-<slug>"     # expect four
 ls ~/.buzz/.claude/agents/*-<slug>.md                   # expect four
+ls ~/.buzz/proxy/agent-{claire,stu}-<slug>.sh           # expect two
 ```
 
-Three servers and four files. Anything short of that means Step 5 did not finish — re-run
-it rather than restarting Buzz, which is the wrong fix for this and wastes their time.
+Four servers, four subagent files, two launchers. Anything short of that means Step 5 did
+not finish — re-run it rather than restarting Buzz, which is the wrong fix for this and
+wastes their time.
+
+**`claude mcp list` is a wiring check, not a fence check.** It reads the registry files
+directly and reports everything registered on the machine, so it prints the same list
+through a correct fence as through no fence at all. What a fenced agent can actually see is
+answered only by a session started with its own launcher:
+
+```bash
+CLAUDE_CONFIG_DIR=~/.buzz/proxy/claude-config-stu-<slug> \
+  claude -p "List every MCP server prefix you can see." --permission-mode bypassPermissions
+```
+
+One prefix for Stu, three for Claire, and no other client named. **Ask the server, not the
+agent, whether a write is refused** — a model politely declining a `DELETE` reads exactly
+like an enforced fence and is not one.
 
 ## Step 7 — Report
 
