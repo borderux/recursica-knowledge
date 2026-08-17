@@ -276,6 +276,12 @@
       "resolve": true
     },
     {
+      "from": "mcp/templates/bq-channel-explore.yaml.tmpl",
+      "to": "mcp/templates/bq-channel-explore.yaml.tmpl",
+      "mode": "0644",
+      "resolve": true
+    },
+    {
       "from": "mcp/templates/agents/scribe.md.tmpl",
       "to": "mcp/templates/agents/scribe.md.tmpl",
       "mode": "0644",

@@ -64,6 +64,12 @@ TOOLBOX_BIN="${TOOLBOX_BIN:-$BUZZ_HOME/bin/toolbox}"
 # install passed "✓ claude CLI" at bootstrap and then died here naming a path the
 # operator had never heard of.
 CLAUDE_BIN="${CLAUDE_BIN:-$(command -v claude 2>/dev/null || echo "$HOME/.local/bin/claude")}"
+# The ACP adapter Buzz launches for a runtime: claude agent. The per-client launchers this
+# script writes exec it, having first pinned CLAUDE_CONFIG_DIR to one client. Buzz ships it
+# inside its own application support directory rather than on PATH, so it is resolved by
+# location with a PATH fallback for a non-standard install.
+ACP_DEFAULT="$HOME/Library/Application Support/Buzz/node-tools/bin/claude-agent-acp"
+ACP_BIN="${ACP_BIN:-$([[ -x "$ACP_DEFAULT" ]] && echo "$ACP_DEFAULT" || command -v claude-agent-acp 2>/dev/null || echo "$ACP_DEFAULT")}"
 # Every BigQuery statement this script runs goes through this helper, because neither
 # gcloud nor bq is installed on a Buzz host. Named once so a missing copy is caught in
 # preflight instead of six times at the call sites.
@@ -143,9 +149,36 @@ BQ_SERVER="bq-${SLUG}"
 # Analyst reads and never writes. A second server over the same dataset with
 # writeMode: blocked is what makes that a fact rather than a prompt instruction.
 BQ_SERVER_RO="bq-${SLUG}-ro"
+# Stu the agent reports on the data so a person can check it, and never changes it. Neither
+# of the other two servers says that: bq-<slug> allows arbitrary writes and bq-<slug>-ro
+# still carries write_finding, which is Analyst's one write path. A third server with no
+# write tool at all is what makes "Stu does not edit the data" a fact instead of a sentence.
+#
+# The explorer app bin/stu launches is a separate path and is meant to write — a person
+# edits and approves in it, recorded against their pubkey in edit_log. It takes the service
+# account key directly (--key) and never goes through MCP, so this server does not constrain
+# it and the dataEditor grant below is required, not excess.
+BQ_SERVER_EXPLORE="bq-${SLUG}-explore"
 DRIVE_SERVER="drive-${SLUG}"
 BQ_YAML="$BUZZ_HOME/mcp/${BQ_SERVER}.yaml"
 BQ_YAML_RO="$BUZZ_HOME/mcp/${BQ_SERVER_RO}.yaml"
+BQ_YAML_EXPLORE="$BUZZ_HOME/mcp/${BQ_SERVER_EXPLORE}.yaml"
+
+# Per-client fence directories and launchers. One channel is one client, so one agent
+# identity is one client: an agent's MCP registry is chosen by CLAUDE_CONFIG_DIR, which is
+# fixed when its process starts and cannot vary per channel. An identity sitting in two
+# client channels can therefore hold only one fence — or, if it holds the user-scope
+# registry, all of them at once.
+#
+# That last case is the one to understand before changing any of this. IAM does not cover
+# it. Each client's service account is correctly locked to its own dataset and folder, so
+# every cross-client attempt with the wrong key is refused — but a session holding every
+# client's servers holds every client's *correct* key, and each crossing is authorised.
+# IAM answers "may this credential read this data", never "should this session be touching
+# this client". Only the loaded server set answers the second question.
+FENCE_DIR="$BUZZ_HOME/proxy"
+FENCE_CLAIRE="$FENCE_DIR/claude-config-claire-${SLUG}"
+FENCE_STU="$FENCE_DIR/claude-config-stu-${SLUG}"
 
 # ─────────────────────────────────────────────────────────── preflight
 
@@ -197,7 +230,7 @@ case "$SA_EMAIL" in
     ;;
 esac
 ok "dataset: $PROJECT.$DATASET"
-ok "servers: $BQ_SERVER, $DRIVE_SERVER"
+ok "servers: $BQ_SERVER, $BQ_SERVER_RO, $BQ_SERVER_EXPLORE, $DRIVE_SERVER"
 
 if [[ "$DRY_RUN" == "yes" ]]; then
   warn "--dry-run: stopping before any change"
@@ -457,6 +490,11 @@ sed -e "s/@SLUG@/$SLUG/g" -e "s/@DATASET@/$DATASET/g" \
     "$TEMPLATES/bq-channel-ro.yaml.tmpl" > "$BQ_YAML_RO"
 ok "wrote $BQ_YAML_RO"
 
+sed -e "s/@SLUG@/$SLUG/g" -e "s/@DATASET@/$DATASET/g" \
+    -e "s/@PROJECT@/$PROJECT/g" -e "s/@CHANNEL_UUID@/$CHANNEL_UUID/g" \
+    "$TEMPLATES/bq-channel-explore.yaml.tmpl" > "$BQ_YAML_EXPLORE"
+ok "wrote $BQ_YAML_EXPLORE"
+
 # persona-$SLUG.md's prompt calls for a `write_persona_set` tool and a population lookup, neither
 # of which bq-channel-ro.yaml.tmpl carries yet — that's separate, DB-owned follow-up work (new
 # persona tables, the write tool, and per-client population mapping). Rendering it here is safe
@@ -472,9 +510,10 @@ done
 
 step "Registering MCP servers (user scope)"
 
-"$CLAUDE_BIN" mcp remove --scope user "$BQ_SERVER"    >/dev/null 2>&1 || true
-"$CLAUDE_BIN" mcp remove --scope user "$BQ_SERVER_RO" >/dev/null 2>&1 || true
-"$CLAUDE_BIN" mcp remove --scope user "$DRIVE_SERVER" >/dev/null 2>&1 || true
+"$CLAUDE_BIN" mcp remove --scope user "$BQ_SERVER"         >/dev/null 2>&1 || true
+"$CLAUDE_BIN" mcp remove --scope user "$BQ_SERVER_RO"      >/dev/null 2>&1 || true
+"$CLAUDE_BIN" mcp remove --scope user "$BQ_SERVER_EXPLORE" >/dev/null 2>&1 || true
+"$CLAUDE_BIN" mcp remove --scope user "$DRIVE_SERVER"      >/dev/null 2>&1 || true
 
 "$CLAUDE_BIN" mcp add-json --scope user "$BQ_SERVER" "$(cat <<JSON
 {
@@ -498,6 +537,17 @@ JSON
 )" >/dev/null
 ok "registered $BQ_SERVER_RO (read-only, for Analyst)"
 
+"$CLAUDE_BIN" mcp add-json --scope user "$BQ_SERVER_EXPLORE" "$(cat <<JSON
+{
+  "type": "stdio",
+  "command": "$TOOLBOX_BIN",
+  "args": ["--config", "$BQ_YAML_EXPLORE", "--stdio", "--disable-reload"],
+  "env": { "GOOGLE_APPLICATION_CREDENTIALS": "$SA_KEY" }
+}
+JSON
+)" >/dev/null
+ok "registered $BQ_SERVER_EXPLORE (no write path, for Stu)"
+
 "$CLAUDE_BIN" mcp add-json --scope user "$DRIVE_SERVER" "$(cat <<JSON
 {
   "type": "stdio",
@@ -512,6 +562,83 @@ ok "registered $BQ_SERVER_RO (read-only, for Analyst)"
 JSON
 )" >/dev/null
 ok "registered $DRIVE_SERVER"
+
+# ─────────────────────────────────────────────── per-client fence
+
+step "Writing per-client fences"
+
+# The registration above is user scope: it puts this client's servers in the registry every
+# Claude-runtime session on this Mac reads. That is right for the operator's own session,
+# which works across clients on purpose. It is wrong for an agent, which works for one.
+#
+# So each agent gets its own registry here, holding one client, and a launcher that points
+# at it. Buzz Desktop has no field for an MCP server list, and its per-agent env_vars field
+# loses to values Buzz sets afterwards — the agent's *command* is the one hook that holds,
+# because the script it names runs last and is simply the final writer of its environment.
+mkdir -p "$FENCE_CLAIRE" "$FENCE_STU"
+
+emit_fence() {   # $1 = fence dir, $2.. = server names to copy from the user registry
+  local dir="$1"; shift
+  "$NODE_BIN" -e '
+    const fs = require("fs"), os = require("os"), path = require("path");
+    const [dir, ...want] = process.argv.slice(1);
+    const reg = JSON.parse(fs.readFileSync(path.join(os.homedir(), ".claude.json"), "utf8"));
+    const all = reg.mcpServers || {};
+    const missing = want.filter(n => !all[n]);
+    if (missing.length) { console.error("missing from registry: " + missing.join(", ")); process.exit(1); }
+    const mcpServers = Object.fromEntries(want.map(n => [n, all[n]]));
+    fs.writeFileSync(path.join(dir, ".claude.json"),
+      JSON.stringify({ mcpServers, hasCompletedOnboarding: true }, null, 2) + "\n");
+    // The claude.ai Google Drive connector rides on the account login rather than on this
+    // registry, and it reaches all of Drive. Isolating the registry does not remove it.
+    fs.writeFileSync(path.join(dir, "settings.json"),
+      JSON.stringify({ disableClaudeAiConnectors: true }, null, 2) + "\n");
+  ' "$dir" "$@"
+}
+
+emit_fence "$FENCE_CLAIRE" "$BQ_SERVER" "$BQ_SERVER_RO" "$DRIVE_SERVER"
+ok "wrote $FENCE_CLAIRE (3 servers)"
+emit_fence "$FENCE_STU" "$BQ_SERVER_EXPLORE"
+ok "wrote $FENCE_STU (1 server, no write path)"
+
+emit_launcher() {   # $1 = agent name, $2 = fence dir
+  local who="$1" dir="$2" out="$FENCE_DIR/agent-${1}-${SLUG}.sh"
+  cat > "$out" <<LAUNCHER
+#!/bin/sh
+# ${who} for the "${SLUG}" channel ONLY.
+#
+# In Buzz Desktop, set this agent's runtime to "claude" and its agent command to this
+# path — both in the SAME save. Runtime alone, saved first, is the unfenced state: the
+# agent starts, reads the user-scope registry, and holds every client on this machine.
+#
+# CLAUDE_CONFIG_DIR is fixed when this process starts and cannot vary per channel, so the
+# identity using this launcher must belong to the "${SLUG}" client channel and no other
+# client channel. Two client channels means two identities, not one with two fences.
+
+set -eu
+
+export CLAUDE_CONFIG_DIR="${dir}"
+
+# Optional, and absent on most machines: an operator running the agents against a local or
+# self-hosted model keeps the ANTHROPIC_* variables here. Sourced rather than written in so
+# that changing models does not mean regenerating every launcher, and so a machine using
+# the hosted models needs no such file.
+#
+# Written as an if rather than \`[ -f x ] && . x\`, which under \`set -e\` is a list whose
+# status is 1 when the file is absent — that exits before exec, so every machine WITHOUT
+# the optional file would fail to start the agent at all.
+if [ -f "$FENCE_DIR/model-env.sh" ]; then
+  . "$FENCE_DIR/model-env.sh"
+fi
+
+exec "$ACP_BIN" "\$@"
+LAUNCHER
+  chmod 755 "$out"
+  ok "wrote $out"
+}
+
+emit_launcher claire "$FENCE_CLAIRE"
+emit_launcher stu    "$FENCE_STU"
 
 # ─────────────────────────────────────────────────────────── done
 
@@ -573,10 +700,33 @@ cat <<EOF
 
   Drive: share ONLY this client's folder with $SA_EMAIL as Contributor.
 
+  3. POINT ONE Claire AND ONE Stu AT THIS CHANNEL, each their own agent identity.
+     In Buzz Desktop, on each agent, set BOTH fields in the SAME save:
+
+       runtime        claude
+       agent command  $FENCE_DIR/agent-claire-$SLUG.sh
+                      $FENCE_DIR/agent-stu-$SLUG.sh
+
+     Runtime alone, saved without the command, is the unfenced state — the agent
+     starts and holds every client registered on this machine.
+
+     REUSING an existing Claire or Stu that already sits in another client's
+     channel does not work, and it fails silently. The fence is CLAUDE_CONFIG_DIR,
+     fixed when the process starts, so one identity holds one client whichever
+     channel it is answering in. A new client channel needs a new identity.
+
+     IAM does not cover this. Each client's service account is locked to its own
+     dataset and folder, so a cross-client attempt with the wrong key is refused —
+     but an identity holding two clients' servers holds two correct keys, and both
+     are authorised. IAM answers "may this credential read this data", never
+     "should this session be touching this client".
+
   Channel $SLUG is now:
     dataset  $PROJECT.$DATASET
     folder   $DRIVE_FOLDER
-    servers  $BQ_SERVER, $BQ_SERVER_RO, $DRIVE_SERVER
+    servers  $BQ_SERVER, $BQ_SERVER_RO, $BQ_SERVER_EXPLORE, $DRIVE_SERVER
     agents   scribe-$SLUG, lexicon-$SLUG, tagger-$SLUG, analyst-$SLUG, persona-$SLUG
+    fences   $FENCE_CLAIRE
+             $FENCE_STU
 
 EOF
