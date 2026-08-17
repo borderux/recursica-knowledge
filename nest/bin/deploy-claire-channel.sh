@@ -149,10 +149,15 @@ BQ_SERVER="bq-${SLUG}"
 # Analyst reads and never writes. A second server over the same dataset with
 # writeMode: blocked is what makes that a fact rather than a prompt instruction.
 BQ_SERVER_RO="bq-${SLUG}-ro"
-# Stu reports on the data so a person can check it, and never changes it. Neither of the
-# other two servers says that: bq-<slug> allows arbitrary writes and bq-<slug>-ro still
-# carries write_finding, which is Analyst's one write path. A third server with no write
-# tool at all is what makes "Stu does not edit the data" a fact instead of a sentence.
+# Stu the agent reports on the data so a person can check it, and never changes it. Neither
+# of the other two servers says that: bq-<slug> allows arbitrary writes and bq-<slug>-ro
+# still carries write_finding, which is Analyst's one write path. A third server with no
+# write tool at all is what makes "Stu does not edit the data" a fact instead of a sentence.
+#
+# The explorer app bin/stu launches is a separate path and is meant to write — a person
+# edits and approves in it, recorded against their pubkey in edit_log. It takes the service
+# account key directly (--key) and never goes through MCP, so this server does not constrain
+# it and the dataEditor grant below is required, not excess.
 BQ_SERVER_EXPLORE="bq-${SLUG}-explore"
 DRIVE_SERVER="drive-${SLUG}"
 BQ_YAML="$BUZZ_HOME/mcp/${BQ_SERVER}.yaml"
