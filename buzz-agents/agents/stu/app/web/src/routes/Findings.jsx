@@ -666,7 +666,7 @@ function Evidence({ evidence, onOpenContext }) {
   return (
     <ul className="stu-quotes">
       {evidence.map((e, i) => (
-        <EvidenceItem key={`${e.line_id}-${i}`} index={i} evidence={e} siblings={evidence} onOpenContext={onOpenContext} />
+        <EvidenceItem key={`${e.line_id}-${i}`} evidence={e} siblings={evidence} onOpenContext={onOpenContext} />
       ))}
     </ul>
   )
@@ -674,43 +674,22 @@ function Evidence({ evidence, onOpenContext }) {
 
 /**
  * One cited line. The quote leads, emphasized — it is what the finding rests on. What the line
- * says now is real but secondary: worth checking, not worth reading by default, so it stays behind
- * its own disclosure rather than printed unconditionally beside the quote.
- *
- * `index` goes into the panel id rather than just `line_id`, because the same line can be cited
- * twice on one finding — `Evidence`'s own `key` above uses the index for that exact reason, and an
- * id has to be unique for the same reason a key does.
+ * says now is real but secondary, so it stays in the same de-emphasized caption treatment it has
+ * always had — but it prints unconditionally rather than behind its own toggle. Evidence is
+ * already one fold inside the Analyst reasoning/Evidence accordion; a second, per-quote disclosure
+ * nested inside that made it two accordions deep for no reading gain, since this line is short and
+ * costs nothing to show plainly.
  */
-function EvidenceItem({ evidence: e, index, siblings, onOpenContext }) {
-  const [showContext, setShowContext] = useState(false)
-  const contextId = `stu-context-${e.line_id}-${index}`
-
+function EvidenceItem({ evidence: e, siblings, onOpenContext }) {
   return (
     <li>
       <Stack gap={4}>
         <Text variant="body">“{e.quote}”</Text>
         {hasDrifted(e) && <Badge variant="warning">quote is no longer in this line</Badge>}
 
-        {/* Same `Button` treatment as "Read it in context" below — a real button either way, its
-            expanded state announced and associated with the panel it reveals, matching
-            `recursica-skill-tables`' own row-disclosure convention in `DataTable.jsx`. This toggles
-            what the line says *now*, not the lines around it — "surrounding context" is "Read it in
-            context" below, a different reveal with different content, so the label says what this
-            one actually shows instead of reusing that name. */}
-        <Button
-          variant="text"
-          size="small"
-          aria-expanded={showContext}
-          aria-controls={contextId}
-          onClick={() => setShowContext((v) => !v)}
-        >
-          {showContext ? 'Hide what the line says now' : 'Show what the line says now'}
-        </Button>
-
-        {/* Rendered always, hidden by attribute rather than by absence — `aria-controls` above
-            names this id whether or not the panel is open, and a reference to an id that is not in
-            the document is worse than one that points at something hidden. */}
-        <div id={contextId} hidden={!showContext} className="stu-muted">
+        {/* Same measure as `.stu-text`'s long-form reading rule — the raw line can run to a full
+            transcript sentence, and an unbounded caption was the "super long, hard to read" line. */}
+        <div className="stu-muted stu-context-line">
           <Text variant="caption">Line now: {e.line_text ?? 'this line no longer exists'}</Text>
         </div>
 

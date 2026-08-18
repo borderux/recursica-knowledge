@@ -387,6 +387,13 @@ tr[role='link'] {
   max-width: 72ch;
 }
 
+/* What a cited line says now, printed unconditionally beside its quote. Its own measure, tighter
+   than the 72ch the `<li>` already caps at — this is a plain sentence, not the quote it sits
+   under, and reads the same as `.stu-text`'s long-form rule for exactly that reason. */
+.stu-context-line {
+  max-width: 60ch;
+}
+
 /* Themes, as a horizontal row of static chips — unrelated to `.stu-taglist` above, which lays out
    a vertical list of a different tag rendering elsewhere. */
 .stu-chip-row {
