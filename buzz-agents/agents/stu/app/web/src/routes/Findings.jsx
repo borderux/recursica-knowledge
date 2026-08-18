@@ -60,6 +60,9 @@ export function isHypothesis(finding) {
 /** The two tabs, which are also the two routes under `/findings`. */
 const TABS = ['inbox', 'confirmed']
 
+/** `recursica-skill-badges-chips`'s ceiling for a chip group: 7 ± 2, and `tag_ids` is unbounded. */
+const MAX_VISIBLE_THEMES = 9
+
 export function Findings({ identity, revision, onChanged }) {
   const { tab = 'inbox' } = useParams()
   const navigate = useNavigate()
@@ -540,7 +543,7 @@ function Record({ finding, identity, onChanged, onOpenContext }) {
 
           <AccordionItem
             value="evidence"
-            title={`Evidence — ${evidence.length} supporting quote${evidence.length === 1 ? '' : 's'}`}
+            title={evidenceTitle(evidence)}
           >
             <div className="stu-panel-indent">
               <Evidence evidence={evidence} onOpenContext={onOpenContext} />
@@ -550,17 +553,27 @@ function Record({ finding, identity, onChanged, onOpenContext }) {
 
         {themes.length > 0 && (
           <Stack gap={4}>
-            <Text variant="caption">Themes</Text>
+            <Text variant="caption" id={`themes-caption-${finding.finding_id}`}>Themes</Text>
             {/* Tags are chips, not badges, per `recursica-skill-badges-chips` — cardinality alone
                 settles it once there is more than one value. But these are read-only, produced by
-                the analysis rather than picked by the reviewer, so the accessible name lives on
-                the group and each chip is `aria-hidden` — a reviewer cannot toggle a theme, and a
-                row of checkbox-shaped controls that do nothing when activated is a worse
-                announcement than the one sentence the group already gives in full. */}
-            <div role="group" aria-label={`Themes: ${themes.join(', ')}`} className="stu-chip-row">
-              {themes.map((t) => (
-                <Chip key={t} checked tabIndex={-1} aria-hidden="true">{t}</Chip>
+                the analysis rather than picked by the reviewer, not something to toggle — so
+                `checked` stays off. The adapter's own static-chip path takes it from there: with no
+                `checked`, `defaultChecked`, `onRemove`, or `onClick`, it applies `tabIndex={-1}` and
+                `aria-hidden` to the chip's input itself, which is the one the house wants read-only.
+                The group points `aria-labelledby` at the visible "Themes" caption rather than
+                spelling every value into an `aria-label` — Mantine's chip text lives in a `<label>`
+                that stays in the accessibility tree regardless of the input's own `aria-hidden`, so
+                an `aria-label` enumerating the values would have announced them a second time. */}
+            <div role="group" aria-labelledby={`themes-caption-${finding.finding_id}`} className="stu-chip-row">
+              {themes.slice(0, MAX_VISIBLE_THEMES).map((t) => (
+                <Chip key={t}>{t}</Chip>
               ))}
+              {/* `recursica-skill-badges-chips`: a chip group holds 7 ± 2 items. `tag_ids` carries
+                  no such ceiling, so past it this reads as a count rather than growing the row
+                  further. */}
+              {themes.length > MAX_VISIBLE_THEMES && (
+                <Text variant="caption">+{themes.length - MAX_VISIBLE_THEMES} more</Text>
+              )}
             </div>
           </Stack>
         )}
@@ -616,6 +629,20 @@ function hasDrifted(e) {
 }
 
 /**
+ * The evidence accordion's own label, so the drift check reads even while the panel is collapsed
+ * — it is the one warning on this card that must not go two clicks deep. Silent when nothing has
+ * drifted, so the common case still reads as the plain count it always was.
+ */
+function evidenceTitle(evidence) {
+  const base = `Evidence — ${evidence.length} supporting quote${evidence.length === 1 ? '' : 's'}`
+  const drifted = evidence.filter(hasDrifted).length
+  if (drifted === 0) return base
+  return drifted === 1
+    ? `${base}, 1 no longer matches its line`
+    : `${base}, ${drifted} no longer match their lines`
+}
+
+/**
  * The evidence list, once its accordion item is open. The count and the reveal control are the
  * accordion header itself now — see the `title` on the "evidence" `AccordionItem` in `Record` —
  * so this renders only what opening it was for.
@@ -633,7 +660,7 @@ function Evidence({ evidence, onOpenContext }) {
   return (
     <ul className="stu-quotes">
       {evidence.map((e, i) => (
-        <EvidenceItem key={`${e.line_id}-${i}`} evidence={e} siblings={evidence} onOpenContext={onOpenContext} />
+        <EvidenceItem key={`${e.line_id}-${i}`} index={i} evidence={e} siblings={evidence} onOpenContext={onOpenContext} />
       ))}
     </ul>
   )
@@ -643,10 +670,14 @@ function Evidence({ evidence, onOpenContext }) {
  * One cited line. The quote leads, emphasized — it is what the finding rests on. What the line
  * says now is real but secondary: worth checking, not worth reading by default, so it stays behind
  * its own disclosure rather than printed unconditionally beside the quote.
+ *
+ * `index` goes into the panel id rather than just `line_id`, because the same line can be cited
+ * twice on one finding — `Evidence`'s own `key` above uses the index for that exact reason, and an
+ * id has to be unique for the same reason a key does.
  */
-function EvidenceItem({ evidence: e, siblings, onOpenContext }) {
+function EvidenceItem({ evidence: e, index, siblings, onOpenContext }) {
   const [showContext, setShowContext] = useState(false)
-  const contextId = `stu-context-${e.line_id}`
+  const contextId = `stu-context-${e.line_id}-${index}`
 
   return (
     <li>
@@ -656,7 +687,10 @@ function EvidenceItem({ evidence: e, siblings, onOpenContext }) {
 
         {/* Same `Button` treatment as "Read it in context" below — a real button either way, its
             expanded state announced and associated with the panel it reveals, matching
-            `recursica-skill-tables`' own row-disclosure convention in `DataTable.jsx`. */}
+            `recursica-skill-tables`' own row-disclosure convention in `DataTable.jsx`. This toggles
+            what the line says *now*, not the lines around it — "surrounding context" is "Read it in
+            context" below, a different reveal with different content, so the label says what this
+            one actually shows instead of reusing that name. */}
         <Button
           variant="text"
           size="small"
@@ -664,14 +698,15 @@ function EvidenceItem({ evidence: e, siblings, onOpenContext }) {
           aria-controls={contextId}
           onClick={() => setShowContext((v) => !v)}
         >
-          {showContext ? 'Hide surrounding context' : 'Show surrounding context'}
+          {showContext ? 'Hide what the line says now' : 'Show what the line says now'}
         </Button>
 
-        {showContext && (
-          <div id={contextId} className="stu-muted">
-            <Text variant="caption">Line now: {e.line_text ?? 'this line no longer exists'}</Text>
-          </div>
-        )}
+        {/* Rendered always, hidden by attribute rather than by absence — `aria-controls` above
+            names this id whether or not the panel is open, and a reference to an id that is not in
+            the document is worse than one that points at something hidden. */}
+        <div id={contextId} hidden={!showContext} className="stu-muted">
+          <Text variant="caption">Line now: {e.line_text ?? 'this line no longer exists'}</Text>
+        </div>
 
         <Group gap="sm" wrap="wrap">
           {/* A button, because it opens a panel beside this page rather than going
