@@ -215,6 +215,7 @@ function Inbox({ rows, identity, onChanged, onOpenContext }) {
               identity={identity}
               onChanged={onChanged}
               onOpenContext={onOpenContext}
+              openEvidenceByDefault
             />
           ))}
         </Stack>
@@ -489,12 +490,17 @@ function withCitations(text) {
  *
  * The zones below are ranked, top to bottom: the title is the one dominant element; status, type
  * and confidence are secondary metadata beside it; the statement is the primary takeaway; the
- * analyst's reasoning, the evidence, and the provenance trail are all real but secondary, so each
- * is its own collapsed-by-default `Accordion` item rather than competing with the statement for
- * the same attention. `multiple` because they are independent questions a reviewer may want open
- * together — opening the evidence has no reason to shut the reasoning underneath it.
+ * analyst's reasoning and the provenance trail are real but secondary, so each stays its own
+ * collapsed-by-default `Accordion` item rather than competing with the statement for the same
+ * attention. `multiple` because they are independent questions a reviewer may want open together —
+ * opening the evidence has no reason to shut the reasoning underneath it.
+ *
+ * Evidence is the one exception: `openEvidenceByDefault` starts it open on the Inbox, where a
+ * quote is what an Approve/Reject decision rests on and `recursica-skill-accordion` puts anything
+ * on that critical path on the page itself, not a click away. Confirmed carries no such decision,
+ * so it stays collapsed there like every other panel.
  */
-function Record({ finding, identity, onChanged, onOpenContext }) {
+function Record({ finding, identity, onChanged, onOpenContext, openEvidenceByDefault = false }) {
   const question = isQuestion(finding)
   const hypothesis = isHypothesis(finding)
   const evidence = finding.evidence ?? []
@@ -529,7 +535,7 @@ function Record({ finding, identity, onChanged, onOpenContext }) {
         {/* Reasoning and evidence share one `Accordion` — they're peers a reviewer weighs
             together. Provenance sits in a separate one below the themes, matching the ranked
             reading order rather than a shared container it has no reason to join. */}
-        <Accordion multiple>
+        <Accordion multiple defaultValue={openEvidenceByDefault ? ['evidence'] : undefined}>
           {finding.detail && (
             <AccordionItem value="reasoning" title="Analyst reasoning">
               {/* `accordion-content`'s own padding is theme-owned and not ours to override — see
