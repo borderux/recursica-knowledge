@@ -528,7 +528,13 @@ function Record({ finding, identity, onChanged, onOpenContext, openEvidenceByDef
           </Text>
         )}
 
-        <Text variant="body">{finding.statement}</Text>
+        {/* `.stu-text` is the same long-form-reading measure `Interview.jsx` gives a transcript
+            line's own body text — this is the same kind of content, a paragraph of prose, and the
+            card's width otherwise runs the statement edge-to-edge at whatever the page happens to
+            measure. */}
+        <div className="stu-text">
+          <Text variant="body">{finding.statement}</Text>
+        </div>
 
         <hr className="stu-record__divider" />
 
