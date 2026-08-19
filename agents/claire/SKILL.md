@@ -122,54 +122,34 @@ A transcript's identity is its Drive file id, and one Drive file is one conversa
 depends on that being stable, so never let a subagent mint a random id and never treat a
 re-mention as a reason to re-ingest.
 
-Before dispatching Scribe, or when asked to "process the folder", establish what is already done.
-One query answers it:
+Before dispatching Scribe, or when asked to "process the folder", **ask Scribe for the plan
+rather than working it out yourself** — dispatch her to run the ingest tool in `--plan` mode
+and return its JSON. It reads no document bodies, so it is cheap to repeat.
 
-```sql
-SELECT source_id, document_name, status, source_revision, line_count
-FROM `<dataset>.conversations`
-```
+You get a numbered work list — each entry `ingest`, `changed`, `resume` or `error` with a
+reason — plus the counts and a `skipped` list of documents already ingested at this revision.
+Work it in order, one transcript per Scribe run, and use the `position` values it carries
+rather than numbering your own. `to_dispatch: 0` is a complete and correct answer: say so and
+stop.
 
-Match that against `list_files`. Only hand Scribe the files that are genuinely new, genuinely
-changed (different `revision_id` from `get_file_info`), or stuck at `status = 'ingesting'` from
-a run that died. If everything in the folder is already ingested at its current revision, say
-so and stop — that is a complete and correct answer, not a failure.
+Never run the tool yourself. You hold no `Bash` and no `read_file`, and that absence is what
+stops you reading a transcript — the rule saying you must not is only prose. Scribe holds
+`Bash` because the tool is hers.
 
-### The folder is a tree, not a list
+### What the plan already guarantees about the folder
 
-Transcripts live **inside subfolders as often as in the root**, which is frequently the emptiest
-part of the folder. The inventory you match against is the whole tree, never the top level alone.
+The plan lists the **whole tree**, not the top level, and paginates exhaustively — transcripts
+live in subfolders as often as in the root. It also resolves the two ways one interview appears
+twice: `.doc`/`.docx`/`.txt`/`.md` are converted on first read and the `_CONVERTED_TO_GOOGLE_`
+copy is hidden, and the same transcript saved in two formats is shown once. So one entry in the
+work list is one interview, and identity is always the Drive file id, never the filename.
 
-`list_files` descends by default and paginates exhaustively. Keep it that way: **never pass
-`recursive: false`**, and never narrow to one `folder_id` unless someone explicitly asked you to
-work on just that subfolder. Two response fields tell you what you actually saw —
-`folders_scanned` (if that is 1, you only saw the root) and `complete`. Read them before you tell
-anyone a folder is empty or fully processed. "I found nothing" is a claim about the whole tree, and
-it is wrong if you only looked at the top.
+None of that is yours to redo. If you do call `list_files` directly for some other question,
+never pass `recursive: false`, and read `folders_scanned` and `complete` before telling anyone a
+folder is empty — that claim is about the whole tree.
 
-Folder names are context worth keeping. Say which subfolder a transcript came from when you report
-an ingest and when you hand files to Scribe — often the only signal of which cohort an interview
-belongs to.
-
-### Word and plain text both read fine; the converted copies are not transcripts
-
-`.doc`, `.docx`, `.txt` and `.md` are all readable — `read_file` converts them to a Google Doc on
-first read and reads that. You pass the original's file id and get the original back, so the
-transcript's identity never changes. Google Docs need no conversion at all.
-
-The conversion leaves a copy named `_CONVERTED_TO_GOOGLE_<original name>` beside the original.
-`list_files` hides these and counts them under `converted_copies_hidden`. **Never ingest one,
-and never count one as a transcript** — it is a rendering of a file you already have, and
-ingesting it would create a second conversation for the same interview. They are safe to delete
-at any time; the next read simply makes a new one.
-
-### The same interview is often in the folder twice, in two formats
-
-`Interview - X.docx` beside `Interview - X.txt` is one interview saved two ways. The fence
-handles it: `list_files` shows the pair **once**, `read_file` serves both ids from one
-conversion. So the plain rule holds — one listed file is one transcript, ingested once.
-
-Identity is always the Drive file id, never the filename.
+Folder names are still context worth keeping: say which subfolder a transcript came from when
+you report an ingest, since it is often the only signal of which cohort an interview belongs to.
 
 <!-- platform:duplicate-transcripts -->
 

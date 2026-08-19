@@ -34,6 +34,7 @@
 // below say which step each block is.
 //
 // Usage:
+//   scribe-ingest.mjs --slug <slug> --plan          # what still needs work, as JSON
 //   scribe-ingest.mjs --slug <slug> --document "<document name>"
 //                     [--source-id <id>] [--dataset <id|project.dataset>]
 //                     [--channel-id <uuid>] [--project <id>] [--project-name <name>]
@@ -43,7 +44,8 @@
 // client's installed fence config, so the caller passes neither a key path nor a folder id.
 //
 // Exit codes — chosen so a small model can branch without parsing prose:
-//   0  done (see "outcome" in the JSON: ingested | skipped | resumed | superseded)
+//   0  done. With --plan, "outcome" is work-to-do | nothing-to-do and "plan" holds the
+//      list. Otherwise "outcome" is ingested | skipped | resumed | superseded.
 //   1  usage error
 //   2  Drive unreadable / document not found in the fence
 //   3  parse problem — the document did not yield turns where it should have
@@ -121,12 +123,14 @@ const sourceIdArg = arg('source-id')
 const channelId = arg('channel-id')
 const projectName = arg('project-name')
 const dryRun = flag('dry-run')
+const planMode = flag('plan')
 const maxChunks = Number(arg('max-chunks') || 0) || Infinity
 
-if (!dataset || !bqKey || !driveKey || !driveRoot || (!documentName && !sourceIdArg)) {
+if (!dataset || !bqKey || !driveKey || !driveRoot || (!planMode && !documentName && !sourceIdArg)) {
   if (fence.error) console.error(`error: ${fence.error}`)
   console.error(
-    'usage: scribe-ingest.mjs --slug <slug> (--document "<name>" | --source-id <id>)\n' +
+    'usage: scribe-ingest.mjs --slug <slug> --plan\n' +
+    '       scribe-ingest.mjs --slug <slug> (--document "<name>" | --source-id <id>)\n' +
     '                        [--dataset <id|project.dataset>] [--channel-id <uuid>]\n' +
     '                        [--project <id>] [--project-name <name>]\n' +
     '                        [--dry-run] [--max-chunks N]\n' +
@@ -389,8 +393,120 @@ function projectNameFrom(headerText) {
 // ---------------------------------------------------------------------------
 const drive = new DriveFence()
 
+/**
+ * --plan: what in this folder still needs work, as JSON.
+ *
+ * Claire's definition used to describe this as a procedure — query conversations, match
+ * against list_files, pick the ones that are new, changed by revision, or stuck. That is
+ * a lookup and a comparison, so it does not need a model, and it was a SECOND copy of the
+ * state rules this script already applies per document below. Two implementations of one
+ * rule is the failure mode; this is the one implementation, offered folder-wide.
+ *
+ * Reads no document bodies: list_files once, then get_file_info per file for the revision,
+ * then a single query. So it is cheap enough to run before every dispatch.
+ *
+ * It deliberately does NOT distinguish a cosmetic edit from a real supersede. That needs
+ * the content hash, which needs a read, and the ingest run resolves it anyway — a changed
+ * revision whose content matches just moves the revision pointer. The plan's job is
+ * "worth dispatching or not", not the final outcome.
+ */
+async function plan() {
+  const listing = await drive.call('list_files', { recursive: true })
+  const files = listing.files ?? []
+
+  const rows =
+    bq(
+      `SELECT conversation_id, source_id, document_name, status, source_revision,
+              line_count, ingest_cursor_line, ingest_cursor_seq
+       FROM ${T('conversations')}`,
+      { json: true, label: 'work-list state query' },
+    ) ?? []
+  const bySource = new Map(rows.map((r) => [r.source_id, r]))
+
+  const work = []
+  const skipped = []
+
+  for (const f of files) {
+    let revision = null
+    try {
+      revision = (await drive.call('get_file_info', { file_id: f.id })).revision_id
+    } catch (err) {
+      // A file whose metadata will not load is a problem to report, not to skip past:
+      // silently dropping it is how a transcript never gets ingested and nobody knows.
+      work.push({
+        document_name: f.name,
+        source_id: f.id,
+        action: 'error',
+        reason: `metadata unreadable: ${err.message}`,
+      })
+      continue
+    }
+
+    const prior = bySource.get(f.id)
+    if (!prior) {
+      work.push({ document_name: f.name, source_id: f.id, action: 'ingest', reason: 'not in conversations' })
+      continue
+    }
+    if (prior.status === 'ingesting' || prior.status === 'failed') {
+      work.push({
+        document_name: f.name,
+        source_id: f.id,
+        action: 'resume',
+        reason: `status ${prior.status}`,
+        resume_from_line: prior.ingest_cursor_line === null ? 1 : Number(prior.ingest_cursor_line),
+        lines_already_written: Number(prior.ingest_cursor_seq ?? 0),
+      })
+      continue
+    }
+    if (prior.status === 'superseded') {
+      work.push({ document_name: f.name, source_id: f.id, action: 'ingest', reason: 'prior row superseded' })
+      continue
+    }
+    if (prior.source_revision !== revision) {
+      work.push({
+        document_name: f.name,
+        source_id: f.id,
+        action: 'changed',
+        reason: 'revision moved since the last ingest; the run decides cosmetic vs supersede',
+      })
+      continue
+    }
+    skipped.push({
+      document_name: f.name,
+      source_id: f.id,
+      conversation_id: prior.conversation_id ?? `c_${f.id}`,
+      line_count: Number(prior.line_count ?? 0),
+      reason: 'already ingested at this revision',
+    })
+  }
+
+  // Number the work list here, once. Claire's reporting rule is that the denominator is
+  // this list rather than the folder and that positions are never renumbered — so the
+  // numbering belongs to whatever computes the list, not to whoever reports on it.
+  work.forEach((w, i) => {
+    w.position = `${i + 1} / ${work.length}`
+  })
+
+  report.outcome = work.length ? 'work-to-do' : 'nothing-to-do'
+  report.plan = {
+    documents_in_folder: files.length,
+    to_dispatch: work.length,
+    counts: work.reduce((acc, w) => ({ ...acc, [w.action]: (acc[w.action] ?? 0) + 1 }), {}),
+    work,
+    skipped,
+  }
+  // Fields that only describe a single-document run would be misleading here.
+  for (const k of ['document_name', 'source_id', 'conversation_id', 'total_lines', 'line_count', 'chunks', 'participants', 'correction_candidates']) {
+    delete report[k]
+  }
+  drive.close()
+  emit(0)
+}
+
 async function main() {
   await drive.init()
+
+  if (planMode) return plan()
 
   // --- Step 1: resolve the document to a source_id, without the agent ever
   // handling the id. This is the failure the baseline kept dying on.
