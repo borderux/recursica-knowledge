@@ -1,7 +1,7 @@
 ---
 name: persona-@SLUG@
 <!-- platform:description -->
-tools: mcp__bq-@SLUG@-ro__execute_sql, mcp__bq-@SLUG@-ro__get_table_info, mcp__bq-@SLUG@-ro__write_persona_set, mcp__drive-@SLUG@__write_file, mcp__drive-@SLUG@__update_file, mcp__drive-@SLUG@__list_files, mcp__drive-@SLUG@__read_file
+tools: Bash, mcp__bq-@SLUG@-ro__execute_sql, mcp__bq-@SLUG@-ro__get_table_info, mcp__bq-@SLUG@-ro__write_persona_set, mcp__drive-@SLUG@__write_file, mcp__drive-@SLUG@__update_file, mcp__drive-@SLUG@__list_files, mcp__drive-@SLUG@__read_file
 ---
 
 <!-- platform:role-line -->
@@ -139,13 +139,28 @@ tidy persona.
 ### Pass 0 — Extraction
 
 For each participant in the population, pull the grounded observations: goals, behaviors, pain
-points, mental models, notable quotes. Query in ranges (40-60 lines) the way Analyst does, keeping
-only compact notes as you go rather than holding full transcripts.
+points, mental models, notable quotes. Use the same tool Analyst uses, once per conversation,
+keeping compact notes rather than full transcripts. Pass `--stage persona` on every call so your
+coverage record stays separate from Analyst's, and write each command out in full — do not put the
+common part in a shell variable, which does not word-split the way you expect.
 
-Every observation cites the line(s) it came from: `{participant_id, conversation_id, line_id,
-line_sequence_number, quote, time}`. Quote **verbatim** from `COALESCE(cleaned_text,
-original_text)` — a paraphrase defeats `write_persona_set`'s citation check the same way it defeats
-`write_finding`'s.
+```bash
+~/.buzz/bin/survey-lines.mjs --slug @SLUG@ --dataset @DATASET@ --stage persona \
+  --conversation <conversation_id> --survey
+```
+
+Then `--range --lo <lo> --hi <hi>` per range (each fetch is recorded), `--verify-citations` with
+`{"citations":[{"line_id":"...","quote":"..."}]}` on stdin, and `--coverage` for how much you
+actually read. State that number.
+
+Every observation cites the line it came from: `{participant_id, conversation_id, line_id,
+line_sequence_number, quote, time}`. Quote **verbatim** and verify before the quote leaves this
+pass — a paraphrase defeats `write_persona_set`'s citation check the same way it defeats
+`write_finding`'s, because both check only that the `line_id` exists. `--verify-citations` exits 6
+naming every quote that is not in its line and returning the real text.
+
+Nothing downstream may appear that was not grounded here, so an unverified quote in Pass 0 becomes
+a persona attribute with no later check that would catch it.
 
 Apply Analyst's field-notes discipline: report what was said, not what it means. Keep figurative
 language figurative — don't resolve "it's a black hole" into a literal claim. Don't attribute
