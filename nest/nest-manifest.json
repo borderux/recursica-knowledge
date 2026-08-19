@@ -179,6 +179,41 @@
     },
     {
       "$comment": [
+        "Shared BigQuery access for the agent tools: run a statement, escape a string literal,",
+        "name a table. Extracted rather than copied when the tagger tool needed the same three",
+        "things — a second hand-written copy of SQL-literal escaping is a divergence waiting to",
+        "become a broken write in one agent and not the other.",
+        "",
+        "Both tools import it through BUZZ_HOME rather than a relative path, because they live",
+        "under agents/ in the repo and only meet this file once installed."
+      ],
+      "from": "bin/lib/bq.mjs",
+      "to": "bin/lib/bq.mjs",
+      "mode": "0644",
+      "resolve": false
+    },
+    {
+      "$comment": [
+        "The batch server Tagger drives. Unlike the ingest tool it does NOT replace the model —",
+        "which tags a line earns is judgement. It owns everything around that: the batch cursor,",
+        "validating each tag against the active library and that tag's own threshold, the MERGE,",
+        "the accounting, and the coverage proof.",
+        "",
+        "The coverage proof is why it exists. Untagged lines and never-read lines are",
+        "indistinguishable in the tags table, which is how the previous pipeline's LIMIT 500 went",
+        "unnoticed against longer transcripts. The cursor is derived from batch rows recorded in",
+        "ingest_runs, so it survives a crash and cannot be misremembered.",
+        "",
+        "fromRoot and resolve:true for the same reasons as the ingest tool below."
+      ],
+      "from": "agents/claire/subagents/tagger/scripts/tagger-batch.mjs",
+      "to": "bin/tagger-batch.mjs",
+      "mode": "0755",
+      "resolve": true,
+      "fromRoot": true
+    },
+    {
+      "$comment": [
         "The transcript ingest Scribe runs instead of walking the document herself. It lives",
         "under agents/claire/subagents/scribe/ rather than in nest/bin/ because it is the",
         "subagent's tool: the prompt that invokes it and the script it invokes version together,",
