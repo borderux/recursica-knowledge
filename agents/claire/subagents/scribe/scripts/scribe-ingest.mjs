@@ -52,9 +52,9 @@
 //   4  BigQuery rejected a statement; the run is resumable from the cursor
 //   5  finished writing but verification failed — left at status='failed', needs a human
 
-import { spawn, spawnSync } from 'node:child_process'
+import { spawn } from 'node:child_process'
 import { readFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { dirname, resolve } from 'node:path'
 import { createInterface } from 'node:readline'
 
@@ -177,50 +177,23 @@ function die(code, message, extra = {}) {
 }
 
 // ---------------------------------------------------------------------------
-// BigQuery. Same helper shape as bin/sync-tag-dictionary.mjs.
+// BigQuery, from the shared lib so the SQL-literal escaping has one implementation.
+// The lib lives at its installed path, so it is imported through BUZZ_HOME rather than
+// by a static relative path that would not resolve from a checkout.
 // ---------------------------------------------------------------------------
+const { makeBq, q, num, tableRef } = await import(
+  pathToFileURL(resolve(BUZZ_HOME, 'bin/lib/bq.mjs')).href
+)
 
-// bq-exec returns every value as a string (the REST API's f[i].v), so callers
-// that need a number must coerce. Kept explicit rather than guessing per column.
-function bq(sql, { json = false, label = 'statement' } = {}) {
-  if (dryRun && /\b(MERGE|UPDATE|DELETE|INSERT)\b/i.test(sql)) {
-    log(`dry-run: skipping ${label}`)
-    return json ? [] : null
-  }
-  const res = spawnSync(
-    process.execPath,
-    [BQ_EXEC, '--key', bqKey, '--project', project, '--file', '-', ...(json ? [] : ['--quiet'])],
-    { input: sql, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 },
-  )
-  if (res.status !== 0) {
-    die(4, `BigQuery rejected ${label}`, {
-      bigquery_error: (res.stdout || '').trim() || (res.stderr || '').trim(),
-      // The agent's job on exit 4 is to fix and retry, so it needs the statement.
-      sql: sql.length > 4000 ? `${sql.slice(0, 4000)}\n-- [truncated]` : sql,
-    })
-  }
-  if (!json) return null
-  try {
-    return JSON.parse(res.stdout)
-  } catch {
-    return []
-  }
-}
+const bq = makeBq({
+  bqExecPath: BQ_EXEC,
+  keyPath: bqKey,
+  project,
+  dryRun,
+  onError: ({ label, sql, error }) => die(4, `BigQuery rejected ${label}`, { bigquery_error: error, sql }),
+})
 
-// Single-quoted BigQuery string literal. Order matters: backslash first, or the
-// escapes we add get escaped again.
-const q = (s) =>
-  s === null || s === undefined
-    ? 'NULL'
-    : `'${String(s)
-        .replace(/\\/g, '\\\\')
-        .replace(/'/g, "\\'")
-        .replace(/\r/g, '\\r')
-        .replace(/\n/g, '\\n')
-        .replace(/\t/g, '\\t')}'`
-
-const num = (v) => (v === null || v === undefined || v === '' ? 'NULL' : String(Number(v)))
-const T = (name) => `\`${project}.${dataset}.${name}\``
+const T = (name) => tableRef(project, dataset, name)
 
 // Delimiter for flattening ARRAY<STRING> out of BigQuery. A control character no
 // variant can contain, so the round-trip is lossless. Same choice, same reason, as
