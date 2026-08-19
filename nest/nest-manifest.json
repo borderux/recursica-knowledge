@@ -179,6 +179,26 @@
     },
     {
       "$comment": [
+        "The pass reader Analyst and Persona both use: survey a conversation from its tags,",
+        "serve line ranges and record which were served, and check that a cited quote actually",
+        "appears in the line it cites.",
+        "",
+        "That last one is the reason it exists. Both definitions warned in almost the same words",
+        "that a quote recalled from a window you no longer hold reads right and does not match the",
+        "line, and that the write path verifies the line_id exists but never the quote. So the one",
+        "mistake both prompts named was the one nothing caught.",
+        "",
+        "It lives in bin/ rather than beside a skill because two subagents own it. A tool sits next",
+        "to its skill when it has one owner; copying this into both would be the divergence the",
+        "shared BigQuery helper was extracted to avoid."
+      ],
+      "from": "bin/survey-lines.mjs",
+      "to": "bin/survey-lines.mjs",
+      "mode": "0755",
+      "resolve": true
+    },
+    {
+      "$comment": [
         "Shared BigQuery access for the agent tools: run a statement, escape a string literal,",
         "name a table. Extracted rather than copied when the tagger tool needed the same three",
         "things — a second hand-written copy of SQL-literal escaping is a divergence waiting to",
