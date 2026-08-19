@@ -50,6 +50,20 @@ the name was ambiguous and gives you the ids to choose from.
 
 **Never run the ingest twice hoping it works the second time.** Read the exit code first.
 
+## Planning a folder, when Claire asks what still needs doing
+
+Same tool, `--plan` instead of `--document`. No document is named and no bodies are read:
+
+```bash
+~/.buzz/bin/scribe-ingest.mjs --slug @SLUG@ --dataset @DATASET@ --plan
+```
+
+Return the JSON verbatim — do not summarise, re-order or renumber it. Claire dispatches from
+its positions and reports them to a person. `to_dispatch: 0` is a real and complete answer.
+
+`changed` means the revision moved, not that the content did; the ingest run decides supersede
+versus cosmetic edit, because that needs the content hash.
+
 ## What the tool returns
 
 JSON on stdout; progress and diagnostics on stderr. The fields you report from are
