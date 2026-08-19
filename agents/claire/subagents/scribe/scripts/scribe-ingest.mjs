@@ -20,9 +20,13 @@
 //
 // THIS FILE IS AN INSTALL SOURCE. It lives beside the skill that documents it so the tool
 // and its instructions version together, and bootstrap-nest.mjs installs it to ~/.buzz/bin/
-// (see nest/nest-manifest.json), resolving its {{BQ_PROJECT}} token on the way in. The two
-// helper paths below are relative to that installed location; set BUZZ_HOME to run it from a
+// (see nest/nest-manifest.json), resolving the project placeholder below on the way in. The
+// two helper paths are relative to that installed location; set BUZZ_HOME to run it from a
 // checkout, which is how it gets tested before release.
+//
+// Do not name that placeholder in prose anywhere in this file. The manifest installs it with
+// resolve:true, which substitutes EVERY occurrence — so a comment mentioning the marker comes
+// out the other side as a sentence about a project id, which is how this comment read before.
 //
 // Implements the contract documented in the scribe-<slug> agent definition: derived ids,
 // claim-before-write, per-chunk MERGE with a range-scoped delete, cursor advance in the
