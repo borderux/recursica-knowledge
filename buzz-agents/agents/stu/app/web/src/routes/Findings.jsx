@@ -18,8 +18,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link as RouterLink, Navigate, useNavigate, useParams } from 'react-router'
 import {
-  Badge, Button, Dropdown, Group, Layer, Link, SegmentedControl, Stack, Tabs, Text, TextArea,
-  TextField, Title,
+  Accordion, AccordionItem, Badge, Button, Chip, Dropdown, Group, Layer, Link, SegmentedControl,
+  Stack, Tabs, Text, TextArea, TextField, Title,
 } from '@recursica/mantine-adapter'
 import { api } from '../api.js'
 import { Empty, Page, Section } from '../shell/Page.jsx'
@@ -59,6 +59,9 @@ export function isHypothesis(finding) {
 
 /** The two tabs, which are also the two routes under `/findings`. */
 const TABS = ['inbox', 'confirmed']
+
+/** `recursica-skill-badges-chips`'s ceiling for a chip group: 7 ± 2, and `tag_ids` is unbounded. */
+const MAX_VISIBLE_THEMES = 9
 
 export function Findings({ identity, revision, onChanged }) {
   const { tab = 'inbox' } = useParams()
@@ -212,6 +215,7 @@ function Inbox({ rows, identity, onChanged, onOpenContext }) {
               identity={identity}
               onChanged={onChanged}
               onOpenContext={onOpenContext}
+              openEvidenceByDefault
             />
           ))}
         </Stack>
@@ -433,29 +437,89 @@ function optionsFrom(rows, extract) {
 // ------------------------------------------------------------------------------ record
 
 /**
+ * The confidence meter beside a finding's metadata row: five segments, filled proportionally
+ * (90% fills 4.5 of them) alongside the number itself. `aria-hidden` throughout — the number is
+ * the one channel a screen reader needs, and `recursica-skill-system-conventions` forbids the
+ * segments from being the only place the value lives, which the visible number already prevents.
+ */
+function ConfidenceMeter({ value }) {
+  if (value == null) return <Text variant="caption">confidence unscored</Text>
+
+  const filled = Math.max(0, Math.min(5, Number(value) * 5))
+  return (
+    <Group gap={6} align="center" wrap="nowrap">
+      <span className="stu-meter" aria-hidden="true">
+        {Array.from({ length: 5 }, (_, i) => (
+          <span key={i} className="stu-meter__segment">
+            <span
+              className="stu-meter__fill"
+              style={{ width: `${Math.max(0, Math.min(1, filled - i)) * 100}%` }}
+            />
+          </span>
+        ))}
+      </span>
+      <Text variant="caption">confidence {formatConfidence(value)}</Text>
+    </Group>
+  )
+}
+
+/** Matches an inline "Seq 127" (or "seq 127") reference inside the analyst's reasoning prose. */
+const CITATION_RE = /\bseq\.?\s*\d+\b/gi
+
+/**
+ * The reasoning paragraph with every inline sequence reference broken out as its own span, styled
+ * as a subtle citation chip — see `.stu-citation` for why this is neither the Chip nor Badge
+ * component. `String.split` on a global regex keeps the surrounding prose in order; `String.match`
+ * recovers the matched text those gaps were split on, so zipping the two back together rebuilds
+ * the paragraph with the citations marked rather than discarding any of it.
+ */
+function withCitations(text) {
+  const prose = text.split(CITATION_RE)
+  const citations = text.match(CITATION_RE) ?? []
+  return prose.flatMap((part, i) => (
+    citations[i] ? [part, <span key={i} className="stu-citation">{citations[i]}</span>] : [part]
+  ))
+}
+
+/**
  * One row, whatever kind it is. What differs is the decision at the bottom: a claim is approved or
  * rejected, and a question is answered or dismissed. A hypothesis takes the claim's actions — it is
  * a claim, just a weak one — and is marked instead, because the thing a reviewer needs to know
  * about it is that the analysis is not asserting it. Everything above the decision — the evidence,
  * the drift check, the provenance — is the same work and reads the same way for all three.
+ *
+ * The zones below are ranked, top to bottom: the title is the one dominant element; status, type
+ * and confidence are secondary metadata beside it; the statement is the primary takeaway; the
+ * analyst's reasoning and the provenance trail are real but secondary, so each stays its own
+ * collapsed-by-default `Accordion` item rather than competing with the statement for the same
+ * attention. `multiple` because they are independent questions a reviewer may want open together —
+ * opening the evidence has no reason to shut the reasoning underneath it.
+ *
+ * Evidence is the one exception: `openEvidenceByDefault` starts it open on the Inbox, where a
+ * quote is what an Approve/Reject decision rests on and `recursica-skill-accordion` puts anything
+ * on that critical path on the page itself, not a click away. Confirmed carries no such decision,
+ * so it stays collapsed there like every other panel.
  */
-function Record({ finding, identity, onChanged, onOpenContext }) {
+function Record({ finding, identity, onChanged, onOpenContext, openEvidenceByDefault = false }) {
   const question = isQuestion(finding)
   const hypothesis = isHypothesis(finding)
   const evidence = finding.evidence ?? []
+  const themes = finding.tag_ids ?? []
 
   return (
     <div className="stu-record">
     <Layer layer={1}>
-      <Stack gap="sm">
-        <Group gap="sm" align="baseline" wrap="wrap">
+      <Stack gap="md">
+        <Stack gap={4}>
           <Title order={4}>{finding.title}</Title>
-          <Badge variant={statusVariant(finding.status)}>{finding.status}</Badge>
-          {question && <Badge variant="warning">open question</Badge>}
-          {hypothesis && <Badge variant="warning">hypothesis</Badge>}
-          <Text variant="caption">{finding.finding_type} · {finding.scope}</Text>
-          <Text variant="caption">confidence {formatConfidence(finding.confidence)}</Text>
-        </Group>
+          <Group gap="sm" align="center" wrap="wrap">
+            <Badge variant={statusVariant(finding.status)}>{finding.status}</Badge>
+            {question && <Badge variant="warning">open question</Badge>}
+            {hypothesis && <Badge variant="warning">hypothesis</Badge>}
+            <Text variant="caption">{finding.finding_type} · {finding.scope}</Text>
+            <ConfidenceMeter value={finding.confidence} />
+          </Group>
+        </Stack>
 
         {hypothesis && (
           <Text variant="body-small">
@@ -464,21 +528,90 @@ function Record({ finding, identity, onChanged, onOpenContext }) {
           </Text>
         )}
 
-        <Text variant="body">{finding.statement}</Text>
-        {finding.detail && <Text variant="body-small">{finding.detail}</Text>}
+        {/* `.stu-text` is the same long-form-reading measure `Interview.jsx` gives a transcript
+            line's own body text — this is the same kind of content, a paragraph of prose, and the
+            card's width otherwise runs the statement edge-to-edge at whatever the page happens to
+            measure. */}
+        <div className="stu-text">
+          <Text variant="body">{finding.statement}</Text>
+        </div>
 
-        <Evidence evidence={evidence} finding={finding} onOpenContext={onOpenContext} />
+        <hr className="stu-record__divider" />
 
-        {finding.tag_ids?.length > 0 && (
-          <Text variant="caption">Themes: {finding.tag_ids.join(', ')}</Text>
+        {/* Reasoning and evidence share one `Accordion` — they're peers a reviewer weighs
+            together. Provenance sits in a separate one below the themes, matching the ranked
+            reading order rather than a shared container it has no reason to join. */}
+        <Accordion multiple defaultValue={openEvidenceByDefault ? ['evidence'] : undefined}>
+          {finding.detail && (
+            <AccordionItem value="reasoning" title="Analyst reasoning">
+              {/* `accordion-content`'s own padding is theme-owned and not ours to override — see
+                  `recursica-skill-accordion`'s "Not your decision" list. This is a second,
+                  additive indent on the content we supply, not a change to the component's. */}
+              <div className="stu-panel-indent">
+                <Text variant="body-small">{withCitations(finding.detail)}</Text>
+              </div>
+            </AccordionItem>
+          )}
+
+          <AccordionItem
+            value="evidence"
+            title={evidenceTitle(evidence)}
+          >
+            <div className="stu-panel-indent">
+              <Evidence evidence={evidence} onOpenContext={onOpenContext} />
+            </div>
+          </AccordionItem>
+        </Accordion>
+
+        {themes.length > 0 && (
+          <Stack gap={4}>
+            <Text variant="caption" id={`themes-caption-${finding.finding_id}`}>Themes</Text>
+            {/* Tags are chips, not badges, per `recursica-skill-badges-chips` — cardinality alone
+                settles it once there is more than one value. But these are read-only, produced by
+                the analysis rather than picked by the reviewer, not something to toggle — so
+                `checked` stays off. The adapter's own static-chip path takes it from there: with no
+                `checked`, `defaultChecked`, `onRemove`, or `onClick`, it applies `tabIndex={-1}` and
+                `aria-hidden` to the chip's input itself, which is the one the house wants read-only.
+                The group points `aria-labelledby` at the visible "Themes" caption rather than
+                spelling every value into an `aria-label` — Mantine's chip text lives in a `<label>`
+                that stays in the accessibility tree regardless of the input's own `aria-hidden`, so
+                an `aria-label` enumerating the values would have announced them a second time. */}
+            <div role="group" aria-labelledby={`themes-caption-${finding.finding_id}`} className="stu-chip-row">
+              {themes.slice(0, MAX_VISIBLE_THEMES).map((t) => (
+                <Chip key={t}>{t}</Chip>
+              ))}
+              {/* `recursica-skill-badges-chips`: a chip group holds 7 ± 2 items. `tag_ids` carries
+                  no such ceiling, so past it this reads as a count rather than growing the row
+                  further. */}
+              {themes.length > MAX_VISIBLE_THEMES && (
+                <Text variant="caption">+{themes.length - MAX_VISIBLE_THEMES} more</Text>
+              )}
+            </div>
+          </Stack>
         )}
 
-        <Text variant="caption">
-          Produced by {finding.produced_by ?? 'unknown'}
-          {finding.reviewed_by && ` · reviewed by ${finding.reviewed_by}`}
-        </Text>
+        <Accordion>
+          <AccordionItem value="provenance" title="Provenance & corrections">
+            {/* `className` on a Recursica component is stripped by the adapter's anti-override
+                layer unless `overStyled` is passed — see `filterStylingProps`. The low-emphasis
+                opacity has to land on a plain wrapper instead, not on the `Text` itself. The
+                extra indent is additive to our own content, not an override of the component's
+                own theme-owned padding — see the same note on the reasoning/evidence panels. */}
+            <div className="stu-panel-indent stu-muted">
+              <Stack gap={4}>
+                <Text variant="caption">
+                  Produced by {finding.produced_by ?? 'unknown'}
+                  {finding.reviewed_by && ` · reviewed by ${finding.reviewed_by}`}
+                </Text>
+                {finding.notes && (
+                  <Text variant="body-small">Note on the record: {finding.notes}</Text>
+                )}
+              </Stack>
+            </div>
+          </AccordionItem>
+        </Accordion>
 
-        {finding.notes && <Text variant="body-small">Note on the record: {finding.notes}</Text>}
+        <hr className="stu-record__divider" />
 
         {question
           ? <Resolution finding={finding} identity={identity} onChanged={onChanged} />
@@ -507,49 +640,85 @@ function hasDrifted(e) {
   return !flat(e.line_text).includes(flat(e.quote))
 }
 
-function Evidence({ evidence, finding, onOpenContext }) {
+/**
+ * The evidence accordion's own label, so the drift check reads even while the panel is collapsed
+ * — it is the one warning on this card that must not go two clicks deep. Silent when nothing has
+ * drifted, so the common case still reads as the plain count it always was.
+ */
+function evidenceTitle(evidence) {
+  const base = `Evidence — ${evidence.length} supporting quote${evidence.length === 1 ? '' : 's'}`
+  const drifted = evidence.filter(hasDrifted).length
+  if (drifted === 0) return base
+  return drifted === 1
+    ? `${base}, 1 no longer matches its line`
+    : `${base}, ${drifted} no longer match their lines`
+}
+
+/**
+ * The evidence list, once its accordion item is open. The count and the reveal control are the
+ * accordion header itself now — see the `title` on the "evidence" `AccordionItem` in `Record` —
+ * so this renders only what opening it was for.
+ */
+function Evidence({ evidence, onOpenContext }) {
+  if (evidence.length === 0) {
+    return (
+      <Text variant="body-small">
+        None. The write tool refuses a finding with no evidence, so an empty list here
+        means the row predates that gate — treat the claim as unsupported.
+      </Text>
+    )
+  }
+
   return (
-    <Stack gap={4}>
-      <Text variant="caption">Evidence — {evidence.length} line{evidence.length === 1 ? '' : 's'}</Text>
-      {evidence.length === 0
-        ? <Text variant="body-small">
-            None. The write tool refuses a finding with no evidence, so an empty list here
-            means the row predates that gate — treat the claim as unsupported.
-          </Text>
-        : (
-          <ul className="stu-quotes">
-            {evidence.map((e, i) => (
-              <li key={`${e.line_id}-${i}`}>
-                <Text variant="body-small">Quoted: “{e.quote}”</Text>
-                {/* What the line says now. If the quote is no longer in it, the finding is
-                    resting on wording that has since been corrected. */}
-                <Text variant="body-small">
-                  Line now: {e.line_text ?? 'this line no longer exists'}
-                </Text>
-                {hasDrifted(e) && <Badge variant="warning">quote is no longer in this line</Badge>}
-                <Group gap="sm" wrap="wrap">
-                  {/* A button, because it opens a panel beside this page rather than going
-                      anywhere — a panel is invoked, not navigated to, and takes no history entry. */}
-                  <Button
-                    variant="text"
-                    size="small"
-                    onClick={() => onOpenContext({ citation: e, siblings: evidence })}
-                  >
-                    Read it in context
-                  </Button>
-                  {/* And the page, for reading past the window the panel holds. */}
-                  <Link
-                    component={RouterLink}
-                    to={`/interviews/${encodeURIComponent(e.conversation_id)}/lines/${e.line_sequence_number}`}
-                  >
-                    Open the transcript
-                  </Link>
-                </Group>
-              </li>
-            ))}
-          </ul>
-        )}
-    </Stack>
+    <ul className="stu-quotes">
+      {evidence.map((e, i) => (
+        <EvidenceItem key={`${e.line_id}-${i}`} evidence={e} siblings={evidence} onOpenContext={onOpenContext} />
+      ))}
+    </ul>
+  )
+}
+
+/**
+ * One cited line. The quote leads, emphasized — it is what the finding rests on. What the line
+ * says now is real but secondary, so it stays in the same de-emphasized caption treatment it has
+ * always had — but it prints unconditionally rather than behind its own toggle. Evidence is
+ * already one fold inside the Analyst reasoning/Evidence accordion; a second, per-quote disclosure
+ * nested inside that made it two accordions deep for no reading gain, since this line is short and
+ * costs nothing to show plainly.
+ */
+function EvidenceItem({ evidence: e, siblings, onOpenContext }) {
+  return (
+    <li>
+      <Stack gap={4}>
+        <Text variant="body">“{e.quote}”</Text>
+        {hasDrifted(e) && <Badge variant="warning">quote is no longer in this line</Badge>}
+
+        {/* Same measure as `.stu-text`'s long-form reading rule — the raw line can run to a full
+            transcript sentence, and an unbounded caption was the "super long, hard to read" line. */}
+        <div className="stu-muted stu-context-line">
+          <Text variant="caption">Line now: {e.line_text ?? 'this line no longer exists'}</Text>
+        </div>
+
+        <Group gap="sm" wrap="wrap">
+          {/* A button, because it opens a panel beside this page rather than going
+              anywhere — a panel is invoked, not navigated to, and takes no history entry. */}
+          <Button
+            variant="text"
+            size="small"
+            onClick={() => onOpenContext({ citation: e, siblings })}
+          >
+            Read it in context
+          </Button>
+          {/* And the page, for reading past the window the panel holds. */}
+          <Link
+            component={RouterLink}
+            to={`/interviews/${encodeURIComponent(e.conversation_id)}/lines/${e.line_sequence_number}`}
+          >
+            Open the transcript
+          </Link>
+        </Group>
+      </Stack>
+    </li>
   )
 }
 
@@ -579,7 +748,6 @@ function Decision({ finding, identity, onChanged }) {
       {problem && <Text variant="body-small">{problem}</Text>}
 
       <TextField
-        formLayout="side-by-side"
         label="Note"
         placeholder="Optional — why you decided this way"
         value={note}
@@ -663,7 +831,6 @@ function Resolution({ finding, identity, onChanged }) {
       )}
 
       <TextArea
-        formLayout="side-by-side"
         label="Answer"
         description={assumed
           ? 'Pre-filled with the assumption. Save it as it stands to confirm it, or change it first.'
@@ -674,7 +841,6 @@ function Resolution({ finding, identity, onChanged }) {
         onChange={(e) => setAnswer(e.currentTarget.value)}
       />
       <TextField
-        formLayout="side-by-side"
         label="Note"
         placeholder="Optional — where the answer came from"
         value={note}

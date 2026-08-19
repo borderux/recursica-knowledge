@@ -386,3 +386,85 @@ tr[role='link'] {
 .stu-taglist li {
   max-width: 72ch;
 }
+
+/* What a cited line says now, printed unconditionally beside its quote. Its own measure, tighter
+   than the 72ch the `<li>` already caps at — this is a plain sentence, not the quote it sits
+   under, and reads the same as `.stu-text`'s long-form rule for exactly that reason. */
+.stu-context-line {
+  max-width: 60ch;
+}
+
+/* Themes, as a horizontal row of static chips — unrelated to `.stu-taglist` above, which lays out
+   a vertical list of a different tag rendering elsewhere. */
+.stu-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* A zone boundary inside a finding record. Space alone reads as "related but separate" and
+   `recursica-skill-screen-priority` wants a rule only where space has already failed to divide —
+   which is exactly a card carrying seven ranked zones of very different weight. A hairline, not a
+   layer: `recursica-skill-layers` reserves opening a new layer for genuine containment, and a
+   divider inside one record is not that. */
+.stu-record__divider {
+  border: 0;
+  border-top: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+  margin: 0;
+}
+
+/* The confidence meter beside a finding's metadata row. No token in the kit covers a rating or
+   gauge control, so this reads only `currentColor` — never an invented palette value — and is
+   `aria-hidden`: the adjacent percentage text is the one accessible source of this fact, so a
+   screen reader is not asked to parse five decorative segments to learn what the number already
+   says in full.
+ */
+.stu-meter {
+  display: inline-flex;
+  gap: 2px;
+  width: 56px;
+  height: 8px;
+}
+
+.stu-meter__segment {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  border-radius: 1px;
+  overflow: hidden;
+  background: color-mix(in srgb, currentColor 20%, transparent);
+}
+
+.stu-meter__fill {
+  position: absolute;
+  inset: 0;
+  right: auto;
+  background: currentColor;
+}
+
+/* An inline "Seq N" reference inside the analyst's reasoning prose. Neither chip nor badge fits: a
+   chip is a plural, operable group and a badge is one status per object, and this is neither —
+   it's a citation marker repeated many times inside one paragraph. Styled subtly, on `currentColor`
+   only, so it reads as a footnote rather than competing with the text around it.
+ */
+.stu-citation {
+  display: inline-block;
+  padding: 0 4px;
+  border-radius: 3px;
+  background: color-mix(in srgb, currentColor 10%, transparent);
+  white-space: nowrap;
+}
+
+/* Extra indent on an accordion panel's own content, so an open panel reads as nested under its
+   header. Additive to whatever `accordion-content` already carries — that padding is theme-owned
+   and this file never touches it; this is a second indent on the content we placed inside it. */
+.stu-panel-indent {
+  padding-left: var(--stu-gutter);
+}
+
+/* De-emphasised footer content (provenance, correction notes). `recursica-skill-layers` requires
+   the low-emphasis opacity token rather than a second grey, so this is opacity applied to the
+   layer's own text color, not a color of its own. */
+.stu-muted {
+  opacity: var(--recursica_brand_text-emphasis_low, 0.6);
+}
