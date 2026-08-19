@@ -309,8 +309,8 @@ class DriveFence {
 // Parsing. The transcript format is a header block, a ==== rule, then speaker
 // turns of the shape:
 //
-//     Researcher  00:00:09
-//     Thanks for making the time...
+//     Speaker Name  00:00:00
+//     <what they said, one or more lines>
 //
 // A turn is a speaker line plus every following line up to the next speaker line.
 // ---------------------------------------------------------------------------
