@@ -202,6 +202,11 @@
       "description": "Fully-qualified BigQuery dataset for that client, as project.dataset.",
       "expandedBy": "nest/bin/deploy-claire-channel.sh, once per client",
       "example": "acme-research-123456.research_acme"
+    },
+    "CHANNEL_UUID": {
+      "description": "Buzz channel this client's agents answer in. Passed to the ingest tool so conversations.channel_id records which conversation a row came from.",
+      "expandedBy": "nest/bin/deploy-claire-channel.sh, once per client",
+      "example": "00000000-0000-0000-0000-000000000000"
     }
   }
 }

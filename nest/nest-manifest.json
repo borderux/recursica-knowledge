@@ -178,6 +178,28 @@
       "resolve": true
     },
     {
+      "$comment": [
+        "The transcript ingest Scribe runs instead of walking the document herself. It lives",
+        "under agents/claire/subagents/scribe/ rather than in nest/bin/ because it is the",
+        "subagent's tool: the prompt that invokes it and the script it invokes version together,",
+        "and a change to one that forgets the other is the failure worth designing out. That is",
+        "the Claude skill layout — a SKILL.md beside the resources it uses.",
+        "",
+        "fromRoot for the same reason Barb's agents use it: the source is under agents/, not",
+        "under nest/. Unlike those, resolve:true — it carries {{BQ_PROJECT}} as the default",
+        "project, exactly like sync-tag-dictionary.mjs above.",
+        "",
+        "It is NOT a build output, so there is no `npm run agents:build` step behind it.",
+        "build-agents.mjs reads only SKILL.md out of a subagent directory and ignores the rest,",
+        "which is what lets the tool sit beside its own documentation without being rendered."
+      ],
+      "from": "agents/claire/subagents/scribe/scripts/scribe-ingest.mjs",
+      "to": "bin/scribe-ingest.mjs",
+      "mode": "0755",
+      "resolve": true,
+      "fromRoot": true
+    },
+    {
       "from": "bin/guard-published-text.mjs",
       "to": "bin/guard-published-text.mjs",
       "mode": "0755",
