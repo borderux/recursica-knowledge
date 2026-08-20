@@ -9,12 +9,16 @@
 #   from .secrets/claire-<sa-slug>-service-user.json. Defaults to the slug. Needed because a
 #   Google service account cannot be renamed, so a slug shortened later leaves the two apart.
 #
-# --dataset <name>  the BigQuery dataset, when it is not named research_<slug>. Defaults to that
-#   derivation, so an existing channel is unaffected. Pass the same value the channel was deployed
-#   with — deploy-claire-channel.sh takes this flag too, and the app derives the name the same way
-#   it used to. An overridden dataset that is not passed through here leaves every query failing
-#   with "Access Denied ... or perhaps it does not exist", which reads as a broken grant and is
-#   not one: it is a name nobody created.
+# --dataset <name>  the BigQuery dataset, when it is not named research_<slug>. Rarely needed:
+#   with no flag the launcher reads the name out of this channel's fenced MCP server config,
+#   which the deploy wrote from the same value the dataset was created with. Only a channel with
+#   no such server on this machine falls back to the research_<slug> derivation.
+#
+#   Naming it by hand was the whole failure mode. An overridden dataset that reached the deploy
+#   and not this launcher left every query failing with "Access Denied ... or perhaps it does not
+#   exist" — which reads as a broken grant and is not one: it is a name nobody created. That
+#   wording is BigQuery declining to distinguish a table you may not see from a table that is not
+#   there, so the diagnosis went to IAM every time and the dataset never got looked at.
 #
 # Idempotent: if a server is already serving this slug on the port, it prints that URL and
 # exits 0 rather than binding a second one. That matters because Stu has two launch paths —
@@ -57,10 +61,10 @@ SLUG=""
 SA_SLUG="${STU_SA_SLUG:-}"
 CHANNEL=""
 PROJECT="${STU_PROJECT:-}"
-# Empty means "let the app derive research_<slug>", which is the convention and the common case.
-# A dataset that already existed under a name somebody else chose cannot be renamed in BigQuery,
-# so the name has to be sayable here as well as at deploy time. config.mjs has always accepted
-# --dataset; this launcher was the half that never passed it on.
+# Empty here means "work it out in the preflight" — from the channel's MCP config if there is one,
+# and otherwise by letting the app derive research_<slug>. A dataset that already existed under a
+# name somebody else chose cannot be renamed in BigQuery, so the name has to be sayable here as
+# well as at deploy time; it just should not have to be said.
 DATASET="${STU_DATASET:-}"
 USER_PUBKEY="${STU_USER_PUBKEY:-}"
 USER_NAME="${STU_USER_NAME:-}"
@@ -125,12 +129,12 @@ serving_this_slug() {
   grep -q "\"slug\":\"$SLUG\"" <<<"$body"
 }
 
-# ...and serving it out of the dataset that was asked for. The slug alone used to decide reuse,
+# ...and serving it out of the dataset this launch resolved. The slug alone used to decide reuse,
 # which turned the fix for a forgotten --dataset into a no-op: the launcher found its own
 # wrong-dataset job, printed "already running" and exited 0, so the only way through was to know
-# to --stop first. Only checked when a dataset was named — the derivation belongs to the app, and
-# recomputing it here would put the name in two places again. The other direction is harmless:
-# reusing a correctly-overridden server from a launch that forgot the flag serves the right data.
+# to --stop first. Now that the preflight resolves the name rather than waiting to be told it,
+# this check has a value to compare in every case that has an MCP server — so a job left over
+# from before, serving the derived name, is reported instead of reused.
 serving_this_dataset() {
   if [[ -z "$DATASET" ]]; then return 0; fi
   local body
@@ -203,6 +207,65 @@ if [[ -z "$PROJECT" ]]; then
     catch { process.exit(1); }
   ' "$KEY" 2>/dev/null || true)"
   [[ -n "$PROJECT" ]] || die "could not read project_id from $KEY — pass --project <id> or set STU_PROJECT"
+fi
+
+# Same move for the dataset, and for the same reason: the name is already written down on this
+# machine, so asking a caller to repeat it correctly is a step that can only be got wrong. The
+# channel's fenced MCP server is the copy to read — deploy-claire-channel.sh renders it from the
+# --dataset the dataset was created with, and it is the name every agent on this channel already
+# queries through, so Stu and the agents cannot end up disagreeing about where the data is.
+#
+# Not the key file: unlike project_id, a dataset name is nowhere in it. Not the channel canvas
+# either, though it records the same value — reading it needs a relay credential, and the launchd
+# job that re-enters this script under --supervise has none.
+#
+# An explicit --dataset or STU_DATASET still wins, and a channel with no MCP server on this
+# machine still falls through to the app's research_<slug> derivation, so nothing that worked
+# before this stops working.
+MCP_YAML="$BUZZ_HOME/mcp/bq-$SLUG.yaml"
+# A fence line rather than the file: a bq-<slug>.yaml with no allowedDatasets at all is not this
+# script's problem to report, and it leaves the derivation as the answer exactly as before.
+if [[ -z "$DATASET" ]] && grep -qE '^[[:space:]]*allowedDatasets:' "$MCP_YAML" 2>/dev/null; then
+  # Every item under the fence, space separated. Deliberately captures any list item shape and
+  # leaves judging it to the charset check below, rather than matching only well-formed names:
+  # a pattern that skips what it cannot parse resolves nothing, falls back to the derivation and
+  # launches on the wrong dataset silently, which is the entire failure being removed here. So
+  # anything unreadable has to come out of awk looking wrong, not looking absent.
+  #
+  # `exit` still runs END, which is what stops a second allowedDatasets block further down the
+  # file from contributing.
+  FENCED="$(awk '
+    /^[[:space:]]*allowedDatasets:[[:space:]]*$/ { inlist = 1; next }
+    inlist && /^[[:space:]]*#/                   { next }
+    inlist && /^[[:space:]]*-/ {
+      sub(/^[[:space:]]*-[[:space:]]*/, "")
+      sub(/[[:space:]]*#.*$/, "")
+      sub(/[[:space:]]+$/, "")
+      if ($0 != "") names = (names == "" ? $0 : names " " $0)
+      next
+    }
+    inlist && /[^[:space:]]/ { exit }
+    END { print names }
+  ' "$MCP_YAML")"
+  # Quotes are stripped here rather than in awk, where escaping them into a single-quoted program
+  # costs more than it buys. A YAML list of one plain scalar is what the template writes; a quoted
+  # one is still legal and still means the same dataset.
+  FENCED="${FENCED//\"/}"
+  FENCED="${FENCED//\'/}"
+  read -ra FENCED_LIST <<<"$FENCED"
+
+  # Three ways this can fail, and all three are louder than resolving nothing. Flow style
+  # (`allowedDatasets: [x]`) lands on the first: the block regex above needs the key alone on its
+  # line, so the grep sees a fence that awk reports as empty.
+  [[ "${#FENCED_LIST[@]}" -ge 1 ]] || die "$MCP_YAML has an allowedDatasets fence this script
+  could not read, so the dataset it names is unknown. Pass --dataset <name>."
+  [[ "${#FENCED_LIST[@]}" -le 1 ]] || die "$MCP_YAML fences ${#FENCED_LIST[@]} datasets, so which
+  one Stu should open is not implied. Pass --dataset <name> to say which."
+  [[ "${FENCED_LIST[0]}" =~ ^[A-Za-z0-9_]+$ ]] || die "$MCP_YAML fences a name that BigQuery
+  cannot hold, so nothing would answer on it. Fix the fence, or pass --dataset <name>."
+
+  DATASET="${FENCED_LIST[0]}"
+  echo "stu: dataset $DATASET (from mcp/bq-$SLUG.yaml)"
 fi
 
 # Deliberately stricter than the app, which also accepts an email as an identity. On this path a
@@ -284,7 +347,8 @@ if serving_this_slug; then
     echo "stu: already running — $URL"
     exit 0
   fi
-  die "$SLUG is already running on port $PORT out of a different dataset than --dataset asked for:
+  die "$SLUG is already running on port $PORT out of a different dataset than this launch resolved
+  ($DATASET):
   $(curl -fsS --max-time 2 "$URL/api/config" 2>/dev/null)
   Restarting it would drop whoever is using it, so this is not done for you. Run
   '$SELF --slug $SLUG --stop' and launch again, or pass --port to run the other one beside it." 2
