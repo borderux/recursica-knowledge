@@ -32,6 +32,10 @@
 # person for confirmation instead of trying to look up the channel roster. The roster lookup
 # needs a relay credential, which a launchd job does not have — see server/identity.mjs.
 #
+# The web bundle: web/dist is rebuilt whenever anything under web/ is newer than it, not only when
+# it is missing. The server is read out of the checkout, so pulling new commits changes the back end
+# in place and would otherwise leave the browser on the bundle built before the pull.
+#
 # Exit codes: 0 running (started, already up, or stopped), 1 usage/preflight, 2 build or start failed.
 
 set -euo pipefail
@@ -267,8 +271,41 @@ fi
 
 # The server serves web/dist. A missing build is the most common first-run failure, so build it
 # rather than handing back a 404 the user has to interpret.
-if [[ ! -f "$APP/web/dist/index.html" ]]; then
+#
+# Missing is not the only way it is wrong, and it was the only one checked. The server runs
+# server.mjs straight out of the checkout, so pulling new commits updates the back end and leaves
+# the front end on whatever bundle was built last — the repository reads exactly origin/main while
+# the browser shows a two-day-old screen, and nothing anywhere says so. That happened: a merged UI
+# change was reported as "not working" when it had simply never been compiled. So the build is
+# considered stale when anything it is built from is newer than it, not only when it is absent.
+#
+# Everything under web/ counts as an input, minus the build output and the dependency tree. A list
+# of the interesting paths would be a second source of truth that goes stale the day someone adds
+# a config file — and it would have to include the gitignored recursica_* token files, which
+# ensure-tokens.mjs refreshes from the pinned package, since a token bump changes the bundle
+# without touching a tracked line. .DS_Store is skipped because opening the folder in Finder is
+# not a source change.
+BUILT="$APP/web/dist/index.html"
+stale_inputs() {
+  find "$APP/web" \
+    \( -name node_modules -o -name dist -o -name .DS_Store \) -prune -o \
+    -type f -newer "$BUILT" -print 2>/dev/null
+}
+
+REBUILT=""
+if [[ ! -f "$BUILT" ]]; then
   echo "stu: no web build found — building (first run only)"
+  REBUILT=1
+elif [[ -n "$(stale_inputs)" ]]; then
+  # Deliberately not a restart. The server reads dist off disk per request, so a rebuild reaches
+  # the next page load on its own, and restarting would drop whoever is using it. The window where
+  # vite has emptied dist and not yet written it is the cost, and it is a few seconds of 404 rather
+  # than a dropped session.
+  echo "stu: the web build is older than the app source — rebuilding"
+  REBUILT=1
+fi
+
+if [[ -n "$REBUILT" ]]; then
   ( cd "$APP/web" && npm install --silent && npm run build --silent ) \
     || die "the web build failed" 2
 fi
@@ -281,7 +318,15 @@ fi
 
 if serving_this_slug; then
   if serving_this_dataset; then
-    echo "stu: already running — $URL"
+    # Say when the bundle just changed under a server that was already up. Without this the
+    # launcher prints the same "already running" line whether or not the page the user is looking
+    # at is the one that was just built, and the rebuild above is invisible to the person who
+    # needs to reload to see it.
+    if [[ -n "$REBUILT" ]]; then
+      echo "stu: already running — $URL (rebuilt the web app; reload the page to pick it up)"
+    else
+      echo "stu: already running — $URL"
+    fi
     exit 0
   fi
   die "$SLUG is already running on port $PORT out of a different dataset than --dataset asked for:
