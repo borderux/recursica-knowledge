@@ -832,7 +832,7 @@ function Resolution({ finding, identity, onChanged }) {
 
       <TextArea
         label="Answer"
-        description={assumed
+        assistiveText={assumed
           ? 'Pre-filled with the assumption. Save it as it stands to confirm it, or change it first.'
           : 'What the answer actually is, and how you know.'}
         value={answer}

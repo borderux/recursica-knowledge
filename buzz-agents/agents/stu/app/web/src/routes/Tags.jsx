@@ -144,7 +144,7 @@ function AddTag({ identity, onClose, onDone }) {
           <TextArea
             formLayout="side-by-side"
             label="Description"
-            description="What a line has to be about for this tag to apply"
+            assistiveText="What a line has to be about for this tag to apply"
             value={description}
             onChange={(e) => setDescription(e.currentTarget.value)}
           />
