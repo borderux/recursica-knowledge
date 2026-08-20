@@ -5,16 +5,29 @@
 #   ~/.buzz/bin/stu --slug acme --status
 #   ~/.buzz/bin/stu --slug acme --stop
 #
-# --sa-slug <name>  the service account's name, when it differs from the slug. The key is read
-#   from .secrets/claire-<sa-slug>-service-user.json. Defaults to the slug. Needed because a
-#   Google service account cannot be renamed, so a slug shortened later leaves the two apart.
+# --sa-slug <name>  the service account's name, when it differs from the slug, read as
+#   .secrets/claire-<sa-slug>-service-user.json. Rarely needed, for the same reason --dataset is
+#   rarely needed: with no flag the launcher takes the key path this channel's MCP servers were
+#   registered with, which is the account the agents already query as. Passing it overrides that
+#   lookup. Absent both, the path is derived from the slug as it always was.
 #
-# --dataset <name>  the BigQuery dataset, when it is not named research_<slug>. Defaults to that
-#   derivation, so an existing channel is unaffected. Pass the same value the channel was deployed
-#   with — deploy-claire-channel.sh takes this flag too, and the app derives the name the same way
-#   it used to. An overridden dataset that is not passed through here leaves every query failing
-#   with "Access Denied ... or perhaps it does not exist", which reads as a broken grant and is
-#   not one: it is a name nobody created.
+#   The flag exists because a Google service account cannot be renamed, so a slug shortened after
+#   the account was created leaves the two apart forever.
+#
+# --key <path>  the service-account key outright, skipping both the lookup and the derivation.
+#   This is what the launchd job carries, so the supervising child is handed the parent's answer
+#   rather than re-deriving one from the same inputs.
+#
+# --dataset <name>  the BigQuery dataset, when it is not named research_<slug>. Rarely needed:
+#   with no flag the launcher reads the name out of this channel's fenced MCP server config,
+#   which the deploy wrote from the same value the dataset was created with. Only a channel with
+#   no such server on this machine falls back to the research_<slug> derivation.
+#
+#   Naming it by hand was the whole failure mode. An overridden dataset that reached the deploy
+#   and not this launcher left every query failing with "Access Denied ... or perhaps it does not
+#   exist" — which reads as a broken grant and is not one: it is a name nobody created. That
+#   wording is BigQuery declining to distinguish a table you may not see from a table that is not
+#   there, so the diagnosis went to IAM every time and the dataset never got looked at.
 #
 # Idempotent: if a server is already serving this slug on the port, it prints that URL and
 # exits 0 rather than binding a second one. That matters because Stu has two launch paths —
@@ -59,12 +72,13 @@ SLUG=""
 # account cannot be renamed after creation, so a client whose slug is later shortened keeps
 # the original name forever. --sa-slug names the key independently of the channel.
 SA_SLUG="${STU_SA_SLUG:-}"
+KEY_ARG=""
 CHANNEL=""
 PROJECT="${STU_PROJECT:-}"
-# Empty means "let the app derive research_<slug>", which is the convention and the common case.
-# A dataset that already existed under a name somebody else chose cannot be renamed in BigQuery,
-# so the name has to be sayable here as well as at deploy time. config.mjs has always accepted
-# --dataset; this launcher was the half that never passed it on.
+# Empty here means "work it out in the preflight" — from the channel's MCP config if there is one,
+# and otherwise by letting the app derive research_<slug>. A dataset that already existed under a
+# name somebody else chose cannot be renamed in BigQuery, so the name has to be sayable here as
+# well as at deploy time; it just should not have to be said.
 DATASET="${STU_DATASET:-}"
 USER_PUBKEY="${STU_USER_PUBKEY:-}"
 USER_NAME="${STU_USER_NAME:-}"
@@ -78,6 +92,10 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --slug)       SLUG="$2"; shift 2 ;;
     --sa-slug)    SA_SLUG="$2"; shift 2 ;;
+    # The key path outright, skipping both the registry lookup and the slug derivation. This is
+    # what the launchd plist carries, so the supervising child is handed the parent's answer
+    # instead of re-deriving one; it is equally usable by hand.
+    --key)        KEY_ARG="$2"; shift 2 ;;
     --channel)    CHANNEL="$2"; shift 2 ;;
     --project)    PROJECT="$2"; shift 2 ;;
     --dataset)    DATASET="$2"; shift 2 ;;
@@ -90,7 +108,16 @@ while [[ $# -gt 0 ]]; do
     --status)     ACTION="status"; shift ;;
     # Internal: launchd's entry point. Runs node in the foreground and watches Buzz Desktop.
     --supervise)  ACTION="supervise"; shift ;;
-    -h|--help)    sed -n '2,35p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    # The header block above: every comment line from the second to the exit-codes line that ends
+    # it. This used to be a hardcoded `sed -n '2,35p'`, which silently truncates the help the first
+    # time anybody adds a paragraph up there. Writing this change did it twice — once by extending
+    # the header, then again after correcting the number and extending the header further. A bound
+    # that has to be re-counted by hand will be got wrong by hand, so there is no number left.
+    -h|--help)
+      awk 'NR == 1 { next }
+           /^#/ { sub(/^# ?/, ""); print; if (/^Exit codes/) exit; next }
+           { exit }' "$0"
+      exit 0 ;;
     *) echo "stu: unknown argument $1" >&2; exit 1 ;;
   esac
 done
@@ -102,6 +129,10 @@ die() { echo "stu: $1" >&2; exit "${2:-1}"; }
 [[ -n "$SLUG" ]] || die "--slug is required (e.g. --slug acme)"
 # Same rule config.mjs enforces, and it also keeps the slug safe in a launchd label and filename.
 [[ "$SLUG" =~ ^[a-z0-9][a-z0-9-]*$ ]] || die "--slug must be lowercase alphanumeric with hyphens: got \"$SLUG\""
+# Whether anybody actually named an account, captured before the default lands on top of it. An
+# explicit --sa-slug is an operator overriding the recorded key path on purpose, so the preflight
+# skips the registry lookup entirely rather than second-guessing them.
+SA_SLUG_GIVEN="$SA_SLUG"
 # Defaults to the slug, which is the common case. Same character rule: Google service account
 # ids allow hyphens and not underscores, so an underscore here can never match a real account.
 SA_SLUG="${SA_SLUG:-$SLUG}"
@@ -129,12 +160,12 @@ serving_this_slug() {
   grep -q "\"slug\":\"$SLUG\"" <<<"$body"
 }
 
-# ...and serving it out of the dataset that was asked for. The slug alone used to decide reuse,
+# ...and serving it out of the dataset this launch resolved. The slug alone used to decide reuse,
 # which turned the fix for a forgotten --dataset into a no-op: the launcher found its own
 # wrong-dataset job, printed "already running" and exited 0, so the only way through was to know
-# to --stop first. Only checked when a dataset was named — the derivation belongs to the app, and
-# recomputing it here would put the name in two places again. The other direction is harmless:
-# reusing a correctly-overridden server from a launch that forgot the flag serves the right data.
+# to --stop first. Now that the preflight resolves the name rather than waiting to be told it,
+# this check has a value to compare in every case that has an MCP server — so a job left over
+# from before, serving the derived name, is reported instead of reused.
 serving_this_dataset() {
   if [[ -z "$DATASET" ]]; then return 0; fi
   local body
@@ -186,15 +217,77 @@ fi
   renamed the clone, re-run 'node scripts/bootstrap-nest.mjs' from it; to use a different
   checkout, set STU_APP to its buzz-agents/agents/stu/app directory."
 
-KEY="$BUZZ_HOME/.secrets/claire-$SA_SLUG-service-user.json"
-[[ -f "$KEY" ]] || die "no service-account key at $KEY — deploy the channel first
-  If this client's service account is not named after its slug, pass --sa-slug <name>
-  (or set STU_SA_SLUG). A symlink at the slug-named path works too."
-
+# Resolved before the key rather than after it, because reading the MCP registry below needs it.
 # launchd hands the job a bare PATH, so the interpreter is resolved here, while we still have the
 # launching shell's environment, and passed through the plist.
 NODE_BIN="${STU_NODE:-$(command -v node || true)}"
 [[ -n "$NODE_BIN" && -x "$NODE_BIN" ]] || die "no usable node found — set STU_NODE to its absolute path"
+
+# The service account, resolved the same way as the dataset and for the same reason: a Google
+# service account cannot be renamed, so a slug shortened after the account was created leaves the
+# two apart forever, and --sa-slug was the caller's job to remember. The deploy already recorded
+# the real path — it registered this channel's MCP servers with GOOGLE_APPLICATION_CREDENTIALS
+# pointing at the key — so the launcher reads it instead of being told.
+#
+# Stu's own fenced registry is tried first. It holds exactly one server, for one channel, so
+# there is no way to pick up another client's key from it; the user-scope registry is the
+# fallback for a machine deployed before the per-agent fences existed, and there the server name
+# is matched exactly rather than by prefix, or slug "acme" would match "acme-eu"'s server.
+#
+# One rule, shared with the dataset lookup above, and worth stating as a rule because the two
+# used to differ here for reasons that were defensible and impossible to remember: if a config
+# names something, that is the answer and being unable to use it stops the launch; if nothing
+# names it, the derivation is the answer and the launch proceeds as it always did. Guessing past
+# a recorded value is the one thing neither lookup does.
+#
+# So a registry entry naming a key that is not on disk is refused rather than quietly replaced by
+# the slug-derived path. The entry is the deploy's own record of where this channel's credential
+# lives; if it is wrong, every agent on the channel is failing too and the derived path is not a
+# repair, just a different question. A registry with no entry for this slug, or one that will not
+# parse, names nothing and falls through — an unparseable file has said nothing to override.
+KEY="$KEY_ARG"
+KEY_FROM=""
+if [[ -z "$KEY_ARG" && -z "$SA_SLUG_GIVEN" ]]; then
+  # Prints "<key path>\n<file that named it>" for the first entry whose key is on disk, or for the
+  # first entry found at all when none of them are — the caller tells the two apart by testing the
+  # path. Preferring a usable entry over a broken earlier one keeps a stale fenced registry from
+  # blocking a machine whose user-scope entry is correct.
+  KEY_RESOLVED="$("$NODE_BIN" -e '
+    const fs = require("node:fs");
+    const [slug, ...files] = process.argv.slice(1);
+    let firstFound = null;
+    for (const file of files) {
+      let servers;
+      try { servers = JSON.parse(fs.readFileSync(file, "utf8")).mcpServers; } catch { continue; }
+      if (!servers) continue;
+      for (const name of [`bq-${slug}-explore`, `bq-${slug}`, `bq-${slug}-ro`]) {
+        const key = servers[name]?.env?.GOOGLE_APPLICATION_CREDENTIALS;
+        if (!key) continue;
+        if (fs.existsSync(key)) { process.stdout.write(`${key}\n${file}`); process.exit(0); }
+        firstFound = firstFound ?? `${key}\n${file}`;
+      }
+    }
+    if (firstFound) process.stdout.write(firstFound);
+  ' "$SLUG" \
+    "$BUZZ_HOME/proxy/claude-config-stu-$SLUG/.claude.json" \
+    "${CLAUDE_CONFIG_DIR:-$HOME}/.claude.json" 2>/dev/null || true)"
+  if [[ -n "$KEY_RESOLVED" ]]; then
+    KEY="$(head -1 <<<"$KEY_RESOLVED")"
+    KEY_FROM="$(tail -1 <<<"$KEY_RESOLVED")"
+    [[ -f "$KEY" ]] || die "${KEY_FROM/#$HOME/~} says this channel's service-account key is at
+  $KEY
+  and it is not there. That file is what the agents on this channel authenticate with, so they are
+  failing too and the slug-derived path would not be a repair. Restore the key, re-run the deploy,
+  or pass --key <path> to override."
+  fi
+fi
+
+# The derivation stays the default, so a machine with no registry entry behaves as it always has.
+KEY="${KEY:-$BUZZ_HOME/.secrets/claire-$SA_SLUG-service-user.json}"
+[[ -f "$KEY" ]] || die "no service-account key at $KEY — deploy the channel first
+  If this client's service account is not named after its slug, pass --sa-slug <name>
+  (or set STU_SA_SLUG). A symlink at the slug-named path works too."
+[[ -z "$KEY_FROM" ]] || echo "stu: key $KEY (from ${KEY_FROM/#$HOME/~})"
 
 # server/config.mjs requires a project and deliberately has no default, so leaving this to the
 # caller made the documented launch line fail on a clean machine. The key we just preflighted
@@ -207,6 +300,65 @@ if [[ -z "$PROJECT" ]]; then
     catch { process.exit(1); }
   ' "$KEY" 2>/dev/null || true)"
   [[ -n "$PROJECT" ]] || die "could not read project_id from $KEY — pass --project <id> or set STU_PROJECT"
+fi
+
+# Same move for the dataset, and for the same reason: the name is already written down on this
+# machine, so asking a caller to repeat it correctly is a step that can only be got wrong. The
+# channel's fenced MCP server is the copy to read — deploy-claire-channel.sh renders it from the
+# --dataset the dataset was created with, and it is the name every agent on this channel already
+# queries through, so Stu and the agents cannot end up disagreeing about where the data is.
+#
+# Not the key file: unlike project_id, a dataset name is nowhere in it. Not the channel canvas
+# either, though it records the same value — reading it needs a relay credential, and the launchd
+# job that re-enters this script under --supervise has none.
+#
+# An explicit --dataset or STU_DATASET still wins, and a channel with no MCP server on this
+# machine still falls through to the app's research_<slug> derivation, so nothing that worked
+# before this stops working.
+MCP_YAML="$BUZZ_HOME/mcp/bq-$SLUG.yaml"
+# A fence line rather than the file: a bq-<slug>.yaml with no allowedDatasets at all is not this
+# script's problem to report, and it leaves the derivation as the answer exactly as before.
+if [[ -z "$DATASET" ]] && grep -qE '^[[:space:]]*allowedDatasets:' "$MCP_YAML" 2>/dev/null; then
+  # Every item under the fence, space separated. Deliberately captures any list item shape and
+  # leaves judging it to the charset check below, rather than matching only well-formed names:
+  # a pattern that skips what it cannot parse resolves nothing, falls back to the derivation and
+  # launches on the wrong dataset silently, which is the entire failure being removed here. So
+  # anything unreadable has to come out of awk looking wrong, not looking absent.
+  #
+  # `exit` still runs END, which is what stops a second allowedDatasets block further down the
+  # file from contributing.
+  FENCED="$(awk '
+    /^[[:space:]]*allowedDatasets:[[:space:]]*$/ { inlist = 1; next }
+    inlist && /^[[:space:]]*#/                   { next }
+    inlist && /^[[:space:]]*-/ {
+      sub(/^[[:space:]]*-[[:space:]]*/, "")
+      sub(/[[:space:]]*#.*$/, "")
+      sub(/[[:space:]]+$/, "")
+      if ($0 != "") names = (names == "" ? $0 : names " " $0)
+      next
+    }
+    inlist && /[^[:space:]]/ { exit }
+    END { print names }
+  ' "$MCP_YAML")"
+  # Quotes are stripped here rather than in awk, where escaping them into a single-quoted program
+  # costs more than it buys. A YAML list of one plain scalar is what the template writes; a quoted
+  # one is still legal and still means the same dataset.
+  FENCED="${FENCED//\"/}"
+  FENCED="${FENCED//\'/}"
+  read -ra FENCED_LIST <<<"$FENCED"
+
+  # Three ways this can fail, and all three are louder than resolving nothing. Flow style
+  # (`allowedDatasets: [x]`) lands on the first: the block regex above needs the key alone on its
+  # line, so the grep sees a fence that awk reports as empty.
+  [[ "${#FENCED_LIST[@]}" -ge 1 ]] || die "$MCP_YAML has an allowedDatasets fence this script
+  could not read, so the dataset it names is unknown. Pass --dataset <name>."
+  [[ "${#FENCED_LIST[@]}" -le 1 ]] || die "$MCP_YAML fences ${#FENCED_LIST[@]} datasets, so which
+  one Stu should open is not implied. Pass --dataset <name> to say which."
+  [[ "${FENCED_LIST[0]}" =~ ^[A-Za-z0-9_]+$ ]] || die "$MCP_YAML fences a name that BigQuery
+  cannot hold, so nothing would answer on it. Fix the fence, or pass --dataset <name>."
+
+  DATASET="${FENCED_LIST[0]}"
+  echo "stu: dataset $DATASET (from mcp/bq-$SLUG.yaml)"
 fi
 
 # Deliberately stricter than the app, which also accepts an email as an identity. On this path a
@@ -329,7 +481,8 @@ if serving_this_slug; then
     fi
     exit 0
   fi
-  die "$SLUG is already running on port $PORT out of a different dataset than --dataset asked for:
+  die "$SLUG is already running on port $PORT out of a different dataset than this launch resolved
+  ($DATASET):
   $(curl -fsS --max-time 2 "$URL/api/config" 2>/dev/null)
   Restarting it would drop whoever is using it, so this is not done for you. Run
   '$SELF --slug $SLUG --stop' and launch again, or pass --port to run the other one beside it." 2
@@ -357,12 +510,16 @@ EOF
   plist_arg "$SELF"
   plist_arg "--supervise"
   plist_arg "--slug"; plist_arg "$SLUG"
-  # The child runs this same script and redoes the whole preflight, so every launcher-level flag it
-  # depends on has to be here, not just the ones the server reads. --sa-slug was missing: the parent
-  # found the key, the plist dropped the flag, and the child looked under the slug-named path and
-  # died "no service-account key ... deploy the channel first" from a correctly deployed channel.
-  # It only ever appeared to work where a symlink happened to sit at the slug-named path.
-  plist_arg "--sa-slug"; plist_arg "$SA_SLUG"
+  # The resolved key, not the --sa-slug that may have produced it. The child runs this same script
+  # and redoes the whole preflight, so anything the parent worked out has to reach it as the answer
+  # rather than as the question. This line has produced the same failure twice. Once in the repo:
+  # --sa-slug was absent here, so the parent found the key, the child looked under the slug-named
+  # path and died "no service-account key ... deploy the channel first" from a correctly deployed
+  # channel. Once while the lookup above was being written: --sa-slug had since been added, and the
+  # child, seeing a flag, skipped the lookup that had just succeeded in the parent and died the same
+  # way. Both only appeared to work where a symlink happened to sit at the slug-named path, which is
+  # what made the first one survive as long as it did. Passing the path ends the class.
+  plist_arg "--key"; plist_arg "$KEY"
   plist_arg "--project"; plist_arg "$PROJECT"
   plist_arg "--port"; plist_arg "$PORT"
   if [[ -n "$DATASET" ]];     then plist_arg "--dataset";    plist_arg "$DATASET"; fi
