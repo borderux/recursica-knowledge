@@ -44,6 +44,13 @@ export const api = {
   tagUsage: (tagId) => request('GET', `/api/tags/${encodeURIComponent(tagId)}/usage`),
   dictionary: () => request('GET', '/api/dictionary'),
   findings: () => request('GET', '/api/findings'),
+  personas: () => request('GET', '/api/personas'),
+  // decision: 'promote' | 'reject'. Only a draft accepts either.
+  decidePersonaSet: (populationId, version, b) => request(
+    'PATCH',
+    `/api/personas/${encodeURIComponent(populationId)}/${encodeURIComponent(version)}`,
+    b,
+  ),
   edits: (params = {}) => {
     const qs = new URLSearchParams(
       Object.entries(params).filter(([, v]) => v != null),

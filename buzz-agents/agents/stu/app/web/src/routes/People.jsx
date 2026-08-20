@@ -59,9 +59,9 @@ export function People({ identity, revision, onChanged }) {
   if (error) return <Page title="People"><Text>{error}</Text></Page>
   if (!data) return null
 
-  const { roster, people, pairs, personMatches, unattributed } = data
+  const { roster, people, pairs, personMatches, unattributed, conversationPopulations } = data
   const byId = new Map(roster.map((r) => [r.participant_id, r]))
-  const rows = buildRows({ roster, people, pairs, personMatches })
+  const rows = buildRows({ roster, people, pairs, personMatches, conversationPopulations })
 
   /** Open the form for a set of ids, prefilled from whichever record carries the most transcript. */
   function propose(participantIds, personId = null) {
@@ -122,6 +122,17 @@ export function People({ identity, revision, onChanged }) {
       width: COLUMN_WIDTH.term,
       sortValue: (r) => r.roles[0] ?? null,
       render: (r) => (r.roles.length ? r.roles.join(' / ') : <Absent />),
+    },
+    {
+      key: 'population',
+      header: 'Population',
+      width: COLUMN_WIDTH.term,
+      sortValue: (r) => r.populations[0] ?? null,
+      // Links to Personas rather than to a filtered view of it — this table's job is to say
+      // which population a person belongs to; browsing that population's archetypes is Personas'.
+      render: (r) => (r.populations.length
+        ? <Link component={RouterLink} to="/personas">{r.populations.join(' / ')}</Link>
+        : <Absent />),
     },
     {
       key: 'interviews',
@@ -228,10 +239,17 @@ export function People({ identity, revision, onChanged }) {
  * A record that is already part of a person does not also appear alone, which is the double-count
  * the stacked-section version had no way to avoid.
  */
-export function buildRows({ roster, people, pairs, personMatches }) {
+export function buildRows({ roster, people, pairs, personMatches, conversationPopulations = [] }) {
   const byId = new Map(roster.map((r) => [r.participant_id, r]))
   const spokenFor = new Set()
   const rows = []
+
+  // Resolved through `population_map`, never the raw `participant_type` — same rule Personas
+  // reads by. A conversation with no ruling yet, or one this population lookup has never seen,
+  // contributes nothing rather than a guess.
+  const populationByConversation = new Map(
+    conversationPopulations.map((c) => [c.conversation_id, c.population_id]),
+  )
 
   const totals = (ids) => {
     const records = ids.map((id) => byId.get(id)).filter(Boolean)
@@ -242,6 +260,11 @@ export function buildRows({ roster, people, pairs, personMatches }) {
       ).size,
       roles: [...new Set(records.flatMap((r) => r.source_types ?? []))],
       sourceNames: [...new Set(records.flatMap((r) => r.source_names ?? []))],
+      populations: [...new Set(
+        records
+          .flatMap((r) => (r.appearances ?? []).map((a) => populationByConversation.get(a.conversation_id)))
+          .filter(Boolean),
+      )],
       records,
     }
   }
@@ -261,6 +284,7 @@ export function buildRows({ roster, people, pairs, personMatches }) {
       conversationCount: t.conversationCount || Number(person.conversation_count ?? 0),
       status: 'Consolidated',
       notes: person.notes,
+      populations: t.populations,
       warnings: [],
     })
   }
@@ -285,6 +309,7 @@ export function buildRows({ roster, people, pairs, personMatches }) {
       conversationCount: t.conversationCount,
       status: 'Awaiting approval',
       reasons: pair.reasons ?? [],
+      populations: t.populations,
       warnings: [],
     })
   }
@@ -305,6 +330,7 @@ export function buildRows({ roster, people, pairs, personMatches }) {
       conversationCount: t.conversationCount,
       status: 'Awaiting approval',
       reasons: match.reasons ?? [],
+      populations: t.populations,
       warnings: [],
     })
   }
@@ -322,6 +348,7 @@ export function buildRows({ roster, people, pairs, personMatches }) {
       lineCount: t.lineCount,
       conversationCount: t.conversationCount,
       status: 'Separate',
+      populations: t.populations,
       warnings: warningsFor(r),
     })
   }

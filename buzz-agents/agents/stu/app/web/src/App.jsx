@@ -6,6 +6,7 @@ import { IdentityGate } from './shell/IdentityGate.jsx'
 import { Interviews } from './routes/Interviews.jsx'
 import { Interview } from './routes/Interview.jsx'
 import { People } from './routes/People.jsx'
+import { Personas } from './routes/Personas.jsx'
 import { Tags } from './routes/Tags.jsx'
 import { TagDetail } from './routes/TagDetail.jsx'
 import { Dictionary } from './routes/Dictionary.jsx'
@@ -14,17 +15,22 @@ import { History } from './routes/History.jsx'
 
 const STORAGE_KEY = 'stu.identity'
 
-// Six destinations. recursica-skill-navigation puts complex subject matter at about five items
+// Seven destinations. recursica-skill-navigation puts complex subject matter at about five items
 // per level, and recursica-skill-screen-scaffolding sends anything past three or four to a left
 // rail. Both point the same way, so the rail is not a preference here.
 //
 // `People` sits directly under `Interviews` because it is the same subject matter one level up:
 // the interviews are where a speaker is read, and this is where it is settled who was speaking.
+// `Personas` sits directly under `People` for the same reason one level up again: a person belongs
+// to a population through the conversations they appear in, and a persona is a behavioral archetype
+// synthesized across a population's people — reading one without the other loses the traceability
+// this whole app exists to keep.
 //
 // Labels are object nouns, never actions — `Interviews`, not `View interviews`.
 const SECTIONS = [
   { to: '/interviews', label: 'Interviews' },
   { to: '/people', label: 'People' },
+  { to: '/personas', label: 'Personas' },
   { to: '/tags', label: 'Tags' },
   { to: '/dictionary', label: 'Dictionary' },
   { to: '/findings', label: 'Findings' },
@@ -85,6 +91,8 @@ export default function App() {
           {/* A cited line is a place you can be sent to. Findings link straight here. */}
           <Route path="/interviews/:cid/lines/:seq" element={<Interview {...screens} />} />
           <Route path="/people" element={<People {...screens} />} />
+          <Route path="/personas" element={<Navigate to="/personas/review" replace />} />
+          <Route path="/personas/:tab" element={<Personas {...screens} />} />
           <Route path="/tags" element={<Tags {...screens} />} />
           <Route path="/tags/:tagId" element={<TagDetail {...screens} />} />
           {/* Each tab is its own route, so a tab survives a refresh and works with back and
