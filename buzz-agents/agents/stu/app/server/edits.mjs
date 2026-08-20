@@ -757,23 +757,33 @@ export function createEdits(bq, queries) {
         newValue: decision === 'promote' ? 'current' : resolution,
         note,
       }, async () => {
-        if (decision === 'promote') {
-          // Superseding the prior current row happens in the same write as promoting this one —
-          // never as a separate call a caller could stop between, which is what would let a
-          // population hold two current rows at once.
-          await bq.execute(`
-            UPDATE ${T('persona_sets')}
-            SET status = 'superseded'
-            WHERE population_id = @pop AND status = 'current' AND version != @ver
-          `, { pop: populationId, ver: version })
-        }
+        const supersedePrior = `
+          UPDATE ${T('persona_sets')}
+          SET status = 'superseded'
+          WHERE population_id = @pop AND status = 'current' AND version != @ver`
 
-        await bq.execute(`
+        const recordDecision = `
           UPDATE ${T('persona_sets')}
           SET status = @status, reviewed_by = @pubkey, reviewed_at = CURRENT_TIMESTAMP(),
               resolution = @resolution, notes = IF(@notes IS NULL, notes, @notes)
-          WHERE population_id = @pop AND version = @ver
-        `, {
+          WHERE population_id = @pop AND version = @ver`
+
+        // Promoting is two statements, so it goes out as one multi-statement transaction rather
+        // than two calls. Two calls did preserve the invariant that matters — superseding first
+        // means an interruption leaves the population with no current version rather than two —
+        // but "no current version" is its own wrong state, silent, and nothing detects or repairs
+        // it. A transaction is the only form in which the pair either both happens or neither
+        // does, which is what the paragraph above claims.
+        //
+        // Rejecting touches one row and needs none of this.
+        const sql = decision === 'promote'
+          ? `BEGIN TRANSACTION;\n${supersedePrior};\n${recordDecision};\nCOMMIT TRANSACTION;`
+          : recordDecision
+
+        // A script reports affected rows per child job, not on the parent, so `execute` returns 0
+        // for the promote path. Nothing reads it — `write` passes it through and this caller
+        // returns its own result — but do not start trusting it here without checking that.
+        await bq.execute(sql, {
           status: decision === 'promote' ? 'current' : before.status,
           resolution, notes, pubkey: actor.pubkey, pop: populationId, ver: version,
         })
