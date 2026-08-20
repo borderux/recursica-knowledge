@@ -718,6 +718,71 @@ export function createEdits(bq, queries) {
     },
 
     /**
+     * The one write `persona_sets` reserves for a human, through Stu — the column comment on
+     * `status` says so directly. Percy's `write_persona_set` only ever inserts `draft`; nothing
+     * else ever moves a row off it or onto `current`.
+     *
+     * Two decisions, not a status enum: `promote` is the actual state change — this version
+     * becomes `current`, and whatever was `current` for the same population becomes `superseded`
+     * in the same write, so a population never holds two `current` rows even for an instant.
+     * `reject` leaves `status` alone (the schema only has three values, and `rejected` is not one
+     * of them) and records the verdict in `resolution` instead — a reviewed-and-declined draft is
+     * a different thing from an unreviewed one, and this is how that difference is kept without
+     * inventing a status the write tool doesn't recognise.
+     */
+    async decidePersonaSet(actor, { populationId, version, decision, note }) {
+      const allowed = ['promote', 'reject']
+      if (!allowed.includes(decision)) {
+        throw new Error(`decision must be one of ${allowed.join(' | ')}`)
+      }
+
+      const before = await queries.personaSet(populationId, version)
+      if (!before) throw new Error(`persona set not found: ${populationId} v${version}`)
+      if (before.status !== 'draft') {
+        throw new Error(
+          `${populationId} v${version} is already ${before.status} — only a draft can be ` +
+          `promoted or rejected`,
+        )
+      }
+
+      const resolution = decision === 'promote' ? 'approved' : 'rejected'
+      const notes = appendNote(before.notes, note)
+
+      await write(actor, {
+        targetTable: 'persona_sets',
+        targetKey: { population_id: populationId, version },
+        field: decision === 'promote' ? 'status' : 'resolution',
+        action: 'update',
+        oldValue: decision === 'promote' ? before.status : before.resolution,
+        newValue: decision === 'promote' ? 'current' : resolution,
+        note,
+      }, async () => {
+        if (decision === 'promote') {
+          // Superseding the prior current row happens in the same write as promoting this one —
+          // never as a separate call a caller could stop between, which is what would let a
+          // population hold two current rows at once.
+          await bq.execute(`
+            UPDATE ${T('persona_sets')}
+            SET status = 'superseded'
+            WHERE population_id = @pop AND status = 'current' AND version != @ver
+          `, { pop: populationId, ver: version })
+        }
+
+        await bq.execute(`
+          UPDATE ${T('persona_sets')}
+          SET status = @status, reviewed_by = @pubkey, reviewed_at = CURRENT_TIMESTAMP(),
+              resolution = @resolution, notes = IF(@notes IS NULL, notes, @notes)
+          WHERE population_id = @pop AND version = @ver
+        `, {
+          status: decision === 'promote' ? 'current' : before.status,
+          resolution, notes, pubkey: actor.pubkey, pop: populationId, ver: version,
+        })
+      })
+
+      return { changed: true, population_id: populationId, version, decision, resolution }
+    },
+
+    /**
      * Add a tag to the library by hand. Written with origin = 'human', which is what stops
      * sync-tag-dictionary.mjs retiring it on the next run.
      */

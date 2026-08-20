@@ -81,13 +81,16 @@ const routes = [
   // The consolidation screen's whole payload in one call. Suggestions are computed against the
   // same snapshot the roster is drawn from, so a merge offered is a merge the table can show.
   ['GET', '/api/participants', async () => {
-    const [roster, people, candidates, unattributed] = await Promise.all([
+    const [roster, people, candidates, unattributed, conversationPopulations] = await Promise.all([
       queries.participantRoster(),
       queries.people(),
       queries.duplicateCandidates(),
       queries.unattributedLines(),
+      // Which population each of a person's conversations belongs to — what lets the People
+      // table link a person to the Personas screen built from their population's evidence.
+      queries.conversationPopulations(),
     ])
-    return { roster, people, ...candidates, unattributed }
+    return { roster, people, ...candidates, unattributed, conversationPopulations }
   }],
 
   ['POST', '/api/people', async (_p, body) => {
@@ -130,6 +133,24 @@ const routes = [
   ['GET', '/api/dictionary', () => queries.dictionary()],
 
   ['GET', '/api/findings', () => queries.findings()],
+
+  ['GET', '/api/personas', async () => {
+    const [personaSets, conversationPopulations] = await Promise.all([
+      queries.personaSets(),
+      queries.conversationPopulations(),
+    ])
+    return { personaSets, conversationPopulations }
+  }],
+
+  ['PATCH', '/api/personas/:populationId/:version', async (p, body) => {
+    const actor = await identity.actor(body.pubkey)
+    return edits.decidePersonaSet(actor, {
+      populationId: p.populationId,
+      version: Number(p.version),
+      decision: body.decision,
+      note: body.note,
+    })
+  }],
 
   ['GET', '/api/edits', (_p, _b, url) => queries.edits({
     conversationId: url.searchParams.get('conversation_id'),

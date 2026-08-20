@@ -660,6 +660,69 @@ export function createQueries(bq) {
     },
 
     /**
+     * Persona sets — one row per `(population_id, version)` — with their evidence resolved to
+     * live transcript text, same treatment as `findings()`. `personas`, `run_summary`,
+     * `cohort_alignment`, and `diff` are JSON columns and decode to objects/arrays.
+     *
+     * `status` is `draft | current | superseded` — Percy writes `draft` and never anything else;
+     * moving a version to `current` is the one write this screen exists to make, and superseding
+     * an old version also happens only there, never on its own row here.
+     */
+    async personaSets() {
+      return bq.query(`
+        WITH resolved AS (
+          SELECT
+            ps.population_id,
+            ps.version,
+            ARRAY_AGG(
+              STRUCT(
+                e.conversation_id                             AS conversation_id,
+                e.line_id                                     AS line_id,
+                e.quote                                       AS quote,
+                COALESCE(l.cleaned_text, l.original_text)     AS line_text,
+                l.line_sequence_number                        AS line_sequence_number
+              )
+              ORDER BY l.line_sequence_number
+            ) AS evidence
+          FROM ${T('persona_sets')} ps
+          CROSS JOIN UNNEST(ps.evidence) AS e
+          LEFT JOIN ${T('lines_current')} l ON l.line_id = e.line_id
+          GROUP BY ps.population_id, ps.version
+        )
+        SELECT
+          ps.population_id, ps.version, ps.status, ps.supersedes, ps.goals_available,
+          ps.run_summary, ps.cohort_alignment, ps.personas, ps.diff,
+          ps.reviewed_by, ps.reviewed_at, ps.resolution,
+          ps.produced_by, ps.produced_at, ps.document_uri, ps.notes,
+          IFNULL(r.evidence, []) AS evidence
+        FROM ${T('persona_sets')} ps
+        LEFT JOIN resolved r
+          ON r.population_id = ps.population_id AND r.version = ps.version
+        ORDER BY
+          CASE ps.status WHEN 'draft' THEN 0 WHEN 'current' THEN 1 ELSE 2 END,
+          ps.population_id, ps.version DESC
+      `)
+    },
+
+    /** One persona set, with the columns a promote/reject decision needs to record what changed. */
+    async personaSet(populationId, version) {
+      const rows = await bq.query(`
+        SELECT population_id, version, status, reviewed_by, reviewed_at, resolution, notes
+        FROM ${T('persona_sets')}
+        WHERE population_id = @pop AND version = @ver
+      `, { pop: populationId, ver: version })
+      return rows[0] ?? null
+    },
+
+    /**
+     * Which population each conversation belongs to, resolved through `population_map` — never
+     * the raw `participant_type` string. Powers the link from People to Personas.
+     */
+    async conversationPopulations() {
+      return bq.query(`SELECT conversation_id, raw_value, population_id FROM ${T('conversation_populations')}`)
+    },
+
+    /**
      * Corrections whose line no longer exists, because a re-ingest re-parsed it away. The edit
      * itself is safe — it is in `line_edits`, which Scribe cannot reach — but it is attached to
      * nothing, so nobody would see it again unless it is asked for by name.
