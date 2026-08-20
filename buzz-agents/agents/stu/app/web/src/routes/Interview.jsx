@@ -328,7 +328,7 @@ function CorrectionForm({ line, cid, identity, onChanged }) {
       <TextArea
         formLayout="side-by-side"
         label="Corrected text"
-        description="Empty records that the source text was right as it stood."
+        assistiveText="Empty records that the source text was right as it stood."
         value={value}
         autosize
         minRows={2}
