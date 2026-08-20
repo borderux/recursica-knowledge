@@ -230,32 +230,51 @@ NODE_BIN="${STU_NODE:-$(command -v node || true)}"
 # fallback for a machine deployed before the per-agent fences existed, and there the server name
 # is matched exactly rather than by prefix, or slug "acme" would match "acme-eu"'s server.
 #
-# Unlike the dataset, an unreadable registry here is NOT worth refusing over. A wrong or missing
-# key fails loudly on its own — the file is either absent, in which case the preflight below says
-# so, or it belongs to another client, in which case IAM refuses every query. There is no silent
-# wrong answer to protect against, so this narrows to a quiet fallback where the dataset lookup
-# has to shout.
+# One rule, shared with the dataset lookup above, and worth stating as a rule because the two
+# used to differ here for reasons that were defensible and impossible to remember: if a config
+# names something, that is the answer and being unable to use it stops the launch; if nothing
+# names it, the derivation is the answer and the launch proceeds as it always did. Guessing past
+# a recorded value is the one thing neither lookup does.
+#
+# So a registry entry naming a key that is not on disk is refused rather than quietly replaced by
+# the slug-derived path. The entry is the deploy's own record of where this channel's credential
+# lives; if it is wrong, every agent on the channel is failing too and the derived path is not a
+# repair, just a different question. A registry with no entry for this slug, or one that will not
+# parse, names nothing and falls through — an unparseable file has said nothing to override.
 KEY="$KEY_ARG"
 KEY_FROM=""
 if [[ -z "$KEY_ARG" && -z "$SA_SLUG_GIVEN" ]]; then
+  # Prints "<key path>\n<file that named it>" for the first entry whose key is on disk, or for the
+  # first entry found at all when none of them are — the caller tells the two apart by testing the
+  # path. Preferring a usable entry over a broken earlier one keeps a stale fenced registry from
+  # blocking a machine whose user-scope entry is correct.
   KEY_RESOLVED="$("$NODE_BIN" -e '
     const fs = require("node:fs");
     const [slug, ...files] = process.argv.slice(1);
+    let firstFound = null;
     for (const file of files) {
       let servers;
       try { servers = JSON.parse(fs.readFileSync(file, "utf8")).mcpServers; } catch { continue; }
       if (!servers) continue;
       for (const name of [`bq-${slug}-explore`, `bq-${slug}`, `bq-${slug}-ro`]) {
         const key = servers[name]?.env?.GOOGLE_APPLICATION_CREDENTIALS;
-        if (key && fs.existsSync(key)) { process.stdout.write(`${key}\n${file}`); process.exit(0); }
+        if (!key) continue;
+        if (fs.existsSync(key)) { process.stdout.write(`${key}\n${file}`); process.exit(0); }
+        firstFound = firstFound ?? `${key}\n${file}`;
       }
     }
+    if (firstFound) process.stdout.write(firstFound);
   ' "$SLUG" \
     "$BUZZ_HOME/proxy/claude-config-stu-$SLUG/.claude.json" \
     "${CLAUDE_CONFIG_DIR:-$HOME}/.claude.json" 2>/dev/null || true)"
   if [[ -n "$KEY_RESOLVED" ]]; then
     KEY="$(head -1 <<<"$KEY_RESOLVED")"
     KEY_FROM="$(tail -1 <<<"$KEY_RESOLVED")"
+    [[ -f "$KEY" ]] || die "${KEY_FROM/#$HOME/~} says this channel's service-account key is at
+  $KEY
+  and it is not there. That file is what the agents on this channel authenticate with, so they are
+  failing too and the slug-derived path would not be a repair. Restore the key, re-run the deploy,
+  or pass --key <path> to override."
   fi
 fi
 
