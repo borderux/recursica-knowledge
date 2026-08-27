@@ -104,10 +104,11 @@ JOIN `@DATASET@.conversation_populations` pop
   ON pop.conversation_id = l.conversation_id
 WHERE t.removed_at IS NULL
   AND pop.population_id = '<population_id>'
+  AND pc.resolved_type = 'participant'
 ORDER BY l.conversation_id, l.line_sequence_number
 ```
 
-Four things matter here and each has bitten this pipeline before in a different agent:
+Five things matter here and each has bitten this pipeline before in a different agent:
 
 - **`lines_current`, not `transcript_lines`.** The view resolves to a human correction when one
   exists. Reading the raw table cites text a reviewer has since fixed.
@@ -121,6 +122,12 @@ Four things matter here and each has bitten this pipeline before in a different 
   belong to which population — reading the raw column yourself would bypass that ruling and can
   disagree with it (a raw value can be a data-hygiene fix, not a real distinction; `population_map`
   is where that gets decided, not you).
+- **`pc.resolved_type = 'participant'`, always.** Interviewers, stakeholders, and observers speak
+  in the transcript but are never part of the population being studied. That exclusion belongs
+  here, in the query Pass 0 reads from — not as a filter applied to `participant_ids` after
+  clustering. If this condition is ever missing, an interviewer's lines still enter Pass 0 as
+  observations and can end up seeding or joining a cluster, which is the membership bug, not a
+  cosmetic one.
 
 **B. Research questions / study goals** — see "No study goals exist yet" above. There is currently
 no Input B. Do not query for one; there is nowhere to query.
@@ -177,6 +184,11 @@ never the raw cohort value**. The population itself is the *outer* boundary, fix
 configured this deployment and resolved through the lookup; clustering happens *inside* that
 boundary, on behavior alone.
 
+**Interviewers are never part of any population.** The Data access query already restricts Pass 0
+to `resolved_type = 'participant'`, so an interviewer, stakeholder, or observer should never reach
+this pass at all. If one shows up in what Pass 0 extracted, that is a query regression to fix, not
+a name to filter out of a cluster here.
+
 - For each proposed cluster, state the single distinguishing axis that separates it from the
   others.
 - A cluster needs at least 3 participants to be "confirmed." Smaller groupings are "tentative."
@@ -192,10 +204,47 @@ raw value, and a clean non-alignment is as informative as alignment.
 
 ### Pass 2 — Synthesis
 
-For each cluster, produce one persona:
+For each cluster, produce one persona in exactly this JSON shape. These are the literal keys
+`write_persona_set` and the Personas screen read — do not rename, nest, flatten, or substitute any
+of them:
 
-- Every attribute traces to a Pass 0 observation, and thus to a transcript line. Nothing appears in
-  Pass 2 that wasn't already grounded in Pass 0.
+```json
+{
+  "id": "string",
+  "name": "string",
+  "summary": "string",
+  "status": "confirmed | tentative",
+  "distinguishing_axis": "string",
+  "participant_ids": ["participant_id", "..."],
+  "goals": [
+    {"statement": "string", "type": "observed | inferred", "support": "strong | moderate | weak",
+     "evidence": [{"conversation_id": "...", "line_id": "...", "quote": "..."}]}
+  ],
+  "behaviors": [
+    {"statement": "string", "type": "observed | inferred", "support": "strong | moderate | weak",
+     "evidence": [{"conversation_id": "...", "line_id": "...", "quote": "..."}]}
+  ],
+  "pain_points": [
+    {"statement": "string", "type": "observed | inferred", "support": "strong | moderate | weak",
+     "evidence": [{"conversation_id": "...", "line_id": "...", "quote": "..."}]}
+  ],
+  "mental_model": "string",
+  "representative_quotes": [{"conversation_id": "...", "line_id": "...", "quote": "..."}],
+  "gaps": ["string", "..."]
+}
+```
+
+- `participant_ids` holds the cluster's `participant_id` values — the stable id from
+  `participants_current`, never `resolved_name` or any other display name. `resolved_name` is for
+  your own Pass 0/1 bookkeeping and for rendering the Drive doc, not for this array.
+- `status` mirrors the Pass 1 cluster confidence — `"confirmed"` for a cluster of 3+ participants,
+  `"tentative"` for a smaller one — not a different vocabulary invented at synthesis time.
+- `goals`, `behaviors`, and `pain_points` are three separate arrays, never one combined
+  `attributes` list. Every observation from Pass 0 belongs in exactly one of the three based on
+  what kind of claim it is.
+- Every attribute traces to a Pass 0 observation, and thus to a transcript line — nothing appears
+  in Pass 2 that wasn't already grounded in Pass 0. Its `evidence` array carries that citation,
+  same shape as everywhere else in this pipeline.
 - Type each attribute `observed` or `inferred`, and give it a support level (`strong` / `moderate`
   / `weak`) based on how many participants in the cluster support it.
 - End each persona with an explicit **gaps** list: what the data does not tell you about this
