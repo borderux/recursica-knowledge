@@ -123,7 +123,7 @@ function Waiting({ rows }) {
  * One tab's worth of terms: the filter that narrows them, then the two sections they fall into.
  *
  * The filter sits above both sections because it acts on both — recursica-skill-filters, "filters
- * sit above the collection they act on". `Waiting on you` and `Decided` are two views of one
+ * sit above the collection they act on". `Terms awaiting review` and `Decided` are two views of one
  * collection, not two collections.
  */
 function Terms({ rows, kind, empty, identity, onChanged }) {
@@ -163,6 +163,8 @@ function Terms({ rows, kind, empty, identity, onChanged }) {
           {/* A noun naming the field, matching what each term shows, and `Any` for the neutral
               state — the convention the Findings filter bar already set. Person and org under
               Spellings are the highest-risk group, and this is what isolates them. */}
+          {/* TODO: If fewer than 4 term types exist, render as radio buttons instead of
+              a dropdown — recursica-skill-dropdown, "four options is the floor." */}
           <Group gap="lg" align="flex-end" wrap="wrap">
             <Dropdown
               label="Type"
@@ -195,7 +197,7 @@ function Terms({ rows, kind, empty, identity, onChanged }) {
 
           If that consequence needs saying, it belongs at the point of the decision rather than
           above the collection. Not built here, because it was not asked for. */}
-      <Section title="Waiting on you">
+      <Section title="Terms awaiting review">
         {waiting.length === 0
           ? (
             <Empty>
@@ -280,7 +282,7 @@ function Term({ term, kind, identity, onChanged }) {
                       component={RouterLink}
                       to={lineRoute(e)}
                     >
-                      Read it in context
+                      Line context
                     </Link>
                   </li>
                 ))}
