@@ -1,0 +1,25 @@
+{
+  "name": "recursica-skill-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Stdio MCP server that serves recursica-knowledge skills as a compact catalog, rule cards, and on-demand full text, with a buzz _PostCompact hook.",
+  "license": "MIT",
+  "author": "hi@borderux.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/borderux/recursica-knowledge.git",
+    "directory": "skill-mcp"
+  },
+  "type": "module",
+  "bin": {
+    "recursica-skill-mcp": "src/server.js",
+    "recursica-build-cards": "src/build-cards.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^4.5.4"
+  }
+}
