@@ -86,14 +86,30 @@ a fixture matching the structural `research_<slug>` rule, because that is the ru
 That predates the comment fix and is not a regression from it.
 
 `.husky/commit-msg` runs it on every commit. **Check that the hook is actually wired before
-you trust it:**
+you trust it — and check it by running it, not by reading a setting:**
 
 ```bash
-git config core.hooksPath        # must print .husky — empty means no hook has ever run
-git config core.hooksPath .husky # what `npm install` does; safe to run by hand
+git hook run commit-msg -- <file>   # prints the checker's output, or fails saying no such hook
+git config core.hooksPath           # empty means no hook has ever run
+npm install                         # what wires it; safe to run by hand
 ```
 
-That setting is shared by every linked worktree, so setting it once in the main checkout
+`git hook run` resolves the hook exactly the way a commit does and then executes it, so it
+answers the question the setting only hints at. Unwired, it exits 1 with `cannot find a hook
+named commit-msg`. (Older git has no `hook run` subcommand; there, fall back to confirming
+`core.hooksPath` is non-empty and that a `commit-msg` file exists beneath it.)
+
+**Do not verify this by asserting `core.hooksPath` equals `.husky`.** That is what this file
+prescribed, and it stopped being true at husky 9, which points git at `.husky/_` instead — a
+directory of one-line stubs, each walking up to run the real script in `.husky/`. The hook
+fires and the assertion fails, which is the wrong way round for a check whose whole purpose
+is catching a guard that has gone quiet. The repair this file offered in the same breath was
+worse: `git config core.hooksPath .husky`, described as safe to run by hand, moves the
+setting off the value husky installs in order to fix a break that was never there. An empty
+value is still the real failure, and `npm install` is still the fix — it runs `prepare`,
+which runs `.husky/install.mjs`.
+
+That setting is shared by every linked worktree, so wiring it once in the main checkout
 covers them all. The check itself needs nothing installed, and it reads the name rules from
 the main worktree when a linked one has no copy of its own.
 
