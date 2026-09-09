@@ -41,6 +41,10 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 
 **Build for extension.** Establish the groups from patterns broad enough that content added later has an obvious home. **A taxonomy that only fits today's content is a defect**, not a structure that will be revisited — the revisit does not happen, and new items get filed wherever there is room.
 
+**Grouping works because recognition is cheaper than recall.** A user scanning categories should recognise where an item lives rather than remember where it was put. See `recursica-skill-working-memory` for the basis and the boundary.
+
+**Do not justify a category count with 7 ± 2.** That ceiling governs sets the user has to hold in mind and compare; a category listing is a recognition surface, where the item-per-level ceiling exists for scannability rather than memory. The count rule that does apply is `recursica-skill-navigation`'s, and its basis and its limits are in `recursica-skill-working-memory`.
+
 **What groups a navigation level in particular — object type first, then task, then frequency of use — is owned by `recursica-skill-navigation`.** Apply it there; this section governs the categories themselves.
 
 **How deep the resulting structure may go is owned by `recursica-skill-navigation`.** Do not set a depth here.
@@ -49,11 +53,29 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 
 **Name a new concept from a real-world mental model**, the same way the UI components are named. Do not coin a term and expect the label to teach it — a name the user has to be taught is a name they will not recognise on the second visit either.
 
-**Descriptive, industry-standard labels beat creative or catchy ones.** They align with what the user already expects, and the familiarity is the whole benefit: the concepts and their rules come pre-loaded. Cleverness in a structural label is a cost the user pays and the product does not recover.
+**Descriptive, industry-standard labels beat creative or catchy ones.** They align with what the user already expects, and the familiarity is the whole benefit: the concepts and their rules come pre-loaded. Cleverness in a structural label is a cost the user pays and the product does not recover. The mechanism is recognition rather than memory — see `recursica-skill-working-memory`.
 
 **A label that does not say what action is about to be taken is a blocking defect.** Send the work back. **Do not resolve it by attaching a tooltip** — a tooltip gives context about the system, most often on an icon-only control, and never carries what a user needs in order to operate something. See `recursica-skill-tooltip` and `recursica-skill-icon-semantics`.
 
 **Everything else about names is `recursica-skill-naming-terminology`** — whose vocabulary wins, singular versus plural, how far a term may be shortened, acronyms, and reconciling terms across personas.
+
+## The shape of a label
+
+**The words are `recursica-skill-naming-terminology`'s decision, not this skill's.** They are collected here because a structure is only as good as the names on it, and these questions come up while the structure is still being drawn:
+
+| Question | House answer | Owner |
+| --- | --- | --- |
+| Noun or verb? | A label names a thing and is never a verb. The exception is a button, which names an action in verb-plus-object shape. | `recursica-skill-naming-terminology`, `recursica-skill-buttons-links` |
+| Navigation items specifically? | Object labels — **Forms**, not **View forms**. Going to a list is a movement to a place, not an action taken. | `recursica-skill-naming-terminology` |
+| Singular or plural? | Follow the plurality of what the user arrives at. The name describes the destination, not the link. | `recursica-skill-naming-terminology` |
+| First person or third? | Never address the reader. No `Your`, `you`, `my`, `I` — unless the same screen shows another party's and names them. | `recursica-skill-naming-terminology` |
+| How many words? | Two or three, one qualifier at most, in adjective-plus-noun shape. | `recursica-skill-naming-terminology` |
+| Adjective on its own? | Not a label. `Overdue requests`, never `Overdue`. | `recursica-skill-naming-terminology` |
+| Sentence case or title case? | Not chosen here — case is carried by the type token and must not be modified. | `recursica-skill-typography-semantics` |
+
+**What this skill adds to that: a category that will not compress to two or three words is usually two categories.** `recursica-skill-naming-terminology` makes the point about labels — one that will not compress is usually two labels. At the structural level the same symptom means the group bundles two ideas, and the fix is to split the group rather than to accept a longer name for it.
+
+**The object must stay traceable across every level.** The same thing has to be recognisable from category to navigation item to page title to column header, without vanishing or being renamed on arrival. That is governing principle 3 of `recursica-skill-naming-terminology`, and it is the naming rule an architecture depends on most.
 
 ## Orientation in practice
 
@@ -69,6 +91,8 @@ Any of these is evidence of a structural fault, not a copy or visual one:
 - **Users searching for items that sit in the top-level navigation.** They are routing around the structure rather than using it.
 - **Poor discoverability generally** — users needing to be shown where things are.
 - **Labels that do not make sense to the user.**
+
+**Do not propose onboarding, a tour, or training as the fix.** Users do not invest in learning a structure — they satisfice with the method they already have, however costly. See `recursica-skill-discoverability` for the paradox of the active user and where it does not apply. A tour laid over a structure users cannot navigate leaves the structure in place.
 
 **Rewriting labels is a legitimate fix only when labels are the only failure.** Where discovery is low across the board, renaming is a symptom-level change and the grouping is the thing to revisit.
 
@@ -100,6 +124,7 @@ Any of these is evidence of a structural fault, not a copy or visual one:
 - **Ordering of items within a level** — frequency, alphabetical, workflow sequence. Listed as uncovered in `recursica-skill-navigation` too.
 - **How many top-level sections a product should have before it is really two products.** 7 ± 2 governs items per level, not whether one architecture is being asked to cover too much.
 - **Whether the architecture may differ per persona.** `recursica-skill-naming-terminology` covers per-persona wording; nothing covers per-persona structure.
+- **Whether the number of categories at a level is bounded by anything beyond the navigation item ceiling.** `recursica-skill-working-memory` sets no house ceiling outside the surfaces it lists, and a taxonomy is not one of them.
 - **How a structure migrates when categories change** — whether existing URLs redirect, and what happens to a section that is dissolved.
 
 ## Pre-flight checklist
@@ -113,6 +138,11 @@ Before considering a structure done, verify:
 - [ ] Content added later has an obvious home in the existing groups.
 - [ ] Any new concept is named from a real-world mental model, in standard descriptive terms rather than creative ones.
 - [ ] No label is ambiguous about the action it takes, and no tooltip is patching one.
+- [ ] Every category name is a noun phrase of two or three words — no verb outside a button, no bare adjective, no `Your` or `you`.
+- [ ] Any category that would not compress to that shape was split rather than given a longer name.
+- [ ] The same object stays recognisable from category to nav item to page title to column header.
+- [ ] No category count was justified by working-memory limits on a surface where the user only has to recognise.
+- [ ] No tour, onboarding, or training was proposed as the fix for a structure users cannot navigate.
 - [ ] No structural problem was answered with emphasis, colour, or a bigger heading.
 - [ ] Where discovery is failing broadly, the grouping was revisited rather than only the labels.
 - [ ] Nothing in the uncovered list — validation timing, discovery thresholds, item ordering, per-persona structure, migration — was decided without asking.
