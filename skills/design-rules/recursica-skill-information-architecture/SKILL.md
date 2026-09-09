@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-information-architecture
-description: House rules for the structure beneath an enterprise web application — what orientation requires, resolving the structure before the layout, a taxonomy that absorbs content added later, naming a concept the user has no model for, why standard labels beat creative ones, the signals that say the structure is wrong rather than the labels, and open versus closed card sorting. Use when organising unstructured content, deciding a product's sections, judging whether a structure will scale, or diagnosing why users cannot find things. Trigger on "IA", "information architecture", "site map", "taxonomy", "how should this be organised", "where does this belong", "users can't find it", or "card sort". Do NOT use for navigation patterns, item counts, nesting depth, or breadcrumbs — that is recursica-skill-navigation. Do NOT use for what things are called — that is recursica-skill-naming-terminology. Do NOT use for page composition — that is recursica-skill-screen-scaffolding.
+description: House rules for the structure beneath an enterprise web application — what wayfinding requires, resolving the structure before the layout, a taxonomy that absorbs content added later, naming a concept the user has no model for, why standard labels beat creative ones, the signals that say the structure is wrong rather than the labels, and open versus closed card sorting. Use when organising unstructured content, deciding a product's sections, judging whether a structure will scale, or diagnosing why users cannot find things. Trigger on "IA", "information architecture", "site map", "taxonomy", "how should this be organised", "where does this belong", "users can't find it", or "card sort". Do NOT use for navigation patterns, item counts, nesting depth, or breadcrumbs — that is recursica-skill-navigation. Do NOT use for what things are called — that is recursica-skill-naming-terminology. Do NOT use for page composition — that is recursica-skill-screen-scaffolding.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -15,15 +15,27 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 
 ## The three governing principles
 
-1. **Orientation is what the architecture is for.** At any point a user must be able to answer four questions without hunting: where am I, where did I come from, what is this application for, and what is the primary action here. A structure that cannot answer all four has failed, however defensible its categories are.
-2. **Borrow the user's model; never invent one.** Groupings and names come from the world the user already works in, including their domain's own vocabulary. A structure they recognise costs nothing to learn, and one they do not costs them every visit.
-3. **The structure is what gets fixed.** Poor discovery, labels nobody understands, navigation that overflows — these are symptoms. Adding a mechanism to cope with them leaves the mistake in place. See convention 4 in `recursica-skill-system-conventions`, and governing principle 2 in `recursica-skill-navigation`.
+1. **Wayfinding is what the architecture is for.** At any point a user must be able to answer four questions without hunting: where am I, where did I come from, what is this application for, and what is the primary action here. A structure that cannot answer all four has failed, however defensible its categories are.
+2. **The structure comes from the user's world, not the product's.** Groupings and names come from the world the user already works in. A structure they recognise costs nothing to learn, and one they do not costs them every visit. What that model is made of, and where it comes from, is the next section.
+3. **Change the structure; do not add a mechanism to cope with it.** When a core feature goes undiscovered, when a navigation level overflows, when a label needs a tooltip to make sense — change the grouping. Reach for the mechanism that would paper over it, and the fault stays where it is with one more thing to maintain on top. This is convention 4 in `recursica-skill-system-conventions` applied to structure; `recursica-skill-navigation` states it as its own second principle.
 
 ## What this skill owns, and where it stops
 
 **Information architecture defines relationships, categories, labels, navigation paths, and structural priority.**
 
 **Visual design defines affordance, aesthetic hierarchy, and brand.** These are different jobs, and the boundary matters in one direction especially: **a structural problem is never solved by a visual one.** Emphasis, colour, and a larger heading do not repair a category that is in the wrong place. See `recursica-skill-screen-priority` on establishing hierarchy without colour.
+
+## What the user's model is, and where it comes from
+
+**A mental model here means the way the user already expects this kind of thing to be arranged, before they ever open the product.** It is not a guess about them, and it is not the structure that seems most logical to the team. It has three sources:
+
+1. **How the thing works outside software.** The real-world arrangement is the default for a concept the product introduces — the same source the UI components are named from.
+2. **The conventions of the users' domain.** In a niche product the domain's own terms are the users' everyday terms, so a domain model is a user model. Do not translate the domain out on the grounds that an outsider would not follow it. `recursica-skill-naming-terminology` owns the wording that results.
+3. **Established patterns from comparable products.** What the user has already learned elsewhere arrives pre-loaded, concepts and rules together, which is why a standard structure beats a better one nobody recognises.
+
+**NEVER the product's internal model.** Team shorthand, project jargon, and the shape of the data are the one source that does not count, however obvious they look from the inside. They are the model of the people who built the thing, not the people using it.
+
+**Where the model is not known, learn it before drawing the structure.** It is not inferable from the content — the content is what the team already has, arranged the way the team already thinks. An open card sort is how it is learned; see **Validating the structure** below, and `recursica-skill-design-router` on asking rather than assuming.
 
 ## Resolving the structure
 
@@ -45,6 +57,8 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 
 **Do not justify a category count with 7 ± 2.** That ceiling governs sets the user has to hold in mind and compare; a category listing is a recognition surface, where the item-per-level ceiling exists for scannability rather than memory. The count rule that does apply is `recursica-skill-navigation`'s, and its basis and its limits are in `recursica-skill-working-memory`.
 
+**A category that will not compress to two or three words is usually two categories.** `recursica-skill-naming-terminology` makes this point about labels — one that will not compress is usually two labels. At the structural level the same symptom means the group bundles two ideas, and the fix is to split it rather than to accept a longer name for it.
+
 **What groups a navigation level in particular — object type first, then task, then frequency of use — is owned by `recursica-skill-navigation`.** Apply it there; this section governs the categories themselves.
 
 **How deep the resulting structure may go is owned by `recursica-skill-navigation`.** Do not set a depth here.
@@ -59,29 +73,11 @@ Context these rules assume: **complex enterprise web applications, desktop-first
 
 **Everything else about names is `recursica-skill-naming-terminology`** — whose vocabulary wins, singular versus plural, how far a term may be shortened, acronyms, and reconciling terms across personas.
 
-## The shape of a label
-
-**The words are `recursica-skill-naming-terminology`'s decision, not this skill's.** They are collected here because a structure is only as good as the names on it, and these questions come up while the structure is still being drawn:
-
-| Question | House answer | Owner |
-| --- | --- | --- |
-| Noun or verb? | A label names a thing and is never a verb. The exception is a button, which names an action in verb-plus-object shape. | `recursica-skill-naming-terminology`, `recursica-skill-buttons-links` |
-| Navigation items specifically? | Object labels — **Forms**, not **View forms**. Going to a list is a movement to a place, not an action taken. | `recursica-skill-naming-terminology` |
-| Singular or plural? | Follow the plurality of what the user arrives at. The name describes the destination, not the link. | `recursica-skill-naming-terminology` |
-| First person or third? | Never address the reader. No `Your`, `you`, `my`, `I` — unless the same screen shows another party's and names them. | `recursica-skill-naming-terminology` |
-| How many words? | Two or three, one qualifier at most, in adjective-plus-noun shape. | `recursica-skill-naming-terminology` |
-| Adjective on its own? | Not a label. `Overdue requests`, never `Overdue`. | `recursica-skill-naming-terminology` |
-| Sentence case or title case? | Not chosen here — case is carried by the type token and must not be modified. | `recursica-skill-typography-semantics` |
-
-**What this skill adds to that: a category that will not compress to two or three words is usually two categories.** `recursica-skill-naming-terminology` makes the point about labels — one that will not compress is usually two labels. At the structural level the same symptom means the group bundles two ideas, and the fix is to split the group rather than to accept a longer name for it.
-
-**The object must stay traceable across every level.** The same thing has to be recognisable from category to navigation item to page title to column header, without vanishing or being renamed on arrival. That is governing principle 3 of `recursica-skill-naming-terminology`, and it is the naming rule an architecture depends on most.
-
-## Orientation in practice
+## Wayfinding in practice
 
 **The requirement is this skill's. The mechanisms are not.** Location is carried by the selected state in the navigation, by breadcrumbs, and by the page's own heading hierarchy — all owned by `recursica-skill-navigation`, `recursica-skill-screen-scaffolding`, and `recursica-skill-breadcrumb`.
 
-**What this skill requires of them: the four questions must be answerable from the page itself**, not only from the navigation being on screen. If the structure needs the nav visible to be legible, the structure is doing too little.
+**Where the user is must be answerable from the page itself**, not only from a highlighted item in the navigation — see governing principle 3 of `recursica-skill-navigation`. Test it by covering the nav: if the page no longer says where it sits, the H1 and the breadcrumb are not carrying their share.
 
 ## Signals the architecture is wrong
 
@@ -123,6 +119,7 @@ Any of these is evidence of a structural fault, not a copy or visual one:
 - **What counts as a low discovery rate.** The signal is named; no threshold or measurement method is given.
 - **Ordering of items within a level** — frequency, alphabetical, workflow sequence. Listed as uncovered in `recursica-skill-navigation` too.
 - **How many top-level sections a product should have before it is really two products.** 7 ± 2 governs items per level, not whether one architecture is being asked to cover too much.
+- **Which source of the user's model wins when two disagree** — a domain convention pointing one way and a widespread pattern from comparable products pointing another. Each is a legitimate source; nothing ranks them against each other.
 - **Whether the architecture may differ per persona.** `recursica-skill-naming-terminology` covers per-persona wording; nothing covers per-persona structure.
 - **Whether the number of categories at a level is bounded by anything beyond the navigation item ceiling.** `recursica-skill-working-memory` sets no house ceiling outside the surfaces it lists, and a taxonomy is not one of them.
 - **How a structure migrates when categories change** — whether existing URLs redirect, and what happens to a section that is dissolved.
@@ -135,14 +132,14 @@ Before considering a structure done, verify:
 - [ ] Those four answers come from the page itself, not only from the navigation being visible.
 - [ ] The structure was resolved in order: movement and location, then page identity and primary action, then content.
 - [ ] Categories follow a model the user already recognises, not one the product invented.
+- [ ] That model came from the real world, the users' domain, or an established pattern — never from team shorthand or the shape of the data.
+- [ ] Where the model was unknown, it was learned rather than inferred from the content.
 - [ ] Content added later has an obvious home in the existing groups.
 - [ ] Any new concept is named from a real-world mental model, in standard descriptive terms rather than creative ones.
 - [ ] No label is ambiguous about the action it takes, and no tooltip is patching one.
-- [ ] Every category name is a noun phrase of two or three words — no verb outside a button, no bare adjective, no `Your` or `you`.
-- [ ] Any category that would not compress to that shape was split rather than given a longer name.
-- [ ] The same object stays recognisable from category to nav item to page title to column header.
+- [ ] Any category that would not compress to two or three words was split rather than given a longer name.
 - [ ] No category count was justified by working-memory limits on a surface where the user only has to recognise.
 - [ ] No tour, onboarding, or training was proposed as the fix for a structure users cannot navigate.
 - [ ] No structural problem was answered with emphasis, colour, or a bigger heading.
 - [ ] Where discovery is failing broadly, the grouping was revisited rather than only the labels.
-- [ ] Nothing in the uncovered list — validation timing, discovery thresholds, item ordering, per-persona structure, migration — was decided without asking.
+- [ ] Nothing in the uncovered list — validation timing, discovery thresholds, item ordering, conflicting model sources, per-persona structure, migration — was decided without asking.
