@@ -392,6 +392,11 @@ The second is the stronger check: that key is written by her own session, so it 
 file was read rather than evidence it exists. Then ask her to call `router` — if she returns the
 design router's decision order, the whole chain works.
 
+**If every turn comes back `Authentication required`, the fence is working and the account did
+not come with it.** A config directory holds the signed-in account as well as the server list,
+so one written from nothing is correctly isolated and not logged in. `deploy-betty.sh` carries
+the account across and says so when it does; re-run it and restart her.
+
 **Barb comes with her.** Betty's review tiers assume Barb exists. Installing Betty without
 `barb`, `checker` and `feisty` leaves her describing a review she cannot run, which reads to a
 user exactly like a review that found nothing.

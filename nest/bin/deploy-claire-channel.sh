@@ -587,8 +587,16 @@ emit_fence() {   # $1 = fence dir, $2.. = server names to copy from the user reg
     const missing = want.filter(n => !all[n]);
     if (missing.length) { console.error("missing from registry: " + missing.join(", ")); process.exit(1); }
     const mcpServers = Object.fromEntries(want.map(n => [n, all[n]]));
+    // Carry the account identity across. A config directory written from nothing has no
+    // logged-in account, so an agent pointed at it starts and then fails every turn with
+    // "Authentication required" — which reads as a broken agent rather than as a fence
+    // working exactly as asked. Only these keys: never `mcpServers`, which is the whole
+    // point of writing a separate file, and never `projects` or the caches.
+    const AUTH_KEYS = ["oauthAccount", "userID", "claudeCodeFirstTokenDate", "machineID"];
+    const carried = {};
+    for (const k of AUTH_KEYS) if (reg[k] !== undefined) carried[k] = reg[k];
     fs.writeFileSync(path.join(dir, ".claude.json"),
-      JSON.stringify({ mcpServers, hasCompletedOnboarding: true }, null, 2) + "\n");
+      JSON.stringify({ ...carried, hasCompletedOnboarding: true, mcpServers }, null, 2) + "\n");
     // The claude.ai Google Drive connector rides on the account login rather than on this
     // registry, and it reaches all of Drive. Isolating the registry does not remove it.
     fs.writeFileSync(path.join(dir, "settings.json"),

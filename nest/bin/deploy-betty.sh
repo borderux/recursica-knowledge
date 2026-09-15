@@ -85,14 +85,37 @@ FENCE_AGENT="$FENCE_DIR/claude-config-${AGENT}"
 mkdir -p "$FENCE_AGENT"
 
 "$NODE_BIN" -e '
-  const fs = require("fs"), path = require("path");
+  const fs = require("fs"), os = require("os"), path = require("path");
   const [dir, nodeBin, server] = process.argv.slice(1);
+
+  // The account identity is carried over from the user-scope config. A config directory
+  // written from nothing has no logged-in account, and the agent starts and then fails every
+  // turn with "Authentication required" — which reads as a broken agent rather than as a
+  // config directory that is doing exactly what it was asked to do.
+  //
+  // Only these keys. Not `projects`, not the caches, and above all not `mcpServers`: copying
+  // that would hand back every client server this directory exists to keep out, and the file
+  // would still look deliberate. The fence is the point; the login is incidental to it.
+  const AUTH_KEYS = [
+    "oauthAccount", "userID", "claudeCodeFirstTokenDate", "machineID", "hasCompletedOnboarding",
+  ];
+  let carried = {};
+  try {
+    const user = JSON.parse(fs.readFileSync(path.join(os.homedir(), ".claude.json"), "utf8"));
+    for (const k of AUTH_KEYS) if (user[k] !== undefined) carried[k] = user[k];
+  } catch {
+    // No user-scope config: an operator on a self-hosted model supplies ANTHROPIC_* through
+    // proxy/model-env.sh instead, and needs no account here.
+  }
+
   fs.writeFileSync(path.join(dir, ".claude.json"), JSON.stringify({
+    ...carried,
+    hasCompletedOnboarding: true,
     mcpServers: {
       "recursica-knowledge": { command: nodeBin, args: [server] },
     },
-    hasCompletedOnboarding: true,
   }, null, 2) + "\n");
+  console.log(carried.oauthAccount ? "  carried the signed-in account over" : "  no signed-in account to carry — expect to supply ANTHROPIC_* yourself");
   // The claude.ai connectors ride on the account login rather than on this registry, and
   // the Google Drive one reaches all of Drive. Isolating the registry does not remove it,
   // so an agent whose whole safety property is "holds no client data" has to turn it off
