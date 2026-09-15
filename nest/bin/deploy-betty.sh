@@ -87,11 +87,33 @@ mkdir -p "$FENCE_AGENT"
 "$NODE_BIN" -e '
   const fs = require("fs"), path = require("path");
   const [dir, nodeBin, server] = process.argv.slice(1);
-  fs.writeFileSync(path.join(dir, ".claude.json"), JSON.stringify({
+
+  // Writing this directory does NOT log the agent in, and nothing written here can.
+  // The account profile lives in this file, but the credential that actually authenticates
+  // lives in the macOS Keychain under an entry keyed to the config directory. Copying the
+  // profile across produces a file that looks signed in and an agent that fails every turn
+  // with "Authentication required" — the most misleading state available. So carry nothing,
+  // and print the one command that mints a credential for this fence.
+  //
+  // Never `mcpServers`: copying that would hand back every client server this directory
+  // exists to keep out, and the file would still look deliberate.
+
+  // Re-runs are expected — the guides say to re-run this after changing the server. So keep
+  // whatever the fence already holds and replace only `mcpServers`. A login writes its account
+  // block into this same file, and a wholesale overwrite would throw that away and send the
+  // operator back round the loop they just finished. Everything in here was written by this
+  // agent in its own sessions, so there is nothing cross-client to preserve by accident.
+  const file = path.join(dir, ".claude.json");
+  let existing = {};
+  try { existing = JSON.parse(fs.readFileSync(file, "utf8")); } catch {}
+  delete existing.mcpServers;
+
+  fs.writeFileSync(file, JSON.stringify({
+    ...existing,
+    hasCompletedOnboarding: true,
     mcpServers: {
       "recursica-knowledge": { command: nodeBin, args: [server] },
     },
-    hasCompletedOnboarding: true,
   }, null, 2) + "\n");
   // The claude.ai connectors ride on the account login rather than on this registry, and
   // the Google Drive one reaches all of Drive. Isolating the registry does not remove it,
@@ -139,23 +161,50 @@ LAUNCHEREOF
 chmod 755 "$LAUNCHER"
 ok "wrote $LAUNCHER"
 
-step "Done — one thing left, and it is manual"
+step "Done — three things left, all manual"
 
 cat <<EOF
 
-  In Buzz Desktop, open ${AGENT} and save BOTH of these in one edit:
+  1. In Buzz Desktop, open ${AGENT} and set:
 
-    runtime         claude
-    agent command   ${LAUNCHER}
+       runtime    claude
+       env var    CLAUDE_CONFIG_DIR = ${FENCE_AGENT}
 
-  Saving the runtime by itself leaves her reading the user-scope registry, which on this
-  machine holds every client's BigQuery and Drive server. One save, both fields.
+     The environment variable is what redirects her off the user-scope registry in
+     ~/.claude.json, which on this machine holds every client's BigQuery and Drive
+     server. The runtime on its own, with no variable, is the unfenced state — and it
+     looks completely normal from the outside.
 
-  To check it afterwards, ask her to list her tools. She should see the five
-  recursica-knowledge tools and no bq-* or drive-* server at all. **Ask the server, not
-  the agent, if the answer matters**: a model will describe a fence it does not have.
-  The file is the evidence:
+     There is also a launcher at ${LAUNCHER} which exports the same variable. Use it
+     instead if your build of Buzz Desktop exposes an agent-command field; the variable
+     is the path known to work. Setting both is fine — the launcher runs last and wins.
 
-    cat ${FENCE_AGENT}/.claude.json
+  2. Log in inside the fence. A config directory is its own account: the credential
+     lives in the login keychain under an entry keyed to this directory, so a freshly
+     written fence is correctly isolated and signed out. Nothing this script writes can
+     change that — a login has to mint it.
+
+       CLAUDE_CONFIG_DIR=${FENCE_AGENT} claude auth login
+
+     One browser round-trip, once per fence, and it survives restarts. Skipping it is
+     the "Authentication required" failure below.
+
+  3. Restart her. A configuration change never reaches a running process, and she will
+     keep serving from the unfenced registry until she is restarted.
+
+  Then verify from the process, not by asking her — a model will describe a fence it
+  does not have:
+
+    ps eww -p \$(pgrep -f claude-agent-acp) | tr ' ' '\n' | grep CLAUDE_CONFIG_DIR
+    grep firstStartTime ${FENCE_AGENT}/.claude.json
+    CLAUDE_CONFIG_DIR=${FENCE_AGENT} claude auth status
+
+  The second is the stronger check for the fence: that key is written by her own session,
+  so it is proof the file was read rather than proof it exists. The third is the login —
+  "loggedIn": true, or step 2 has not been done.
+
+  If she answers every turn with \`Authentication required\`, the fence is working and
+  the login is missing. The instinct is to undo the isolation. That is exactly backwards:
+  run step 2 against this directory and restart her.
 
 EOF

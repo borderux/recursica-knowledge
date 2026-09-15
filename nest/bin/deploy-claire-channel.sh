@@ -587,8 +587,21 @@ emit_fence() {   # $1 = fence dir, $2.. = server names to copy from the user reg
     const missing = want.filter(n => !all[n]);
     if (missing.length) { console.error("missing from registry: " + missing.join(", ")); process.exit(1); }
     const mcpServers = Object.fromEntries(want.map(n => [n, all[n]]));
-    fs.writeFileSync(path.join(dir, ".claude.json"),
-      JSON.stringify({ mcpServers, hasCompletedOnboarding: true }, null, 2) + "\n");
+    // This does NOT log the agent in, and nothing written here can. The credential that
+    // authenticates lives in the login keychain under an entry keyed to the config
+    // directory, not in this file — so a fence written from nothing is correctly isolated
+    // and signed out, and fails every turn with "Authentication required". Copying the
+    // account profile across only makes the file look signed in, which is worse. The fix
+    // is `CLAUDE_CONFIG_DIR=<dir> claude auth login`, once per fence; see the step below.
+    // Re-runs are expected, and a login writes its account block into this same file. Keep
+    // what the fence already holds and replace only `mcpServers`, so re-running to pick up a
+    // server change does not silently sign the agent out again.
+    const file = path.join(dir, ".claude.json");
+    let existing = {};
+    try { existing = JSON.parse(fs.readFileSync(file, "utf8")); } catch {}
+    delete existing.mcpServers;
+    fs.writeFileSync(file,
+      JSON.stringify({ ...existing, mcpServers, hasCompletedOnboarding: true }, null, 2) + "\n");
     // The claude.ai Google Drive connector rides on the account login rather than on this
     // registry, and it reaches all of Drive. Isolating the registry does not remove it.
     fs.writeFileSync(path.join(dir, "settings.json"),
@@ -701,14 +714,39 @@ cat <<EOF
   Drive: share ONLY this client's folder with $SA_EMAIL as Contributor.
 
   3. POINT ONE Claire AND ONE Stu AT THIS CHANNEL, each their own agent identity.
-     In Buzz Desktop, on each agent, set BOTH fields in the SAME save:
+     In Buzz Desktop, on each agent, set BOTH of these in the SAME save:
 
-       runtime        claude
-       agent command  $FENCE_DIR/agent-claire-$SLUG.sh
-                      $FENCE_DIR/agent-stu-$SLUG.sh
+       runtime    claude
+       env var    CLAUDE_CONFIG_DIR = $FENCE_CLAIRE
+                  CLAUDE_CONFIG_DIR = $FENCE_STU
 
-     Runtime alone, saved without the command, is the unfenced state — the agent
+     Runtime alone, saved without the variable, is the unfenced state — the agent
      starts and holds every client registered on this machine.
+
+     This script also writes launchers at $FENCE_DIR/agent-claire-$SLUG.sh and
+     agent-stu-$SLUG.sh, which export the same variable and were meant to be named
+     in an agent-command field. That field is not what an operator is shown on every
+     build. The environment variable is the path known to work here; use the launcher
+     instead only if your build exposes the field. Setting both is fine — the
+     launcher runs last and wins.
+
+  4. LOG IN INSIDE EACH FENCE, then restart both agents.
+
+       CLAUDE_CONFIG_DIR=$FENCE_CLAIRE claude auth login
+       CLAUDE_CONFIG_DIR=$FENCE_STU claude auth login
+
+     A config directory is its own account: the credential lives in the login
+     keychain under an entry keyed to that directory, so a fence written by this
+     script is correctly isolated and signed out. Nothing this script writes can
+     change that. Skip it and every turn fails with "Authentication required" —
+     which means the fence worked and the login is missing, NOT that the isolation
+     should be undone. One browser round-trip each, and it survives restarts.
+
+     A configuration change never reaches a running process, so restart both agents
+     after this. Verify from the process rather than by asking the agent:
+
+       CLAUDE_CONFIG_DIR=$FENCE_CLAIRE claude auth status
+       ps eww -p \$(pgrep -f claude-agent-acp) | tr ' ' '\n' | grep CLAUDE_CONFIG_DIR
 
      REUSING an existing Claire or Stu that already sits in another client's
      channel does not work, and it fails silently. The fence is CLAUDE_CONFIG_DIR,
