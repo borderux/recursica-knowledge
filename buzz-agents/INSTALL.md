@@ -386,16 +386,29 @@ not have.
 ```bash
 ps eww -p $(pgrep -f claude-agent-acp) | tr ' ' '\n' | grep CLAUDE_CONFIG_DIR
 grep firstStartTime ~/.buzz/proxy/claude-config-betty/.claude.json
+CLAUDE_CONFIG_DIR=~/.buzz/proxy/claude-config-betty claude auth status
 ```
 
-The second is the stronger check: that key is written by her own session, so it is evidence the
-file was read rather than evidence it exists. Then ask her to call `router` — if she returns the
+The second is the stronger check for the fence: that key is written by her own session, so it is
+evidence the file was read rather than evidence it exists. The third is the login. Then ask her to call `router` — if she returns the
 design router's decision order, the whole chain works.
 
-**If every turn comes back `Authentication required`, the fence is working and the account did
-not come with it.** A config directory holds the signed-in account as well as the server list,
-so one written from nothing is correctly isolated and not logged in. `deploy-betty.sh` carries
-the account across and says so when it does; re-run it and restart her.
+**A fenced agent needs its own login, and this is not optional.** A config directory is its own
+account: the credential lives in the login keychain under an entry keyed to that directory, so a
+fence written by the deploy script is correctly isolated and signed out. No file the script
+writes can change that — only a login mints a credential:
+
+```bash
+CLAUDE_CONFIG_DIR=~/.buzz/proxy/claude-config-betty claude auth login
+CLAUDE_CONFIG_DIR=~/.buzz/proxy/claude-config-betty claude auth status   # "loggedIn": true
+```
+
+One browser round-trip, once per fence, and it survives restarts. Restart her afterwards.
+
+**If every turn comes back `Authentication required`, the fence is working and the login is
+missing.** The instinct is to undo the isolation, which is exactly backwards — run the login
+above against that directory instead. Copying the account block out of `~/.claude.json` does not
+work either: that is profile data, not the credential, and it leaves a file that looks signed in.
 
 **Barb comes with her.** Betty's review tiers assume Barb exists. Installing Betty without
 `barb`, `checker` and `feisty` leaves her describing a review she cannot run, which reads to a

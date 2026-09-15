@@ -473,12 +473,21 @@ For a `claude`-runtime agent, set **one environment variable** on the agent in B
 **Then restart the agent.** A configuration change never reaches a process that is already
 running, and the agent will keep serving from the unfenced registry until it is restarted.
 
-**If the agent then answers every turn with `Authentication required`, the fence is working
-and the account did not come with it.** A config directory holds the signed-in account as well
-as the server list, so one written from nothing is correctly isolated and not logged in. Step 5
-now carries the account keys across when it writes the directory — re-run it. Directories
-written before that change need the same re-run; nothing else about them is wrong.
-Save-and-assume is the failure here.
+**Then log in inside each fence.** A config directory is its own account: the credential lives
+in the login keychain under an entry keyed to that directory, so a fence written by step 5 is
+correctly isolated and signed out. Nothing step 5 writes can change that — only a login mints
+one, and it survives restarts.
+
+```bash
+CLAUDE_CONFIG_DIR=~/.buzz/proxy/claude-config-claire-<slug> claude auth login
+CLAUDE_CONFIG_DIR=~/.buzz/proxy/claude-config-claire-<slug> claude auth status   # "loggedIn": true
+```
+
+**If the agent answers every turn with `Authentication required`, the fence is working and the
+login is missing.** The instinct is to undo the isolation; that is exactly backwards. Copying
+the account block out of `~/.claude.json` does not work either — it is profile data, not the
+credential, and it leaves a directory that looks signed in and still fails. Save-and-assume is
+the failure here.
 
 > **The launchers are the older path, and they are not what to use.** Step 5 also writes
 > `~/.buzz/proxy/agent-<who>-<slug>.sh`, which exports the same variable and was meant to be

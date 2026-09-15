@@ -85,37 +85,36 @@ FENCE_AGENT="$FENCE_DIR/claude-config-${AGENT}"
 mkdir -p "$FENCE_AGENT"
 
 "$NODE_BIN" -e '
-  const fs = require("fs"), os = require("os"), path = require("path");
+  const fs = require("fs"), path = require("path");
   const [dir, nodeBin, server] = process.argv.slice(1);
 
-  // The account identity is carried over from the user-scope config. A config directory
-  // written from nothing has no logged-in account, and the agent starts and then fails every
-  // turn with "Authentication required" — which reads as a broken agent rather than as a
-  // config directory that is doing exactly what it was asked to do.
+  // Writing this directory does NOT log the agent in, and nothing written here can.
+  // The account profile lives in this file, but the credential that actually authenticates
+  // lives in the macOS Keychain under an entry keyed to the config directory. Copying the
+  // profile across produces a file that looks signed in and an agent that fails every turn
+  // with "Authentication required" — the most misleading state available. So carry nothing,
+  // and print the one command that mints a credential for this fence.
   //
-  // Only these keys. Not `projects`, not the caches, and above all not `mcpServers`: copying
-  // that would hand back every client server this directory exists to keep out, and the file
-  // would still look deliberate. The fence is the point; the login is incidental to it.
-  const AUTH_KEYS = [
-    "oauthAccount", "userID", "claudeCodeFirstTokenDate", "machineID", "hasCompletedOnboarding",
-  ];
-  let carried = {};
-  try {
-    const user = JSON.parse(fs.readFileSync(path.join(os.homedir(), ".claude.json"), "utf8"));
-    for (const k of AUTH_KEYS) if (user[k] !== undefined) carried[k] = user[k];
-  } catch {
-    // No user-scope config: an operator on a self-hosted model supplies ANTHROPIC_* through
-    // proxy/model-env.sh instead, and needs no account here.
-  }
+  // Never `mcpServers`: copying that would hand back every client server this directory
+  // exists to keep out, and the file would still look deliberate.
 
-  fs.writeFileSync(path.join(dir, ".claude.json"), JSON.stringify({
-    ...carried,
+  // Re-runs are expected — the guides say to re-run this after changing the server. So keep
+  // whatever the fence already holds and replace only `mcpServers`. A login writes its account
+  // block into this same file, and a wholesale overwrite would throw that away and send the
+  // operator back round the loop they just finished. Everything in here was written by this
+  // agent in its own sessions, so there is nothing cross-client to preserve by accident.
+  const file = path.join(dir, ".claude.json");
+  let existing = {};
+  try { existing = JSON.parse(fs.readFileSync(file, "utf8")); } catch {}
+  delete existing.mcpServers;
+
+  fs.writeFileSync(file, JSON.stringify({
+    ...existing,
     hasCompletedOnboarding: true,
     mcpServers: {
       "recursica-knowledge": { command: nodeBin, args: [server] },
     },
   }, null, 2) + "\n");
-  console.log(carried.oauthAccount ? "  carried the signed-in account over" : "  no signed-in account to carry — expect to supply ANTHROPIC_* yourself");
   // The claude.ai connectors ride on the account login rather than on this registry, and
   // the Google Drive one reaches all of Drive. Isolating the registry does not remove it,
   // so an agent whose whole safety property is "holds no client data" has to turn it off
@@ -162,7 +161,7 @@ LAUNCHEREOF
 chmod 755 "$LAUNCHER"
 ok "wrote $LAUNCHER"
 
-step "Done — two things left, both manual"
+step "Done — three things left, all manual"
 
 cat <<EOF
 
@@ -180,7 +179,17 @@ cat <<EOF
      instead if your build of Buzz Desktop exposes an agent-command field; the variable
      is the path known to work. Setting both is fine — the launcher runs last and wins.
 
-  2. Restart her. A configuration change never reaches a running process, and she will
+  2. Log in inside the fence. A config directory is its own account: the credential
+     lives in the login keychain under an entry keyed to this directory, so a freshly
+     written fence is correctly isolated and signed out. Nothing this script writes can
+     change that — a login has to mint it.
+
+       CLAUDE_CONFIG_DIR=${FENCE_AGENT} claude auth login
+
+     One browser round-trip, once per fence, and it survives restarts. Skipping it is
+     the "Authentication required" failure below.
+
+  3. Restart her. A configuration change never reaches a running process, and she will
      keep serving from the unfenced registry until she is restarted.
 
   Then verify from the process, not by asking her — a model will describe a fence it
@@ -188,8 +197,14 @@ cat <<EOF
 
     ps eww -p \$(pgrep -f claude-agent-acp) | tr ' ' '\n' | grep CLAUDE_CONFIG_DIR
     grep firstStartTime ${FENCE_AGENT}/.claude.json
+    CLAUDE_CONFIG_DIR=${FENCE_AGENT} claude auth status
 
-  The second is the stronger check: that key is written by her own session, so it is
-  proof the file was read rather than proof it exists.
+  The second is the stronger check for the fence: that key is written by her own session,
+  so it is proof the file was read rather than proof it exists. The third is the login —
+  "loggedIn": true, or step 2 has not been done.
+
+  If she answers every turn with \`Authentication required\`, the fence is working and
+  the login is missing. The instinct is to undo the isolation. That is exactly backwards:
+  run step 2 against this directory and restart her.
 
 EOF
