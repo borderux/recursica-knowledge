@@ -45,7 +45,7 @@
     "agents:build:check": "node scripts/build-agents.mjs --check",
     "skills:manifest": "node scripts/screen-skill-manifest.mjs",
     "skills:manifest:check": "node scripts/screen-skill-manifest.mjs --self-check",
-    "test": "node --test 'nest/bin/*.test.mjs' 'scripts/*.test.mjs' 'buzz-agents/lib/*.test.mjs'"
+    "test": "node --test 'nest/bin/*.test.mjs' 'nest/mcp/*/*.test.mjs' 'scripts/*.test.mjs' 'buzz-agents/lib/*.test.mjs'"
   },
   "packageManager": "npm@10.9.0",
   "engines": {

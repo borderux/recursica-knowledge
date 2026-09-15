@@ -53,9 +53,10 @@
       "howToFind": "The part of BUILDER_REPO after the slash. Derived from canvas key `builder_repo`, not looked up."
     },
     "KNOWLEDGE_REPO_NAME": {
-      "description": "Bare name of the design-knowledge repository ALAN promotes findings into and must never edit directly.",
+      "description": "Bare name of the design-knowledge repository the builder agents read skills from, promote findings into, and must never edit directly.",
       "usedBy": [
-        "alan"
+        "alan",
+        "betty"
       ],
       "example": "design-knowledge",
       "howToFind": "Canvas key `knowledge_repo` in the install channel. The repository holding the design-rule skills, which ALAN promotes findings into and must never edit directly."
@@ -136,7 +137,8 @@
     "WORKSPACE_ROOT": {
       "description": "Directory holding the repository checkouts an agent works in. Appears only in the portable artifacts under portable/ — never in a prompt Buzz receives, which is what portableOnly means. On a Buzz install the equivalent path is written out in full; on a plain checkout it is wherever the operator keeps their repos.",
       "usedBy": [
-        "alan"
+        "alan",
+        "betty"
       ],
       "example": "~/src",
       "portableOnly": true,

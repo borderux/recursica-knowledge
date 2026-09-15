@@ -36,6 +36,13 @@
     "                         nothing to render. They use fromRoot — see that entry.",
     "  drive-fence/diag-export.mjs  A one-off investigation into a Drive 403, not runtime.",
     "  .secrets/*             Service-account keys. Never versioned, never templated.",
+    "  mcp/knowledge/server.mjs   Runs from the checkout, like Stu's app above and for a sharper",
+    "                         version of the same reason: it serves skills/ and imports",
+    "                         scripts/screen-skill-manifest.mjs, both of which live in the",
+    "                         checkout. Copying the server here would separate it from the only",
+    "                         thing it reads, leaving a KNOWLEDGE_ROOT path to get wrong for no",
+    "                         benefit. Register it by absolute path into the checkout; see",
+    "                         mcp/knowledge/README.md.",
     "  .claude/skills/buzz-cli/  Ships with Buzz Desktop; not ours to install or update."
   ],
   "$resolveComment": [
@@ -162,6 +169,23 @@
     {
       "from": "bin/deploy-claire-channel.sh",
       "to": "bin/deploy-claire-channel.sh",
+      "mode": "0755",
+      "resolve": true
+    },
+    {
+      "$comment": ["Gives Betty her knowledge server and nothing else. Unlike the Claire deploy",
+                   "this takes no client arguments, because Betty is client-independent: the",
+                   "registry it writes holds one credential-free server, which is what makes",
+                   "\"she holds no client data\" a file somebody can read rather than a claim in a",
+                   "prompt. It also turns the claude.ai connectors off, which the registry alone",
+                   "does not do — that connector rides on the account login and reaches all of",
+                   "Drive.",
+                   "",
+                   "It refuses a linked worktree rather than warning: baking a worktree path into",
+                   "a launcher works until the branch merges, and then the agent starts with no",
+                   "tools and reports having none, which reads as a broken agent."],
+      "from": "bin/deploy-betty.sh",
+      "to": "bin/deploy-betty.sh",
       "mode": "0755",
       "resolve": true
     },
