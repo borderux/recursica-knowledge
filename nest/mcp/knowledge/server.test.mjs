@@ -155,3 +155,25 @@ export declare const Button: FC<ButtonProps>;
   assert.ok(blocks.some((b) => b.includes('variant') && b.includes('}>;')), 'the body was cut off')
   assert.ok(!blocks.some((b) => b.includes('Unrelated')))
 })
+
+test('the server starts when reached through a symlinked path', async () => {
+  // `import.meta.url` is resolved through symlinks and `process.argv[1]` is not, so comparing
+  // them as strings makes the run-as-a-command guard read false wherever any component of the
+  // path is a link — which on macOS is everything under /tmp. The server then exits 0 having
+  // printed nothing and served nothing, which is indistinguishable from a quiet success.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'knowledge-mcp-link-'))
+  const link = path.join(dir, 'server.mjs')
+  fs.symlinkSync(SERVER, link)
+
+  const banner = await new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, [link], { stdio: ['pipe', 'pipe', 'pipe'] })
+    let err = ''
+    child.stderr.on('data', (d) => { err += d })
+    child.on('error', reject)
+    child.on('close', () => resolve(err))
+    child.stdin.end()
+  })
+
+  assert.match(banner, /ready/, 'the server produced no banner through a symlink — the guard is comparing unresolved paths')
+  fs.rmSync(dir, { recursive: true, force: true })
+})

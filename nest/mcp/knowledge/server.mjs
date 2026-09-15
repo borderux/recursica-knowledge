@@ -466,8 +466,22 @@ async function handleRequest(msg) {
 
 // Only when run as a command. Without this guard the stdio loop starts on import, so a test
 // file importing a helper would also attach a reader to the test runner's stdin and never exit.
+//
+// Compared as real paths on both sides. `import.meta.url` is already resolved through symlinks
+// and `process.argv[1]` is not, so a plain string comparison fails wherever any component of the
+// path is a link — which on macOS includes everything under /tmp and /var/folders. The failure
+// is silent and total: the guard reads false, the server never starts its stdio loop, and it
+// exits 0 having printed nothing, which looks exactly like a server with nothing to say.
+function realOrSelf(p) {
+  try {
+    return fs.realpathSync(p)
+  } catch {
+    return path.resolve(p)
+  }
+}
+
 const invokedDirectly =
-  process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+  process.argv[1] && realOrSelf(process.argv[1]) === realOrSelf(fileURLToPath(import.meta.url))
 
 if (invokedDirectly) start()
 
