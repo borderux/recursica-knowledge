@@ -128,10 +128,24 @@ function locate(slug) {
   return null;
 }
 
-/** Every adapter component named in an import from the adapter, across the given source. */
+/**
+ * Every adapter component named in an import from a Recursica adapter, across the given source.
+ *
+ * **Matched by shape rather than by one hardcoded package name.** The first version of this
+ * regex pinned `@recursica/mantine-adapter`, which is what one application happened to install.
+ * The adapters are published under more than one name — `@recursica/adapter-mantine-v8` is the
+ * versioned line — and a screen importing `Button, Modal, Table, TextField` from that one
+ * yielded **zero** imports, so `manifest()` returned only the always-on design rules and
+ * reported nothing under `uncovered`. A review of that screen came back clean because it had
+ * checked almost nothing, which is precisely the silent-shortfall failure this file exists to
+ * prevent and the reason the two oldest tests below were written.
+ *
+ * `adapter-common` and `adapter-tester` are excluded: they are the shared types and the test
+ * harness, not a component surface, so a name imported from them is not a component on screen.
+ */
 export function adapterImports(source) {
   const found = new Set();
-  const re = /import\s*\{([^}]*)\}\s*from\s*["']@recursica\/mantine-adapter["']/g;
+  const re = /import\s*\{([^}]*)\}\s*from\s*["']@recursica\/(?!adapter-common["']|adapter-tester["'])[a-z0-9-]*adapter[a-z0-9-]*["']/g;
   for (const m of source.matchAll(re)) {
     for (const raw of m[1].split(",")) {
       // `Link as RouterLink` is a rename; the imported name is what identifies the component.

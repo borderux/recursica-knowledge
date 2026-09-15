@@ -36,6 +36,13 @@
     "                         nothing to render. They use fromRoot — see that entry.",
     "  drive-fence/diag-export.mjs  A one-off investigation into a Drive 403, not runtime.",
     "  .secrets/*             Service-account keys. Never versioned, never templated.",
+    "  mcp/knowledge/server.mjs   Runs from the checkout, like Stu's app above and for a sharper",
+    "                         version of the same reason: it serves skills/ and imports",
+    "                         scripts/screen-skill-manifest.mjs, both of which live in the",
+    "                         checkout. Copying the server here would separate it from the only",
+    "                         thing it reads, leaving a KNOWLEDGE_ROOT path to get wrong for no",
+    "                         benefit. Register it by absolute path into the checkout; see",
+    "                         mcp/knowledge/README.md.",
     "  .claude/skills/buzz-cli/  Ships with Buzz Desktop; not ours to install or update."
   ],
   "$resolveComment": [
