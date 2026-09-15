@@ -451,15 +451,36 @@ of output to explain rather than a decision anybody made.
 
 ## Step 5b — One Claire and one Stu **per client channel**
 
-Step 5 wrote two launchers. Point a **new** agent identity at each, in Buzz Desktop:
+**First, ask which runtime the agent is on. It decides whether any of this applies.**
+
+| Runtime | What to do |
+|---|---|
+| `buzz-agent` | Nothing here. That runtime does not read the Claude MCP registry at all, so there is no registry to redirect and no fence to set. |
+| `claude` | Everything below. This runtime reads `~/.claude.json`, the **user-scope** registry, which holds every client's servers on this machine. |
+
+This question used to be missing, and its absence was invisible for a month: every agent on
+this machine happened to be on `buzz-agent`, where the step is a no-op, so nobody noticed the
+instruction was never followed. The first agent put on the `claude` runtime inherited three
+clients' BigQuery and Drive servers, silently and immediately.
+
+For a `claude`-runtime agent, set **one environment variable** on the agent in Buzz Desktop:
 
 | Field | Value |
 |---|---|
 | Runtime | `claude` |
-| Agent command | `~/.buzz/proxy/agent-claire-<slug>.sh` — and `agent-stu-<slug>.sh` for Stu |
+| Env var | `CLAUDE_CONFIG_DIR` = `~/.buzz/proxy/claude-config-claire-<slug>` — and `claude-config-stu-<slug>` for Stu |
 
-**Set both fields in one save.** Runtime alone, saved first, is the unfenced state: the agent
-starts, reads the user-scope registry, and holds every client on this machine.
+**Then restart the agent.** A configuration change never reaches a process that is already
+running, and the agent will keep serving from the unfenced registry until it is restarted.
+Save-and-assume is the failure here.
+
+> **The launchers are the older path, and they are not what to use.** Step 5 also writes
+> `~/.buzz/proxy/agent-<who>-<slug>.sh`, which exports the same variable and was meant to be
+> named in an agent-command field. That field is not what an operator is shown, and on this
+> machine no agent has ever held a launcher path — verified across every config backup since
+> the launchers were first generated. The scripts still work if your build exposes the field;
+> the environment variable is the path that is known to work, so prefer it. If you set both,
+> the launcher wins, because it runs last and is the final writer of the agent's environment.
 
 **Do not reuse a Claire or Stu that already sits in another client's channel.** This is the
 mistake to expect, it looks entirely reasonable, and it fails silently. The fence is
@@ -479,8 +500,19 @@ report in Step 6 is necessary and not sufficient — it is about keys, not about
 and a small local model asked to read another client's table did it on the first attempt and
 named the other client's tool in its answer. Prompt discipline is not a control.
 
-If Buzz Desktop has no agent-command field on this build, stop and report it rather than
-saving runtime on its own — that combination is the unfenced state, not a partial install.
+**Verify from the process, never by asking the agent.** A model will describe a fence it does
+not have. Two checks, and the second is the stronger one:
+
+```bash
+# 1. the variable reached the real process
+ps eww -p $(pgrep -f claude-agent-acp) | tr ' ' '\n' | grep CLAUDE_CONFIG_DIR
+
+# 2. the agent's own session wrote into that config — proof it was read, not just present
+grep firstStartTime ~/.buzz/proxy/claude-config-<who>-<slug>/.claude.json
+```
+
+An agent on the `claude` runtime with no `CLAUDE_CONFIG_DIR` is not partially installed. It is
+holding every client on the machine, and it looks completely normal from the outside.
 
 ## Step 6 — Prove the fence, before any client data moves
 

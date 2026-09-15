@@ -139,23 +139,34 @@ LAUNCHEREOF
 chmod 755 "$LAUNCHER"
 ok "wrote $LAUNCHER"
 
-step "Done — one thing left, and it is manual"
+step "Done — two things left, both manual"
 
 cat <<EOF
 
-  In Buzz Desktop, open ${AGENT} and save BOTH of these in one edit:
+  1. In Buzz Desktop, open ${AGENT} and set:
 
-    runtime         claude
-    agent command   ${LAUNCHER}
+       runtime    claude
+       env var    CLAUDE_CONFIG_DIR = ${FENCE_AGENT}
 
-  Saving the runtime by itself leaves her reading the user-scope registry, which on this
-  machine holds every client's BigQuery and Drive server. One save, both fields.
+     The environment variable is what redirects her off the user-scope registry in
+     ~/.claude.json, which on this machine holds every client's BigQuery and Drive
+     server. The runtime on its own, with no variable, is the unfenced state — and it
+     looks completely normal from the outside.
 
-  To check it afterwards, ask her to list her tools. She should see the five
-  recursica-knowledge tools and no bq-* or drive-* server at all. **Ask the server, not
-  the agent, if the answer matters**: a model will describe a fence it does not have.
-  The file is the evidence:
+     There is also a launcher at ${LAUNCHER} which exports the same variable. Use it
+     instead if your build of Buzz Desktop exposes an agent-command field; the variable
+     is the path known to work. Setting both is fine — the launcher runs last and wins.
 
-    cat ${FENCE_AGENT}/.claude.json
+  2. Restart her. A configuration change never reaches a running process, and she will
+     keep serving from the unfenced registry until she is restarted.
+
+  Then verify from the process, not by asking her — a model will describe a fence it
+  does not have:
+
+    ps eww -p \$(pgrep -f claude-agent-acp) | tr ' ' '\n' | grep CLAUDE_CONFIG_DIR
+    grep firstStartTime ${FENCE_AGENT}/.claude.json
+
+  The second is the stronger check: that key is written by her own session, so it is
+  proof the file was read rather than proof it exists.
 
 EOF

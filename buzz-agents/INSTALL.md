@@ -29,6 +29,13 @@ nothing here depends on him: he needs a sandbox Drive of his own before he is sa
 that is [`nest/GUIDES/LOKI_SANDBOX_SETUP.md`](../nest/GUIDES/LOKI_SANDBOX_SETUP.md). Step 5 says
 what to do with his draft in the meantime.
 
+And a seventh — **Betty**, the designer agent, who takes a product request and builds the UI on
+Recursica. She installs in minutes and independently of everything else here, because she needs
+no service-account key, no dataset, no Drive folder and no client: research reaches her through
+Claire rather than through credentials of her own. See
+[**Installing Betty on her own**](#installing-betty-on-her-own) at the end — you do not need any
+of Steps 3 to 7 for her.
+
 And a sixth — **Barb**, who reviews screens built on Recursica against the design system's own
 rules. She is the odd one out in a useful way: no key, no dataset, no values-file entry, nothing
 client-shaped anywhere near her. Save her draft whenever you like. The one thing to read first is
@@ -335,6 +342,59 @@ Not oversights — each is deliberate:
 - **Your `ANTHROPIC_API_KEY` and any service-account key.** Yours, not shared.
 - **Google Cloud console steps** for a brand-new client that need permissions a channel
   service account deliberately does not have.
+
+---
+
+## Installing Betty on her own
+
+Betty needs none of the client plumbing above. No key, no dataset, no Drive folder, no values
+file. If she is the only agent you want, this section is the whole install.
+
+**1. Prerequisites and the nest** — Step 1 and Step 4 above. `node`, Buzz Desktop, a checkout
+of this repository, and `node scripts/bootstrap-nest.mjs`.
+
+**2. Create her.** Approve her draft in Buzz Desktop the same way as any other agent (Step 5).
+Leave `respond_to` as `owner-only` unless you want other people bringing her work — **each
+person runs their own Betty**, which is the expected shape rather than a limitation.
+
+**3. Give her the knowledge server.**
+
+```bash
+~/.buzz/bin/deploy-betty.sh
+```
+
+Run it from the **main checkout**, not a worktree — it refuses a worktree, because a path that
+disappears when a branch merges produces an agent that starts with no tools and reports having
+none. It checks the server actually starts before writing anything.
+
+**4. Wire her up in Buzz Desktop**, then restart her:
+
+| Field | Value |
+| --- | --- |
+| Runtime | `claude` |
+| Env var | `CLAUDE_CONFIG_DIR` = `~/.buzz/proxy/claude-config-betty` |
+
+The variable is the point. Without it a `claude`-runtime agent reads the **user-scope**
+registry at `~/.claude.json`, which on a machine that also runs Claire holds every client's
+BigQuery and Drive server. Betty's whole safety property is that she holds no client data, and
+this one line is what makes that true rather than aspirational. **Restart her afterwards** — a
+config change never reaches a running process.
+
+**5. Prove it, from the process rather than from her.** A model will describe a fence it does
+not have.
+
+```bash
+ps eww -p $(pgrep -f claude-agent-acp) | tr ' ' '\n' | grep CLAUDE_CONFIG_DIR
+grep firstStartTime ~/.buzz/proxy/claude-config-betty/.claude.json
+```
+
+The second is the stronger check: that key is written by her own session, so it is evidence the
+file was read rather than evidence it exists. Then ask her to call `router` — if she returns the
+design router's decision order, the whole chain works.
+
+**Barb comes with her.** Betty's review tiers assume Barb exists. Installing Betty without
+`barb`, `checker` and `feisty` leaves her describing a review she cannot run, which reads to a
+user exactly like a review that found nothing.
 
 ---
 
