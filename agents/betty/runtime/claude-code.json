@@ -1,0 +1,10 @@
+{
+  "$comment": "Claude Code runtime settings for Betty. The prompt is portable/claude-code/agents/betty.md; this file is the configuration that has no business inside a prompt. Read agents/betty/PORTING.md before wiring it up.",
+  "model": "opus",
+  "tools": ["Read", "Write", "Edit", "Bash", "Glob", "Grep", "WebFetch", "Task"],
+  "$toolsComment": "Betty reads a repository, writes application source and markdown, and runs npm and git. `Task` is how she dispatches Barb, and it is the only thing she uses Task for.",
+  "subagents": ["barb"],
+  "$subagentsComment": "Barb reviews what Betty built against the design system's own rules. She brings `checker` and `feisty` with her — all three files have to be installed, because Barb without the fan-out can only skim a ~220k-token corpus. Betty dispatches Barb; she never dispatches checker or feisty herself. The builder deciding which skills to check is exactly the judgment Barb exists to take away from her.",
+  "$notGrantedComment": "Betty is given no BigQuery and no Drive access, and that absence is the design rather than an oversight. Research reaches her through Claire, who holds the client's data fence; granting Betty her own credentials would put one identity inside every client's data at once. She is also not given a way to make Barb's report go away — Barb has no write tools, and Betty must not be allowed to edit the knowledge repository. A builder that can soften the rule it broke is the failure this pairing exists to catch.",
+  "$modelComment": "opus because the expensive judgment is not writing the JSX — it is noticing that two stakeholders asked for incompatible things, or that a requirement collides with a house rule, and stopping. A smaller model resolves those silently, which is the one behaviour this prompt spends the most words forbidding."
+}
