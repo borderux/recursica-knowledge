@@ -138,9 +138,29 @@ export function globalConfigPath() {
  * Derived from the directory name under `agents/`, which is what the export derives
  * from the persona's `name`. Not from `display_name` — that is the field a human
  * renames, and a renamed agent must not silently lose its stamp and read as unknown.
+ *
+ * ## Why one agent can need several keys
+ *
+ * One definition can have several installs on one Mac — a Claire per client, each fenced
+ * to its own data. They run the same prompt but are updated one at a time, so a single
+ * key would record whichever was stamped last and report the rest as current when they
+ * are not. `install` distinguishes them.
+ *
+ * It must be the persona's `slug`, not its display name: the name is the field an
+ * operator renames, and the whole reason this key comes from the directory rather than
+ * from `display_name` is that a rename must not orphan a stamp. Only the first 8
+ * characters are used — enough to separate a handful of installs, short enough to read.
+ *
+ * A single install keeps the unqualified key. Every stamp already written on every
+ * operator's Mac is of that shape, and qualifying them all would orphan the lot to solve
+ * a problem only a multi-client Mac has. The cost is one re-stamp on the day a second
+ * install appears, which the stampable path handles by itself.
  */
-export function stampKey(dirName) {
-  const suffix = dirName.toUpperCase().replace(/[^A-Z0-9]+/g, "_");
+export function stampKey(dirName, install = null) {
+  const part = (s) => String(s).toUpperCase().replace(/[^A-Z0-9]+/g, "_");
+  const suffix = install
+    ? `${part(dirName)}__${part(String(install).slice(0, 8))}`
+    : part(dirName);
   const key = STAMP_PREFIX + suffix;
   if (!KEY_PATTERN.test(key)) {
     throw new Error(`derived env var key is not valid for Buzz: ${key}`);

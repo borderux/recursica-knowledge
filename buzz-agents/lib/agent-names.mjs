@@ -72,6 +72,52 @@ export function sameAgent(liveName, storedName) {
 }
 
 /**
+ * The portable name when the brackets are the other way round.
+ *
+ * `Claire (Alex)` is the documented convention and `canonicalAgentName` handles it. The
+ * inverted form `acme (Claire)` — the qualifier outside, the agent inside — reads
+ * the same way to a human and the opposite way to that function, which strips the
+ * brackets and returns `acme`. An operator running one Claire per client this way
+ * had three of four installs match nothing at all, so nothing ever checked them and they
+ * drifted for weeks in silence. Both forms have to resolve to `Claire`.
+ *
+ * Which half is the agent cannot be decided from the string alone: `Stu (Barb)` is two
+ * agent names and either could be the install. So the repository's own list decides, and
+ * the outer half wins whenever it names something the repo holds. `Claire (Alex)` stays
+ * claire; `Stu (Barb)` stays stu; only a name whose outer half means nothing here —
+ * a client, an environment — is read inside-out.
+ *
+ * With no list to consult, this degrades to `canonicalAgentName`: a guess that invents a
+ * match is worse than no match, because the caller's next move is a `draft-update`.
+ */
+export function portableAgentName(name, known = null) {
+  const raw = String(name ?? "").trim();
+  const outer = canonicalAgentName(raw);
+  if (!known) return outer;
+
+  const index = new Set(
+    Array.from(known, (n) => canonicalAgentName(n).toLowerCase()).filter(Boolean),
+  );
+  if (index.has(outer.toLowerCase())) return outer;
+
+  const inner = raw.match(OWNER_SUFFIX)?.[1].trim() ?? "";
+  return inner && index.has(inner.toLowerCase()) ? inner : outer;
+}
+
+/**
+ * What distinguishes this install from the others of the same agent — the client in
+ * `acme (Claire)`, the operator in `Claire (Alex)`. Null for a bare name.
+ *
+ * Reporting only, so it is free to be whichever half is not the agent.
+ */
+export function installQualifier(name, portable) {
+  const raw = String(name ?? "").trim();
+  const inner = raw.match(OWNER_SUFFIX)?.[1].trim() ?? "";
+  if (!inner) return null;
+  return sameAgent(canonicalAgentName(raw), portable) ? inner : canonicalAgentName(raw);
+}
+
+/**
  * Every live persona matching a stored definition, rather than the first one.
  *
  * `sameAgent` answers a yes/no question, and a caller using it with `.find()` silently
@@ -80,19 +126,26 @@ export function sameAgent(liveName, storedName) {
  * tell them apart, so it needs to know there were two — a `draft-update` aimed at the wrong
  * one reports `accepted: true` and quietly updates an agent nobody named.
  *
- * Exact matches win outright when they exist: an operator holding `Claire` and
- * `Claire (Alex)` while the repo stores `Claire` has said unambiguously which is which.
+ * Several matches is a normal state, not an error. One agent per client on one Mac means
+ * one definition with four installs, each fenced to its own client's data, and all four
+ * want the same prompt. This returns all of them and lets the caller compare each in turn.
+ *
+ * `known` is every agent name the repository holds; see `portableAgentName` for what it
+ * decides. Omitting it restricts matching to the `Claire (Alex)` form.
  */
-export function matchAgents(personas, config) {
-  const exact = personas.filter(
-    (p) => p.name === config.name || p.display_name === config.display_name,
-  );
-  if (exact.length) return exact;
+export function matchAgents(personas, config, known = null) {
+  const samePortable = (liveName, storedName) => {
+    const a = portableAgentName(liveName, known).toLowerCase();
+    const b = canonicalAgentName(storedName).toLowerCase();
+    return a !== "" && a === b;
+  };
 
   return personas.filter(
     (p) =>
-      sameAgent(p.name, config.name) ||
-      sameAgent(p.display_name, config.display_name),
+      p.name === config.name ||
+      p.display_name === config.display_name ||
+      samePortable(p.name, config.name) ||
+      samePortable(p.display_name, config.display_name),
   );
 }
 
