@@ -335,6 +335,21 @@
       "resolve": true
     },
     {
+      "$comment": [
+        "Asks on a schedule the question sync-prompts.mjs answers only when somebody",
+        "runs it. On the machine this was written for nobody ever did, and three of four",
+        "installs of one agent had drifted unreported.",
+        "",
+        "No launchd plist ships with it. The invocation needs a channel UUID and the",
+        "operator's pubkey, and a channel UUID is one of the things that must not reach",
+        "this repository. The recipe is in the script's own header."
+      ],
+      "from": "bin/watch-agent-drift.mjs",
+      "to": "bin/watch-agent-drift.mjs",
+      "mode": "0755",
+      "resolve": true
+    },
+    {
       "from": "bin/janice-turn-window.py",
       "to": "bin/janice-turn-window.py",
       "mode": "0755",

@@ -48,7 +48,7 @@ import {
   findStaleRedactions,
   deriveValues,
 } from "../lib/placeholders.mjs";
-import { canonicalAgentName } from "../lib/agent-names.mjs";
+import { canonicalAgentName, portableAgentName } from "../lib/agent-names.mjs";
 import {
   AVATAR_FILE,
   describeAvatar,
@@ -268,6 +268,19 @@ const instances = entries.filter((e) => e.persona_id);
 const personas = allPersonas.filter((p) => !p.is_builtin);
 const builtins = allPersonas.filter((p) => p.is_builtin).map((p) => p.name);
 
+/**
+ * Every agent name the repository already holds, which is what tells `portableAgentName`
+ * which half of a bracketed name is the agent. Directory names alone are enough here: the
+ * export derives its directory from this, so an agent with no directory yet is a new one
+ * and the outer half of its name is the right answer for it.
+ */
+const storedAgentNames = fs.existsSync(agentsDir)
+  ? fs
+      .readdirSync(agentsDir, { withFileTypes: true })
+      .filter((d) => d.isDirectory())
+      .map((d) => d.name)
+  : [];
+
 if (allPersonas.length === 0) {
   console.error(
     "Found no persona entries (an entry with `slug` set and `persona_id` null).",
@@ -287,14 +300,66 @@ if (personas.length === 0) {
 const changed = [];
 const rawPrompts = [];
 
-for (const persona of personas) {
-  // Canonical, so `Claire (Alex)` exports to agents/claire/ and updates the definition
-  // she came from. Without stripping the owner suffix this wrote agents/claire-alex/
-  // beside it — a duplicate of the same agent, one per operator who ever exported.
-  const dirName = canonicalAgentName(persona.name || persona.display_name)
+// Canonical, so `Claire (Alex)` exports to agents/claire/ and updates the definition she
+// came from. Without stripping the owner suffix this wrote agents/claire-alex/ beside it —
+// a duplicate of the same agent, one per operator who ever exported.
+//
+// `portableAgentName` because an operator running one Claire per client names them the
+// other way round — `acme (Claire)` — and stripping the brackets from that yields the
+// client, so the export would have written agents/acme/ beside agents/claire/. Same bug as
+// the one that made sync-prompts blind to those installs; see that function for how the
+// repo's own list decides which half is the agent.
+const dirFor = (persona) =>
+  portableAgentName(persona.name || persona.display_name, storedAgentNames)
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
+
+/**
+ * Directories more than one install wants to write, disagreeing about what to put there.
+ *
+ * Resolving the inverted form correctly is what creates this: four Claires that used to
+ * scatter into agents/<client>/ now all name agents/claire/, and the loop below writes as
+ * it goes, so the last one silently becomes the committed definition. Which of four is the
+ * real one is not a thing this script can know — and the export exists precisely to capture
+ * edits that live nowhere else, so picking wrong loses the work it was run to save.
+ *
+ * Compared in stored form, not raw. Installs of one agent differ by exactly the values the
+ * tokenizer replaces, so raw prompts disagree for every fenced install and a raw comparison
+ * would contest every directory that has more than one. Identical stored forms mean the
+ * choice does not matter and the export proceeds.
+ */
+const storedForm = (persona) => {
+  let t = persona.system_prompt ?? "";
+  if (!t.endsWith("\n")) t += "\n";
+  return applyRedactions(tokenize(t, values), allRedactions);
+};
+
+const contested = new Set();
+{
+  const byDir = new Map();
+  for (const p of personas) {
+    const d = dirFor(p);
+    if (!byDir.has(d)) byDir.set(d, []);
+    byDir.get(d).push(p);
+  }
+  for (const [d, group] of byDir) {
+    if (group.length < 2) continue;
+    if (new Set(group.map(storedForm)).size > 1) contested.add(d);
+  }
+}
+
+const contestedNames = new Map();
+
+for (const persona of personas) {
+  const dirName = dirFor(persona);
+
+  if (contested.has(dirName)) {
+    if (!contestedNames.has(dirName)) contestedNames.set(dirName, []);
+    contestedNames.get(dirName).push(persona.display_name ?? persona.name);
+    continue;
+  }
+
   const outDir = path.join(agentsDir, dirName);
 
   const config = {};
@@ -302,9 +367,11 @@ for (const persona of personas) {
     if (persona[field] !== undefined) config[field] = persona[field];
   }
   // The owner suffix is local to one install. Storing `Claire (Alex)` would put one
-  // operator's name in the definition every other operator restores from.
+  // operator's name in the definition every other operator restores from. The inverted
+  // form carries a client name, which must reach the repository even less.
   for (const field of ["name", "display_name"]) {
-    if (config[field] !== undefined) config[field] = canonicalAgentName(config[field]);
+    if (config[field] !== undefined)
+      config[field] = portableAgentName(config[field], storedAgentNames);
   }
   config.system_prompt_file = "SYSTEM_PROMPT.md";
 
@@ -417,6 +484,20 @@ for (const persona of personas) {
   );
 }
 
+for (const [dirName, names] of contestedNames) {
+  console.log(
+    `\n  ! buzz-agents/agents/${dirName}/ not written: ${names.length} installs of this ` +
+      "agent are running different prompts",
+  );
+  for (const n of names) console.log(`      ${n}`);
+  console.log(
+    "    They share one stored definition, so exporting would commit whichever came last\n" +
+      "    and silently discard the rest. Bring them into line first — the per-install\n" +
+      "    report says which are behind and which hold edits:\n\n" +
+      "      node buzz-agents/scripts/sync-prompts.mjs --diff\n",
+  );
+}
+
 // Scan all files under nest/ and buzz-agents/ using findLeaks and findStaleRedactions
 const buzzDir = path.join(__dirname, "..");
 const nestDir = path.join(repoRoot, "nest");
@@ -480,6 +561,14 @@ if (checkOnly) {
     console.error(`\nOut of date — ${changed.length} file(s) would change:`);
     for (const f of changed) console.error(`  ${f}`);
     console.error("\nRun: node buzz-agents/scripts/export-agents.mjs");
+    process.exit(1);
+  }
+  // A contested directory produces no diff, because nothing was compared — so reporting
+  // "up to date" here would be the check passing on the agents it could not read at all.
+  if (contestedNames.size) {
+    console.error(
+      `\nCould not export ${contestedNames.size} agent(s); see above. Nothing else is out of date.`,
+    );
     process.exit(1);
   }
   console.log("\nUp to date.");
