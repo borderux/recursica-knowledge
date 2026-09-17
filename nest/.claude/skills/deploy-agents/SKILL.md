@@ -126,7 +126,31 @@ Only add it when the two genuinely differ — omitted, everything derives from `
 the normal case. Do not "fix" a mismatch by renaming the account in the console: you cannot,
 and creating a replacement means re-granting the dataset and re-sharing the Drive folder.
 
-**If a value is missing from the canvas, the fix is to add it to the canvas** — not to
+### The community note is where these belong now
+
+`~/.buzz/bin/client-config.mjs resolve --channel <uuid>` answers this whole section in one
+command, reading the community and the channel together and refusing rather than guessing.
+Use it before asking anybody anything.
+
+A client's details are recorded once for the whole community, so a **second** channel for a
+client that already has one needs a single line naming the client, not the block above:
+
+```markdown
+## Claire config
+- client: <slug>
+```
+
+`client-config.mjs publish --from-channel <uuid>` promotes an existing channel's block to the
+community; without `--write` it prints what it would publish. Say out loud before writing it
+that a note is readable by everyone in the community where a canvas is readable by that
+channel's members — it carries names and ids only, never a key, but that is a wider audience.
+
+**The channel line is not optional and must not be "simplified" away.** A channel that names
+no client is unconfigured, and that is the fence doing its job: most channels in a community
+are not client channels, and moving everything to the community would quietly configure all
+of them for that client.
+
+**If a value is missing, the fix is to add it to the community note** — not to
 collect it in chat and move on. The next operator hits the identical gap otherwise.
 `TAG_SHEET_ID` is the one most often absent and it is not derivable; ask the owner for it,
 then **write it back**. Show them the block before you set it: `buzz canvas set` replaces the
