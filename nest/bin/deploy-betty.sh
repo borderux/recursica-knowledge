@@ -156,7 +156,24 @@ if [ -f "${FENCE_DIR}/model-env.sh" ]; then
   . "${FENCE_DIR}/model-env.sh"
 fi
 
-exec "${ACP_BIN}" "\$@"
+# Buzz Desktop is a GUI app: it inherits launchd's PATH (/usr/bin:/bin:/usr/sbin:/sbin),
+# which holds neither node nor the Claude CLI. The adapter is a .js file whose shebang is
+# \`#!/usr/bin/env node\`, so exec'ing it directly under that PATH dies with
+# "env: node: No such file or directory" before the agent ever starts. That failure reaches
+# the operator as an agent that simply will not come up, with nothing about node anywhere
+# near it — so run the adapter under Buzz's own bundled node instead, and put the Claude
+# CLI's directory on PATH for anything downstream that still looks the CLI up by name.
+NODE_FOR_ACP=\$(ls -d "\$HOME/Library/Application Support/Buzz/runtimes/node"/*/*/bin/node 2>/dev/null | tail -1)
+[ -n "\$NODE_FOR_ACP" ] || NODE_FOR_ACP=\$(command -v node 2>/dev/null || true)
+if [ -z "\$NODE_FOR_ACP" ]; then
+  echo "agent-${AGENT}.sh: no node — neither a bundled runtime under ~/Library/Application Support/Buzz/runtimes/node nor one on PATH" >&2
+  exit 127
+fi
+
+PATH="\$HOME/.local/bin:\$PATH"
+export PATH
+
+exec "\$NODE_FOR_ACP" "${ACP_BIN}" "\$@"
 LAUNCHEREOF
 chmod 755 "$LAUNCHER"
 ok "wrote $LAUNCHER"
