@@ -55,6 +55,29 @@
  * names only: "claire: 3 of 4 installs behind". The detail stays on the machine, where the
  * operator reads it by running the report themselves. That is also why this sends a message
  * rather than a diff.
+ *
+ * ## Running it on a schedule
+ *
+ * Under launchd, because cron on macOS does not survive a login cycle cleanly and this has
+ * to keep working across reboots to be worth anything. Twice a day is plenty: prompts move
+ * at the speed of pull requests, and the dedup above means a shorter interval buys nothing
+ * but wake-ups.
+ *
+ * Write `~/Library/LaunchAgents/xyz.buzz.agent-drift.plist` with `ProgramArguments` running
+ * this script — `--repo` the knowledge checkout, `--channel` where to post, `--mention` the
+ * operator's pubkey — and a `StartCalendarInterval` array of the hours wanted. Then:
+ *
+ *   launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/xyz.buzz.agent-drift.plist
+ *   launchctl kickstart -p gui/$(id -u)/xyz.buzz.agent-drift    # prove it before trusting it
+ *
+ * No plist ships in this repository, and that is not an omission: the invocation needs a
+ * channel UUID, which is one of the values that must never be committed here. Check the
+ * arguments with `--dry-run` first — it prints the message and writes no state, so a wrong
+ * channel costs nothing.
+ *
+ * Give the plist a `StandardErrorPath`. A launchd job that has been failing since March
+ * looks exactly like one with nothing to report, which is the failure this whole script
+ * exists to stop happening to prompts.
  */
 
 import fs from "node:fs";
