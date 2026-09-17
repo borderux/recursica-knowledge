@@ -101,6 +101,8 @@ These four key names are exact. `bq_project` and `bq_dataset` carry the `bq_` pr
 and `drive_folder` do not. A config written with `project:` or `dataset:` instead is the same
 class of failure as an empty one — do not accept it, and do not silently read around it.
 
+
+
 And how to fill each one:
 
 - **slug** — a short lowercase name for this client, letters, numbers and hyphens only. Their

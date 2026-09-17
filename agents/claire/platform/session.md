@@ -73,6 +73,8 @@ These four key names are exact. `bq_project` and `bq_dataset` carry the `bq_` pr
 and `drive_folder` do not. A config written with `project:` or `dataset:` instead is the same
 class of failure as an empty one — do not accept it, and do not silently read around it.
 
+## config-second-channel
+
 ## config-bq-project
 
 - **bq_project** — already filled in above, the same for every client.

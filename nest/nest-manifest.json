@@ -203,6 +203,28 @@
     },
     {
       "$comment": [
+        "Resolves a channel's client settings from the community and the channel together.",
+        "",
+        "The lookup has an order, a precedence rule and a refusal case, and the cost of",
+        "getting any of them wrong is reading another client's data. That is a script's job",
+        "rather than three paragraphs in a prompt — see the file's own header.",
+        "",
+        "resolve:false. It carries no {{TOKEN}}, and resolving it would rewrite the example",
+        "slugs in its help text into whichever client this machine was installed for."
+      ],
+      "from": "bin/client-config.mjs",
+      "to": "bin/client-config.mjs",
+      "mode": "0755",
+      "resolve": false
+    },
+    {
+      "from": "bin/lib/client-config.mjs",
+      "to": "bin/lib/client-config.mjs",
+      "mode": "0644",
+      "resolve": false
+    },
+    {
+      "$comment": [
         "The pass reader Analyst and Persona both use: survey a conversation from its tags,",
         "serve line ranges and record which were served, and check that a cited quote actually",
         "appears in the line it cites.",
