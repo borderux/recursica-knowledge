@@ -56,6 +56,19 @@ export const RESERVED_PREFIX = "BUZZ_";
 export const STAMP_PREFIX = "AGENT_PROMPT_VERSION_";
 
 /**
+ * Which repository definition an installed agent came from.
+ *
+ * Kept beside the stamps because it is the same kind of fact — something true of this
+ * machine's installs, that Buzz itself has no field for — and because the atomic,
+ * prefix-guarded writer is already here. See ./agent-bindings.mjs for why a binding
+ * exists at all.
+ */
+export const DEFINITION_PREFIX = "AGENT_DEFINITION_";
+
+/** Every namespace this module's writer is allowed to touch. */
+export const WRITABLE_PREFIXES = [STAMP_PREFIX, DEFINITION_PREFIX];
+
+/**
  * A stamp is `<commit sha>@<fingerprint of the prompt that was installed>`.
  *
  * The sha alone answers the question this design exists for — "has the branch moved past
@@ -181,15 +194,19 @@ export function readEnvVars(configPath = globalConfigPath()) {
  * A value of null removes the key. Returns the keys that actually changed, so a caller
  * can report a write happening rather than claiming one that was a no-op.
  *
- * Refuses any key outside our prefix. This file also holds the provider, the model and
+ * Refuses any key outside our prefixes. This file also holds the provider, the model and
  * the preferred runtime for every agent on the machine; a stamp writer has no business
  * being able to touch those, so the guard is here rather than in the caller.
  */
-export function writeStamps(updates, configPath = globalConfigPath()) {
+export function writeStamps(
+  updates,
+  configPath = globalConfigPath(),
+  prefixes = WRITABLE_PREFIXES,
+) {
   for (const key of Object.keys(updates)) {
-    if (!key.startsWith(STAMP_PREFIX)) {
+    if (!prefixes.some((p) => key.startsWith(p))) {
       throw new Error(
-        `refusing to write env var outside ${STAMP_PREFIX}*: ${key}`,
+        `refusing to write env var outside ${prefixes.join("*, ")}*: ${key}`,
       );
     }
     if (key.startsWith(RESERVED_PREFIX)) {
@@ -267,6 +284,74 @@ export function describeCommit(repoRoot, sha) {
 }
 
 /** A file's contents at a commit, or null if the commit or path is unknown here. */
+/**
+ * The commits that changed a file, newest first, at most `limit` of them.
+ *
+ * Bounded on purpose. The one caller walks this to identify an install by the prompt it is
+ * running, and a prompt an install has been sitting on for longer than the last twenty
+ * revisions is old enough that the operator saying which agent it is beats this guessing.
+ */
+export function promptCommitHistory(repoRoot, relPath, limit = 20) {
+  try {
+    const out = execFileSync(
+      "git",
+      ["-C", repoRoot, "log", `-n${limit}`, "--format=%H", "--", relPath],
+      { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] },
+    ).trim();
+    return out ? out.split("\n") : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Many `<sha>:<path>` blobs in one git process.
+ *
+ * `fileAtCommit` spawns git per revision, which is fine for the one or two a stamp check
+ * needs and not fine for walking every revision of every prompt: seven prompts at twenty
+ * revisions took over two minutes, on a check meant to run unattended on a schedule.
+ * `cat-file --batch` answers the same question in a single process.
+ *
+ * Returns a Map from the requested `<sha>:<path>` to its content, omitting the ones git
+ * reports missing — a prompt that did not exist yet at an old commit is an ordinary
+ * answer, not an error.
+ *
+ * Parsed as bytes rather than as a string. The batch protocol frames each blob with a byte
+ * length, and decoding the whole stream as UTF-8 first would make that length disagree with
+ * the buffer for any prompt containing a multi-byte character. Every prompt here contains
+ * an em dash.
+ */
+export function filesAtCommits(repoRoot, refs) {
+  const out = new Map();
+  if (!refs.length) return out;
+  let buf;
+  try {
+    buf = execFileSync("git", ["-C", repoRoot, "cat-file", "--batch"], {
+      input: refs.join("\n") + "\n",
+      stdio: ["pipe", "pipe", "ignore"],
+      maxBuffer: 256 * 1024 * 1024,
+    });
+  } catch {
+    return out;
+  }
+
+  let at = 0;
+  for (const ref of refs) {
+    const nl = buf.indexOf(0x0a, at);
+    if (nl === -1) break;
+    const header = buf.toString("utf8", at, nl);
+    at = nl + 1;
+    const parts = header.split(" ");
+    // `<oid> missing`, and on newer git `<oid> ambiguous`. Either way no body follows.
+    if (parts.length < 3) continue;
+    const size = Number(parts[2]);
+    if (!Number.isFinite(size)) break;
+    out.set(ref, buf.toString("utf8", at, at + size));
+    at += size + 1; // git writes a newline after the body
+  }
+  return out;
+}
+
 export function fileAtCommit(repoRoot, sha, relPath) {
   try {
     return execFileSync("git", ["-C", repoRoot, "show", `${sha}:${relPath}`], {
