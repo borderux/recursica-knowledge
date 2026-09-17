@@ -15,10 +15,14 @@ import {
 } from "./agent-bindings.mjs";
 import { filesAtCommits, fileAtCommit } from "./version-stamp.mjs";
 
-const SLUG = "b06255a8-5385-4b22-9cef-ab1187db64d9";
+// A made-up UUID. The first version of this file used a real persona slug off the machine it
+// was written on — harmless in content, since a slug carries no meaning, but it is a live
+// identifier from somebody's install sitting in a public repository where any sixteen bytes
+// would have done.
+const SLUG = "00000000-1111-2222-3333-444444444444";
 
 test("a binding key is derived from the slug, not the name", () => {
-  assert.equal(bindingKey(SLUG), "AGENT_DEFINITION_B06255A8");
+  assert.equal(bindingKey(SLUG), "AGENT_DEFINITION_00000000");
   // The same install under any name gives the same key. That is the property.
   assert.equal(bindingKey(SLUG.toUpperCase()), bindingKey(SLUG));
 });
@@ -45,7 +49,7 @@ test("a binding survives a rename because it never saw the name", () => {
 
 test("an unbound slug resolves to nothing rather than to a guess", () => {
   assert.equal(bindingFor(new Map(), SLUG), null);
-  assert.equal(bindingFor(new Map([["B06255A8", "claire"]]), null), null);
+  assert.equal(bindingFor(new Map([["00000000", "claire"]]), null), null);
 });
 
 test("a definition is identified by the prompt an install runs", () => {
