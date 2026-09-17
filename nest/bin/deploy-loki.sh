@@ -361,10 +361,13 @@ cat <<EOF
   3. Restart him. A configuration change never reaches a running process.
 
   Then verify from the process, not by asking him — a model will describe a fence it does
-  not have:
+  not have. Select on BUZZ_ACP_DISPLAY_NAME: the system prompt is not in the process
+  environment, so matching "You are Loki" there never matches anything. The loop says
+  NO FENCE out loud, because a loop that prints nothing reads as a pass:
 
     for pid in \$(pgrep -f claude-agent-acp); do
-      ps eww -p \$pid | grep -q "You are Loki" && ps eww -p \$pid | tr ' ' '\n' | grep CLAUDE_CONFIG_DIR
+      ps eww -p \$pid | tr ' ' '\n' | grep -qi '^BUZZ_ACP_DISPLAY_NAME=${AGENT}' || continue
+      ps eww -p \$pid | tr ' ' '\n' | grep '^CLAUDE_CONFIG_DIR=' || echo "pid \$pid: NO FENCE"
     done
     grep firstStartTime ${FENCE_AGENT}/.claude.json
     CLAUDE_CONFIG_DIR=${FENCE_AGENT} claude auth status
