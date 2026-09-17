@@ -604,15 +604,28 @@ let stamped = [];
 
 if (stampable.length && mayStamp) {
   try {
-    stamped = writeStamps(
-      Object.fromEntries(
-        stampable.map((r) => [
-          r.key,
-          formatStamp(r.repoCommit, r.fingerprint),
-        ]),
-      ),
-      configPath,
+    const updates = Object.fromEntries(
+      stampable.map((r) => [r.key, formatStamp(r.repoCommit, r.fingerprint)]),
     );
+
+    /**
+     * Writing a qualified stamp retires the unqualified one for that agent.
+     *
+     * The fallback that reads it exists to carry a stamp across the day a second install
+     * appears, and it has to be one-way. Left in place, the old key sits there holding a
+     * sha from before the split — and it becomes live again the moment the installs drop
+     * back to one, which is a routine thing to do: decommission a client, and the agent
+     * that remains is read against a stamp months out of date and reported as behind
+     * something it is already running.
+     */
+    for (const r of stampable) {
+      if (!r.install) continue;
+      const legacy = stampKey(r.dir);
+      if (legacy !== r.key && envVars[legacy] !== undefined)
+        updates[legacy] = null;
+    }
+
+    stamped = writeStamps(updates, configPath);
     for (const r of stampable) {
       r.state = r.settings.length ? "settings-only" : "in-sync";
       r.justStamped = true;
