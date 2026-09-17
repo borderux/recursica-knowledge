@@ -41,6 +41,7 @@ import { execFileSync } from "node:child_process";
 import {
   parseChannel,
   parseCommunity,
+  communityClients,
   mergeConfig,
   formatBlock,
   FENCE_KEYS,
@@ -117,21 +118,38 @@ if (cmd === "resolve") {
     process.exit(1);
   }
 
-  const { client, values: channelValues } = parseChannel(channelCanvas(uuid));
+  const {
+    client: named,
+    optedOut,
+    values: channelValues,
+  } = parseChannel(channelCanvas(uuid));
+
+  const note = communityNote();
+  const clients = communityClients(note);
+
+  /**
+   * A channel that says nothing inherits the community's client, when there is exactly one.
+   *
+   * That is the whole point of one community per client: the community boundary is the fence,
+   * so a channel inside it does not have to re-declare which client it is in. Where the
+   * community describes several, nothing is inherited — guessing which of two a silent channel
+   * meant is the failure this exists to prevent.
+   */
+  const client = named ?? (!optedOut && clients.length === 1 ? clients[0] : null);
+  const how = named ? "channel" : client ? "community" : null;
 
   if (!client) {
-    // Not an error. Most channels are not client channels, and the whole point of keeping a
-    // line on the channel is that this stays a real answer after the details move away.
-    const out = {
-      status: "unconfigured",
-      reason:
-        "this channel names no client, so it has no client data and is not set up for any",
-    };
-    console.log(asJson ? JSON.stringify(out, null, 2) : `unconfigured — ${out.reason}`);
+    const reason = optedOut
+      ? "this channel opts out of client data"
+      : clients.length > 1
+        ? `this community describes ${clients.length} clients, so a channel has to name one`
+        : "no client is configured for this channel or this community";
+    const out = { status: "unconfigured", reason };
+    console.log(asJson ? JSON.stringify(out, null, 2) : `unconfigured — ${reason}`);
     process.exit(3);
   }
 
-  const communityValues = parseCommunity(communityNote(), client);
+  const communityValues = parseCommunity(note, client);
   const { values, conflicts, missing } = mergeConfig(channelValues, communityValues);
 
   if (conflicts.length) {
@@ -173,7 +191,8 @@ if (cmd === "resolve") {
     process.exit(4);
   }
 
-  if (asJson) console.log(JSON.stringify({ status: "ok", client, values }, null, 2));
+  if (asJson)
+    console.log(JSON.stringify({ status: "ok", client, from: how, values }, null, 2));
   else process.stdout.write(formatBlock(values));
   process.exit(0);
 }

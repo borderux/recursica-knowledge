@@ -11,6 +11,10 @@ Buzz.app. There is no Linux build and no container option.
 
 ---
 
+> **Setting up a brand-new client?** Read
+> [NEW_CLIENT_COMMUNITY.md](NEW_CLIENT_COMMUNITY.md) instead. One community per client, and
+> that file is the whole path in order. This file is about getting *your* Mac running.
+
 ## What you are installing
 
 Two halves, and it is worth knowing which is which when something breaks:

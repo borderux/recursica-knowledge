@@ -225,6 +225,46 @@
     },
     {
       "$comment": [
+        "Reports whether a community holds exactly one client and only that client's",
+        "agents. The second half is the one nothing else can see: an agent's presence in a",
+        "community is invisible in Buzz Desktop and invisible in the config files, and shows",
+        "up only in the running processes."
+      ],
+      "from": "bin/verify-client-community.mjs",
+      "to": "bin/verify-client-community.mjs",
+      "mode": "0755",
+      "resolve": false
+    },
+    {
+      "$comment": [
+        "Probes an agent's fence through its own settings, in the permission mode it really",
+        "runs in. Takes a manifest of ALLOW/DENY paths built outside the fence — a correct",
+        "fence blocks directory listing, so a glob evaluated inside expands to nothing and a",
+        "globbing verifier reports a clean pass having tested zero files.",
+        "",
+        "It insists on at least one must-be-readable path. An all-BLOCKED result is not a",
+        "pass: the first build of this fence put the re-allow in permissions.allow instead of",
+        "sandbox.filesystem.allowRead, and the agent's own key came back blocked along with",
+        "everyone else's. The probe output looked more secure, not less."
+      ],
+      "from": "bin/verify-agent-fence.sh",
+      "to": "bin/verify-agent-fence.sh",
+      "mode": "0755",
+      "resolve": false
+    },
+    {
+      "$comment": [
+        "Reads the fence off the running processes rather than the config file. Saving an",
+        "agent's config restarts it only on the community the operator was standing in, so",
+        "the file can be correct while three stale copies keep running the old environment."
+      ],
+      "from": "bin/check-agent-fence-live.sh",
+      "to": "bin/check-agent-fence-live.sh",
+      "mode": "0755",
+      "resolve": false
+    },
+    {
+      "$comment": [
         "The pass reader Analyst and Persona both use: survey a conversation from its tags,",
         "serve line ranges and record which were served, and check that a cited quote actually",
         "appears in the line it cites.",
@@ -433,6 +473,12 @@
       "to": "mcp/templates/agents/persona.md.tmpl",
       "mode": "0644",
       "resolve": true
+    },
+    {
+      "from": "GUIDES/PER_CLIENT_AGENT_FENCE.md",
+      "to": "GUIDES/PER_CLIENT_AGENT_FENCE.md",
+      "mode": "0644",
+      "resolve": false
     },
     {
       "from": "GUIDES/RESEARCH_CHANNEL_DATASET_SCHEMA.md",

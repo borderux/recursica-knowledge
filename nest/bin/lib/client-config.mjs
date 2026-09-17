@@ -18,11 +18,24 @@
  * cannot reach client data. Put the settings at the community level and every channel in it
  * becomes configured for that client, including the ones nobody meant to configure.
  *
- * ## So: details at the community, consent at the channel
+ * ## So: details at the community, and the community is one client
  *
- * The community holds what the client *is*. The channel holds one line saying which client it is
- * for, and a channel without that line stays unconfigured exactly as it is today. An operator
- * writes one line per working channel instead of six, and the details are in one findable place.
+ * The community holds what the client *is*. When it describes exactly one client, every channel
+ * in it resolves to that client — which is correct, because the community boundary is the fence:
+ * one community per client, one agent set per community.
+ *
+ * That is a change from this module's first version, which required every channel to name its
+ * client and argued the line was holding the fence up. It was, while one community could hold
+ * several clients. Once it cannot, the line stops being load-bearing and insisting on it is
+ * ceremony — six lines of setup replaced by one line of setup, where the honest answer is none.
+ *
+ * Two things survive from that version, because they are still real:
+ *
+ *   - **A channel can opt out.** `- client: none` keeps a channel out of client data, for a
+ *     welcome or admin channel in a client's community. Explicit, not inferred.
+ *   - **A community describing several clients still needs the line.** Nothing resolves by
+ *     itself there, because guessing which of two clients a channel means is the failure the
+ *     whole design exists to prevent.
  *
  * The old whole-block canvas keeps working and keeps winning, so nothing has to migrate on any
  * particular day. See `mergeConfig` for what happens when the two disagree, which is the part
@@ -73,21 +86,44 @@ export function parseBlock(markdown, heading) {
 }
 
 /**
- * What the channel says. Either today's whole block or tomorrow's one line.
+ * What the channel says, if anything.
  *
- * `client:` is the new form and `slug:` the old one; they mean the same thing and the old one
- * is not going away on a schedule. A channel carrying neither is unconfigured, which is a
- * legitimate and common state — most channels are not client channels.
+ * `client:` is the new form and `slug:` the old one; they mean the same thing and the old one is
+ * not going away on a schedule. `- client: none` is an explicit opt-out and is reported as such,
+ * distinctly from saying nothing — the caller falls back to the community for silence and must
+ * not for a refusal.
  */
 export function parseChannel(canvas) {
   const block = parseBlock(canvas, "Claire config");
-  const client = block.client ?? block.slug ?? null;
-  if (!client) return { client: null, values: {} };
+  const named = block.client ?? block.slug ?? null;
+
+  if (named && /^(none|no|off)$/i.test(named)) {
+    return { client: null, optedOut: true, values: {} };
+  }
+  if (!named) return { client: null, optedOut: false, values: {} };
 
   const values = {};
   for (const k of CONFIG_KEYS) if (block[k]) values[k] = block[k];
-  values.slug = client;
-  return { client, values };
+  values.slug = named;
+  return { client: named, optedOut: false, values };
+}
+
+/**
+ * Every client the community note describes.
+ *
+ * One is the ordinary case and the reason a channel need not name anything. Several is
+ * legitimate and means nothing resolves by itself: picking one of two clients for a channel
+ * that named neither is the failure this whole module exists to prevent.
+ */
+export function communityClients(note) {
+  if (!note) return [];
+  const labelled = [...String(note).matchAll(/^##\s+client:\s*(\S+)\s*$/gim)].map((m) =>
+    m[1].trim(),
+  );
+  if (labelled.length) return [...new Set(labelled)];
+
+  const single = parseBlock(note, "Claire config");
+  return single.slug ? [single.slug] : [];
 }
 
 /**

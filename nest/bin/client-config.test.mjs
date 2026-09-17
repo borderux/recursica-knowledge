@@ -141,3 +141,52 @@ test("keys are matched exactly, not loosely", () => {
   assert.equal(values.bq_project, undefined);
   assert.equal(values.bq_dataset, undefined);
 });
+
+/* ---- one community per client: the channel line stops being required ---- */
+
+import { communityClients } from "./lib/client-config.mjs";
+
+const ONE_CLIENT = `
+## client: acme
+
+- slug: acme
+- bq_project: p
+- bq_dataset: acme_dataset
+- drive_folder: F
+`;
+
+test("the community's clients are read from its labelled blocks", () => {
+  assert.deepEqual(communityClients(ONE_CLIENT), ["acme"]);
+  assert.deepEqual(communityClients(COMMUNITY), ["acme", "other"]);
+  assert.deepEqual(communityClients(null), []);
+});
+
+test("an unlabelled single block still names its client", () => {
+  assert.deepEqual(
+    communityClients("## Claire config\n\n- slug: acme\n- bq_dataset: d\n"),
+    ["acme"],
+  );
+});
+
+test("a silent channel is distinguishable from one that refuses", () => {
+  // The caller inherits the community's client for silence and must not for a refusal, so
+  // these cannot collapse into the same answer.
+  assert.deepEqual(parseChannel(""), { client: null, optedOut: false, values: {} });
+  const out = parseChannel("## Claire config\n\n- client: none\n");
+  assert.equal(out.client, null);
+  assert.equal(out.optedOut, true);
+});
+
+test("opting out is spelled a few obvious ways", () => {
+  for (const v of ["none", "None", "no", "off"]) {
+    assert.equal(
+      parseChannel(`## Claire config\n\n- client: ${v}\n`).optedOut,
+      true,
+      v,
+    );
+  }
+});
+
+test("a client actually called something like the opt-out is not one", () => {
+  assert.equal(parseChannel("## Claire config\n\n- client: nonesuch\n").client, "nonesuch");
+});
