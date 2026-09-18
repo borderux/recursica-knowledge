@@ -79,12 +79,18 @@ ships it. Write a path into `~/.buzz/proxy/target` only if yours is somewhere el
 ```sh
 cd ~/.buzz/proxy
 cp -R fences/_unknown fences/acme
-printf 'acme.communities.buzz.xyz\tacme\n' >> communities.map
+printf 'acme.relay.example\tacme\n' >> communities.map   # your real host, not this one
 ```
 
-Then put that community's servers in `fences/acme/.claude.json`. **Tab-separated, not
-spaces** — a line with spaces does not match and the community silently falls through to the
-deny-all fence.
+Then put that community's servers in `fences/acme/.claude.json`.
+
+**Take the host from `launcher.log`, do not type what you expect.** It is `BUZZ_RELAY_URL`
+with the scheme and any path stripped, and a relay can be hosted anywhere — the log prints the
+host it parsed on every agent start, which is the only value guaranteed to match. The fence
+name beside it is yours to choose and need not resemble the host.
+
+**Tab-separated, not spaces** — a line with spaces does not match, and the community then
+falls through to the deny-all fence with no error.
 
 ### 2. Map every community, not the ones you can see
 
@@ -184,7 +190,7 @@ the server list from the config directory.
 ```sh
 cd ~/.buzz/proxy
 cp -R fences/_unknown fences/acme2
-printf 'acme2.communities.buzz.xyz\tacme2\n' >> communities.map
+printf 'acme2.relay.example\tacme2\n' >> communities.map   # your real host
 # edit fences/acme2/.claude.json
 CLAUDE_CONFIG_DIR=~/.buzz/proxy/fences/acme2 claude auth login
 ./verify-fence.sh
