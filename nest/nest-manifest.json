@@ -163,6 +163,18 @@
     {
       "path": "mcp",
       "mode": "0700"
+    },
+    {
+      "path": "proxy",
+      "mode": "0700"
+    },
+    {
+      "path": "proxy/fences",
+      "mode": "0700"
+    },
+    {
+      "path": "proxy/fences/_unknown",
+      "mode": "0700"
     }
   ],
   "files": [
@@ -521,6 +533,12 @@
       "resolve": false
     },
     {
+      "from": "GUIDES/PER_COMMUNITY_TOOL_FENCE.md",
+      "to": "GUIDES/PER_COMMUNITY_TOOL_FENCE.md",
+      "mode": "0644",
+      "resolve": false
+    },
+    {
       "from": "GUIDES/RESEARCH_CHANNEL_DATASET_SCHEMA.md",
       "to": "GUIDES/RESEARCH_CHANNEL_DATASET_SCHEMA.md",
       "mode": "0644",
@@ -625,6 +643,67 @@
       "mode": "0644",
       "resolve": false,
       "fromRoot": true
+    },
+    {
+      "$comment": [
+        "The per-community tool fence. One agent record joined to several communities gets a",
+        "different MCP registry in each, because Buzz spawns one process per (pubkey, relayUrl)",
+        "and puts BUZZ_RELAY_URL in it — so the launcher can pick the config directory at spawn",
+        "even though nothing on the record can. See GUIDES/PER_COMMUNITY_TOOL_FENCE.md.",
+        "",
+        "resolve:false, and it must stay that way. The script resolves the nest from its own",
+        "location and the ACP agent from $HOME, so it carries no {{TOKEN}} — and a `{{` baked",
+        "into a shell script by a future edit would be resolved into an install-time value",
+        "inside a file that is supposed to work in a moved nest.",
+        "",
+        "Installing it is not enabling it. It applies nothing until the operator creates an",
+        "ARMED file beside it, which is deliberately NOT in this manifest: a bootstrap that",
+        "shipped that file would arm a fence somebody was still testing, and one that restored",
+        "it after removal would re-arm a fence they had backed out of."
+      ],
+      "from": "proxy/buzz-agent-launcher.sh",
+      "to": "proxy/buzz-agent-launcher.sh",
+      "mode": "0755",
+      "resolve": false
+    },
+    {
+      "from": "proxy/verify-fence.sh",
+      "to": "proxy/verify-fence.sh",
+      "mode": "0755",
+      "resolve": false
+    },
+    {
+      "$comment": [
+        "The operator's map of relay host to fence, so ifAbsent — a `git pull` must not",
+        "overwrite the list of clients they have granted. Shipped from a .example source for",
+        "the same reason local-values.example.json is: the installed file is theirs, and the",
+        "one in the repository is a template nobody's machine is running."
+      ],
+      "from": "proxy/communities.map.example",
+      "to": "proxy/communities.map",
+      "mode": "0644",
+      "resolve": false,
+      "ifAbsent": true
+    },
+    {
+      "$comment": [
+        "The deny-all fallback for an unmapped relay, and the template an operator copies",
+        "to make a real fence. ifAbsent because a fence directory is also a Claude config",
+        "directory: the harness writes its own bookkeeping into .claude.json on first use,",
+        "so a bootstrap that kept these in sync would fight the thing using them."
+      ],
+      "from": "proxy/fences/_unknown/settings.json",
+      "to": "proxy/fences/_unknown/settings.json",
+      "mode": "0644",
+      "resolve": false,
+      "ifAbsent": true
+    },
+    {
+      "from": "proxy/fences/_unknown/.claude.json",
+      "to": "proxy/fences/_unknown/.claude.json",
+      "mode": "0644",
+      "resolve": false,
+      "ifAbsent": true
     }
   ],
   "$settingsComment": [

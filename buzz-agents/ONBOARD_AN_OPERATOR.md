@@ -210,6 +210,13 @@ travels out of band, separately, and never in the message.
 - **Two operators on one client dataset is defended but untested at the time of writing** —
   deterministic keys plus `MERGE`, and `ingest_runs` claiming. Worth one deliberate test
   before two people ingest the same client simultaneously.
+- **One agent in several client communities needs a fence per community, not per agent.**
+  An agent record is community-agnostic, so nothing stored on it can differ between them —
+  the launcher in
+  [`nest/GUIDES/PER_COMMUNITY_TOOL_FENCE.md`](../nest/GUIDES/PER_COMMUNITY_TOOL_FENCE.md)
+  reads the relay at spawn and picks the config directory. Worth knowing before you add a
+  second client to an operator who already has one, because the default is that their agent
+  reaches both from either.
 - **Updates are pull-based.** `git pull && node scripts/bootstrap-nest.mjs` picks up script
   and guide changes. Prompt changes need a `draft-update` they approve; agents never rewrite
   themselves.

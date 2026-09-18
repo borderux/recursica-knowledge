@@ -38,9 +38,21 @@ your permission settings` in **both** modes.
 
 So there is no need to move agents off bypass, and no risk of them stalling on prompts.
 
+## When this is not the right guide
+
+This fences an agent for its whole life. If one agent belongs to several communities and those
+communities are different clients, the fence has to change per community instead, and no value
+stored on the agent record can do that — see
+[PER_COMMUNITY_TOOL_FENCE.md](PER_COMMUNITY_TOOL_FENCE.md). Everything below still applies to
+each directory it creates.
+
 ## Recipe, per client agent
 
 1. One `CLAUDE_CONFIG_DIR` per client agent, set in that agent's `env_vars`.
+
+   **Check that field exists before you plan around it.** It is absent on newer managed-agent
+   records, where the only command-shaped fields are the agent command and its override. Where
+   it is absent, the launcher in the per-community guide is the only lever.
 2. In `<config dir>/settings.json`:
 
 ```json

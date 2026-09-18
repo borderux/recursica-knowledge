@@ -1,0 +1,13 @@
+# <relay host>	<fence name>          TAB-separated, one line per Buzz community.
+#
+# The host is BUZZ_RELAY_URL with the scheme and any path stripped. The fence name is a
+# directory under fences/ holding that community's .claude.json and settings.json.
+#
+# A relay with no line here falls through to the deny-all _unknown fence and is logged as
+# a warning. That is deliberate — a community you have not granted anything gets nothing —
+# but it also means a community you forgot silently loses every tool. Run verify-fence.sh,
+# which lists the communities Buzz has spawned an agent in and flags the unmapped ones.
+#
+# Replace these examples. They are not real hosts.
+acme.communities.buzz.xyz	acme
+acme-research.communities.buzz.xyz	acme-research
