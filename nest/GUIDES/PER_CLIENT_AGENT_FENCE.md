@@ -40,11 +40,15 @@ So there is no need to move agents off bypass, and no risk of them stalling on p
 
 ## When this is not the right guide
 
-This fences an agent for its whole life. If one agent belongs to several communities and those
-communities are different clients, the fence has to change per community instead, and no value
-stored on the agent record can do that — see
-[PER_COMMUNITY_TOOL_FENCE.md](PER_COMMUNITY_TOOL_FENCE.md). Everything below still applies to
-each directory it creates.
+This fences an agent for its whole life, which is right as long as each agent serves one
+client. If any agent belongs to several communities and those communities are different
+clients, the fence has to vary per community as well as per agent, and no value stored on the
+agent record can do that — see [PER_COMMUNITY_TOOL_FENCE.md](PER_COMMUNITY_TOOL_FENCE.md).
+
+The two are the same mechanism: that guide's launcher picks one of these directories at spawn
+instead of the record naming one. Everything below applies unchanged to each directory it
+creates, and the two can run side by side — agents that span communities on the launcher, the
+rest here.
 
 ## Recipe, per client agent
 

@@ -175,6 +175,10 @@
     {
       "path": "proxy/fences/_unknown",
       "mode": "0700"
+    },
+    {
+      "path": "proxy/fences/_unknown/_default",
+      "mode": "0700"
     }
   ],
   "files": [
@@ -646,10 +650,16 @@
     },
     {
       "$comment": [
-        "The per-community tool fence. One agent record joined to several communities gets a",
-        "different MCP registry in each, because Buzz spawns one process per (pubkey, relayUrl)",
-        "and puts BUZZ_RELAY_URL in it — so the launcher can pick the config directory at spawn",
-        "even though nothing on the record can. See GUIDES/PER_COMMUNITY_TOOL_FENCE.md.",
+        "The per-agent, per-community tool fence. One agent record joined to several",
+        "communities gets a different MCP registry in each, because Buzz spawns one process",
+        "per (pubkey, relayUrl) and puts BUZZ_RELAY_URL and BUZZ_ACP_DISPLAY_NAME in it — so",
+        "the launcher can pick the config directory at spawn even though nothing on the",
+        "record can. See GUIDES/PER_COMMUNITY_TOOL_FENCE.md.",
+        "",
+        "Keyed on BOTH dimensions, which is not an elaboration. Keyed on community alone,",
+        "every agent in a client community shares one registry — handing an agent whose",
+        "whole property is holding no client data the same BigQuery and Drive access as the",
+        "one that ingests it, and undoing PER_CLIENT_AGENT_FENCE.md in the process.",
         "",
         "resolve:false, and it must stay that way. The script resolves the nest from its own",
         "location and the ACP agent from $HOME, so it carries no {{TOKEN}} — and a `{{` baked",
@@ -687,20 +697,20 @@
     },
     {
       "$comment": [
-        "The deny-all fallback for an unmapped relay, and the template an operator copies",
-        "to make a real fence. ifAbsent because a fence directory is also a Claude config",
+        "The deny-all fallback for an unmapped community, and the template every real fence",
+        "is copied from. ifAbsent because a fence directory is also a Claude config",
         "directory: the harness writes its own bookkeeping into .claude.json on first use,",
         "so a bootstrap that kept these in sync would fight the thing using them."
       ],
-      "from": "proxy/fences/_unknown/settings.json",
-      "to": "proxy/fences/_unknown/settings.json",
+      "from": "proxy/fences/_unknown/_default/settings.json",
+      "to": "proxy/fences/_unknown/_default/settings.json",
       "mode": "0644",
       "resolve": false,
       "ifAbsent": true
     },
     {
-      "from": "proxy/fences/_unknown/.claude.json",
-      "to": "proxy/fences/_unknown/.claude.json",
+      "from": "proxy/fences/_unknown/_default/.claude.json",
+      "to": "proxy/fences/_unknown/_default/.claude.json",
       "mode": "0644",
       "resolve": false,
       "ifAbsent": true

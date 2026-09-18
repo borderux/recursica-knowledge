@@ -1,15 +1,21 @@
 #!/bin/sh
-# Per-community tool fence for Buzz managed agents.
+# Per-agent, per-community tool fence for Buzz managed agents.
 #
-# One agent record, one identity, one name — a different MCP registry per community.
+# One agent record, one identity, one name — a different MCP registry in each community it
+# belongs to, and a different one per agent within a community.
 #
-# Buzz spawns one agent process per (pubkey, relayUrl) and puts BUZZ_RELAY_URL in that
-# process's environment. The agent *record* is community-agnostic, but the *process* is
-# not. This script runs as the agent's command, reads the relay, picks the matching
+# Buzz spawns one agent process per (pubkey, relayUrl) and puts both BUZZ_RELAY_URL and
+# BUZZ_ACP_DISPLAY_NAME in that process's environment. The agent *record* is
+# community-agnostic, but the *process* knows both which agent it is and which community it
+# is serving. This script runs as the agent's command, reads the two, picks the matching
 # CLAUDE_CONFIG_DIR, and execs the real ACP agent.
 #
-# Install: Buzz Desktop -> the agent -> agent command -> this path. Then quit and reopen
-# Buzz Desktop; saving restarts the agent only on the community you are looking at.
+# Both dimensions are needed. Keyed on community alone, every agent in a client community
+# shares one tool list — which hands an agent that is supposed to hold no client data the
+# same database and Drive access as the one that ingests it.
+#
+# Install: Buzz Desktop -> each agent -> agent command -> this path. Then quit and reopen
+# Buzz Desktop; saving restarts that agent only on the community you are looking at.
 #
 # It applies nothing until you `touch ARMED` beside it. Until then it logs the decision it
 # would have made, which is what you read before committing to it.
@@ -21,12 +27,21 @@ DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 LOG="$DIR/launcher.log"
 MAP="$DIR/communities.map"
 
-# Log the decision and nothing else. The process environment this script inherits holds
-# the agent's private key; never write "$@" or `env` output to a file that is not 0600.
+# Log the decision and nothing else. The process environment this script inherits holds the
+# agent's private key; never write "$@" or `env` output to a file that is not 0600.
 log() { printf '%s pid=%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$$" "$*" >> "$LOG"; }
 
 relay=${BUZZ_RELAY_URL:-}
 host=$(printf '%s' "$relay" | sed -e 's|^[a-z]*://||' -e 's|[:/].*$||')
+
+# The display name is the only agent identifier Buzz puts in the environment — there is no
+# id. Fold to a directory-safe slug: lower case, anything else to a single dash. A renamed
+# agent therefore stops matching its own directory and lands on _default; verify-fence.sh
+# reports that, because silently losing tools reads as a broken agent.
+agent=$(printf '%s' "${BUZZ_ACP_DISPLAY_NAME:-}" \
+  | tr '[:upper:]' '[:lower:]' \
+  | sed -e 's|[^a-z0-9]\{1,\}|-|g' -e 's|^-||' -e 's|-$||')
+[ -n "$agent" ] || agent=_default
 
 fence=""
 if [ -n "$host" ] && [ -f "$MAP" ]; then
@@ -44,11 +59,23 @@ if [ -z "$fence" ]; then
   log "WARN unmapped relay=${relay:-<empty>} -> deny-all fence _unknown"
 fi
 
-cfg="$DIR/fences/$fence"
+# <community>/<agent>, falling back to <community>/_default. Both are per community, so the
+# fallback an operator writes for one client is never another client's.
+#
+# Missing directories are resolved here but only enforced below, under ARMED. An unarmed
+# launcher must never refuse to start an agent: it sits in the spawn path of every agent
+# pointed at it, so a fence that is not switched on yet has no business deciding whether
+# anything runs. Upgrading the launcher ahead of restructuring the directories is the
+# ordinary case, not an error.
+cfg="$DIR/fences/$fence/$agent"
+cfg_ok=yes
 if [ ! -d "$cfg" ]; then
-  log "FATAL fence dir missing: $cfg (relay=$relay)"
-  echo "buzz-agent-launcher: fence dir missing: $cfg" >&2
-  exit 1
+  if [ -d "$DIR/fences/$fence/_default" ]; then
+    log "WARN no fence dir for agent=$agent in $fence -> _default"
+    cfg="$DIR/fences/$fence/_default"
+  else
+    cfg_ok=no
+  fi
 fi
 
 # The real agent. NOT $BUZZ_ACP_AGENT_COMMAND — Buzz sets that to whatever it was told to
@@ -78,11 +105,19 @@ fi
 # file is the operator's, so re-running the bootstrap can neither arm nor disarm the fence —
 # which it could if this were a PROBE file the bootstrap had to ship and then not restore.
 if [ -f "$DIR/ARMED" ]; then
+  if [ "$cfg_ok" = no ]; then
+    log "FATAL armed, but no fence dir for agent=$agent in $fence and no _default: $cfg"
+    echo "buzz-agent-launcher: no fence dir for agent '$agent' in '$fence'," \
+         "and no _default. Create one, or remove $DIR/ARMED to disable the fence." >&2
+    exit 1
+  fi
   CLAUDE_CONFIG_DIR=$cfg
   export CLAUDE_CONFIG_DIR
-  log "ARMED relay=$relay host=$host fence=$fence CLAUDE_CONFIG_DIR=$cfg"
+  log "ARMED agent=$agent relay=$relay host=$host fence=$fence CLAUDE_CONFIG_DIR=$cfg"
+elif [ "$cfg_ok" = no ]; then
+  log "PROBE agent=$agent relay=$relay host=$host fence=$fence NO DIR ($cfg) — would refuse if armed"
 else
-  log "PROBE relay=$relay host=$host fence=$fence would-set CLAUDE_CONFIG_DIR=$cfg (not applied)"
+  log "PROBE agent=$agent relay=$relay host=$host fence=$fence would-set CLAUDE_CONFIG_DIR=$cfg (not applied)"
 fi
 
 exec "$target" "$@"

@@ -1,5 +1,5 @@
 ---
-title: "Per-Community Tool Fence: one agent, one identity, a registry per community"
+title: "Per-Community Tool Fence: a tool list per agent, per community"
 tags: [buzz, fencing, multi-tenant, mcp, claude-config]
 status: active
 created: 2026-09-18
@@ -22,35 +22,53 @@ agent is one agent.
 
 ## What this does
 
-It makes the tool list depend on which community the agent is answering in.
+It makes the tool list depend on **which agent** woke up and **which community** it woke up
+in.
 
-You keep one agent. One identity, one name, one history. But the moment it wakes up in a
-community, it gets that community's tools and only those. A community you have not set up
-yet gets **no** tools at all, rather than everyone's.
+You keep your agents as they are — same identities, same names, same histories. But the
+moment one starts in a community, it gets the tools you granted *that agent* in *that
+community* and nothing else. A community you have not set up yet gets no tools at all rather
+than everyone's, and so does an agent you have not set up.
+
+**Both halves matter.** Key the fence on community alone and every agent in a client
+community shares one tool list: the agent whose entire safety property is holding no client
+data inherits the database and Drive access of the one that ingests it. That is the
+guarantee [`PER_CLIENT_AGENT_FENCE.md`](PER_CLIENT_AGENT_FENCE.md) exists to make, and it is
+undone by a fence that is per client but not per agent.
 
 ## Do you need it?
 
 | | |
 | --- | --- |
 | One client, or none | **No.** Use [`PER_CLIENT_AGENT_FENCE.md`](PER_CLIENT_AGENT_FENCE.md) — one agent, one fixed tool list. Simpler, and OS-enforced |
-| Several clients, one agent each | **No.** Same guide. One fence per agent |
-| Several clients, **one agent in all of them** | **Yes.** This is the only case that needs this, because nothing stored on the agent can differ between communities |
+| Several clients, a separate agent for each | **No.** Same guide. One fence per agent |
+| Several clients, and **any agent appears in more than one** | **Yes.** Nothing stored on an agent can differ between communities, so this is the only lever |
 
-If you are not sure which you are, count the communities your agent appears in. Step 2 below
-is a command that tells you.
+It is normal for this to be some of your agents and not others. An agent that lives in one
+community is fine on the per-agent guide; point the ones that span communities at this
+launcher and leave the rest alone. They can coexist — both end up setting the same variable.
+
+If you are not sure which you are, step 2 below is a command that lists every agent and
+community pair on the machine.
 
 ## What it costs you
 
 About fifteen minutes the first time, then two minutes per client after that.
 
-1. Copy a folder and add one line per community. *(5 min)*
+1. Copy a folder per agent per community, and add one line per community. *(5 min)*
 2. Restart Buzz and read a log to check it routed correctly — it changes nothing yet. *(2 min)*
-3. Log in once per community, in a browser. **This is the step people skip, and skipping it
-   takes every agent offline at once.** *(5 min)*
+3. Log in once per fence directory, in a browser. **This is the step people skip, and
+   skipping it takes every agent offline at once.** *(5 min, and it is per directory — the
+   one real cost of splitting by agent as well as community)*
 4. Create one file to switch it on. Restart Buzz. *(1 min)*
 5. Run a script that tells you whether it actually took. *(1 min)*
 
 Backing out is deleting one file and restarting. Nothing is destroyed and nothing is migrated.
+
+**Unarmed, it cannot stop an agent starting.** It sits in the spawn path of every agent
+pointed at it, so until it is armed it only ever logs and hands off — including when a
+directory it would have used is missing. Armed, that same missing directory is a refusal,
+because at that point the alternative is starting an agent with somebody else's tools.
 
 ## What it does not do
 
@@ -98,9 +116,10 @@ Installed by `scripts/bootstrap-nest.mjs` into `~/.buzz/proxy/`:
 | --- | --- |
 | `buzz-agent-launcher.sh` | Set this as the agent's command in Buzz Desktop |
 | `communities.map` | `<relay host>` → `<fence name>`, **tab**-separated. Yours to edit |
-| `fences/<name>/.claude.json` | The MCP servers that community may load |
-| `fences/<name>/settings.json` | `permissions.deny` + `disableClaudeAiConnectors` |
-| `fences/_unknown/` | Deny-all fallback for an unmapped relay. Also the template |
+| `fences/<community>/<agent>/.claude.json` | The MCP servers that agent may load in that community |
+| `fences/<community>/<agent>/settings.json` | `permissions.deny` + `disableClaudeAiConnectors` |
+| `fences/<community>/_default/` | Any agent in that community with no directory of its own |
+| `fences/_unknown/_default/` | Deny-all fallback for an unmapped relay. Also the template |
 | `ARMED` | The launcher applies the fence only while this file exists. Yours to create |
 | `launcher.log` | One line per agent start |
 | `verify-fence.sh` | Unmapped communities, login state, and the server list per fence |
@@ -112,15 +131,29 @@ ships it. Write a path into `~/.buzz/proxy/target` only if yours is somewhere el
 
 ## Install
 
-### 1. Add a fence per community
+### 1. Add a fence per agent per community
 
 ```sh
 cd ~/.buzz/proxy
-cp -R fences/_unknown fences/acme
+mkdir -p fences/acme
+cp -R fences/_unknown/_default fences/acme/_default   # this community's fallback
+cp -R fences/_unknown/_default fences/acme/claire     # one per agent that needs its own
+cp -R fences/_unknown/_default fences/acme/betty
 printf 'acme.relay.example\tacme\n' >> communities.map   # your real host, not this one
 ```
 
-Then put that community's servers in `fences/acme/.claude.json`.
+The agent directory name is the agent's display name in Buzz, lower-cased, with every run of
+non-alphanumeric characters replaced by a single dash. `Claire` is `claire`.
+
+Then put each agent's servers in its own `.claude.json` — the client's database and Drive in
+`fences/acme/claire/`, the knowledge server alone in `fences/acme/betty/`. An agent with no
+directory of its own falls back to `fences/acme/_default`, which is per community, so the
+fallback you write for one client is never another client's.
+
+**Leave `_default` empty unless you mean it.** It is what a new agent gets before you have
+thought about it, so an empty one is a new agent with no tools — visible, and fixed in a
+minute. A generous one is a new agent holding a client's data before anyone decided it
+should.
 
 **Take the host from `launcher.log`, do not type what you expect.** It is `BUZZ_RELAY_URL`
 with the scheme and any path stripped, and a relay can be hosted anywhere — the log prints the
@@ -130,24 +163,30 @@ name beside it is yours to choose and need not resemble the host.
 **Tab-separated, not spaces** — a line with spaces does not match, and the community then
 falls through to the deny-all fence with no error.
 
-### 2. Map every community, not the ones you can see
+### 2. Cover every pair, not the ones you can see
 
-The list of communities your agent runs in is **not** `ps`, and **not** `launcher.log`. Only
-the community whose agent is currently awake appears in either. Buzz keeps the complete list,
+The list of agent-and-community pairs on this machine is **not** `ps`, and **not**
+`launcher.log`. Only the ones currently awake appear in either. Buzz keeps the complete list,
 one file per `(pubkey, relayUrl)` it has ever spawned:
 
 ```sh
 ls ~/Library/Application\ Support/xyz.block.buzz.app/agents/agent-pids/
 ```
 
-`verify-fence.sh` reads that directory and names any community with no line in
-`communities.map`. Run it before you arm anything. A community you forget does not error —
-it gets the empty registry, which looks from the inside like an agent whose tools all
-disappeared.
+`verify-fence.sh` reads that directory, resolves each pubkey to an agent name, and prints
+every pair with where it would route — naming any community missing from `communities.map`
+and any agent falling back to `_default`. Run it before you arm anything.
 
-### 3. Point the agent at the launcher
+Neither gap errors. A missing community gets the empty registry; a missing agent directory
+gets the fallback. Both look from the inside like an agent whose tools disappeared.
+
+### 3. Point each agent at the launcher
 
 Buzz Desktop → the agent → agent command → `~/.buzz/proxy/buzz-agent-launcher.sh`.
+
+**Once per agent**, and the same path every time — the launcher works out which agent it is
+from the environment, so there is nothing per-agent to configure here. An agent you do not
+point at it keeps whatever it had, which is how you roll this out one agent at a time.
 
 On builds that separate the two, creating a custom harness and **assigning** it to the agent
 are different steps. Creating it is not enough; the agent keeps the built-in harness until
@@ -167,8 +206,8 @@ it would have done:
 cat ~/.buzz/proxy/launcher.log
 ```
 
-You want one `PROBE` line per agent process, each naming the fence you expect, and no
-`_unknown` among them. Buzz runs several agents per community — `parallelism` in the agent's
+You want one `PROBE` line per agent process, each naming the agent you expect and the fence
+you expect, with no `_unknown` and no `-> _default` you did not intend. Buzz runs several agents per community — `parallelism` in the agent's
 settings — so expect that many lines per community, all with the same fence.
 
 **One line per restart has an empty relay and lands in `_unknown`.** That is Buzz probing the
@@ -177,15 +216,19 @@ harness, not a session. Expect it; do not map it away.
 ### 5. Log in — once per fence, and it is not optional
 
 ```sh
-CLAUDE_CONFIG_DIR=~/.buzz/proxy/fences/acme claude auth login
-CLAUDE_CONFIG_DIR=~/.buzz/proxy/fences/acme claude auth status   # "loggedIn": true
+CLAUDE_CONFIG_DIR=~/.buzz/proxy/fences/acme/claire claude auth login
+CLAUDE_CONFIG_DIR=~/.buzz/proxy/fences/acme/claire claude auth status   # "loggedIn": true
 ```
+
+Every directory the launcher can land on needs this — every `<community>/<agent>`, every
+`<community>/_default`, and `_unknown/_default`. `verify-fence.sh` lists them and reports
+which are signed out, so run it rather than working from memory.
 
 A config directory is its own account. The credential lives in the login keychain under an
 entry keyed to that directory, so **a fence you just created is correctly isolated and signed
 out**, and no file the bootstrap writes can change that — only a login mints a credential.
 
-**Do this before arming, for every fence including `_unknown`.** Arming an agent
+**Do this before arming, for every fence including `_unknown/_default`.** Arming an agent
 whose fence has never been logged in produces an agent that answers `Authentication required`
 to everything, on every community at once. The instinct is then to undo the isolation, which
 is exactly backwards. Copying the account block out of `~/.claude.json` does not work either:
@@ -227,15 +270,18 @@ the server list from the config directory.
 
 ```sh
 cd ~/.buzz/proxy
-cp -R fences/_unknown fences/acme2
+mkdir -p fences/acme2
+cp -R fences/_unknown/_default fences/acme2/_default
+cp -R fences/_unknown/_default fences/acme2/claire
 printf 'acme2.relay.example\tacme2\n' >> communities.map   # your real host
-# edit fences/acme2/.claude.json
-CLAUDE_CONFIG_DIR=~/.buzz/proxy/fences/acme2 claude auth login
+# edit fences/acme2/claire/.claude.json
+CLAUDE_CONFIG_DIR=~/.buzz/proxy/fences/acme2/claire   claude auth login
+CLAUDE_CONFIG_DIR=~/.buzz/proxy/fences/acme2/_default claude auth login
 ./verify-fence.sh
 ```
 
-The agent command never changes again. Adding a client is a row in `communities.map`, a
-directory, and a login.
+The agent command never changes again, for any agent. Adding a client is a row in
+`communities.map`, a directory per agent, and a login per directory.
 
 ---
 
@@ -262,6 +308,13 @@ reaches all of Drive unless that flag is set. It is in the template for that rea
 **Two communities in one fence is one fence.** If two clients share a config directory, the
 agent can reach both from either. The map is where that decision is made and it is easy to
 make by accident — check `communities.map` for two hosts pointing at the same name.
+
+**Renaming an agent in Buzz silently moves it to `_default`.** The display name is the only
+agent identifier Buzz puts in the process environment — there is no id — so the directory is
+matched by name. Rename the agent and its directory stops matching; it does not error, it
+falls back. `verify-fence.sh` reports a directory no running agent resolves to, which is what
+a rename looks like from the outside. Rename the directory to match and log in again, because
+the credential is keyed to the directory path.
 
 ---
 
