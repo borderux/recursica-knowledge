@@ -7,22 +7,60 @@ created: 2026-09-18
 
 # Per-community tool fence
 
-One agent record, one identity, one name — a different MCP registry per community.
+## The problem
 
-This is for the operator whose agent belongs to more than one Buzz community, where those
-communities are different clients. The agent is the same person everywhere; what it can
-reach must not be.
+You have two clients. Each one has their own Buzz community, and the same agent is in both —
+same name, same face, same person as far as anyone in either community is concerned.
 
-It is the next case after [`PER_CLIENT_AGENT_FENCE.md`](PER_CLIENT_AGENT_FENCE.md), which
-pins one agent to one `CLAUDE_CONFIG_DIR` for its whole life and makes that OS-enforced with
-the Seatbelt sandbox. **Read that one first** — its rule-syntax and `allowRead` findings apply
-here unchanged and are not repeated below. It is the right shape for an agent that serves one
-client, or none. It has nothing to say about an agent that serves three.
+That agent's tools come from one file on your Mac. So when it is answering in the first
+client's community, it can still query the second client's database, read the second client's
+Drive folder, and quote one to the other. Not because anyone granted that — because the tool
+list has no idea which community the question came from.
 
-**One correction to it.** Its step 1 says to set `CLAUDE_CONFIG_DIR` in the agent record's
-`env_vars`. That field does not exist on a managed agent on every build — where it is absent
-the only command-shaped fields are the agent command and its override, and the launcher below
-is the only lever left. Look at your own agent's settings before following either recipe.
+Buzz gives you no setting for this. Everything you can configure lives on the *agent*, and the
+agent is one agent.
+
+## What this does
+
+It makes the tool list depend on which community the agent is answering in.
+
+You keep one agent. One identity, one name, one history. But the moment it wakes up in a
+community, it gets that community's tools and only those. A community you have not set up
+yet gets **no** tools at all, rather than everyone's.
+
+## Do you need it?
+
+| | |
+| --- | --- |
+| One client, or none | **No.** Use [`PER_CLIENT_AGENT_FENCE.md`](PER_CLIENT_AGENT_FENCE.md) — one agent, one fixed tool list. Simpler, and OS-enforced |
+| Several clients, one agent each | **No.** Same guide. One fence per agent |
+| Several clients, **one agent in all of them** | **Yes.** This is the only case that needs this, because nothing stored on the agent can differ between communities |
+
+If you are not sure which you are, count the communities your agent appears in. Step 2 below
+is a command that tells you.
+
+## What it costs you
+
+About fifteen minutes the first time, then two minutes per client after that.
+
+1. Copy a folder and add one line per community. *(5 min)*
+2. Restart Buzz and read a log to check it routed correctly — it changes nothing yet. *(2 min)*
+3. Log in once per community, in a browser. **This is the step people skip, and skipping it
+   takes every agent offline at once.** *(5 min)*
+4. Create one file to switch it on. Restart Buzz. *(1 min)*
+5. Run a script that tells you whether it actually took. *(1 min)*
+
+Backing out is deleting one file and restarting. Nothing is destroyed and nothing is migrated.
+
+## What it does not do
+
+**It does not fence the workspace.** `~/.buzz` — `AGENTS.md`, `.secrets/`, `REPOS/`,
+`RESEARCH/`, `WORK_LOGS/` — is one directory shared by every community, and Buzz offers no
+way to vary it. So an agent still reads and writes the same files everywhere.
+
+This fences what the agent can **call**, not everywhere it can look. That is a real limit and
+it is worth saying out loud before anyone describes this as client isolation. Closing it needs
+a product change in Buzz.
 
 ---
 
@@ -44,11 +82,11 @@ agent starts.
 A launcher set as the agent's command reads it, picks a config directory, and `exec`s the
 real ACP agent. That is the whole mechanism.
 
-**What it does not fence:** the nest. `~/.buzz` — `AGENTS.md`, `.secrets/`, `REPOS/`,
-`RESEARCH/`, `WORK_LOGS/` — is shared machine-wide across every community, and Buzz exposes no
-working-directory override. Tools fence cleanly; the workspace does not. Do not present this
-as client isolation of everything the agent touches, because it is not. It is isolation of
-what the agent can *call*.
+**A correction to [`PER_CLIENT_AGENT_FENCE.md`](PER_CLIENT_AGENT_FENCE.md) while you are
+here.** Its step 1 says to set `CLAUDE_CONFIG_DIR` in the agent record's `env_vars`. That
+field does not exist on a managed agent on every build — where it is absent, the agent command
+is the only lever, and the launcher below is the only way to set that variable at all. Look at
+your own agent's settings before following either recipe.
 
 ---
 
