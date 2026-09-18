@@ -378,6 +378,12 @@ none. It checks the server actually starts before writing anything.
 | Runtime | `claude` |
 | Env var | `CLAUDE_CONFIG_DIR` = `~/.buzz/proxy/claude-config-betty` |
 
+**No `env_vars` field on the agent?** It is absent on newer managed-agent records, where the
+only command-shaped fields are the agent command and its override. Then this recipe cannot be
+followed as written and the launcher in
+[`nest/GUIDES/PER_COMMUNITY_TOOL_FENCE.md`](../nest/GUIDES/PER_COMMUNITY_TOOL_FENCE.md) is the
+way in — it sets the same variable, from the agent command, at spawn.
+
 The variable is the point. Without it a `claude`-runtime agent reads the **user-scope**
 registry at `~/.claude.json`, which on a machine that also runs Claire holds every client's
 BigQuery and Drive server. Betty's whole safety property is that she holds no client data, and
