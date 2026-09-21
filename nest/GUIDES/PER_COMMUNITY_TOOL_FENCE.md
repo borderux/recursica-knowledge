@@ -57,19 +57,21 @@ About fifteen minutes the first time, then two minutes per client after that.
 
 1. Copy a folder per agent per community — or one into `_shared` for an agent that is the
    same everywhere — and add one line per community. *(5 min)*
-2. Restart Buzz and read a log to check it routed correctly — it changes nothing yet. *(2 min)*
-3. Log in once per fence directory, in a browser. **This is the step people skip, and
-   skipping it takes every agent offline at once.** *(5 min, and it is per directory — the
-   one real cost of splitting by agent as well as community)*
-4. Create one file to switch it on. Restart Buzz. *(1 min)*
-5. Run a script that tells you whether it actually took. *(1 min)*
+2. Log in once per fence directory, in a browser. **Do this before you point any agent at
+   the launcher.** The fence is live the moment an agent runs through it, and a directory
+   nobody has logged into makes that agent answer `Authentication required` to everything.
+   *(5 min, and it is per directory — the one real cost of splitting by agent as well as
+   community)*
+3. Point the agents at the launcher and restart Buzz. *(2 min)*
+4. Run a script that tells you whether it actually took. *(1 min)*
 
-Backing out is deleting one file and restarting. Nothing is destroyed and nothing is migrated.
+Backing out means taking the launcher back out of the agent command. Nothing is destroyed
+and nothing is migrated.
 
-**Unarmed, it cannot stop an agent starting.** It sits in the spawn path of every agent
-pointed at it, so until it is armed it only ever logs and hands off — including when a
-directory it would have used is missing. Armed, that same missing directory is a refusal,
-because at that point the alternative is starting an agent with somebody else's tools.
+**The fence is always on, and there is no flag to switch it off.** An optional fence is the
+same as no fence, because the machine that most needs one is the machine nobody got round to
+configuring. A missing directory therefore falls back to the deny-all registry rather than to
+the operator's own — an agent with no tools, which says so in the log.
 
 ## What it does not do
 
@@ -94,7 +96,7 @@ In order, first hit wins:
 | `claude-config-<agent>-<community>/` | Legacy, written by `deploy-claire-channel.sh` |
 | `claude-config-<agent>/` | Legacy, written by `deploy-betty.sh` and `deploy-loki.sh` |
 | `fences/<community>/_default/` | An agent you have not set up yet, in a community you have |
-| — | Nothing. Refused when armed |
+| `fences/_unknown/_default/` | Nothing matched. Deny-all, rather than the operator's own registry |
 
 **`_shared` is for agents that hold no client data.** Some agents are client-independent by
 design: they serve every client identically and reach research through another agent rather
@@ -159,7 +161,6 @@ Installed by `scripts/bootstrap-nest.mjs` into `~/.buzz/proxy/`:
 | `fences/<community>/_default/` | Any agent in that community with no directory of its own |
 | `fences/_unknown/_default/` | Deny-all fallback for an unmapped relay. Also the template |
 | `model-env.sh` | Optional. Sourced before handing off, for running agents against a self-hosted model |
-| `ARMED` | The launcher applies the fence only while this file exists. Yours to create |
 | `launcher.log` | One line per agent start |
 | `verify-fence.sh` | Unmapped communities, login state, and the server list per fence |
 
@@ -219,7 +220,29 @@ and any agent falling back to `_default`. Run it before you arm anything.
 Neither gap errors. A missing community gets the empty registry; a missing agent directory
 gets the fallback. Both look from the inside like an agent whose tools disappeared.
 
-### 3. Point each agent at the launcher
+### 3. Log in — once per fence, before any agent uses it
+
+```sh
+CLAUDE_CONFIG_DIR=~/.buzz/proxy/fences/acme/claire claude auth login
+CLAUDE_CONFIG_DIR=~/.buzz/proxy/fences/acme/claire claude auth status   # "loggedIn": true
+```
+
+Every directory the launcher can land on needs this — every `<community>/<agent>`, every
+`<community>/_default`, and `_unknown/_default`. `verify-fence.sh` lists them and reports
+which are signed out, so run it rather than working from memory.
+
+A config directory is its own account. The credential lives in the login keychain under an
+entry keyed to that directory, so **a fence you just created is correctly isolated and signed
+out**, and no file the bootstrap writes can change that — only a login mints a credential.
+
+**Every fence, including `_unknown/_default`, and all of it before step 4.** There is no
+dry-run period to test in: an agent whose fence has
+never been logged in answers `Authentication required` to everything from its first turn. The
+instinct is then to undo the isolation, which is exactly backwards. Copying the account block
+out of `~/.claude.json` does not work either: that is profile data, not the credential, and it
+leaves a directory that looks signed in.
+
+### 4. Point each agent at the launcher
 
 Buzz Desktop → the agent → agent command → `~/.buzz/proxy/buzz-agent-launcher.sh`.
 
@@ -236,61 +259,24 @@ happen to be looking at. Every other community keeps its old process, and its ol
 environment, indefinitely — so a half-applied change looks exactly like a change that did not
 apply.
 
-### 4. Read the log before you arm it
-
-The launcher applies nothing until you arm it, so a fresh install is a no-op that logs what
-it would have done:
+### 5. Read the log
 
 ```sh
 cat ~/.buzz/proxy/launcher.log
 ```
 
-You want one `PROBE` line per agent process, each naming the agent you expect and the fence
+You want one `FENCED` line per agent process, each naming the agent you expect and the fence
 you expect, with no `_unknown` and no `-> _default` you did not intend. Buzz runs several agents per community — `parallelism` in the agent's
 settings — so expect that many lines per community, all with the same fence.
 
 **One line per restart has an empty relay and lands in `_unknown`.** That is Buzz probing the
 harness, not a session. Expect it; do not map it away.
 
-### 5. Log in — once per fence, and it is not optional
+### 6. Verify from the process, not from the agent
 
 ```sh
-CLAUDE_CONFIG_DIR=~/.buzz/proxy/fences/acme/claire claude auth login
-CLAUDE_CONFIG_DIR=~/.buzz/proxy/fences/acme/claire claude auth status   # "loggedIn": true
-```
-
-Every directory the launcher can land on needs this — every `<community>/<agent>`, every
-`<community>/_default`, and `_unknown/_default`. `verify-fence.sh` lists them and reports
-which are signed out, so run it rather than working from memory.
-
-A config directory is its own account. The credential lives in the login keychain under an
-entry keyed to that directory, so **a fence you just created is correctly isolated and signed
-out**, and no file the bootstrap writes can change that — only a login mints a credential.
-
-**Do this before arming, for every fence including `_unknown/_default`.** Arming an agent
-whose fence has never been logged in produces an agent that answers `Authentication required`
-to everything, on every community at once. The instinct is then to undo the isolation, which
-is exactly backwards. Copying the account block out of `~/.claude.json` does not work either:
-that is profile data, not the credential, and it leaves a directory that looks signed in.
-
-### 6. Arm it
-
-```sh
-touch ~/.buzz/proxy/ARMED
-```
-
-Quit and reopen Buzz Desktop. `launcher.log` now reads `ARMED` instead of `PROBE`.
-
-Arming is opt-in rather than opt-out on purpose: the file is yours, so `git pull &&
-bootstrap-nest` can neither arm a fence you were still testing nor silently disarm one you
-rely on. To back out, `rm ~/.buzz/proxy/ARMED` and restart — the launcher stays in the path
-and keeps logging.
-
-### 7. Verify from the process, not from the agent
-
-```sh
-~/.buzz/proxy/verify-fence.sh          # before arming: mapping and logins
-~/.buzz/bin/check-agent-fence-live.sh  # after arming: which processes carry it
+~/.buzz/proxy/verify-fence.sh          # mapping and login state
+~/.buzz/bin/check-agent-fence-live.sh  # which processes actually carry it
 ```
 
 These answer different questions and both are needed. `verify-fence.sh` checks the launcher's
