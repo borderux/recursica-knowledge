@@ -17,8 +17,10 @@
 # Install: Buzz Desktop -> each agent -> agent command -> this path. Then quit and reopen
 # Buzz Desktop; saving restarts that agent only on the community you are looking at.
 #
-# It applies nothing until you `touch ARMED` beside it. Until then it logs the decision it
-# would have made, which is what you read before committing to it.
+# The fence is always on. There is no flag to switch it off: an optional fence is the same
+# as no fence, because the machine that most needs one is the machine nobody configured.
+# Taking this script out of the agent command is the only way off, and that is a visible
+# act rather than a missing file.
 #
 # See nest/GUIDES/PER_COMMUNITY_TOOL_FENCE.md.
 
@@ -88,11 +90,9 @@ fi
 #
 # _default is per community, so the fallback written for one client is never another's.
 #
-# Missing directories are resolved here but only enforced below, under ARMED. An unarmed
-# launcher must never refuse to start an agent: it sits in the spawn path of every agent
-# pointed at it, so a fence that is not switched on yet has no business deciding whether
-# anything runs. Upgrading the launcher ahead of restructuring the directories is the
-# ordinary case, not an error.
+# Missing directories are resolved here and handled below. Upgrading the launcher ahead of
+# restructuring the directories is the ordinary case rather than an error, so a miss falls
+# back to a deny-all registry instead of refusing to start.
 cfg=""
 for candidate in \
   "$DIR/fences/$fence/$agent" \
@@ -142,25 +142,30 @@ if [ ! -r "$target" ]; then
   exit 1
 fi
 
-# Opt in, rather than opt out. An unarmed launcher is a no-op that logs; an armed one
-# redirects every agent on this machine to a config directory that needs its own login. The
-# file is the operator's, so re-running the bootstrap can neither arm nor disarm the fence —
-# which it could if this were a PROBE file the bootstrap had to ship and then not restore.
-if [ -f "$DIR/ARMED" ]; then
-  if [ "$cfg_ok" = no ]; then
-    log "FATAL armed, but no fence dir for agent=$agent in $fence and no _default: $cfg"
-    echo "buzz-agent-launcher: no fence dir for agent '$agent' in '$fence'," \
-         "and no _default. Create one, or remove $DIR/ARMED to disable the fence." >&2
+# Enforce, unconditionally. Every community is fenced whether or not anybody remembered to
+# turn it on.
+#
+# A miss here falls back to the deny-all _unknown registry rather than refusing to start.
+# An agent with no tools is fenced and says so in this log; an agent that will not start
+# reads as broken, and the first thing a hurried operator does about a broken agent is take
+# the fence out of the agent command entirely. Refusing is reserved for the case where even
+# the deny-all directory is absent, which means a half-installed nest and not a decision
+# about tools.
+if [ "$cfg_ok" = no ]; then
+  if [ -d "$DIR/fences/_unknown/_default" ]; then
+    log "WARN no fence dir for agent=$agent in $fence and no _default -> deny-all _unknown/_default"
+    cfg="$DIR/fences/_unknown/_default"
+  else
+    log "FATAL no fence dir for agent=$agent in $fence, no _default, no deny-all fallback"
+    echo "buzz-agent-launcher: no fence directory for agent '$agent' in '$fence'," \
+         "and no deny-all fallback to fall back to. Re-run bootstrap-nest.mjs." >&2
     exit 1
   fi
-  CLAUDE_CONFIG_DIR=$cfg
-  export CLAUDE_CONFIG_DIR
-  log "ARMED agent=$agent relay=$relay host=$host fence=$fence CLAUDE_CONFIG_DIR=$cfg"
-elif [ "$cfg_ok" = no ]; then
-  log "PROBE agent=$agent relay=$relay host=$host fence=$fence NO DIR ($cfg) — would refuse if armed"
-else
-  log "PROBE agent=$agent relay=$relay host=$host fence=$fence would-set CLAUDE_CONFIG_DIR=$cfg (not applied)"
 fi
+
+CLAUDE_CONFIG_DIR=$cfg
+export CLAUDE_CONFIG_DIR
+log "FENCED agent=$agent relay=$relay host=$host fence=$fence CLAUDE_CONFIG_DIR=$cfg"
 
 # Optional, and absent on most machines: an operator running the agents against a local or
 # self-hosted model keeps the ANTHROPIC_* variables here. Sourced rather than baked in, so

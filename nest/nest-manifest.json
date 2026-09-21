@@ -670,10 +670,12 @@
         "into a shell script by a future edit would be resolved into an install-time value",
         "inside a file that is supposed to work in a moved nest.",
         "",
-        "Installing it is not enabling it. It applies nothing until the operator creates an",
-        "ARMED file beside it, which is deliberately NOT in this manifest: a bootstrap that",
-        "shipped that file would arm a fence somebody was still testing, and one that restored",
-        "it after removal would re-arm a fence they had backed out of."
+        "Installing it IS enabling it. The fence applies from the first agent start, with no",
+        "flag to switch it off — an optional fence is the same as no fence, because the",
+        "machine that most needs one is the machine nobody got round to configuring. So the",
+        "logins for every fence directory must be done BEFORE any agent is pointed here:",
+        "a directory is its own account, and one nobody has logged into answers",
+        "'Authentication required' to everything."
       ],
       "from": "proxy/buzz-agent-launcher.sh",
       "to": "proxy/buzz-agent-launcher.sh",
