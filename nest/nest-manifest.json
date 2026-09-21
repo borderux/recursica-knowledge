@@ -173,6 +173,10 @@
       "mode": "0700"
     },
     {
+      "path": "proxy/fences/_shared",
+      "mode": "0700"
+    },
+    {
       "path": "proxy/fences/_unknown",
       "mode": "0700"
     },

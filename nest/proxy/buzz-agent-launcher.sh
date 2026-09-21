@@ -59,24 +59,66 @@ if [ -z "$fence" ]; then
   log "WARN unmapped relay=${relay:-<empty>} -> deny-all fence _unknown"
 fi
 
-# <community>/<agent>, falling back to <community>/_default. Both are per community, so the
-# fallback an operator writes for one client is never another client's.
+# Resolution order:
+#
+#   fences/<community>/<agent>     a client-bound agent: different tools per client
+#   fences/_shared/<agent>         a client-independent agent: same tools everywhere
+#   claude-config-<agent>-<fence>  legacy, written by deploy-claire-channel.sh
+#   claude-config-<agent>          legacy, written by deploy-betty.sh and deploy-loki.sh
+#   fences/<community>/_default    an agent nobody has set up yet, in a known community
+#
+# The two legacy names are in the list because the deploy scripts write there and several
+# tools read there — scribe-ingest, tagger-batch and survey-lines all resolve a client's
+# server config by that path. Repointing the deploys without those would leave an agent
+# whose tools are written somewhere nothing reads; repointing everything is a migration,
+# not a fix. Reading both is neither: the existing convention already encodes the same two
+# shapes this tree does, with <agent> alone meaning client-independent and <agent>-<client>
+# meaning client-bound, so the launcher just recognises it.
+#
+# The legacy per-client name is matched on the FENCE name, not the client slug. They are
+# usually the same word. Where they are not, the lookup misses and falls through to the
+# fallback rather than guessing — visible in this log, and fixed by naming the fence after
+# the slug in communities.map.
+#
+# _shared exists because some agents are client-independent by design — they hold no client
+# data and serve every client identically. Giving those a directory per community would mean
+# N identical copies and N separate logins, since the credential is keychain-scoped per
+# directory. Nothing lands in _shared unless an operator puts it there, and a per-community
+# directory always wins over it, so a client-bound agent cannot fall into it by accident.
+#
+# _default is per community, so the fallback written for one client is never another's.
 #
 # Missing directories are resolved here but only enforced below, under ARMED. An unarmed
 # launcher must never refuse to start an agent: it sits in the spawn path of every agent
 # pointed at it, so a fence that is not switched on yet has no business deciding whether
 # anything runs. Upgrading the launcher ahead of restructuring the directories is the
 # ordinary case, not an error.
-cfg="$DIR/fences/$fence/$agent"
+cfg=""
+for candidate in \
+  "$DIR/fences/$fence/$agent" \
+  "$DIR/fences/_shared/$agent" \
+  "$DIR/claude-config-$agent-$fence" \
+  "$DIR/claude-config-$agent"
+do
+  if [ -d "$candidate" ]; then cfg=$candidate; break; fi
+done
+
 cfg_ok=yes
-if [ ! -d "$cfg" ]; then
-  if [ -d "$DIR/fences/$fence/_default" ]; then
-    log "WARN no fence dir for agent=$agent in $fence -> _default"
-    cfg="$DIR/fences/$fence/_default"
-  else
-    cfg_ok=no
-  fi
-fi
+case ${cfg:-} in
+  "$DIR/fences/$fence/$agent") ;;
+  "$DIR/fences/_shared/$agent")
+    log "INFO agent=$agent has no dir in $fence -> _shared/$agent" ;;
+  "$DIR/claude-config-"*)
+    log "INFO agent=$agent using legacy fence dir $(basename -- "$cfg")" ;;
+  *)
+    if [ -d "$DIR/fences/$fence/_default" ]; then
+      log "WARN no fence dir for agent=$agent in $fence -> _default"
+      cfg="$DIR/fences/$fence/_default"
+    else
+      cfg="$DIR/fences/$fence/$agent"
+      cfg_ok=no
+    fi ;;
+esac
 
 # The real agent. NOT $BUZZ_ACP_AGENT_COMMAND — Buzz sets that to whatever it was told to
 # run, which once this script is installed is this script, so reading it execs a fork bomb.
@@ -94,9 +136,9 @@ if [ "$target" = "$0" ] || [ "$target" = "$DIR/$(basename -- "$0")" ]; then
   exit 1
 fi
 
-if [ ! -x "$target" ]; then
-  log "FATAL agent command not executable: $target"
-  echo "buzz-agent-launcher: agent command not executable: $target" >&2
+if [ ! -r "$target" ]; then
+  log "FATAL agent command not readable: $target"
+  echo "buzz-agent-launcher: agent command not readable: $target" >&2
   exit 1
 fi
 
@@ -120,4 +162,41 @@ else
   log "PROBE agent=$agent relay=$relay host=$host fence=$fence would-set CLAUDE_CONFIG_DIR=$cfg (not applied)"
 fi
 
+# Optional, and absent on most machines: an operator running the agents against a local or
+# self-hosted model keeps the ANTHROPIC_* variables here. Sourced rather than baked in, so
+# changing models does not mean touching this script.
+#
+# Written as an `if` rather than `[ -f x ] && . x`: under `set -e` that form is a list whose
+# status is 1 when the file is absent, which exits before the exec below — so every machine
+# WITHOUT the optional file would fail to start the agent at all.
+if [ -f "$DIR/model-env.sh" ]; then
+  . "$DIR/model-env.sh"
+fi
+
+# Buzz Desktop is a GUI app: it inherits launchd's PATH (/usr/bin:/bin:/usr/sbin:/sbin),
+# which holds neither node nor the Claude CLI. The ACP adapter is a .js file whose shebang
+# is `#!/usr/bin/env node`, so exec'ing it directly under that PATH dies with
+# "env: node: No such file or directory" before the agent ever starts — reaching the
+# operator as an agent that will not come up, with nothing about node anywhere near it.
+#
+# Run a node-shebang target under node explicitly, and put node and the usual CLI directory
+# on PATH for anything downstream that still resolves them by name. Targets that are not
+# node scripts are exec'd as they are.
+case $(head -n 1 "$target" 2>/dev/null) in
+  '#!'*node*)
+    node_bin=$(ls -d "$HOME/Library/Application Support/Buzz/runtimes/node"/*/*/bin/node 2>/dev/null | tail -1)
+    [ -n "${node_bin:-}" ] || node_bin=$(command -v node 2>/dev/null || true)
+    if [ -z "${node_bin:-}" ]; then
+      log "FATAL no node for $target (no bundled runtime, none on PATH)"
+      echo "buzz-agent-launcher: no node to run $target" >&2
+      exit 127
+    fi
+    PATH="$HOME/.local/bin:$(dirname -- "$node_bin"):$PATH"
+    export PATH
+    exec "$node_bin" "$target" "$@"
+    ;;
+esac
+
+PATH="$HOME/.local/bin:$PATH"
+export PATH
 exec "$target" "$@"
