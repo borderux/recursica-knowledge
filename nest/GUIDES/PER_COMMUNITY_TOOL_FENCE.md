@@ -55,7 +55,8 @@ community pair on the machine.
 
 About fifteen minutes the first time, then two minutes per client after that.
 
-1. Copy a folder per agent per community, and add one line per community. *(5 min)*
+1. Copy a folder per agent per community — or one into `_shared` for an agent that is the
+   same everywhere — and add one line per community. *(5 min)*
 2. Restart Buzz and read a log to check it routed correctly — it changes nothing yet. *(2 min)*
 3. Log in once per fence directory, in a browser. **This is the step people skip, and
    skipping it takes every agent offline at once.** *(5 min, and it is per directory — the
@@ -79,6 +80,42 @@ way to vary it. So an agent still reads and writes the same files everywhere.
 This fences what the agent can **call**, not everywhere it can look. That is a real limit and
 it is worth saying out loud before anyone describes this as client isolation. Closing it needs
 a product change in Buzz.
+
+---
+
+## Which directory an agent gets
+
+In order, first hit wins:
+
+| | |
+| --- | --- |
+| `fences/<community>/<agent>/` | A **client-bound** agent — different tools per client |
+| `fences/_shared/<agent>/` | A **client-independent** agent — the same tools everywhere |
+| `claude-config-<agent>-<community>/` | Legacy, written by `deploy-claire-channel.sh` |
+| `claude-config-<agent>/` | Legacy, written by `deploy-betty.sh` and `deploy-loki.sh` |
+| `fences/<community>/_default/` | An agent you have not set up yet, in a community you have |
+| — | Nothing. Refused when armed |
+
+**`_shared` is for agents that hold no client data.** Some agents are client-independent by
+design: they serve every client identically and reach research through another agent rather
+than through credentials of their own. Giving those a directory per community means N
+identical copies and N separate logins, because the credential is keychain-scoped per
+directory. One directory, one login. A per-community directory always wins over `_shared`,
+so a client-bound agent cannot land there by accident, and nothing is in `_shared` unless
+you put it there.
+
+**The two legacy names are read, not written.** The deploy scripts already write there, and
+so do the tools that resolve a client's server config by path — `scribe-ingest`,
+`tagger-batch`, `survey-lines`. Repointing the deploys without those would write an agent's
+tools somewhere nothing reads. The existing convention already encodes the same two shapes
+this tree does — `<agent>` alone for client-independent, `<agent>-<client>` for
+client-bound — so the launcher simply recognises it. An existing install works the moment
+its agents are pointed at the launcher, with nothing to migrate.
+
+One catch: the legacy per-client name is matched on the **fence** name, not the client slug.
+They are usually the same word. Where they are not, the lookup misses and falls through
+rather than guessing — visible in `launcher.log`, and fixed by naming the fence after the
+slug in `communities.map`.
 
 ---
 
@@ -118,8 +155,10 @@ Installed by `scripts/bootstrap-nest.mjs` into `~/.buzz/proxy/`:
 | `communities.map` | `<relay host>` → `<fence name>`, **tab**-separated. Yours to edit |
 | `fences/<community>/<agent>/.claude.json` | The MCP servers that agent may load in that community |
 | `fences/<community>/<agent>/settings.json` | `permissions.deny` + `disableClaudeAiConnectors` |
+| `fences/_shared/<agent>/` | An agent that is the same in every community. One directory, one login |
 | `fences/<community>/_default/` | Any agent in that community with no directory of its own |
 | `fences/_unknown/_default/` | Deny-all fallback for an unmapped relay. Also the template |
+| `model-env.sh` | Optional. Sourced before handing off, for running agents against a self-hosted model |
 | `ARMED` | The launcher applies the fence only while this file exists. Yours to create |
 | `launcher.log` | One line per agent start |
 | `verify-fence.sh` | Unmapped communities, login state, and the server list per fence |
@@ -308,6 +347,15 @@ reaches all of Drive unless that flag is set. It is in the template for that rea
 **Two communities in one fence is one fence.** If two clients share a config directory, the
 agent can reach both from either. The map is where that decision is made and it is easy to
 make by accident — check `communities.map` for two hosts pointing at the same name.
+
+**The launcher resolves `node` itself, and must keep doing so.** Buzz Desktop is a GUI app
+and inherits launchd's `PATH`, which contains neither `node` nor the Claude CLI. The ACP
+adapter is a `.js` file with a `#!/usr/bin/env node` shebang, so exec'ing it directly under
+that `PATH` dies with `env: node: No such file or directory` before the agent starts — which
+reaches the operator as an agent that will not come up, with nothing about node anywhere
+near it. The launcher runs a node-shebang target under Buzz's bundled node explicitly. It
+works without this on a machine whose `PATH` happens to carry node, which is not the same as
+being correct.
 
 **Renaming an agent in Buzz silently moves it to `_default`.** The display name is the only
 agent identifier Buzz puts in the process environment — there is no id — so the directory is

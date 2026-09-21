@@ -54,13 +54,21 @@ for p in sorted(glob.glob(f'{reg}/agent-pids/*.json')):
         print(f'  {agent:<14} {host:<38} UNMAPPED COMMUNITY -> deny-all _unknown')
         bad += 1
         continue
-    if os.path.isdir(f'{proxy}/fences/{fence}/{agent}'):
-        print(f'  {agent:<14} {host:<38} -> fences/{fence}/{agent}')
-    elif os.path.isdir(f'{proxy}/fences/{fence}/_default'):
-        print(f'  {agent:<14} {host:<38} NO AGENT DIR -> fences/{fence}/_default')
-        bad += 1
+    # Same order the launcher uses. Keep the two in step: a checker that resolves
+    # differently from the thing it checks is worse than no checker.
+    for rel in (f'fences/{fence}/{agent}',
+                f'fences/_shared/{agent}',
+                f'claude-config-{agent}-{fence}',
+                f'claude-config-{agent}'):
+        if os.path.isdir(f'{proxy}/{rel}'):
+            note = '  (legacy)' if rel.startswith('claude-config-') else ''
+            print(f'  {agent:<14} {host:<38} -> {rel}{note}')
+            break
     else:
-        print(f'  {agent:<14} {host:<38} NO AGENT DIR AND NO _default -> agent will not start')
+        if os.path.isdir(f'{proxy}/fences/{fence}/_default'):
+            print(f'  {agent:<14} {host:<38} NO AGENT DIR -> fences/{fence}/_default')
+        else:
+            print(f'  {agent:<14} {host:<38} NO AGENT DIR AND NO _default -> agent will not start when armed')
         bad += 1
 
 if not seen:
@@ -68,9 +76,15 @@ if not seen:
 # A directory nobody routes to is usually an agent that was renamed in Buzz: the old name
 # keeps its tools and the running agent quietly falls back to _default.
 routed = {(a, fences.get(h)) for a, h in seen}
+agents_seen = {a for a, _ in seen}
 for d in sorted(glob.glob(f'{proxy}/fences/*/*/')):
     fence, agent = d.rstrip('/').split(os.sep)[-2:]
     if agent == '_default' or fence == '_unknown':
+        continue
+    # _shared is keyed on the agent alone, so it is in use if that agent runs anywhere.
+    if fence == '_shared':
+        if agent not in agents_seen:
+            print(f'  (unused)       fences/_shared/{agent} — no running agent has this name. Renamed?')
         continue
     if not any(a == agent and f == fence for a, f in routed):
         print(f'  (unused)       fences/{fence}/{agent} — no running agent resolves to this. Renamed?')
@@ -78,9 +92,11 @@ sys.exit(1 if bad else 0)
 PY
 fi
 
-for d in "$DIR"/fences/*/*/; do
+# Every directory the launcher can land on, including the legacy ones the deploy scripts
+# still write. A signed-out fence is a dead agent whichever layout it is in.
+for d in "$DIR"/fences/*/*/ "$DIR"/claude-config-*/; do
   [ -d "$d" ] || continue
-  printf '\n=== fence: %s ===\n' "$(printf '%s' "${d#"$DIR"/fences/}" | sed 's|/$||')"
+  printf '\n=== fence: %s ===\n' "$(printf '%s' "${d#"$DIR"/}" | sed -e 's|^fences/||' -e 's|/$||')"
   # loggedIn:false is the single most common reason a freshly armed fence produces an agent
   # that answers "Authentication required" to everything, on every community at once.
   CLAUDE_CONFIG_DIR="$d" claude auth status 2>&1 | grep -E '"loggedIn"|"authMethod"' || rc=1
