@@ -46,8 +46,15 @@ fi
 sudo sed -i "/^$MARK\$/,\$d" "$H/SOUL.md"
 {
   echo "$MARK"
-  if [ "$HANDLE" = barb ]; then
-    awk 'BEGIN{n=0} /^---$/ && n<2 {n++; next} n>=2' "$K/agents/barb/SKILL.md"
+  # Any agent defined in the knowledge repo gets its definition composed in ahead of its soul,
+  # so agents/<handle>/ stays the source of truth and souls/ holds only what is true here.
+  #
+  # Read the BUILT artifact, never agents/<handle>/SKILL.md. The source still carries its
+  # unsubstituted <!-- platform:NAME --> markers, so pasting it drops whole passages: Barb was
+  # losing her identity line, her intake paragraph and her write fence exactly that way.
+  BUILT="$K/portable/claude-code/agents/$HANDLE.md"
+  if [ -f "$BUILT" ]; then
+    awk 'BEGIN{n=0} /^---$/ && n<2 {n++; next} n>=2' "$BUILT"
   fi
   cat "$HERE/souls/$HANDLE.md"
 } | sudo tee -a "$H/SOUL.md" >/dev/null

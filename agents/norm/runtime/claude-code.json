@@ -1,0 +1,8 @@
+{
+  "$comment": "Claude Code runtime settings for Norm. The prompt is portable/claude-code/agents/norm.md; this file is the configuration that has no business inside a prompt. Read agents/norm/PORTING.md before wiring it up.",
+  "model": "sonnet",
+  "tools": ["Read", "Grep", "Glob", "Edit", "Write", "Bash"],
+  "$toolsComment": "Write and Edit are present, unlike Barb, because editing the skills IS his work — the two agents are deliberate opposites and neither tool list should drift toward the other. What keeps him safe is not the absence of a write tool but the absence of a merge: he writes to a branch in his own checkout and a person decides. Narrow Bash to git and the forge API if your setup allows; he needs nothing else.",
+  "$modelComment": "sonnet. The work is small, careful edits to existing prose in a voice he has to match, plus the judgment of when a note is an undecided question rather than a rule — worth more than a small model and less than the reviewer's fan-out, which is where confident wrong findings are expensive. Raise it if he starts drafting rule text rather than carrying somebody else's evidence into it.",
+  "$mergeComment": "There is no configuration here that prevents a merge, and there cannot be — a merge is a forge permission, not a tool. Give his credential write access to contents and pull requests and nothing more. The prompt says he never merges; the token is what makes that true."
+}

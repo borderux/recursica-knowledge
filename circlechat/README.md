@@ -30,8 +30,21 @@ After merging a knowledge PR: `./circlechat/sync-skills.sh`.
 | Barb  | Reviews Betty's screens against the skills (subagents: checker, feisty). Flags knowledge problems to Norm | Nothing                        |
 | Norm  | Turns Barb's knowledge notes into PRs on this repo                                                        | PR branches only, never merges |
 
-Persona text lives in `souls/`. Barb's is her `agents/barb/SKILL.md` plus `souls/barb.md`.
-Edit these files, not the live `SOUL.md`, then rerun `setup-agent.sh` — it replaces its own section and leaves CircleChat's part alone.
+Each persona is the agent's definition from this repo — the built artifact at
+`portable/claude-code/agents/<handle>.md` — followed by `souls/<handle>.md`, which carries only
+what is true on CircleChat: container paths, the credential, where to post. The definition is
+never copied into `souls/`.
+
+So a change to how an agent works goes in `agents/<handle>/` and is picked up by `npm run agents:build`;
+a change to how it runs _here_ goes in `souls/`. Edit either, never the live `SOUL.md`, then rerun
+`setup-agent.sh` — it replaces its own marked section and leaves CircleChat's part alone.
+
+Composing from the built artifact rather than the source is deliberate: `agents/<handle>/SKILL.md`
+still holds unsubstituted `<!-- platform:NAME -->` markers, and pasting those in silently drops
+whole passages. Barb was losing her identity line, her intake paragraph and her write fence.
+
+Note the size: Betty's composed soul is ~19k and Barb's ~10k, where previously Betty got only her
+soul file. If latency or cost moves on `claude-haiku-4-5`, that is why.
 
 ## Hard-won lessons (read before debugging)
 
