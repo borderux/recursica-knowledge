@@ -9,48 +9,48 @@ metadata:
 
 # Read-only field
 
-A read-only field shows a label and its value inside a form. It renders no input.
+A read-only field shows a label and its value inside a form. It shows no input.
 
 ## Use it when
 
 - **A form shows a value this user cannot edit here** — a view mode on a profile or a settings page.
-- **A confirmation step summarizes what was entered**, for review before submission.
-- **The value is system-generated** — an account ID, a created date, a computed total.
-- **The value belongs to the form's object** and needs to sit in the same label-and-value rhythm as the fields around it.
+- **A confirmation step sums up what was entered**, for review before submitting.
+- **The system created the value** — an account ID, a created date, a calculated total.
+- **The value belongs to the form's object**, and needs to sit in the same label-and-value rhythm as the fields around it.
 
 ## Do not use it when
 
-Each of these is a different thing. Switch to it rather than adapting a read-only field:
+Each of these is a different thing. Switch to it, instead of adapting a read-only field:
 
-| Instead of a read-only field                           | Use                                                                                          |
-| ------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| The user can edit the value here                       | The matching input — `recursica-skill-text-field`, `recursica-skill-number-input`, and so on |
-| The value is unavailable now but could become operable | A disabled input on the real component — see `recursica-skill-selection-controls`            |
-| Nobody edits this data in any context                  | Plain text. A form control's shell implies a form's semantics                                |
-| The content is not a label-and-value pair              | Standard text elements — headings and body copy                                              |
-| Repeating objects each carry the same properties       | A table. Rows are objects, columns are fields — see `recursica-skill-tables`                 |
+| Instead of a read-only field                          | Use                                                                                          |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| The user can edit the value here                      | The matching input — `recursica-skill-text-field`, `recursica-skill-number-input`, and so on |
+| The value is unavailable now, but could become usable | A disabled input on the real component — see `recursica-skill-selection-controls`            |
+| Nobody edits this data anywhere                       | Plain text. A form control's frame suggests it is part of a form                             |
+| The content is not a pair of a label and a value      | Standard text elements — headings and body text                                              |
+| Repeating objects each have the same properties       | A table. Rows are objects, and columns are fields — see `recursica-skill-tables`             |
 
-**This is the correct answer to "the value is not editable", and a disabled input is not.** A disabled input is still a field: still visibly an input, not currently operable, and the user could plausibly make it operable by doing something else first. A read-only field makes no such promise.
+**This is the correct answer when "the value cannot be edited", and a disabled input is not.** A disabled input is still a field: still clearly an input, not usable right now, and the user could reasonably make it usable by doing something else first. A read-only field makes no such promise.
 
-**Never approximate read-only by disabling an input or stripping its borders.** Owned by `recursica-skill-forms`.
+**Never fake read-only by disabling an input or removing its borders.** Owned by `recursica-skill-forms`.
 
 ## What exists
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.read-only-field`.
 
-**The third column is the React prop that sets the axis.** The axis name is the token inventory's; it is not a prop, and passing it as one is dropped silently by React. A blank cell means no single prop carries that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** The axis name comes from the token inventory. It is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis      | Options                   | React prop   |
 | --------- | ------------------------- | ------------ |
 | `layouts` | `stacked`, `side-by-side` | `formLayout` |
 
-**`layouts` is the label placement axis, set by the `formLayout` prop, and it is the same axis every field carries.** `side-by-side` is the house default; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport. Set it to match the fields around it — a read-only field placed among stacked fields stacks too.
+**`layouts` is the label-placement axis, set by the `formLayout` prop, and it is the same axis every field has.** `side-by-side` is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's (the visible area of the browser window). Set it to match the fields around it — a read-only field placed among stacked fields stacks too.
 
-**`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Omit it and you get the fallback on a container of any width, which is the rule inverted. `layouts` is the token axis name and is not a prop — `layouts="side-by-side"` is dropped silently by React and leaves the control stacked with no error. Pass `formLayout="side-by-side"` explicitly.
+**`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Leave it out, and you get the fallback in a container of any width — the rule turned upside down. `layouts` is the name of the token axis, not a prop: `layouts="side-by-side"` is quietly ignored by React and leaves the control stacked, with no error. Pass `formLayout="side-by-side"` explicitly.
 
-**There are no states. None.** No `error`, no `disabled`, no focus, no hover. This component is not a control, so it has nothing to be in an invalid or inoperable state about. Do not pass one, and do not simulate one.
+**There are no states. None.** No `error`, no `disabled`, no focus, no hover. This component is not a control, so it has nothing to be invalid or unusable about. Do not pass a state, and do not fake one.
 
-**There is no placeholder and no input.** Only `text`, `colors`, and `min-height`.
+**There is no placeholder, and no input.** Only `text`, `colors`, and `min-height`.
 
 **There is no size axis**, and no `rows` — a long value has no stated treatment. See the uncovered list.
 
@@ -58,45 +58,45 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.read-only-field`.
 
 ## Rules for using it
 
-**Always pass a visible label**, and let the component pair it with the value. Name the object explicitly, sentence capitalization, no trailing colon. The rules in `recursica-skill-label` apply unchanged.
+**Always pass a visible label**, and let the component pair it with the value. Name the object clearly, use sentence capitalization, and leave off any colon at the end. The rules in `recursica-skill-label` apply without change.
 
-**Label placement is one decision per form, not per field.** This field's `layouts` value is not an independent choice — it matches every other field in the same form, editable or not. The container-width test is applied once, to the form as a whole, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints, but never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
+**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form, whether they can be edited or not. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints (the screen widths at which the layout changes), but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
-**Make it unmistakably not an input.** The distinction between read-only, disabled, and editable must be visible at a glance — and the most common failure is the reverse of this one: a light gray background on editable fields that makes a whole form read as read-only. Let this component's tokens do the work and do not restyle either side toward the other.
+**Make it clearly not an input.** The difference between read-only, disabled, and editable must be visible at a glance. The most common failure is the opposite of this one: a light gray background on editable fields that makes a whole form look read-only. Let this component's tokens do the work, and do not restyle either side to look like the other.
 
-**Format the value by the display rules, not the entry rules.** A read-only date is always `Jan 7, 2026` — never `01/07/2026`, because the numeric form exists only inside a focused input. Numerics are right-aligned with fixed precision, currency carries two decimals, and durations use unit labels. Owned by `recursica-skill-dates-and-currency`.
+**Format the value by the rules for showing values, not the rules for entering them.** A read-only date is always `Jan 7, 2026` — never `01/07/2026`, because the numeric form exists only inside an input that has focus. Numbers are right-aligned with fixed precision, currency has two decimal places, and durations use unit labels. Owned by `recursica-skill-dates-and-currency`.
 
-**Keep alignment uniform with the editable values on the same screen.** Left-aligning read-only values so they sit near their labels while editable values are right-aligned makes one screen look like two systems.
+**Keep the alignment the same as the editable values on the same screen.** Left-aligning read-only values so they sit near their labels, while editable values are right-aligned, makes one screen look like two systems.
 
-**State the time zone and the unit in the value's text.** Nothing else is going to carry them: there is no help text slot and no placeholder here.
+**Put the time zone and the unit in the value's text.** Nothing else will carry them: there is no help text slot and no placeholder here.
 
-**If the value is editable through another flow, the way in is a persistent, named control** — never an affordance that appears on hover. See the uncovered list before adding one.
+**If the value can be edited through another flow, the way in is a named control that stays visible** — never a control that appears on hover. See the uncovered list before adding one.
 
-**One label, one value.** If the value is a set of things, it is a list or a table, not a read-only field with commas in it.
+**One label, one value.** If the value is a set of things, it is a list or a table — not a read-only field with commas in it.
 
 ## Accessibility
 
-The rules here differ from every editable field, and the difference is the point: **this must read as a labeled value, not as a control, while still being programmatically associated and freely copyable.**
+The rules here are different from every editable field, and that difference is the point: **this must read as a labeled value, not as a control — while still being connected in code, and free to copy.**
 
 ### Screen readers
 
-- **It must not announce as an input.** Do not render it as an `input` or `textarea` — not disabled, not with a `readonly` attribute, not with a textbox role. A user who hears "edit text" will try to type into it.
-- **The label-to-value association must still be programmatic.** Pass the label to the component. A label rendered as loose text beside a value is a visual pairing only, and a screen reader user moving through the page gets an orphaned string with no idea what it names.
-- **The value must be real text in the document** — never an image, a canvas, a background image, or CSS-generated content. Text that cannot be read cannot be announced.
-- **Do not mark it required or optional.** There is nothing to require; a required marker on a value the user cannot enter is a false instruction.
-- **Do not apply a disabled treatment or `aria-disabled`.** It is not disabled, and announcing it as such tells the user their access is conditional when it is permanent.
-- **Never leave an empty value silent.** A label followed by nothing announces as a name with no value, which is indistinguishable from a bug. Put something readable there.
-- **Format the value so it reads correctly aloud** — a spelled month, a stated unit, a stated time zone. `01/07/2026` is ambiguous read aloud in exactly the way it is ambiguous on screen.
+- **It must not be announced as an input.** Do not build it as an `input` or a `textarea` — not disabled, not with a `readonly` attribute, and not with a textbox role. A user who hears "edit text" will try to type into it.
+- **The connection between label and value must still be made in code.** Pass the label to the component. A label shown as loose text beside a value is only paired visually, and a screen reader (software that reads the screen aloud) user moving through the page gets a stray string with no idea what it names.
+- **The value must be real text in the document** — never an image, a canvas, a background image, or content generated by CSS. Text that cannot be read cannot be announced.
+- **Do not mark it required or optional.** There is nothing to require. A required marker on a value the user cannot enter is a false instruction.
+- **Do not apply a disabled look or `aria-disabled`.** It is not disabled, and announcing it as disabled tells the user their access depends on something, when it is permanent.
+- **Never leave an empty value silent.** A label followed by nothing is announced as a name with no value, which cannot be told apart from a bug. Put something readable there.
+- **Format the value so it reads correctly aloud** — a spelled-out month, a stated unit, a stated time zone. `01/07/2026` is unclear read aloud, in exactly the way it is unclear on screen.
 - **If an edit control is present, it must name its object** — "Edit email address", not "Edit" — because a screen reader user hears the control without the row it sits in.
 
 ### Keyboard and non-mouse navigation
 
-- **It is not a tab stop.** Do not add `tabindex`, and do not make it focusable to give it a focus ring. A keyboard user tabs from the field above it straight to the field below it, and that is correct.
-- **The value must be selectable text the user can copy.** Never block selection — an account number or an ID that cannot be copied forces the user to transcribe it by hand, and copying is the main thing anyone does with a read-only value.
-- **Because it never receives focus, nothing about it may depend on hover or focus.** Every part of the meaning — the value, its unit, its zone, any note about why it is not editable — is in text that is present at rest.
-- **Any edit affordance is a control**, so it is its own tab stop, activated by Enter or Space, with its own accessible name, and it is **visible without hovering.** A hover-revealed edit icon does not exist for keyboard or touch users.
-- **It must not interrupt the tab order** of the fields around it. Placing it between two inputs changes what a user reads, never the sequence they tab through.
-- **Never suppress the focus ring** on an edit control it carries.
+- **It is not a tab stop** (a place the Tab key lands). Do not add a `tabindex`, and do not make it able to receive focus just to give it a focus ring. A keyboard user tabs from the field above it straight to the field below it, and that is correct.
+- **The value must be text the user can select and copy.** Never block selection. An account number or an ID that cannot be copied forces the user to type it out by hand — and copying is the main thing anyone does with a read-only value.
+- **Because it never receives focus, nothing about it may depend on hover or focus.** Every part of the meaning — the value, its unit, its time zone, any note about why it cannot be edited — is in text that is there at rest.
+- **Any edit control is a control**, so it is its own tab stop, activated by Enter or Space, with its own accessible name (the name a screen reader reads out for a control) — and it is **visible without hovering.** An edit icon that appears on hover does not exist for keyboard or touch users.
+- **It must not interrupt the tab order** of the fields around it. Placing it between two inputs changes what a user reads, never the order they tab through.
+- **Never hide the focus ring** (the outline that shows which element has keyboard focus) on an edit control it carries.
 
 ## Not your decision
 
@@ -120,30 +120,30 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Uncovered — ask, do not invent
 
-- **The editable read-only field.** An "Is editable" behavior with an edit icon that **appears on hover** and routes the user to another flow is documented outside the token inventory, with no token behind it; the kit defines no edit affordance on this component, and `recursica-skill-label` reserves an `edit-icon-gap` without saying what it triggers. A hover-only control also conflicts with the accessibility rules above. Do not resolve this yourself, and do not rely on it without asking.
-- **Required and optional markers.** Toggling an optional label or a required asterisk on this component is described outside the token inventory, which contradicts there being no input to require. Do not rely on it without asking.
-- **Empty and null values.** No rule states what a read-only field shows when the value is missing. `recursica-skill-tables` has a null-cell rule for cells; nothing extends it to a field.
-- **Long or multi-line values.** Only `min-height` exists — whether the value wraps, scrolls, or truncates is unstated.
-- **Help or assistive text.** With no error state and no assistive slot, whether a note may sit under a read-only field is unsettled.
-- **Whether a read-only field participates in a compound control**, such as one half of a date-and-time row.
+- **The editable read-only field.** An "Is editable" behavior, with an edit icon that **appears on hover** and sends the user to another flow, is documented outside the token inventory, with no token behind it. The kit defines no edit control on this component, and `recursica-skill-label` sets aside an `edit-icon-gap` without saying what it triggers. A control that appears only on hover also conflicts with the accessibility rules above. Do not settle this yourself, and do not rely on it without asking.
+- **Required and optional markers.** Turning on an optional label or a required asterisk on this component is described outside the token inventory — which contradicts there being no input to require. Do not rely on it without asking.
+- **Empty and null values.** No rule says what a read-only field shows when the value is missing. `recursica-skill-tables` has a null-cell rule for cells, but nothing extends it to a field.
+- **Long values, or values on several lines.** Only `min-height` exists — whether the value wraps, scrolls, or is truncated is not stated.
+- **Help or assistive text.** With no error state and no assistive slot, whether a note may sit under a read-only field is not settled.
+- **Whether a read-only field can be part of a compound control**, such as one half of a date-and-time row.
 
 ## Pre-flight checklist
 
-- [ ] The value genuinely cannot be edited here, and a disabled input was not used instead.
-- [ ] Data nobody ever edits, outside a form, is plain text rather than this component.
-- [ ] A visible label is passed to the component and reads correctly on its own.
-- [ ] `layouts` matches every other field in the same form — one placement per form at any given breakpoint, with no mixing between fields or sections; side-by-side unless the container is too narrow.
-- [ ] No state was passed or simulated — no error, no disabled, no focus treatment.
-- [ ] The value uses the display format: spelled month dates, fixed precision, unit labels for durations.
-- [ ] Alignment matches the editable values on the same screen.
+- [ ] The value really cannot be edited here, and a disabled input is not used instead.
+- [ ] Data that nobody ever edits, outside a form, is plain text instead of this component.
+- [ ] A visible label is passed to the component, and it makes sense on its own.
+- [ ] `layouts` matches every other field in the same form — one placement per form at any given breakpoint, with no mixing between fields or sections — and is side by side unless the container is too narrow.
+- [ ] You passed or faked no state — no error, no disabled, and no focus styling.
+- [ ] The value uses the display format: dates with a spelled-out month, fixed precision, and unit labels for durations.
+- [ ] The alignment matches the editable values on the same screen.
 - [ ] The time zone and the unit are in the value's text.
-- [ ] It does not render an input, and does not announce as one.
-- [ ] The label-to-value association is programmatic, not just visual.
-- [ ] The value is real text, selectable and copyable, never an image.
-- [ ] No required or optional marker, and no disabled treatment or `aria-disabled`.
+- [ ] It does not show an input, and does not announce itself as one.
+- [ ] The connection between label and value is made in code, not only visually.
+- [ ] The value is real text that can be selected and copied — never an image.
+- [ ] There is no required or optional marker, and no disabled look or `aria-disabled`.
 - [ ] An empty value is never left silent.
 - [ ] It is not a tab stop, has no `tabindex`, and does not interrupt the tab order around it.
 - [ ] Nothing about it depends on hover or focus.
-- [ ] Any edit control is persistently visible, its own tab stop, named with its object, with its focus ring intact.
-- [ ] No component-owned styling was overridden, and neither the read-only nor the editable fields were restyled toward each other.
-- [ ] Nothing in the uncovered list — the hover edit affordance especially — was invented.
+- [ ] Any edit control stays visible, is its own tab stop, is named with its object, and has its focus ring intact.
+- [ ] You overrode no styling that the component owns, and did not restyle the read-only or the editable fields to look like each other.
+- [ ] You invented nothing from the uncovered list — above all, the edit control that appears on hover.

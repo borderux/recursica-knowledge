@@ -13,9 +13,9 @@ A timeline lists events that already happened, in order, each with a timestamp.
 
 ## Use it when
 
-- **A chronological record has to be read as a sequence** — an audit trail, an incident log, activity on one object, a release history.
-- **The order and the date matter more than dense detail.** Each entry is a short title, a line of description, and a time.
-- **Milestones already reached** are being reported, where the reader's question is what happened and when.
+- **A record over time has to be read as a sequence** — an audit trail, an incident log, activity on one object, a release history.
+- **The order and the date matter more than a lot of detail.** Each entry is a short title, a line of description, and a time.
+- **Milestones already reached** are being reported, and the reader wants to know what happened and when.
 
 ## Do not use it when
 
@@ -31,7 +31,9 @@ A timeline lists events that already happened, in order, each with a timestamp.
 | The dates are unknown or approximate                              | A grouped list, so the ordering claim is not made         |
 | Separating repeating peer objects visually                        | `recursica-skill-card` if it earns one, otherwise a table |
 
-**A very long history is not a longer timeline.** Group it — by month, by quarter — or paginate it with `recursica-skill-pagination`. Rendering a thousand events is the structural failure `recursica-skill-system-conventions` warns about.
+"High plurality" means many items of the same kind. A "peer" is an item of the same kind and rank as the items around it.
+
+**A very long history is not a longer timeline.** Group it — by month, by quarter — or split it into pages with `recursica-skill-pagination`. Showing a thousand events at once is the structural failure `recursica-skill-system-conventions` warns about.
 
 ## What exists
 
@@ -42,66 +44,66 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.timeline` and `ui-kit.
 | `timeline`        | `selection-states` | `active`, `inactive`                            |
 | `timeline-bullet` | `types`            | `default`, `icon`, `icon-alternative`, `avatar` |
 
-**An item is three parts: a title, a description, and a timestamp**, each with its own type token (`title-text`, `description-text`, `timestamp-text`). **The timestamp is part of the component**, which means `recursica-skill-dates-and-currency` governs how it reads — that is not optional formatting.
+**An item has three parts: a title, a description, and a timestamp.** Each has its own type token (`title-text`, `description-text`, `timestamp-text`). A token is a named design value, such as a color or a text style. **The timestamp is part of the component**, which means `recursica-skill-dates-and-currency` governs how it reads — that formatting is not optional.
 
-**`active` and `inactive` are selection states, not statuses.** There is no completed, current, upcoming, or error state on a timeline item. Do not repurpose `active` to mean "done".
+**`active` and `inactive` are selection states, not statuses.** A timeline item has no completed, current, upcoming, or error state. Do not reuse `active` to mean "done".
 
-**There is no connector token on the timeline.** A connecting line with a highlighted state for completed events is documented outside the token inventory; the kit defines no such property here. Do not encode progress into the line.
+**There is no connector token on the timeline.** A connecting line with a highlighted state for completed events is documented outside the token inventory, but the kit defines no such property here. Do not use the line to show progress.
 
-**There is no alignment axis, no orientation axis, and no size axis.** Left and right alignment are documented outside the token inventory; the kit defines neither, and nothing supports two opposing tracks or a comparative side-by-side timeline. `max-text-width` is a fixed property.
+**There is no alignment axis, no orientation axis, and no size axis.** Left and right alignment are documented outside the token inventory, but the kit defines neither, and nothing supports two opposing tracks or a timeline that compares two streams side by side. `max-text-width` is a fixed property.
 
-**`icon-alternative` also goes by "theme icon"** in material documented outside the token inventory. One thing, two names — and no rule distinguishes when each is used.
+**`icon-alternative` is also called "theme icon"** in material documented outside the token inventory. It is one thing with two names — and no rule says when each name is used.
 
 ## Rules for using it
 
-**Order the items chronologically and hold one direction throughout.** Mixed or unstated ordering makes the component lie about the thing it exists to show.
+**Put the items in time order, and keep one direction the whole way through.** If the order is mixed or not stated, the component misrepresents the one thing it exists to show.
 
-**Group events that happened close together into one item** rather than emitting three near-identical entries a second apart. The timeline's value is legibility of sequence, not completeness of the log.
+**Group events that happened close together into one item**, instead of showing three almost identical entries a second apart. A timeline's value is that the sequence is easy to read, not that the log is complete.
 
 **Format every timestamp by `recursica-skill-dates-and-currency`:**
 
-- **Relative time for recent events** — `15 minutes ago`, `yesterday` — because making the reader subtract from now is work the format should absorb.
-- **Above the switchover threshold, the absolute date** — `Jan 7, 2026`. **Never the numeric slash or hyphen form**, which exists only inside a focused input.
-- **State the time zone whenever the time is not in the user's own**, or the user's zone is unknown.
-- **Where the location of an event matters, show the time in the zone it occurred, labeled, and do not convert it** — and offer a way to convert.
-- **Hold one format across the whole timeline.** Not relative on some items and absolute on others within the same threshold.
+- **Relative time for recent events** — `15 minutes ago`, `yesterday` — because working backward from now is effort the format should save the reader.
+- **Past the switchover point, the absolute date** — `Jan 7, 2026`. **Never the numeric slash or hyphen form**, which exists only inside an input that has focus.
+- **State the time zone whenever the time is not in the user's own**, or the user's time zone is unknown.
+- **Where the event's location matters, show the time in the time zone where it happened, labeled, and do not convert it** — and give the user a way to convert it.
+- **Keep one format across the whole timeline.** Do not use relative time on some items and absolute dates on others when they fall on the same side of the switchover point.
 
-**The title names the event; the description is the body.** Do not concatenate the timestamp into the title — it has its own slot and its own type token.
+**The title names the event; the description is the body.** Do not add the timestamp to the title — it has its own slot and its own type token.
 
-**The bullet is decoration.** An avatar or an icon bullet may reinforce who or what an entry is about, but the title and description must say it. `recursica-skill-system-conventions` forbids carrying meaning in one channel, and a bullet is the weakest channel in the component. For an avatar bullet's own requirements see `recursica-skill-avatar`.
+**The bullet is decoration.** An avatar or an icon bullet may help show who or what an entry is about, but the title and description must say it. `recursica-skill-system-conventions` forbids carrying meaning in one channel (one way of showing something, such as color, shape, or text), and a bullet is the weakest channel in the component. For an avatar bullet's own requirements, see `recursica-skill-avatar`.
 
-**Use one bullet type consistently within a timeline**, or vary it only where the variation itself is stated in the text. A mix of icon types the reader has to decode is a legend with no key.
+**Use one bullet type throughout a timeline**, or vary it only where the text also states what the difference means. A mix of icons the reader has to decode is a legend with no key.
 
 **Do not wrap the timeline in a card**, and do not put a form or a form control inside a timeline item. See `recursica-skill-card`.
 
-**A timeline is not an edit surface.** If entries are being created or modified here, that is a form, on its own terms.
+**A timeline is not a place to edit.** If entries are being created or changed here, that is a form, and follows the rules for forms.
 
-**`inactive` does not mean "already happened."** Every entry in a log or history is in the past, and all of them are real. Rendering completed events in the de-emphasised treatment makes a record of what happened look like a plan for what will — the exact opposite of the truth. Reserve any dimmed or pending treatment for genuinely future or unreached states, and if the timeline is purely historical, **no entry is de-emphasised.**
+**`inactive` does not mean "already happened."** Every entry in a log or history is in the past, and all of them are real. Showing completed events in the faded style makes a record of what happened look like a plan for what will happen — the exact opposite of the truth. Keep any faded or pending style for states that are truly in the future or not yet reached. If the timeline is purely a history, **no entry is faded.**
 
 ## Accessibility
 
-A timeline is a list of events, and almost everything that makes it readable is visual: a vertical line implying sequence, a bullet implying a type, a color implying selection, and a relative timestamp whose real value is nowhere. **All four have to be replaced with something programmatic.**
+A timeline is a list of events, and almost everything that makes it readable is visual: a vertical line that suggests sequence, a bullet that suggests a type, a color that suggests selection, and a relative timestamp that hides the real date. **All four have to be replaced with something in the code** that assistive technology (software such as a screen reader, which reads the screen aloud) can read.
 
 ### Screen readers
 
-- **Announce the events as a list, with its length.** A run of unstructured text gives the user no sense of how many events there are or which one they are in.
-- **Each item's title, description, and timestamp must be associated as one item.** Three sibling lines with no grouping read as nine unrelated strings across three events, and the reader cannot tell which time belongs to which title.
-- **Each item leads with its title**, at a consistent heading level if headings are used, so the user can move event to event instead of reading everything.
-- **Reading order must match visual order**, and the sequence must come from the list order — **the connecting line conveys nothing programmatically.**
-- **State the sort direction in text** above the timeline. "Newest first" is not inferable from a list read aloud.
-- **A relative timestamp must have its absolute value available too.** "2 hours ago" is useless to someone reconstructing a sequence later; expose the full, disambiguated date and time in the accessible output alongside it.
-- **The bullet is decorative and must be silent.** An icon bullet is announced as nothing; an avatar bullet either carries alternative text naming the person or is marked decorative with the name in the item's own text. **Never let an avatar or icon be the only thing identifying who or what an entry is about.**
-- **`active` must be programmatic** — a current or selected state on the item — **never color alone.**
+- **Announce the events as a list, with its length.** A run of unstructured text gives the user no sense of how many events there are, or which one they are on.
+- **Each item's title, description, and timestamp must be grouped together as one item.** Three separate lines with no grouping read as nine unrelated strings across three events, and the reader cannot tell which time belongs to which title.
+- **Each item starts with its title**, at the same heading level every time if headings are used, so the user can jump from event to event instead of reading everything.
+- **The reading order must match the visual order**, and the sequence must come from the order of the list — **the connecting line tells a screen reader nothing.**
+- **State the sort direction in text** above the timeline. A list read aloud does not reveal that it is "Newest first".
+- **A relative timestamp must also have its absolute value available.** "2 hours ago" is useless to someone piecing together a sequence later. Include the full, clear date and time in what the screen reader reads, alongside it.
+- **The bullet is decorative and must be silent.** An icon bullet is announced as nothing. An avatar bullet either has alternative text naming the person, or is marked decorative, with the name in the item's own text. **Never let an avatar or an icon be the only thing that identifies who or what an entry is about.**
+- **`active` must be set in code** — a current or selected state on the item — **never shown by color alone.**
 
 ### Keyboard and non-mouse navigation
 
-- **A non-interactive item is not a tab stop.** No `tabindex`, no click handler on a static event.
-- **If items are selectable, each is a real control** with an accessible name and a selected state, in the tab order in visual order.
-- **If an item contains a link or a button, the item itself must not also be clickable.** Overlapping targets give the keyboard user an ambiguous activation — the same reasoning `recursica-skill-card` and `recursica-skill-tables` apply to clickable cards and rows.
-- **The absolute date must not live only in a hover tooltip.** That is the most common failure here: a relative time with the real timestamp on hover is unreachable by keyboard and by touch.
-- **Nothing else needed may be hover-only** either — not an entry's detail, not its actions.
-- **Where a long timeline pages or loads more, that control is a real keyboard-reachable button**, and appending items must not move or destroy focus.
-- **Never suppress the focus ring** on a selectable item or on any control inside one.
+- **An item that cannot be used is not a tab stop** (a place the Tab key lands). No `tabindex`, and no click handler on an event that just displays.
+- **If items can be selected, each is a real control** with an accessible name (the name a screen reader reads out for it) and a selected state, in the tab order, in visual order.
+- **If an item contains a link or a button, the item itself must not also be clickable.** Overlapping targets leave a keyboard user unsure what Enter will do — the same reasoning `recursica-skill-card` and `recursica-skill-tables` apply to clickable cards and rows.
+- **The absolute date must not appear only in a tooltip on hover.** This is the most common failure here: a relative time with the real timestamp shown on hover cannot be reached by keyboard or by touch.
+- **Nothing else the user needs may appear only on hover** either — not an entry's detail, and not its actions.
+- **Where a long timeline pages or loads more, that control is a real button the keyboard can reach**, and adding items must not move or lose focus.
+- **Never hide the focus ring** (the outline that shows which element has keyboard focus) on an item that can be selected, or on any control inside one.
 
 ## Not your decision
 
@@ -124,37 +126,37 @@ Do not implement, override, or tune any of these — the components own them:
 
 ## Uncovered — ask, do not invent
 
-- **Alignment.** Left and right alignment are documented outside the token inventory; the kit defines no alignment axis. Do not rely on this without asking.
-- **The connecting line.** A connector with a highlighted state for completed events is documented outside the token inventory; the kit defines no connector property on the timeline, so whether progress may be shown at all is unresolved. Do not rely on this without asking.
-- **Two-track or comparative timelines** — parallel streams compared side by side. Nothing in the kit supports it.
+- **Alignment.** Left and right alignment are documented outside the token inventory, but the kit defines no alignment axis. Do not rely on this without asking.
+- **The connecting line.** A connector with a highlighted state for completed events is documented outside the token inventory, but the kit defines no connector property on the timeline, so whether progress may be shown at all is not settled. Do not rely on this without asking.
+- **Two-track or comparing timelines** — two streams of events compared side by side. Nothing in the kit supports it.
 - **What `active` means in house terms** — the item the user selected, or the most recent event. Only the two selection states exist.
-- **Whether a timeline item may be selectable, a link, or carry an action.** No interactive rule is stated.
-- **Default sort direction** — newest first or oldest first.
-- **When to group a long history, by what period, and at what count.**
-- **The relative-to-absolute switchover threshold**, which `recursica-skill-dates-and-currency` names as a product decision.
-- **Whether `icon-alternative` has a meaning distinct from `icon`**, or is only a different visual treatment.
+- **Whether a timeline item may be selected, be a link, or have an action.** No rule for interaction is stated.
+- **The default sort direction** — newest first or oldest first.
+- **When to group a long history, by what time period, and at how many items.**
+- **The point where relative time switches to an absolute date**, which `recursica-skill-dates-and-currency` names as a product decision.
+- **Whether `icon-alternative` means something different from `icon`**, or is only a different look.
 - **The empty state of a timeline** — an object with no events yet.
 
 ## Pre-flight checklist
 
-- [ ] No completed or historical entry is rendered in a de-emphasised or pending treatment.
-- [ ] The events are genuinely sequential and already happened; a current process went to a stepper.
-- [ ] High volume, sortable, or comparable records went to a table; unordered content went to a list.
-- [ ] A long history is grouped or paginated rather than rendered whole.
-- [ ] Only `active`/`inactive` and the four bullet types were used; no completed, current, or error state was invented.
+- [ ] No completed or past entry is shown in a faded or pending style.
+- [ ] The events really are in sequence and already happened. A process happening now went to a stepper.
+- [ ] High-volume records, or records to sort or compare, went to a table. Content with no order went to a list.
+- [ ] A long history is grouped or split into pages, not shown all at once.
+- [ ] Only `active`/`inactive` and the four bullet types are used. No completed, current, or error state was invented.
 - [ ] No alignment, orientation, size, or connector property was passed — none exist.
-- [ ] Items are in chronological order, in one stated direction, with near-simultaneous events grouped.
-- [ ] Every timestamp uses the disambiguated format, with relative time for recent events and no numeric slash-or-hyphen dates.
-- [ ] Time zones are stated where the value is not the user's own; events whose location matters are shown unconverted and labeled.
-- [ ] One timestamp format across the whole timeline; the timestamp is in its own slot, not the title.
-- [ ] The title and description carry who and what; no meaning rests on the bullet alone.
-- [ ] Bullet type is used consistently, and no timeline is wrapped in a card or holds a form control.
-- [ ] The events are announced as a list with its length, in visual order, with sort direction stated in text.
-- [ ] Each item's title, description, and timestamp are programmatically associated as one item.
-- [ ] Every relative timestamp has its absolute value in the accessible output, and not only in a hover tooltip.
+- [ ] Items are in time order, in one stated direction, with events that happened close together grouped.
+- [ ] Every timestamp uses the clear format: relative time for recent events, and no numeric slash-or-hyphen dates.
+- [ ] Time zones are stated where the time is not in the user's own. Events whose location matters are shown unconverted and labeled.
+- [ ] One timestamp format is used across the whole timeline, and the timestamp is in its own slot, not in the title.
+- [ ] The title and description say who and what. No meaning depends on the bullet alone.
+- [ ] One bullet type is used throughout. No timeline is wrapped in a card or holds a form control.
+- [ ] The events are announced as a list with its length, in visual order, with the sort direction stated in text.
+- [ ] Each item's title, description, and timestamp are grouped in code as one item.
+- [ ] Every relative timestamp has its absolute value in what the screen reader reads — not only in a tooltip on hover.
 - [ ] Bullets are silent or, for avatars, named — and the name also appears in the item's text.
-- [ ] `active` is exposed programmatically, never by color alone.
-- [ ] Static items are not tab stops; selectable items are real named controls and contain no competing click target.
-- [ ] Any load-more control is keyboard reachable and does not disturb focus; the focus ring is intact.
-- [ ] No component-owned gap, width, type treatment, bullet styling, or color was overridden.
-- [ ] Nothing in the uncovered list was invented.
+- [ ] `active` is set in code, never shown by color alone.
+- [ ] Items that just display are not tab stops. Items that can be selected are real, named controls, with no second click target inside them.
+- [ ] Any load-more control can be reached by keyboard and does not disturb focus. The focus ring is not hidden.
+- [ ] You overrode no gap, width, type style, bullet styling, or color that the component owns.
+- [ ] You invented nothing from the uncovered list.

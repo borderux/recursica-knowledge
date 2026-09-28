@@ -13,9 +13,9 @@ A tooltip is a short text label for a control that has no visible one.
 
 ## Use it when
 
-- **A control is icon-only.** `recursica-skill-buttons-links` requires a tooltip on every icon-only button, with no exceptions.
-- **Visible text has been truncated with an ellipsis** and the tooltip shows it in full.
-- **An unusual function needs one clarifying phrase** that a new user may not infer — and only where the label is already good. Never to rescue a weak label.
+- **A control shows only an icon.** `recursica-skill-buttons-links` requires a tooltip on every icon-only button, with no exceptions.
+- **Visible text has been cut off with an ellipsis (…)**, and the tooltip shows it in full.
+- **An unusual function needs one short phrase to explain it**, because a new user may not work it out — and only where the label is already good. Never use one to rescue a weak label.
 
 ## Do not use it when
 
@@ -30,69 +30,71 @@ A tooltip is a short text label for a control that has no visible one.
 | The user must acknowledge or decide something         | `recursica-skill-modal`                                                |
 | The explanation runs to a paragraph                   | The page, or a panel — `recursica-skill-panel`                         |
 
-**A tooltip is supplementary by definition.** Nothing inside it may be the only copy of a piece of information, because on a touch device there is no hover and the user may never see it at all.
+"Assistive technology" is software, such as a screen reader, that helps people with disabilities use the screen. An "accessible name" is the name a screen reader reads out for a control.
+
+**A tooltip is, by definition, an extra.** Nothing inside it may be the only copy of a piece of information, because a touch device has no hover, and the user may never see it at all.
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.tooltip`. **The tooltip has no variant axes whatsoever** — no placement axis, no size axis, no content-type axis. Every listed item is a fixed property.
+Taken from `recursica_ui-kit.json` → `ui-kit.components.tooltip`. **The tooltip has no variant axes at all** — no placement axis, no size axis, no content-type axis. Every listed item is a fixed property.
 
-**What the component provides:** a text area and a **beak** — the small pointer that connects the tooltip to its trigger. `beak-size` and `beak-inset` are set by tokens.
+**What the component provides:** a text area and a **beak** — the small pointer that connects the tooltip to its trigger. `beak-size` and `beak-inset` are set by tokens (named design values).
 
-**You cannot set placement.** There is no top, left, right, or bottom option, and no beak-alignment option. Both are documented outside the token inventory; the kit defines neither — see Uncovered. Do not pass a position prop and do not hand-position the beak.
+**You cannot set placement.** There is no top, left, right, or bottom option, and no option for aligning the beak. Both are documented outside the token inventory, but the kit defines neither — see Uncovered. Do not pass a position prop, and do not position the beak by hand.
 
 **There is no size axis.** `min-width`, `max-width`, and `min-height` are fixed. If the content does not fit inside them, it is not tooltip content.
 
-**There is no rich-content or custom-content axis.** `text` is the only content property. A tooltip holds text.
+**There is no axis for rich or custom content.** `text` is the only content property. A tooltip holds text.
 
-**`tooltip` and `hover-card-popover` are two different components with almost identical tokens.** Do not choose between them on styling, because the styling is effectively the same. Choose on content:
+**`tooltip` and `hover-card-popover` are two different components with almost the same tokens.** Do not choose between them by their look, because they look almost the same. Choose by content:
 
 - **Tooltip** — a short text label for a control that has no visible one.
 - **Hover card / popover** — richer content beside a target. See `recursica-skill-hover-card-popover`.
 
-Neither may hold anything the user needs in order to complete a task, and neither may be the only place a piece of information exists.
+Neither may hold anything the user needs to complete a task, and neither may be the only place a piece of information exists.
 
 ## Rules for using it
 
-**One short phrase, naming the control.** "Delete invoice", not a sentence. It is a label, not documentation.
+**One short phrase that names the control.** "Delete invoice", not a sentence. It is a label, not instructions.
 
 **Never the only place a piece of information lives.** If it matters, it is also on the page, in the accessible name, or in assistive text.
 
-**Never put a control or a link inside a tooltip.** The moment something inside needs to be clicked, the user has to keep the pointer on the trigger while reaching it, which is a pointer trap. That content belongs in a popover.
+**Never put a control or a link inside a tooltip.** As soon as something inside needs to be clicked, the user has to keep the pointer over the trigger while moving to it — a trap for the pointer. That content belongs in a popover.
 
-**A tooltip is not a label for a form field.** Fields get visible labels and persistent assistive text — see `recursica-skill-text-field`.
+**A tooltip is not a label for a form field.** Fields get visible labels and assistive text that stays on screen — see `recursica-skill-text-field`.
 
-**A button with both an icon and a label rarely needs one.** `recursica-skill-buttons-links` makes it optional there, and only for ancillary information about an unusual function.
+**A button with both an icon and a label rarely needs one.** `recursica-skill-buttons-links` makes it optional there, and only for extra information about an unusual function.
 
-**Not a validation or error mechanism.** An error must be persistent and associated with its field; see `recursica-skill-forms`.
+**Not a way to show validation or errors.** An error must stay on screen and be connected to its field. See `recursica-skill-forms`.
 
-**Truncating text and adding a tooltip is not a fix for a column that is too narrow.** Repeated truncation is a structural problem — see `recursica-skill-tables` and `recursica-skill-system-conventions`.
+**Cutting text off and adding a tooltip does not fix a column that is too narrow.** Text that is cut off again and again is a structural problem — see `recursica-skill-tables` and `recursica-skill-system-conventions`.
 
-**Do not use the browser's `title` attribute as the tooltip.** It does not appear on keyboard focus, cannot be dismissed, and is unreliably announced. Use the component.
+**Do not use the browser's `title` attribute as the tooltip.** It does not appear on keyboard focus, cannot be dismissed, and is not reliably read by screen readers. Use the component.
 
 ## Accessibility
 
-A tooltip is the component most often used to paper over a missing accessible name, and it cannot do that job. Everything below is behavior you must ensure.
+A tooltip is the component most often used to cover up a missing accessible name, and it cannot do that job. Everything below is behavior you must make sure of.
 
 ### Screen readers
 
-- **Associate the tooltip with its control** so it is announced as that control's description. A loose, absolutely positioned element beside the control is announced as unrelated text, or not at all.
-- **A tooltip is never the accessible name substitute for an unlabeled control.** The control needs its own name. An icon-only button gets both a name and a tooltip; if only one of the two exists, it must be the name.
+- **Connect the tooltip to its control**, so it is announced as that control's description. A separate element placed next to the control is announced as unrelated text, or not at all.
+- **A tooltip never stands in for the accessible name of a control with no label.** The control needs its own name. An icon-only button gets both a name and a tooltip. If only one of the two exists, it must be the name.
 - **The name and the tooltip should say the same thing.** A user who speaks the tooltip text must be able to activate the control by voice.
-- **Never put meaning in a tooltip that exists nowhere else.** A tooltip is a single channel, and `recursica-skill-system-conventions` forbids that for any meaning the user must receive.
-- **Nothing inside a tooltip is announced as interactive**, because nothing inside it is interactive.
-- **Truncated text must be available in full programmatically**, not only in the tooltip. A screen reader user does not experience the truncation and must not experience a cut-off value either.
-- **The tooltip must not be announced as a live region.** It is a description, read when its control is reached — not an alert that interrupts.
+- **Never put meaning in a tooltip that exists nowhere else.** A tooltip is a single channel (one way of showing something), and `recursica-skill-system-conventions` forbids that for any meaning the user must receive.
+- **Nothing inside a tooltip is announced as something you can use**, because nothing inside it can be used.
+- **Text that is cut off must be available in full in the code**, not only in the tooltip. A screen reader user does not see the text being cut off, and must not hear a cut-off value either.
+- **The tooltip must not be announced as a live region** (a part of the page that screen readers announce when it changes). It is a description, read when its control is reached — not an alert that interrupts.
 
 ### Keyboard and non-mouse navigation
 
-- **It must appear on keyboard focus as well as on hover.** A hover-only tooltip is invisible to every keyboard user, which means every icon-only button on the surface is unlabeled for them.
-- **It must stay visible long enough to read**, and must not vanish while the pointer is still on the control or focus is still on it. No auto-hide that removes it mid-sentence.
-- **It must be dismissible with Escape without moving focus.** A tooltip can overlap the content underneath it, so the user needs a way to clear it — and clearing it must not blur the control.
-- **It must not contain a control or a link**, which is also why it needs no internal tab handling. If it needs a tab stop, it is a popover.
-- **Never move focus into the tooltip.** It is not focusable and is never a tab stop.
-- **The trigger must be focusable.** A tooltip attached to something no one can focus can never appear for a keyboard user.
-- **Never suppress the focus ring** on the trigger. A tooltip appearing is not a focus indicator.
-- **Nothing needed may be hover-only** — which, for this component, means nothing needed may be in it at all.
+- **It must appear on keyboard focus as well as on hover.** A tooltip that appears only on hover is invisible to every keyboard user, which means every icon-only button on the surface has no label for them.
+- **It must stay visible long enough to read**, and must not disappear while the pointer is still on the control, or focus is still on it. Nothing may hide it automatically in the middle of reading.
+- **It must close with Escape without moving focus.** A tooltip can cover the content underneath it, so the user needs a way to clear it — and clearing it must not take focus off the control.
+- **It must not contain a control or a link**, which is also why it needs no Tab handling inside it. If it needs a tab stop (a place the Tab key lands), it is a popover.
+- **Never move focus into the tooltip.** It cannot take focus, and it is never a tab stop.
+- **The trigger must be able to take focus.** A tooltip attached to something no one can focus can never appear for a keyboard user.
+- **Never hide the focus ring** (the outline that shows which element has keyboard focus) on the trigger. A tooltip appearing does not show where focus is.
+- **Nothing the user needs may appear only on hover** — which, for this component, means nothing the user needs may be in it at all.
 
 ## Not your decision
 
@@ -116,27 +118,27 @@ The beak is part of the component. Do not draw your own, and do not reposition t
 
 - **Placement.** A position axis of top, left, right, and bottom, a beak-alignment axis of start, middle, and end, and a `position` prop are all documented outside the token inventory. The kit defines no placement axis at all — only `beak-size` and `beak-inset` as fixed properties. Do not rely on this without asking.
 - **Custom content.** Content types of "text" and "custom" are documented outside the token inventory. The kit has only `text`. Do not rely on this without asking.
-- **Show delay, hide delay, and any auto-hide duration.** No token or rule defines them.
-- **Touch behavior.** Hover does not exist on touch, and no alternative pattern is specified for reaching a tooltip's content there.
-- **Whether a tooltip may attach to a non-interactive element** — a truncated table cell, a chart label — given that a non-focusable target can never reveal it from the keyboard.
-- **Behavior at a viewport edge**, with no placement axis available to flip it.
+- **The delay before showing, the delay before hiding, and any time before it hides on its own.** No token or rule defines them.
+- **Touch behavior.** Hover does not exist on touch screens, and no other pattern is given for reaching a tooltip's content there.
+- **Whether a tooltip may attach to an element the user cannot interact with** — a table cell with cut-off text, a chart label — given that a target that cannot take focus can never show the tooltip from the keyboard.
+- **What happens at the edge of the viewport** (the visible area of the browser window), with no placement axis available to flip it.
 
 ## Pre-flight checklist
 
-- [ ] The content is a short label or phrase, not documentation and not a paragraph.
-- [ ] Every icon-only control has a tooltip; no tooltip is compensating for a weak label.
-- [ ] Nothing in the tooltip is needed to complete a task, and nothing in it exists nowhere else.
-- [ ] No control, link, or other interactive element is inside it.
+- [ ] The content is a short label or phrase — not instructions, and not a paragraph.
+- [ ] Every icon-only control has a tooltip, and no tooltip is making up for a weak label.
+- [ ] Nothing in the tooltip is needed to complete a task, and nothing in it appears only there.
+- [ ] No control, link, or other element the user can interact with is inside it.
 - [ ] No form field relies on a tooltip for its label, hint, format rule, or error.
-- [ ] Truncation plus a tooltip is not standing in for a structural fix.
-- [ ] The browser `title` attribute is not being used as the tooltip.
-- [ ] The tooltip is associated with its control and announced as that control's description.
-- [ ] The control has its own accessible name; the tooltip is not serving as the name.
-- [ ] The accessible name and the tooltip text agree.
-- [ ] Truncated values are available in full programmatically.
+- [ ] Cutting text off and adding a tooltip is not standing in for a structural fix.
+- [ ] The browser's `title` attribute is not being used as the tooltip.
+- [ ] The tooltip is connected to its control and announced as that control's description.
+- [ ] The control has its own accessible name. The tooltip is not serving as the name.
+- [ ] The accessible name and the tooltip text match.
+- [ ] Values that are cut off are available in full in the code.
 - [ ] It appears on keyboard focus as well as hover, and stays visible long enough to read.
-- [ ] Escape dismisses it without moving focus; focus never enters it.
-- [ ] The trigger is focusable, and its focus ring is intact.
+- [ ] Escape closes it without moving focus, and focus never enters it.
+- [ ] The trigger can take focus, and its focus ring is not hidden.
 - [ ] No placement, size, or content variant was passed — none exists.
-- [ ] No component-owned padding, width, color, or beak treatment was overridden.
-- [ ] Nothing in the uncovered list was invented.
+- [ ] You overrode no padding, width, color, or beak styling that the component owns.
+- [ ] You invented nothing from the uncovered list.
