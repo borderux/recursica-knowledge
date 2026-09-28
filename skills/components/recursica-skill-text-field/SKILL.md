@@ -22,7 +22,7 @@ A text field captures free-form text on a single line.
 Each of these has a different component. Switch to it rather than adapting a text field:
 
 | Instead of a text field                                                            | Use                                                                                             |
-| ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ---------- |
+| ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | The value comes from a known set of options                                        | A dropdown, radio group, or autocomplete — see `recursica-skill-selection-controls`             |
 | The answer is yes or no                                                            | A switch or a checkbox                                                                          |
 | The content runs to multiple lines                                                 | `recursica-skill-textarea`                                                                      |
@@ -37,10 +37,10 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.text-field`. **Do not 
 
 **The third column is the React prop that sets the axis.** The axis name is the token inventory's; it is not a prop, and passing it as one is dropped silently by React. A blank cell means no single prop carries that axis — it is set by CSS state or by separate props, and the rules below say which.
 
-| Axis      | Options                   | React prop |
-| --------- | ------------------------- | ---------- |
+| Axis      | Options                   | React prop   |
+| --------- | ------------------------- | ------------ |
 | `layouts` | `stacked`, `side-by-side` | `formLayout` |
-| `states`  | `error`, `disabled`       |            |
+| `states`  | `error`, `disabled`       |              |
 
 **`layouts` is the label placement axis, and the React prop that sets it is `formLayout`.** `side-by-side` — label beside the field — is the house rule; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport. See `recursica-skill-forms`.
 

@@ -24,7 +24,7 @@ A textarea captures plain text across multiple lines.
 Each of these has a different component. Switch to it rather than adapting a textarea:
 
 | Instead of a textarea                       | Use                                                                                          |
-| ------------------------------------------- | -------------------------------------------------------------------------------------------- | ---------- |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | The content is short and fits one line      | `recursica-skill-text-field` — the field's size tells the user how much to write             |
 | The value comes from a known set of options | A dropdown, radio group, or autocomplete — see `recursica-skill-selection-controls`          |
 | The user must apply bold, italics, or lists | A rich text editor. No such component exists in this kit — see Uncovered                     |
@@ -42,10 +42,10 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.textarea`. **Do not pa
 
 **The third column is the React prop that sets the axis.** The axis name is the token inventory's; it is not a prop, and passing it as one is dropped silently by React. A blank cell means no single prop carries that axis — it is set by CSS state or by separate props, and the rules below say which.
 
-| Axis      | Options                   | React prop |
-| --------- | ------------------------- | ---------- |
+| Axis      | Options                   | React prop   |
+| --------- | ------------------------- | ------------ |
 | `layouts` | `stacked`, `side-by-side` | `formLayout` |
-| `states`  | `error`, `disabled`       |            |
+| `states`  | `error`, `disabled`       |              |
 
 **`layouts` is the label placement axis, set by the `formLayout` prop.** `side-by-side` — label beside the field — is the house default; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport. See `recursica-skill-forms`.
 

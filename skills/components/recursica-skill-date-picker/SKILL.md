@@ -28,7 +28,7 @@ A date picker captures a single calendar date, by typing or by picking.
 Each of these has a different component. Switch to it rather than adapting a date picker:
 
 | Instead of a date picker                               | Use                                                                                 |
-| ------------------------------------------------------ | ----------------------------------------------------------------------------------- | ---------- |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------- |
 | The value is a time of day                             | `recursica-skill-time-picker`                                                       |
 | The user already knows the date by heart               | A text field with the format stated in help text — see `recursica-skill-text-field` |
 | The date is far in the past — a birth date             | A text field. Never make the user page a calendar back through decades              |
@@ -46,10 +46,10 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.date-picker`. **Do not
 
 **The third column is the React prop that sets the axis.** The axis name is the token inventory's; it is not a prop, and passing it as one is dropped silently by React. A blank cell means no single prop carries that axis — it is set by CSS state or by separate props, and the rules below say which.
 
-| Axis      | Options                   | React prop |
-| --------- | ------------------------- | ---------- |
+| Axis      | Options                   | React prop   |
+| --------- | ------------------------- | ------------ |
 | `layouts` | `stacked`, `side-by-side` | `formLayout` |
-| `states`  | `error`, `disabled`       |            |
+| `states`  | `error`, `disabled`       |              |
 
 **`layouts` is the label placement axis, set by the `formLayout` prop.** `side-by-side` — label beside the field — is the house default; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport. See `recursica-skill-forms`.
 

@@ -26,7 +26,7 @@ A transfer list is two lists side by side with controls that move items between 
 ## Do not use it when
 
 | Instead of a transfer list                            | Use                                                                                        |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------------------ | ---------- |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------ |
 | There are only a handful of items                     | A checkbox group — see `recursica-skill-checkbox` and `recursica-skill-selection-controls` |
 | Exactly one value is chosen                           | `recursica-skill-dropdown`, or a radio group                                               |
 | Zero-to-many, but the unselected set is uninteresting | A multi-select dropdown — see `recursica-skill-selection-controls`                         |
@@ -43,10 +43,10 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.transfer-list`. **Do n
 
 **The third column is the React prop that sets the axis.** The axis name is the token inventory's; it is not a prop, and passing it as one is dropped silently by React. A blank cell means no single prop carries that axis — it is set by CSS state or by separate props, and the rules below say which.
 
-| Axis      | Options                   | React prop |
-| --------- | ------------------------- | ---------- |
+| Axis      | Options                   | React prop   |
+| --------- | ------------------------- | ------------ |
 | `layouts` | `stacked`, `side-by-side` | `formLayout` |
-| `states`  | `error`, `disabled`       |            |
+| `states`  | `error`, `disabled`       |              |
 
 **`layouts` is the label placement axis, set by the `formLayout` prop, not the arrangement of the two lists.** `side-by-side` — label beside the control — is the house default; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport. The two lists themselves are always two columns.
 

@@ -22,7 +22,7 @@ A time picker captures a point in the day, by typing or by picking.
 Each of these has a different component. Switch to it rather than adapting a time picker:
 
 | Instead of a time picker                           | Use                                                                                        |
-| -------------------------------------------------- | ------------------------------------------------------------------------------------------ | ---------- |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------ |
 | The user picks an approximate or relative time     | Not a time at all — "in 30 minutes" is an offset, so capture the number and its unit       |
 | The choices are a few preset times                 | A segmented control or a dropdown — see `recursica-skill-selection-controls`               |
 | The value is a length of time, not a point in time | A number input per unit. `3h 20m`, never `3:20` — see `recursica-skill-dates-and-currency` |
@@ -40,10 +40,10 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.time-picker`. **Do not
 
 **The third column is the React prop that sets the axis.** The axis name is the token inventory's; it is not a prop, and passing it as one is dropped silently by React. A blank cell means no single prop carries that axis — it is set by CSS state or by separate props, and the rules below say which.
 
-| Axis      | Options                   | React prop |
-| --------- | ------------------------- | ---------- |
+| Axis      | Options                   | React prop   |
+| --------- | ------------------------- | ------------ |
 | `layouts` | `stacked`, `side-by-side` | `formLayout` |
-| `states`  | `error`, `disabled`       |            |
+| `states`  | `error`, `disabled`       |              |
 
 **`layouts` is the label placement axis, set by the `formLayout` prop.** `side-by-side` — label beside the field — is the house default; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport. See `recursica-skill-forms`.
 

@@ -20,7 +20,7 @@ A button performs an action. It does not take the user anywhere.
 ## Do not use it when
 
 | Instead of a button                               | Use                                                               |
-| ------------------------------------------------- | ----------------------------------------------------------------- | ---------- |
+| ------------------------------------------------- | ----------------------------------------------------------------- |
 | The user ends up somewhere else                   | `recursica-skill-link` — with a real `href`                       |
 | Navigating out of a table row to a related object | A link. Links are quieter, which matters at table density         |
 | One value is chosen from a small set              | `recursica-skill-segmented-control`                               |
@@ -37,8 +37,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.button`. **Do not pass
 
 | Axis      | Options                            | React prop |
 | --------- | ---------------------------------- | ---------- |
-| `styles` | `solid`, `text`, `outline`         | `variant` |
-| `sizes` | `default`, `small`                 | `size` |
+| `styles`  | `solid`, `text`, `outline`         | `variant`  |
+| `sizes`   | `default`, `small`                 | `size`     |
 | `content` | `icon-label`, `label`, `icon-only` |            |
 
 **`text` is the style called "Ghost" outside the token inventory.** One thing, two names.

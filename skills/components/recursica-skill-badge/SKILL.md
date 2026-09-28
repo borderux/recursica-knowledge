@@ -20,7 +20,7 @@ A badge is one piece of read-only metadata attached to something else. The syste
 ## Do not use it when
 
 | Instead of a badge                          | Use                                                                                   |
-| ------------------------------------------- | ------------------------------------------------------------------------------------- | ---------- |
+| ------------------------------------------- | ------------------------------------------------------------------------------------- |
 | The user selects, toggles, or dismisses it  | `recursica-skill-chip`                                                                |
 | The object carries several values           | Chips. A badge is singular                                                            |
 | The value is an error or failure condition  | An icon or a purpose-built treatment — see the rule below                             |
@@ -38,7 +38,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.badge`. **Do not pass 
 
 | Axis     | Options                                        | React prop |
 | -------- | ---------------------------------------------- | ---------- |
-| `styles` | `primary-color`, `warning`, `success`, `alert` | `variant` |
+| `styles` | `primary-color`, `warning`, `success`, `alert` | `variant`  |
+
 **There is no size axis and no content axis in the kit**, though both are documented outside the token inventory. See the uncovered list before relying on either — that mismatch has not been resolved.
 
 **No disabled state, no interactive state, no hover treatment.** A badge has no states because it is not a control.

@@ -21,7 +21,7 @@ A slider selects a value from a bounded range by moving a thumb along a track.
 ## Do not use it when
 
 | Instead of a slider                              | Use                                                                                             |
-| ------------------------------------------------ | ----------------------------------------------------------------------------------------------- | ---------- |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
 | The user already has an exact number in mind     | `recursica-skill-number-input`                                                                  |
 | The range is unbounded or open-ended             | `recursica-skill-number-input` — a track needs two ends to exist                                |
 | There are only a few discrete values             | `recursica-skill-segmented-control` or a radio group — see `recursica-skill-selection-controls` |
@@ -37,10 +37,10 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.slider`. **Do not pass
 
 **The third column is the React prop that sets the axis.** The axis name is the token inventory's; it is not a prop, and passing it as one is dropped silently by React. A blank cell means no single prop carries that axis — it is set by CSS state or by separate props, and the rules below say which.
 
-| Axis      | Options                       | React prop |
-| --------- | ----------------------------- | ---------- |
+| Axis      | Options                       | React prop   |
+| --------- | ----------------------------- | ------------ |
 | `layouts` | `stacked`, `side-by-side`     | `formLayout` |
-| `states`  | `error`, `disabled`, `active` |            |
+| `states`  | `error`, `disabled`, `active` |              |
 
 **`layouts` is the label placement axis, set by the `formLayout` prop.** `side-by-side` — label beside the control — is the house default; `stacked` is the fallback when the container is too narrow to fit both. The trigger is container width, not viewport.
 

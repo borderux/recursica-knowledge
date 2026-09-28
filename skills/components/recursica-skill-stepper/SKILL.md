@@ -21,7 +21,7 @@ A stepper carries the user through one multi-part process and shows where they a
 ## Do not use it when
 
 | Instead of a stepper                                       | Use                                                                                                    |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ---------- |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | The steps can be completed in any order                    | One page. No checklist component exists — if tasks get marked done, that is `recursica-skill-checkbox` |
 | A short form that fits on one page                         | One page, single column — `recursica-skill-forms`                                                      |
 | An answer only changes a field just below it               | Progressive disclosure on one page — `recursica-skill-forms`                                           |
@@ -41,7 +41,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.stepper`. **Do not pas
 
 | Axis          | Options                  | React prop |
 | ------------- | ------------------------ | ---------- |
-| `sizes` | `large`, `small`         | `size` |
+| `sizes`       | `large`, `small`         | `size`     |
 | `orientation` | `horizontal`, `vertical` |            |
 
 **A step may carry a second line.** `description-text` exists alongside `label-text`, so a step has a name and an optional short descriptor. It is not a paragraph slot.
