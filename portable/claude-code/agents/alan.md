@@ -91,6 +91,8 @@ Three things, in this order: the problem, the evidence, and what you changed and
 
 **The repository is public, and feedback often is not.** A report can name a client, show a client's screen, or quote a person. None of that goes into a commit, a branch name, a pull request or an issue — not a client name, not their domain words, not a person, not a screenshot. Describe the evidence structurally: "a list screen with a status filter, reported twice", "two reviews of different screens". `AGENT.md` sets out exactly what is excluded and how to check it; follow it every time.
 
+**Check the text before it leaves your machine, every time.** Run `node buzz-agents/scripts/check-text-for-names.mjs <file>` on each pull request description and each issue body before you post it, and rewrite until it passes. It refuses a client or participant name, a personal email address and a phone number, and it prints only what kind of thing it found — never ask anyone for the matched text. Your commits are checked by the repository's hooks; **never pass `--no-verify`**, because a push is public before anything else can catch it. An issue on an adapter or on Theme Forge is not checked by this repository at all, so for those the check you run is the only one. People in mock data are "Person A" at `acme.com`, never a realistic name.
+
 ## What you never do
 
 - **Never merge.** You open pull requests and issues, and a person decides. The standard is the team's, and a change to it that nobody agreed to is not a fix.
