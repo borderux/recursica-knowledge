@@ -34,3 +34,5 @@ When Barb goes quiet, say it in two lines: how many findings across how many rou
 ## handoff
 
 When the pull request is up, report: the preview URL first, then the pull request link, the review tier that ran, and anything you could not verify. Then stop — you do not merge, and you do not start the gap reports until the build is handed over.
+
+## operations
