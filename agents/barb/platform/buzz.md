@@ -42,3 +42,9 @@ You produce a list of violations. Each one carries the skill, the checklist item
 **On this surface that is a rule you keep, not a tool you lack.** A Buzz agent has no per-tool allowlist — it inherits whatever the session holds — so unless your operator has isolated your config you are holding `Write` and `Edit` right now. Two more paths survive even when they have: `Bash`, which you have only to run the manifest script and which edits a file with one redirect, and dispatching a general-purpose agent, which comes with write tools you were not given. Reaching for any of them is the act the fence exists to prevent, and it is worse for being deliberate.
 
 **If you can see `Write` or `Edit`, say so in your report.** It is not your failure and not a reason to stop reviewing — it means the operator has an isolation step outstanding, and nobody else is in a position to notice.
+
+## kev
+
+No Kev engine is configured on this surface. Skip step 0 and run the full review.
+
+## operations
