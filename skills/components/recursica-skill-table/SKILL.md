@@ -19,7 +19,7 @@ A table shows many copies of one object, so the reader can compare values down a
 
 ## Use it when
 
-- **The plurality (the number of them) is high, has no fixed end, or is growing.** This is the default for repeating records, with no exception.
+- **The plurality (how many of something there are) is high, has no fixed end, or is growing.** This is the default for repeating records, with no exception.
 - **The content is only data** — text, numbers, dates, currency, status.
 - **The reader compares values across records**, which a column makes possible and a set of cards does not.
 - **Sorting, filtering, or selecting rows is part of the work.**
@@ -97,8 +97,8 @@ A data table can only be used without sight if its structure is real. The failur
 
 - **It must be a real table, with real header cells**, each connected to its column. A cell's meaning is its column header; without that connection, the value is a number with no name.
 - **The table needs an accessible name** (the name a screen reader reads out for a control) — what these records are. A page with three tables and no names cannot be navigated.
-- **The sort state must be announced on the header**: which column is sorted, in which direction, and that the header is the control that changes it. The `sorted-text-style` is only the visual channel (way of carrying meaning).
-- **A row's selection checkbox needs a name that identifies its row** — "Select invoice 1043", not five identical "Select" controls. The header's select-all checkbox needs its own name, and its indeterminate state (the partly selected state, shown as a dash) must be made available.
+- **The sort state must be announced on the header**: which column is sorted, in which direction, and that the header is the control that changes it. The `sorted-text-style` is only the visual channel (a way of carrying meaning, such as color, shape, position, or text).
+- **A row's selection checkbox needs a name that identifies its row** — "Select invoice 1043", not five identical "Select" controls. The header's select-all checkbox needs its own name, and its indeterminate state (the partly selected state, shown as a dash, when some but not all items are selected) must be made available.
 - **`NA` must be actual text in the cell.** This is the accessibility reason for the rule, not just a visual one: an empty cell is announced as nothing.
 - **Any repeated row action must name its object**, or the row must supply that context in code.
 - **A fixed header must still be the table's header row**, not a separate visual element floating above a table with no header.

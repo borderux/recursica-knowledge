@@ -31,9 +31,9 @@ A toast reports what just happened, without interrupting the work.
 | The persistent save status required by field-level saving   | A persistent status on the page — `recursica-skill-forms`                          |
 | Progress while an action is in flight                       | The in-button loading state on submit, or `recursica-skill-loader`                 |
 
-An "affordance" is the visible control that shows the user an action is possible — here, the delete button.
+An "affordance" is a visible cue that tells the user they can act on something — here, the delete button.
 
-**A toast reports something that just happened.** That is the house test. `recursica-skill-feedback-messaging` splits the channels (the different ways of delivering a message) by tense: an event that is finished is a toast, and a condition that has not happened yet is a banner. Check the tense of the sentence before you choose.
+**A toast reports something that just happened.** That is the house test. `recursica-skill-feedback-messaging` splits the channels (the ways a message reaches the user — a toast, a banner, a modal, and so on) by tense: an event that is finished is a toast, and a condition that has not happened yet is a banner. Check the tense of the sentence before you choose.
 
 **A toast is the wrong place for anything that must not be missed.** It appears away from where the user is looking, and leaves on its own, so a critical alert that needs action right away is not a toast. **And there is no component in this system for one yet** — the banner the tense rule calls for is planned, but not in the token inventory. Do not force a toast into that job, do not build your own alert that stays on screen, and do not send the reader to a component that does not exist. Raise it — see the uncovered list.
 
@@ -75,7 +75,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.toast`. **Do not pass 
 
 **A toast with an action must not be the only way to reach that action** — see the keyboard section. An undo that disappears with the toast is an undo a keyboard user never had.
 
-**Never use a toast as the only record of a destructive action** (one that deletes or cannot be undone). Once it is gone, the user has no way back to it.
+**Never use a toast as the only record of a destructive action** (one that deletes something or cannot easily be undone). Once it is gone, the user has no way back to it.
 
 **The duration belongs to the underlying library, and is not changed.** Whatever Mantine, Material, or whichever library backs the component sets is the duration. Do not tune it, do not vary it by message, and do not make it longer so an action can be reached. Owned by `recursica-skill-feedback-messaging`.
 
@@ -93,7 +93,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.toast`. **Do not pass 
 
 ### Screen readers
 
-- **The toast must be announced when it appears, without moving focus.** Use a live region (a part of the page that screen readers announce when its content changes) that already exists in the DOM (the page structure in the browser) before the message is added. A region created at the same moment as the message is often not announced at all.
+- **The toast must be announced when it appears, without moving focus.** Use a live region (an area a screen reader announces automatically when its content changes) that already exists in the DOM (the page's structure in code) before the message is added. A region created at the same moment as the message is often not announced at all.
 - **An error toast is announced right away; a success or `default` toast waits its turn.** The urgent setting, `assertive`, interrupts, so it is kept for failures. Never let a confirmation cut into what the user is reading or typing, and never leave a failure waiting in a line. Owned by `recursica-skill-live-regions`.
 - **A toast always announces.** No toast appears silently. What the toast says is the announcement, so nothing else should repeat it.
 - **The style is not announced.** `success` and `error` differ only by color and icon, so the text must say which it is: "Saved" versus "Could not save".
@@ -155,7 +155,7 @@ Do not implement, override, or tune any of these — the component owns them for
 - [ ] Errors are announced right away (`assertive`); success and default wait their turn (`polite`). Every toast announces, and nothing repeats it.
 - [ ] The icon is silent, and the text states the result.
 - [ ] Stacked toasts share one live region with messages in order, and their announcements never overlap.
-- [ ] Any action has a real accessible name (the name a screen reader reads out) that includes what it acts on. Any close control has a real name.
+- [ ] Any action has a real accessible name (the name a screen reader reads out for a control) that includes what it acts on. Any close control has a real name.
 - [ ] No undo lives only inside a toast. The action also exists somewhere on the page that stays.
 - [ ] The duration, how long it stays, and the undo window were left to the library and not tuned.
 - [ ] The user can dismiss every toast, and duplicates are combined, not stacked.

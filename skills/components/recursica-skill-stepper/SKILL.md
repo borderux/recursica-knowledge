@@ -31,7 +31,7 @@ A stepper walks the user through one process that has several parts, and shows w
 | Progress of a single operation, with no known end          | `recursica-skill-loader`, or the submit button's in-flight state                                       |
 | Making a long form feel shorter without changing its shape | Nothing. Fix the form — see `recursica-skill-system-conventions`                                       |
 
-Progressive disclosure means showing only what is needed now, with the rest revealed on request.
+Progressive disclosure means showing only what is needed now, with the rest available on request.
 
 **The stepper exists because a form must never be spread across tabs.** `recursica-skill-navigation` states that ban, and names the stepper as the replacement. If someone reaches for tabs to hold form fields, this component is the answer.
 
@@ -48,7 +48,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.stepper`. **Do not pas
 
 **A step may have a second line.** `description-text` exists beside `label-text`, so a step has a name and an optional short description. It is not a place for a paragraph.
 
-**Finished steps and upcoming steps are told apart by the connector** (the line between them). `completed-connector-size` and `upcoming-connector-size` differ — which means progress depends on the thickness of a line and a color. **That is a single visual channel (a way of carrying meaning), and you must not rely on it alone**; see the accessibility section and `recursica-skill-system-conventions`.
+**Finished steps and upcoming steps are told apart by the connector** (the line between them). `completed-connector-size` and `upcoming-connector-size` differ — which means progress depends on the thickness of a line and a color. **That is a single visual channel (a way of carrying meaning, such as color, shape, position, or text), and you must not rely on it alone**; see the accessibility section and `recursica-skill-system-conventions`.
 
 **There is no state axis on the component.** "Done, Current, & Upcoming" behavior is documented outside the token inventory, but the kit defines no `states`. A step's status is data you supply, and you must express it in what assistive technology reads — it is not a variant you select.
 
@@ -58,7 +58,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.stepper`. **Do not pas
 
 ## Rules for using it
 
-**Every step must be a stage the user recognizes.** Cutting a form into random thirds adds clicks without making it any easier. If the steps do not match something in the user's mental model (their picture of how the task works), the form belongs on one page.
+**Every step must be a stage the user recognizes.** Cutting a form into random thirds adds clicks without making it any easier. If the steps do not match something in the user's mental model (a person's picture of how something works), the form belongs on one page.
 
 **Label each step with the name of the stage**, and use `description-text` only for a short fragment that clarifies it. `recursica-skill-forms` bans sentences in microcopy (the short text in an interface) — the shortest string that carries the information wins.
 

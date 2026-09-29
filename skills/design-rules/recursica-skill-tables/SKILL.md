@@ -24,7 +24,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **A set of repeating objects is a table by default.** Cards are the narrow exception, and they need all of the following: the set is **small and finite**, every item carries **the same kinds of information**, and each item contains a **graphic** — a chart, an image, a photograph.
 
-- **High plurality (many of them), no fixed end, or growing → table.** Always.
+- **High plurality (a large number of items of the same kind), no fixed end, or growing → table.** Always.
 - **Data that is only text and numbers → table**, however few the records. A table shows the same values in less space, and lets the reader compare down a column. `recursica-skill-card` allows an occasional exception here for looks, for a small, finite set — used on purpose and stated, never as the default.
 - **Small, finite, and graphic → cards.** See `recursica-skill-card`.
 
@@ -154,7 +154,7 @@ Decide in this order:
 
 **The text is literally `NA`, and it is the same in every column.** Different wording in each column — `Not recorded`, `No name`, `Not set`, `None` — is the mistake here. It reads as a value instead of as the absence of one, and it gives the same fact a different spelling in every column of the same table. **One string, everywhere.**
 
-**Neutral 500, not the component's disabled colour.** They are not the same value — a cell's `text-color-disabled` works out one step lighter — and this treatment is a stated rule, not a reuse of the disabled state. Take it from the neutral palette token (a named design value set by the design system), so it changes when the theme does.
+**Neutral 500, not the component's disabled colour.** They are not the same value — a cell's `text-color-disabled` works out one step lighter — and this treatment is a stated rule, not a reuse of the disabled state. Take it from the neutral palette token (a named design value, such as a color or a size, set by the design system), so it changes when the theme does.
 
 **The italics matter.** They are the second channel (a way of carrying meaning, such as color, shape, position, or text). `recursica-skill-system-conventions` forbids carrying meaning through colour alone, and a gray `NA` on its own does exactly that.
 

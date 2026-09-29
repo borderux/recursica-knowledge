@@ -60,7 +60,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.avatar`. **Do not pass
 
 **Decide once whether this avatar is a control.** A button that opens the user menu is a real button, with a real accessible name (the name a screen reader reads out for a control) and a tab stop (a place the Tab key lands). Everything else is decoration: no click handler, no tabindex, and no interactive role. There is nothing in between.
 
-**Keep the account menu out of primary navigation.** It is a tool used everywhere, not a destination — `recursica-skill-navigation` places it elsewhere in the application chrome (the frame around the content, such as the header).
+**Keep the account menu out of primary navigation.** It is a tool used everywhere, not a destination — `recursica-skill-navigation` places it elsewhere in the application chrome (the frame around the content).
 
 **Size follows how dense the surface is, not how important the person is.** Use `small` in a table row or a comment, and `large` on a profile header. Do not use size to rank people.
 

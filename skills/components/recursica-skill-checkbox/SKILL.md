@@ -76,7 +76,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.checkbox`, `checkbox-g
 
 **Select all is fine to include, and the group provides the indeterminate state.** Select all, then deselect one item, and the select-all control moves to indeterminate.
 
-**Treat the need for select all as a warning sign.** If ticking items one by one would be tiring — twenty checkboxes — the control is wrong. Fix the structure before adding the affordance (the visible cue that the user can act).
+**Treat the need for select all as a warning sign.** If ticking items one by one would be tiring — twenty checkboxes — the control is wrong. Fix the structure before adding the affordance (a visible cue that tells the user they can act on something).
 
 **Selecting table rows uses a checkbox in the leftmost cell, with a checkbox in the table header.** How the header checkbox works is fixed:
 
@@ -117,7 +117,7 @@ The component pairs each box with its item label, and provides the focus ring (t
 
 - **Space toggles a checkbox.** That is the expected key. Do not remap it, do not require Enter instead, and do not swallow it.
 - **The library owns how keys work inside the control.** Do not attach your own key listeners to the box, or rebuild the toggling — you will break behaviour that already works.
-- **Every checkbox in a group is its own tab stop** (a place the Tab key lands). This is the opposite of a radio group. Do not add roving focus (where the arrow keys move between options that share one tab stop) inside a checkbox group, and do not repurpose Home and End — they belong to the page.
+- **Every checkbox in a group is its own tab stop** (a place the Tab key lands). This is the opposite of a radio group. Do not add roving focus (where the arrow keys move between items that share one tab stop) inside a checkbox group, and do not repurpose Home and End — they belong to the page.
 - **Clicking or tapping the item label toggles its checkbox.** That comes free with a real connected label, and it gives the user a bigger target. Do not break it by showing the label as loose text.
 - **Do not move focus for the user.** When a checkbox reveals fields below, focus stays on the checkbox, and the user reaches the new fields with the next Tab. Pulling focus into the revealed content strands both keyboard and screen reader users.
 - **Nothing needed may appear only on hover.** A rule, a count, or a row action that appears only on hover cannot be reached by keyboard or touch users.

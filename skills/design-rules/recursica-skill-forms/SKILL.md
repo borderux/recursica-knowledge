@@ -67,7 +67,7 @@ This is not a matter of looks. Mixing the two placements in one form:
 
 ## Single page vs. multi-step
 
-Decide based on the user's mental model (their picture of how the task works), not on the number of fields alone. Use multiple steps when **any** of these is true:
+Decide based on the user's mental model (a person's picture of how something works), not on the number of fields alone. Use multiple steps when **any** of these is true:
 
 1. **Separate stages.** The task naturally breaks into steps that the user already thinks of as separate, and splitting it up makes it easier to take in.
 2. **Volume.** There are so many fields that the visual noise needs to be reduced.
@@ -75,7 +75,7 @@ Decide based on the user's mental model (their picture of how the task works), n
 
 **The opposite case: information that refers back and forth favors one long form.** When completing one section depends on checking or remembering another, a stepper (a component that walks the user through numbered steps) becomes actively worse than length. Moving forward and back to re-read costs more than scrolling does. Usability testing on a long credit-card application found that the single form did better than the stepper for exactly this reason: the user wanted to confirm that the whole thing was correct and complete at once. **The question is how much has to stay in view, not how many fields there are.** See `recursica-skill-screen-priority`.
 
-**Where disclosure ends and steps begin:** if an answer causes a _small, local_ change — a field or a section right below it — use progressive disclosure (showing only what is needed now, with the rest revealed on request) and stay on one page. If it causes a _clearly different later step_, use multiple steps. Do not reach for multiple steps to handle small conditional fields.
+**Where disclosure ends and steps begin:** if an answer causes a _small, local_ change — a field or a section right below it — use progressive disclosure (showing only what is needed now, with the rest available on request) and stay on one page. If it causes a _clearly different later step_, use multiple steps. Do not reach for multiple steps to handle small conditional fields.
 
 ## Grouping
 

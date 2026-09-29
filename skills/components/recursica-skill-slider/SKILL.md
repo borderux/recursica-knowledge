@@ -88,7 +88,7 @@ The component provides the focus ring (the outline that shows which element has 
 
 - **It must be announced as a slider, with its current value, its minimum, and its maximum.** A thumb on a track with no role and no limits cannot be used — the user cannot tell how far through the range they are.
 - **The unit must be announced with the value.** "Forty" is not an answer; "forty percent" is. If the unit is not part of the announced value, put it in the label.
-- **The value must be announced as it changes, but it must not flood the user** — one announcement for each value the user settles on, not one for every pixel of movement. Do not add a live region (an area a screen reader announces automatically when it changes) on top of the value the control already announces.
+- **The value must be announced as it changes, but it must not flood the user** — one announcement for each value the user settles on, not one for every pixel of movement. Do not add a live region (an area a screen reader announces automatically when its content changes) on top of the value the control already announces.
 - **The minimum and maximum labels must be connected to the control in code**, not left as floating text near the ends of the track. Labels that are not connected are invisible to a screen reader (software that reads the screen aloud) user who tabs straight to the thumb.
 - **The paired number input needs its own accessible name** (the name a screen reader reads out for a control), and it must be clear that it and the track are two views of one value — not two separate fields.
 - **Pass assistive text and error text through the component.** Text shown beside the slider is not connected to it.

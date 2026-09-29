@@ -11,7 +11,7 @@ metadata:
 
 These are the house rules for dashboards. They are opinions, and unusually strong ones: the team's position is that most dashboards in enterprise software are failures. Treat them as constraints.
 
-These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. Grids, gutters, breakpoints (the screen widths at which the layout changes), type styles, elevation (how raised a surface looks, usually shown with a shadow), and spacing all come from the system's layouts and tokens (named design values, such as a color or a spacing size, set by the design system), and you must not change them. Your decisions are whether a dashboard is the right answer at all, what goes on it, and what the user does next.
+These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. Grids, gutters, breakpoints (the screen widths at which the layout changes), type styles, elevation (how raised a surface looks), and spacing all come from the system's layouts and tokens (named design values, such as colors or sizes, set by the design system), and you must not change them. Your decisions are whether a dashboard is the right answer at all, what goes on it, and what the user does next.
 
 ## Governing principles
 
@@ -66,7 +66,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **Fewer data points is better.** A dashboard is measured by how clear and actionable its few insights are, not by how much it shows.
 
-**Never make the whole page out of cards.** Layouts made entirely of cards are chaotic, because a grid of equally weighted cards has no hierarchy — and hierarchy is exactly what a car's dashboard has and a wall of cards does not. Use the system's layout structures, type hierarchy, and white space to build a fixed layout, and place cards inside it. A card is for repeating peer objects (a set of repeating objects of the same kind) — see `recursica-skill-card` and the earned-container convention in `recursica-skill-system-conventions`.
+**Never make the whole page out of cards.** Layouts made entirely of cards are chaotic, because a grid of equally weighted cards has no hierarchy — and hierarchy is exactly what a car's dashboard has and a wall of cards does not. Use the system's layout structures, type hierarchy, and white space to build a fixed layout, and place cards inside it. A card is for repeating peer objects (objects of the same kind, such as rows in a list) — see `recursica-skill-card` and the earned-container convention in `recursica-skill-system-conventions`.
 
 **No competing visualizations on screen at the same time.**
 

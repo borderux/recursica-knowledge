@@ -67,7 +67,7 @@ Taken from `recursica_ui-kit.json`. Two specs, with one axis between them.
 
 **Dividers group items; they do not decorate.** Use a divider to separate different sets of related items. A divider between every item is noise, and a divider with nothing on one side of it is a mistake.
 
-**A destructive item states the consequence in its words.** There is no destructive item state, so the label is the only channel (way of carrying meaning), and confirmation is handled by `recursica-skill-modal`.
+**A destructive item states the consequence in its words.** There is no destructive item state, so the label is the only channel (a way of carrying meaning, such as color, shape, position, or text), and confirmation is handled by `recursica-skill-modal`.
 
 **Hide what the user can never do; disable what the user can unlock.** This is the permissions rule from `recursica-skill-navigation`. No permission means no item — not a disabled item, and not an item that fails when used.
 
@@ -98,7 +98,7 @@ A menu is a component about managing focus. The list itself is easy. The trigger
 - **Focus returns to the trigger when the menu closes** — on Escape, on activating an item, or on clicking away. This is the step most often skipped, and skipping it drops the user at the top of the document.
 - **The arrow keys move between items. Escape closes. Enter and Space activate. Home and End jump to the first and last item.** Connect all of them.
 - **The menu is a single tab-stop group, not a series of tab stops.** Tab does not step from item to item; the arrow keys do that. Tab leaves the menu.
-- **A menu that scrolls must scroll to follow keyboard focus.** Moving with the arrows to an item below the fold (the part you only see after scrolling) has to bring it into view.
+- **A menu that scrolls must scroll to follow keyboard focus.** Moving with the arrows to an item below the fold (the part of the page you only see after scrolling) has to bring it into view.
 - **Do not move focus anywhere except back to the trigger.** Not to the top of the page, and not into the content the action affected.
 - **Nothing needed may appear only on hover.** A row-action menu whose trigger only appears when the row is hovered cannot be reached by keyboard or by touch. If the action exists, its trigger is visible.
 - **Never hide the focus ring** (the outline that shows which element has keyboard focus), on the trigger or on the focused item, and never let the hover style double as the focus style.

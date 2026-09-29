@@ -9,7 +9,7 @@ metadata:
 
 # Transfer list
 
-A transfer list is two lists side by side, with controls that move items between them. It is also called a dual listbox (a listbox is a list the user picks items from).
+A transfer list is two lists side by side, with controls that move items between them. It is also called a dual listbox, because each side is a listbox (a list the user picks one or more options from).
 
 > **Not implemented yet.** Both adapters ship `TransferList` as an empty placeholder. It shows
 > placeholder content and applies none of the 31 `transfer-list` variables the kit exports. Everything below
@@ -52,7 +52,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.transfer-list`. **Do n
 
 **`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Leave it out, and you get the fallback in a container of any width — the rule turned upside down. `layouts` is the name of the token axis, not a prop: `layouts="side-by-side"` is quietly ignored by React and leaves the control stacked, with no error. Pass `formLayout="side-by-side"` explicitly.
 
-**This field's `layouts` value is not a separate choice.** `recursica-skill-forms` requires **one label placement per form — side-by-side or stacked, never both at the same breakpoint** (a screen width at which the layout changes). The container-width test is applied once, to the form, and its answer governs every field in it, including short fields that would have fitted. Match every other field in the same form. A whole form may switch placement between breakpoints, but a section never gets its own. See `recursica-skill-forms`.
+**This field's `layouts` value is not a separate choice.** `recursica-skill-forms` requires **one label placement per form — side-by-side or stacked, never both at the same breakpoint** (the screen width at which the layout changes). The container-width test is applied once, to the form, and its answer governs every field in it, including short fields that would have fitted. Match every other field in the same form. A whole form may switch placement between breakpoints, but a section never gets its own. See `recursica-skill-forms`.
 
 **The component owns a header, a filter, and two item lists** — `header-style`, `title-filter-gap`, `filter-items-gap`, and the `gap` between the lists. Do not build your own search field or heading above it.
 
@@ -88,8 +88,8 @@ Two lists and a set of arrow buttons is the pattern most often shipped so that i
 
 ### Screen readers
 
-- **Each list has its own accessible name** (the name a screen reader reads out for it). Without one, a user hears a list of items with no idea which side they are on, and the whole control turns into noise.
-- **The selected state must be set in code, not shown by color.** To assistive technology (software such as a screen reader), an item with only a tinted background is not selected. Required by `recursica-skill-system-conventions`.
+- **Each list has its own accessible name** (the name a screen reader reads out for a control). Without one, a user hears a list of items with no idea which side they are on, and the whole control turns into noise.
+- **The selected state must be set in code, not shown by color.** To assistive technology (tools such as screen readers that help people with disabilities use a computer), an item with only a tinted background is not selected. Required by `recursica-skill-system-conventions`.
 - **Each move control's name says what moves where** — "Move selected to included", "Remove selected from included". A name like "Right arrow" or ">" is useless, and two arrows with no labels cannot be told apart.
 - **After a move, the result must be announced**: what moved, and how many items are now in each list. The user cannot see two columns change at once.
 - **The filter must announce how many results it shows** when it changes the list — "3 of 120 shown". A filter that says nothing sounds like a list that emptied for no reason.

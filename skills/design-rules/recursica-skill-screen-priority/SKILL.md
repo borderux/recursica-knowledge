@@ -59,7 +59,7 @@ These rules assume **complex enterprise web applications**, where people are doi
 
 **A stakeholder may overrule you anyway**, even where it harms the workflow. That is a real outcome, not a failure of the rule — good user-centred design still means arguing from the user's point of view.
 
-**Business units rarely have competing requirements — they have different ones.** Treat them as fitting together, and resolve them by understanding the workflow and matching the user's mental model (their picture of how something works), rather than by judging between departments.
+**Business units rarely have competing requirements — they have different ones.** Treat them as fitting together, and resolve them by understanding the workflow and matching the user's mental model (a person's picture of how something works), rather than by judging between departments.
 
 **A legal, compliance, or hard technical limit overrides the user's mental model.** Some things cannot be worked around, and the mental model has to change to fit them. This is the one thing that outranks the user.
 

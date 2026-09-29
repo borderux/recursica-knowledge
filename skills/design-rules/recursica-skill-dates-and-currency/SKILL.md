@@ -21,9 +21,9 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 ## Whose locale wins
 
-A locale is the set of language and regional settings — such as date and number formats — that a person uses.
+A locale is the language and regional settings a person uses, such as date and number formats.
 
-**Always the user's, never the tenant's** (the tenant is the organization whose account the application runs under). Show time in the user's own time zone, and use a format the user will understand. There is one exception, below.
+**Always the user's, never the tenant's** (the organization whose account the application runs under). Show time in the user's own time zone, and use a format the user will understand. There is one exception, below.
 
 ## Date format
 

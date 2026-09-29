@@ -184,7 +184,7 @@ misses got through a verification step that did run.
 **And not a line count, which this file used to prescribe.** `%(trailers)` emits a trailing
 blank line on some commits and not others, and any body line shaped like `Key: value` in the
 final paragraph is parsed as a genuine trailer — `%(trailers:only=true)` does not filter it,
-because it *is* valid trailer syntax. Measured across three commits in this repo, the same
+because it _is_ valid trailer syntax. Measured across three commits in this repo, the same
 `wc -l` returned 3, 4 and 5 while all three carried exactly the right trailers. So the
 line count was an unreliable instrument in both directions the whole time it was the
 instruction, and the note below about a check that read back two and stopped is a case of the
@@ -192,7 +192,7 @@ same instrument.
 
 **Two counts rather than one**, because a single `grep -cE '^(Co-authored-by|Signed-off-by):'`
 prints 3 for three `Co-authored-by` lines and no sign-off. The failure this verifies against
-is a wrong *composition*, so a recipe that cannot see composition verifies nothing.
+is a wrong _composition_, so a recipe that cannot see composition verifies nothing.
 
 **Keep an example trailer out of a commit message's final paragraph.** Git decides trailers
 from the last paragraph, so a bare `Co-authored-by: EXAMPLE <x@x>` line there is a genuine
@@ -211,18 +211,18 @@ model's**, so passing it is evidence about two trailers out of three.
 **A guard believed to be total is worse than one known to be partial.** This table was
 produced by running the installed guard against each command, not by reading the code:
 
-| Command | | |
-|---|---|---|
-| `git commit` with no trailers | **deny** | including `-F <file>`, `-m`, and a piped `-F -` |
-| `git commit --amend` | **deny** | when the resulting message lacks them — HEAD's own message counts |
-| `git -c commit.gpgsign=false commit` | **deny** | global options are walked, not string-matched |
-| `git revert` | **deny** | its generated message has none, and it takes no `--trailer` |
-| `git rebase --exec 'git commit …'` | **deny** | the exec'd command is inspected, one level deep |
-| `git commit --dry-run` | allow | writes nothing |
-| `git commit --fixup` / `--squash` | allow | git writes the message; the rebase consumes it |
-| `git revert --no-commit`, `--continue`/`--abort`/`--quit` | allow | stages, or finishes what was already gated |
-| `git cherry-pick`, `git am` | allow | they carry the source message, so its trailers ride along |
-| `git merge` | allow | a merge commit is not authored work — the forge's own squash commits carry no sign-off either |
+| Command                                                   |          |                                                                                               |
+| --------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------- |
+| `git commit` with no trailers                             | **deny** | including `-F <file>`, `-m`, and a piped `-F -`                                               |
+| `git commit --amend`                                      | **deny** | when the resulting message lacks them — HEAD's own message counts                             |
+| `git -c commit.gpgsign=false commit`                      | **deny** | global options are walked, not string-matched                                                 |
+| `git revert`                                              | **deny** | its generated message has none, and it takes no `--trailer`                                   |
+| `git rebase --exec 'git commit …'`                        | **deny** | the exec'd command is inspected, one level deep                                               |
+| `git commit --dry-run`                                    | allow    | writes nothing                                                                                |
+| `git commit --fixup` / `--squash`                         | allow    | git writes the message; the rebase consumes it                                                |
+| `git revert --no-commit`, `--continue`/`--abort`/`--quit` | allow    | stages, or finishes what was already gated                                                    |
+| `git cherry-pick`, `git am`                               | allow    | they carry the source message, so its trailers ride along                                     |
+| `git merge`                                               | allow    | a merge commit is not authored work — the forge's own squash commits carry no sign-off either |
 
 Two consequences worth stating plainly:
 
@@ -231,7 +231,7 @@ Two consequences worth stating plainly:
   below — but it means the guard is not a guarantee about the repository, only about what
   agents propose.
 - **`git filter-branch`, `git fast-import`, and a shell function or script wrapping `git
-  commit` all pass through.** Nothing has needed them here; if one starts appearing, the
+commit` all pass through.** Nothing has needed them here; if one starts appearing, the
   boundary moves.
 
 Three things about the guard are deliberate:
@@ -272,7 +272,7 @@ Three things about it are deliberate:
   it. A guard that blocks its own cleanup, or the message describing it, gets switched off.
 - **Quoted data is never commands.** A heredoc body, a `--content` string, a `-c` argument:
   these are text the command carries, not work it does. Both guards in this nest have now
-  been caught by the same shape — and the specific victim is the report *about* a guard,
+  been caught by the same shape — and the specific victim is the report _about_ a guard,
   which quotes the commands it denies. Every finding in this thread was written as
   `cat > report.md <<'EOF'` with a table of denied commands, so segmenting the body as a
   command list denied the message saying the guard was broken. Strip heredoc bodies and
@@ -398,7 +398,7 @@ shipping an artifact that quietly drops a boundary the platform cannot express �
 built for opencode, because opencode has no per-tool allowlist to keep her subagents apart.
 
 **Subagents take `targets:` too**, and it is stripped from the artifact rather than shipped in it —
-a subagent's front matter *is* the artifact, so a build instruction has no business in the file a
+a subagent's front matter _is_ the artifact, so a build instruction has no business in the file a
 runtime reads. Claire's subagents build to the nest template the deploy renders per client; Barb's
 do not, because a design reviewer touches no client data and writing hers into the per-client
 deploy would hand every client two agents that have nothing to do with them.
@@ -435,7 +435,7 @@ different punctuation, so the script strips the punctuation and compares — whi
 → `recursica-skill-textarea` (no hyphen; a kebab-case guess yields a path that does not exist),
 `Radio` → `radio-button`, and both `HoverCard` and `Popover` → `hover-card-popover`, with no alias
 entry for any of them. Do not add one: a hand-written alias list is a second source of truth that
-goes stale silently when a skill is renamed. What *is* written down is `ROUTES` — the eleven
+goes stale silently when a skill is renamed. What _is_ written down is `ROUTES` — the eleven
 components with no skill of their own, where the question "which design rules govern this" is a
 judgment no string comparison can make. A name matching more than one skill with no route is an
 error rather than a guess. Run `skills:manifest:check` after an adapter upgrade.
@@ -463,6 +463,7 @@ If you (the AI assistant) are tasked with creating, editing, or registering cust
   - [skills/psychology/](skills/psychology/) — the cognitive-science basis behind those rules, with citations. Load when a decision turns on how much to put in front of a user, or when a rule needs justifying.
 - **Frontmatter**: where a skill has a `package.json`, that file is the source of truth for name, version, description, license, and author, and [sync-skill-versions.js](scripts/sync-skill-versions.js) copies them into `SKILL.md`. Skills without a `package.json` keep those fields in the `SKILL.md` frontmatter directly. The `name` must match the skill's directory name, and `description` must be 1024 characters or fewer.
 - **Frontmatter must parse as YAML.** An unquoted `description` containing a colon followed by a space breaks the document and the skill fails to install. Use an em dash instead of a colon, or quote the whole value.
+- **Define a term in the skill that uses it, in the glossary's words.** Put the definition in brackets after the term's first use in prose, and if the term is in [`skills/meta/GLOSSARY.md`](skills/meta/GLOSSARY.md), copy it exactly — `npm run skills:glossary:check` and `npm test` fail when one differs. The glossary is the source for those definitions, not a skill: nothing serves it to an agent building a screen, so never replace an in-place definition with a link to it.
 
 ### The shape of a component skill
 

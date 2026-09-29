@@ -47,6 +47,7 @@ When writing the body of your `SKILL.md` file:
 - **Define output formats**: Use explicit Markdown structure templates to guide output formats.
 - **Explain the "why"**: Explain the reasoning behind your instructions so the AI understands why a specific pattern is important.
 - **Add examples**: Include input/output examples of how the skill operates.
+- **Define terms where you use them, with the glossary's words**: The first time a design or accessibility term appears in a skill's prose, put its definition in brackets right after it — "a tab stop (a place the Tab key lands)". If the term is in [`skills/meta/GLOSSARY.md`](../skills/meta/GLOSSARY.md), copy that definition word for word. `npm run skills:glossary:check` fails on any that differ, and so does `npm test`. Do not link to the glossary instead: each skill is served on its own, so a definition one link away is one the reader never sees.
 
 ---
 

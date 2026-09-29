@@ -158,7 +158,7 @@ Plurality means how many of something there are. A peer is one of a set of repea
 
 **A design must not depend on how any two layers happen to differ in the current theme.** Two neighboring levels may share a surface color, or differ in their border rather than their fill — and that is the theme author's decision. If a separation matters, it has to survive a change of theme.
 
-**The theme control is application chrome** (the frame around the content, such as the header and menus), not page content — `recursica-skill-screen-scaffolding`.
+**The theme control is application chrome** (the frame around the content), not page content — `recursica-skill-screen-scaffolding`.
 
 ## Not your decision
 

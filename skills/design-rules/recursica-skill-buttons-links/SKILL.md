@@ -152,7 +152,7 @@ A destructive action is one that deletes something or cannot easily be undone.
 
 **Label the toggle with the positive state it reaches, not the negative action.** "Follow" becomes "Following" or "Followed" after the click — not "Unfollow."
 
-Put plainly: labeling the button "Unfollow" puts a negative action in front of the user and invites them to take it. Naming the state they reached instead reinforces the choice they made. This hides the way to un-toggle behind a second click. That is intentional, and it is admitted to be **slightly a dark pattern** (a design that nudges users against their own interest). Apply it as a deliberate house preference, not as a neutral best practice.
+Put plainly: labeling the button "Unfollow" puts a negative action in front of the user and invites them to take it. Naming the state they reached instead reinforces the choice they made. This hides the way to un-toggle behind a second click. That is intentional, and it is admitted to be **slightly a dark pattern** (a design that pushes users to act against their own interest). Apply it as a deliberate house preference, not as a neutral best practice.
 
 ## Toolbars
 

@@ -73,9 +73,9 @@ This component only works if the field it belongs to knows about it. Text shown 
 - **Pass the help and error text through the field component**, never as a separate element you place beside or below it. Only the field can connect them to the input.
 - **The help text is announced as part of reaching the field.** Write it to be heard at that moment, not as a caption read afterward.
 - **When an error appears, it must be announced** — an error that is only visual is a silent failure. The field being marked invalid and the message being connected to it are both required.
-- **The error message must make sense on its own**, because it has replaced the help text. Restating the rule is not repetition; it is the only channel (way of carrying meaning) left.
+- **The error message must make sense on its own**, because it has replaced the help text. Restating the rule is not repetition; it is the only channel (a way of carrying meaning, such as color, shape, position, or text) left.
 - **The component's icon is decorative and must be silent.** It is the second visual signal; the words carry the meaning.
-- **Do not announce the same text twice.** If the message is connected to the field, do not also put it in a live region (an area a screen reader announces automatically when it changes) that repeats it.
+- **Do not announce the same text twice.** If the message is connected to the field, do not also put it in a live region (an area a screen reader announces automatically when its content changes) that repeats it.
 - **Do not use it to announce anything the user did not do.** Unprompted messages under a field are confusing when they are read in order.
 
 ### Keyboard and non-mouse navigation

@@ -22,7 +22,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 1. **Check whether the data needs a chart.** The next section often answers this: a number or a table is frequently better than a chart. Settle this first, because it may make the library question go away entirely.
 2. **Check the project for a declared charting library.** Look in the dependency list and in the project's own configuration. If one is there, use it. That decision has already been made, and adding a second charting library is not yours to do.
 3. **If none is declared, stop and prompt the user to add one.** Do not go ahead, and do not build around the gap. Present open-source options that suit this application's architecture, along with their tradeoffs, and let the user choose. See `recursica-skill-design-router` on asking instead of guessing.
-4. **Never build a chart by hand out of basic layout components.** In a build test, a bar chart was made from `Grid`, `Flex`, `Stack`, and `Text`, using badges as the bars. It worked, and it is not allowed. A badge is not a bar, and the styling escape hatch is for a missing prop or token (a named design value, such as a color or a spacing size, set by the design system) — never for a missing component.
+4. **Never build a chart by hand out of basic layout components.** In a build test, a bar chart was made from `Grid`, `Flex`, `Stack`, and `Text`, using badges as the bars. It worked, and it is not allowed. A badge is not a bar, and the styling escape hatch is for a missing prop or token (a named design value, such as a color or a size, set by the design system) — never for a missing component.
 
 ### What makes a charting library fit
 

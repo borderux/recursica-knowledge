@@ -11,7 +11,7 @@ metadata:
 
 These are the house rules for type, and for the markup underneath it. They are opinions, not neutral best practices — treat them as constraints.
 
-These rules assume **complex enterprise web applications, designed for desktop first**, built on a design system that delivers typography as tokens (named design values, such as a font size or a line height, set by the design system). Which element carries which meaning is your decision. What that element looks like is not.
+These rules assume **complex enterprise web applications, designed for desktop first**, built on a design system that delivers typography as tokens (named design values, such as colors or sizes, set by the design system). Which element carries which meaning is your decision. What that element looks like is not.
 
 ## The three governing principles
 

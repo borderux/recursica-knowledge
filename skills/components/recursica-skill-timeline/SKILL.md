@@ -31,7 +31,7 @@ A timeline lists events that already happened, in order, each with a timestamp.
 | The dates are unknown or approximate                              | A grouped list, so the ordering claim is not made         |
 | Separating repeating peer objects visually                        | `recursica-skill-card` if it earns one, otherwise a table |
 
-"High plurality" means many items of the same kind. A "peer" is an item of the same kind and rank as the items around it.
+"High plurality" means a large number of items of the same kind. A "peer" is an object of the same kind as the ones around it, such as a row in a list.
 
 **A very long history is not a longer timeline.** Group it — by month, by quarter — or split it into pages with `recursica-skill-pagination`. Showing a thousand events at once is the structural failure `recursica-skill-system-conventions` warns about.
 
@@ -44,7 +44,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.timeline` and `ui-kit.
 | `timeline`        | `selection-states` | `active`, `inactive`                            |
 | `timeline-bullet` | `types`            | `default`, `icon`, `icon-alternative`, `avatar` |
 
-**An item has three parts: a title, a description, and a timestamp.** Each has its own type token (`title-text`, `description-text`, `timestamp-text`). A token is a named design value, such as a color or a text style. **The timestamp is part of the component**, which means `recursica-skill-dates-and-currency` governs how it reads — that formatting is not optional.
+**An item has three parts: a title, a description, and a timestamp.** Each has its own type token (`title-text`, `description-text`, `timestamp-text`). A token is a named design value, such as a color or a size, set by the design system. **The timestamp is part of the component**, which means `recursica-skill-dates-and-currency` governs how it reads — that formatting is not optional.
 
 **`active` and `inactive` are selection states, not statuses.** A timeline item has no completed, current, upcoming, or error state. Do not reuse `active` to mean "done".
 
@@ -70,7 +70,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.timeline` and `ui-kit.
 
 **The title names the event; the description is the body.** Do not add the timestamp to the title — it has its own slot and its own type token.
 
-**The bullet is decoration.** An avatar or an icon bullet may help show who or what an entry is about, but the title and description must say it. `recursica-skill-system-conventions` forbids carrying meaning in one channel (one way of showing something, such as color, shape, or text), and a bullet is the weakest channel in the component. For an avatar bullet's own requirements, see `recursica-skill-avatar`.
+**The bullet is decoration.** An avatar or an icon bullet may help show who or what an entry is about, but the title and description must say it. `recursica-skill-system-conventions` forbids carrying meaning in one channel (a way of carrying meaning, such as color, shape, position, or text), and a bullet is the weakest channel in the component. For an avatar bullet's own requirements, see `recursica-skill-avatar`.
 
 **Use one bullet type throughout a timeline**, or vary it only where the text also states what the difference means. A mix of icons the reader has to decode is a legend with no key.
 
@@ -82,7 +82,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.timeline` and `ui-kit.
 
 ## Accessibility
 
-A timeline is a list of events, and almost everything that makes it readable is visual: a vertical line that suggests sequence, a bullet that suggests a type, a color that suggests selection, and a relative timestamp that hides the real date. **All four have to be replaced with something in the code** that assistive technology (software such as a screen reader, which reads the screen aloud) can read.
+A timeline is a list of events, and almost everything that makes it readable is visual: a vertical line that suggests sequence, a bullet that suggests a type, a color that suggests selection, and a relative timestamp that hides the real date. **All four have to be replaced with something in the code** that assistive technology (tools such as screen readers that help people with disabilities use a computer) can read.
 
 ### Screen readers
 
@@ -98,7 +98,7 @@ A timeline is a list of events, and almost everything that makes it readable is 
 ### Keyboard and non-mouse navigation
 
 - **An item that cannot be used is not a tab stop** (a place the Tab key lands). No `tabindex`, and no click handler on an event that just displays.
-- **If items can be selected, each is a real control** with an accessible name (the name a screen reader reads out for it) and a selected state, in the tab order, in visual order.
+- **If items can be selected, each is a real control** with an accessible name (the name a screen reader reads out for a control) and a selected state, in the tab order, in visual order.
 - **If an item contains a link or a button, the item itself must not also be clickable.** Overlapping targets leave a keyboard user unsure what Enter will do — the same reasoning `recursica-skill-card` and `recursica-skill-tables` apply to clickable cards and rows.
 - **The absolute date must not appear only in a tooltip on hover.** This is the most common failure here: a relative time with the real timestamp shown on hover cannot be reached by keyboard or by touch.
 - **Nothing else the user needs may appear only on hover** either — not an entry's detail, and not its actions.

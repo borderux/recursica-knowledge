@@ -9,7 +9,7 @@ metadata:
 
 # Live regions
 
-These are the house rules for telling assistive technology (tools such as screen readers that help people with disabilities use a computer) that something on the page has changed. A live region is an area that a screen reader announces automatically when its content changes. These rules are opinions, not neutral best practices — treat them as constraints.
+These are the house rules for telling assistive technology (tools such as screen readers that help people with disabilities use a computer) that something on the page has changed. A live region is an area a screen reader announces automatically when its content changes. These rules are opinions, not neutral best practices — treat them as constraints.
 
 These rules assume **complex enterprise web applications**, built on a component library that handles its own accessibility. What is left for you is the announcements that fall between components, and giving the components what they need to announce correctly.
 

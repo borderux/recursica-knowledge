@@ -65,7 +65,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.time-picker`. **Do not
 
 **Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones like this one that would have fitted side by side. A whole form may switch placement between breakpoints (the screen widths at which the layout changes), but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
-**Whether time is 12-hour or 24-hour is the user's preference**, set by their locale (their language and regional settings) or by an explicit setting. It is not a design decision, and it does not change from screen to screen.
+**Whether time is 12-hour or 24-hour is the user's preference**, set by their locale (the language and regional settings a person uses) or by an explicit setting. It is not a design decision, and it does not change from screen to screen.
 
 **Use the user's locale and the user's time zone, never the tenant's** (the organization whose account the application runs under).
 

@@ -14,7 +14,7 @@ A segmented control is a horizontal radio group: exactly one of a few options, a
 ## Use it when
 
 - **The layout calls for a horizontal single-select.** This is how that is done here — radio buttons are never turned sideways into a row.
-- **A toggle is needed outside a form.** A switch belongs only in a form, so any two-state control in application chrome (the frame around the content, such as the header), a filter bar, or a toolbar is a segmented control. In chrome, it shows **icons rather than text labels** — a light/dark theme control is the standard example. See `recursica-skill-screen-scaffolding` for where chrome sits.
+- **A toggle is needed outside a form.** A switch belongs only in a form, so any two-state control in application chrome (the frame around the content), a filter bar, or a toolbar is a segmented control. In chrome, it shows **icons rather than text labels** — a light/dark theme control is the standard example. See `recursica-skill-screen-scaffolding` for where chrome sits.
 - **The set is small: 2 to 5 options**, with short labels.
 - **The choice switches a view or a mode** — list or grid, daily or weekly — where the options are closely tied to what is on screen.
 - **Filtering in place** that would be too much for a dropdown or a modal.

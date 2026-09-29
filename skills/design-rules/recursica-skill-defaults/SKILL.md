@@ -33,7 +33,7 @@ These rules assume **complex enterprise web applications**, where the same peopl
 
 **The reason is reading direction, and that is the whole reason.** In a culture that reads left to right, people start at the left, so the leftmost tab is where the eye already is.
 
-**The one limit is locale** (the set of language and regional settings a person uses). In a locale that reads right to left, the first tab in that reading order is the default instead. Nothing else changes this — not importance, not how often a tab is used, and not which tab a stakeholder considers the highlight.
+**The one limit is locale** (the language and regional settings a person uses). In a locale that reads right to left, the first tab in that reading order is the default instead. Nothing else changes this — not importance, not how often a tab is used, and not which tab a stakeholder considers the highlight.
 
 **This is separate from restoring a tab.** Which tab opens _first_ is this rule. Returning a user to the tab they were on is a result of routing, not remembered state — see `recursica-skill-navigation`.
 

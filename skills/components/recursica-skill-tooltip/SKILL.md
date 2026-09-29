@@ -30,7 +30,7 @@ A tooltip is a short text label for a control that has no visible one.
 | The user must acknowledge or decide something         | `recursica-skill-modal`                                                |
 | The explanation runs to a paragraph                   | The page, or a panel — `recursica-skill-panel`                         |
 
-"Assistive technology" is software, such as a screen reader, that helps people with disabilities use the screen. An "accessible name" is the name a screen reader reads out for a control.
+"Assistive technology" means tools such as screen readers that help people with disabilities use a computer. An "accessible name" is the name a screen reader reads out for a control.
 
 **A tooltip is, by definition, an extra.** Nothing inside it may be the only copy of a piece of information, because a touch device has no hover, and the user may never see it at all.
 
@@ -38,7 +38,7 @@ A tooltip is a short text label for a control that has no visible one.
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.tooltip`. **The tooltip has no variant axes at all** — no placement axis, no size axis, no content-type axis. Every listed item is a fixed property.
 
-**What the component provides:** a text area and a **beak** — the small pointer that connects the tooltip to its trigger. `beak-size` and `beak-inset` are set by tokens (named design values).
+**What the component provides:** a text area and a **beak** — the small pointer that connects the tooltip to its trigger. `beak-size` and `beak-inset` are set by tokens (named design values, such as colors or sizes, set by the design system).
 
 **You cannot set placement.** There is no top, left, right, or bottom option, and no option for aligning the beak. Both are documented outside the token inventory, but the kit defines neither — see Uncovered. Do not pass a position prop, and do not position the beak by hand.
 
@@ -80,10 +80,10 @@ A tooltip is the component most often used to cover up a missing accessible name
 - **Connect the tooltip to its control**, so it is announced as that control's description. A separate element placed next to the control is announced as unrelated text, or not at all.
 - **A tooltip never stands in for the accessible name of a control with no label.** The control needs its own name. An icon-only button gets both a name and a tooltip. If only one of the two exists, it must be the name.
 - **The name and the tooltip should say the same thing.** A user who speaks the tooltip text must be able to activate the control by voice.
-- **Never put meaning in a tooltip that exists nowhere else.** A tooltip is a single channel (one way of showing something), and `recursica-skill-system-conventions` forbids that for any meaning the user must receive.
+- **Never put meaning in a tooltip that exists nowhere else.** A tooltip is a single channel (a way of carrying meaning, such as color, shape, position, or text), and `recursica-skill-system-conventions` forbids that for any meaning the user must receive.
 - **Nothing inside a tooltip is announced as something you can use**, because nothing inside it can be used.
 - **Text that is cut off must be available in full in the code**, not only in the tooltip. A screen reader user does not see the text being cut off, and must not hear a cut-off value either.
-- **The tooltip must not be announced as a live region** (a part of the page that screen readers announce when it changes). It is a description, read when its control is reached — not an alert that interrupts.
+- **The tooltip must not be announced as a live region** (an area a screen reader announces automatically when its content changes). It is a description, read when its control is reached — not an alert that interrupts.
 
 ### Keyboard and non-mouse navigation
 

@@ -103,7 +103,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 ## Not your decision
 
-- **Sentence case versus title case.** Sentence case capitalizes only the first word; title case capitalizes every major word. This is set by the typography token (a named design value set by the design system), decided by the brand, and **must not be changed.** Whether a heading is in title case or sentence case is decided in advance by the type style it uses — see `recursica-skill-typography-semantics`.
+- **Sentence case versus title case.** Sentence case capitalizes only the first word; title case capitalizes every major word. This is set by the typography token (a named design value, such as a color or a size, set by the design system), decided by the brand, and **must not be changed.** Whether a heading is in title case or sentence case is decided in advance by the type style it uses — see `recursica-skill-typography-semantics`.
 - **Any other type styling** — size, weight, letter spacing. Tokens own all of it.
 - **The AP style guide** (the Associated Press rules for writing style) applies to copy in general, and is recorded in `recursica-skill-typography-semantics`.
 

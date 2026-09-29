@@ -50,7 +50,7 @@ Do not treat horizontal versus vertical as a matter of taste when growth is expe
 
 ## What does not belong in primary navigation
 
-**Keep search, notifications, and the user or account menu out of primary navigation.** They are tools used everywhere, not destinations in the information architecture. Put them elsewhere in the application chrome (the frame around the content, such as the header). Mixing them into the primary navigation raises the number of items, and blurs what the navigation is a map of.
+**Keep search, notifications, and the user or account menu out of primary navigation.** They are tools used everywhere, not destinations in the information architecture. Put them elsewhere in the application chrome (the frame around the content). Mixing them into the primary navigation raises the number of items, and blurs what the navigation is a map of.
 
 ## Number of navigation items
 
@@ -100,7 +100,7 @@ Location is shown by three things, and you need more than the first one:
 
 ## Hiding navigation
 
-**Hiding navigation entirely is acceptable when it is used rarely and the screen space is needed** — behind a hamburger menu (a button with three horizontal lines) or something similar. This is not a compromise. For navigation the user rarely touches, it is correct.
+**Hiding navigation entirely is acceptable when it is used rarely and the screen space is needed** — behind a hamburger menu (a button with three horizontal lines that opens a menu) or something similar. This is not a compromise. For navigation the user rarely touches, it is correct.
 
 **If the user moves back and forth between sections, keep the navigation visible at all times.** How often it is used is what decides this, not the size of the screen.
 

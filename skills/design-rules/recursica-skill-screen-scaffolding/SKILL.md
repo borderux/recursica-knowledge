@@ -85,7 +85,7 @@ The filter controls themselves are owned by `recursica-skill-filters`.
 
 ## Dividing a page into regions
 
-**Use space first, and usually only space.** Gutter tokens and vertical gutter tokens (named spacing values set by the design system) create both the connection between things that belong together and the separation between things that do not.
+**Use space first, and usually only space.** Gutter tokens and vertical gutter tokens (named design values, such as colors or sizes, set by the design system) create both the connection between things that belong together and the separation between things that do not.
 
 **A heading with plenty of space above it is the main divider.** The space above a heading is what makes it own what follows.
 
@@ -148,7 +148,7 @@ The filter controls themselves are owned by `recursica-skill-filters`.
 | **A layer**      | A region that needs its own surface but is not one of a set of peers   | `recursica-skill-layers`                   |
 | **A card**       | A small, finite set of repeating peer objects, each carrying a graphic | `recursica-skill-card`, and its five tests |
 
-A peer is one of a set of repeating objects of the same kind, such as rows in a list.
+A peer is an object of the same kind as the ones around it, such as a row in a list.
 
 **A layer is the middle option, and it is the one most often missed.** An agent that knows only "card or nothing" will box everything, or box nothing. A region that deserves separation but has no peers — a chart and its labels, a group of summary figures — gets a layer.
 

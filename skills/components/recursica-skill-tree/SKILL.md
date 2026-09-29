@@ -29,7 +29,7 @@ A tree shows data arranged as parents and children, and lets the user open only 
 | The hierarchy is only two levels deep         | A grouped list, or navigation with sub-items                     |
 | Moving items between two sets                 | `recursica-skill-transfer-list`                                  |
 
-"Flat peers" are items of the same kind and rank, with no parents or children.
+"Flat peers" are objects of the same kind, such as rows in a list, with no parents or children.
 
 **A tree used for flat data is a list with wasted indentation.** If nothing has children, it is not a tree.
 
@@ -41,7 +41,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.tree`.
 | ------------------ | ------------------------ |
 | `selection-states` | `unselected`, `selected` |
 
-**`indent` is a token** (a named design value). The component fixes how far each level is indented — do not work out your own indentation.
+**`indent` is a token** (a named design value, such as a color or a size, set by the design system). The component fixes how far each level is indented — do not work out your own indentation.
 
 **`button-node-gap` tells you the expand control is separate from the node itself.** The control that opens and closes the node and the node's label are two things. That matters for both selection and keyboard behavior: selecting a node and expanding it are different actions.
 
@@ -65,7 +65,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.tree`.
 
 **Do not put a form, a table, or a card inside a tree node.** A node is a label, not a container.
 
-**Never rely on indentation alone to show depth.** It is a single visual channel (one way of showing something) — `recursica-skill-system-conventions` requires a second one, which here means the level must be set in the code.
+**Never rely on indentation alone to show depth.** It is a single visual channel (a way of carrying meaning, such as color, shape, position, or text) — `recursica-skill-system-conventions` requires a second one, which here means the level must be set in the code.
 
 **If the tree is navigation, its nodes are links** with real routes, and it follows `recursica-skill-navigation` — including opening sub-levels on click, never on hover.
 
@@ -79,7 +79,7 @@ A tree is the component where the keyboard rules are the most specific, and the 
 - **Each node must report its level, and its position among the nodes at the same level** — "level 3, 2 of 7". Without this, the user has no idea where they are, because to them indentation does not exist.
 - **A node with children must report whether it is expanded or collapsed**, and a node with no children must not claim it can expand.
 - **The selected state must be set in code**, never shown only by the fill or color of the selected node.
-- **The expand control needs its own accessible name** (the name a screen reader reads out) if it is separate from the node — and that name must include the node: "Expand Marketing", not "Expand".
+- **The expand control needs its own accessible name** (the name a screen reader reads out for a control) if it is separate from the node — and that name must include the node: "Expand Marketing", not "Expand".
 - **Announce what changed when a node expands.** Say how many children appeared, or at least that the node is now expanded.
 - **A node's icon is decorative and must be silent.** A folder icon does not tell a screen reader user that the node has children; the expand state does.
 - **The tree needs an accessible name** — which hierarchy this is.

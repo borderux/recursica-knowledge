@@ -19,7 +19,7 @@ A switch turns one thing on or off. The label says what is being controlled; the
 - **The state must be readable at a glance**, including on touch, where the switch's larger target and clearer on/off look are an advantage.
 - **It is the one lone binary field in a form.** A single checkbox with no others beside it looks odd; a switch usually reads better. This is the one case where appearance may decide, because the two work the same way here.
 
-**A switch appears only inside a form.** Outside one — in chrome (the frame around the content, such as the header), a filter bar, a toolbar, or a header — the control is a `recursica-skill-segmented-control`, whatever the value looks like. Owned by `recursica-skill-selection-controls`.
+**A switch appears only inside a form.** Outside one — in chrome (the frame around the content), a filter bar, a toolbar, or a header — the control is a `recursica-skill-segmented-control`, whatever the value looks like. Owned by `recursica-skill-selection-controls`.
 
 ## Do not use it when
 

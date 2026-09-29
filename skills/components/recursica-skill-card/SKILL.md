@@ -9,7 +9,7 @@ metadata:
 
 # Card
 
-A card separates one repeating object from its peers (other objects of the same kind). It is not a container for whatever needs grouping.
+A card separates one repeating object from its peers (objects of the same kind, such as rows in a list). It is not a container for whatever needs grouping.
 
 **Overuse is the usual failure.** Generated screens turn into boxes inside boxes, because a card looks like a safe way to group things. It is not. Grouping is done with space; a drawn boundary has to be earned.
 
@@ -18,7 +18,7 @@ A card separates one repeating object from its peers (other objects of the same 
 Before using a card, confirm all five:
 
 1. **Plurality.** There is more than one of the object on the screen. A single object is never a card.
-2. **Finite and small.** The set has a fixed end, and it is short. **A high plurality (a large number of them) is a table.**
+2. **Finite and small.** The set has a fixed end, and it is short. **A high plurality (a large number of items of the same kind) is a table.**
 3. **Repetition.** Every item carries the same kinds of information, in the same arrangement.
 4. **A graphic.** Each item contains something visual — a chart, an image, a photograph. **A set of data that is only text and numbers is a table.**
 5. **Separate, but together.** The items need to read as clearly separate objects, while still reading as one group of the same kind of thing.

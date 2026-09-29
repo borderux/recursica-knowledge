@@ -45,7 +45,7 @@ This repository holds more than the skills. Website content, build scripts, pack
 
 The component adapters offer a styling escape hatch. **Its name makes it sound like a way to override things. Treat it as a warning sign instead**, and ask this question before you use it:
 
-**Is there a prop or a token (a named design value, such as a color or a spacing size, set by the design system) for what you are trying to change?**
+**Is there a prop or a token (a named design value, such as a color or a size, set by the design system) for what you are trying to change?**
 
 - **Yes — then you are overriding something the component controls, and that is forbidden.** Every component skill lists these under `Not your decision`. Stop, and use the prop.
 - **No — then you are filling in for a prop or token that is missing.** That is the normal reason to use the hatch. What matters is what you do next: **the missing prop or token is a gap in the design system, and you must report it.** Using the hatch quietly and moving on is how a gap becomes permanent and invisible.
@@ -127,7 +127,7 @@ Apply these in order. The first one that settles the conflict wins.
 2. **A prohibition beats a permission.** `NEVER` and `MUST NOT` outrank "may", "is fine", and "acceptable". If one skill forbids something another skill allows, the prohibition holds.
 3. **A design-rules or psychology skill beats a component skill.** This rule settles most real conflicts, so apply it before the ones below. The design-rules skills come from the team. The component skills were put together from the list of tokens around them. When the two disagree about **composition** — whether a component belongs here, how many are allowed, what may contain what, when one control should replace another — the design-rules skill is correct and the component skill has a defect. Follow the design rule, and say that the component skill needs fixing.
 
-   The component skill still wins on exactly one thing: **which variants (versions of a component, such as a solid or an outline button) and states actually exist.** A design rule that assumes a capability the component does not have is a gap to raise. It is not permission to invent that capability.
+   The component skill still wins on exactly one thing: **which variants (versions of a component, such as solid or outline buttons) and states actually exist.** A design rule that assumes a capability the component does not have is a gap to raise. It is not permission to invent that capability.
 
 4. **The more specific surface wins, within the same tier.** A rule about one control beats a general rule about all controls. For example, a segmented control is capped at 2–5 options even though the general limit is 7 ± 2, because the segmented control's own rule is narrower. This does not raise a component skill above a design rule — rule 3 already settles that.
 5. **The skill that names the surface owns it.** When two skills both seem to apply, the one whose description names that surface is in charge; the other is background.
@@ -138,7 +138,7 @@ Apply these in order. The first one that settles the conflict wins.
 
 ## Before you ask — check the cross-surface conventions
 
-**`recursica-skill-system-conventions`** holds six conventions drawn from across the topic skills: one behavioral mode per system; the unadvertised affordance (a visible cue that tells the user they can act on something, deliberately not shown); never carrying meaning in a single channel (a way of carrying meaning, such as color, shape, position, or text); fixing the structure instead of the symptom; a visible container must be earned; and one control, one outcome. When no topic skill covers a decision, check there before treating the decision as unowned. It is the house position on surfaces nobody has designed before.
+**`recursica-skill-system-conventions`** holds six conventions drawn from across the topic skills: one behavioral mode per system; the unadvertised affordance (a control that is deliberately not promoted); never carrying meaning in a single channel (a way of carrying meaning, such as color, shape, position, or text); fixing the structure instead of the symptom; a visible container must be earned; and one control, one outcome. When no topic skill covers a decision, check there before treating the decision as unowned. It is the house position on surfaces nobody has designed before.
 
 ## What has no owner yet
 

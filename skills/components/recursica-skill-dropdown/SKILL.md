@@ -63,7 +63,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.dropdown`. **Do not pa
 
 ## Rules for using it
 
-**Run the affordance test before choosing this control: does the user know what is in there before they click it?** A dropdown hides its options, so there is no affordance (a visible cue that tells the user what they can act on) for what is inside. The set has to be predictable.
+**Run the affordance test before choosing this control: does the user know what is in there before they click it?** A dropdown hides its options, so there is no affordance (a visible cue that tells the user they can act on something) for what is inside. The set has to be predictable.
 
 - **Good:** US states. A fixed list, in alphabetical order, and everyone has a rough idea of how many there are.
 - **Bad:** fifty unrelated values with nothing in common. Overwhelming, and mentally expensive to pick from.

@@ -70,7 +70,7 @@ A modal is the component where accessibility failures are most serious. Get the 
 - **The modal's accessible name (the name a screen reader reads out for a control) is its title.** Connect the two; do not leave the dialog unnamed, and do not name it "Dialog".
 - **Everything behind the modal must be inert** — impossible to reach, read, or tab to. A screen reader user who wanders into the page underneath has no way to know they have left the dialog.
 - **The content must be announced when the modal opens**, which follows from putting focus inside it. Do not rely on how it looks to show that something happened.
-- **A destructive confirmation must read as destructive in words.** With no severity variant, color and icons tell a screen reader nothing — `recursica-skill-system-conventions` requires a second channel (way of carrying meaning), and here the text is the only one.
+- **A destructive confirmation must read as destructive in words.** With no severity variant, color and icons tell a screen reader nothing — `recursica-skill-system-conventions` requires a second channel (a way of carrying meaning, such as color, shape, position, or text), and here the text is the only one.
 - **The close control needs a real name** — "Close", or better, what it closes. An unlabeled icon-only close button is announced as nothing.
 
 ### Keyboard and non-mouse navigation

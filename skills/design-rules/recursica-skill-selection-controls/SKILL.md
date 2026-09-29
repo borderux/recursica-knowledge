@@ -16,7 +16,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 ## Governing principles
 
 1. **The shape of the data picks the control.** How many values can be selected? Do they rule each other out? Is the opposite of the value obvious? Answer those questions, and the control is decided. How it looks comes last, not first.
-2. **Options should be visible and easy to scan.** Arrange them vertically, and keep them within working memory (the small amount of information a person can hold in mind at once). Hiding options inside a dropdown has to be earned, by the set being predictable enough that the user knows what is in it before opening it.
+2. **Options should be visible and easy to scan.** Arrange them vertically, and keep them within working memory (how much a person can hold in mind at once). Hiding options inside a dropdown has to be earned, by the set being predictable enough that the user knows what is in it before opening it.
 3. **One saving point per form.** Submitting everything together is the default, and saving instantly and saving later must never exist side by side in the same system. The user needs one reliable answer to "is my work saved?"
 
 ## Choosing the control
@@ -31,7 +31,7 @@ Work down this list; the first match wins.
 
 ## Switch vs. checkbox
 
-**A switch only ever appears inside a form.** That is the first test, and it comes before the tests below. Anywhere else — application chrome (the frame around the content, such as the header), a filter bar, a toolbar, a page header — **a toggle is a segmented control**, not a switch. See `recursica-skill-segmented-control`.
+**A switch only ever appears inside a form.** That is the first test, and it comes before the tests below. Anywhere else — application chrome (the frame around the content), a filter bar, a toolbar, a page header — **a toggle is a segmented control**, not a switch. See `recursica-skill-segmented-control`.
 
 **A switch has a deliberately narrow use.** Inside a form, reach for a checkbox unless the switch test passes.
 
@@ -69,7 +69,7 @@ Work down this list; the first match wins.
 
 **Above that limit, switch to a dropdown.** Dropdowns handle large sets of options well, and are usually single select. A multi-select dropdown — a checkbox group inside a dropdown — is available when many values can be selected.
 
-**The dropdown affordance test.** A dropdown hides its options, so the user has no affordance (a visible cue that tells them they can act on something) for what is inside. Before choosing one, ask: **does the user know what is in there before they click it?**
+**The dropdown affordance test.** A dropdown hides its options, so the user has no affordance (a visible cue that tells the user they can act on something) for what is inside. Before choosing one, ask: **does the user know what is in there before they click it?**
 
 - **Good:** US states. A fixed list, in alphabetical order, and everyone has a rough idea of how many there are — predictable and familiar.
 - **Bad:** 50 unrelated values with nothing in common. Overwhelming, and mentally expensive to pick from.
@@ -94,7 +94,7 @@ Work down this list; the first match wins.
 
 **How the header checkbox works — it MUST behave this way:**
 
-- Indeterminate (some rows selected, some not) + click → **always becomes fully checked.** Never unchecked.
+- Indeterminate + click → **always becomes fully checked.** Never unchecked.
 - From fully checked or fully unchecked, a click switches to the other.
 - Indeterminate can be reached **only** by selecting or deselecting individual rows. Clicking the header control never puts it into that state.
 
@@ -189,7 +189,7 @@ Before treating a set of selection controls as done, check:
 - [ ] Row selection in a table uses a leftmost checkbox with a header checkbox, on every table that has row checkboxes. Clicking an indeterminate header selects all.
 - [ ] Selecting rows only feeds bulk actions. Selecting one row triggers no action on that single record, and there is no separate clear or deselect-all control beside the header checkbox.
 - [ ] There are no switches in table rows.
-- [ ] Checkboxes and radio buttons are stacked vertically — never horizontally. Where horizontal is needed, a segmented control (single select) or selectable chips (multi-select) are used.
+- [ ] Checkboxes and radio buttons are stacked vertically — never horizontally. Where horizontal is needed, a segmented control is used for single select, or selectable chips for multi-select.
 - [ ] The form saves everything together, behind a submit button, with no instant saving of individual fields anywhere in it.
 - [ ] Switches save at the same point everywhere in the system.
 - [ ] There is no indicator of unsaved changes; the enabled submit button is the only signal.
