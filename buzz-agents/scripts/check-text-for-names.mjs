@@ -20,6 +20,10 @@
  *   node buzz-agents/scripts/check-text-for-names.mjs <file>
  *   … | node buzz-agents/scripts/check-text-for-names.mjs
  *   node buzz-agents/scripts/check-text-for-names.mjs --commit-msg <file>
+ *   node buzz-agents/scripts/check-text-for-names.mjs --json <file>
+ *
+ * `--json` prints `{"matched": [labels]}` on stdout for another script to read, and keeps the
+ * warnings on stderr. check-changes-for-names.mjs uses it to check a whole diff.
  *
  * `--commit-msg` says the text is a commit message, which is the ONLY case where a `#` line
  * is not published. Without it every line is read. See the comment on COMMENT below — that
@@ -39,9 +43,11 @@ import {
   findLeaks,
   deriveValues,
 } from "../lib/placeholders.mjs";
+import { findPersonalData } from "../lib/personal-data.mjs";
 
 const argv = process.argv.slice(2);
 const commitMsgMode = argv.includes("--commit-msg");
+const jsonMode = argv.includes("--json");
 const file = argv.find((a) => !a.startsWith("--"));
 
 function read() {
@@ -188,7 +194,15 @@ const matched = [
     .filter((r) => new RegExp(r.pattern, r.flags ?? "g").test(body))
     .map((r) => r.label),
   ...tokenLeaks,
+  // Needs no local file, so it is the one rule that runs on a fresh clone, a CI runner and a
+  // CircleChat host exactly as it does here. See ../lib/personal-data.mjs.
+  ...findPersonalData(body),
 ];
+
+if (jsonMode) {
+  process.stdout.write(JSON.stringify({ matched }) + "\n");
+  process.exit(matched.length === 0 ? 0 : 2);
+}
 
 if (matched.length === 0) process.exit(0);
 
