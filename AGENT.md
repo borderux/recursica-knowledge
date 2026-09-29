@@ -464,6 +464,21 @@ If you (the AI assistant) are tasked with creating, editing, or registering cust
 - **Frontmatter**: where a skill has a `package.json`, that file is the source of truth for name, version, description, license, and author, and [sync-skill-versions.js](scripts/sync-skill-versions.js) copies them into `SKILL.md`. Skills without a `package.json` keep those fields in the `SKILL.md` frontmatter directly. The `name` must match the skill's directory name, and `description` must be 1024 characters or fewer.
 - **Frontmatter must parse as YAML.** An unquoted `description` containing a colon followed by a space breaks the document and the skill fails to install. Use an em dash instead of a colon, or quote the whole value.
 - **Define a term in the skill that uses it, in the glossary's words.** Put the definition in brackets after the term's first use in prose, and if the term is in [`skills/meta/GLOSSARY.md`](skills/meta/GLOSSARY.md), copy it exactly — `npm run skills:glossary:check` and `npm test` fail when one differs. The glossary is the source for those definitions, not a skill: nothing serves it to an agent building a screen, so never replace an in-place definition with a link to it.
+- **A paragraph several skills share is worded in [`skills/meta/SHARED-PASSAGES.md`](skills/meta/SHARED-PASSAGES.md).** The label-placement rule, the React-prop column note and the rest are copied into each skill for the same reason definitions are, and they had drifted into seven wordings. Change a shared passage there and in every copy together; a skill whose situation genuinely differs writes its own paragraph under an opening that file does not list.
+- **Run `npm run skills:check` before you push a skill change.** It runs every check below, and `npm test` and CI run them too:
+
+  | Check                    | What it holds                                                                                                                     |
+  | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+  | `skills:manifest:check`  | every adapter component resolves to a skill; every skill has a checklist                                                          |
+  | `skills:structure:check` | frontmatter parses, `name` matches the folder, description ≤ 1024; component sections in order; references resolve; tables render |
+  | `skills:glossary:check`  | in-place definitions match `GLOSSARY.md`                                                                                          |
+  | `skills:passages:check`  | shared paragraphs match `SHARED-PASSAGES.md`                                                                                      |
+  | `skills:uncovered:check` | every topic a checklist calls uncovered is in that skill's `## Uncovered`                                                         |
+  | `skills:kit:check`       | every `## What exists` inventory matches `recursica_ui-kit.json` in the pinned `@recursica/official-release`                      |
+
+  The last two carry a short `KNOWN` list of mismatches that are logged in [`docs/open-questions.md`](docs/open-questions.md) and waiting on a decision. They print on every run, and an entry fails the check once it is fixed, so the list cannot outlive the problem. **Bumping `@recursica/official-release` is a skill change**: pin the new version exactly and run `skills:kit:check`, which is how a release that adds or removes a variant reaches the skills.
+
+- **`npm run skills:review` before you ask for review of a wording change.** It compares each changed skill with `main` and lists every change that tends to move a rule rather than its wording — a dropped "must", "never" or "only" (counted per section, so a move between sections shows), a lost code span or number, a merged checklist item. It warns and does not fail, because a deliberate rule change looks the same; CI posts the warnings as annotations on the pull request. `--strict` fails on any, for a change that is meant to be wording only.
 
 ### The shape of a component skill
 
