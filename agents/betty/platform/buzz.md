@@ -31,3 +31,5 @@ When Barb goes quiet, post it in two lines: how many findings across how many ro
 ## handoff
 
 Post in the channel when the pull request is up: the preview URL first, then the pull request link, the review tier that ran, and anything you could not verify. `@mention` whoever asked for the work. Then stop — you do not merge, and you do not start the gap reports until the build is handed over.
+
+## operations

@@ -83,7 +83,10 @@ const TARGETS = {
   buzz: { fragments: "buzz.md", out: (n) => `buzz-agents/agents/${n}/SYSTEM_PROMPT.md`, frontmatter: false, pinned: true },
   "claude-code": { fragments: "session.md", out: (n) => `portable/claude-code/agents/${n}.md`, frontmatter: "claude-code" },
   opencode: { fragments: "session.md", out: (n) => `portable/opencode/agents/${n}.md`, frontmatter: "opencode" },
-  circlechat: { fragments: "circlechat.md", out: (n) => `portable/circlechat/agents/${n}/SOUL.md`, frontmatter: false, optional: true },
+  circlechat: { fragments: "circlechat.md", out: (n) => `portable/circlechat/agents/${n}/SOUL.md`, frontmatter: false, optional: true,
+    // CircleChat has no install step to swap tokens back in, so the values are fixed here. They
+    // are paths inside the agent container, identical on every CircleChat install.
+    values: { KNOWLEDGE_REPO_NAME: "recursica-knowledge", WORKSPACE_ROOT: "/workspace" } },
 };
 
 /**
@@ -212,6 +215,7 @@ function buildArtifact({ source, base, target, spec, outName, label }) {
     if (!(marker in frags)) { bad(`${target}: platform/${spec.fragments} has no "## ${marker}" block`); return; }
     out = out.split(`<!-- platform:${marker} -->`).join(frags[marker]);
   }
+  for (const [k, v] of Object.entries(spec.values ?? {})) out = out.split(`{{${k}}}`).join(v);
   if (spec.frontmatter) {
     // Only claude-code reads a runtime file here, and only for the two keys its front matter
     // has. `$`-prefixed keys in those files are commentary for a human and are ignored.
