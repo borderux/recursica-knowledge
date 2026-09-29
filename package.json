@@ -50,6 +50,7 @@
     "skills:passages:check": "node scripts/check-shared-passages.mjs",
     "skills:uncovered:check": "node scripts/check-uncovered.mjs",
     "skills:kit:check": "node scripts/check-kit-inventory.mjs",
+    "skills:review": "node scripts/review-skill-diff.mjs",
     "test": "node --test 'nest/bin/*.test.mjs' 'nest/mcp/*/*.test.mjs' 'scripts/*.test.mjs' 'buzz-agents/lib/*.test.mjs'"
   },
   "packageManager": "npm@10.9.0",
