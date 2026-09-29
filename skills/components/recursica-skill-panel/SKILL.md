@@ -103,6 +103,8 @@ A build test confirmed that all four are needed, and that they survive the adapt
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 **Decide, and state, whether you are building a modal panel or a non-modal one — then build it consistently as one or the other.** Almost every panel accessibility failure is a half-modal: a surface that looks like it does not block, but traps focus like a dialog, or hides the page from assistive technology (tools such as screen readers that help people with disabilities use a computer) while leaving it clickable. The default here is non-modal — the page behind stays usable, readable, and reachable.
 
 ### Screen readers
@@ -125,7 +127,6 @@ A build test confirmed that all four are needed, and that they survive the adapt
 - **Trap focus only if the panel really is modal** — and then the page behind must also be inert, and must not scroll. Trapping focus while the page stays usable is the worst of both: the mouse can leave, but the keyboard cannot.
 - **The tab order inside the panel follows the visual order** — the content, then the footer buttons, then the close control where it sits visually — and must not jump between the panel and the page unpredictably.
 - **Never make closing it pointer-only.** Escape and the close control both work, whatever a click outside does.
-- **Nothing needed may appear only on hover**, and **never hide the focus ring** (the outline that shows which element has keyboard focus) inside the panel.
 
 ## Not your decision
 
@@ -145,6 +146,7 @@ Do not implement, override, or tune any of these — the component owns them:
 - `recursica-skill-navigation` — a location is a route; a trigger-invoked panel is not one and gets no history entry.
 - `recursica-skill-forms` — one label placement per form and the container-width test behind it, single-column layout, validation, and save mode for any form the panel holds.
 - `recursica-skill-buttons-links` — the trigger is a button, one primary action per surface, footer placement.
+- `recursica-skill-system-conventions` — the accessibility baseline every component follows.
 
 ### Only if the screen also uses it
 

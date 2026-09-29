@@ -76,6 +76,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.read-only-field`.
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 The rules here are different from every editable field, and that difference is the point: **this must read as a labeled value, not as a control — while still being connected in code, and free to copy.**
 
 ### Screen readers
@@ -96,7 +98,6 @@ The rules here are different from every editable field, and that difference is t
 - **Because it never receives focus, nothing about it may depend on hover or focus.** Every part of the meaning — the value, its unit, its time zone, any note about why it cannot be edited — is in text that is there at rest.
 - **Any edit control is a control**, so it is its own tab stop, activated by Enter or Space, with its own accessible name (the name a screen reader reads out for a control) — and it is **visible without hovering.** An edit icon that appears on hover does not exist for keyboard or touch users.
 - **It must not interrupt the tab order** of the fields around it. Placing it between two inputs changes what a user reads, never the order they tab through.
-- **Never hide the focus ring** (the outline that shows which element has keyboard focus) on an edit control it carries.
 
 ## Not your decision
 
@@ -116,6 +117,7 @@ Do not implement, override, or tune any of these — the component owns them:
 - `recursica-skill-label` — the label component, its placement axis, and the reserved edit-icon gap.
 - `recursica-skill-selection-controls` — disabled vs. read-only, and when a value should not be a form control at all.
 - `recursica-skill-tables` — where repeating read-only values belong instead.
+- `recursica-skill-system-conventions` — the accessibility baseline every component follows.
 
 ### Only if the screen also uses it
 

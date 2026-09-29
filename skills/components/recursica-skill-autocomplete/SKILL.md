@@ -105,6 +105,8 @@ Those states are not kit axes and must not be passed as variants — `Focused` a
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring, hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 The component connects the label to the input, provides the focus ring (the outline that shows which element has keyboard focus), and owns the filter-and-select interaction. What that interaction announces is up to you — and it is the hardest part of any control in this system to get right. The list changes under the user on every keystroke, and none of that reaches a screen reader (software that reads the screen aloud) unless it is announced.
 
 ### Screen readers
@@ -118,9 +120,7 @@ The component connects the label to the input, provides the focus ring (the outl
 - **Do not announce every keystroke, and do not announce the list on every character when the count has not changed.** Announcing too much makes the field just as unusable as silence does.
 - **Selection must be available in code, never shown by a highlight or a checkmark alone.** Required by `recursica-skill-system-conventions`.
 - **The chosen value must be readable in the field after it is selected**, and announced as the field's value — not left only as text drawn on the screen.
-- **Assistive text and error text must be passed through the component**, never shown as separate elements beside it. Text that is not connected is invisible to someone who tabs straight into the field.
 - **On error, the message is the only text announced**, because it has replaced the assistive text — so it has to state the rule. "Invalid input" is not an error message.
-- **The required state must be available in code**, not shown by an asterisk alone.
 - **Give the trailing indicator no separate announcement.** It is part of the field, not a second control.
 - **The clear control is a real control and needs its own accessible name**, and clearing must announce that the field is empty and the full set is back. The leading icon, by contrast, is decorative and must be silent.
 - **A disabled field is announced as disabled, but Tab skips it**, so any explanation carried only by how it looks cannot be reached. Put the reason in text.
@@ -135,8 +135,6 @@ The component connects the label to the input, provides the focus ring (the outl
 - **Do not move focus into the list.** The input keeps focus and points to the active option. Moving real focus into a popup breaks the way back, and stops the user typing.
 - **Do not move focus for the user after a selection.** No jumping ahead to the next field because a value now exists, and no focus jump when the filter narrows down to exactly one result.
 - **Everything reachable by mouse must be reachable by key.** Nothing about filtering, moving through results, or choosing may depend on a pointer, and nothing needed may appear only on hover.
-- **Never hide the focus ring, and never let it be confused with the active option's highlight or the selected option's look.** The focused field, the active option, and the selected option are three different things.
-- **The tab order follows the visual order**, which the single-column form rule makes easy.
 
 ## Not your decision
 
@@ -188,8 +186,6 @@ Never style an unfocused field so that it reads as disabled. An editable field m
 - [ ] No required information lives in the placeholder; the rule is in the assistive text.
 - [ ] Any default really is correct for nearly everyone.
 - [ ] On error, the assistive text is replaced by a message that restates the rule, with a signal that is not color.
-- [ ] Assistive text and error text are passed through the component, not shown beside it.
-- [ ] The required state is available in code, not shown by an asterisk alone.
 - [ ] The filtered list is not cut off by the viewport, a panel, a modal, or any scrolling ancestor.
 - [ ] The expanded state, the filtered result count after each change, "no results", the active option, and the chosen value are all announced — and nothing is announced too much.
 - [ ] The field is one tab stop. The arrows move, Enter selects, and Escape closes the list and returns focus to the input.

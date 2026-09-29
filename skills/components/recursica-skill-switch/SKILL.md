@@ -91,6 +91,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.switch`, `switch-group
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring, hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 The component pairs the switch with its item label, makes on and off available, and provides the focus ring (the outline that shows which element has keyboard focus). Everything below is up to you — and a switch is unusually easy to get wrong, because its whole meaning lives in a position and a colour.
 
 ### Screen readers
@@ -115,7 +117,6 @@ The component pairs the switch with its item label, makes on and off available, 
 - **Clicking or tapping the item label toggles the switch.** That comes free with a real connected label, and it gives the user a bigger target.
 - **Do not move focus for the user.** Focus stays on the switch after it is flipped — including when flipping it reveals fields below — so the user can flip it straight back.
 - **Nothing needed may appear only on hover** — not the consequence, and not a tooltip explaining what off means.
-- **Never hide the focus ring, and never let it be confused with the on state.** A switch that is on and a switch that is focused must be easy to tell apart at a glance; the ring must not look like part of the track.
 
 ## Not your decision
 
@@ -169,7 +170,6 @@ Do not add margins or spacer elements between switches or around the group; the 
 - [ ] Each switch is its own tab stop, and you added no arrow-key or roving focus.
 - [ ] Clicking the item label toggles the switch.
 - [ ] Focus is never moved for the user, including when flipping it reveals fields below.
-- [ ] Nothing needed requires hover. The focus ring is intact, and easy to tell apart from the on state.
 - [ ] Disabled is used only for switches that are unavailable for now, with the reason in text. Values that can never be edited use the read-only field.
 - [ ] You passed no variant, size, or state outside the inventory above, and overrode no property the component owns.
 - [ ] You invented nothing from the uncovered list: which side of the label, the error state, the in-flight state, and group size.

@@ -109,6 +109,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.card`. **The kit defin
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 A card set is a list of objects, and it must be announced as one. Two failures matter: a set that reads as one long run of text with no boundaries, and a "clickable card" that a keyboard user cannot activate, or that swallows the controls inside it.
 
 ### Screen readers
@@ -128,7 +130,6 @@ A card set is a list of objects, and it must be announced as one. Two failures m
 - **Prefer making the card's heading the link**, instead of making the whole card one. The heading gives the link a real name; a link the size of the card is announced as the card's entire contents.
 - **Nothing may appear on hover.** Actions revealed by hovering over a card cannot be reached by keyboard or by touch. A card's actions stay visible, or they are in a menu that can itself be reached.
 - **The tab order runs card by card**, following the visual order — not column by column against the layout.
-- **Never hide the focus ring** (the outline that shows which element has keyboard focus) on an interactive card or on any control inside it, and never let the hover style double as the focus style.
 
 ## Not your decision
 
@@ -171,6 +172,5 @@ Do not implement, override, or tune any of these — the component owns them:
 - [ ] Any chart in a slot has its accompanying data table.
 - [ ] Repeated controls name their object.
 - [ ] Static cards are not tab stops, and a clickable card contains no other interactive element.
-- [ ] Nothing is revealed on hover, and the focus ring is intact.
 - [ ] You invented no size variant, and overrode no padding, border, or elevation that the component owns.
 - [ ] You invented nothing from the uncovered list.

@@ -75,6 +75,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.loader`. **Do not pass
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 A spinner is pure animation. That means that to a screen reader (software that reads the screen aloud) user, it is nothing at all unless you announce it. The typical failure is not a control that cannot be reached — it is a wait that starts and ends in complete silence, leaving the user with no idea that anything happened.
 
 ### Screen readers
@@ -95,7 +97,6 @@ A spinner is pure animation. That means that to a screen reader (software that r
 - **When a region is replaced, keep the user's place.** If focus was inside the region, put it on the region's heading or its first interactive element once the content arrives — never at the top of the document.
 - **Do not trap the keyboard behind a loader.** Content that is covered, or not there yet, must not stay behind the spinner as a set of silent, invisible tab stops.
 - **Nothing needed may appear only on hover** — least of all the text explaining what is loading, which must stay visible.
-- **Never hide the focus ring** (the outline that shows which element has keyboard focus) on anything around the loader that can still be used.
 
 ## Not your decision
 

@@ -74,6 +74,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.chip`. **Do not pass a
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 A chip group is a form control that happens to be laid out horizontally, and it must behave like one. The most common failure is a set of clickable `div`s with a colored selected state — invisible and unusable to anyone not using a mouse.
 
 ### Screen readers
@@ -93,7 +95,6 @@ A chip group is a form control that happens to be laid out horizontally, and it 
 - **A removable chip's close control is its own stop** within the chip, reachable without a pointer.
 - **After a chip is removed, move focus on purpose** — to the next chip, or to the group if none are left. Focus left on a removed element is lost, and the user is quietly sent back to the top of the document.
 - **Never require hover to reveal the close control.** A dismiss that appears on hover cannot be reached by keyboard or by touch.
-- **Never hide the focus ring** (the outline that shows which element has keyboard focus), and never let the selected style stand in for the focus style. A chip can be focused and unselected at the same time, and the user must be able to tell.
 
 ## Not your decision
 
@@ -112,6 +113,7 @@ Do not implement, override, or tune any of these — the component owns them:
 - `recursica-skill-forms` — commit model, and error presentation for the group.
 - `recursica-skill-assistive-element` — the element that carries the group's validation error below it, and the wording it takes.
 - `recursica-skill-working-memory` — the basis for option-count limits.
+- `recursica-skill-system-conventions` — the accessibility baseline every component follows.
 
 ## Uncovered — ask, do not invent
 
@@ -133,7 +135,6 @@ Do not implement, override, or tune any of these — the component owns them:
 - [ ] Every close control's name includes the value it removes, and removal is announced.
 - [ ] Chips and close controls can be used from the keyboard, and nothing depends on hover.
 - [ ] Focus is moved on purpose after a removal.
-- [ ] The focus ring is intact, and easy to tell apart from the selected style.
 - [ ] You passed no state other than `selected` and `unselected`, and assumed no size or style axis.
 - [ ] You overrode no styling that the component owns.
 - [ ] You invented nothing from the uncovered list.

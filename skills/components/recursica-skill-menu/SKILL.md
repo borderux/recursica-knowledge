@@ -77,6 +77,8 @@ Taken from `recursica_ui-kit.json`. Two specs, with one axis between them.
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 A menu is a component about managing focus. The list itself is easy. The trigger's state, the arrow keys, and returning focus when it closes are where menus fail — and a menu that opens on hover fails all three at once.
 
 ### Screen readers
@@ -101,7 +103,6 @@ A menu is a component about managing focus. The list itself is easy. The trigger
 - **A menu that scrolls must scroll to follow keyboard focus.** Moving with the arrows to an item below the fold (the part of the page you only see after scrolling) has to bring it into view.
 - **Do not move focus anywhere except back to the trigger.** Not to the top of the page, and not into the content the action affected.
 - **Nothing needed may appear only on hover.** A row-action menu whose trigger only appears when the row is hovered cannot be reached by keyboard or by touch. If the action exists, its trigger is visible.
-- **Never hide the focus ring** (the outline that shows which element has keyboard focus), on the trigger or on the focused item, and never let the hover style double as the focus style.
 
 ## Not your decision
 

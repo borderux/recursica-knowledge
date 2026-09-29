@@ -90,13 +90,13 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.number-input`. **Do no
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring, hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 The component connects the label to the input, and provides the focus ring (the outline that shows which element has keyboard focus). The unit, the limits, and any control inside the field are up to you.
 
 ### Screen readers
 
 - **Pass a real label.** Never let placeholder text be the accessible name (the name a screen reader reads out for a control) — it is not announced as a label, and it disappears when the user types. A field with no label has no accessible name.
-- **Pass help text and error text through the component**, never as a separate element placed beside the field. Only the component can connect them to the input, and text that is not connected is invisible to a user who tabs straight into the field.
-- **Show the required state in code, not with an asterisk alone.** The asterisk is a visual convention, not an accessible way of saying "required".
 - **State the unit in text** — in the label, or in the help text. A visual prefix or suffix may not be announced with the value, and a currency symbol sitting in a column header is not connected to the field at all. "1000" announced with no unit is not an answer.
 - **State the expected format, the minimum, and the maximum in the help text.** Thousands separators, decimal places, and whether negative numbers are allowed have to be put in words. A mask, or a right-aligned display with two decimals, tells a screen reader nothing.
 - **Name every icon inside the field that can be used** — a clear control, or a stepper button if one is ever added. Decorative icons must be silent, and never announced as unlabeled graphics.
@@ -106,14 +106,11 @@ The component connects the label to the input, and provides the focus ring (the 
 ### Keyboard and non-mouse navigation
 
 - **Never remove the field from the tab order**, and never make reaching it depend on a pointer.
-- **The tab order follows the visual order.** The single-column form rule in `recursica-skill-forms` is what keeps this true.
 - **Typing is always enough to reach the value.** If any adjustment control exists, it is only a shortcut. A user must be able to reach the value by typing alone, and never have to press a button forty times.
 - **Every control inside the field is its own tab stop** (a place the Tab key lands), and works with Enter or Space — not with a handler that only responds to clicks.
 - **Do not move focus for the user.** No jumping ahead when the value reaches its number of digits, and no focus jump on a keystroke — both strand a user partway through typing.
 - **Never let a scroll wheel or a stray arrow key change a saved value** while the field has focus but the user is only reading, and never trap arrow keys that the user needs to move the caret (the text cursor).
-- **Tab skips a disabled field**, so anything shown only by the disabled state cannot be reached. Put the reason in text.
 - **Nothing needed to complete the field may appear only on hover** — not the limits, not the unit, and not an adjustment control.
-- **Never hide the focus ring**, and never rely on the caret alone to show where focus is.
 
 ## Not your decision
 
@@ -164,12 +161,9 @@ Never style an unfocused number input so it reads as disabled. An editable field
 - [ ] You did not pre-fill `0` to avoid an empty field, and pre-filled no default the user would have to understand to check.
 - [ ] Help and error text are passed through the component. The error replaces the help text, and restates the rule and its limits.
 - [ ] The error state has a signal that is not color, and no value is quietly forced into range or rewritten.
-- [ ] The required state is shown in code, not by an asterisk alone.
 - [ ] Every icon inside the field that can be used has an accessible name, and decorative icons are silent.
 - [ ] Typing alone reaches any valid value. Any adjustment control is only a shortcut, with its own tab stop.
-- [ ] The field is in the tab order, the tab order matches the visual order, and focus is never moved for the user.
 - [ ] The arrow keys and the scroll wheel do not change the value unexpectedly.
-- [ ] A disabled field has its reason in text, nothing needed requires hover, and the focus ring is intact.
 - [ ] You passed no variant, size, or state outside the inventory above, and invented no stepper.
 - [ ] You overrode no styling that the component owns, and no field without focus looks disabled.
 - [ ] Numbers that are not editable here use the read-only component, not a disabled input.

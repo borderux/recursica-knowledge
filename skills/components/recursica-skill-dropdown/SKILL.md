@@ -99,6 +99,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.dropdown`. **Do not pa
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring, hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 The component connects the label to the field, provides the focus ring (the outline that shows which element has keyboard focus), and owns the open-and-select interaction. What that interaction announces, and everything below, is up to you. A dropdown is the control where "it works with a mouse" hides the most failures.
 
 ### Screen readers
@@ -109,9 +111,7 @@ The component connects the label to the field, provides the focus ring (the outl
 - **The number of options must be available when the list opens** — "5 of 40" or something similar — so the user knows how big the list is. (The open list is a listbox: a list the user picks one or more options from.)
 - **The active option must be announced as the user moves through the list**, including its position and whether it is selected. Moving the highlight silently makes the list unusable without sight.
 - **Selection must be available in code, never shown by a checkmark or a highlight alone.** Required by `recursica-skill-system-conventions`.
-- **The field's assistive text and error text must be passed through the component**, never shown as separate elements beside it. Text that is not connected is invisible to someone who tabs straight into the field.
 - **On error, the message is the only text announced**, because it has replaced the assistive text — so it has to state the rule. "Invalid input" is not an error message.
-- **The required state must be available in code**, not shown by an asterisk alone.
 - **Give the expand indicator no separate announcement.** It is part of the field, not a second control. It must not show up as an unlabelled graphic or as its own button.
 - **A disabled dropdown is announced as disabled, but Tab skips it**, so any explanation carried only by how it looks cannot be reached. Put the reason in text.
 - **If choosing an option reveals more fields, say so before the choice is made** — in the label or in the assistive text.
@@ -125,8 +125,6 @@ The component connects the label to the field, provides the focus ring (the outl
 - **Do not move focus into the list.** The field keeps focus and points to the active option. A dropdown that moves real focus into a popup breaks the way back.
 - **Do not move focus for the user after a selection.** No jumping ahead to the next field because a value now exists.
 - **Everything reachable by mouse must be reachable by key.** Nothing about opening, moving through, or choosing may depend on a pointer, and nothing needed may appear only on hover.
-- **Never hide the focus ring, and never let it be confused with the selected option's highlight.** The focused field, the active option, and the selected option are three different things, and they must look different.
-- **The tab order follows the visual order**, which the single-column form rule makes easy.
 
 ## Not your decision
 
@@ -176,8 +174,6 @@ Never style an unfocused dropdown so that it reads as disabled. An editable fiel
 - [ ] `formLayout` is passed explicitly — `side-by-side`, unless the form's container is too narrow — and matches every other field in the same form. There is one placement per form at any given breakpoint, with no mixing between fields or sections. A missing prop means `stacked`, not the house rule, and `layouts` is not the prop name.
 - [ ] The menu is not cut off by the viewport, a panel, a modal, or any scrolling ancestor.
 - [ ] Selection rules are in assistive text. On error, it is replaced by a message that restates the rule, with a signal that is not color.
-- [ ] Assistive text and error text are passed through the component, not shown beside it.
-- [ ] The required state is available in code, not shown by an asterisk alone.
 - [ ] The expanded state, the number of options, the active option, and the selected value are all announced.
 - [ ] The field is one tab stop. Enter, Space, and Down open it; the arrows, Home, and End move; Enter selects; and Escape closes it and returns focus to the field.
 - [ ] You overrode no key handling inside the control, and real focus never moves into the list.

@@ -68,6 +68,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.avatar`. **Do not pass
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 An avatar is either a picture or a control, and the two fail in different ways. As a picture, the risk is being announced as an unlabeled graphic, or as a second, repeated copy of a name that was already read. As a control, the risk is having no name at all.
 
 ### Screen readers
@@ -88,7 +90,6 @@ An avatar is either a picture or a control, and the two fail in different ways. 
 - **When a control avatar opens a menu, focus moves into the menu, and returns to the avatar when the menu closes.** See `recursica-skill-menu`.
 - **An avatar inside an interactive element** — a row link, a list item — is part of that element's name, not a separate stop inside it.
 - **Nothing about the avatar may depend on hover.** A name that appears only in a hover tooltip cannot be reached by keyboard and touch users — and it was never what identified the person anyway.
-- **Never hide the focus ring** (the outline that shows which element has keyboard focus) on an interactive avatar, and never let a hover effect stand in for the focus state.
 
 ## Not your decision
 
@@ -135,7 +136,6 @@ Do not implement, override, or tune any of these — the component owns them for
 - [ ] No name is repeated in a hidden element while the visible one stays in the reading order.
 - [ ] Size follows how dense the surface is, not how important the person is.
 - [ ] The account menu sits outside primary navigation.
-- [ ] Nothing about the avatar depends on hover, and the focus ring is intact on anything interactive.
 - [ ] You passed no style or size outside the inventory above, and invented no group, status dot, badge slot, or border axis.
 - [ ] You overrode no styling that the component owns.
 - [ ] You invented nothing from the uncovered list.

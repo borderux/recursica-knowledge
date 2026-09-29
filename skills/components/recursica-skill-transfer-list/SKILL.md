@@ -84,6 +84,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.transfer-list`. **Do n
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 Two lists and a set of arrow buttons is the pattern most often shipped so that it works only with a mouse. Everything below is up to you.
 
 ### Screen readers
@@ -94,7 +96,6 @@ Two lists and a set of arrow buttons is the pattern most often shipped so that i
 - **After a move, the result must be announced**: what moved, and how many items are now in each list. The user cannot see two columns change at once.
 - **The filter must announce how many results it shows** when it changes the list — "3 of 120 shown". A filter that says nothing sounds like a list that emptied for no reason.
 - **Each list's item count should be available**, so the user does not have to count by going through every item.
-- **Pass label, help, and error text through the component**, never as separate text placed beside it. Only the component can connect them to the control.
 - **Do not announce the same event twice.** If the result of a move is announced, do not also announce every item again as focus lands on it.
 
 ### Keyboard and non-mouse navigation
@@ -106,7 +107,6 @@ Two lists and a set of arrow buttons is the pattern most often shipped so that i
 - **The tab order follows the visual order**: label, filter, first list, move controls, second list.
 - **Do not move focus for the user**, other than placing it on purpose after a move. Typing in the filter must not throw focus into the list.
 - **Nothing the user needs may appear only on hover** — not the move controls, not a remove control on each item, and not the counts.
-- **Never hide the focus ring** (the outline that shows which element has keyboard focus), and never let a selected item's highlight also serve as the focus indicator. Selected and focused are different states, and they need different styles.
 
 ## Not your decision
 
@@ -151,7 +151,6 @@ Do not implement, override, or tune any of these — the component owns them:
 - [ ] A real label is passed with the selection rules in assistive text, and its `layouts` placement matches every other field in the same form — one placement per form, per `recursica-skill-forms`.
 - [ ] The error state has a signal that is not color. Label, help, and error text are passed through the component.
 - [ ] The tab order runs: label, filter, first list, move controls, second list.
-- [ ] Nothing the user needs appears only on hover. The focus ring is not hidden, and looks different from the selected style.
 - [ ] The control is in the form's single column, and not inside a card.
 - [ ] You passed no variant, size, or state outside the inventory above, and built no header, filter, or wrapper by hand.
 - [ ] You overrode no size, padding, or gap that the component owns.

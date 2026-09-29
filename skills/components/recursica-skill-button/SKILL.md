@@ -79,6 +79,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.button`. **Do not pass
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring, hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 The component provides the focus ring (the outline that shows which element has keyboard focus) and the behavior of being activated. Everything below is up to you.
 
 ### Screen readers
@@ -104,7 +106,6 @@ The component provides the focus ring (the outline that shows which element has 
 - **Otherwise, do not move focus when it is activated.** An action that happens in place leaves focus on the button, so the user can act again.
 - **Disabling a button while it works will drop focus.** A disabled control leaves the tab order, and the user who just pressed Enter on it is sent back to the top of the document. Keep the button able to receive focus while it is in flight — show the disabled state without removing it from the tab order — or move focus on purpose to whatever comes next.
 - **The animated loading icon must respect a reduced-motion preference** (a setting that asks for less animation).
-- **Never hide the focus ring**, and never let the hover style double as the focus style.
 
 ## Not your decision
 

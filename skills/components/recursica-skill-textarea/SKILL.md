@@ -92,13 +92,13 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.textarea`. **Do not pa
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring, hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 The component connects the label to the input, and provides the focus ring (the outline that shows which element has keyboard focus). Everything below is up to you. The keyboard rules matter more here than on a single-line field, because Enter and Tab mean something different inside a textarea.
 
 ### Screen readers
 
 - **Pass a real label.** Never let placeholder text be the accessible name (the name a screen reader reads out for a control) — it is not announced as a label, and it disappears when the user types. A field with no label has no accessible name.
-- **Pass help text and error text through the component**, never as a separate element placed beside the field. Only the component can connect them to the input, and text that is not connected is invisible to a user who tabs straight into the field.
-- **Show the required state in code, not with an asterisk alone.** The asterisk is a visual convention, not an accessible way of saying "required".
 - **State the limit, and what should go in the field, in the help text.** A visible character counter is not connected to the field, and may never be announced. So the maximum has to be in words the user hears when they arrive.
 - **Announce the field as multi-line.** It must be a real multi-line control, not a single-line input styled to look tall, so that a screen reader (software that reads the screen aloud) tells the user that line breaks are allowed.
 - **The component defines no icon inside the field, so any icon you place there is yours** — give it an accessible name if it can be used, and keep it silent if it is decorative.
@@ -108,7 +108,6 @@ The component connects the label to the input, and provides the focus ring (the 
 ### Keyboard and non-mouse navigation
 
 - **Never remove the field from the tab order**, and never make reaching it depend on a pointer.
-- **The tab order follows the visual order.** The single-column form rule in `recursica-skill-forms` is what keeps this true.
 - **Tab must move out of the field, not insert a tab character.** This is the only way a keyboard user can leave a textarea.
 - **Enter inserts a line break, and must not submit the form.** Never connect submit to Enter inside a textarea, and never make a key combination the only way to add a new line.
 - **Escape must not clear the field**, or throw away what was entered.
@@ -116,9 +115,7 @@ The component connects the label to the input, and provides the focus ring (the 
 - **Do not move focus for the user** when the value reaches a length or a limit.
 - **If the content scrolls, it must be scrollable from the keyboard** with focus inside the field — with the arrow keys, Page Up, and Page Down. Content the user cannot reach without a pointer cannot be reached at all.
 - **Never make resizing necessary to read or finish the value.** A drag handle cannot be used from the keyboard, so the field must be usable at the size it is given.
-- **Tab skips a disabled field**, so anything shown only by the disabled state cannot be reached. Put the reason in text.
 - **Nothing needed to complete the field may appear only on hover** — not the limit, and not the rule.
-- **Never hide the focus ring**, and never rely on the caret (the text cursor) alone to show where focus is.
 
 ## Not your decision
 
@@ -164,15 +161,11 @@ Never style an unfocused textarea so it reads as disabled. An editable field mus
 - [ ] No required information lives in placeholder text.
 - [ ] Help text says what to include and any limit. On error, it is replaced by a message that restates the rule.
 - [ ] The error state has a signal that is not color.
-- [ ] Help and error text are passed through the component, not shown beside it.
 - [ ] No character limit is enforced without being stated, and no text is quietly cut off or cleared.
-- [ ] The required state is shown in code, not by an asterisk alone.
 - [ ] The field is announced as multi-line. Any icon you added is named if it can be used, and silent if it is decorative.
-- [ ] The field is in the tab order, and the tab order matches the visual order.
 - [ ] Tab leaves the field, Enter inserts a line break and does not submit, and Escape does not clear it.
 - [ ] Content that overflows can be scrolled from the keyboard, and resizing is never needed to finish the value.
 - [ ] Focus is never moved for the user, and no live count floods a screen reader.
-- [ ] A disabled field has its reason in text, nothing needed requires hover, and the focus ring is intact.
 - [ ] You left `rows`, height, and spacing to the component — no wrapper, and no custom margins.
 - [ ] You passed no variant, size, or state outside the inventory above.
 - [ ] Text that cannot be edited uses the read-only component, not a disabled textarea.

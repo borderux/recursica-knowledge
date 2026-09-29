@@ -96,13 +96,13 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.date-picker`. **Do not
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring, hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 The component connects the label to the input, and provides the focus ring (the outline that shows which element has keyboard focus). The calendar trigger and the popover (the small panel that opens next to its trigger) are where date pickers fail, and both are up to you to get right.
 
 ### Screen readers
 
 - **Pass a real label.** Never let placeholder text be the accessible name (the name a screen reader reads out for a control) — it is not announced as a label, and it disappears when the user types. A field with no label has no accessible name.
-- **Pass help text and error text through the component**, never as a separate element placed beside the field. Only the component can connect them to the input, and text that is not connected is invisible to a user who tabs straight into the field.
-- **Show the required state in code, not with an asterisk alone.** The asterisk is a visual convention, not an accessible way of saying "required".
 - **Name the calendar icon if it is a control** — "Choose date" — and keep it silent if it is decorative. An unlabeled graphic that can be used is announced as nothing useful.
 - **State the expected format in the help text.** The mask that appears on focus is a visual aid; a screen reader (software that reads the screen aloud) user gets nothing from it. Say `MM/DD/YYYY` in words the user can act on.
 - **State the time zone in text** whenever it matters. A time zone that is only implied is not communicated.
@@ -111,15 +111,11 @@ The component connects the label to the input, and provides the focus ring (the 
 ### Keyboard and non-mouse navigation
 
 - **Never remove the field from the tab order**, and never make reaching it depend on a pointer.
-- **The tab order follows the visual order.** The single-column form rule in `recursica-skill-forms` is what keeps this true.
 - **The calendar trigger is its own tab stop** (a place the Tab key lands), and works with Enter or Space — not with a handler that only responds to clicks.
 - **Typing must always work.** The popover is never the only way to enter a value. A keyboard user must be able to type the date and move on, without ever opening the calendar.
 - **The popover must be fully usable by keyboard.** It opens from the keyboard, the arrow keys move between dates, Enter selects, and Escape closes it and returns focus to the field it opened from. Focus must not be left in a closed popover, or dropped to the top of the page.
 - **Never move focus ahead automatically between the parts of a date.** Jumping from month to day to year as the user types strands keyboard and screen reader users partway through, and it fights anyone fixing a typo.
 - **Do not move focus for the user** when a value looks complete, and do not close the popover into a different field.
-- **Tab skips a disabled field**, so anything shown only by the disabled state cannot be reached. Put the reason in text.
-- **Nothing needed to complete the field may appear only on hover.** Help text stays on screen; a hint that appears only on hover cannot be reached by keyboard or touch users.
-- **Never hide the focus ring**, and never rely on the caret (the text cursor) alone to show where focus is.
 
 ## Not your decision
 
@@ -169,12 +165,9 @@ Never style an unfocused date picker so it reads as disabled. An editable field 
 - [ ] Only today's date is pre-filled, and only when today is what is being recorded.
 - [ ] Help and error text are passed through the component. The error replaces the help text and restates the rule.
 - [ ] The error state has a signal that is not color.
-- [ ] The required state is shown in code, not by an asterisk alone.
 - [ ] The calendar trigger has an accessible name, is its own tab stop, and works with Enter or Space. Decorative icons are silent.
 - [ ] The popover opens from the keyboard, the arrow keys move, and Escape closes it and returns focus to the field.
 - [ ] Focus never jumps ahead automatically between the parts of a date, and is never moved for the user.
-- [ ] The field is in the tab order, the tab order matches the visual order, and a disabled field has its reason in text.
-- [ ] Nothing needed to complete the field requires hover, and the focus ring is not hidden.
 - [ ] You passed no variant, size, or state outside the inventory above, and invented no range or inline calendar.
 - [ ] You overrode no styling that the component owns, and no field without focus looks disabled.
 - [ ] Dates that are not editable here use the read-only component, not a disabled picker.

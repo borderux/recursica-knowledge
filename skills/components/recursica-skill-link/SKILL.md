@@ -62,6 +62,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.link`.
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring, hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 The component owns the underline, the color, and the focus ring (the outline that shows which element has keyboard focus). The meaning in the markup is up to you, and a link built from the wrong element fails every kind of assistive technology (tools such as screen readers that help people with disabilities use a computer) at once.
 
 ### Screen readers

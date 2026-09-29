@@ -91,6 +91,8 @@ A surface that opens on hover and has a control in it is not a third option; it 
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 The two kinds have truly different requirements, and there is no safe middle ground. Name which one you are building, then meet that column completely. A build that half-meets both is the pointer trap this section exists to prevent.
 
 ### Screen readers
@@ -116,7 +118,6 @@ The two kinds have truly different requirements, and there is no safe middle gro
 - **A hover card must stay open while the pointer travels from the target into the card.** One that disappears in the gap cannot be read — and cannot be read at all by anyone with unsteady pointer control.
 - **A hover card never takes focus.** Focus is never moved for the user by something they only hovered over.
 - **Nothing needed may appear only on hover.** This is the single rule the whole component depends on.
-- **Never hide the focus ring** (the outline that shows which element has keyboard focus) on the trigger or on anything inside.
 
 ## Not your decision
 

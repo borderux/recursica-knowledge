@@ -73,6 +73,8 @@ Neither may hold anything the user needs to complete a task, and neither may be 
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 A tooltip is the component most often used to cover up a missing accessible name, and it cannot do that job. Everything below is behavior you must make sure of.
 
 ### Screen readers
@@ -93,7 +95,6 @@ A tooltip is the component most often used to cover up a missing accessible name
 - **It must not contain a control or a link**, which is also why it needs no Tab handling inside it. If it needs a tab stop (a place the Tab key lands), it is a popover.
 - **Never move focus into the tooltip.** It cannot take focus, and it is never a tab stop.
 - **The trigger must be able to take focus.** A tooltip attached to something no one can focus can never appear for a keyboard user.
-- **Never hide the focus ring** (the outline that shows which element has keyboard focus) on the trigger. A tooltip appearing does not show where focus is.
 - **Nothing the user needs may appear only on hover** — which, for this component, means nothing the user needs may be in it at all.
 
 ## Not your decision

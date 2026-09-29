@@ -90,13 +90,13 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.time-picker`. **Do not
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring, hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 The component connects the label to the input, and provides the focus ring (the outline that shows which element has keyboard focus). The clock trigger, the AM/PM control, and the popover (the small panel that opens next to its trigger) are where time pickers fail, and they are up to you.
 
 ### Screen readers
 
 - **Pass a real label.** Never let placeholder text be the accessible name (the name a screen reader reads out for a control) — it is not announced as a label, and it disappears when the user types. A field with no label has no accessible name.
-- **Pass help text and error text through the component**, never as a separate element placed beside the field. Only the component can connect them to the input, and text that is not connected is invisible to a user who tabs straight into the field.
-- **Show the required state in code, not with an asterisk alone.** The asterisk is a visual convention, not an accessible way of saying "required".
 - **Name the clock icon if it is a control** — "Choose time" — and keep it silent if it is decorative. An unlabeled graphic that can be used announces nothing useful.
 - **State the expected format in the help text.** Whether the field wants `9:00 AM` or `09:00`, and whether seconds are accepted, must be put in words. A visual mask tells a screen reader (software that reads the screen aloud) nothing.
 - **State the time zone in text**, not by position or color. A time zone that is only implied is not communicated — and a converted, or not local, time that is not labeled is a wrong answer delivered with confidence.
@@ -106,15 +106,12 @@ The component connects the label to the input, and provides the focus ring (the 
 ### Keyboard and non-mouse navigation
 
 - **Never remove the field from the tab order**, and never make reaching it depend on a pointer.
-- **The tab order follows the visual order.** The single-column form rule in `recursica-skill-forms` is what keeps this true.
 - **Every control inside the field is its own tab stop** (a place the Tab key lands) — the clock trigger, an AM/PM control — and each works with Enter or Space, not with a handler that only responds to clicks.
 - **Typing must always work.** The popover is never the only way to enter a value. A keyboard user must be able to type the time and move on, without opening it.
 - **The popover must be fully usable by keyboard.** It opens from the keyboard, the arrow keys move between values, Enter selects, and Escape closes it and returns focus to the field it opened from. Focus must never be left in a closed popover, or dropped to the top of the page.
 - **Never move focus ahead automatically between the parts of a time.** Jumping from hour to minute to AM/PM as the user types strands keyboard and screen reader users partway through, and fights anyone fixing a typo.
 - **Do not move focus for the user** when a value looks complete, and do not close the popover into a different field.
-- **Tab skips a disabled field**, so anything shown only by the disabled state cannot be reached. Put the reason in text.
 - **Nothing needed to complete the field may appear only on hover** — not the format, not the time zone, and not the trigger.
-- **Never hide the focus ring**, and never rely on the caret (the text cursor) alone to show where focus is.
 
 ## Not your decision
 
@@ -165,12 +162,9 @@ Never style an unfocused time picker so it reads as disabled. An editable field 
 - [ ] The expected format is stated in help text.
 - [ ] Help and error text are passed through the component. The error replaces the help text, and restates the rule.
 - [ ] The error state has a signal that is not color.
-- [ ] The required state is shown in code, not by an asterisk alone.
 - [ ] Every control inside the field — the clock trigger, AM/PM — has an accessible name and its own tab stop, and works with Enter or Space. Decorative icons are silent.
 - [ ] The popover opens from the keyboard, the arrow keys move, and Escape closes it and returns focus to the field.
 - [ ] Focus never jumps ahead automatically between hour, minute, and AM/PM, and is never moved for the user.
-- [ ] The field is in the tab order, the tab order matches the visual order, and a disabled field has its reason in text.
-- [ ] Nothing needed to complete the field requires hover, and the focus ring is not hidden.
 - [ ] You passed no variant, size, or state outside the inventory above, and invented no seconds, range, or inline clock.
 - [ ] You overrode no styling that the component owns, and no field without focus looks disabled.
 - [ ] Times that cannot be edited use the read-only component, not a disabled picker.

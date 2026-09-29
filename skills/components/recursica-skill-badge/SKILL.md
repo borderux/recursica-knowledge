@@ -68,6 +68,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.badge`. **Do not pass 
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring, hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 A badge is text, not a control. That makes the risk the opposite of most components: not that it cannot be reached, but that it is read as a floating fragment with no owner, or not read at all.
 
 ### Screen readers

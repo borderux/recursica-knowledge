@@ -68,6 +68,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.tabs` and `tabs-item`.
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 A tab set is one of the few components where getting the meaning in the markup wrong makes the content unreachable, rather than just awkward. The library owns how the keys work — you must let it.
 
 ### Screen readers
@@ -85,7 +87,6 @@ A tab set is one of the few components where getting the meaning in the markup w
 - **The arrow keys move between tabs**, following the orientation: left and right for a horizontal set, up and down for a vertical one. Home and End jump to the first and last.
 - **The panel's content can be reached from the tab right away.** Tabbing off the selected tab lands in its panel, not somewhere else on the page.
 - **Never activate a tab just because it receives focus** where activating it is costly or navigates — the user must be able to move across the set and then choose.
-- **Never require hover to see which tab is selected**, and never hide the focus ring (the outline that shows which element has keyboard focus) on the focused tab.
 - **A tab is activated with Enter or Space**, never by click only.
 
 ## Not your decision
@@ -104,6 +105,7 @@ Do not implement, override, or tune any of these — the component owns them:
 - `recursica-skill-forms` — the stepper, which is the correct alternative to a tabbed form.
 - `recursica-skill-working-memory` — the basis for the item-count ceiling.
 - `recursica-skill-badges-chips` — the counter on a tab.
+- `recursica-skill-system-conventions` — the accessibility baseline every component follows.
 
 ## Uncovered — ask, do not invent
 
@@ -124,6 +126,5 @@ Do not implement, override, or tune any of these — the component owns them:
 - [ ] Selection is shown by more than color, and the selected tab is announced as selected.
 - [ ] The tab list is one tab stop, the arrow keys move between tabs, and you added no custom key handling.
 - [ ] Counters are announced with their tab, cannot be used as controls, and do not animate.
-- [ ] The focus ring is intact, and nothing depends on hover.
 - [ ] You overrode no styling that the component owns.
 - [ ] You invented nothing from the uncovered list.

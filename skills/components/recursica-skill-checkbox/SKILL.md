@@ -97,6 +97,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.checkbox`, `checkbox-g
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring, hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 The component pairs each box with its item label, and provides the focus ring (the outline that shows which element has keyboard focus). The group's name, making the state available, and everything below are up to you — and they are the parts most often missed.
 
 ### Screen readers
@@ -108,8 +110,6 @@ The component pairs each box with its item label, and provides the focus ring (t
 - **Indeterminate must be made available as a mixed state**, not as a dash that exists only on screen. "Partially checked" is information; a horizontal bar is not.
 - **A select-all control must name what it selects** — "Select all rows", not "Select all" floating in a table header.
 - **In a table, each row checkbox must name its row.** Thirteen announcements of "checkbox, unchecked" tell the user nothing. Either the name carries the object, or the row supplies it in code.
-- **Pass the group's assistive text and any selection rule through the component**, so it is connected to the group instead of floating beside it. Text that is not connected is invisible to someone who tabs straight to the first option.
-- **The required state belongs to the group, and it must be available in code** — not shown by an asterisk alone.
 - **A disabled item is announced as disabled, but Tab skips it**, so any explanation carried only by how it looks cannot be reached. Put the reason in text.
 - **When a checkbox reveals more fields, say so before it is ticked** — in the item label, or in the group's assistive text. Content that appears silently below is easy to miss when read in order.
 
@@ -120,9 +120,6 @@ The component pairs each box with its item label, and provides the focus ring (t
 - **Every checkbox in a group is its own tab stop** (a place the Tab key lands). This is the opposite of a radio group. Do not add roving focus (where the arrow keys move between items that share one tab stop) inside a checkbox group, and do not repurpose Home and End — they belong to the page.
 - **Clicking or tapping the item label toggles its checkbox.** That comes free with a real connected label, and it gives the user a bigger target. Do not break it by showing the label as loose text.
 - **Do not move focus for the user.** When a checkbox reveals fields below, focus stays on the checkbox, and the user reaches the new fields with the next Tab. Pulling focus into the revealed content strands both keyboard and screen reader users.
-- **Nothing needed may appear only on hover.** A rule, a count, or a row action that appears only on hover cannot be reached by keyboard or touch users.
-- **Never hide the focus ring, and never let it be confused with the checked state.** Focus and selection are two different things, and they must be easy to tell apart at a glance. A box that is checked but not focused, and a box that is focused but not checked, must not look alike.
-- **The tab order follows the visual order** down the stack, which the vertical-only rule makes easy.
 
 ## Not your decision
 
@@ -171,7 +168,6 @@ Do not add margins or spacer elements between items or between the group and its
 - [ ] Space toggles, every checkbox is its own tab stop, you added no arrow-key or roving focus, and you overrode no key handling.
 - [ ] Clicking the item label toggles the box.
 - [ ] Focus is never moved for the user, including when a checkbox reveals fields below.
-- [ ] Nothing needed requires hover. The focus ring is intact, and easy to tell apart from the checked state.
 - [ ] Disabled is used only for options that are unavailable for now, with the reason in text. Values that can never be edited use the read-only field.
 - [ ] You passed no variant, size, or state outside the inventory above, and overrode no property the component owns.
 - [ ] The group saves with the form, in the same save mode as everything else in the system.

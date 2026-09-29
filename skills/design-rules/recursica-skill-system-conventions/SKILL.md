@@ -132,6 +132,20 @@ Examples:
 
 **What this does not forbid.** A single action with necessary side effects is still one outcome. Submitting a form saves it and closes it. Deleting a row removes it and shows an undo. The test is whether the second effect is _part of_ what the user asked for, or a separate thing riding along with it.
 
+## Accessibility baseline for every component
+
+**These apply to every component, and no component skill repeats them.** They are not a seventh convention. They are the accessibility rules the component skills each used to state for themselves — the focus ring was in 34 of 39 — gathered here once, so they cannot drift apart. A component skill's own accessibility section adds what is specific to that component, and where it says something more specific, it wins.
+
+- **Never hide the focus ring** (the outline that shows which element has keyboard focus). Keep it on whatever has focus, and keep it looking different from the hover style, from the caret alone, and from any selected, checked, active, or on state. Focus and selection are different facts, and a user must be able to tell them apart at a glance.
+- **Nothing the user needs appears only on hover** — not a control, an action, a label, a value, a count, or a reason. A keyboard user and a touch user never hover.
+- **The tab order follows the visual order.**
+- **Tab skips a disabled control**, so the reason something is disabled goes in visible text. The disabled look alone tells a keyboard user nothing, because they never reach it.
+- **A form control's help, error, and rule text passes through the component** — for a group, through the group — never as a separate element placed beside it. Only the component can connect that text to the control, and text that is not connected is invisible to someone who tabs straight into the field.
+- **The required state is set in code**, not shown by an asterisk alone. The asterisk is a visual convention, not an accessible way of saying "required".
+- **Never move focus for the user**, except where a component skill says when to — opening a modal, for example.
+- **An icon that is a control has an accessible name; a decorative icon is silent.** Each component skill says which of its icons are which.
+- **No meaning rests on color alone.** See convention 3.
+
 ## When a seventh convention seems to be emerging
 
 **Do not add one.** If a pattern seems to repeat across surfaces but is not listed here, say so, and let a person decide whether it is a convention. On a later read, a convention invented by an agent cannot be told apart from a recorded one — which is exactly what this file exists to prevent.
@@ -148,6 +162,9 @@ Examples:
 - [ ] Settings that few users need have a real entry point that is not promoted, and all three conditions for hiding them hold: the house default is a deliberate choice, only a minority of users need the setting, and no task requires it.
 - [ ] Every hidden control can be reached by keyboard and by assistive technology. Where the gesture is a drag or a long-press, there is a second way to do it that is not a drag.
 - [ ] No meaning depends on a single channel. For each meaning, you can name its second channel.
+- [ ] Every component meets the accessibility baseline: the focus ring is never hidden and looks different from hover and from any selected state, nothing the user needs appears only on hover, and the tab order follows the visual order.
+- [ ] Every disabled control has its reason in visible text. A form control's help, error, and rule text passes through the component, and the required state is set in code, not by an asterisk alone.
+- [ ] Focus is never moved for the user except where a component skill says when. Icons that are controls have an accessible name, and decorative icons are silent.
 - [ ] You did not add a workaround, such as an overflow menu or an inner scroll area, to make a broken structure fit. Where a limit could not be changed, you said so plainly.
 - [ ] Every visible container separates its contents from a peer you can name. Regions with no peer are grouped with space instead.
 - [ ] Repeating objects are shown as a table, unless the set is small, finite, and each one carries a graphic — or you used the aesthetic exception and said so.

@@ -72,6 +72,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.segmented-control` and
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 In meaning, this is a radio group, and it must be built as one. The usual failure is a row of buttons where the selected one is just a different color. That tells a screen reader (software that reads the screen aloud) user nothing, and leaves keyboard users tabbing through every segment.
 
 ### Screen readers
@@ -89,7 +91,6 @@ In meaning, this is a radio group, and it must be built as one. The usual failur
 - **The arrow keys move the selection** within the group, following the orientation: left and right when horizontal, up and down when vertical. Home and End jump to the ends.
 - **Because the arrow keys select as they move, keep the change cheap.** This is the same reason a slow or destructive switch belongs on a different control.
 - **Focus lands on the selected segment** when the user tabs in — not on the first segment.
-- **Never require hover to tell which segment is selected**, and never hide the focus ring (the outline that shows which element has keyboard focus).
 - **Focus and selection must look different** — a user can have focus on the group while a different segment is selected, and both need to be visible.
 
 ## Not your decision
@@ -126,7 +127,6 @@ Do not implement, override, or tune any of these — the component owns them:
 - [ ] The selected state is available in code, not shown by color alone, and icon-only segments have explicit names.
 - [ ] The group is one tab stop. The arrow keys move the selection, and no segment has its own tabindex.
 - [ ] Focus lands on the selected segment when the user tabs in.
-- [ ] Focus and selection look different, and the focus ring is intact.
 - [ ] Content changes caused by switching are perceivable, not silent.
 - [ ] You assumed no size or style axis. The orientation is `horizontal`, and any vertical single-select became a radio group.
 - [ ] You overrode no styling that the component owns.

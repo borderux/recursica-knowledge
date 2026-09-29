@@ -82,6 +82,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.stepper`. **Do not pas
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 The stepper's whole job is to show position and progress, and it does that visually — an indicator, a color, and the thickness of a connector. **None of that reaches a screen reader** (software that reads the screen aloud). Everything the sighted user learns at a glance has to be stated in what assistive technology reads, and the riskiest moment is when the step changes.
 
 ### Screen readers
@@ -104,7 +106,6 @@ The stepper's whole job is to show position and progress, and it does that visua
 - **The tab order within a step follows the visual order** — the step's fields from top to bottom, then Back and Next in the footer. The single-column form layout is what keeps this true.
 - **Back must not lose the user's place.** Going back to a step puts focus at the start of that step's content, with the values they entered still there.
 - **Nothing needed may appear only on hover** — not a step's description, and not the reason a step is disabled.
-- **Never hide the focus ring** (the outline that shows which element has keyboard focus), on the step indicators or on the footer buttons.
 
 ## Not your decision
 
@@ -159,6 +160,5 @@ Do not implement, override, or tune any of these — the component owns them for
 - [ ] When the step changes, the new position and heading are announced, and focus moves to the start of the new content — never left on Next.
 - [ ] Steps that can be used to move around are real controls with names and states. Steps that cannot are not able to receive focus.
 - [ ] Nothing moves ahead automatically. Back restores the step with its values, and puts focus at its start.
-- [ ] The tab order matches the visual order, nothing needed appears only on hover, and the focus ring is intact.
 - [ ] You overrode no color, connector size, or type styling that the component owns.
 - [ ] You invented nothing from the uncovered list.

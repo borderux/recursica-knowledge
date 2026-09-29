@@ -82,6 +82,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.file-upload`. **Do not
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 A drop zone is the single most common control in an enterprise application that works only with a mouse. Everything below is up to you.
 
 ### Screen readers
@@ -94,7 +96,6 @@ A drop zone is the single most common control in an enterprise application that 
 - **The number of files in the list should be available**, not something the user can only count by going through every row.
 - **Do not describe dropping files as the only way in.** Text that says "drag files here" and nothing else tells a keyboard user the control is not for them.
 - **The area's icon is decorative and must be silent.**
-- **Show the required state in code**, not with an asterisk alone.
 
 ### Keyboard and non-mouse navigation
 
@@ -105,8 +106,6 @@ A drop zone is the single most common control in an enterprise application that 
 - **Otherwise, do not move focus for the user.** Coming back from the file dialog leaves focus on the add control, so the user can add another file.
 - **The tab order follows the visual order**: the label, the add control, then the list from top to bottom.
 - **Nothing needed may appear only on hover** — not the remove control, not the file name, and not the size limit. A remove button that appears when hovering over a row cannot be reached by keyboard or by touch.
-- **Tab skips a disabled control**, so put the reason in text.
-- **Never hide the focus ring** (the outline that shows which element has keyboard focus), and never let the highlight for dropping files double as the focus indicator.
 
 ## Not your decision
 

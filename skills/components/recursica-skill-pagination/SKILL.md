@@ -70,6 +70,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.pagination`. **Do not 
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 Pagination is a row of small controls that all look alike and, left alone, all say nothing useful. Every failure here is a failure of naming or of focus.
 
 ### Screen readers
@@ -92,8 +94,6 @@ Pagination is a row of small controls that all look alike and, left alone, all s
 - **Previous and next are never disabled links at the ends.** They are missing or cannot be used, and they are handled the same way at both ends and on every table in the application. A control that is present and looks usable, but quietly does nothing, is worse than one that is gone.
 - **A control that cannot be used is not a tab stop**, so any reason shown only by how it looks cannot be reached by keyboard. Put the reason in text.
 - **Add no custom key handling inside the component.** Keyboard behavior inside a component is owned by the underlying coded library — `recursica-skill-navigation`.
-- **Nothing may appear only on hover.** A footer that reveals its controls on hover cannot be used by keyboard or by touch.
-- **Never hide the focus ring** (the outline that shows which element has keyboard focus), **and never let `active-pages` double as the focus state.** The current page and the focused page are different facts, and they must look different.
 
 ## Not your decision
 
@@ -143,7 +143,6 @@ Do not implement, override, or tune any of these — the component owns them:
 - [ ] Previous and next are never disabled links. At the ends, they are missing or cannot be used, the same way at both ends and across the application.
 - [ ] Every control is a tab stop in visual order, and focus after a page change is handled on purpose — never at the top of the document.
 - [ ] You added no custom keyboard handling inside the component.
-- [ ] Nothing appears only on hover, and the focus ring is intact and looks different from the current-page style.
 - [ ] Changing pages did not change the default sort, and any totals say what they cover.
 - [ ] You invented no variant, state, first or last control, or ellipsis outside the inventory above.
 - [ ] You overrode no styling that the component owns.

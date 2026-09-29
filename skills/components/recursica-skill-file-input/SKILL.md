@@ -80,6 +80,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.file-input`. **Do not 
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 The whole point of this component is that a file field is a field. Everything below is up to you, and the failures are almost always about the pointer.
 
 ### Screen readers
@@ -90,7 +92,6 @@ The whole point of this component is that a file field is a field. Everything be
 - **Any clear or remove control needs an accessible name that includes the file name** — "Remove quarterly-report.pdf", not "Clear".
 - **A removal must be announced**, and so must a rejected file and the reason it was rejected.
 - **The field's icon is decorative and must be silent.** It is only a visual signal; the label and help text carry the meaning.
-- **Show the required state in code**, not with an asterisk alone.
 - **Never rely on the field's appearance to say that a file is attached.** The value must be readable, not just visible.
 
 ### Keyboard and non-mouse navigation
@@ -100,10 +101,7 @@ The whole point of this component is that a file field is a field. Everything be
 - **Any clear or remove control is its own tab stop** (a place the Tab key lands), in visual order, and works with Enter or Space.
 - **When a file is removed, put focus somewhere on purpose** — back on the field itself, not lost at the top of the document.
 - **Otherwise, do not move focus for the user.** Coming back from the operating system's file dialog leaves focus on the field.
-- **The tab order follows the visual order**, which the single-column form layout in `recursica-skill-forms` makes easy.
 - **Nothing needed may appear only on hover** — not the size limit, not the accepted types, and not the remove control.
-- **Tab skips a disabled field**, so put the reason it is disabled in text.
-- **Never hide the focus ring** (the outline that shows which element has keyboard focus).
 
 ## Not your decision
 
@@ -150,7 +148,6 @@ Never style an unfocused field so that it reads as disabled. An editable field m
 - [ ] Any clear or remove control is a tab stop, with a name that includes the file name.
 - [ ] Removals and rejections are announced, and focus is put somewhere on purpose after a removal.
 - [ ] The field's icon is silent, and the required state is shown in code.
-- [ ] The tab order follows the visual order, nothing needed appears only on hover, and the focus ring is intact.
 - [ ] No upload starts as a side effect of choosing a file. It starts when the user clearly asks, and when the form saves everything together, it finishes before submit.
 - [ ] You passed no variant, size, or state outside the inventory above.
 - [ ] You overrode no padding, border, or color that the component owns, and no field without focus looks disabled.

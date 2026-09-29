@@ -54,7 +54,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.text-field`. **Do not 
 
 ## Rules for using it
 
-**Always pass a visible label.** Name the object clearly; a screen reader user hears the label on its own, without the context around it. Use sentence capitalization, no colon at the end, and keep it short enough not to wrap.
+**Always pass a visible label.** Name the object clearly; a screen reader user (someone using software that reads the screen aloud) hears the label on its own, without the context around it. Use sentence capitalization, no colon at the end, and keep it short enough not to wrap.
 
 **Never put required information in the placeholder.** It disappears on the first keystroke. Use it only to show the form of the value you expect.
 
@@ -81,14 +81,14 @@ Never reach for a disabled text field as a way to show a value.
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring, hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 The component connects the label to the input, provides the focus ring (the outline that shows which element has keyboard focus), and handles the keys inside the field. Everything below is up to you to get right — and it is the part most often missed.
 
 ### Screen readers
 
 - **Pass a real label.** Never let placeholder text be the accessible name (the name a screen reader reads out for a control) — it is not announced as a label, and it disappears when the user types. A field with no label has no accessible name.
-- **Pass assistive text and error text through the component**, never as a separate element placed beside the field. Only the component can connect them to the input, and text that is not connected is invisible to a screen reader (software that reads the screen aloud) user who tabs straight into the field.
 - **The error message must be the text that gets announced.** Because the error replaces the assistive text instead of adding to it, the message is the only thing that will be read — so it has to state the rule, not "Invalid input".
-- **Show the required state in code, not with an asterisk alone.** The asterisk is a visual convention; it is not an accessible way of saying "required".
 - **Give every icon inside the field that can be used an accessible name** — a clear control, a calendar trigger. Decorative icons must be silent, not announced as unlabeled graphics.
 - **If a prefix or suffix changes what the value means** — a currency symbol, a unit — make sure that meaning is in the label or the assistive text. A visual affix on its own may not be announced with the value.
 - **When a value's format changes on focus**, state the expected format in the assistive text. The mask is a visual aid, and tells a screen reader nothing.
@@ -99,9 +99,6 @@ The component connects the label to the input, provides the focus ring (the outl
 - **The tab order follows the visual order.** The single-column form rule in `recursica-skill-forms` is what keeps this true. Do not reorder fields on screen while leaving the DOM order (the order in the page's code) alone, or the other way round.
 - **Every control inside the field is its own tab stop** (a place the Tab key lands), and works from the keyboard — Enter or Space, not handlers that only respond to clicks.
 - **Do not move focus for the user.** No jumping ahead to the next field when a value looks complete, and no focus jumps on a keystroke. Both strand keyboard and screen reader users partway through typing.
-- **Tab skips a disabled field**, so any information shown only by its disabled state cannot be reached by keyboard. Put the reason in text.
-- **Nothing needed to complete the field may require hover to appear.** Assistive text stays on screen; a hint that appears only on hover cannot be reached by keyboard or touch users.
-- **Never hide the focus ring**, and never rely on the caret (the text cursor) alone to show where focus is.
 
 ## Not your decision
 
@@ -140,11 +137,7 @@ Never style an unfocused field so that it reads as disabled. An editable field m
 - [ ] No required information lives in placeholder text.
 - [ ] Assistive text states the rule. On error, it is replaced by a message that restates that rule.
 - [ ] The error state has a signal that is not color.
-- [ ] Assistive text and error text are passed through the component, not shown beside it.
-- [ ] The required state is shown in code, not by an asterisk alone.
 - [ ] Every icon inside the field that can be used has an accessible name, and decorative icons are silent.
-- [ ] The field is in the tab order, the tab order matches the visual order, and focus is never moved for the user.
-- [ ] Nothing needed to complete the field requires hover, and the focus ring is not hidden.
 - [ ] You passed no variant, size, or state outside the inventory defined by tokens above.
 - [ ] You overrode no styling that the component owns, and no field without focus looks disabled.
 - [ ] Values that cannot be edited use the read-only component, text on several lines moved to a textarea, and quantities moved to a number input.

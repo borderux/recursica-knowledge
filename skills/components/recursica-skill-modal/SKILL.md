@@ -62,6 +62,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.modal`. **The modal ha
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 A modal is the component where accessibility failures are most serious. Get the focus handling wrong, and a keyboard or screen reader user is either trapped, or reading a page they cannot see. Most of this is behavior you must make sure of, not styling.
 
 ### Screen readers
@@ -82,7 +84,6 @@ A modal is the component where accessibility failures are most serious. Get the 
 - **Every control in the modal can be reached by keyboard, in visual order**, including the footer buttons and the close control.
 - **The page behind must not scroll**, and no element behind it may take focus.
 - **Never make closing it pointer-only.** A click on the overlay may close it, but Escape and the cancel action must both work.
-- **Never hide the focus ring** (the outline that shows which element has keyboard focus) inside the modal.
 
 ## Not your decision
 
@@ -101,6 +102,7 @@ Do not implement, override, or tune any of these — the component owns them:
 - `recursica-skill-buttons-links` — modal triggers, destructive-action confirmation, undo, footer button hierarchy.
 - `recursica-skill-navigation` — routing and browser history, including the deep-linkable modal exception.
 - `recursica-skill-forms` — save mode and validation for any form the modal contains.
+- `recursica-skill-system-conventions` — the accessibility baseline every component follows.
 
 ### Only if the screen also uses it
 

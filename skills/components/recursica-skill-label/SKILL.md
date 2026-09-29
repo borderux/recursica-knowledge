@@ -76,6 +76,8 @@ Mixing the two placements in one form causes three problems. It destroys the sin
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring, hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 The label is where a field becomes usable by a screen reader (software that reads the screen aloud) at all. The connection between label and control is the whole reason this component exists.
 
 ### Screen readers

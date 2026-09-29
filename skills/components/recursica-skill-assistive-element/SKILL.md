@@ -66,6 +66,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.assistive-element`.
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring, hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 This component only works if the field it belongs to knows about it. Text shown near a field but not connected to it is invisible to a screen reader (software that reads the screen aloud) user who tabs straight into the input — which is the normal way of moving through a form.
 
 ### Screen readers

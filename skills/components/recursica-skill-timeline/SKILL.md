@@ -82,6 +82,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.timeline` and `ui-kit.
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 A timeline is a list of events, and almost everything that makes it readable is visual: a vertical line that suggests sequence, a bullet that suggests a type, a color that suggests selection, and a relative timestamp that hides the real date. **All four have to be replaced with something in the code** that assistive technology (tools such as screen readers that help people with disabilities use a computer) can read.
 
 ### Screen readers
@@ -103,7 +105,6 @@ A timeline is a list of events, and almost everything that makes it readable is 
 - **The absolute date must not appear only in a tooltip on hover.** This is the most common failure here: a relative time with the real timestamp shown on hover cannot be reached by keyboard or by touch.
 - **Nothing else the user needs may appear only on hover** either — not an entry's detail, and not its actions.
 - **Where a long timeline pages or loads more, that control is a real button the keyboard can reach**, and adding items must not move or lose focus.
-- **Never hide the focus ring** (the outline that shows which element has keyboard focus) on an item that can be selected, or on any control inside one.
 
 ## Not your decision
 

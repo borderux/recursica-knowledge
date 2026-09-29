@@ -72,6 +72,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.breadcrumb`. **Do not 
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 A breadcrumb is a short row of links, and assistive technology (tools such as screen readers that help people with disabilities use a computer) has no way to recognize it as a trail unless you say so. Three failures account for nearly all the problems: a navigation region with no name, a separator read aloud between every item, and a current page that links to itself.
 
 ### Screen readers
@@ -93,7 +95,6 @@ A breadcrumb is a short row of links, and assistive technology (tools such as sc
 - **Nothing in the trail may appear only on hover** — not a crumb, and not a collapsed part of one. Levels revealed on hover cannot be reached by keyboard or by touch.
 - **Enter activates a crumb; Space does not.** That is correct browser behavior for a link. If you find yourself adding a Space handler, you have built a button.
 - **Do not intercept the modifier keys.** Ctrl, Cmd, Shift, and middle-click must reach the browser, so the user stays in control of where the parent page opens.
-- **Never hide the focus ring** (the outline that shows which element has keyboard focus), and never let a hover underline stand in for the focus state.
 
 ## Not your decision
 
@@ -140,7 +141,6 @@ Do not implement, override, or tune any of these — the component owns them:
 - [ ] You added no hidden copy of the trail or the page title for screen readers.
 - [ ] Every crumb is a tab stop, in visual order, and the current page cannot receive focus.
 - [ ] Nothing in the trail depends on hover, and the modifier keys are not intercepted.
-- [ ] The focus ring is intact, and is not the hover effect.
 - [ ] The trail does not scroll sideways, wrap into a strip, or shrink to fit.
 - [ ] You invented no variant, state, content option, or separator token outside the inventory above.
 - [ ] You overrode no styling that the component owns.

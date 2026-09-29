@@ -86,6 +86,8 @@ Taken from `recursica_ui-kit.json`. Four specs make up one accordion, and **only
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 The component draws the header and the chevron. Whether the collapsed state is real, and whether the header is a real button, are entirely up to you — and they are the two things most often done wrong.
 
 ### Screen readers
@@ -108,7 +110,6 @@ The component draws the header and the chevron. Whether the collapsed state is r
 - **Do not move focus for the user when a header toggles.** Focus stays on the header that was activated. Do not throw it into the panel.
 - **Never collapse a panel that contains focus.** If single-open behavior closes a panel the user is working in, their focus is destroyed, and they are sent back to the top of the document.
 - **The header must never open on hover**, and nothing needed inside a panel may be revealed only by hover.
-- **Never hide the focus ring** (the outline that shows which element has keyboard focus) on the header, and never let the hover style stand in for it.
 
 ## Not your decision
 

@@ -82,6 +82,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.slider`. **Do not pass
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring, hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 The component provides the focus ring (the outline that shows which element has keyboard focus), the thumb, and the keys inside the track. Everything below is up to you — and this is where sliders fail most often, because dragging is the only interaction most builds actually finish.
 
 ### Screen readers
@@ -91,7 +93,6 @@ The component provides the focus ring (the outline that shows which element has 
 - **The value must be announced as it changes, but it must not flood the user** — one announcement for each value the user settles on, not one for every pixel of movement. Do not add a live region (an area a screen reader announces automatically when its content changes) on top of the value the control already announces.
 - **The minimum and maximum labels must be connected to the control in code**, not left as floating text near the ends of the track. Labels that are not connected are invisible to a screen reader (software that reads the screen aloud) user who tabs straight to the thumb.
 - **The paired number input needs its own accessible name** (the name a screen reader reads out for a control), and it must be clear that it and the track are two views of one value — not two separate fields.
-- **Pass assistive text and error text through the component.** Text shown beside the slider is not connected to it.
 - **Never rely on the track's fill to show the value.** Position on a track is a single visual channel (a way of carrying meaning, such as color, shape, position, or text). The announced value and the readout are the other channels.
 
 ### Keyboard and non-mouse navigation
@@ -100,10 +101,8 @@ The component provides the focus ring (the outline that shows which element has 
 - **The arrow keys move by one step. Page Up and Page Down move by a larger step. Home goes to the minimum, and End to the maximum.** Do not remap or swallow any of them.
 - **The thumb is the tab stop (a place the Tab key lands), and the focus ring goes on the thumb.** Never hide it, and never let the track's fill stand in for it.
 - **The paired number input is its own tab stop**, in visual order relative to the track.
-- **The tab order follows the visual order**, and the slider sits in order with the fields around it. The single-column form layout is what keeps this true; see `recursica-skill-forms`.
 - **Do not move focus for the user** — not when the value reaches an end, and not when the number input is saved.
 - **Nothing needed to use the slider may appear only on hover.** The current value, the ends of the range, and the step size all stay on screen, or they do not exist.
-- **Tab skips a disabled slider**, so any reason shown only by its disabled look cannot be reached. Put the reason in text.
 
 ## Not your decision
 

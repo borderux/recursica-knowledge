@@ -86,6 +86,8 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.radio-button`, `radio-
 
 ## Accessibility
 
+The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring, hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+
 The component pairs each control with its item label, manages focus within the group, and provides the focus ring (the outline that shows which element has keyboard focus). The group's name, making the state available, and everything below are up to you.
 
 ### Screen readers
@@ -95,8 +97,6 @@ The component pairs each control with its item label, manages focus within the g
 - **The group must be announced as a group**, with a position within it — "option 2 of 5". That is what tells the user the options are alternatives, rather than separate fields.
 - **The selected state must be available in code**, never shown only by a fill colour or a dot. A user who cannot see the control must still hear "selected" or "not selected". Required by `recursica-skill-system-conventions`.
 - **A value selected in advance is announced as the current answer.** This is exactly why the caution about pre-selection exists: the default is heard as a decision already made.
-- **Pass the group's assistive text and any error text through the component**, so they are connected to the group. Text floating beside the options is invisible to someone who tabs straight into the group.
-- **The required state belongs to the group, and it must be available in code** — not shown by an asterisk alone.
 - **A disabled option is announced as disabled, but the arrow keys skip it**, so any explanation carried only by how it looks cannot be reached. Put the reason in text.
 - **When an option reveals more fields, say so before it is chosen** — in the item label, or in the group's assistive text.
 
@@ -108,9 +108,6 @@ The component pairs each control with its item label, manages focus within the g
 - **The library owns how keys work and the roving focus inside the group** — roving focus is where the arrow keys move between options that share one tab stop. Do not attach your own key listeners, do not manage tabindex yourself, and do not rebuild the wrapping — you will break behaviour that already works.
 - **Clicking or tapping the item label selects its option.** That comes free with a real connected label, and it gives the user a bigger target. Do not break it by showing the label as loose text.
 - **Do not move focus for the user.** When an option reveals fields below, focus stays in the group, and the user reaches the new fields with the next Tab. Never jump ahead because a choice seems made.
-- **Nothing needed may appear only on hover.** A rule or a consequence that appears only on hover cannot be reached by keyboard or touch users.
-- **Never hide the focus ring, and never let it be confused with the selected state.** Because the arrow keys move focus and selection together, the two styles sit next to each other all the time, and they must stay easy to tell apart. A selected option that is not focused, and a focused option, must not look alike.
-- **The tab order follows the visual order**, which the vertical-only rule makes easy.
 
 ## Not your decision
 
@@ -160,7 +157,6 @@ Do not add margins or spacer elements between options or around the group; the c
 - [ ] You overrode no key handling, tabindex, or wrapping behaviour inside the group.
 - [ ] Clicking the item label selects the option.
 - [ ] Focus is never moved for the user, including when an option reveals fields below.
-- [ ] Nothing needed requires hover. The focus ring is intact, and easy to tell apart from the selected state.
 - [ ] Disabled is used only for options that are unavailable for now, with the reason in text. Values that can never be edited use the read-only field.
 - [ ] You passed no variant, size, or state outside the inventory above, and overrode no property the component owns.
 - [ ] The group saves with the form, in the same save mode as everything else in the system.
