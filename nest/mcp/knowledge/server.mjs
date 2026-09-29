@@ -353,11 +353,13 @@ const TOOLS = [
       'component is and a design-rules skill tells you whether it belongs on the screen — reading ' +
       'the first without the second is the most common way to produce something individually ' +
       'correct and collectively wrong. Ask for what you need; the family comes with it. ' +
-      'detail "contract" returns each skill\'s checklist, and for a component its inventory and ' +
-      '"Do not use it when" table — about a sixth of the text, and every rule in checkable form. ' +
-      'Build from the contract, and call skill_section for the reasoning behind any item you are ' +
-      'unsure how to apply. detail "full" (the default) returns every skill whole. Each skill ' +
-      'lists `seeAlso`: alternatives it points at, which are not loaded unless you ask for them.',
+      'detail "full" (the default) returns every skill whole — use it whenever it fits. detail ' +
+      '"contract" returns each skill\'s checklist and uncovered list, and for a component its ' +
+      'inventory and "Do not use it when" table: about a quarter of the text. Builders working ' +
+      'from contracts broke more rules than builders reading full text, above all accessibility ' +
+      'rules, so use it only when the full family will not fit, and call skill_section for each ' +
+      'component\'s Accessibility section and for the reasoning behind any item you are unsure ' +
+      'how to apply. Each skill lists `seeAlso`: alternatives it points at, not loaded unless asked for.',
     inputSchema: {
       type: 'object',
       properties: {
