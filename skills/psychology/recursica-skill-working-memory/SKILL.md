@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-working-memory
-description: The cognitive-science basis for Recursica's item-count rules, with citations — Miller's 7 ± 2, Cowan's revision to about 4 chunks, chunking, and recognition vs. recall. Use whenever a decision turns on how many things to put in front of a user at once — navigation items per level, options in a radio or checkbox group, or whether a long list belongs in a dropdown instead. Also use when asked to justify, cite, or push back on one of these limits, or when a spec proposes a count that looks too high. Trigger on "7 plus or minus 2", "magic number seven", "working memory", "short-term memory", "cognitive load", "chunking", "how many items", "too many options", or "recognition over recall". Do NOT use to choose a control type — that is recursica-skill-selection-controls. Do NOT use for navigation structure — that is recursica-skill-navigation. This skill supplies the reasoning those skills apply.
+description: The research behind Recursica's item-count limits, with citations — Miller's 7 ± 2, Cowan's 4, chunking, and recognition versus recall. Use when a decision turns on how many options, navigation items, or chips to show at once, or to justify or challenge a count. Not for choosing a control — see recursica-skill-selection-controls.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -9,18 +9,18 @@ metadata:
 
 # Working memory and item counts
 
-The shared reasoning behind every count limit in the Recursica design rules. Sibling skills state the rule for their surface; this skill explains why the number is what it is, and — just as importantly — when it does not apply.
+This skill gives the shared reasoning behind every limit on item counts in the Recursica design rules. Working memory is how much a person can hold in mind at once. The related skills state the rule for their own part of the interface. This skill explains why the number is what it is — and, just as important, when it does not apply.
 
-Read this before overriding a count limit, and cite it when someone asks where the number came from.
+Read this before you override a count limit. Cite it when someone asks where the number came from.
 
 ## The house rule
 
-**Target 7 ± 2 items, scaled by the cognitive load of the material.**
+**Aim for 7 ± 2 items, adjusted for the cognitive load** (the mental effort a task demands) of the content.
 
-- **Similar, easily distinguished, familiar items** → the upper end of the range is fine.
-- **Dissimilar, cognitively demanding, or domain-expertise items** → use fewer, toward 5.
+- **Items that are similar, easy to tell apart, and familiar** → the high end of the range is fine.
+- **Items that are different from each other, hard to think about, or need expert knowledge** → use fewer, closer to 5.
 
-Where it currently applies, as stated by the owning skill:
+Where it applies today, as stated by the skill that owns each rule:
 
 | Surface                              | Rule                                                            | Owner                                |
 | ------------------------------------ | --------------------------------------------------------------- | ------------------------------------ |
@@ -28,42 +28,42 @@ Where it currently applies, as stated by the owning skill:
 | Options in a radio or checkbox group | 7 ± 2 scaled by cognitive load; above it, convert to a dropdown | `recursica-skill-selection-controls` |
 | Chips in a group or filter bar       | 7 ± 2 scaled by cognitive load, as a checkbox group             | `recursica-skill-badges-chips`       |
 
-No house ceiling has been set for table columns, toolbar actions, or steps in a flow. Do not invent one by analogy — treat those as open questions rather than applying this number where it has not been established.
+No house limit has been set for table columns, toolbar actions, or steps in a flow. Do not invent one by comparison with these — treat those as open questions, instead of applying this number where it has not been agreed.
 
 ## What the research actually says
 
-**Miller (1956)** is the source of "7 ± 2." He observed that immediate memory span for unidimensional stimuli — digits, tones, single-attribute items — clusters around seven items, and coined _chunking_ to describe how people compress information into larger units to work around that limit.
+**Miller (1956)** is the source of "7 ± 2." He found that people's short-term memory for simple items that vary in only one way — digits, tones, items with a single feature — tends to hold about seven. He came up with the term _chunking_ for how people group information into larger units to get around that limit.
 
-**Miller's number is not a design law, and he did not present it as one.** He was describing recall of items held in mind, not the number of options a person can pick from on a screen.
+**Miller's number is not a design law, and he did not present it as one.** He was describing how many items people can recall from memory, not how many options a person can choose from on a screen.
 
-**Cowan (2001)** revisited the evidence and put pure working-memory capacity at closer to **four chunks**, plus or minus one, once rehearsal and long-term memory support are controlled for. The honest state of the literature is that the true capacity is _lower_ than seven, not higher.
+**Cowan (2001)** looked at the evidence again, and put the true capacity of working memory closer to four chunks, plus or minus one, once repeating things to yourself and help from long-term memory are ruled out. The honest summary of the research is that the real capacity is _lower_ than seven, not higher.
 
-**So why does the house rule say 7 ± 2?** Because it is a **scannability and comparison ceiling**, not a memory-capacity claim. Above roughly nine items a list stops being takeable-in-at-a-glance and starts requiring systematic search — and that is the failure we are designing against. The number is a useful, widely understood convention that lands in the right place for scanning. It is not evidence that users can hold nine things in mind.
+**So why does the house rule say 7 ± 2?** Because it is a limit on scanning and comparing, not a claim about memory capacity. Past about nine items, a list can no longer be taken in at a glance, and starts to need a careful search — and that is the failure we are designing against. The number is a useful, widely understood convention that falls in the right place for scanning. It is not evidence that users can hold nine things in mind.
 
-**Chunking is the lever, not the limit.** Grouping items under headings, or by parent object, lets a screen carry far more than nine items without exceeding the ceiling at any one level. Prefer restructuring into groups over shaving items.
+**Chunking is the tool, not the limit.** Grouping items under headings, or by the object they belong to, lets a screen hold far more than nine items without going over the limit at any one level. Prefer reorganizing items into groups over cutting items.
 
 ## Recognition vs. recall — the boundary
 
-**The ceiling applies to sets where the user must compare options or hold them in mind.** It does **not** apply to a visible, well-ordered list the user only has to recognize an answer in.
+**The limit applies to sets where the user must compare options or hold them in mind.** It does not apply to a visible, well-ordered list where the user only has to recognize the answer.
 
 This is why a long list is not automatically a violation:
 
-- **US states in a dropdown is fine at 50 items.** The set is finite, alphabetized, and universally known, so the user is recognizing a value they already have in mind, not evaluating fifty candidates.
-- **Fifty disparate values in a dropdown is not fine.** The user has to read and weigh each one, which is comparison, and the ceiling bites.
+- **US states in a dropdown is fine at 50 items.** The set is fixed, in alphabetical order, and known to everyone, so the user is recognizing a value they already have in mind — not weighing up fifty choices.
+- **Fifty unrelated values in a dropdown is not fine.** The user has to read and weigh each one. That is comparing, and the limit applies.
 
-**The test is the same one `recursica-skill-selection-controls` applies to dropdowns:** does the user know what is in the set before they open it? If yes, length is cheap. If no, length is expensive.
+**The test is the same one `recursica-skill-selection-controls` applies to dropdowns:** does the user know what is in the set before they open it? If yes, length costs little. If no, length costs a lot.
 
-Menus and navigation are recognition surfaces too — which is why the navigation ceiling exists for scannability, not because users must memorize nav items. Do not justify a nav count limit by claiming users cannot remember the options; they do not have to.
+Menus and navigation are also places where users recognize — which is why the navigation limit exists for easy scanning, not because users must memorize navigation items. Do not justify a navigation count limit by claiming users cannot remember the options; they do not have to.
 
 ## Common misapplications
 
-**Do not cite 7 ± 2 to cap a list the user only recognizes from.** Alphabetized reference data, search results, and table rows are not bound by it.
+**Do not cite 7 ± 2 to limit a list the user only recognizes items from.** Reference data in alphabetical order, search results, and table rows are not bound by it.
 
-**Do not treat nine as a target.** It is the far end of a range that shrinks as material gets harder. Most enterprise subject matter is harder than average, so most counts should sit below seven.
+**Do not treat nine as a target.** It is the far end of a range that gets smaller as the content gets harder. Most enterprise subject matter is harder than average, so most counts should be below seven.
 
-**Do not use the rule to justify hiding things behind a "more" affordance.** Exceeding the ceiling means the structure needs grouping or a different control, not concealment. See the overflow rules in `recursica-skill-navigation`.
+**Do not use the rule to justify hiding things behind a "more" control.** Going over the limit means the structure needs grouping, or a different control — not hiding. See the overflow rules in `recursica-skill-navigation`.
 
-**Do not claim the number is settled science.** If challenged, the accurate position is: Miller's span is about recall of unidimensional items, Cowan's reconsideration puts capacity nearer four, and Recursica uses 7 ± 2 as a deliberate scannability convention.
+**Do not claim the number is settled science.** If challenged, the accurate position is this: Miller's span is about recalling simple items that vary in one way, Cowan's review puts capacity closer to four, and Recursica uses 7 ± 2 on purpose as a convention for easy scanning.
 
 ## References
 
@@ -74,17 +74,17 @@ Menus and navigation are recognition surfaces too — which is why the navigatio
 ## Out of scope
 
 - **Choosing a control type.** Covered by `recursica-skill-selection-controls`.
-- **Whether a feature should be discoverable or promoted.** Covered by `recursica-skill-discoverability`, the sibling psychology skill.
-- **Navigation structure, grouping, and overflow behavior.** Covered by `recursica-skill-navigation`.
-- **Any count limit not listed in the table above.** No rule exists yet; say so rather than deriving one.
+- **Whether a feature should be easy to find or promoted.** Covered by `recursica-skill-discoverability`, the other psychology skill.
+- **Navigation structure, grouping, and what happens when there are too many items.** Covered by `recursica-skill-navigation`.
+- **Any count limit not listed in the table above.** No rule exists yet. Say so, instead of working one out yourself.
 
 ## Pre-flight checklist
 
-When a count decision is in play, verify:
+When a decision about how many items to show comes up, check:
 
-- [ ] Each level of a set holds 7 ± 2 items, biased below seven where the material is unfamiliar or hard to distinguish.
-- [ ] Sets that exceed the ceiling were restructured by grouping, or moved to a different control — not hidden behind an overflow affordance.
-- [ ] The ceiling was applied only to comparison sets, not to recognition lists like alphabetized reference data.
-- [ ] Any long list left long passes the predictability test: the user knows what is in the set before opening it.
-- [ ] No count limit was invented for a surface the table above does not cover.
-- [ ] Any claim made about the research is accurate — 7 ± 2 is a scannability convention here, not a capacity finding.
+- [ ] Each level of a set holds 7 ± 2 items, leaning below seven where the content is unfamiliar or hard to tell apart.
+- [ ] Sets that go over the limit were reorganized into groups, or moved to a different control — not hidden behind a "more" control.
+- [ ] The limit was applied only to sets the user compares, not to lists the user recognizes from, like reference data in alphabetical order.
+- [ ] Any long list that was left long passes the predictability test: the user knows what is in the set before opening it.
+- [ ] No count limit was invented for a part of the interface the table above does not cover.
+- [ ] Any claim about the research is accurate — here, 7 ± 2 is a convention for easy scanning, not a finding about memory capacity.

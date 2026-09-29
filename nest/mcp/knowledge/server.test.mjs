@@ -15,7 +15,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { family, declarationsFor, readSkill } from './server.mjs'
+import { family, declarationsFor, readSkill, served, TOOLS } from './server.mjs'
 
 const SERVER = fileURLToPath(new URL('./server.mjs', import.meta.url))
 
@@ -53,10 +53,12 @@ test('skill_family never returns a skill on its own', async () => {
 })
 
 test('a family is closed transitively, not one hop deep', async () => {
-  // Deliberately not the badge skill: its cross-links happen to bottom out in one hop, so it
-  // passes a one-hop implementation too. The accordion's family is the deepest in the corpus at
-  // four, which is what makes it the one that can tell the two apart.
-  const root = 'recursica-skill-accordion'
+  // Deliberately not the badge skill: its cross-links bottom out in one hop, so it passes a
+  // one-hop implementation too. The timeline needs the avatar skill, and the avatar needs the
+  // navigation and buttons-links rules, which the timeline never names — only a transitive
+  // closure reaches them. (This used to be the accordion, until its links to tree and tabs
+  // became "only if used" and its family stopped at one hop.)
+  const root = 'recursica-skill-timeline'
   const direct = new Set(readSkill(root).loadTheseToo)
   const { skills } = family([root])
   const beyondOneHop = skills
@@ -82,7 +84,7 @@ test('the handshake advertises every tool', async () => {
   assert.equal(init.result.serverInfo.name, 'recursica-knowledge')
   assert.match(init.result.instructions, /router/)
   const names = list.result.tools.map((t) => t.name).sort()
-  assert.deepEqual(names, ['component_api', 'list_skills', 'router', 'skill_family', 'skills_for_screen'])
+  assert.deepEqual(names, ['component_api', 'list_skills', 'router', 'skill_family', 'skill_section', 'skills_for_screen'])
 })
 
 test('router returns the design router itself', async () => {
@@ -176,4 +178,52 @@ test('the server starts when reached through a symlinked path', async () => {
 
   assert.match(banner, /ready/, 'the server produced no banner through a symlink — the guard is comparing unresolved paths')
   fs.rmSync(dir, { recursive: true, force: true })
+})
+
+test('an alternative a skill points at is not loaded, but is named in seeAlso', () => {
+  // A table points at cards as the alternative for small sets. Following that link pulled in
+  // the card skill and, through it, the dashboards and data-visualization rules — six unused
+  // skills on an ordinary screen. The link is still reported, so nothing is hidden.
+  const { skills } = family(['recursica-skill-table'])
+  const slugs = skills.map((s) => s.slug)
+  assert.ok(!slugs.includes('recursica-skill-card'), 'an "only if used" link was followed')
+  assert.ok(slugs.includes('recursica-skill-tables'), 'the table came back without its design rules')
+  assert.ok(readSkill('recursica-skill-table').seeAlso.includes('recursica-skill-card'))
+})
+
+test('a component still loads the parts it is built from', () => {
+  // A text field is a label, an input, and an assistive element. Those two are components, but
+  // needs, not alternatives — a rule that loaded components only when imported would drop them.
+  const slugs = family(['recursica-skill-text-field']).skills.map((s) => s.slug)
+  assert.ok(slugs.includes('recursica-skill-label'))
+  assert.ok(slugs.includes('recursica-skill-assistive-element'))
+})
+
+test('a served skill carries no frontmatter', () => {
+  const skill = readSkill('recursica-skill-badge')
+  assert.ok(!skill.body.startsWith('---'), 'the body still opens with frontmatter')
+  assert.ok(!('description' in served(skill, 'full')), 'the description is repeated in a family response')
+})
+
+test('a contract is much shorter than the skill and keeps every checklist item', () => {
+  for (const slug of ['recursica-skill-table', 'recursica-skill-forms']) {
+    const skill = readSkill(slug)
+    const { contract } = served(skill, 'contract')
+    const items = (text) => (text.match(/^- \[ \]/gm) ?? []).length
+    assert.equal(items(contract), items(skill.body), `${slug}: a checklist item is missing from the contract`)
+    assert.ok(contract.length < skill.body.length / 2, `${slug}: the contract is not much shorter`)
+  }
+  const table = served(readSkill('recursica-skill-table'), 'contract')
+  assert.match(table.contract, /^## Do not use it when/m)
+  assert.match(table.contract, /^## What exists/m)
+  assert.ok(table.sections.includes('Rules for using it'), 'the contract does not say what else can be fetched')
+  assert.match(table.contract, /^## Uncovered — ask, do not invent/m, 'the contract hides the list the checklist says not to invent from')
+})
+
+test('skill_section returns one section, and names the real ones when asked for a wrong one', () => {
+  const tool = TOOLS.find((t) => t.name === 'skill_section')
+  const { text } = tool.handler({ slug: 'recursica-skill-table', heading: 'What exists' })
+  assert.match(text, /\| Spec/)
+  assert.ok(!/^## /m.test(text), 'the section ran on into the next one')
+  assert.throws(() => tool.handler({ slug: 'recursica-skill-table', heading: 'Nope' }), /It has: .*Rules for using it/)
 })

@@ -14,11 +14,11 @@ The number that matters is **MISSED (Kev said clear)**. The second is how many l
 
 Kev-engine: `jaredpalmer/kev-4b` on a 16 GB RTX 5070 Ti. Screens from the builder's prototype repo.
 
-| Screen | Lines | Barb run | Barb findings | Kev lead | Kev unsure | Missed | Leads real |
-|---|---|---|---|---|---|---|---|
-| delivery-customer-profile | 214 | single-pass¹ | 2 | 2 | 0 | 0 | 2 / 5 |
-| delivery-customer-profile | 214 | full (checker + feisty) | 4 | 2 | 2 | 0 | 2 / 5 |
-| delivery-manager | 637 | single-pass¹ | 6 | 0 | 5 | 1 | 0 / 41 |
+| Screen                    | Lines | Barb run                | Barb findings | Kev lead | Kev unsure | Missed | Leads real |
+| ------------------------- | ----- | ----------------------- | ------------- | -------- | ---------- | ------ | ---------- |
+| delivery-customer-profile | 214   | single-pass¹            | 2             | 2        | 0          | 0      | 2 / 5      |
+| delivery-customer-profile | 214   | full (checker + feisty) | 4             | 2        | 2          | 0      | 2 / 5      |
+| delivery-manager          | 637   | single-pass¹            | 6             | 0        | 5          | 1      | 0 / 41     |
 
 ¹ Before the Hermes delegation cap was lifted (see `agents/barb/runtime/hermes.md`), so these
 findings were never challenged by feisty. The full-review row is the trustworthy one.

@@ -6,12 +6,12 @@ the reviewer; it works with any System One-compatible server, including TypeSafe
 
 ## Which model
 
-| Model | Fits | Notes |
-|---|---|---|
-| kev-0.8b | ~3 GB | Proves the setup; too weak to trust. |
-| kev-4b | ~9 GB | What the evals ran on. |
-| kev-9b | ~18 GB | Too big for a 16 GB card. Runs on a Mac via MLX. |
-| kev-27b | ~66 GB | Needs an 80 GB NVIDIA card. No Mac path. |
+| Model    | Fits   | Notes                                            |
+| -------- | ------ | ------------------------------------------------ |
+| kev-0.8b | ~3 GB  | Proves the setup; too weak to trust.             |
+| kev-4b   | ~9 GB  | What the evals ran on.                           |
+| kev-9b   | ~18 GB | Too big for a 16 GB card. Runs on a Mac via MLX. |
+| kev-27b  | ~66 GB | Needs an 80 GB NVIDIA card. No Mac path.         |
 
 The card has to be free. On a shared GPU, another model server (FreeToken, Ollama with a model
 loaded) is the usual reason Kev-engine fails with "CUDA error: out of memory".

@@ -5,8 +5,12 @@
   "type": "module",
   "license": "MIT",
   "author": "hi@borderux.com",
-  "engines": { "node": ">=20" },
-  "bin": { "kev": "bin/kev.mjs" },
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "kev": "bin/kev.mjs"
+  },
   "scripts": {
     "review": "node bin/kev.mjs",
     "agent": "node agent.mjs",

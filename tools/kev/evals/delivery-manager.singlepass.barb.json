@@ -1,38 +1,38 @@
 [
- {
-  "skill": "recursica-skill-badges-chips",
-  "checklistItem": "Each object carries at most one badge; multiple values are chips.",
-  "file": "src/routes/prototypes/delivery-manager/index.tsx",
-  "line": 556
- },
- {
-  "skill": "recursica-skill-badge",
-  "checklistItem": "No badge communicates an error condition; `warning` and `alert` were not guessed at.",
-  "file": "src/routes/prototypes/delivery-manager/index.tsx",
-  "line": 61
- },
- {
-  "skill": "recursica-skill-tables",
-  "checklistItem": "Widths are set by data type: an explicit width on every narrow column — counts, dates, statuses, currency, short terms — and none on the sentence column, which takes the remainder. Widths are defined once for the application rather than per table.",
-  "file": "src/routes/prototypes/delivery-manager/index.tsx",
-  "line": 481
- },
- {
-  "skill": "recursica-skill-table",
-  "checklistItem": "It is a real table with real header cells associated with their columns, and it has an accessible name.",
-  "file": "src/routes/prototypes/delivery-manager/index.tsx",
-  "line": 481
- },
- {
-  "skill": "recursica-skill-loader",
-  "checklistItem": "Loading start and completion are both announced, politely, from a live region that already existed.",
-  "file": "src/routes/prototypes/delivery-manager/index.tsx",
-  "line": 336
- },
- {
-  "skill": "recursica-skill-table",
-  "checklistItem": "Sort, filter, and page changes announce their result.",
-  "file": "src/routes/prototypes/delivery-manager/index.tsx",
-  "line": 471
- }
+  {
+    "skill": "recursica-skill-badges-chips",
+    "checklistItem": "Each object carries at most one badge; multiple values are chips.",
+    "file": "src/routes/prototypes/delivery-manager/index.tsx",
+    "line": 556
+  },
+  {
+    "skill": "recursica-skill-badge",
+    "checklistItem": "No badge communicates an error condition; `warning` and `alert` were not guessed at.",
+    "file": "src/routes/prototypes/delivery-manager/index.tsx",
+    "line": 61
+  },
+  {
+    "skill": "recursica-skill-tables",
+    "checklistItem": "Widths are set by data type: an explicit width on every narrow column — counts, dates, statuses, currency, short terms — and none on the sentence column, which takes the remainder. Widths are defined once for the application rather than per table.",
+    "file": "src/routes/prototypes/delivery-manager/index.tsx",
+    "line": 481
+  },
+  {
+    "skill": "recursica-skill-table",
+    "checklistItem": "It is a real table with real header cells associated with their columns, and it has an accessible name.",
+    "file": "src/routes/prototypes/delivery-manager/index.tsx",
+    "line": 481
+  },
+  {
+    "skill": "recursica-skill-loader",
+    "checklistItem": "Loading start and completion are both announced, politely, from a live region that already existed.",
+    "file": "src/routes/prototypes/delivery-manager/index.tsx",
+    "line": 336
+  },
+  {
+    "skill": "recursica-skill-table",
+    "checklistItem": "Sort, filter, and page changes announce their result.",
+    "file": "src/routes/prototypes/delivery-manager/index.tsx",
+    "line": 471
+  }
 ]

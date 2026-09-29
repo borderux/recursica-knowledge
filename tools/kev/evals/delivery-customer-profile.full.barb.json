@@ -1,6 +1,26 @@
 [
- {"skill":"recursica-skill-badge","checklistItem":"No badge communicates an error condition; `warning` and `alert` were not guessed at.","file":"src/routes/prototypes/delivery-customer-profile/index.tsx","line":49},
- {"skill":"recursica-skill-loader","checklistItem":"Loading start and completion are both announced, politely, from a live region that already existed.","file":"src/routes/prototypes/delivery-customer-profile/index.tsx","line":104},
- {"skill":"recursica-skill-loader","checklistItem":"The wait is real, of unknown length, and longer than roughly 3 seconds; nothing shorter shows a loader.","file":"src/routes/prototypes/delivery-customer-profile/index.tsx","line":59},
- {"skill":"recursica-skill-screen-scaffolding","checklistItem":"Every page has a footer.","file":"src/routes/prototypes/delivery-customer-profile/index.tsx","line":102}
+  {
+    "skill": "recursica-skill-badge",
+    "checklistItem": "No badge communicates an error condition; `warning` and `alert` were not guessed at.",
+    "file": "src/routes/prototypes/delivery-customer-profile/index.tsx",
+    "line": 49
+  },
+  {
+    "skill": "recursica-skill-loader",
+    "checklistItem": "Loading start and completion are both announced, politely, from a live region that already existed.",
+    "file": "src/routes/prototypes/delivery-customer-profile/index.tsx",
+    "line": 104
+  },
+  {
+    "skill": "recursica-skill-loader",
+    "checklistItem": "The wait is real, of unknown length, and longer than roughly 3 seconds; nothing shorter shows a loader.",
+    "file": "src/routes/prototypes/delivery-customer-profile/index.tsx",
+    "line": 59
+  },
+  {
+    "skill": "recursica-skill-screen-scaffolding",
+    "checklistItem": "Every page has a footer.",
+    "file": "src/routes/prototypes/delivery-customer-profile/index.tsx",
+    "line": 102
+  }
 ]

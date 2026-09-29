@@ -230,10 +230,29 @@ function section(text, heading) {
 }
 
 /** The `## Load these too` skill slugs a skill file names. */
+/** Heading that splits `## Load these too` into what a skill needs and what it only points at. */
+export const IF_USED_HEADING = "### Only if the screen also uses it";
+
+/**
+ * A skill's cross-links, split in two. `needs` is loaded with the skill, always. `ifUsed` names
+ * alternatives and neighbours — a table points at cards, a dropdown at autocomplete — which are
+ * loaded only when the screen imports that component.
+ *
+ * Before the split, every link was followed, so a table pulled in cards, and cards pulled in the
+ * dashboards and data-visualization rules: six unused skills and about 25,000 tokens on an
+ * ordinary form-and-table screen. Server and manifest share this parser so they cannot disagree
+ * about which is which.
+ */
+export function crossLinks(text) {
+  const body = section(text, "Load these too");
+  if (!body) return { needs: [], ifUsed: [] };
+  const [needs, ifUsed = ""] = body.split(IF_USED_HEADING);
+  const slugs = (s) => [...new Set(s.match(/recursica-skill-[a-z0-9-]*[a-z0-9]/g) ?? [])];
+  return { needs: slugs(needs), ifUsed: slugs(ifUsed) };
+}
+
 function loadTheseToo(relPath) {
-  const body = section(fs.readFileSync(path.join(ROOT, relPath), "utf8"), "Load these too");
-  if (!body) return [];
-  return [...new Set(body.match(/recursica-skill-[a-z0-9-]+/g) ?? [])];
+  return crossLinks(fs.readFileSync(path.join(ROOT, relPath), "utf8"));
 }
 
 /**
@@ -285,8 +304,11 @@ export function manifest(entries) {
     .map((r) => `${r.name} (could be ${r.candidates.join(" or ")})`);
 
   // Breadth-first over `## Load these too`, so a skill reached only through another still lands.
+  // An "only if used" link is followed only when the screen imports that component, which in
+  // practice means it is already in the set.
+  const used = new Set(resolved.flatMap((r) => r.skills));
   const seen = new Set();
-  const queue = [...resolved.flatMap((r) => r.skills), ...ALWAYS];
+  const queue = [...used, ...ALWAYS];
   const missing = [];
   while (queue.length) {
     const slug = queue.shift();
@@ -294,7 +316,8 @@ export function manifest(entries) {
     const where = locate(slug);
     if (!where) { missing.push(slug); continue; }
     seen.add(slug);
-    queue.push(...loadTheseToo(where));
+    const links = loadTheseToo(where);
+    queue.push(...links.needs, ...links.ifUsed.filter((s) => used.has(s)));
   }
 
   const skills = [...seen].sort().map((slug) => ({ slug, path: locate(slug) }));
@@ -341,6 +364,7 @@ function selfCheck() {
   // Asserting non-empty is what turns that from invisible into a failed check.
   let items = 0;
   let links = 0;
+  let ifUsed = 0;
   for (const category of CATEGORIES) {
     const dir = path.join(SKILLS, category);
     if (!fs.existsSync(dir)) continue;
@@ -355,8 +379,9 @@ function selfCheck() {
 
       if (category === "components") {
         const cross = loadTheseToo(path.relative(ROOT, p));
-        if (cross.length === 0) problems.push(`components/${slug}: '## Load these too' parsed to nothing`);
-        links += cross.length;
+        if (cross.needs.length === 0) problems.push(`components/${slug}: '## Load these too' has no links it needs`);
+        links += cross.needs.length;
+        ifUsed += cross.ifUsed.length;
       }
     }
   }
@@ -369,7 +394,7 @@ function selfCheck() {
   console.log(`✓ ${ADAPTER_COMPONENTS.length} adapter components all resolve.`);
   console.log(`✓ ${Object.keys(ROUTES).length} routes for components with no skill of their own, ${ALWAYS.length} always-on skills.`);
   console.log(`✓ ${items} pre-flight checklist items across every skill.`);
-  console.log(`✓ ${links} cross-links parsed from the 39 component skills.`);
+  console.log(`✓ ${links} cross-links the 39 component skills need, and ${ifUsed} loaded only if the screen uses them.`);
 }
 
 // Only when run as a command. Without this guard the CLI executes on import, so the test file

@@ -16,6 +16,7 @@ FINDINGS THAT SURVIVED FEISTY
    index.tsx:102-205 renders no footer, and no shared shell in the repo supplies one.
 
 FINDINGS RAISED BY CHECKERS, REFUTED BY FEISTY
+
 - defaults: "discard user's place/data on error/refresh" -- reset path reachable only through the dev-only mode switcher.
 - feedback-messaging: full-page error/not-found copy should be a toast -- empty/loading/error states are listed as unowned by the design router.
 - forms: read-only fields should use read-only-field -- that skill's own rule says plain text when nothing is editable.
@@ -29,5 +30,6 @@ FINDINGS RAISED BY CHECKERS, REFUTED BY FEISTY
 - typography-semantics: no computed max-width -- the enclosing Container caps at 960px.
 
 UNCHECKED
+
 - Render-only items (reading measure, casing enforcement, grid alignment, small viewports).
 - Heading import is unmapped in the manifest.

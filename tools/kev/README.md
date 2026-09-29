@@ -16,14 +16,14 @@ designer sees a screen.
 
 ## How it maps to Barb
 
-| Barb | kev |
-|---|---|
-| Manifest picks the skills | Same script, same output. Never judged. |
-| One `checker` per skill | Code splits the screen into line-numbered chunks. Kev-engine answers one yes/no per checklist item per chunk. A second pass asks, over the whole screen, whether something required is missing. |
-| `feisty` refutes findings | Not replaced. Anything likely is reported as a **lead**, not a finding. Full Barb confirms. |
-| `file:line` | A line range (the chunk). Full Barb pins the line. |
-| No write tools | Read-only by construction: Kev-engine has no tools, and this code only reads. |
-| Ignores caller hints | The agent ignores extra direction in the message and says so. |
+| Barb                      | kev                                                                                                                                                                                             |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Manifest picks the skills | Same script, same output. Never judged.                                                                                                                                                         |
+| One `checker` per skill   | Code splits the screen into line-numbered chunks. Kev-engine answers one yes/no per checklist item per chunk. A second pass asks, over the whole screen, whether something required is missing. |
+| `feisty` refutes findings | Not replaced. Anything likely is reported as a **lead**, not a finding. Full Barb confirms.                                                                                                     |
+| `file:line`               | A line range (the chunk). Full Barb pins the line.                                                                                                                                              |
+| No write tools            | Read-only by construction: Kev-engine has no tools, and this code only reads.                                                                                                                   |
+| Ignores caller hints      | The agent ignores extra direction in the message and says so.                                                                                                                                   |
 
 It never hands full Barb a list of skills to check. Barb's own rules reject a narrowed review.
 

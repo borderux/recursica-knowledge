@@ -65,7 +65,7 @@ export { TOOLS }
 const manifestModule = await import(
   path.join(ROOT, 'scripts', 'screen-skill-manifest.mjs')
 )
-const { manifest } = manifestModule
+const { manifest, crossLinks } = manifestModule
 
 // ---------------------------------------------------------------- skills on disk
 
@@ -87,12 +87,6 @@ function section(text, heading) {
   return next === -1 ? text.slice(from) : text.slice(from, next)
 }
 
-function crossLinks(body) {
-  const named = section(body, 'Load these too')
-  if (!named) return []
-  return [...new Set(named.match(/recursica-skill-[a-z0-9-]+/g) ?? [])]
-}
-
 function frontmatter(body) {
   const m = body.match(/^---\n([\s\S]*?)\n---\n/)
   if (!m) return {}
@@ -104,19 +98,62 @@ function frontmatter(body) {
   return out
 }
 
+/**
+ * A skill as served. `body` is the text after the frontmatter: the frontmatter's description is
+ * for choosing a skill, and once one is chosen it is about 250 tokens of repetition per skill —
+ * 6% of an ordinary screen's family. It is still returned, once, as `description`, where
+ * list_skills needs it.
+ */
 function readSkill(slug) {
   const where = locate(slug)
   if (!where) return null
-  const body = fs.readFileSync(where, 'utf8')
-  const meta = frontmatter(body)
+  const text = fs.readFileSync(where, 'utf8')
+  const meta = frontmatter(text)
+  const links = crossLinks(text)
   return {
     slug,
     path: path.relative(ROOT, where),
     category: path.basename(path.dirname(path.dirname(where))),
     description: meta.description ?? null,
-    loadTheseToo: crossLinks(body),
-    body,
+    loadTheseToo: links.needs,
+    seeAlso: links.ifUsed,
+    body: text.replace(/^---\n[\s\S]*?\n---\n+/, ''),
   }
+}
+
+/** The `## ` headings of a skill body, in order. */
+function headings(body) {
+  return [...body.matchAll(/^## (.+?)\s*$/gm)].map((m) => m[1])
+}
+
+/**
+ * The sections that carry a skill's rules in their shortest form. The pre-flight checklist holds
+ * every rule as a statement that can be checked; a component's "Do not use it when" table and
+ * "What exists" inventory hold what the checklist points at. The uncovered list is in too,
+ * because the checklist ends by telling the agent not to invent anything on it, and an agent
+ * that cannot see the list cannot follow that. Together they are about a fifth of the full text.
+ * The reasoning behind any item is one skill_section call away.
+ */
+const UNCOVERED = 'Uncovered — ask, do not invent'
+const CONTRACT_SECTIONS = {
+  components: ['Do not use it when', 'What exists', UNCOVERED, 'Pre-flight checklist'],
+  default: [UNCOVERED, 'Pre-flight checklist'],
+}
+
+function contract(skill) {
+  const wanted = CONTRACT_SECTIONS[skill.category] ?? CONTRACT_SECTIONS.default
+  const parts = wanted
+    .map((h) => [h, section(`\n${skill.body}`, h)])
+    .filter(([, text]) => text && text.trim())
+    .map(([h, text]) => `## ${h}\n${text.trimEnd()}`)
+  return parts.join('\n\n')
+}
+
+/** What a skill_family entry carries, at the requested detail. */
+function served(skill, detail) {
+  const base = { slug: skill.slug, category: skill.category, path: skill.path, seeAlso: skill.seeAlso }
+  if (detail === 'contract') return { ...base, sections: headings(skill.body), contract: contract(skill) }
+  return { ...base, body: skill.body }
 }
 
 /** A skill and everything its cross-links reach, breadth-first. Never one file alone. */
@@ -311,11 +348,16 @@ const TOOLS = [
   {
     name: 'skill_family',
     description:
-      'The full text of one or more skills PLUS every skill their "Load these too" sections ' +
-      'name, transitively. It never returns a skill alone, because a component skill tells you ' +
-      'what a component is and a design-rules skill tells you whether it belongs on the screen — ' +
-      'reading the first without the second is the most common way to produce something ' +
-      'individually correct and collectively wrong. Ask for what you need; the family comes with it.',
+      'One or more skills PLUS every skill their "Load these too" sections say they need, ' +
+      'transitively. It never returns a skill alone, because a component skill tells you what a ' +
+      'component is and a design-rules skill tells you whether it belongs on the screen — reading ' +
+      'the first without the second is the most common way to produce something individually ' +
+      'correct and collectively wrong. Ask for what you need; the family comes with it. ' +
+      'detail "contract" returns each skill\'s checklist, and for a component its inventory and ' +
+      '"Do not use it when" table — about a sixth of the text, and every rule in checkable form. ' +
+      'Build from the contract, and call skill_section for the reasoning behind any item you are ' +
+      'unsure how to apply. detail "full" (the default) returns every skill whole. Each skill ' +
+      'lists `seeAlso`: alternatives it points at, which are not loaded unless you ask for them.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -325,12 +367,18 @@ const TOOLS = [
           description: 'Skill slugs, e.g. recursica-skill-table.',
           minItems: 1,
         },
+        detail: {
+          type: 'string',
+          enum: ['full', 'contract'],
+          description: 'full: every skill whole (default). contract: checklists, inventories and "Do not use it when" tables only.',
+        },
       },
       required: ['slugs'],
       additionalProperties: false,
     },
-    handler({ slugs }) {
+    handler({ slugs, detail = 'full' }) {
       if (!Array.isArray(slugs) || slugs.length === 0) throw new Error('slugs must be a non-empty array')
+      if (!['full', 'contract'].includes(detail)) throw new Error('detail must be "full" or "contract"')
       const { skills, missing } = family(slugs)
       if (skills.length === 0) {
         throw new Error(`no skill on disk named: ${missing.join(', ')}. Call list_skills for the real names.`)
@@ -341,8 +389,35 @@ const TOOLS = [
         // rather than wonder why the response is longer than the question.
         pulled_in: skills.map((s) => s.slug).filter((s) => !slugs.includes(s)),
         missing,
-        skills,
+        detail,
+        skills: skills.map((s) => served(s, detail)),
       }
+    },
+  },
+  {
+    name: 'skill_section',
+    description:
+      'One `## ` section of one skill, by heading — the reasoning behind a checklist item, the ' +
+      'full rules a contract summarizes, or the uncovered list before you decide something. Use ' +
+      'it after skill_family with detail "contract", instead of loading whole skills. An unknown ' +
+      'heading returns the headings that exist.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        slug: { type: 'string', description: 'Skill slug, e.g. recursica-skill-table.' },
+        heading: { type: 'string', description: 'The section heading without the ##, e.g. "Rules for using it".' },
+      },
+      required: ['slug', 'heading'],
+      additionalProperties: false,
+    },
+    handler({ slug, heading }) {
+      const skill = readSkill(slug)
+      if (!skill) throw new Error(`no skill on disk named ${slug}. Call list_skills for the real names.`)
+      const text = section(`\n${skill.body}`, heading)
+      if (text === null) {
+        throw new Error(`${slug} has no section "${heading}". It has: ${headings(skill.body).join('; ')}`)
+      }
+      return { slug, heading, text: text.trim() }
     },
   },
   {
@@ -513,4 +588,4 @@ rl.on('close', () => process.exit(0))
 logf(`ready — root=${ROOT} skills=${allSlugs().length} tools=${TOOLS.length}`)
 }
 
-export { family, declarationsFor, componentApi, adapterPackages, readSkill }
+export { family, declarationsFor, componentApi, adapterPackages, readSkill, contract, served }
