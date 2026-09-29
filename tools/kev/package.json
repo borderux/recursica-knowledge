@@ -1,0 +1,24 @@
+{
+  "name": "kev",
+  "version": "0.1.0",
+  "description": "Fast, cheap first-pass design review for Recursica screens, using Kev-engine (local model). Not a replacement for Barb.",
+  "type": "module",
+  "license": "MIT",
+  "author": "hi@borderux.com",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "kev": "bin/kev.mjs"
+  },
+  "scripts": {
+    "review": "node bin/kev.mjs",
+    "agent": "node agent.mjs",
+    "eval": "node eval.mjs",
+    "dry": "KEV_MOCK=1 node bin/kev.mjs"
+  },
+  "dependencies": {
+    "@typesafe-ai/sdk": "^0.6.0",
+    "ws": "^8.21.3"
+  }
+}

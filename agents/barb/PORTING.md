@@ -13,6 +13,9 @@ read-only tool set.**
 | The manifest script | `scripts/screen-skill-manifest.mjs`, plus a Node 20+ runtime to run it. |
 | The application | A checkout of the app being reviewed, built on `@recursica/mantine-adapter`. |
 | Subagent dispatch | `checker` and `feisty` must be registered, and the platform must support one agent spawning another. |
+| Room to fan out | Around 30–60 sub-agents in one turn, and a turn long enough to finish them (a full review of a small screen took about 17 minutes). Check the platform's per-turn caps and timeouts before anything else: every one Hermes had was below that, and each failed silently. See `runtime/hermes.md`. |
+| Somewhere to put the report | A file she can write and attach, if the chat surface limits message length. |
+| Kev (optional) | `tools/kev` plus a reachable Kev-engine. Without it she skips step 0 and every review is a full one. |
 
 Nothing else. There is no credential to provision and nothing to fence.
 
@@ -150,3 +153,12 @@ single file, the rules that matter most will be missing and the report will look
 
 **A clean report means the screen breaks no written, source-checkable rule. It does not mean the
 screen is right.** Port that sentence with her.
+
+## Kev, optional
+
+Step 0 in her prompt runs `tools/kev`, a cheap first pass on a local model, and stops early when
+it finds leads. A surface without Kev says so in its `kev` fragment and she skips the step. To
+add Kev to a surface: stand up Kev-engine (`tools/kev/ENGINE.md`), make `tools/kev` reachable
+from wherever she runs, give her the engine URL and key through the environment, and write the
+surface's `## kev` fragment with the command. Two properties must survive: Kev's output never
+reaches a checker or feisty, and a failed Kev run means a full review, never a clean one.
