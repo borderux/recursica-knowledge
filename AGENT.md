@@ -133,6 +133,27 @@ incidents in this repo went out that way.
 If something already pushed names a client or a participant, say so immediately, scrub what
 can still be scrubbed, and state plainly what cannot be undone.
 
+### What a commit adds to its files, and personal contact details
+
+The checks above read messages. `scripts/check-changes-for-names.mjs` reads **the lines a
+change adds to its files** — where a pasted report, a quoted participant or a mock-data table
+actually lands. `.husky/pre-commit` runs it on what is staged and refuses the commit; CI runs it
+on every pull request, over the added lines, every commit message, and the title and
+description.
+
+The checker also refuses **a personal email address or a phone number** by shape, with no list
+needed — so unlike the name rules it runs on a fresh clone, a CI runner and a CircleChat host.
+Placeholder domains (`acme.com`, `example.com`, `.test`), the role addresses this repository
+already publishes, and 555 numbers are allowed. A real person's work address is not.
+
+**CI checks client names only if the `LOCAL_REDACTIONS_JSON` repository secret holds a copy of
+`local-redactions.json`.** Without it the log says so and the other rules still run.
+
+**None of this stops a push.** A pushed branch is public before CI starts, so CI decides whether
+a change can merge, not whether it was published. What stops publication is the pre-commit hook
+and the PreToolUse guard — both run before anything leaves the machine, and both are skipped by
+`--no-verify`. Never pass it.
+
 ### The operator's sign-off
 
 A second `PreToolUse` hook, `buzz-agents/scripts/hook-guard-commit-trailers.mjs`, denies a
