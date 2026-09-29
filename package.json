@@ -46,6 +46,7 @@
     "skills:manifest": "node scripts/screen-skill-manifest.mjs",
     "skills:manifest:check": "node scripts/screen-skill-manifest.mjs --self-check",
     "skills:glossary:check": "node scripts/check-glossary.mjs",
+    "skills:structure:check": "node scripts/check-skill-structure.mjs",
     "test": "node --test 'nest/bin/*.test.mjs' 'nest/mcp/*/*.test.mjs' 'scripts/*.test.mjs' 'buzz-agents/lib/*.test.mjs'"
   },
   "packageManager": "npm@10.9.0",
