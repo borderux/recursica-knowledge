@@ -41,6 +41,8 @@ This repository holds more than the skills. Website content, build scripts, pack
 
 **Load the whole family, not one file.** A component skill tells you what a component is and how to make it accessible. It does not tell you whether that component belongs on the screen — a design-rules skill does. Working from a component skill alone is the most common way to build something where each piece is correct but the whole is wrong.
 
+**Load the family lean: rules first, reasoning when you need it.** Every skill ends in a pre-flight checklist that states each of its rules as something you can check, and its uncovered list says what not to decide on your own. A component skill adds two more: its "Do not use it when" table and its "What exists" inventory. Start from those four. Read a skill's other sections when a checklist item is unclear, when two items seem to conflict, or when you are about to decide something the skill may cover. In a skill's "Load these too" list, the links under "Only if the screen also uses it" are alternatives and neighbors — load one only when the screen uses that component. If you reach the skills through the Recursica knowledge server, `skill_family` with `detail: "contract"` returns exactly these sections, and `skill_section` returns any other section on its own.
+
 ## The styling escape hatch is a gap report, not a permission
 
 The component adapters offer a styling escape hatch. **Its name makes it sound like a way to override things. Treat it as a warning sign instead**, and ask this question before you use it:

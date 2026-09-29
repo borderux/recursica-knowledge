@@ -13,7 +13,11 @@ in `nest/nest-manifest.json`.
 ## The rule it enforces
 
 **`skill_family` never returns a single skill.** It returns the skill plus everything its
-`## Load these too` section names, transitively — up to four hops deep in the current corpus.
+`## Load these too` section says it needs, transitively. Links listed under "Only if the screen
+also uses it" are alternatives — a table points at cards — and are returned as `seeAlso`, not
+loaded. Following them used to pull six unused skills, about 25,000 tokens, into an ordinary
+form-and-table screen. The parser is `crossLinks` in `scripts/screen-skill-manifest.mjs`, shared
+with `skills_for_screen` so the two cannot disagree.
 
 That is the point of the server rather than a feature of it. A component skill tells you what a
 component is; a design-rules skill tells you whether it belongs on the screen. Working from the
@@ -27,7 +31,8 @@ looking like it helped. **There is deliberately no search tool here.**
 | --- | --- |
 | `router` | The decision order, the precedence when rules collide, and when to stop and ask. Call it first. |
 | `skills_for_screen` | Which skills apply to real files, computed from their adapter imports rather than judged. |
-| `skill_family` | The rules themselves — always as a family. |
+| `skill_family` | The rules themselves — always as a family. `detail: "contract"` returns only each skill's checklist, uncovered list and, for a component, its inventory and "Do not use it when" table: every rule in checkable form, at about a quarter of the size. |
+| `skill_section` | One section of one skill, for the reasoning behind a contract item. |
 | `list_skills` | Slugs, categories and one-line descriptions, for when there are no files to compute from. |
 | `component_api` | Real prop types from the adapter version a given project installs. |
 
@@ -35,6 +40,21 @@ looking like it helped. **There is deliberately no search tool here.**
 it. That is a correctness requirement: Barb computes applicability with the same module, and a
 second implementation would drift from hers silently — a review that checked the wrong set of
 skills reads exactly like a review that found nothing.
+
+## Contract first
+
+An ordinary ten-component screen needs 31 skills. In full that is about 120,000 tokens, more than
+most models can hold beside the application. As contracts it is about 30,000. The router tells
+agents to build from the contract and fetch a section when an item is unclear, when two items
+seem to conflict, or before deciding something a skill may cover.
+
+The default is still `full`, so nothing changes for a caller that does not ask. **Whether
+contract-first builds are as accurate as full-text builds has not been measured yet**: the test
+is to build the same screen both ways and have Barb review each. Make `contract` the default only
+after that.
+
+Responses carry no frontmatter. The description is for choosing a skill, and repeating it for
+every skill in a family cost 6% of the response. `list_skills` still returns it.
 
 ## Registering it
 
