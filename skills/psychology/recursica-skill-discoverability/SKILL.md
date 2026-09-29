@@ -19,7 +19,7 @@ Read this before you add a configuration feature. Cite it when someone argues th
 
 ## What the research says
 
-**Users do not put effort into learning, even when it would pay off quickly.** Carroll and Rosson called this the **paradox of the active user**: people stick with the method they already know instead of spending a few minutes finding a faster one. They want to finish the task in front of them, not become experts in the tool. This makes sense in the moment but costs them over time, and it is remarkably hard to change — decades of new tools have not changed it.
+**Users do not put effort into learning, even when it would pay off quickly.** Carroll and Rosson called this the paradox of the active user: people stick with the method they already know instead of spending a few minutes finding a faster one. They want to finish the task in front of them, not become experts in the tool. This makes sense in the moment but costs them over time, and it is remarkably hard to change — decades of new tools have not changed it.
 
 **This has a direct effect on configuration.** A customization feature depends on the user doing exactly what this paradox says they will not do: stop working, figure out how the interface could serve them better, and go set it up. Most never will. Building a configuration system and expecting people to use it is designing for a user who hardly exists.
 

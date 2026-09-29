@@ -56,7 +56,7 @@ Examples:
 2. **Only a small minority of users truly need the feature.**
 3. **No task requires it.** If a user cannot finish their work without finding the control, it must be visible.
 
-**Unadvertised does not mean inaccessible.** The control MUST stay reachable by keyboard and by assistive technology (tools such as screen readers that help people with disabilities use a computer). Where the interaction is a drag or a long-press, **a second way of doing it MUST exist** — a requirement that is already stated for reordering columns.
+**Unadvertised does not mean inaccessible.** The control MUST stay reachable by keyboard and by assistive technology (tools such as screen readers that help people with disabilities use a computer). Where the interaction is a drag or a long-press, a second way of doing it MUST exist — a requirement that is already stated for reordering columns.
 
 ## 3. Never carry meaning in a single channel
 
@@ -71,7 +71,7 @@ Examples:
 | An empty value versus zero in a cell | An explicit "NA" — not an empty cell, and not a `0` that reads as a real value                                            | `recursica-skill-tables`             |
 | An object's status                   | An icon as well as a color, and an accessible name (the name a screen reader reads out for a control) as well as the icon | `recursica-skill-icon-semantics`     |
 
-**Why it applies generally:** these rules were written about unrelated surfaces, but they share one mechanism. Showing meaning through only one channel is a single point of failure for understanding. The color palette is the design system's business; **which channels carry the meaning is yours.**
+**Why it applies generally:** these rules were written about unrelated surfaces, but they share one mechanism. Showing meaning through only one channel is a single point of failure for understanding. The color palette is the design system's business; which channels carry the meaning is yours.
 
 **Applying it to a new surface:** name the channel the meaning currently depends on. Then ask what a user who cannot perceive that channel would see. If the answer is "nothing," add a second channel.
 
@@ -126,9 +126,9 @@ Examples:
 | A figure or summary that points to a filtered list | Navigate and apply a filter in one click. Pick one                                                                                        | `recursica-skill-navigation`, `recursica-skill-filters`          |
 | A button that opens a modal                        | Navigate. The button opens the modal (a window that blocks the rest of the page until the user closes it); it does not also move the user | `recursica-skill-buttons-links`                                  |
 
-**Why it applies generally:** there are three separate costs, and they add up. The user cannot **predict** what the control will do, because its label can only honestly describe one of the two things. They cannot **undo** it, because going back reverses one effect and leaves the other in place. And they cannot **describe** what happened to a colleague — which is what makes an application feel impossible to learn, not just awkward.
+**Why it applies generally:** there are three separate costs, and they add up. The user cannot predict what the control will do, because its label can only honestly describe one of the two things. They cannot undo it, because going back reverses one effect and leaves the other in place. And they cannot describe what happened to a colleague — which is what makes an application feel impossible to learn, not just awkward.
 
-**Applying it to a new surface:** list every change of state that one use of the control causes — the route, an opened surface, a filter, a selection, a mode, the scroll position. **If there is more than one, the control is hyperloaded.** Either split it into two controls, or make the second effect something the user clearly asked for, rather than something bundled in.
+**Applying it to a new surface:** list every change of state that one use of the control causes — the route, an opened surface, a filter, a selection, a mode, the scroll position. If there is more than one, the control is hyperloaded. Either split it into two controls, or make the second effect something the user clearly asked for, rather than something bundled in.
 
 **What this does not forbid.** A single action with necessary side effects is still one outcome. Submitting a form saves it and closes it. Deleting a row removes it and shows an undo. The test is whether the second effect is _part of_ what the user asked for, or a separate thing riding along with it.
 

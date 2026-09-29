@@ -36,9 +36,9 @@ Each of these has a different component. Switch to it, instead of adapting a tim
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.time-picker`. **Do not pass a variant or state that is not listed here** — other design systems have sizes, seconds variants, warning states, and inline clocks that this component does not.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.time-picker`. **Do not pass a variant or state that is not listed here** — other design systems have sizes, seconds variants, warning states, and inline clocks that this component does not.
 
-**The third column is the React prop that sets each axis.** The axis name comes from the token inventory. It is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis      | Options                   | React prop   |
 | --------- | ------------------------- | ------------ |
@@ -142,12 +142,12 @@ Never style an unfocused time picker so it reads as disabled. An editable field 
 
 ## Uncovered — ask, do not invent
 
-- **The AM/PM control.** A selector for AM or PM inside the field, hidden in 24-hour mode, is documented outside the token inventory, with no token behind it — the kit defines no tokens for it. Whether it is part of this component, or a separate select on the row, is not stated. Do not rely on it without asking.
-- **What the popover contains.** A "dial or input picker" opened by a dropdown indicator is documented outside the token inventory, but the kit defines no popover tokens. Its step size — every minute, every five, every fifteen — is not stated. Do not rely on any of it without asking.
+- **The AM/PM control.** A selector for AM or PM inside the field, hidden in 24-hour mode, is shown only on the design-system website, with no token behind it — the UI kit defines no tokens for it. Whether it is part of this component, or a separate select on the row, is not stated. Do not rely on it without asking.
+- **What the popover contains.** A "dial or input picker" opened by a dropdown indicator is shown only on the design-system website, but the UI kit defines no popover tokens. Its step size — every minute, every five, every fifteen — is not stated. Do not rely on any of it without asking.
 - **Whether a time has a masked format while it has focus**, the way a date does. The format-follows-focus rule in `recursica-skill-dates-and-currency` is stated with a date example only.
 - **Seconds.** No axis or property covers them, so whether the field can accept them at all is not known.
 - **Time ranges.** No range axis exists, and how a start and an end are checked against each other is not stated.
-- **The disabled state is defined in the kit, but missing from what is documented outside the token inventory.** Treat the kit as the authority — it is the source for which states exist — and flag the gap.
+- **The disabled state is defined in the UI kit, but missing from what is shown only on the design-system website.** Treat the UI kit as the authority — it is the source for which states exist — and flag the gap.
 
 ## Pre-flight checklist
 

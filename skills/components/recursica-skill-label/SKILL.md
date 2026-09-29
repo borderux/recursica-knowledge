@@ -29,9 +29,9 @@ The label names the field. It is a real component — not text you place beside 
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.label`.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.label`.
 
-**The third column is the React prop that sets each axis.** The axis name comes from the token inventory. It is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis      | Options                   | React prop   |
 | --------- | ------------------------- | ------------ |
@@ -41,7 +41,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.label`.
 
 **`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Leave it out, and you get the fallback in a container of any width — the rule turned upside down. `layouts` is the name of the token axis, not a prop: `layouts="side-by-side"` is quietly ignored by React and leaves the control stacked, with no error. Pass `formLayout="side-by-side"` explicitly.
 
-**The kit provides a required indicator and an optional text**, each with its own gaps, and a transparency setting for the optional text. Both exist — which one you use is decided by the form, not by the field.
+**The UI kit provides a required indicator and an optional text**, each with its own gaps, and a transparency setting for the optional text. Both exist — which one you use is decided by the form, not by the field.
 
 **There is a gap for an edit icon**, so a label can carry an edit control. What that control is for is not stated; see the uncovered list.
 
@@ -51,10 +51,10 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.label`.
 
 **Side by side is the default.** The label sits to the left of the field, on the same row, right-aligned so it sits close to its field. Stack it above only when the container is too narrow to fit both — and what decides this is the width of the form's container, not the viewport (the visible area of the browser window). Owned by `recursica-skill-forms`.
 
-**Label placement is one decision per form, and the label owns it.** A single form uses labels side by side, or stacked labels — **never both at the same breakpoint** (the screen width at which the layout changes).
+**Label placement is one decision per form, and the label owns it.** A single form uses labels side by side, or stacked labels — never both at the same breakpoint (the screen width at which the layout changes).
 
-- **The container-width test is applied once, to the form**, and its answer governs every field in that form. If the form's container cannot fit label and field side by side, **every** label in it stacks — including the short ones that would have fitted.
-- **This label's `layouts` value is not a separate choice.** It matches every other label in the same form. There is no judgment call for each field here, and a field's own width, height, or content is not a reason to place its label differently — not a tall textarea, not a two-character number input, and not a radio group with eight options.
+- **The container-width test is applied once, to the form**, and its answer governs every field in that form. If the form's container cannot fit label and field side by side, every label in it stacks — including the short ones that would have fitted.
+- **This label's `layouts` value is not a separate choice.** It matches every other label in the same form. There is no judgment call for each field here. A field's own width, height, or content is not a reason to place its label differently — not a tall textarea, not a two-character number input, and not a radio group with eight options.
 - **Across breakpoints, a whole form may switch** — side by side in a wide container, stacked in a narrow drawer. That is still one placement per form, decided once for each breakpoint. What is forbidden is a mix within a single breakpoint.
 - **Sections do not get their own placement.** A form's sections are parts of one form. A section whose labels stack while the section above sits side by side is the same defect.
 
@@ -115,7 +115,7 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Uncovered — ask, do not invent
 
-- **The edit control on a label.** The kit sets aside a gap for an edit icon, but what it does, and on which fields, is not stated.
+- **The edit control on a label.** The UI kit sets aside a gap for an edit icon, but what it does, and on which fields, is not stated.
 - **Which form-wide signal marks required fields** when asterisks are avoided. Bold is given as an example, not a rule.
 - **Whether the required indicator and the optional text may both appear in one application**, on different forms.
 - **Truncating a label** when it is longer than the space available in side-by-side placement.

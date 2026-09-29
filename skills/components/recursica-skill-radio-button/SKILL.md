@@ -35,7 +35,7 @@ A radio group is one label with several values, of which exactly one may be sele
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.radio-button`, `radio-button-group`, and `radio-button-item`. **Do not pass a variant, size, or state that is not listed here.**
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.radio-button`, `radio-button-group`, and `radio-button-item`. **Do not pass a variant, size, or state that is not listed here.**
 
 | Component            | Axis               | Options                   |
 | -------------------- | ------------------ | ------------------------- |
@@ -45,7 +45,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.radio-button`, `radio-
 
 **Three components, one form field.** The group owns the layout and the spacing between items. The item owns one option's label, and pairs it with a control. The radio button owns the circle itself and whether it is selected. Use all three together; never place bare `radio-button` instances in a form and call it a group.
 
-**The axes sit on different parts, and that is on purpose.** `layouts` belongs to the **group** — one decision for the whole field. `disabled` belongs to the **item** — so a single option can be unavailable while the rest of the choice can still be used. There is no disabled state for the group; `globals.states.disabled` supplies the look.
+**The axes (variant properties, as Figma calls them — the ways a component varies, such as its size) sit on different parts, and that is on purpose.** `layouts` belongs to the group — one decision for the whole field. `disabled` belongs to the item — so a single option can be unavailable while the rest of the choice can still be used. There is no disabled state for the group; `globals.states.disabled` supplies the look.
 
 **`layouts` is the label-placement axis, the same axis every field has.** `side-by-side` puts the group's label beside the stack of options; `stacked` puts it above. **It is not an axis for which way the items run.** Options are always stacked vertically — `recursica-skill-selection-controls` forbids a horizontal radio group outright — so `side-by-side` must never be read as "put the radio buttons in a row."
 
@@ -65,7 +65,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.radio-button`, `radio-
 
 **Traditionally, a radio group requires an answer**, and the user cannot move on until one option is selected. A group with nothing selected, and no requirement to select anything, is unusual and confusing. Treat it as a warning sign, and ask whether it really is a choice of one.
 
-**A radio group used for progressive disclosure may properly start with nothing selected**, so that the content it reveals appears only once the user has actually chosen. (Progressive disclosure means showing only what is needed now, with the rest revealed on request.) That fits with the caution above; it is not an exception to it — nothing is selected in advance, and nothing is revealed until the user decides.
+**A radio group used for progressive disclosure may properly start with nothing selected**, so that the content it reveals appears only once the user has actually chosen. (Progressive disclosure means showing only what is needed now, with the rest available on request.) That fits with the caution above; it is not an exception to it — nothing is selected in advance, and nothing is revealed until the user decides.
 
 **Stack the options vertically. Never horizontally.** A row of radio buttons makes it hard to tell which control belongs to which label, and the pairing between each control and its value stops being clear. If the layout calls for a row, change the control to a segmented control — which is limited to 2–5 options. Never fall back to tabs.
 
@@ -137,7 +137,7 @@ Do not add margins or spacer elements between options or around the group; the c
 
 ## Uncovered — ask, do not invent
 
-- **How a radio group shows an error.** The kit gives `dropdown` and `autocomplete` an `error` state, and gives the radio button none — yet a required group can fail validation. The error treatment is not stated.
+- **How a radio group shows an error.** The UI kit gives `dropdown` and `autocomplete` an `error` state, and gives the radio button none — yet a required group can fail validation. The error treatment is not stated.
 - **Whether any control ever clears a radio group.** The design rules treat a set radio button as one that cannot be deselected, which is why the caution about pre-selection exists. Whether a group may offer an explicit clear, or a "None" option, is not stated.
 - **Radio buttons inside a table row.** Mentioned in passing in the design rules as an alternative to a switch, but not established as a pattern.
 

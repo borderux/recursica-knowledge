@@ -18,9 +18,9 @@ A card separates one repeating object from its peers (objects of the same kind, 
 Before using a card, confirm all five:
 
 1. **Plurality.** There is more than one of the object on the screen. A single object is never a card.
-2. **Finite and small.** The set has a fixed end, and it is short. **A high plurality (a large number of items of the same kind) is a table.**
+2. **Finite and small.** The set has a fixed end, and it is short. A high plurality (a large number of items of the same kind) is a table.
 3. **Repetition.** Every item carries the same kinds of information, in the same arrangement.
-4. **A graphic.** Each item contains something visual — a chart, an image, a photograph. **A set of data that is only text and numbers is a table.**
+4. **A graphic.** Each item contains something visual — a chart, an image, a photograph. A set of data that is only text and numbers is a table.
 5. **Separate, but together.** The items need to read as clearly separate objects, while still reading as one group of the same kind of thing.
 
 **If any test fails, do not use a card.** Depending on which test failed, use a table, or use spacing.
@@ -74,12 +74,12 @@ When the tests fail and grouping is still needed, reach for these, in this order
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.card`. **The kit defines no variant axes on the card** — everything is a property. Two more choices are documented outside the token inventory.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.card`. **The UI kit defines no variant axes (variant properties, as Figma calls them — the ways a component varies, such as its size) on the card** — everything is a property. Two more choices are shown only on the design-system website.
 
-| Choice | Options            | Source                      |
-| ------ | ------------------ | --------------------------- |
-| Style  | Elevation, Outline | Outside the token inventory |
-| Slot   | Top, Bottom, None  | Outside the token inventory |
+| Choice | Options            | Source             |
+| ------ | ------------------ | ------------------ |
+| Style  | Elevation, Outline | Outside the UI kit |
+| Slot   | Top, Bottom, None  | Outside the UI kit |
 
 **The slot is where the graphic goes** — the image or chart that earns the card, above the content or below it. `None` means no slot, which is the setup the aesthetic exception relies on.
 
@@ -152,7 +152,7 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Uncovered — ask, do not invent
 
-- **When Elevation applies, and when Outline does.** Both are documented outside the token inventory, which has no variant axis for either, and no rule assigns them to surfaces. Do not rely on this without asking.
+- **When Elevation applies, and when Outline does.** Both are shown only on the design-system website, which has no variant axis for either, and no rule assigns them to surfaces. Do not rely on this without asking.
 - **How many cards count as a "small and finite" set.** The limit is stated as a judgment, not a number.
 - **Card layout across breakpoints** — how many go across, and what happens below desktop size. Named as having no owner in `recursica-skill-design-router`.
 - **Whether a card may be selectable** as part of a multi-select, and what the selected state looks like. No such state exists.

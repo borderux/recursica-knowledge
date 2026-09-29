@@ -32,9 +32,9 @@ Tabs switch between parts of one whole — like the folders in a single file dra
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.tabs` and `tabs-item`.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.tabs` and `tabs-item`.
 
-**The third column is the React prop that sets each axis.** The axis name comes from the token inventory. It is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis     | Options                       | React prop |
 | -------- | ----------------------------- | ---------- |
@@ -42,11 +42,11 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.tabs` and `tabs-item`.
 
 **The same three styles exist on `tabs` and on `tabs-item`** — they are one choice applied to the whole set, not mixed within it.
 
-**Orientation.** The kit defines no orientation axis, but horizontal and vertical tab sets are documented outside the token inventory. Both are approved — see the vertical rule below.
+**Orientation.** The UI kit defines no orientation axis, but horizontal and vertical tab sets are shown only on the design-system website. Both are approved — see the vertical rule below.
 
-**Selected and unselected are not variants you pass.** They are documented outside the token inventory as states; the component works them out from which tab is active.
+**Selected and unselected are not variants you pass.** They are shown only on the design-system website as states; the component works them out from which tab is active.
 
-**A tab item may have a leading icon and a counter** — both documented outside the token inventory as parts of the item. A counter is a badge; see `recursica-skill-badges-chips`.
+**A tab item may have a leading icon and a counter** — both shown only on the design-system website as parts of the item. A counter is a badge; see `recursica-skill-badges-chips`.
 
 ## Rules for using it
 

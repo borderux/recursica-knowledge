@@ -36,9 +36,9 @@ Each of these has a different component. Switch to it, instead of adapting a num
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.number-input`. **Do not pass a variant or state that is not listed here** — other design systems have sizes, warning and success states, and content variants that this component does not.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.number-input`. **Do not pass a variant or state that is not listed here** — other design systems have sizes, warning and success states, and content variants that this component does not.
 
-**The third column is the React prop that sets each axis.** The axis name comes from the token inventory. It is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis      | Options                   | React prop   |
 | --------- | ------------------------- | ------------ |
@@ -53,7 +53,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.number-input`. **Do no
 
 **There is no size axis.** `min-height` is a fixed property, and `globals.form.field.size` supplies the field sizing.
 
-**The kit defines no stepper or increment control.** There are no tokens for increase and decrease buttons, no `collapsed` or `expanded` state, and no content axis. **Do not claim that increment buttons exist, and do not build them out of buttons placed beside the field** — see the uncovered list.
+**The UI kit defines no stepper or increment control.** There are no tokens for increase and decrease buttons, no `collapsed` or `expanded` state, and no content axis. Do not claim that increment buttons exist, and do not build them out of buttons placed beside the field — see the uncovered list.
 
 **There is no read-only state.** Read-only is a separate component — `read-only-field`, with the same `layouts` axis and no input.
 
@@ -141,9 +141,9 @@ Never style an unfocused number input so it reads as disabled. An editable field
 
 ## Uncovered — ask, do not invent
 
-- **Increase and decrease controls are documented outside the token inventory, with no token behind them.** The kit defines no stepper tokens at all — no increase button, no decrease button, no step. **Increment controls must not be built out of buttons placed beside the field**, and nothing in this system promises a stepper. Whether this component ever gets one, and what its step would be, must be settled by a person. Do not rely on this without asking.
-- **A `collapsed` and an `expanded` state are documented outside the token inventory.** Neither is an axis in the kit. They seem to describe whether a stepper is visible. Do not build either one, and do not rely on them without asking.
-- **A content axis** — `unvalued`, `unvalued with placeholder`, `valued` — **is documented outside the token inventory, with no token behind it.** It is not an axis in the kit, and nothing says whether a placeholder is wanted on a number field at all. Do not rely on it without asking.
+- **Increase and decrease controls are shown only on the design-system website, with no token behind them.** The UI kit defines no stepper tokens at all — no increase button, no decrease button, no step. Increment controls must not be built out of buttons placed beside the field, and nothing in this system promises a stepper. Whether this component ever gets one, and what its step would be, must be settled by a person. Do not rely on this without asking.
+- **A `collapsed` and an `expanded` state are shown only on the design-system website.** Neither is an axis in the UI kit. They seem to describe whether a stepper is visible. Do not build either one, and do not rely on them without asking.
+- **A content axis** — `unvalued`, `unvalued with placeholder`, `valued` — is shown only on the design-system website, with no token behind it. It is not an axis in the UI kit, and nothing says whether a placeholder is wanted on a number field at all. Do not rely on it without asking.
 - **Whether the field formats the value as the user types** — thousands separators appearing while typing, or only when the field loses focus.
 - **Negative values.** Whether the accounting parentheses from `recursica-skill-dates-and-currency` are ever used inside an input, or only when showing a value.
 - **Choosing the unit.** A value whose unit can be switched — kg or lb — has no stated pattern.

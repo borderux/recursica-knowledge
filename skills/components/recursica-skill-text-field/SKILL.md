@@ -33,9 +33,9 @@ Each of these has a different component. Switch to it, instead of adapting a tex
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.text-field`. **Do not pass a variant or state that is not listed here** — other design systems have field sizes, fluid styles, and warning, success, and loading states that this component does not.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.text-field`. **Do not pass a variant or state that is not listed here** — other design systems have field sizes, fluid styles, and warning, success, and loading states that this component does not.
 
-**The third column is the React prop that sets each axis.** The axis name comes from the token inventory. It is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis      | Options                   | React prop   |
 | --------- | ------------------------- | ------------ |

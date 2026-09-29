@@ -35,15 +35,15 @@ A panel puts extra content beside the page, without blocking it.
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.panel`. **The panel has no variant axes at all** — no sizes, no sides, no widths, no types. Every entry below is a fixed property.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.panel`. **The panel has no variant axes (variant properties, as Figma calls them — the ways a component varies, such as its size) at all** — no sizes, no sides, no widths, no types. Every entry below is a fixed property.
 
 **What the component provides:** a header with a close control (`header-close-gap`), a content area, and a footer with a gap between buttons. `min-width` and `max-width` are properties defined by tokens, and a `divider-size` exists.
 
-**Do not pass a side or an edge.** There is no left, right, top, or bottom panel in the kit. Which edge a panel comes from is not yours to set — see the uncovered list.
+**Do not pass a side or an edge.** There is no left, right, top, or bottom panel in the UI kit. Which edge a panel comes from is not yours to set — see the uncovered list.
 
 **Do not pass a width or a size.** `min-width` and `max-width` are fixed. There is no narrow, wide, or full-height panel.
 
-**There is no types axis.** A "Standard" panel and a "Scrollable" panel are documented outside the token inventory. The kit defines only `divider-size`, with nothing that says when the divider appears, or which of the two you are building.
+**There is no types axis.** A "Standard" panel and a "Scrollable" panel are shown only on the design-system website. The UI kit defines only `divider-size`, with nothing that says when the divider appears, or which of the two you are building.
 
 **In structure, the panel is the modal without the blocking.** The same header, content, footer, and close control. The whole difference is that the page behind stays usable — which is exactly what changes the accessibility work below.
 
@@ -57,7 +57,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.panel`. **The panel ha
 
 **A form in a panel stacks its labels above its fields.** The panel is a narrow container, and `recursica-skill-forms` makes the container's width — not the viewport's (the visible area of the browser window) — what decides stacking. Everything else about the form still holds: a single column, and one field per row.
 
-**Label placement is one decision for the whole form, never for each field.** `recursica-skill-forms` allows labels side by side or stacked, and forbids both at the same breakpoint (the screen width at which the layout changes). The container-width test is applied once, to the form, and the answer governs every field in it. A panel is exactly the container that triggers stacking — so **the whole form inside it stacks, not just the fields that feel cramped**, including the short ones that would have fitted beside their labels.
+**Label placement is one decision for the whole form, never for each field.** `recursica-skill-forms` allows labels side by side or stacked, and forbids both at the same breakpoint (the screen width at which the layout changes). The container-width test is applied once, to the form, and the answer governs every field in it. A panel is exactly the container that triggers stacking — so the whole form inside it stacks, not just the fields that feel cramped, including the short ones that would have fitted beside their labels.
 
 **The panel does not get its own save mode.** Whatever the application uses, the panel uses. Saving field by field requires a save status that stays on the page; saving everything together shows no status and no indicator of unsaved changes. See `recursica-skill-forms`.
 
@@ -69,7 +69,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.panel`. **The panel ha
 
 **When the panel changes the page behind it** — a set of filters that narrows a table — the change on the page is the feedback. Do not add a toast for it.
 
-**A panel sits flush against the left or right edge of the viewport, and runs its full height**, from top to bottom. It is never set in from the edge, never floating, and never less than full height. Left and right are both standard, and the side is set for each panel. **Never open panels on both sides at once.** Where panels stack, they all use the same side, though their widths may differ. **A top or bottom edge is allowed, but extremely unusual, and has no designed treatment — get it approved before building one.** Owned by `recursica-skill-panels-modals`.
+**A panel sits flush against the left or right edge of the viewport, and runs its full height**, from top to bottom. It is never set in from the edge, never floating, and never less than full height. Left and right are both standard, and the side is set for each panel. Never open panels on both sides at once. Where panels stack, they all use the same side, though their widths may differ. A top or bottom edge is allowed, but extremely unusual, and has no designed treatment — get it approved before building one. Owned by `recursica-skill-panels-modals`.
 
 **A panel MUST NEVER scroll sideways.** No exception. A sideways scrollbar means the content does not belong in a panel.
 
@@ -77,7 +77,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.panel`. **The panel ha
 
 **A panel may open a modal.** A panel is not a mode, so this is not stacking modes — and it is how the unsaved-changes confirmation appears when the panel closes.
 
-**A panel may be stacked on top of another panel, though it is not ideal.** The second one covers the first completely, and closing it shows the first again. **It may never be nested inside one.** Covered, never contained. There is no hard limit on stacking, but **more than two stacked panels needs the user's approval.**
+**A panel may be stacked on top of another panel, though it is not ideal.** The second one covers the first completely, and closing it shows the first again. It may never be nested inside one. Covered, never contained. There is no hard limit on stacking, but more than two stacked panels needs the user's approval.
 
 **A panel does not survive a route change**, except where the navigation exists only to open another panel or modal.
 
@@ -85,15 +85,15 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.panel`. **The panel ha
 
 **NEVER draw a shader, scrim (a dimmed overlay), or tint behind an open panel.** This is now settled and absolute: there is no value in dimming content that the panel exists to sit beside. `recursica-skill-panels-modals` owns the rule. The overlay override below is how it is enforced against the library's default.
 
-**The adapter that ships today makes this component modal by default, which is the opposite of the house rule.** The panel wraps Mantine's `Drawer`, which by default draws an overlay, closes on a click outside it, traps focus, and locks page scrolling. **A panel built with only the documented API is quietly modal.** Until the adapter's defaults are fixed, getting the house behavior means passing the underlying props explicitly:
+**The adapter that ships today makes this component modal by default, which is the opposite of the house rule.** The panel wraps Mantine's `Drawer`, which by default draws an overlay, closes on a click outside it, traps focus, and locks page scrolling. A panel built with only the documented API is quietly modal. Until the adapter's defaults are fixed, getting the house behavior means passing the underlying props explicitly:
 
 `withOverlay={false}` · `closeOnClickOutside={false}` · `trapFocus={false}` · `lockScroll={false}`
 
-A build test confirmed that all four are needed, and that they survive the adapter's filtering of props. **A library default is not a house rule.** Mantine's drawer being modal by default says nothing about what a Recursica panel should do, and must never be read as though it did — see `recursica-skill-design-router`. **This is a tracked defect in the adapter.** When the default is fixed, delete the overrides instead of carrying them forever. Check before assuming they are still needed.
+A build test confirmed that all four are needed, and that they survive the adapter's filtering of props. **A library default is not a house rule.** Mantine's drawer being modal by default says nothing about what a Recursica panel should do, and must never be read as though it did — see `recursica-skill-design-router`. This is a tracked defect in the adapter. When the default is fixed, delete the overrides instead of carrying them forever. Check before assuming they are still needed.
 
 **A panel is non-modal (it leaves the rest of the page usable), and that is the point of it.** The user can still move around the application, and act on the page behind it — see `recursica-skill-panels-modals`, which settles this directly. A panel built to block the page is a modal using the wrong component.
 
-**NEVER put a table inside a panel.** The panel is narrow and a table needs width, so the result either scrolls sideways — forbidden outright — or cuts every column short. Repeating content becomes groups of stacked fields instead. **Secondary material goes in a second tab**, not below the main content. Owned by `recursica-skill-panels-modals`.
+**NEVER put a table inside a panel.** The panel is narrow and a table needs width, so the result either scrolls sideways — forbidden outright — or cuts every column short. Repeating content becomes groups of stacked fields instead. Secondary material goes in a second tab, not below the main content. Owned by `recursica-skill-panels-modals`.
 
 **A form in a panel uses stacked label placement for every field.** The panel is narrow, which is the container-width condition that triggers stacking, and the whole form stacks — including short fields that would have fitted side by side. Owned by `recursica-skill-forms`.
 
@@ -157,10 +157,10 @@ Do not implement, override, or tune any of these — the component owns them:
 ## Uncovered — ask, do not invent
 
 - **Whether it slides in or expands** when it opens. The side is set, and how it is anchored is settled, but the transition is not.
-- **Panel width.** `min-width` and `max-width` are fixed, and there is no size axis, so a "wide panel" cannot be built — though stacked panels may differ in width from each other, and nothing says whether a left panel and a right panel share a width.
+- **Panel width.** `min-width` and `max-width` are fixed, and there is no size axis, so a "wide panel" cannot be built. Stacked panels may still differ in width from each other, and nothing says whether a left panel and a right panel share a width.
 - **What a top or bottom panel looks like.** Allowed, not designed, and so it needs approval instead of following a rule.
 - **Whether clicking outside the panel closes it.**
-- **When the divider appears.** "Standard" and "Scrollable" types are documented outside the token inventory, with no token behind either, and no types axis — the kit defines only `divider-size`. Do not rely on this without asking.
+- **When the divider appears.** "Standard" and "Scrollable" types are shown only on the design-system website, with no token behind either, and no types axis — the UI kit defines only `divider-size`. Do not rely on this without asking.
 - **A loading state inside a panel**, while its content is being fetched. There is no such state on the component.
 
 ## Pre-flight checklist

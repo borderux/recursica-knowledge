@@ -40,11 +40,11 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **A filter should arrive unapplied.** Filters are additive: the user starts from everything and narrows it down. A filter applied in advance risks the user not noticing it, and concluding that the data is missing. Owned by `recursica-skill-defaults`.
 
-**A default that filters must be visible as a filter.** If the collection arrives already narrowed, the control must show that state. Never show a screen that quietly hides rows while every control reads neutral. **Set a default filter; never filter the data itself.**
+**A default that filters must be visible as a filter.** If the collection arrives already narrowed, the control must show that state. Never show a screen that quietly hides rows while every control reads neutral. Set a default filter; never filter the data itself.
 
 ## Dates
 
-**Prefer a single control of relative ranges over a pair of empty date fields.** `This month`, `Last 30 days`, `This quarter` — the ranges people actually work in — plus a **Custom** option that opens a modal (a window that blocks the rest of the page until the user closes it) for entering an exact range.
+**Prefer a single control of relative ranges over a pair of empty date fields.** `This month`, `Last 30 days`, `This quarter` — the ranges people actually work in — plus a Custom option that opens a modal (a window that blocks the rest of the page until the user closes it) for entering an exact range.
 
 **Two bare date fields are the pattern to avoid.** `Start date on/after` and `Start date on/before` are two controls for one idea. Both are empty, and the connection between them is only implied, not shown. The user has to work out that it is a range at all.
 
@@ -54,7 +54,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **A filter over a known set of categories is multi-select.** People filtering a queue want two statuses at once far more often than one, and a single-select control forces them to run the search twice.
 
-**There is no multi-select control in the component inventory.** This is a known gap — see `recursica-skill-selection-controls` and `recursica-skill-dropdown`. **Do not build one out of other parts.** Where multi-select is really needed, raise it. In the meantime, the working substitute is separate single-value filters that all apply at once.
+**There is no multi-select control in the component inventory.** This is a known gap — see `recursica-skill-selection-controls` and `recursica-skill-dropdown`. Do not build one out of other parts. Where multi-select is really needed, raise it. In the meantime, the working substitute is separate single-value filters that all apply at once.
 
 **A single on/off toggle is usually a badly named filter.** Before you add one, ask what field it filters, and whether that field is visible in the collection. If the matching column does not exist, the user cannot check what the toggle did. If its meaning repeats something already shown in every row, it is doing nothing.
 

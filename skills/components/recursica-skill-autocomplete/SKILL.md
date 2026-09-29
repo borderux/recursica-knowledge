@@ -32,9 +32,9 @@ An autocomplete is a text field whose value comes from a defined set. The user t
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.autocomplete`. **Do not pass a variant, size, or state that is not listed here.**
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.autocomplete`. **Do not pass a variant, size, or state that is not listed here.**
 
-**The third column is the React prop that sets each axis.** The axis name comes from the token inventory. It is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis      | Options                   | React prop   |
 | --------- | ------------------------- | ------------ |
@@ -53,18 +53,18 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.autocomplete`. **Do no
 
 **There is no multi-select axis, no chip or token display for chosen values, and no loading state** — see the uncovered list.
 
-**The kit defines the closed field only.** `icon-size` and `icon-text-gap` cover a leading icon and the trailing indicator. The filtered list, its option rows, and anything shown when there are no results are not in this component's inventory.
+**The UI kit defines the closed field only.** `icon-size` and `icon-text-gap` cover a leading icon and the trailing indicator. The filtered list, its option rows, and anything shown when there are no results are not in this component's inventory.
 
 **Read-only is a separate component** — `read-only-field`, which shows text instead of an input.
 
-**Documented outside the token inventory**, under the component's former name, "Search":
+**Shown only on the design-system website**, under the component's former name, "Search":
 
 | Section    | Options                  |
 | ---------- | ------------------------ |
 | `State`    | Default, Focused, Valued |
 | `Behavior` | Suggestions (optional)   |
 
-Those states are not kit axes and must not be passed as variants — `Focused` and `Valued` are conditions the component works out for itself. What they do tell you is the shape of the component: a **leading icon**, and a **clear control that appears once there is text in the field**. Suggestions are described as an optional extra, not the default.
+Those states are not kit axes and must not be passed as variants — `Focused` and `Valued` are conditions the component works out for itself. What they do tell you is the shape of the component: a **leading icon**, and a clear control that appears once there is text in the field. Suggestions are described as an optional extra, not the default.
 
 ## Rules for using it
 

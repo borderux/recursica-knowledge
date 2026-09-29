@@ -23,7 +23,7 @@ An avatar is a small visual stand-in for a person or entity. It helps people rec
 | ------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
 | The name alone identifies the record and space is tight | Plain text. In a dense table, a name column beats a picture — see `recursica-skill-tables` |
 | Status, presence, or a count must be shown              | `recursica-skill-badge`, beside the name. This component has no status dot                 |
-| Several people must read as one overlapping cluster     | Nothing — the kit defines no avatar group. See the uncovered list                          |
+| Several people must read as one overlapping cluster     | Nothing — the UI kit defines no avatar group. See the uncovered list                       |
 | The graphic stands for an idea, not a person            | An icon. An avatar is identity, not decoration                                             |
 | It would be the only way to tell whose row this is      | A name in text, with the avatar beside it                                                  |
 
@@ -31,9 +31,9 @@ An avatar is a small visual stand-in for a person or entity. It helps people rec
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.avatar`. **Do not pass a style or size that is not listed here.**
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.avatar`. **Do not pass a style or size that is not listed here.**
 
-**The third column is the React prop that sets each axis.** The axis name comes from the token inventory. It is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis     | Options                     | React prop |
 | -------- | --------------------------- | ---------- |
@@ -46,7 +46,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.avatar`. **Do not pass
 
 **There is no group, stack, or overlapping-cluster variant**, and no shape axis. Do not build an avatar group out of several avatars.
 
-**A different set of styles is documented outside the token inventory** — styles named Image, Primary, Background, and Ghost, plus a Border true/false axis — along with spacing out overlapping avatars in a group. None of that exists in the kit, whose only property is `elevation`. See the uncovered list before relying on any of it.
+**A different set of styles is shown only on the design-system website** — styles named Image, Primary, Background, and Ghost, plus a Border true/false axis — along with spacing out overlapping avatars in a group. None of that exists in the UI kit, whose only property is `elevation`. See the uncovered list before relying on any of it.
 
 ## Rules for using it
 
@@ -116,8 +116,8 @@ Do not implement, override, or tune any of these — the component owns them for
 
 ## Uncovered — ask, do not invent
 
-- **Two sets of styles that do not agree.** Styles named Image, Primary, Background, and Ghost, plus a Border true/false axis, are documented outside the token inventory. The kit defines `text`, `icon`, and `image`, with `elevation` as its only property. Which one is the authority has not been settled — do not rely on this without asking.
-- **Avatar groups.** Overlapping avatars in a group are documented outside the token inventory, but no group or stack exists in the kit. Do not build one, and do not rely on this without asking.
+- **Two sets of styles that do not agree.** Styles named Image, Primary, Background, and Ghost, plus a Border true/false axis, are shown only on the design-system website. The UI kit defines `text`, `icon`, and `image`, with `elevation` as its only property. Which one is the authority has not been settled — do not rely on this without asking.
+- **Avatar groups.** Overlapping avatars in a group are shown only on the design-system website, but no group or stack exists in the UI kit. Do not build one, and do not rely on this without asking.
 - **Which size belongs on which surface.** No rule says where `small`, `default`, and `large` each apply.
 - **How initials are chosen** — one letter or two, and what happens with a one-word, hyphenated, or non-Latin name.
 - **Whether an avatar may stand for something that is not a person** — a company, a team, a system — and what its fallback is.

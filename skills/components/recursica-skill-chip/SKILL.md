@@ -33,24 +33,24 @@ A chip is one of several short values the user can see, select, or remove.
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.chip`. **Do not pass a variant or state that is not listed here.**
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.chip`. **Do not pass a variant or state that is not listed here.**
 
 | Axis               | Options                  |
 | ------------------ | ------------------------ |
 | `selection-states` | `unselected`, `selected` |
 | `states`           | `error`                  |
 
-**`states` is nested under `selection-states`.** The kit defines `error` separately for an unselected chip and for a selected one, so error and selection are independent axes that combine.
+**`states` is nested under `selection-states`.** The UI kit defines `error` separately for an unselected chip and for a selected one, so error and selection are independent axes (variant properties, as Figma calls them — the ways a component varies, such as its size) that combine.
 
 **There is no size axis, no style axis, and no disabled state.**
 
-**Two setups are documented outside the token inventory:** a selectable chip, and a removable chip with a close icon. The kit defines a `close-icon-size` and a `close-icon-color`, which is what a removable chip uses. It also defines a `leading-icon-color` for an optional icon before the label.
+**Two setups are shown only on the design-system website:** a selectable chip, and a removable chip with a close icon. The UI kit defines a `close-icon-size` and a `close-icon-color`, which is what a removable chip uses. It also defines a `leading-icon-color` for an optional icon before the label.
 
 **A chip has a `min-width` and a `max-width`.** The component limits long values, which is another reason a chip is not for phrases.
 
-**The error state exists in the kit and in both adapters, and the house rule forbids using it.** Both facts are true, and neither cancels the other. The kit defines seven error colors for each selection state — background, border, text, icon, leading icon, selected icon, and close icon — and both adapters offer an `error` prop that applies them. "Error-selected" is not a fourth state; it is `error` combined with `selected`, which is why the axis is nested.
+**The error state exists in the UI kit and in both adapters, and the house rule forbids using it.** Both facts are true, and neither cancels the other. The UI kit defines seven error colors for each selection state — background, border, text, icon, leading icon, selected icon, and close icon — and both adapters offer an `error` prop that applies them. "Error-selected" is not a fourth state; it is `error` combined with `selected`, which is why the axis is nested.
 
-**Do not pass it.** `recursica-skill-badges-chips` says it plainly: do not use a chip to show an error, ever. A required chip group with nothing selected is a form validation error that the **group** reports below itself, and no chip changes how it looks to report it. The axis is listed above so that you recognise it, instead of assuming a stray `error` prop is a typo — not so that you reach for it.
+**Do not pass it.** `recursica-skill-badges-chips` says it plainly: do not use a chip to show an error, ever. A required chip group with nothing selected is a form validation error that the group reports below itself, and no chip changes how it looks to report it. The axis is listed above so that you recognise it, instead of assuming a stray `error` prop is a typo — not so that you reach for it.
 
 ## Rules for using it
 
@@ -60,7 +60,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.chip`. **Do not pass a
 
 **A chip may be dismissed only if the user put it there.** Values the system set are not the user's to remove.
 
-**Never show an error as a chip**, and never make a chip the thing that reports one. `recursica-skill-badges-chips` forbids a chip from carrying an error condition **as its content** — a chip is never how you tell the user that something is wrong.
+**Never show an error as a chip**, and never make a chip the thing that reports one. `recursica-skill-badges-chips` forbids a chip from carrying an error condition as its content — a chip is never how you tell the user that something is wrong.
 
 **A required chip group with nothing selected is a form validation error, and the group reports it below itself.** `recursica-skill-forms` owns that, and it works exactly as it does for any other control. The message sits in the group's assistive element beneath the group, restates the rule the user has to meet, and carries a signal that is not color. See `recursica-skill-assistive-element`. The two rules do not conflict — the error belongs to the group, not to any chip in it, and no chip changes how it looks to report it.
 

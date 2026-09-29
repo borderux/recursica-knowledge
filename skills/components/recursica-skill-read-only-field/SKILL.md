@@ -36,9 +36,9 @@ Each of these is a different thing. Switch to it, instead of adapting a read-onl
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.read-only-field`.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.read-only-field`.
 
-**The third column is the React prop that sets each axis.** The axis name comes from the token inventory. It is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis      | Options                   | React prop   |
 | --------- | ------------------------- | ------------ |
@@ -96,7 +96,7 @@ The rules here are different from every editable field, and that difference is t
 - **It is not a tab stop** (a place the Tab key lands). Do not add a `tabindex`, and do not make it able to receive focus just to give it a focus ring. A keyboard user tabs from the field above it straight to the field below it, and that is correct.
 - **The value must be text the user can select and copy.** Never block selection. An account number or an ID that cannot be copied forces the user to type it out by hand — and copying is the main thing anyone does with a read-only value.
 - **Because it never receives focus, nothing about it may depend on hover or focus.** Every part of the meaning — the value, its unit, its time zone, any note about why it cannot be edited — is in text that is there at rest.
-- **Any edit control is a control**, so it is its own tab stop, activated by Enter or Space, with its own accessible name (the name a screen reader reads out for a control) — and it is **visible without hovering.** An edit icon that appears on hover does not exist for keyboard or touch users.
+- **Any edit control is a control**, so it is its own tab stop, activated by Enter or Space, with its own accessible name (the name a screen reader reads out for a control) — and it is visible without hovering. An edit icon that appears on hover does not exist for keyboard or touch users.
 - **It must not interrupt the tab order** of the fields around it. Placing it between two inputs changes what a user reads, never the order they tab through.
 
 ## Not your decision
@@ -125,8 +125,8 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Uncovered — ask, do not invent
 
-- **The editable read-only field.** An "Is editable" behavior, with an edit icon that **appears on hover** and sends the user to another flow, is documented outside the token inventory, with no token behind it. The kit defines no edit control on this component, and `recursica-skill-label` sets aside an `edit-icon-gap` without saying what it triggers. A control that appears only on hover also conflicts with the accessibility rules above. Do not settle this yourself, and do not rely on it without asking.
-- **Required and optional markers.** Turning on an optional label or a required asterisk on this component is described outside the token inventory — which contradicts there being no input to require. Do not rely on it without asking.
+- **The editable read-only field.** An "Is editable" behavior, with an edit icon that appears on hover and sends the user to another flow, is shown only on the design-system website, with no token behind it. The UI kit defines no edit control on this component, and `recursica-skill-label` sets aside an `edit-icon-gap` without saying what it triggers. A control that appears only on hover also conflicts with the accessibility rules above. Do not settle this yourself, and do not rely on it without asking.
+- **Required and optional markers.** Turning on an optional label or a required asterisk on this component is described outside the UI kit — which contradicts there being no input to require. Do not rely on it without asking.
 - **Empty and null values.** No rule says what a read-only field shows when the value is missing. `recursica-skill-tables` has a null-cell rule for cells, but nothing extends it to a field.
 - **Long values, or values on several lines.** Only `min-height` exists — whether the value wraps, scrolls, or is truncated is not stated.
 - **Help or assistive text.** With no error state and no assistive slot, whether a note may sit under a read-only field is not settled.

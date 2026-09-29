@@ -28,9 +28,9 @@ One component shows both the help text and the error text below a field. Its typ
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.assistive-element`.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.assistive-element`.
 
-**The third column is the React prop that sets each axis.** The axis name comes from the token inventory. It is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis    | Options         | React prop         |
 | ------- | --------------- | ------------------ |
@@ -60,7 +60,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.assistive-element`.
 
 **Keep it under the field it belongs to.** An assistive element floating between two fields belongs to neither one.
 
-**Its position follows the field's label placement, so it takes on the form's single placement decision.** `recursica-skill-forms` requires **one label placement per form — side by side or stacked, never both at the same breakpoint** (the screen width at which the layout changes). The container-width test is applied once, to the form, and it governs every field in it. This element has no placement axis of its own: wherever the field's label sits, this element's position follows from it. So it is never placed on its own, and it never differs from field to field inside one form. A whole form may switch placement across breakpoints; a single section never gets its own.
+**Its position follows the field's label placement, so it takes on the form's single placement decision.** `recursica-skill-forms` requires one label placement per form — side by side or stacked, never both at the same breakpoint (the screen width at which the layout changes). The container-width test is applied once, to the form, and it governs every field in it. This element has no placement axis of its own: wherever the field's label sits, this element's position follows from it. So it is never placed on its own, and it never differs from field to field inside one form. A whole form may switch placement across breakpoints; a single section never gets its own.
 
 **Do not use it for marketing, reassurance, or padding.** Every line here is read on every pass through the form.
 

@@ -23,13 +23,13 @@ These are the house rules for how a page is put together, and what each region s
 
 **A header, and it is global.** It carries the primary navigation when the navigation is horizontal, and it usually holds access to the profile and menus.
 
-**Or a left rail, instead of the header or alongside it.** A rail is a narrow vertical strip on the left. It may sit below a header, or there may be no header at all. **Inside a rail, the primary navigation goes toward the top, and the profile and settings go toward the bottom** — the same items a header would have carried, moved around.
+**Or a left rail, instead of the header or alongside it.** A rail is a narrow vertical strip on the left. It may sit below a header, or there may be no header at all. Inside a rail, the primary navigation goes toward the top, and the profile and settings go toward the bottom — the same items a header would have carried, moved around.
 
 **A footer on every page.** It may be as simple as a copyright notice, or more. It can be fixed at the bottom or reached by scrolling; both are acceptable.
 
 **Page titles, sections, and any high-level summary content sit below the header**, in the page.
 
-**The header, the navigation, and the main content all sit on layer 0, unless one of them needs containing.** (A layer is a numbered level that sets which colors the components inside it use; layer 0 is the page itself.) Where one does, that region is raised to layer 1 — the navigation or the main content, not both — and the direction is decided once for the whole application. **Layer 0 is declared once, on the root element, and never declared again.** Owned by `recursica-skill-layers`.
+**The header, the navigation, and the main content all sit on layer 0, unless one of them needs containing.** (A layer is a numbered level that sets which colors the components inside it use; layer 0 is the page itself.) Where one does, that region is raised to layer 1 — the navigation or the main content, not both — and the direction is decided once for the whole application. Layer 0 is declared once, on the root element, and never declared again. Owned by `recursica-skill-layers`.
 
 ### Choosing between a top nav and a left rail
 
@@ -38,7 +38,7 @@ These are the house rules for how a page is put together, and what each region s
 - **Few items → a top nav.**
 - **More than about three or four → a left rail**, which gives room to stack them. Desktop viewports are wider than they are tall, so vertical space for navigation is the scarcer resource. A rail spends horizontal space to buy it.
 
-**Three or four is a default, not a hard limit.** It can be changed to fit the product's needs. **Where the choice is not obvious, ask the user which they prefer**, instead of quietly picking one — see `recursica-skill-design-router`.
+**Three or four is a default, not a hard limit.** It can be changed to fit the product's needs. Where the choice is not obvious, ask the user which they prefer, instead of quietly picking one — see `recursica-skill-design-router`.
 
 ## Titles and breadcrumbs
 
@@ -48,19 +48,19 @@ These are the house rules for how a page is put together, and what each region s
 
 **A breadcrumb (a trail of links showing where the page sits) appears once the user is below the top level of the hierarchy.** Landing pages and dashboards do not need one. The sub-sections reached from them do, and it appears on all of them.
 
-**Its job is to give a sense of place** — showing where the user came from and how to get back up. **It matters most on a deep link** (a link that opens a page deep inside the application), where someone arrives several layers down from a dashboard with no idea where they are.
+**Its job is to give a sense of place** — showing where the user came from and how to get back up. It matters most on a deep link (a link that opens a page deep inside the application), where someone arrives several layers down from a dashboard with no idea where they are.
 
 ## The line under a heading
 
 **A page title and a section heading each have a slot beneath them, and by default that slot is empty.** A well-named heading has already said what the region is. A line that says it again is not context — it is the heading a second time in smaller type, and every reader pays for it on every visit.
 
-**The slot is for what the heading cannot carry**: an order, a limit, a consequence, or a state the reader would otherwise get wrong. `Newest first. Append-only: nothing here is ever rewritten.` under **Changes** earns its place — the sort order and the fact that nothing is rewritten cannot be worked out from the word. `The closed vocabulary the tagging rests on.` under **Tags** does not; it just defines the heading.
+**The slot is for what the heading cannot carry**: an order, a limit, a consequence, or a state the reader would otherwise get wrong. `Newest first. Append-only: nothing here is ever rewritten.` under Changes earns its place — the sort order and the fact that nothing is rewritten cannot be worked out from the word. `The closed vocabulary the tagging rests on.` under Tags does not; it just defines the heading.
 
 **The test is subtraction, and it takes one reading.** Delete the line. If the only thing lost is a restatement of the heading, it was noise, and it stays deleted. If a reader would now get something wrong, keep it — and cut it back to only that.
 
 **A slot in the component is not a brief to fill it.** A `lede` or `note` prop exists because some headings need one. A prop that accepts a string is the single most common reason an explanation gets written that nobody asked for. So passing nothing is the normal case, not the unfinished one.
 
-**This rule loses to the prop unless the prop goes.** It has been stated, read, and then broken across a dozen call sites in one application. That happened because writing a sentence into an available string prop is the easiest path every single time, and remembering a rule is not. **So when you find this defect, delete the prop, not just the strings.** A page or section heading component that takes no optional prose cannot grow it back next week; one that takes it will. Where a real exception appears later, add the slot back for that case, and let it be the deliberate act the rule always intended.
+**This rule loses to the prop unless the prop goes.** It has been stated, read, and then broken across a dozen call sites in one application. That happened because writing a sentence into an available string prop is the easiest path every single time, and remembering a rule is not. So when you find this defect, delete the prop, not just the strings. A page or section heading component that takes no optional prose cannot grow it back next week; one that takes it will. Where a real exception appears later, add the slot back for that case, and let it be the deliberate act the rule always intended.
 
 **The same reasoning applies to any slot for optional prose** — a field description, a card subtitle, a paragraph in an empty state. If the component offers somewhere to explain, something will get explained there.
 
@@ -77,7 +77,7 @@ These are the house rules for how a page is put together, and what each region s
 **Position them by the width of the content they act on, not by a breakpoint.**
 
 - **A wide table with many columns → filters above the content.** There is no room beside it.
-- **A narrow table, form, or list → filters in a left rail on the page.** This rail is a region of the page, and it is **not** the navigation rail. Do not confuse the two, or merge them.
+- **A narrow table, form, or list → filters in a left rail on the page.** This rail is a region of the page, and it is not the navigation rail. Do not confuse the two, or merge them.
 
 **There is no pixel threshold for this.** It depends on what is on the screen, not on a viewport width. Anyone asking for the exact breakpoint has misunderstood the rule.
 
@@ -93,17 +93,17 @@ The filter controls themselves are owned by `recursica-skill-filters`.
 
 **Form groups with a subheading break a long form** into readable chunks. Owned by `recursica-skill-forms`.
 
-**NEVER divide regions with cards.** A card is for a plurality of objects (several of the same kind) and for showing visual information. There is no such thing as a single card, and **form fields never go inside a card — that is a hard rule with no exceptions.** Owned by `recursica-skill-card`.
+**NEVER divide regions with cards.** A card is for a plurality of objects (several of the same kind) and for showing visual information. There is no such thing as a single card, and form fields never go inside a card — that is a hard rule with no exceptions. Owned by `recursica-skill-card`.
 
 ## Maximum width
 
-**Content at the page level has a maximum width, and it comes from the design system's layout rule.** It is not yours to set. **The house default is 1200**, and it applies to the **main content area only**. Headers, footers, and other sticky chrome (the frame around the content) are not limited by it, and may stretch across the full viewport. Owned by `recursica-skill-responsive-behavior`, which also has the tablet and small-device breakpoints.
+**Content at the page level has a maximum width, and it comes from the design system's layout rule.** It is not yours to set. The house default is 1200, and it applies to the main content area only. Headers, footers, and other sticky chrome (the frame around the content) are not limited by it, and may stretch across the full viewport. Owned by `recursica-skill-responsive-behavior`, which also has the tablet and small-device breakpoints.
 
 **Space beyond it stays empty.** That is the correct result, not a gap to fill.
 
-**MUST centre the main content horizontally.** Empty space on the right is not the same as empty space on both sides. A maximum width with no alignment leaves the content stuck wherever the layout happens to start it — against the left rail. So on a wide display, every screen sits in the top-left corner with a third of the monitor blank beside it. That looks like a window that failed to resize, not like deliberate restraint. **What it is centred within is a choice, made once — see below.**
+**MUST centre the main content horizontally.** Empty space on the right is not the same as empty space on both sides. A maximum width with no alignment leaves the content stuck wherever the layout happens to start it — against the left rail. So on a wide display, every screen sits in the top-left corner with a third of the monitor blank beside it. That looks like a window that failed to resize, not like deliberate restraint. What it is centred within is a choice, made once — see below.
 
-**This is the rule most often half done**, because a maximum width alone looks correct at the viewport it was built on, and only goes wrong on a larger one. **Check it at a viewport well beyond the maximum**, not just at the one on your desk.
+**This is the rule most often half done**, because a maximum width alone looks correct at the viewport it was built on, and only goes wrong on a larger one. Check it at a viewport well beyond the maximum, not just at the one on your desk.
 
 **Chrome is not limited by the maximum width** — a left rail or a header stretches across the full viewport as before; see above.
 
@@ -124,7 +124,7 @@ The filter controls themselves are owned by `recursica-skill-filters`.
 
 **A page that is loading shows nothing. Then it shows the content.** No spinner, no placeholders, no partial furniture.
 
-**NEVER use skeletons (gray placeholder shapes shown while content loads) or ghost text.** Gray bars standing in where text will be are a spinner in another costume. They add mental work to decode and give nothing back. **They are not used in these applications.**
+**NEVER use skeletons (gray placeholder shapes shown while content loads) or ghost text.** Gray bars standing in where text will be are a spinner in another costume. They add mental work to decode and give nothing back. They are not used in these applications.
 
 **Past about three seconds, a page-level spinner may be called for**, to show that something is happening. Understand what it buys you: nothing about what is slow, or how long is left. Owned by `recursica-skill-feedback-messaging`.
 
@@ -154,11 +154,11 @@ A peer is an object of the same kind as the ones around it, such as a row in a l
 
 **A layer does not excuse something from the card tests.** Needing a surface does not make something a peer.
 
-**Layers are their own system, and `recursica-skill-layers` owns it.** There are four levels, 0 to 3. **The root element is always layer 0.** Every component takes its colours from the layer it sits on. And **every layer property — surface, border, radius, padding, shadow — comes from the Forge theme, and you never set it.** Read that skill before opening a layer.
+**Layers are their own system, and `recursica-skill-layers` owns it.** There are four levels, 0 to 3. **The root element is always layer 0. Every component takes its colours from the layer it sits on. And every layer property — surface, border, radius, padding, shadow — comes from the Forge theme, and you never set it.** Read that skill before opening a layer.
 
 **Layers 0 and 1 do nearly all the work.** Layer 2 needs a stated reason, and layer 3 is almost always a sign that the structure is wrong.
 
-**How the adapter offers a layer is still not confirmed.** The token contract and the `data-recursica-layer` attribute are real, but a `Layer` component is mentioned in the component documentation without being exported. **Do not paint a surface with raw CSS variables or the underlying library's tokens**; raise it instead. See `recursica-skill-design-router`.
+**How the adapter offers a layer is still not confirmed.** The token contract and the `data-recursica-layer` attribute are real, but a `Layer` component is mentioned in the component documentation without being exported. Do not paint a surface with raw CSS variables or the underlying library's tokens; raise it instead. See `recursica-skill-design-router`.
 
 ## Application chrome
 
@@ -172,13 +172,13 @@ A peer is an object of the same kind as the ones around it, such as a row in a l
 
 **The top-left position holds the brand.** Almost always, that is the client's logo — one variation puts the logo in the upper right and the profile information in the upper left. See `recursica-skill-screen-priority`.
 
-**The application has one scrollbar.** Sticky regions stay in place while the page scrolls beneath them, and **no inner scrolling region is ever built.** Beyond a sticky header, a sticky footer, and a permanent navigation rail, there is at most one more sticky element. Owned by `recursica-skill-screen-priority`.
+**The application has one scrollbar.** Sticky regions stay in place while the page scrolls beneath them, and no inner scrolling region is ever built. Beyond a sticky header, a sticky footer, and a permanent navigation rail, there is at most one more sticky element. Owned by `recursica-skill-screen-priority`.
 
 **One scrollbar also means it does not appear when the content fits.** A page whose content is shorter than the viewport must not scroll at all. A few dozen pixels of movement on an otherwise empty page is the same defect as a scrolling region — and it is more likely, because it comes from arithmetic rather than from a decision.
 
 ### Never size a region to the viewport from inside a layer
 
-**A full-height shell, rail, or panel MUST NOT be given a bare viewport height** — `100vh` and its variations — **when it sits inside a declared layer.**
+**A full-height shell, rail, or panel MUST NOT be given a bare viewport height** — `100vh` and its variations — when it sits inside a declared layer.
 
 **A layer carries padding from the theme**, and `recursica-skill-layers` puts that padding out of your reach on purpose. So a region set to the full viewport height inside one comes out as the viewport _plus_ that padding, at the top and the bottom, and the page scrolls by exactly that much on every screen. The navigation rail is where this shows up first, because a rail is the region most likely to be told to fill the height.
 
@@ -194,11 +194,11 @@ A peer is an object of the same kind as the ones around it, such as a row in a l
 
 **There are three tests, and it needs all three:**
 
-1. **The dataset is large enough that its shape cannot be seen.** A count earns its place by telling the reader something the content cannot. **With eleven rows in a table below it, the table has already said it** — the reader can see eleven. Ask what the realistic maximum is, not the theoretical one: if the answer is dozens, the table is enough.
+1. **The dataset is large enough that its shape cannot be seen.** A count earns its place by telling the reader something the content cannot. With eleven rows in a table below it, the table has already said it — the reader can see eleven. Ask what the realistic maximum is, not the theoretical one: if the answer is dozens, the table is enough.
 2. **The number changes.** A figure exists to be read again on the next visit and found different. One that reports the same value every time is a label pretending to be data.
 3. **It guides the next action.** Because of it, the reader should be able to do something differently.
 
-**NEVER show a figure that is always zero by its nature.** A count of a state that nothing ever reaches is not a reassuring zero. It is a permanent hole in the layout that the reader learns to skip — and once they have learned to skip it, they skip the box beside it too. **A zero that will one day be more than zero belongs in the content**, where its arrival can be seen in context.
+**NEVER show a figure that is always zero by its nature.** A count of a state that nothing ever reaches is not a reassuring zero. It is a permanent hole in the layout that the reader learns to skip — and once they have learned to skip it, they skip the box beside it too. A zero that will one day be more than zero belongs in the content, where its arrival can be seen in context.
 
 **Two or three figures that pass are a better screen than six where three are always zero.** The problem is not the number of boxes. It is that padding out the row teaches the reader that the whole row is decoration.
 

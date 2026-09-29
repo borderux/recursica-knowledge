@@ -24,11 +24,11 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 ## Layout
 
-**MUST: a single column, from top to bottom.** One field per row, stacked vertically. This is not negotiable, and **it does not change with the width of the container.** A wide container never earns fields side by side. Extra horizontal space goes unused, or the form's maximum width is limited — it is never spent on a second column.
+**MUST: a single column, from top to bottom.** One field per row, stacked vertically. This is not negotiable, and it does not change with the width of the container. A wide container never earns fields side by side. Extra horizontal space goes unused, or the form's maximum width is limited — it is never spent on a second column.
 
 **NEVER use a multi-column form layout.** Not for addresses (`Address 1` / `Address 2` / `City` / `State` / `Zip` in two columns), not to "save vertical space," not ever. Multi-column layouts are banned because the tab order becomes unclear: does focus move down the left column and then down the right, or left to right across each row? Both answers are reasonable — which is why the layout is broken. A form's reading order must never move both left to right _and_ top to bottom.
 
-**Exception — the compound control.** Small inputs that are closely tied together and make up one value may sit on one row: a date picker plus a time entry plus an AM/PM select. Treat this as **one control** with **one label**. This is the only case where inputs share a row.
+**Exception — the compound control.** Small inputs that are closely tied together and make up one value may sit on one row: a date picker plus a time entry plus an AM/PM select. Treat this as one control with one label. This is the only case where inputs share a row.
 
 ## Labels
 
@@ -42,11 +42,11 @@ The reasons, most important first:
 
 **The container's width affects only how labels and fields relate — never the order of the fields.** Fields stay one per row, top to bottom, always. The one thing that changes is whether a label sits beside its field or above it.
 
-**Stack the label above its field only when the container is too narrow to fit the label and the field side by side.** What decides this is **the width of the form's container, not the viewport breakpoint** (the screen width at which the whole layout changes). A narrow panel, drawer, or side rail on a large desktop display stacks. A wide form on a tablet does not.
+**Stack the label above its field only when the container is too narrow to fit the label and the field side by side.** What decides this is the width of the form's container, not the viewport breakpoint (the screen width at which the whole layout changes). A narrow panel, drawer, or side rail on a large desktop display stacks. A wide form on a tablet does not.
 
 Stacking is a fallback, never a preference. It makes forms long, and it forces the user to switch back and forth between label and field while scanning. It is even worse because fields are different heights — a textarea (a multi-line text field) is tall, and a radio group has as many rows as it has options — so the rhythm is uneven.
 
-**MUST: one label placement per form. Side by side or stacked, never both at the same breakpoint.** Apply the container-width test once, to the form, and let the answer govern every field in it. If the form's container cannot fit label and field side by side, **every** field in that form stacks — including the short ones that would have fit.
+**MUST: one label placement per form. Side by side or stacked, never both at the same breakpoint.** Apply the container-width test once, to the form, and let the answer govern every field in it. If the form's container cannot fit label and field side by side, every field in that form stacks — including the short ones that would have fit.
 
 This is not a matter of looks. Mixing the two placements in one form:
 
@@ -60,7 +60,7 @@ This is not a matter of looks. Mixing the two placements in one form:
 
 **In code, side by side is the value you have to pass.** The prop is `formLayout` on every field component, and it **defaults to `stacked`**. So a field with no `formLayout` shows the fallback in a container of any width — which is this rule turned upside down. Passing nothing is not "taking the default"; it is the defect. There are two ways this fails silently, and neither one shows an error:
 
-- **The prop is `formLayout`, not `layouts`.** `layouts` is the name of the token axis. React ignores an unknown prop without complaint, so `layouts="side-by-side"` leaves the field stacked while looking as if the rule was applied.
+- **The prop is `formLayout`, not `layouts`.** `layouts` is the name of the token axis (a variant property, as Figma calls it — one way a component varies, such as its size). React ignores an unknown prop without complaint, so `layouts="side-by-side"` leaves the field stacked while looking as if the rule was applied.
 - **A form only complies if every field has the prop.** Search the form for the field components and count them. The prop is set per field, so one missed field is the mixed-placement defect described above.
 
 **Label wording:** always name the object clearly. A label must never rely on surrounding content for its meaning or context — a screen reader user hears the label on its own. If a verb is involved, make the verb clear and active. No passive verbs, and no linking verbs.
@@ -73,7 +73,7 @@ Decide based on the user's mental model (a person's picture of how something wor
 2. **Volume.** There are so many fields that the visual noise needs to be reduced.
 3. **Later branching.** An answer makes a _later_ step significantly different.
 
-**The opposite case: information that refers back and forth favors one long form.** When completing one section depends on checking or remembering another, a stepper (a component that walks the user through numbered steps) becomes actively worse than length. Moving forward and back to re-read costs more than scrolling does. Usability testing on a long credit-card application found that the single form did better than the stepper for exactly this reason: the user wanted to confirm that the whole thing was correct and complete at once. **The question is how much has to stay in view, not how many fields there are.** See `recursica-skill-screen-priority`.
+**The opposite case: information that refers back and forth favors one long form.** When completing one section depends on checking or remembering another, a stepper (a component that walks the user through numbered steps) becomes actively worse than length. Moving forward and back to re-read costs more than scrolling does. Usability testing on a long credit-card application found that the single form did better than the stepper for exactly this reason: the user wanted to confirm that the whole thing was correct and complete at once. The question is how much has to stay in view, not how many fields there are. See `recursica-skill-screen-priority`.
 
 **Where disclosure ends and steps begin:** if an answer causes a _small, local_ change — a field or a section right below it — use progressive disclosure (showing only what is needed now, with the rest available on request) and stay on one page. If it causes a _clearly different later step_, use multiple steps. Do not reach for multiple steps to handle small conditional fields.
 
@@ -97,7 +97,7 @@ Group fields in this order of preference:
 - Mostly required fields → mark the few **optional** ones.
 - Mostly optional fields → mark the few **required** ones.
 
-**Avoid cluttering the form with asterisks.** When nearly all fields are required, do not scatter asterisks everywhere. Use a signal that applies across the form instead — for example, **a bold label means required, and regular weight means optional** — and state that convention once. There is less visual noise, and it is just as clear.
+**Avoid cluttering the form with asterisks.** When nearly all fields are required, do not scatter asterisks everywhere. Use a signal that applies across the form instead — for example, a bold label means required, and regular weight means optional — and state that convention once. There is less visual noise, and it is just as clear.
 
 **Mark a whole group as optional** wherever an entire section may not apply to a user. If a user may not have the knowledge for a whole section, the _section_ is optional. Say so at the group heading, rather than on every field.
 
@@ -116,7 +116,7 @@ How that is built: use the button's disabled look, with icon-only content or an 
 **The order of operations:**
 
 1. Prevent. Use clear labels, help text, placeholder text, and sections that are small enough. Placeholder text guides what goes in a text field or textarea. Help text below a field carries the rules (for example, the character requirements for a password).
-2. Validate **inline, on blur** — that is, when the user leaves the field. When a field is focused, then left, and then found to be invalid, mark it right away with a **non-blocking** indicator on that field. Do not put up a modal, do not show an alert, and do not stop the user from moving on to another field.
+2. Validate **inline, on blur** — that is, when the user leaves the field. When a field is focused, then left, and then found to be invalid, mark it right away with a non-blocking indicator on that field. Do not put up a modal, do not show an alert, and do not stop the user from moving on to another field.
 3. **MUST keep the submit button disabled until every required field is complete and valid.**
 
 **NEVER ship an enabled submit button that dumps every validation error at once when clicked.** This is the single worst validation pattern. It tells the user nothing about what the form needs until they have already failed at it, so they are left guessing what to complete. If the button is enabled, the form can be submitted.
@@ -181,7 +181,7 @@ If the result appears on a later step instead, **that is not progressive disclos
 
 **Default: submitting takes effect immediately.** No "Are you sure?" Most forms in web applications are expected to submit straight away, and the results can be seen and edited afterward.
 
-**Confirm only when both of these are true:** the action cannot be undone, **and** there is no other way to recover. Legally binding submissions with no way back are the clearest valid case.
+**Confirm only when both of these are true:** the action cannot be undone, and there is no other way to recover. Legally binding submissions with no way back are the clearest valid case.
 
 **Deleting a repeated item inside a form** follows the same test: confirm only if the item is hard to recreate and there is no undo. Otherwise, delete it on click.
 

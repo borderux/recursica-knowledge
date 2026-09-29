@@ -32,7 +32,7 @@ A modal blocks the page to get one decision or one short task done, then gets ou
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.modal`. **The modal has no variant axes at all** — no sizes, no types, no severity variants. Everything is a fixed property.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.modal`. **The modal has no variant axes (variant properties, as Figma calls them — the ways a component varies, such as its size) at all** — no sizes, no types, no severity variants. Everything is a fixed property.
 
 **What the component provides:** a header, a content area, a footer, a divider that appears when the content scrolls, and a gap between the buttons in the footer. Its `min-width`, `max-width`, `min-height`, and `max-height` are set by tokens.
 
@@ -40,7 +40,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.modal`. **The modal ha
 
 **There is no severity or destructive variant.** A dangerous confirmation looks like any other modal; the words carry the weight.
 
-**Structure documented outside the token inventory:** a title, a content slot, a divider, and a footer.
+**Structure shown only on the design-system website:** a title, a content slot, a divider, and a footer.
 
 ## Rules for using it
 
@@ -50,9 +50,9 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.modal`. **The modal ha
 
 **The title states the decision**, not the name of the component. "Delete this project?" rather than "Confirm".
 
-**Never open a modal from a modal.** Once the user is in a mode, they do not go into modes within it. Stacked modals leave them with no idea where they are, or what dismissing will do. **Two scrims (dimmed overlays) darkening the page at once must never happen.**
+**Never open a modal from a modal.** Once the user is in a mode, they do not go into modes within it. Stacked modals leave them with no idea where they are, or what dismissing will do. Two scrims (dimmed overlays) darkening the page at once must never happen.
 
-**The one exception is replacing, not stacking.** A shared confirmation modal used across the application may appear after an action finishes inside another modal — but it appears **in place of** the first one, which goes away as the new one appears. Never on top. This is not ideal; it exists because secondary modals get reused. Owned by `recursica-skill-panels-modals`.
+**The one exception is replacing, not stacking.** A shared confirmation modal used across the application may appear after an action finishes inside another modal — but it appears in place of the first one, which goes away as the new one appears. Never on top. This is not ideal; it exists because secondary modals get reused. Owned by `recursica-skill-panels-modals`.
 
 **Never put a form in a card inside a modal**, and do not wrap the modal's own content in a card. The modal is already the boundary; see `recursica-skill-card`.
 

@@ -29,7 +29,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
    - **It is a designed, checked experience** on the smaller size.
    - **Phones are actively not supported.**
      Do not assume the middle one just because it sounds the most professional. Find out.
-3. **What viewport does this business actually have?** A factory floor of very old desktops limited to 1024 is a different problem from a guaranteed 1440. In the first case, being responsive is about getting narrower; in the second, it is about **what happens when it gets wider.**
+3. **What viewport does this business actually have?** A factory floor of very old desktops limited to 1024 is a different problem from a guaranteed 1440. In the first case, being responsive is about getting narrower; in the second, it is about what happens when it gets wider.
 4. **What is the main way people give input?** Mouse and keyboard is assumed, but touch is possible even on desktop — and the real cases get stranger. There are capacitive touchscreens (which sense a bare finger) and resistive ones (which need pressure), gloved hands that cannot take the gloves off, and a joystick standing in for a mouse on a factory floor. Each one is a different interaction pattern.
 
 ## The breakpoints
@@ -50,7 +50,7 @@ A breakpoint is the screen width at which the layout changes. There are three ti
 
 **Responsive means the layout reflows.** Components move and rewrap, but the same things are there.
 
-**Adaptive means something different happens.** Not rearranging, and not CSS switched around — **a different element is shown**, or a feature is not offered at all.
+**Adaptive means something different happens.** Not rearranging, and not CSS switched around — a different element is shown, or a feature is not offered at all.
 
 **Both belong below desktop, and adaptive is the half that gets skipped.** The question "what can we take out?" is the one most teams never ask.
 
@@ -62,7 +62,7 @@ A breakpoint is the screen width at which the layout changes. There are three ti
 
 **Nothing is fixed in advance as something that can be dropped, and nothing is protected from being dropped.** When asked whether any type of information is strictly forbidden from being dropped, no matter the context, the answer was no.
 
-**So this is always a conversation with the designer.** **MUST NOT decide on your own what a narrow screen loses** — raise it, as `recursica-skill-design-router` says. An agent that quietly drops a feature at 400px has invented a house rule.
+**So this is always a conversation with the designer.** MUST NOT decide on your own what a narrow screen loses — raise it, as `recursica-skill-design-router` says. An agent that quietly drops a feature at 400px has invented a house rule.
 
 **Sometimes the answer is to hide something completely**, because it cannot be shown well at that size. The table is the standard example.
 
@@ -74,7 +74,7 @@ A breakpoint is the screen width at which the layout changes. There are three ti
 
 ## What becomes a page
 
-**A panel becomes a page below tablet size.** A panel is a **context overlay** — it exists so the user can work beside the page they came from. On a small device there is no room to lay context over anything, so the panel has no purpose left. Owned by `recursica-skill-panels-modals`.
+**A panel becomes a page below tablet size.** A panel is a context overlay — it exists so the user can work beside the page they came from. On a small device there is no room to lay context over anything, so the panel has no purpose left. Owned by `recursica-skill-panels-modals`.
 
 **A modal becomes a page below tablet size only when work is done in it.** The test is whether the user is doing work:
 
@@ -111,7 +111,7 @@ A breakpoint is the screen width at which the layout changes. There are three ti
 
 **The house does not design specifically for touch.** Touch is not something that belongs only to sizes below desktop.
 
-**An application has one main input method, and it applies to the whole application.** If it is designed for touch, it is built around touch everywhere — including on desktop. Otherwise, it is built around mouse and keyboard everywhere. **Never make an application built for touch at one breakpoint and built for a pointer at another.**
+**An application has one main input method, and it applies to the whole application.** If it is designed for touch, it is built around touch everywhere — including on desktop. Otherwise, it is built around mouse and keyboard everywhere. Never make an application built for touch at one breakpoint and built for a pointer at another.
 
 **The components handle touch the same way they handle every other kind of input.** That is built into them, and it is not your concern.
 
@@ -127,11 +127,11 @@ A breakpoint is the screen width at which the layout changes. There are three ti
 
 **NEVER use a bottom navigation bar.** It comes up as an alternative to the hamburger menu for a very simple navigation, and it is not a house pattern. The hamburger menu is the answer at every narrow width.
 
-**An icon-only rail is not a way out below desktop.** It is still banned at every width. The reasons, which everyone in the room agreed on: without a hover state, there is no affordance (a visible cue that tells the user they can act on something) saying what the icons mean, and beyond a handful of them, nobody remembers. **A rail of fifteen icons whose collapsed state shrinks down to bare dots you have to hover over is the extreme case, and it is real.** If a rail pattern were ever used, the icons would have to carry labels.
+**An icon-only rail is not a way out below desktop.** It is still banned at every width. The reasons, which everyone in the room agreed on: without a hover state, there is no affordance (a visible cue that tells the user they can act on something) saying what the icons mean, and beyond a handful of them, nobody remembers. A rail of fifteen icons whose collapsed state shrinks down to bare dots you have to hover over is the extreme case, and it is real. If a rail pattern were ever used, the icons would have to carry labels.
 
 **Icons for specialized business concepts do not work**, which is why the rail fails worst in enterprise software. See `recursica-skill-icon-semantics`.
 
-**A drawer is a panel.** Drawer and panel mean the same thing — a surface that slides in. A navigation drawer is a panel being used to hold navigation, and it is no different in kind from a hamburger menu. **A sidebar is not a drawer:** a sidebar is permanently on screen, the desktop alternative to a top navigation, down the left side.
+**A drawer is a panel.** Drawer and panel mean the same thing — a surface that slides in. A navigation drawer is a panel being used to hold navigation, and it is no different in kind from a hamburger menu. A sidebar is not a drawer: a sidebar is permanently on screen, the desktop alternative to a top navigation, down the left side.
 
 **Knowing that mobile use is coming should change the navigation pattern chosen at the start**, not just how it collapses at the end.
 
@@ -139,8 +139,8 @@ A breakpoint is the screen width at which the layout changes. There are three ti
 
 There are two good signs, and the absence of both gives it away:
 
-1. **Content areas really do reflow.** The classic check: **do cards stack** when the viewport gets narrower?
-2. **The way content is shown changes between tiers.** Cards on desktop becoming a **carousel** on mobile is the clearest evidence of intent. Someone decided that this content is shown differently here, instead of letting the same component squeeze.
+1. **Content areas really do reflow.** The classic check: do cards stack when the viewport gets narrower?
+2. **The way content is shown changes between tiers.** Cards on desktop becoming a carousel on mobile is the clearest evidence of intent. Someone decided that this content is shown differently here, instead of letting the same component squeeze.
 
 **The anti-pattern, described as the worst of them all:** a fixed-width layout that does not reflow at all. The user gets a zoomed-out page with tiny text and lines far too long, and has to zoom in and scroll around to read anything. Nothing else was named as worse.
 

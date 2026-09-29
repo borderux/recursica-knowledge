@@ -48,7 +48,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **Prefer an icon. A badge is the exception, and it has to earn its weight.**
 
-**A badge demands a lot of attention.** It is a filled, bordered, colored box with a word in it, sized to be noticed. That is the right tool for one important thing. It is the wrong tool for eight. A screen scattered with badges costs the reader attention at every single one, while the data they came for fades into the background. **Weight only works when it is rare.**
+**A badge demands a lot of attention.** It is a filled, bordered, colored box with a word in it, sized to be noticed. That is the right tool for one important thing. It is the wrong tool for eight. A screen scattered with badges costs the reader attention at every single one, while the data they came for fades into the background. Weight only works when it is rare.
 
 **So the default is an icon.** It carries the same fact at a small fraction of the cost, and it leaves the badge free for when something really must be noticed. `recursica-skill-icon-semantics` owns the icon and its meaning.
 
@@ -81,9 +81,9 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 ## Placement in table rows
 
-**A status gets its own column only when most rows have one.** Check that first. `recursica-skill-tables` rejects a column that is empty for most rows, so a rare exception never gets a column. **A rare exception is an icon beside the object's identifying value, inside that cell.** Everything below applies to a status that the whole table carries.
+**A status gets its own column only when most rows have one.** Check that first. `recursica-skill-tables` rejects a column that is empty for most rows, so a rare exception never gets a column. A rare exception is an icon beside the object's identifying value, inside that cell. Everything below applies to a status that the whole table carries.
 
-**Put status near the left edge.** People read left to right, so the left edge is where the eye lands first when scanning. In practice, that means **the second or third column**.
+**Put status near the left edge.** People read left to right, so the left edge is where the eye lands first when scanning. In practice, that means the second or third column.
 
 - **The first column is kept for the bulk-selection checkbox**, where there is one.
 - Place the status **right before or right after the information that identifies the object.** If that information is in the first column, the status goes in the second. If the identity is in the second column, the status can come first.
@@ -111,7 +111,7 @@ The point is connection: the status must read as belonging to that object. Colum
 
 ## Sidebar navigation
 
-**Labeling a nav item calls for a badge.** It is read-only metadata attached to a menu option — "Active", for example. **Almost never use a chip in sidebar navigation**, because nothing there is being selected in the way a chip is selected.
+**Labeling a nav item calls for a badge.** It is read-only metadata attached to a menu option — "Active", for example. Almost never use a chip in sidebar navigation, because nothing there is being selected in the way a chip is selected.
 
 ## How many chips
 

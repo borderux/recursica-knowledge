@@ -38,9 +38,9 @@ Apply this to every change that happens without the page reloading:
 
 **Every component is responsible for announcing itself.** That is the default, and it holds in the great majority of cases.
 
-**Components also set what you must supply.** A component that announces for you can only announce what it was given — an accessible name (the name a screen reader reads out for a control), a message, a count. **Where a component needs that information in order to comply, providing it is not optional**, and each component skill states what it needs.
+**Components also set what you must supply.** A component that announces for you can only announce what it was given — an accessible name (the name a screen reader reads out for a control), a message, a count. Where a component needs that information in order to comply, providing it is not optional, and each component skill states what it needs.
 
-**The application covers whatever falls between components.** Where a change happens with no component to speak for it, the application makes the announcement. The clearest case is **a flow that succeeds silently** — a submission that goes to a new page and shows nothing. Nothing there announces on its own, so the application must.
+**The application covers whatever falls between components.** Where a change happens with no component to speak for it, the application makes the announcement. The clearest case is a flow that succeeds silently — a submission that goes to a new page and shows nothing. Nothing there announces on its own, so the application must.
 
 **If there is a toast, the toast announces — always.** (A toast is a short message that appears briefly and then disappears.) There is no case where a toast appears without an announcement. Whatever the toast says is the announcement, so nothing else needs to repeat it.
 
@@ -50,7 +50,7 @@ Apply this to every change that happens without the page reloading:
 
 **Follow established practice: assertive is kept for errors and for conditions the user must know about right away. Everything else is polite.**
 
-These are the two priority levels. An **assertive** announcement interrupts whatever the screen reader is currently reading. A **polite** announcement waits until the screen reader reaches a natural pause.
+These are the two priority levels. An **assertive** announcement interrupts whatever the screen reader is currently reading. A polite announcement waits until the screen reader reaches a natural pause.
 
 **Assertive interrupts by design**, which is precisely why it is kept for rare cases. A confirmation, a result count, or a status update announced assertively cuts across whatever the user was reading or typing. That cost is only worth paying for something that cannot wait.
 
@@ -76,7 +76,7 @@ These are the two priority levels. An **assertive** announcement interrupts what
 
 ## Testing
 
-**These announcements are not routinely tested.** That is how things are done today, and it has one direct effect on how you build: **nothing later on will catch an omission.** So the announcement has to be correct when it is written, instead of being checked afterward.
+**These announcements are not routinely tested.** That is how things are done today, and it has one direct effect on how you build: nothing later on will catch an omission. So the announcement has to be correct when it is written, instead of being checked afterward.
 
 **Treat it as a minimum standard you are responsible for meeting**, not as a feature that someone will review.
 

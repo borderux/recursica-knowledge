@@ -13,7 +13,7 @@ Pagination moves the user between pages of one set of records. It is a control i
 
 ## Use it when
 
-- **An interior table** — a smaller grid set inside a container beside other elements — **holds more records than its fixed number of rows.** `recursica-skill-tables` gives it a fixed five or ten rows, and then paginates.
+- **An interior table** — a smaller grid set inside a container beside other elements — holds more records than its fixed number of rows. `recursica-skill-tables` gives it a fixed five or ten rows, and then paginates.
 - **That interior table must not scroll**, in either direction. Every row it holds is visible, and pagination takes over from there.
 - **The user needs to come back to a specific position** in an ordered set later, which continuous scrolling does not keep.
 
@@ -32,7 +32,7 @@ Pagination moves the user between pages of one set of records. It is a control i
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.pagination`. **Do not pass a variant or state — there are none.**
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.pagination`. **Do not pass a variant or state — there are none.**
 
 | Axis       | Options                                        |
 | ---------- | ---------------------------------------------- |
@@ -44,7 +44,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.pagination`. **Do not 
 
 **There is no rows-per-page select and no results readout** — no "Showing 1–10 of 200" element. If either one is required, it is not this component.
 
-**There is no first or last control, no ellipsis, and no truncating behavior in the kit**, though all three are documented outside the token inventory as behaviors. See the uncovered list.
+**There is no first or last control, no ellipsis, and no truncating behavior in the UI kit**, though all three are shown only on the design-system website as behaviors. See the uncovered list.
 
 ## Rules for using it
 
@@ -52,15 +52,15 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.pagination`. **Do not 
 
 **The number of rows comes from the table, not from here.** An interior table shows a fixed number of rows, usually five or ten. Pagination does not decide how many.
 
-**Do not give the user a rows-per-page control.** None exists in the kit, and no rule allows one.
+**Do not give the user a rows-per-page control.** None exists in the UI kit, and no rule allows one.
 
 **A page is a location, so a page number is a link with a real `href`.** `recursica-skill-buttons-links` makes anything that moves the user a link, and `recursica-skill-navigation` requires every location to be reachable by its URL, with a browser history entry. If a page number cannot be a real `href` because the page has no address, that is a routing defect to fix — not a reason to build it as a button.
 
 **The current page must survive a reload and the browser's back button.** A user who pages to 7, opens a record, and comes back must land on 7.
 
-**Keep the set to the page numbers plus previous and next.** First, last, jump-to-page, and shortening the list with an ellipsis are not defined in the kit — do not put them together yourself.
+**Keep the set to the page numbers plus previous and next.** First, last, jump-to-page, and shortening the list with an ellipsis are not defined in the UI kit — do not put them together yourself.
 
-**Never show previous or next as a disabled link.** `recursica-skill-buttons-links` and `recursica-skill-link` both forbid disabling a link, and pagination is navigation. So on the first page, previous is **missing or cannot be used**, and on the last page, so is next. Never show a control that looks available but is not. Which of the two the house prefers is the one part still open; see the uncovered list. Disabled is not one of the options.
+**Never show previous or next as a disabled link.** `recursica-skill-buttons-links` and `recursica-skill-link` both forbid disabling a link, and pagination is navigation. So on the first page, previous is missing or cannot be used, and on the last page, so is next. Never show a control that looks available but is not. Which of the two the house prefers is the one part still open; see the uncovered list. Disabled is not one of the options.
 
 **The default sort belongs to the table, and must not change when the page changes.** `recursica-skill-tables` sets it on the primary content column; changing pages is not re-sorting.
 
@@ -119,10 +119,10 @@ Do not implement, override, or tune any of these — the component owns them:
 ## Uncovered — ask, do not invent
 
 - **Whether previous and next are missing, or present but unusable, at the ends.** That they are never shown as disabled links is settled, above. Which of the two remaining options the house wants is not — ask, and apply the answer everywhere.
-- **First and last page controls are documented outside the token inventory, with no token behind them.** Do not assume they are available. The same goes for an ellipsis, and for shortening a long list of pages: the kit defines only `navigation-controls`. Do not build any of them without asking.
+- **First and last page controls are shown only on the design-system website, with no token behind them.** Do not assume they are available. The same goes for an ellipsis, and for shortening a long list of pages: the UI kit defines only `navigation-controls`. Do not build any of them without asking.
 - **Whether a page is a real route with a history entry.** This decides whether a page number can be a link with an `href` at all, and no rule states it for a table's pages.
-- **Rows per page as the user's choice.** No select exists in the kit, and no rule says whether the user may change the number.
-- **A results readout** — "Showing 1–10 of 200". No such element exists in the kit. Whether one is required, and where it sits relative to the controls, is not set.
+- **Rows per page as the user's choice.** No select exists in the UI kit, and no rule says whether the user may change the number.
+- **A results readout** — "Showing 1–10 of 200". No such element exists in the UI kit. Whether one is required, and where it sits relative to the controls, is not set.
 - **Where pagination sits within the footer** — which side, and how it fits alongside the totals the footer also carries.
 - **Loading and error states between pages.** `recursica-skill-tables` lists table loading states as having no owner, and the loader has no determinate variant.
 

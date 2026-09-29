@@ -12,10 +12,10 @@ metadata:
 A table shows many copies of one object, so the reader can compare values down a column.
 
 > **Token styling works in Mantine only.** The MUI adapter's `Table.module.css` refers to none of
-> the 101 variables the kit exports across `table`, `table-cell`, `table-header`, and `table-footer`,
+> the 101 variables the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) exports across `table`, `table-cell`, `table-header`, and `table-footer`,
 > while the Mantine adapter applies all of them. On MUI, the table shows up, but none of its spacing,
 > type, or color comes from the design system — and nothing shows an error. Everything below is
-> correct about the kit.
+> correct about the UI kit.
 
 ## Use it when
 
@@ -38,7 +38,7 @@ A table shows many copies of one object, so the reader can compare values down a
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.table`, `table-cell`, `table-header`, `table-footer`. **The table itself has no variant axes.** The three sub-specs each have one.
+Taken from `recursica_ui-kit.json` → `ui-kit.components.table`, `table-cell`, `table-header`, `table-footer`. **The table itself has no variant axes (variant properties, as Figma calls them — the ways a component varies, such as its size).** The three sub-specs each have one.
 
 | Spec           | Axis     | Options    |
 | -------------- | -------- | ---------- |
@@ -57,7 +57,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.table`, `table-cell`, 
 
 **`table-cell` defines a `max-width`, and on its own it does not limit anything.** A maximum width on a table cell is only a suggestion to the browser's automatic table layout, which sizes columns from their content and often goes past it — a 200px maximum measured 257px in a real table. **Do not treat the token as the answer to a column that is too wide.** Column widths are set by data type in `recursica-skill-tables`, and that is the method that actually holds.
 
-**There is no selected-row state, no hover-row state, and no expanded-row state** in the kit. Do not invent one; see the uncovered list.
+**There is no selected-row state, no hover-row state, and no expanded-row state** in the UI kit. Do not invent one; see the uncovered list.
 
 **Only `disabled` exists on cells, headers, and footers.** There is no error state on a cell.
 
@@ -69,11 +69,11 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.table`, `table-cell`, 
 
 **A click on a header flips the sort direction.** Sorting by more than one column is a long-press — an unadvertised affordance (a control that is deliberately not promoted), which means it also needs a way to use it from the keyboard; see the accessibility section.
 
-**Currency is right-aligned, has two decimal places on every value, and puts its symbol in the column header** instead of repeating it in every cell. **None of this is owned here.** `recursica-skill-dates-and-currency` owns the format — right alignment, a fixed precision of two decimals, and the symbol in the header — and `recursica-skill-tables` owns column alignment by data type. Read those skills rather than this summary; where they differ from it, they are correct. All this file adds is which token carries it: the `currency-style` on `table-cell` and `table-footer`.
+**Currency is right-aligned, has two decimal places on every value, and puts its symbol in the column header** instead of repeating it in every cell. None of this is owned here. `recursica-skill-dates-and-currency` owns the format — right alignment, a fixed precision of two decimals, and the symbol in the header — and `recursica-skill-tables` owns column alignment by data type. Read those skills rather than this summary; where they differ from it, they are correct. All this file adds is which token carries it: the `currency-style` on `table-cell` and `table-footer`.
 
-**MUST NOT wrap a cell's value in a text component.** A cell already has `table-cell`'s `text-style` — font family, size, weight, spacing — and a text component brings its own. Putting one inside a cell replaces the type the table owns with the type that component owns, which is the override the `Not your decision` list below forbids. **Put the value in the cell directly.**
+**MUST NOT wrap a cell's value in a text component.** A cell already has `table-cell`'s `text-style` — font family, size, weight, spacing — and a text component brings its own. Putting one inside a cell replaces the type the table owns with the type that component owns, which is the override the `Not your decision` list below forbids. Put the value in the cell directly.
 
-**This is by far the most common way a table's type goes wrong**, and it is worth stating apart from the token list, because it does not look like an override while you are writing it. A cell reading `<Text>{value}</Text>` looks like careful markup, and it is the opposite. What it produces is one column in a different typeface from every other column in the same table — the brand's secondary typeface where the kit asked for the primary. Anyone looking at the screen can see the difference, while it stays invisible in the code changes.
+**This is by far the most common way a table's type goes wrong**, and it is worth stating apart from the token list, because it does not look like an override while you are writing it. A cell reading `<Text>{value}</Text>` looks like careful markup, and it is the opposite. What it produces is one column in a different typeface from every other column in the same table — the brand's secondary typeface where the UI kit asked for the primary. Anyone looking at the screen can see the difference, while it stays invisible in the code changes.
 
 **The test is comparing columns, not reading the code.** Every column of one table shows in one typeface, one size, and one weight. If one column is different, look for a component wrapped around that column's value.
 
@@ -146,11 +146,11 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Uncovered — ask, do not invent
 
-- **How a selected row looks.** The design rules require row selection, but no selected state exists in the kit.
+- **How a selected row looks.** The design rules require row selection, but no selected state exists in the UI kit.
 - **Row hover.** No hover state is defined, yet a clickable row needs an affordance.
 - **Rows that expand, and nested detail.** No tokens, and no rule.
 - **What `disabled` means on a cell, a header, or a footer** — a value that is unavailable, a column that cannot be sorted, or something else.
-- **A supported way to mark one value as missing.** The style itself is settled — `recursica-skill-tables` sets the literal text `NA`, in italics, in neutral 500 — but the kit offers no way to apply it. `disabled` is the one state a cell has, it applies to the whole cell, and something that draws only the value cannot reach the cell it will land in. Until a way exists, read the neutral palette token. Do not reach for the cell's disabled colour, which is a different value.
+- **A supported way to mark one value as missing.** The style itself is settled — `recursica-skill-tables` sets the literal text `NA`, in italics, in neutral 500 — but the UI kit offers no way to apply it. `disabled` is the one state a cell has, it applies to the whole cell, and something that draws only the value cannot reach the cell it will land in. Until a way exists, read the neutral palette token. Do not reach for the cell's disabled colour, which is a different value.
 - **The empty state**, and the difference between "no records yet" and "no results for these filters". Named as having no owner in `recursica-skill-design-router`.
 - **Loading.** No skeleton or determinate loader exists; see `recursica-skill-loader`.
 - **Behavior below desktop size.** Named as having no owner in `recursica-skill-design-router`.

@@ -21,7 +21,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 ## Whose vocabulary
 
-**Use the users' vocabulary.** Where the business and the users call something by different names, **the users win.** Aim to get them to agree first, but when they do not, the people using the product get the final say.
+**Use the users' vocabulary.** Where the business and the users call something by different names, the users win. Aim to get them to agree first, but when they do not, the people using the product get the final say.
 
 **Use the data model's vocabulary only when the user does not already know the term from everyday use.** If a user comes to a concept without already understanding it, teaching them the system's term can be the right move. Everywhere else, the data model's field names stay out of the interface.
 
@@ -46,8 +46,8 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **Match the plurality (how many of something there are) of what the user arrives at.** The name describes the destination, not the link.
 
-- **Plural** when the destination holds many — a navigation item reading **People**, because going there shows a list of persons.
-- **Singular** when the destination is one thing — **Profile**, because there is one profile being edited.
+- **Plural** when the destination holds many — a navigation item reading People, because going there shows a list of persons.
+- **Singular** when the destination is one thing — Profile, because there is one profile being edited.
 
 ## Every label is a noun
 
@@ -59,7 +59,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **Cut words that add nothing.** `Total pending requests` says exactly what `Pending requests` says, so _total_ is noise on a screen someone reads every day. Being concise comes first; a word earns its place by making the label more accurate.
 
-**A label is a noun phrase, not a sentence about the noun.** Use two or three words, with one qualifier at most. The shape to aim for is **adjective + noun**:
+**A label is a noun phrase, not a sentence about the noun.** Use two or three words, with one qualifier at most. The shape to aim for is adjective + noun:
 
 | Instead of                   | Write                   | What was cut                                                            |
 | ---------------------------- | ----------------------- | ----------------------------------------------------------------------- |
@@ -73,27 +73,27 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **This matters most for table headers**, which are read more often than any other label on the screen and have the least room. Owned jointly with `recursica-skill-tables`.
 
-**NEVER define a term right next to itself.** A label followed by an explanation of what it means — `Overdue — past the start date` — admits that the label failed. **Fix the label.** If the idea really needs explaining beyond a good name, that belongs in a tooltip or in help content — never in a subtitle sitting under the thing it defines.
+**NEVER define a term right next to itself.** A label followed by an explanation of what it means — `Overdue — past the start date` — admits that the label failed. Fix the label. If the idea really needs explaining beyond a good name, that belongs in a tooltip or in help content — never in a subtitle sitting under the thing it defines.
 
 **This covers every named thing on the screen, not only field labels** — a page title, a section heading, a column header, a navigation item. The most common breach is not a label at all. It is a page or section whose heading is repeated as prose directly beneath it, in the slot that a scaffold prop offers for exactly that purpose. `recursica-skill-screen-scaffolding` owns what may go in that slot; the rule against defining a term next to itself is why that slot is usually empty.
 
 ## Navigation labels name objects, not actions
 
-**Primary navigation uses object labels.** **Forms**, not **View forms** — going to a list is not an action the user is taking; it is moving to a place.
+**Primary navigation uses object labels.** Forms, not View forms — going to a list is not an action the user is taking; it is moving to a place.
 
-**Actions are for acting on an object**, and they take the verb-plus-object shape — **Save form**. That is a button, not a navigation item. Owned by `recursica-skill-buttons-links`.
+**Actions are for acting on an object**, and they take the verb-plus-object shape — Save form. That is a button, not a navigation item. Owned by `recursica-skill-buttons-links`.
 
-**Where a noun really is ambiguous, make it clear — and reach for an adjective before a verb.** In an application for authors, a navigation item reading **Pages** could mean the pages of the book or the pages of the website. The fix is a qualifier that says which. A verb can sometimes do that job, but an adjective usually does it better.
+**Where a noun really is ambiguous, make it clear — and reach for an adjective before a verb.** In an application for authors, a navigation item reading Pages could mean the pages of the book or the pages of the website. The fix is a qualifier that says which. A verb can sometimes do that job, but an adjective usually does it better.
 
 **There is no rule for when a qualifier is needed.** It is a judgment call, and its only purpose is to make the noun clear. Do not add qualifiers as a habit.
 
 ## Shortening and acronyms
 
-**A term may be shortened when the user already knows the short form and it cannot be misread.** Administrator to **Admin** is fine. Administrator to **Add** is not — it can no longer be recognised as the same term.
+**A term may be shortened when the user already knows the short form and it cannot be misread.** Administrator to Admin is fine. Administrator to Add is not — it can no longer be recognised as the same term.
 
 **If the shortened form could be misread in this context, do not shorten it.** Whether a short form is known depends on the context, and the test is whether the user recognises it, not how many characters it saves.
 
-**An acronym is fine when it is well known.** When you are not sure whether it is, **ask** — see `recursica-skill-design-router`. Where an acronym is not well known, `recursica-skill-typography-semantics` applies: write the term out the first time, with the acronym in parentheses.
+**An acronym is fine when it is well known.** When you are not sure whether it is, ask — see `recursica-skill-design-router`. Where an acronym is not well known, `recursica-skill-typography-semantics` applies: write the term out the first time, with the acronym in parentheses.
 
 ## Names from external integrations
 
@@ -103,7 +103,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 ## Not your decision
 
-- **Sentence case versus title case.** Sentence case capitalizes only the first word; title case capitalizes every major word. This is set by the typography token (a named design value, such as a color or a size, set by the design system), decided by the brand, and **must not be changed.** Whether a heading is in title case or sentence case is decided in advance by the type style it uses — see `recursica-skill-typography-semantics`.
+- **Sentence case versus title case.** Sentence case capitalizes only the first word; title case capitalizes every major word. This is set by the typography token (a named design value, such as a color or a size, set by the design system), decided by the brand, and must not be changed. Whether a heading is in title case or sentence case is decided in advance by the type style it uses — see `recursica-skill-typography-semantics`.
 - **Any other type styling** — size, weight, letter spacing. Tokens own all of it.
 - **The AP style guide** (the Associated Press rules for writing style) applies to copy in general, and is recorded in `recursica-skill-typography-semantics`.
 

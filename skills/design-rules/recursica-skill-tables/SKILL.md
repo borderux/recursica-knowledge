@@ -22,7 +22,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 ## Table or cards?
 
-**A set of repeating objects is a table by default.** Cards are the narrow exception, and they need all of the following: the set is **small and finite**, every item carries **the same kinds of information**, and each item contains a **graphic** — a chart, an image, a photograph.
+**A set of repeating objects is a table by default.** Cards are the narrow exception, and they need all of the following: the set is small and finite, every item carries the same kinds of information, and each item contains a graphic — a chart, an image, a photograph.
 
 - **High plurality (a large number of items of the same kind), no fixed end, or growing → table.** Always.
 - **Data that is only text and numbers → table**, however few the records. A table shows the same values in less space, and lets the reader compare down a column. `recursica-skill-card` allows an occasional exception here for looks, for a small, finite set — used on purpose and stated, never as the default.
@@ -34,7 +34,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **Status is a column, not a heading.** That is the whole mechanism. One table with a status column can be sorted and filtered by state, and the share in each state can be seen at a glance, instead of worked out from the lengths of three separate lists.
 
-**The mark of this mistake is a heading that names a state.** `Suggested`, `Pending`, `Archived`, `Needs review`, `Everything else` — each one is a value that got promoted into page structure. **A section heading names a kind of thing; a status names what happened to one.** If the heading would be a valid value in a status column, it is a filter, and it belongs inside the table.
+**The mark of this mistake is a heading that names a state.** `Suggested`, `Pending`, `Archived`, `Needs review`, `Everything else` — each one is a value that got promoted into page structure. A section heading names a kind of thing; a status names what happened to one. If the heading would be a valid value in a status column, it is a filter, and it belongs inside the table.
 
 **Two tables of the same shape give it away.** Splitting is valid only for a truly different object type, with different columns, that the reader would never want to compare down a column. The same columns twice means it was always one table.
 
@@ -44,9 +44,9 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **Show the proposed result as if it were already applied, and mark the row as waiting for approval.** The reader judges a result, which they can do, instead of piecing one together from a proposal, which is work. A suggested merge of records appears as the merged record, with a pending status on it.
 
-**What went into it is revealed in place** — one level of expand and collapse on the row, a side panel, or a modal. Which of the three is decided by `recursica-skill-panels-modals`. The rule here is that it is one of them, and **never another section on the page.** This is the same single-level expansion that the grouped-rows rule below requires.
+**What went into it is revealed in place** — one level of expand and collapse on the row, a side panel, or a modal. Which of the three is decided by `recursica-skill-panels-modals`. The rule here is that it is one of them, and never another section on the page. This is the same single-level expansion that the grouped-rows rule below requires.
 
-**MUST keep that control after approval, and put undo in it.** Approving does not end the reader's interest in what was combined — it is the moment they most need to check it. The control that showed the proposal now shows the result, and the way back lives where the decision was made, as `recursica-skill-buttons-links` says. **A screen where approving removes the only view of what happened has made the decision impossible to audit.**
+**MUST keep that control after approval, and put undo in it.** Approving does not end the reader's interest in what was combined — it is the moment they most need to check it. The control that showed the proposal now shows the result, and the way back lives where the decision was made, as `recursica-skill-buttons-links` says. A screen where approving removes the only view of what happened has made the decision impossible to audit.
 
 ## What earns a column
 
@@ -58,7 +58,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **An exception attaches to the object instead**, as a marker beside its identifying value. There, it reads as a fact about that row, instead of as a field every row was meant to have.
 
-**That marker is an icon, not a badge.** A badge is a filled, bordered, coloured box carrying a word. It is heavy enough that a scattering of them down a table pulls the eye away from the data. **Prefer an icon, and use a badge only where something really needs that weight** — the icon is the default. Owned by `recursica-skill-badges-chips`; the icon itself is `recursica-skill-icon-semantics`.
+**That marker is an icon, not a badge.** A badge is a filled, bordered, coloured box carrying a word. It is heavy enough that a scattering of them down a table pulls the eye away from the data. Prefer an icon, and use a badge only where something really needs that weight — the icon is the default. Owned by `recursica-skill-badges-chips`; the icon itself is `recursica-skill-icon-semantics`.
 
 **The icon goes beside the identifying value, in that cell — not alone in a cell of its own.** `recursica-skill-icon-semantics` forbids a non-interactive icon sitting by itself with no other information, and a column of bare icons is both that and the empty column this rule just rejected. Beside the name, it has the name for company, which is the whole point of putting it there.
 
@@ -80,7 +80,7 @@ It is occasionally unavoidable, when a client insists that every field gets its 
 
 **A cell may hold two values — primary text and secondary text — and never more than two.** This is the approved way to carry more data without adding columns.
 
-**The column-header test decides whether a stack is valid.** Both values must be explained by the column's own header. A "Status" column whose primary text is _Open_ and whose secondary text is the date it opened passes: both are facts about status. **If the header can no longer account for both values, you are merging two things to save space** — they are separate columns, or one of them does not belong.
+**The column-header test decides whether a stack is valid.** Both values must be explained by the column's own header. A "Status" column whose primary text is _Open_ and whose secondary text is the date it opened passes: both are facts about status. If the header can no longer account for both values, you are merging two things to save space — they are separate columns, or one of them does not belong.
 
 **Stacking also fails when there is too much of it.** If nearly every cell has two lines, the table becomes overwhelming, even when each stack is valid on its own.
 
@@ -92,7 +92,7 @@ It is occasionally unavoidable, when a client insists that every field gets its 
 
 **Set widths by data type**, so that cutting text short is rarely needed. Dates, currency, and statuses are narrow; sentences need room. Fixing widths for each type of content is what keeps a table stable as the data changes.
 
-**The design system sets a maximum column width**, and values are truncated (cut short and ended with an ellipsis, …) when they reach it. The exact character count or pixel limit belongs to the system, varies by implementation, and **is not a design decision.**
+**The design system sets a maximum column width**, and values are truncated (cut short and ended with an ellipsis, …) when they reach it. The exact character count or pixel limit belongs to the system, varies by implementation, and is not a design decision.
 
 **Set widths on the narrow types, and leave the wide one unset.** This is the part that decides whether the rule actually works:
 
@@ -116,7 +116,7 @@ It is occasionally unavoidable, when a client insists that every field gets its 
 
 **An icon alone in a cell is only ever an icon-only button.** A non-interactive icon NEVER sits alone in a cell with no other information — a status column pairs the icon with its text. Owned by `recursica-skill-icon-semantics`.
 
-**Currency MUST be right-aligned, with no exception**, so the decimal point sits in the same place all the way down the column. Apply the reason more widely: **any value with a fixed position for some part of it aligns right.**
+**Currency MUST be right-aligned, with no exception**, so the decimal point sits in the same place all the way down the column. Apply the reason more widely: any value with a fixed position for some part of it aligns right.
 
 **Formatting within the cell — the date format, the decimal precision, the currency symbol in the header, accounting parentheses, and keeping precision the same down a column — is owned by `recursica-skill-dates-and-currency`.**
 
@@ -138,9 +138,9 @@ Decide in this order:
 
 **Two sizes of table behave differently:**
 
-**A full-size table fills the width and height of its container**, and the number of visible rows follows from that. **Prefer infinite scroll** (more rows load as the user scrolls). Pagination — splitting the rows into separate pages — is a clunky way to move through records.
+**A full-size table fills the width and height of its container**, and the number of visible rows follows from that. Prefer infinite scroll (more rows load as the user scrolls). Pagination — splitting the rows into separate pages — is a clunky way to move through records.
 
-**An interior table** — a smaller grid set inside a container alongside other elements — **gets a fixed number of rows, usually five or ten, and then paginates.**
+**An interior table** — a smaller grid set inside a container alongside other elements — gets a fixed number of rows, usually five or ten, and then paginates.
 
 **An interior table MUST NOT scroll, up and down or sideways.** Every row it holds is visible, and pagination takes over from there.
 
@@ -164,7 +164,7 @@ Decide in this order:
 
 ## Default sort
 
-**MUST: every table is sorted, and the sorted column is always clearly marked.** A table with no visible sort indicator forces the reader to work out the order from the data, and they will usually get it wrong. **This holds even when the sort cannot be changed** — a fixed order is still an order, and the reader has a right to know which column produced it, and in which direction.
+**MUST: every table is sorted, and the sorted column is always clearly marked.** A table with no visible sort indicator forces the reader to work out the order from the data, and they will usually get it wrong. This holds even when the sort cannot be changed — a fixed order is still an order, and the reader has a right to know which column produced it, and in which direction.
 
 The indicator is part of the column header component; see `recursica-skill-table`. Your job is to make sure one column carries it.
 
@@ -180,7 +180,7 @@ The indicator is part of the column header component; see `recursica-skill-table
 
 ## Multi-sort
 
-**Sorting by more than one column is allowed, behind a hidden control.** A plain click on a header flips it between ascending and descending. A **long-press** — with a mouse or by touch — opens multi-sort, because putting both behaviors on a single click does not work.
+**Sorting by more than one column is allowed, behind a hidden control.** A plain click on a header flips it between ascending and descending. A long-press — with a mouse or by touch — opens multi-sort, because putting both behaviors on a single click does not work.
 
 **There is no limit on the number of sorted columns.** The user sets the order: first, second, third.
 
@@ -206,19 +206,19 @@ Density is how tightly content is packed together.
 
 **The object's own identifying value is the way in.** The name, the title, the label — whatever the reader would point at to mean "that one" — is the link. It costs no column, and it is where the reader already tries to click.
 
-**Where the row holds nothing else interactive, the whole row may carry the link instead**, as the rule above allows. Both are correct. **Pick one, and use it in every table in the application**, because the reader cannot see which mode a table is in.
+**Where the row holds nothing else interactive, the whole row may carry the link instead**, as the rule above allows. Both are correct. Pick one, and use it in every table in the application, because the reader cannot see which mode a table is in.
 
 **A separate edit or view action on the row is the third option.** It is for an object with no single identifying value to put a link on, or where the action is editing rather than navigating. How it looks is covered by `recursica-skill-buttons-links`.
 
-**NEVER trigger an action on a single record by selecting that record.** A row checkbox means "include this in what the bulk action does," and it means only that. A table where ticking one row offers `Correct this name` and ticking two offers `Combine` has made selection mean two unrelated things, and taught the reader neither. **Editing one record is started from that record** — from its name, or from its own row action. See `recursica-skill-selection-controls`.
+**NEVER trigger an action on a single record by selecting that record.** A row checkbox means "include this in what the bulk action does," and it means only that. A table where ticking one row offers `Correct this name` and ticking two offers `Combine` has made selection mean two unrelated things, and taught the reader neither. Editing one record is started from that record — from its name, or from its own row action. See `recursica-skill-selection-controls`.
 
 ## Adding a record
 
 **The add control sits at the table's header, on the right. NEVER below the table.**
 
-**A table has an unknown number of rows, so "below it" is nowhere.** Whatever is under the last row is at a position no one can predict — one screen down on a short table, twenty on a long one. A reader who does not already know it is there has no reason to scroll to the end of a list to look for it. **Anything below a list of changing length may never be seen at all.** The header is the one part of a table whose position is fixed, and it is already where the eye starts.
+**A table has an unknown number of rows, so "below it" is nowhere.** Whatever is under the last row is at a position no one can predict — one screen down on a short table, twenty on a long one. A reader who does not already know it is there has no reason to scroll to the end of a list to look for it. Anything below a list of changing length may never be seen at all. The header is the one part of a table whose position is fixed, and it is already where the eye starts.
 
-**A form that changes the table's rows MUST NOT sit inline on the page.** Open it in a modal or a panel, as `recursica-skill-panels-modals` says. The reason is the moment of saving: the table has to change visibly when the form succeeds. An inline form leaves the reader looking at a form and a table at once, with no idea which state either one is in. **Closing the surface is what says the work is done, and the changed table behind it is the confirmation.**
+**A form that changes the table's rows MUST NOT sit inline on the page.** Open it in a modal or a panel, as `recursica-skill-panels-modals` says. The reason is the moment of saving: the table has to change visibly when the form succeeds. An inline form leaves the reader looking at a form and a table at once, with no idea which state either one is in. Closing the surface is what says the work is done, and the changed table behind it is the confirmation.
 
 **An action that is rarely used does not get permanent space on the screen.** Creating a record happens now and then; the table is why the reader came. A create form that is permanently on screen spends the most valuable part of the screen on the least frequent task — see `recursica-skill-screen-priority`.
 
@@ -246,17 +246,17 @@ Density is how tightly content is packed together.
 
 **The footer usually cannot be clicked.**
 
-**Totals are another reason to prefer infinite scroll.** With a single scrolling table, it is clear that the total covers everything. With pagination, it is unclear whether the total is for the page or for the whole set. So **if a paginated table shows totals, the footer labels must say which.**
+**Totals are another reason to prefer infinite scroll.** With a single scrolling table, it is clear that the total covers everything. With pagination, it is unclear whether the total is for the page or for the whole set. So if a paginated table shows totals, the footer labels must say which.
 
 ## Column visibility and reordering
 
-**Treat it as a customization, using the same approach as dashboard configuration** — the unadvertised affordance convention in `recursica-skill-system-conventions`**:** a fairly hidden control — a settings or gear icon on the table — that opens a screen for choosing which columns are visible and in what order.
+**Treat it as a customization, using the same approach as dashboard configuration.** That is the unadvertised affordance convention in `recursica-skill-system-conventions`. Put a fairly hidden control on the table, such as a settings or gear icon. It opens a screen for choosing which columns are visible, and in what order.
 
-**Drag-and-drop reordering is not preferred.** It overloads the interaction, and it is not accessible without a mouse. **If dragging is offered, another way to reorder and show or hide columns MUST also exist.**
+**Drag-and-drop reordering is not preferred.** It overloads the interaction, and it is not accessible without a mouse. If dragging is offered, another way to reorder and show or hide columns MUST also exist.
 
 ## Grouped rows
 
-**Avoid grouped rows.** Where a row has extra detail beneath it, use **a single level of expand and collapse** on that row instead.
+**Avoid grouped rows.** Where a row has extra detail beneath it, use a single level of expand and collapse on that row instead.
 
 **If grouped rows are used anyway, their headers and sub-headers MUST line up clearly with the columns above.**
 

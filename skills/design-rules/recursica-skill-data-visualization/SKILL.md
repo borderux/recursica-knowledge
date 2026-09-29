@@ -11,7 +11,7 @@ metadata:
 
 These are the house rules for charts in enterprise applications. They are opinions, not neutral best practices. Treat them as constraints.
 
-These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The color palette and component styling are already handled. Your decisions are whether to visualize at all, which chart to use, what the axes do, what gets labeled, and what the user can interact with.
+These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The color palette and component styling are already handled. Your decisions are whether to visualize at all, which chart to use, what the axes (variant properties, as Figma calls them — the ways a component varies, such as its size) do, what gets labeled, and what the user can interact with.
 
 ## Read this first: charts come from a library, not from Recursica
 
@@ -58,12 +58,12 @@ The rest of this skill describes what a correct chart looks like, whichever libr
 
 ## Chart type
 
-**Pie and donut charts are effectively banned.** The only allowed case is **two segments — three, very rarely — with a large enough difference in value that the difference is visible.** Anything else uses a different chart.
+**Pie and donut charts are effectively banned.** The only allowed case is two segments — three, very rarely — with a large enough difference in value that the difference is visible. Anything else uses a different chart.
 
 - **Segments MUST add up to 100%.** A pie that does not add up to the whole is invalid.
 - **Do not put the chart's own value in the donut hole.** A two-segment donut labeled "75%" tells the story twice and adds nothing. A _different_ kind of value there is fine — a written summary, such as an overall status.
 
-**Choosing between bars and columns, or lines and areas, is not all-or-nothing.** They tell the same story in different ways. **What sets them apart is slope.** A line or an area shows the rate of change: how steep it is carries meaning. Bars and columns show values at single moments and make the reader work out the slope. Pick based on which story you are telling.
+**Choosing between bars and columns, or lines and areas, is not all-or-nothing.** They tell the same story in different ways. What sets them apart is slope. A line or an area shows the rate of change: how steep it is carries meaning. Bars and columns show values at single moments and make the reader work out the slope. Pick based on which story you are telling.
 
 **Nominal categories never get a line chart.** Nominal categories are ones with no natural order. If you could rearrange the categories without changing the meaning — apples, oranges, bananas — there is no slope between them to draw. A line suggests a connection between neighboring points that does not exist. Time, or any sequence with a natural order, does have that connection, and that is what makes it suitable for a line.
 
@@ -95,7 +95,7 @@ The rest of this skill describes what a correct chart looks like, whichever libr
 
 **Put the value at the end of each bar or column** where there is room, even when it falls between gridlines. If the axis reads 10 and the value is 11, show 11 — being exact beats making the reader guess.
 
-**Keep labels as short as they can be while still being understood.** Shortening to "1M" or "2M" is fine when the reader knows the unit. **Do not use abbreviations or acronyms that the reader's knowledge of the field may not cover.**
+**Keep labels as short as they can be while still being understood.** Shortening to "1M" or "2M" is fine when the reader knows the unit. Do not use abbreviations or acronyms that the reader's knowledge of the field may not cover.
 
 **Make numbers easy for people to read.** Very large numbers with many decimal places are effectively unreadable. Round to what the reader can actually use.
 
@@ -184,7 +184,7 @@ Encoding is how the data is turned into visual marks — position, length, color
 
 **Adapt the chart; do not shrink it.** Forcing one chart to work on both desktop and phone either loses detail — which changes the story — or flattens the desktop version into something that says little.
 
-**The story must be the same at every size.** A larger display may carry a richer set of data, and **where information is left out at a smaller size, say so clearly.**
+**The story must be the same at every size.** A larger display may carry a richer set of data, and where information is left out at a smaller size, say so clearly.
 
 ## Uncovered — ask, do not invent
 

@@ -41,7 +41,7 @@ These rules assume **complex enterprise web applications**, where the same peopl
 
 ## Filters arrive unapplied
 
-**Avoid applying a filter in advance.** The cost is specific and serious: **the user may not realize a filter is on, and conclude that the data is missing.** They are looking at part of a collection while believing it is the whole thing.
+**Avoid applying a filter in advance.** The cost is specific and serious: the user may not realize a filter is on, and conclude that the data is missing. They are looking at part of a collection while believing it is the whole thing.
 
 **Filters are additive.** The idea is that the user starts from everything and adds narrowing.
 
@@ -50,7 +50,7 @@ These rules assume **complex enterprise web applications**, where the same peopl
 **Even then, do not filter the data itself — set a default filter.** This distinction is the entire point:
 
 - **A default filter** is a filter control that arrives in a non-neutral state. It is visible as a filter, and the user can remove it like any other.
-- **A default on the data** quietly narrows the collection, with nothing on screen saying so. **NEVER do this.**
+- **A default on the data** quietly narrows the collection, with nothing on screen saying so. NEVER do this.
 
 This is what `recursica-skill-filters` means by "a default that filters must be visible as a filter." This skill answers the question that skill left open about which defaults are appropriate.
 
@@ -68,9 +68,9 @@ This is what `recursica-skill-filters` means by "a default that filters must be 
 
 There are two tests, and a value must pass both.
 
-**Test 1 — the 90 percent test.** Pre-select only where **the chance of that one option being chosen is about 90 percent or higher**. It has to be easy or common, with a usual answer. Below that, **the user is made to choose**, so leave it unselected. When asked where this threshold stops applying, the answer was that it does not.
+**Test 1 — the 90 percent test.** Pre-select only where the chance of that one option being chosen is about 90 percent or higher. It has to be easy or common, with a usual answer. Below that, the user is made to choose, so leave it unselected. When asked where this threshold stops applying, the answer was that it does not.
 
-**Test 2 — the later-consequences veto.** **NEVER pre-select an option that has major effects later in the workflow**, no matter how likely it is. A default is a decision the user may not notice making. A decision with consequences later on is not one to make quietly for them.
+**Test 2 — the later-consequences veto.** NEVER pre-select an option that has major effects later in the workflow, no matter how likely it is. A default is a decision the user may not notice making. A decision with consequences later on is not one to make quietly for them.
 
 **A pre-selected radio button is the most costly default in the system**, and it is the one to be most careful about. It can fail in three ways, all of them quiet:
 

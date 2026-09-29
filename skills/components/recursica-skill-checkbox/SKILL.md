@@ -34,7 +34,7 @@ A checkbox turns a true/false flag on or off for one specific value. A group of 
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.checkbox`, `checkbox-group`, and `checkbox-item`. **Do not pass a variant, size, or state that is not listed here.**
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.checkbox`, `checkbox-group`, and `checkbox-item`. **Do not pass a variant, size, or state that is not listed here.**
 
 | Component        | Axis               | Options                                 |
 | ---------------- | ------------------ | --------------------------------------- |
@@ -44,15 +44,15 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.checkbox`, `checkbox-g
 
 **Three components, one form field.** The group owns the layout and the spacing between items. The item owns one option's label, and pairs it with a box. The checkbox owns the box itself and whether it is selected. Use all three together; never place bare `checkbox` instances in a form and call it a group.
 
-**The axes sit on different parts, and that is on purpose.** `layouts` belongs to the **group** — it is one decision for the whole field. `disabled` belongs to the **item** — so a single option can be unavailable while the ones next to it can still be used. There is no disabled state for the group as a whole; `globals.states.disabled` supplies the look.
+**The axes (variant properties, as Figma calls them — the ways a component varies, such as its size) sit on different parts, and that is on purpose.** `layouts` belongs to the group — it is one decision for the whole field. `disabled` belongs to the item — so a single option can be unavailable while the ones next to it can still be used. There is no disabled state for the group as a whole; `globals.states.disabled` supplies the look.
 
 **`layouts` is the label-placement axis, the same axis every field has.** `side-by-side` puts the group's label beside the stack of items; `stacked` puts it above. **It is not an axis for which way the items run.** Items are always stacked vertically — `recursica-skill-selection-controls` forbids a horizontal checkbox group outright — so `side-by-side` must never be read as "put the checkboxes in a row."
 
 **`indeterminate` is a state of the `checkbox`, not a separate component.** It is the partly-selected state, shown as a dash, that a select-all or a parent checkbox shows when some but not all of its children are checked.
 
-**None of the three has an error state**, and there is no required axis. `Selected-disabled` and `Indeterminate-disabled` are documented outside the token inventory as states. Those are the item's `disabled` combined with the checkbox's selection state — not extra selection states.
+**None of the three has an error state**, and there is no required axis. `Selected-disabled` and `Indeterminate-disabled` are shown only on the design-system website as states. Those are the item's `disabled` combined with the checkbox's selection state — not extra selection states.
 
-**"Selected" and "Unselected" are documented outside the token inventory; the kit says `checked` and `unchecked`.** One thing, two names.
+**"Selected" and "Unselected" are shown only on the design-system website; the UI kit says `checked` and `unchecked`.** One thing, two names.
 
 **There is no size axis.** `size` and `icon-size` are fixed properties of the checkbox.
 
@@ -146,8 +146,8 @@ Do not add margins or spacer elements between items or between the group and its
 
 ## Uncovered — ask, do not invent
 
-- **How a checkbox group shows an error.** The kit gives `dropdown` and `autocomplete` an `error` state, and gives the checkbox none — yet a group can carry a selection rule that fails validation. The error treatment for a group is not stated.
-- **The multi-select dropdown does not exist, and this is now confirmed in the shipped adapter as well as in the token inventory** — the dropdown maps to a single-value select, with no multi-select variant. `recursica-skill-selection-controls` requires one in two places. It is a gap in the component inventory, **not an invitation to build one out of other parts**: do not put a checkbox group inside a dropdown, and do not substitute a transfer list without asking. Where several values must be filtered, a build test used separate single-value filters that AND together (a row appears only if it matches all of them) successfully as the workaround. Ask.
+- **How a checkbox group shows an error.** The UI kit gives `dropdown` and `autocomplete` an `error` state, and gives the checkbox none — yet a group can carry a selection rule that fails validation. The error treatment for a group is not stated.
+- **The multi-select dropdown does not exist, and this is now confirmed in the shipped adapter as well as in the UI kit** — the dropdown maps to a single-value select, with no multi-select variant. `recursica-skill-selection-controls` requires one in two places. It is a gap in the component inventory, not an invitation to build one out of other parts: do not put a checkbox group inside a dropdown, and do not substitute a transfer list without asking. Where several values must be filtered, a build test used separate single-value filters that AND together (a row appears only if it matches all of them) successfully as the workaround. Ask.
 - **Whether a select-all control is a `checkbox-item` in the group, or something outside it**, and how it relates to the group's `item-gap`.
 - **Limits on selection.** Whether a user may be limited to _n_ out of many.
 - **How deep parent-child checkboxes may nest.** The indeterminate state implies a hierarchy, but no rule says how deep it may go, or how a parent's state is worked out beyond one level.

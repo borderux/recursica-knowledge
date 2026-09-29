@@ -38,7 +38,7 @@ The critical path is the set of steps needed to finish the task.
 
 ## What exists
 
-Taken from `recursica_ui-kit.json`. Four specs make up one accordion, and **only one of them has a variant axis at all.**
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has). Four specs make up one accordion, and **only one of them has a variant axis (a variant property, as Figma calls it — one way a component varies, such as its size) at all.**
 
 | Spec                | Axis         | Options          |
 | ------------------- | ------------ | ---------------- |
@@ -58,7 +58,7 @@ Taken from `recursica_ui-kit.json`. Four specs make up one accordion, and **only
 
 **There is no nesting construct.** This matches the house rule: accordions have one level only.
 
-**There is no single-open or multi-open axis.** Nothing in the kit makes opening one item close another — see Uncovered.
+**There is no single-open or multi-open axis.** Nothing in the UI kit makes opening one item close another — see Uncovered.
 
 **There is no size, density, or emphasis axis** on any of the four, and no state axis for hover, focus, or error.
 
@@ -137,7 +137,7 @@ The chevron, its rotation, and the per-appearance colors come with the component
 ## Uncovered — ask, do not invent
 
 - **Whether opening one item closes the others.** No axis defines it, and no rule states it.
-- **Whether the divider between items can be hidden.** A divider that "can be hidden if accordion is the last child in a list or accordion group" is documented outside the token inventory. The kit only offers `divider-size` on `accordion`, with no option to turn it off. Do not rely on this without asking.
+- **Whether the divider between items can be hidden.** A divider that "can be hidden if accordion is the last child in a list or accordion group" is shown only on the design-system website. The UI kit only offers `divider-size` on `accordion`, with no option to turn it off. Do not rely on this without asking.
 - **How to show an item the user cannot open right now.** `recursica-skill-navigation` says to disable what the user can unlock, but `accordion-header` has no disabled appearance.
 - **Animation for opening and closing.** No duration or easing is defined.
 - **Whether a panel can be linked to directly**, so that a shared URL opens a specific section.

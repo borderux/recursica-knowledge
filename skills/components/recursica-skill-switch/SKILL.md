@@ -38,7 +38,7 @@ A switch turns one thing on or off. The label says what is being controlled; the
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.switch`, `switch-group`, and `switch-item`. **Do not pass a variant, size, or state that is not listed here.**
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.switch`, `switch-group`, and `switch-item`. **Do not pass a variant, size, or state that is not listed here.**
 
 | Component      | Axis               | Options                   |
 | -------------- | ------------------ | ------------------------- |
@@ -48,15 +48,15 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.switch`, `switch-group
 
 **Three components, one form field.** The group owns the layout and the spacing between items. The item owns one switch's label. The switch owns the track (the bar), the thumb (the handle that slides), and its state. Use all three together, instead of placing a bare `switch` beside some text.
 
-**The axes sit on different parts, and that is on purpose.** `layouts` belongs to the **group** — one decision for the whole field. `disabled` belongs to the **item** — so a single switch can be unavailable while the ones beside it can still be used. There is no disabled state for the group; `globals.states.disabled` supplies the look.
+**The axes (variant properties, as Figma calls them — the ways a component varies, such as its size) sit on different parts, and that is on purpose.** `layouts` belongs to the group — one decision for the whole field. `disabled` belongs to the item — so a single switch can be unavailable while the ones beside it can still be used. There is no disabled state for the group; `globals.states.disabled` supplies the look.
 
 **`layouts` is the label-placement axis, the same axis every field has.** `side-by-side` puts the group's label beside the switches; `stacked` puts it above.
 
 **The thumb can carry an icon** — `thumb-icon-size` exists — and that icon is a second visual signal of the state, alongside the thumb's position and the track's colour.
 
-**There is no size axis**, none of the three has an error state, and there is no required axis. `Enabled Selected`, `Disabled Selected`, `Enabled Unselected`, and `Disabled Unselected` are documented outside the token inventory. Those are the item's `disabled` combined with the switch's selection state — not four selection states.
+**There is no size axis**, none of the three has an error state, and there is no required axis. `Enabled Selected`, `Disabled Selected`, `Enabled Unselected`, and `Disabled Unselected` are shown only on the design-system website. Those are the item's `disabled` combined with the switch's selection state — not four selection states.
 
-**There is no axis for which side of the label the switch sits on** — see the uncovered list, because one is documented outside the token inventory.
+**There is no axis for which side of the label the switch sits on** — see the uncovered list, because one is shown only on the design-system website.
 
 **Read-only is a separate component** — `read-only-field`, which shows text instead of a control.
 
@@ -68,7 +68,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.switch`, `switch-group
 
 **Do not use a switch for anything with serious consequences if it is flipped by accident.** Where a setting is destructive, cannot be undone, or is high-risk, use a checkbox with a confirmation, or another safeguard, instead.
 
-**When the switch saves follows the application's single mode.** `recursica-skill-selection-controls` allows a switch to save immediately, or to save on submit with the rest of the form — immediately feels slightly more natural for a switch — and that choice is made once, for the whole system. A switch in a form that saves everything together is correct, as long as every switch in the system also waits for Save. **What is forbidden is mixing the two:** an application must never have some switches that save the instant they are flipped and others that wait for a Save. Needing a Save is not, by itself, a reason to reach for a checkbox.
+**When the switch saves follows the application's single mode.** `recursica-skill-selection-controls` allows a switch to save immediately, or to save on submit with the rest of the form — immediately feels slightly more natural for a switch — and that choice is made once, for the whole system. A switch in a form that saves everything together is correct, as long as every switch in the system also waits for Save. What is forbidden is mixing the two: an application must never have some switches that save the instant they are flipped and others that wait for a Save. Needing a Save is not, by itself, a reason to reach for a checkbox.
 
 **If the system's switches save immediately, the page must show a save status that stays on the page.** Saving field by field carries that requirement; saving everything together carries the opposite — no status, and no indicator of unsaved changes. See the save-mode table in `recursica-skill-forms`.
 
@@ -146,8 +146,8 @@ Do not add margins or spacer elements between switches or around the group; the 
 
 ## Uncovered — ask, do not invent
 
-- **An axis for which side of the label the switch sits on is documented outside the token inventory, with no token behind it.** `On Left` and `On Right` appear there, but the kit defines no such axis on `switch`, `switch-item`, or `switch-group`. Do not build one, and do not rely on this without asking.
-- **How a switch shows an error.** The kit gives `dropdown` and `autocomplete` an `error` state, and gives the switch none.
+- **An axis for which side of the label the switch sits on is shown only on the design-system website, with no token behind it.** `On Left` and `On Right` appear there, but the UI kit defines no such axis on `switch`, `switch-item`, or `switch-group`. Do not build one, and do not rely on this without asking.
+- **How a switch shows an error.** The UI kit gives `dropdown` and `autocomplete` an `error` state, and gives the switch none.
 - **What a switch does while its change is in flight**, and what happens if the immediate save fails. There is no pending, loading, or failure state.
 - **Whether a `switch-group` may hold more than a handful of switches**, and whether the 7 ± 2 limit applies to switches at all — the limit is stated only for radio and checkbox groups.
 

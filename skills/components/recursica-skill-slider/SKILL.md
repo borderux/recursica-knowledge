@@ -33,9 +33,9 @@ A slider picks a value from a range with fixed ends, by moving a thumb (the hand
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.slider`. **Do not pass a variant, size, or state that is not listed here.**
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.slider`. **Do not pass a variant, size, or state that is not listed here.**
 
-**The third column is the React prop that sets each axis.** The axis name comes from the token inventory. It is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis      | Options                       | React prop   |
 | --------- | ----------------------------- | ------------ |
@@ -48,7 +48,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.slider`. **Do not pass
 
 **Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints (the screen widths at which the layout changes), but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
-**`active` is found only on this component.** No other component in the kit has an `active` state. It belongs to the component's own interaction — the thumb being moved — so do not build it, and do not repurpose it to mean selected, enabled, or current.
+**`active` is found only on this component.** No other component in the UI kit has an `active` state. It belongs to the component's own interaction — the thumb being moved — so do not build it, and do not repurpose it to mean selected, enabled, or current.
 
 **The number input is part of this component.** `input-width`, `input-height`, `input-text`, `input-gap`, `input-border-size`, `input-border-radius`, `input-padding-vertical`, `input-padding-left`, and `input-padding-right` all exist here. Do not build a separate text field beside the track.
 
@@ -70,7 +70,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.slider`. **Do not pass
 
 **State the unit.** The number alone is unclear — 40 what? Put the unit in the label or the assistive text, and keep it with the value in the readout.
 
-**When a change is saved depends on what the slider is for, and it is not a second mode.** Apply convention 1 of `recursica-skill-system-conventions`, whose test is whether the user can see which mode they are in. A slider whose effect is **visible right away** — volume, zoom, brightness — is a live control: the change is obvious, so it **saves when it changes**. A slider that **stores a value in a form** is a form field, and follows that form's single save mode, whatever it is. These are two different situations, not two modes of one control — so nothing here conflicts with the one-save-mode rule in `recursica-skill-forms`.
+**When a change is saved depends on what the slider is for, and it is not a second mode.** Apply convention 1 of `recursica-skill-system-conventions`, whose test is whether the user can see which mode they are in. A slider whose effect is visible right away — volume, zoom, brightness — is a live control: the change is obvious, so it saves when it changes. A slider that stores a value in a form is a form field, and follows that form's single save mode, whatever it is. These are two different situations, not two modes of one control — so nothing here conflicts with the one-save-mode rule in `recursica-skill-forms`.
 
 **Pass a real label from the shared component**, and put the rule — the unit, the range, the step size — in the assistive element as help text. See `recursica-skill-label` and `recursica-skill-assistive-element`.
 
@@ -129,9 +129,9 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Uncovered — ask, do not invent
 
-- **Choosing a range with two thumbs.** Single and range selection are documented outside the token inventory, but the kit defines no second thumb and no range axis. Do not build one, and do not rely on this without asking.
-- **Smooth versus stepped, as documented types.** Both are documented outside the token inventory. The kit has step-indicator properties but no types axis, so what switches a slider between them is not stated. Do not rely on this without asking.
-- **A hover state.** One is documented outside the token inventory, but the kit's states are only `error`, `disabled`, and `active`. Do not rely on this without asking.
+- **Choosing a range with two thumbs.** Single and range selection are shown only on the design-system website, but the UI kit defines no second thumb and no range axis. Do not build one, and do not rely on this without asking.
+- **Smooth versus stepped, as documented types.** Both are shown only on the design-system website. The UI kit has step-indicator properties but no types axis, so what switches a slider between them is not stated. Do not rely on this without asking.
+- **A hover state.** One is shown only on the design-system website, but the UI kit's states are only `error`, `disabled`, and `active`. Do not rely on this without asking.
 - **What `read-only-value` really means** — a readout that cannot be edited beside a track that can be used, or a read-only slider as a whole.
 - **Whether the number input is required or optional**, and on which surfaces. The house says "highly recommended", which is not a rule.
 - **Value labels other than the minimum and maximum**, including a label that moves with the thumb.

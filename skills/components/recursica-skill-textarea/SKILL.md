@@ -17,7 +17,7 @@ A textarea records plain text across several lines.
 - **The user is writing, not identifying something** — comments, feedback, messages, the details of a support ticket.
 - **Line breaks are part of the value.** If the user needs paragraphs, this is the control.
 
-**The label usually gives it away, and it is the fastest check there is.** `Description`, `Notes`, `Comments`, `Justification`, `Reason`, `Summary`, and `Details` all promise the user room to write. **A label that calls for prose, over a single-line field, is a mismatch the user discovers by running out of space** — and by then they have typed into a box that scrolls sideways, where they cannot see what they wrote. If the label suggests prose, the control is a textarea; if it does not, rethink the label.
+**The label usually gives it away, and it is the fastest check there is.** `Description`, `Notes`, `Comments`, `Justification`, `Reason`, `Summary`, and `Details` all promise the user room to write. A label that calls for prose, over a single-line field, is a mismatch the user discovers by running out of space — and by then they have typed into a box that scrolls sideways, where they cannot see what they wrote. If the label suggests prose, the control is a textarea; if it does not, rethink the label.
 
 ## Do not use it when
 
@@ -38,9 +38,9 @@ Each of these has a different component. Switch to it, instead of adapting a tex
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.textarea`. **Do not pass a variant or state that is not listed here** — other design systems have sizes, resize modes, warning states, and built-in counters that this component does not.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.textarea`. **Do not pass a variant or state that is not listed here** — other design systems have sizes, resize modes, warning states, and built-in counters that this component does not.
 
-**The third column is the React prop that sets each axis.** The axis name comes from the token inventory. It is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis      | Options                   | React prop   |
 | --------- | ------------------------- | ------------ |
@@ -59,7 +59,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.textarea`. **Do not pa
 
 **There is no icon property.** No `icon-size`, and no `icon-text-gap` — this component defines no icon inside the field.
 
-**There is no character counter.** Nothing in the kit shows a count.
+**There is no character counter.** Nothing in the UI kit shows a count.
 
 **There is no read-only state.** Read-only is a separate component — `read-only-field`, with the same `layouts` axis and no input.
 
@@ -71,7 +71,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.textarea`. **Do not pa
 
 **Put the rule in help text** — what to include, any minimum, any maximum — so the user has it before they get it wrong.
 
-**Never enforce a character limit the user cannot see.** If there is a maximum, the limit must be stated up front, and the user must be able to tell where they stand against it. The kit has no counter, so if the design needs one, raise it instead of building one.
+**Never enforce a character limit the user cannot see.** If there is a maximum, the limit must be stated up front, and the user must be able to tell where they stand against it. The UI kit has no counter, so if the design needs one, raise it instead of building one.
 
 **Never cut off or throw away what the user typed.** Do not quietly drop characters past a limit, and do not clear the field when validation fails — the text is theirs.
 
@@ -83,7 +83,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.textarea`. **Do not pa
 
 **Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints (the screen widths at which the layout changes), but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
-**A stacked layout is often more comfortable around a textarea** — a tall field beside a single-line label reads badly in a narrow container — **but that is never a reason to stack this one field on its own.** What decides it is the width of the form's container, not the height of the field. If the form is side by side, then this field is side by side too.
+**A stacked layout is often more comfortable around a textarea** — a tall field beside a single-line label reads badly in a narrow container — but that is never a reason to stack this one field on its own. What decides it is the width of the form's container, not the height of the field. If the form is side by side, then this field is side by side too.
 
 **Disabled and read-only are different components, not two styles of one.**
 
@@ -145,10 +145,10 @@ Never style an unfocused textarea so it reads as disabled. An editable field mus
 
 ## Uncovered — ask, do not invent
 
-- **Growing to fit the content.** The kit fixes `rows`, and **a vertical-resize axis with `auto` and `custom` is documented outside the token inventory, with no token behind it.** **These disagree.** Whether the field grows with its content, and whether there is a handle the user can drag, must be settled by a person. Do not rely on a resize axis without asking.
-- **What a fixed `rows` does with a longer value.** A "default fixed height before content truncation" is described outside the token inventory. Whether the extra text scrolls or is cut off is not stated — and cutting off a user's own entry would be a serious problem. Do not rely on either behaviour without asking.
-- **The character counter.** One is documented outside the token inventory, with no token behind it, and the kit shows none. Where a count lives, and what happens at the limit, is not settled — the same gap is open in `recursica-skill-assistive-element`. Do not rely on a counter without asking.
-- **A rich text editor.** No component in the kit produces formatted content. Do not build one out of a textarea.
+- **Growing to fit the content.** The UI kit fixes `rows`, and **a vertical-resize axis with `auto` and `custom` is shown only on the design-system website, with no token behind it. These disagree.** Whether the field grows with its content, and whether there is a handle the user can drag, must be settled by a person. Do not rely on a resize axis without asking.
+- **What a fixed `rows` does with a longer value.** A "default fixed height before content truncation" is described outside the UI kit. Whether the extra text scrolls or is cut off is not stated — and cutting off a user's own entry would be a serious problem. Do not rely on either behaviour without asking.
+- **The character counter.** One is shown only on the design-system website, with no token behind it, and the UI kit shows none. Where a count lives, and what happens at the limit, is not settled — the same gap is open in `recursica-skill-assistive-element`. Do not rely on a counter without asking.
+- **A rich text editor.** No component in the UI kit produces formatted content. Do not build one out of a textarea.
 - **A minimum length.** Nothing says whether a minimum is a supported limit, or only a validation message.
 
 ## Pre-flight checklist

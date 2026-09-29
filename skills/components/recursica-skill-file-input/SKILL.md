@@ -13,8 +13,8 @@ A file input is a single-line field that lets the user pick a file from their ow
 
 > **Not built yet.** Both adapters ship `FileInput` as a declared stub (an empty placeholder) that
 > shows a placeholder — `mantine-adapter/src/components/FileInput/FileInput.module.css` and the MUI
-> equivalent apply none of the 40 `file-input` variables the kit exports. Everything below is the
-> intended contract, and it is correct about what the kit defines — but building against it today
+> equivalent apply none of the 40 `file-input` variables the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) exports. Everything below is the
+> intended contract, and it is correct about what the UI kit defines — but building against it today
 > produces a placeholder, with no error. Use `recursica-skill-text-field` and a real `<input
 type="file">` until this lands, and raise it instead of working around it.
 
@@ -46,7 +46,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.file-input`. **Do not 
 | `layouts` | `stacked`, `side-by-side` |
 | `states`  | `error`, `disabled`       |
 
-**`layouts` is the label-placement axis.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's (the visible area of the browser window). See `recursica-skill-forms`.
+**`layouts` is the label-placement axis (a variant property, as Figma calls it — one way a component varies, such as its size).** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's (the visible area of the browser window). See `recursica-skill-forms`.
 
 **Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints (the screen widths at which the layout changes), but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
@@ -64,7 +64,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.file-input`. **Do not 
 
 **Limit the picker to the accepted types too.** The text is for the user; limiting the picker is for the computer. Do both, not one.
 
-**Choosing a file does not start an upload.** Choosing a file saves nothing, so it does not use the form's save mode at all. **The upload starts when the user clearly asks for it — never as a side effect of choosing a file.** Where the form saves everything together, the upload finishes before submit. This is settled, and it does not conflict with the one-save-mode rule in `recursica-skill-forms`.
+**Choosing a file does not start an upload.** Choosing a file saves nothing, so it does not use the form's save mode at all. The upload starts when the user clearly asks for it — never as a side effect of choosing a file. Where the form saves everything together, the upload finishes before submit. This is settled, and it does not conflict with the one-save-mode rule in `recursica-skill-forms`.
 
 **Show the file the user picked.** A field that looks empty after a successful pick reads as a pick that failed. The selected file's name is the field's value.
 
@@ -87,7 +87,7 @@ The whole point of this component is that a file field is a field. Everything be
 ### Screen readers
 
 - **Pass a real label.** The icon does not name the field, and a placeholder is not a label. A field with no label has no accessible name (the name a screen reader reads out for a control).
-- **The accepted types and the size limit must be in text that is connected to the field**, passed through the component as help text — not shown separately beside it, and not delivered only as an error after the user has already failed.
+- **The accepted types and the size limit must be in text that is connected to the field.** Pass them through the component as help text. Do not show them separately beside it, and do not deliver them only as an error after the user has already failed.
 - **The name of the picked file must be announced as the field's value.** If the visible name is truncated, the full name must still be available.
 - **Any clear or remove control needs an accessible name that includes the file name** — "Remove quarterly-report.pdf", not "Clear".
 - **A removal must be announced**, and so must a rejected file and the reason it was rejected.
@@ -128,11 +128,11 @@ Never style an unfocused field so that it reads as disabled. An editable field m
 
 ## Uncovered — ask, do not invent
 
-- **Upload feedback.** The kit defines no progress, no success, and no error state for each file on this component. Upload feedback is a real need, and there is nothing here to show it — do not invent a spinner, a bar, or a checkmark.
-- **More than one file in one field.** A "multiple files" content option is documented outside the token inventory, but the kit has no axis for more than one file, and no tokens for each file. Whether this field may hold more than one, and what that looks like, is not settled — do not rely on this without asking.
-- **The file chip and the clear icon.** Showing each file as a dismissible chip, plus an optional clear-all icon, is documented outside the token inventory. The kit defines no chip, no dismiss, and no clear control on this component. Do not rely on this without asking.
+- **Upload feedback.** The UI kit defines no progress, no success, and no error state for each file on this component. Upload feedback is a real need, and there is nothing here to show it — do not invent a spinner, a bar, or a checkmark.
+- **More than one file in one field.** A "multiple files" content option is shown only on the design-system website, but the UI kit has no axis for more than one file, and no tokens for each file. Whether this field may hold more than one, and what that looks like, is not settled — do not rely on this without asking.
+- **The file chip and the clear icon.** Showing each file as a dismissible chip, plus an optional clear-all icon, is shown only on the design-system website. The UI kit defines no chip, no dismiss, and no clear control on this component. Do not rely on this without asking.
 - **Retrying after a file is rejected or fails.** Nothing says whether the user can retry in place, or what the field shows while a retry is waiting.
-- **A drop target on this field.** Nothing in the kit describes one. If drag and drop is wanted, ask.
+- **A drop target on this field.** Nothing in the UI kit describes one. If drag and drop is wanted, ask.
 - **Truncating file names** — how much is shown, and from which end.
 
 ## Pre-flight checklist

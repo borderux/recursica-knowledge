@@ -62,7 +62,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **Four cards across the top is good; six to eight is the limit.** Order the page so the fastest things to read come first — a single number is read in a second, while a table takes real time to take in.
 
-**Prefer a number to a chart.** If a percentage, count, or quantity carries the information, show the number and **give it weight with a larger type size**, instead of wrapping it in a chart. A chart that repeats a number sitting right next to it adds nothing.
+**Prefer a number to a chart.** If a percentage, count, or quantity carries the information, show the number and give it weight with a larger type size, instead of wrapping it in a chart. A chart that repeats a number sitting right next to it adds nothing.
 
 **Fewer data points is better.** A dashboard is measured by how clear and actionable its few insights are, not by how much it shows.
 
@@ -113,7 +113,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **If there is nothing worth putting on it, there should be no dashboard.**
 
-**A first-run dashboard should include an onboarding element** that walks the user through their first tasks and explains what the product does. It must be **dismissible**, so the user stays in control of whether the guidance continues.
+**A first-run dashboard should include an onboarding element** that walks the user through their first tasks and explains what the product does. It must be dismissible, so the user stays in control of whether the guidance continues.
 
 ## Data freshness
 
@@ -148,7 +148,7 @@ No house rule covers these yet. **Ask the person instead of choosing** — see t
 
 ## Out of scope
 
-- **The inside of a chart** — its type, axes, labels, and thresholds. Covered by `recursica-skill-data-visualization`.
+- **The inside of a chart** — its type, axes (variant properties, as Figma calls them — the ways a component varies, such as its size), labels, and thresholds. Covered by `recursica-skill-data-visualization`.
 - **The anatomy of an individual card.** Covered by the card component skill.
 - **Grid column counts, gutters, widget shapes, and minimum sizes.** These come from the design system's layouts.
 - **Table structure.**

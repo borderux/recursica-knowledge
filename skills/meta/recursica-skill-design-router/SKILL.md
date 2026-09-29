@@ -50,7 +50,7 @@ The component adapters offer a styling escape hatch. **Its name makes it sound l
 **Is there a prop or a token (a named design value, such as a color or a size, set by the design system) for what you are trying to change?**
 
 - **Yes — then you are overriding something the component controls, and that is forbidden.** Every component skill lists these under `Not your decision`. Stop, and use the prop.
-- **No — then you are filling in for a prop or token that is missing.** That is the normal reason to use the hatch. What matters is what you do next: **the missing prop or token is a gap in the design system, and you must report it.** Using the hatch quietly and moving on is how a gap becomes permanent and invisible.
+- **No — then you are filling in for a prop or token that is missing.** That is the normal reason to use the hatch. What matters is what you do next: the missing prop or token is a gap in the design system, and you must report it. Using the hatch quietly and moving on is how a gap becomes permanent and invisible.
 
 **Either way, reaching for the hatch means something is wrong** — either your approach or the system. Say which one, and say it right alongside the code.
 
@@ -111,7 +111,7 @@ Work from top to bottom. Each answer limits the ones below it.
 | 24  | Headings, emphasis, abbreviations, and the markup under the visual hierarchy                                                       | `recursica-skill-typography-semantics`             |
 | 25  | Empty, loading, error, and partial states                                                                                          | **No skill yet — ask**                             |
 
-A few terms from the table, since they come up in every skill below: a **surface** is a region that holds content, such as a page, panel, or modal. A **layer** is a numbered level that sets which colors the components inside it use; layer 0 is the page itself. A **modal** is a window that blocks the rest of the page until the user closes it. A **toast** is a short message that appears briefly and then disappears. **Assistive technology** means tools such as screen readers that help people with disabilities use a computer.
+A few terms from the table, since they come up in every skill below: a **surface** is a region that holds content, such as a page, panel, or modal. A layer is a numbered level that sets which colors the components inside it use; layer 0 is the page itself. A modal is a window that blocks the rest of the page until the user closes it. A toast is a short message that appears briefly and then disappears. Assistive technology means tools such as screen readers that help people with disabilities use a computer.
 
 **Two ordering rules worth saying outright:**
 
@@ -124,10 +124,10 @@ Apply these in order. The first one that settles the conflict wins.
 
 1. **The design system beats every skill.** Anything the components control — spacing, color, type, focus states, keyboard behavior inside a control — is not your decision. If a rule seems to ask you to style a component, you have misread it.
 
-   **But a library's default is not a house rule, and you must never treat it as one.** The components are adapters built on top of Mantine, Material, or whatever library sits underneath. What that library does by default has no authority here. When a default disagrees with a house rule, **the house rule wins, and the default is a defect to report** — not proof that the rule is wrong or that the behavior is on purpose. The panel is a live example: it wraps a drawer that is modal by default, while the house rule is that a panel is non-modal (it leaves the rest of the page usable). Check the behavior in the running application instead of assuming it from what the library usually does.
+   **But a library's default is not a house rule, and you must never treat it as one.** The components are adapters built on top of Mantine, Material, or whatever library sits underneath. What that library does by default has no authority here. When a default disagrees with a house rule, the house rule wins, and the default is a defect to report — not proof that the rule is wrong or that the behavior is on purpose. The panel is a live example: it wraps a drawer that is modal by default, while the house rule is that a panel is non-modal (it leaves the rest of the page usable). Check the behavior in the running application instead of assuming it from what the library usually does.
 
 2. **A prohibition beats a permission.** `NEVER` and `MUST NOT` outrank "may", "is fine", and "acceptable". If one skill forbids something another skill allows, the prohibition holds.
-3. **A design-rules or psychology skill beats a component skill.** This rule settles most real conflicts, so apply it before the ones below. The design-rules skills come from the team. The component skills were put together from the list of tokens around them. When the two disagree about **composition** — whether a component belongs here, how many are allowed, what may contain what, when one control should replace another — the design-rules skill is correct and the component skill has a defect. Follow the design rule, and say that the component skill needs fixing.
+3. **A design-rules or psychology skill beats a component skill.** This rule settles most real conflicts, so apply it before the ones below. The design-rules skills come from the team. The component skills were put together from the list of tokens around them. When the two disagree about composition — whether a component belongs here, how many are allowed, what may contain what, when one control should replace another — the design-rules skill is correct and the component skill has a defect. Follow the design rule, and say that the component skill needs fixing.
 
    The component skill still wins on exactly one thing: **which variants (versions of a component, such as solid or outline buttons) and states actually exist.** A design rule that assumes a capability the component does not have is a gap to raise. It is not permission to invent that capability.
 
@@ -146,7 +146,7 @@ Apply these in order. The first one that settles the conflict wins.
 
 **There are two kinds of gap, kept in two places.** Each topic skill has its own `Uncovered — ask, do not invent` section for holes inside a topic it otherwise owns — column types that cannot be sorted, limits on badge counts, empty states for charts, and so on. Check the owning skill's list first.
 
-The list below is the other kind: **whole topics that no skill owns yet.** Both kinds get the same treatment — **ask instead of inventing an answer** — and both lists get shorter as topics are recorded.
+The list below is the other kind: **whole topics that no skill owns yet.** Both kinds get the same treatment — ask instead of inventing an answer — and both lists get shorter as topics are recorded.
 
 - **Empty, loading, error, and partial states.** Three parts are settled and the rest is not. A loading page shows nothing, and skeletons are forbidden (`recursica-skill-screen-scaffolding`). "No rows returned" and "could not fetch" get different messages (`recursica-skill-screen-priority`). A filter that returns zero results is different from never having had data (`recursica-skill-filters`). What is still open is the layout, the wording, and whether an empty state (what a screen shows when there is no data yet) may include an action — including the difference between "no data yet" and "no results for these filters". Dashboards are the exception: `recursica-skill-dashboards` forbids an empty dashboard and requires a first-run element the user can dismiss.
 - **Motion** — anything beyond "do not animate a badge when its status changes". `recursica-skill-icon-semantics` also leaves open whether an icon may animate.
@@ -156,7 +156,12 @@ The list below is the other kind: **whole topics that no skill owns yet.** Both 
 
 ## Reading the rules correctly
 
-**Hedges are not permissions.** The skills use graded language on purpose: `MUST`, `NEVER`, "prefer", "avoid", "typically". "Avoid" means do not do it unless you have a specific reason you can state. It does not mean the choice is open.
+**Hedges are not permissions.** The skills use graded language on purpose: `MUST`, `NEVER`, "prefer", "avoid", "typically". "Avoid" means do not do it unless you have a specific reason you can state. It does not mean the choice is open. Read the rest the same way, whichever model you are:
+
+- **`MUST` and `NEVER`** allow no exception unless the skill names one.
+- **"Prefer", "typically", and "usually"**, when they state what to do, mean do it unless you have a specific reason you can state.
+- **"Avoid" and "rarely"**, when they state what to do, mean do not do it unless you have a specific reason you can state.
+- **"Often", "most often", and "rarely"**, when they describe how things tend to go — "the step most often skipped" — are not rules. They tell you where to look hardest.
 
 **Silence is not permission either.** A topic the skills do not mention has no rule. That does not mean it is allowed. That is what the unowned list and the requirement to ask are for.
 

@@ -15,7 +15,7 @@ These rules assume **complex enterprise web applications** built on a configured
 
 ## The three governing principles
 
-1. **Inconsistency is the giveaway.** Two things reveal a screen that was not designed with care, and both are failures of consistency: **mixed icon styles on one screen**, and **the same function drawn with different icons**. Nothing else in this skill is as reliable a sign.
+1. **Inconsistency is the giveaway.** Two things reveal a screen that was not designed with care, and both are failures of consistency: mixed icon styles on one screen, and the same function drawn with different icons. Nothing else in this skill is as reliable a sign.
 2. **Unclear meaning is fixed with words, never with a better icon.** Where a function's meaning is not obvious from its icon, the fix is a text label or a tooltip. Hunting for a cleverer glyph (the drawn symbol itself) is the wrong move.
 3. **An icon is tied to an action, not to a place.** A pencil means edit wherever editing happens. Keeping meaning consistent is what makes an icon readable at all.
 
@@ -38,7 +38,7 @@ These rules assume **complex enterprise web applications** built on a configured
 
 **Where they usually appear:** toolbars, table rows with several actions, and the ellipsis or "more" button that signals more functions are hidden behind a menu.
 
-**Every icon-only button MUST have a tooltip.** When asked where that rule stops applying, the answer was **"never."** No context, no argument about space, and no argument about established patterns makes an exception. Tooltip content and behavior are owned by `recursica-skill-tooltip`. Whether a control needs one at all is owned by `recursica-skill-buttons-links`, which states the same rule from its side.
+**Every icon-only button MUST have a tooltip.** When asked where that rule stops applying, the answer was "never." No context, no argument about space, and no argument about established patterns makes an exception. Tooltip content and behavior are owned by `recursica-skill-tooltip`. Whether a control needs one at all is owned by `recursica-skill-buttons-links`, which states the same rule from its side.
 
 ## When a text label is required
 
@@ -49,7 +49,7 @@ There are two tests. If either one applies, the control gets **an icon plus a la
 
 **A tooltip does not replace a label in either case.** The tooltip requirement above is the minimum for icon-only controls. It is not a way to make an unclear icon acceptable.
 
-**Specialized business concepts cannot be drawn.** Common, general actions — edit, home, close — are easy to remember because the same glyph means the same thing everywhere. **An icon invented for a function that exists in only one application is very hard to make memorable.** In enterprise software, the concepts are often too abstract for any symbol to carry: there is no shared understanding of what such symbols mean. Where a concept is specialized, **the label does the icon's job, not the other way round.** This is why an icon-only rail fails worst in business systems — see `recursica-skill-navigation` and `recursica-skill-working-memory`.
+**Specialized business concepts cannot be drawn.** Common, general actions — edit, home, close — are easy to remember because the same glyph means the same thing everywhere. An icon invented for a function that exists in only one application is very hard to make memorable. In enterprise software, the concepts are often too abstract for any symbol to carry: there is no shared understanding of what such symbols mean. Where a concept is specialized, the label does the icon's job, not the other way round. This is why an icon-only rail fails worst in business systems — see `recursica-skill-navigation` and `recursica-skill-working-memory`.
 
 ## Icons inside established components
 
@@ -76,7 +76,7 @@ There are two tests. If either one applies, the control gets **an icon plus a la
 
 ## One icon, one meaning
 
-**The same icon does not mean different things in different places.** It must always mean the same thing — or at least share the same **basic action**.
+**The same icon does not mean different things in different places.** It must always mean the same thing — or at least share the same basic action.
 
 **Tie icons to the action wherever you can.** An edit-form control and an edit-page control may both use a pencil. The action is edit in both cases, so reusing the icon is correct, not a clash.
 
@@ -96,7 +96,7 @@ There are two tests. If either one applies, the control gets **an icon plus a la
 
 ## Status as an icon
 
-**A status may be shown as an icon instead of as text**, and it is often shown with **both an icon and a color**.
+**A status may be shown as an icon instead of as text**, and it is often shown with both an icon and a color.
 
 **The reason is scanning.** On a dense screen where nearly everything is text, reading even more text to find a status is hard work. An icon is faster to spot — most of all when the icon and the text appear together.
 

@@ -36,14 +36,14 @@ A menu is a temporary list of choices or actions. A trigger opens it, and dismis
 
 ## What exists
 
-Taken from `recursica_ui-kit.json`. Two specs, with one axis between them.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has). Two specs, with one axis (a variant property, as Figma calls it — one way a component varies, such as its size) between them.
 
 | Spec        | Axis               | Options                  |
 | ----------- | ------------------ | ------------------------ |
 | `menu`      | (none)             | —                        |
 | `menu-item` | `selection-states` | `unselected`, `selected` |
 
-**Which one owns what:** `menu` is the container — its width limits, padding, `max-height`, the gap between items, and the dividers. `menu-item` is one row: a leading icon, a trailing icon, a label, and **supporting text**.
+**Which one owns what:** `menu` is the container — its width limits, padding, `max-height`, the gap between items, and the dividers. `menu-item` is one row: a leading icon, a trailing icon, a label, and supporting text.
 
 **A menu item can have a second line.** `supporting-text` and `text-gap` exist, so an item may be a label plus one line of description. Use it where the label alone is unclear. It is a line, not a paragraph.
 
@@ -51,7 +51,7 @@ Taken from `recursica_ui-kit.json`. Two specs, with one axis between them.
 
 **The menu has a `max-height`, which means a long menu scrolls.** There are two consequences. First, a menu that scrolls hides its own length — the user cannot see how many options exist, and keyboard navigation has to scroll the list to follow focus. Second, and more important: **a long menu is a sign that the structure is wrong.** `recursica-skill-system-conventions` requires fixing the structure instead of adding a workaround to cope with it — and the scrolling area is that workaround. Group the items, or cut them down. Above about nine items, a list can no longer be scanned easily — see `recursica-skill-working-memory` for what that limit actually claims.
 
-**There is no submenu construct.** A trailing chevron for a nested submenu that opens "on hover or click" is documented outside the token inventory. The kit defines no nested menu, and a house rule forbids opening on hover. Do not build one — see Uncovered.
+**There is no submenu construct.** A trailing chevron for a nested submenu that opens "on hover or click" is shown only on the design-system website. The UI kit defines no nested menu, and a house rule forbids opening on hover. Do not build one — see Uncovered.
 
 **There is no placement, size, density, or multi-select axis.** Do not pass a position.
 
@@ -123,9 +123,9 @@ The selected item's visual treatment comes with `selection-states`. Do not resty
 
 ## Uncovered — ask, do not invent
 
-- **Submenus.** A trailing chevron that opens a nested submenu "on hover or click" is documented outside the token inventory. The kit defines no submenu, and opening on hover contradicts the navigation rule. Both whether it exists and how it is triggered need a decision — do not rely on this without asking.
-- **Menus with multi-select.** A type axis of single select, multi-select, and custom content is documented outside the token inventory. The kit defines only `unselected` and `selected` on `menu-item`. Do not rely on this without asking.
-- **Custom content inside a menu item.** Documented outside the token inventory, and nothing in the kit supports it. Do not rely on this without asking.
+- **Submenus.** A trailing chevron that opens a nested submenu "on hover or click" is shown only on the design-system website. The UI kit defines no submenu, and opening on hover contradicts the navigation rule. Both whether it exists and how it is triggered need a decision — do not rely on this without asking.
+- **Menus with multi-select.** A type axis of single select, multi-select, and custom content is shown only on the design-system website. The UI kit defines only `unselected` and `selected` on `menu-item`. Do not rely on this without asking.
+- **Custom content inside a menu item.** Shown only on the design-system website, and nothing in the UI kit supports it. Do not rely on this without asking.
 - **How an unavailable item is shown.** `menu-item` has no disabled state, yet the permissions rule requires disabling what the user can unlock.
 - **The number of items at which a menu is too long.** `max-height` implies scrolling, but no threshold is stated. `recursica-skill-buttons-links` leaves the overflow threshold open too.
 - **Where the menu appears relative to its trigger**, and how it behaves near the edge of the viewport. There is no placement axis.

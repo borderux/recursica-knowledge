@@ -34,17 +34,17 @@ A hover card or a popover reveals richer content beside the element that trigger
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.hover-card-popover`. **The component has no variant axes at all** — no placement axis, no size axis, no content-type axis, and nothing that tells a hover card apart from a popover. One spec, one set of fixed properties.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.hover-card-popover`. **The component has no variant axes (variant properties, as Figma calls them — the ways a component varies, such as its size) at all** — no placement axis, no size axis, no content-type axis, and nothing that tells a hover card apart from a popover. One spec, one set of fixed properties.
 
-**What the component provides:** a content area and a **beak** — the pointer connecting the card to its target. `beak-size` is set by tokens; unlike the tooltip, there is no `beak-inset`.
+**What the component provides:** a content area and a beak — the pointer connecting the card to its target. `beak-size` is set by tokens; unlike the tooltip, there is no `beak-inset`.
 
 **You cannot set the placement.** There is no top, left, right, or bottom option. Do not pass a position prop, and do not position the beak by hand.
 
 **There is no size axis.** `min-width` and `max-width` are fixed. Content that does not fit inside them is page content.
 
-**There is no content-type axis.** `content-text` is the only content property in the kit. A custom content type is documented outside the token inventory — see Uncovered.
+**There is no content-type axis.** `content-text` is the only content property in the UI kit. A custom content type is shown only on the design-system website — see Uncovered.
 
-**Nothing in the kit tells hover behavior apart from click behavior — but the house does, and the two are different components.** One token spec is behind both. The behavior you build decides which one you have made, and it decides every accessibility requirement below. **State which one you are building.**
+**Nothing in the UI kit tells hover behavior apart from click behavior — but the house does, and the two are different components.** One token spec is behind both. The behavior you build decides which one you have made, and it decides every accessibility requirement below. State which one you are building.
 
 |                                 | **Hover card**                                  | **Popover**                                                                                         |
 | ------------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------- |
@@ -56,7 +56,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.hover-card-popover`. *
 
 **A popover is a non-modal dialog** (a window that leaves the rest of the page usable). It does not block the page, and it does not trap focus. It is the click-triggered partner of the hover card, and the only one of the two that may hold anything the user can operate.
 
-**Neither has a placement axis**, even though four positions and three beak alignments are documented outside the token inventory. See the uncovered list.
+**Neither has a placement axis**, even though four positions and three beak alignments are shown only on the design-system website. See the uncovered list.
 
 **`tooltip` and `hover-card-popover` are two different components with almost identical tokens.** Do not choose between them on styling, because the styling is effectively the same. Choose on content: a tooltip is a short text label for a control with no visible label, and this component holds richer content. Neither may hold anything the user needs in order to finish a task, and neither may be the only place a piece of information exists.
 
@@ -64,7 +64,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.hover-card-popover`. *
 
 **Decide, and state, which of the two you are building before you build it.** There are exactly two valid shapes, and their requirements differ:
 
-- **Hover card** — opens on pointer hover, contains **nothing interactive**, and holds **nothing the user needs**. A read-only preview, and nothing else.
+- **Hover card** — opens on pointer hover, contains nothing interactive, and holds nothing the user needs. A read-only preview, and nothing else.
 - **Popover** — opened by a real trigger with a click, Enter, or Space. May contain interactive content, and can be fully used by keyboard, including returning focus.
 
 A surface that opens on hover and has a control in it is not a third option; it is the failure.
@@ -145,9 +145,9 @@ The beak is part of the component. Do not draw your own, and do not reposition t
 ## Uncovered — ask, do not invent
 
 - **Whether the single token spec should become two.** The behaviors are settled and documented separately, but one spec is behind both, so nothing in the inventory tells you which properties a popover uses versus a hover card. Ask before assuming they can look different.
-- **Placement.** Four positions — top, left, right, bottom — and three beak alignments — start, middle, end — are documented outside the token inventory, with no tokens behind them. Do not rely on them without asking, and no rule covers what happens at the edge of the viewport.
+- **Placement.** Four positions — top, left, right, bottom — and three beak alignments — start, middle, end — are shown only on the design-system website, with no tokens behind them. Do not rely on them without asking, and no rule covers what happens at the edge of the viewport.
 - **The delay before showing, the delay before hiding, and the grace period** while the pointer crosses from the target to the card. No token or rule defines any of them.
-- **Custom content.** Content types of text and custom are documented outside the token inventory, but the kit only offers `content-text`. Do not rely on this without asking.
+- **Custom content.** Content types of text and custom are shown only on the design-system website, but the UI kit only offers `content-text`. Do not rely on this without asking.
 - **Behavior on touch.** Hover does not exist on touch, and no alternative pattern is specified.
 - **Whether a popover may be opened from inside a menu, a modal, or another popover.** `recursica-skill-modal` forbids stacking modals, but nothing states the rule here.
 - **Whether a popover may be closed by clicking the page behind it**, which `recursica-skill-modal` also leaves open.

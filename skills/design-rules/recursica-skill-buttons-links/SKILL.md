@@ -36,7 +36,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **MUST NOT use a button to navigate.**
 
-**MUST NOT use a link to trigger a server-side action.** This breaks what a link means; it is not a judgment call. If a link component triggers a server-side action, it should have been a button. **If you do not want it to look like a button, use a text button** — that is what the text variant (one version of a component, such as a solid or an outline button) is for.
+**MUST NOT use a link to trigger a server-side action.** This breaks what a link means; it is not a judgment call. If a link component triggers a server-side action, it should have been a button. If you do not want it to look like a button, use a text button — that is what the text variant (one version of a component, such as a solid or an outline button) is for.
 
 **Links MUST render a real `href`.** The point is that the browser's own features keep working: the right-click menu, opening in a new tab, copying the link address. A trigger that navigates without an href takes those away from the user.
 
@@ -69,7 +69,7 @@ A link may carry an icon showing that the destination is external or will open i
 
 **Aim for exactly one primary action per surface.**
 
-**When several actions really are close in importance**, and all of them would otherwise be solid buttons, create a ranking through their labels instead: **give the slightly more important action a text label, and make the others icon-only.**
+**When several actions really are close in importance**, and all of them would otherwise be solid buttons, create a ranking through their labels instead: give the slightly more important action a text label, and make the others icon-only.
 
 ## Placement
 
@@ -108,9 +108,9 @@ The rule underneath: **a label that never changes can become an icon; a label th
 - **One bulk action** — show it once at least one row is selected. A single disabled control sitting there all the time teaches almost nothing, and it permanently takes up part of the layout.
 - **Several bulk actions** — show them all the time, disabled until at least one row is selected. Here the affordance (a visible cue that tells the user they can act on something) pays for itself: the user learns what can be done in bulk before selecting anything.
 
-**Before either, ask whether bulk actions belong on this screen at all.** Bulk operations are worth building where the work really is done in batches. Where records are handled one at a time, a bulk control is a guess about how the user works — and a guess that costs layout space and attention on every visit. **If you cannot name the batch task it serves, do not build it** — see `recursica-skill-design-router`.
+**Before either, ask whether bulk actions belong on this screen at all.** Bulk operations are worth building where the work really is done in batches. Where records are handled one at a time, a bulk control is a guess about how the user works — and a guess that costs layout space and attention on every visit. If you cannot name the batch task it serves, do not build it — see `recursica-skill-design-router`.
 
-**A bulk action's label shows the number selected in parentheses** — `Apply status`, `Apply status (1)`, `Apply status (102)` — with no number shown until at least one row is selected. The label itself never changes; only the number in parentheses appears and disappears. This is also why `Apply to 0 selected` is unnecessary: the count belongs in the button, not in a phrase built around it. **The spelled-out phrase goes in the accessible name instead** (the name a screen reader reads out for a control). A screen reader announces "Apply status to 102 items" while the button visibly reads `Apply status (102)`. See `recursica-skill-button`.
+**A bulk action's label shows the number selected in parentheses** — `Apply status`, `Apply status (1)`, `Apply status (102)` — with no number shown until at least one row is selected. The label itself never changes; only the number in parentheses appears and disappears. This is also why `Apply to 0 selected` is unnecessary: the count belongs in the button, not in a phrase built around it. The spelled-out phrase goes in the accessible name instead (the name a screen reader reads out for a control). A screen reader announces "Apply status to 102 items" while the button visibly reads `Apply status (102)`. See `recursica-skill-button`.
 
 **Bulk controls never sit inside the filter bar.** They act on the data, not on what is shown. See `recursica-skill-filters`.
 
@@ -136,7 +136,7 @@ A destructive action is one that deletes something or cannot easily be undone.
 
 **The trigger is still a button** either way. Being destructive does not change the component.
 
-**In a confirmation modal:** the primary action is the solid primary button, and **cancel is always the secondary button** — outline or text.
+**In a confirmation modal:** the primary action is the solid primary button, and cancel is always the secondary button — outline or text.
 
 ## Undo
 

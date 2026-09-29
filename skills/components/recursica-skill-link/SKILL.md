@@ -32,17 +32,17 @@ A link takes the user somewhere. It never changes data.
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.link`.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.link`.
 
 | Axis     | Options   |
 | -------- | --------- |
 | `states` | `visited` |
 
-**`visited` is the only state variant.** There is no size axis, no style axis, and no disabled state — the browser and the component own everything else.
+**`visited` is the only state variant.** There is no size axis (a variant property, as Figma calls it — one way a component varies, such as its size), no style axis, and no disabled state — the browser and the component own everything else.
 
-**Properties defined here:** `text`, `icon-size`, `icon-text-gap`, and `colors`. An icon may sit before or after the label; both positions are documented outside the token inventory.
+**Properties defined here:** `text`, `icon-size`, `icon-text-gap`, and `colors`. An icon may sit before or after the label; both positions are shown only on the design-system website.
 
-**Behavior documented outside the token inventory:** a link that navigates within the product, and an external link, which is marked as leaving the product.
+**Behavior shown only on the design-system website:** a link that navigates within the product, and an external link, which is marked as leaving the product.
 
 ## Rules for using it
 
@@ -54,7 +54,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.link`.
 
 **Never open a new tab automatically**, unless that is clearly the only possible behavior. The user chooses, with their own context menu or a modifier key.
 
-**Mark an external link as external** — a behavior documented outside the token inventory — so the user knows they are leaving before they click. Which icon or wording shows this is not settled; see the uncovered list.
+**Mark an external link as external** — a behavior shown only on the design-system website — so the user knows they are leaving before they click. Which icon or wording shows this is not settled; see the uncovered list.
 
 **Never disable a link.** Going to a related object is always possible. If the destination should not exist for this user, do not show the link at all; see `recursica-skill-navigation`.
 

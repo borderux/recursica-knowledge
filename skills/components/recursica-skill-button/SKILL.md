@@ -31,9 +31,9 @@ A button performs an action. It does not take the user anywhere.
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.button`. **Do not pass a variant, size, or state that is not listed here.**
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.button`. **Do not pass a variant, size, or state that is not listed here.**
 
-**The third column is the React prop that sets each axis.** The axis name comes from the token inventory. It is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis      | Options                            | React prop |
 | --------- | ---------------------------------- | ---------- |
@@ -41,7 +41,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.button`. **Do not pass
 | `sizes`   | `default`, `small`                 | `size`     |
 | `content` | `icon-label`, `label`, `icon-only` |            |
 
-**`text` is the style called "Ghost" outside the token inventory.** One thing, two names.
+**`text` is the style called "Ghost" outside the UI kit.** One thing, two names.
 
 **`icon-label` is one setup, not two.** A leading icon, a trailing icon, or both are all `icon-label`, and the props do not change between them. Do not look for separate leading and trailing variants.
 
@@ -89,7 +89,7 @@ The component provides the focus ring (the outline that shows which element has 
 - **The accessible name should match the visible label.** Where they differ, the visible label must be included in the name, or a user who speaks the label cannot activate it by voice.
 - **A row or list action must name its object.** "Delete" repeated down a table is thirteen identical announcements. Either the name carries the object — "Delete invoice 1043" — or the row supplies that context in code.
 - **When a toggle button's label changes, its accessible name changes with it.** A name that is out of date after activation is worse than no name.
-- **The accessible name spells the count out as a phrase; the visible label keeps the number in parentheses.** Visible: `Apply status (102)`. Announced: **"Apply status to 102 items."** A bare number read after a label — "Apply status 102" — is unclear out loud, because it could be a quantity, an identifier, or part of the name.
+- **The accessible name spells the count out as a phrase; the visible label keeps the number in parentheses.** Visible: `Apply status (102)`. Announced: "Apply status to 102 items." A bare number read after a label — "Apply status 102" — is unclear out loud, because it could be a quantity, an identifier, or part of the name.
 - **This is the approved case for the two being different**, and it still follows the rule above, because the visible label is included in the accessible name: someone using voice can still say "Apply status" and be understood.
 - **The name updates as the count does**, and with no selection it is simply `Apply status`, with no count in either place. Do not announce every increase while the user is selecting; what matters is that the name is correct when they reach the button.
 - **It must be a real button element**, never a `div` or a `span` with a click handler. Only a real button is announced as a button, and only a real button responds to Enter and Space without extra work.
@@ -128,7 +128,7 @@ Do not implement, override, or tune any of these — the component owns them for
 - **When `small` is the correct size.** No rule says which surfaces use it.
 - **Whether a full-width button is ever allowed**, and if so where. No axis supports it.
 - **Which icon marks a button in flight**, and whether the animation is defined anywhere. How it is put together is settled; the specific icon is not.
-- **Split buttons and button groups.** Neither exists in the kit; do not build one.
+- **Split buttons and button groups.** Neither exists in the UI kit; do not build one.
 
 ## Pre-flight checklist
 

@@ -11,11 +11,11 @@ metadata:
 
 These are the house rules for Recursica's layer system — the way containers are stacked. A layer is a numbered level that sets which colors the components inside it use; layer 0 is the page itself. These rules are opinions, not neutral best practices — treat them as constraints.
 
-These rules assume **complex enterprise web applications** built on a Recursica theme. The layer contract is defined in the theme, at `https://forge.recursica.com/theme/layers`. **What a layer looks like is the theme's business. Which layer a region sits on is yours** — and that is the only thing this skill decides.
+These rules assume **complex enterprise web applications** built on a Recursica theme. The layer contract is defined in the theme, at `https://forge.recursica.com/theme/layers`. What a layer looks like is the theme's business. Which layer a region sits on is yours — and that is the only thing this skill decides.
 
 ## The three governing principles
 
-1. **Everything is already on a layer.** Layer 0 is the page. Being on a layer is not a choice — **opening a new one is.** An agent that thinks of layers as optional boxes has the idea backwards.
+1. **Everything is already on a layer.** Layer 0 is the page. Being on a layer is not a choice — opening a new one is. An agent that thinks of layers as optional boxes has the idea backwards.
 2. **A layer is a token scope, not a decoration.** A token is a named design value, such as a color or a spacing size, set by the design system. A token scope is the area in which one set of those values applies. Declaring a layer is what makes every component inside it pick up the correct colors. Leaving one undeclared is not a harmless omission — it silently gives the components the wrong palette.
 3. **Nest as little as the design needs.** Layers 0 and 1 do nearly all the work. Reaching for a deeper level is a decision that needs a reason, not a reflex whenever the markup nests.
 
@@ -33,7 +33,7 @@ These rules assume **complex enterprise web applications** built on a Recursica 
 
 ## Containment is the only reason to leave layer 0
 
-**Layer 0 is the default for everything on the page** — including the header, the navigation, and the main content. **A region moves to layer 1 only when it needs to be contained**: held as its own surface (a region that holds content, such as a page, panel, or modal), clearly separate from what is around it.
+**Layer 0 is the default for everything on the page** — including the header, the navigation, and the main content. A region moves to layer 1 only when it needs to be contained: held as its own surface (a region that holds content, such as a page, panel, or modal), clearly separate from what is around it.
 
 **Header, nav, and main content all on layer 0 is correct** when nothing there needs containing. That is not something left out, and not a missed opportunity — it is the result of applying "space first."
 
@@ -79,7 +79,7 @@ The structure of the shell — header, rail, footer, titles — is owned by `rec
 - **padding**
 - **shadow or elevation** (how raised a surface looks)
 
-**All of them are written in the Forge theme and read from it.** They can be configured — by whoever writes the theme, in Forge — and every one of them has a token. **The build agent reads those tokens and never writes them.**
+**All of them are written in the Forge theme and read from it.** They can be configured — by whoever writes the theme, in Forge — and every one of them has a token. The build agent reads those tokens and never writes them.
 
 **Declaring the layer is how you get them.** A correctly declared layer already carries its surface, border, radius, and padding. Setting any of them by hand means either the layer was not declared, or you are overriding the theme.
 
@@ -178,7 +178,7 @@ Plurality means how many of something there are. A peer is one of a set of repea
 
 ## Uncovered — ask, do not invent
 
-- **How the adapter offers a layer.** The token contract and the `data-recursica-layer` attribute are confirmed from the theme. But whether the React adapter ships a `Layer` component, a prop, or expects the attribute directly is not. `recursica-skill-screen-scaffolding` records the component as mentioned but not exported. **Confirm before building, and do not hand-build a substitute.**
+- **How the adapter offers a layer.** The token contract and the `data-recursica-layer` attribute are confirmed from the theme. But whether the React adapter ships a `Layer` component, a prop, or expects the attribute directly is not. `recursica-skill-screen-scaffolding` records the component as mentioned but not exported. Confirm before building, and do not hand-build a substitute.
 - **Which surfaces sit at which level by default.** Nothing states the layer of a panel, a modal, a table, or a dashboard widget — only that each has colors for each layer.
 - **Whether a modal or panel opens a new layer scope**, or takes on the layer beneath it.
 - **Whether summary figures sit on layers or in cards.** Still open in `recursica-skill-screen-scaffolding`.

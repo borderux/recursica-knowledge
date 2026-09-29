@@ -32,23 +32,23 @@ A badge is one piece of read-only metadata attached to something else. The syste
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.badge`. **Do not pass a variant that is not listed here.**
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.badge`. **Do not pass a variant that is not listed here.**
 
-**The third column is the React prop that sets each axis.** The axis name comes from the token inventory. It is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis     | Options                                        | React prop |
 | -------- | ---------------------------------------------- | ---------- |
 | `styles` | `primary-color`, `warning`, `success`, `alert` | `variant`  |
 
-**There is no size axis and no content axis in the kit**, though both are documented outside the token inventory. See the uncovered list before relying on either — that mismatch has not been settled.
+**There is no size axis and no content axis in the UI kit**, though both are shown only on the design-system website. See the uncovered list before relying on either — that mismatch has not been settled.
 
 **No disabled state, no interactive state, and no hover effect.** A badge has no states, because it is not a control.
 
-**Four intents is a closed set, and most fields of work have more statuses than that.** An intent is the kind of meaning a style carries — positive, a warning, a problem, or neutral. A provisioning workflow with Pending, Approved, Ordered, Shipped, Delivered, Blocked, and Cancelled has seven statuses and only four styles to show them. So **styles have to repeat** — two different statuses will look identical.
+**Four intents is a closed set, and most fields of work have more statuses than that.** An intent is the kind of meaning a style carries — positive, a warning, a problem, or neutral. A provisioning workflow with Pending, Approved, Ordered, Shipped, Delivered, Blocked, and Cancelled has seven statuses and only four styles to show them. So styles have to repeat — two different statuses will look identical.
 
-**The style must agree with the sentiment of the value** — whether the value is good, bad, or neutral. A positive state never gets the negative treatment. `alert` reads as something wrong, so an approved, complete, or successful value must never carry it. That would be a badge actively contradicting its own text, and the colour wins on the first read. Where the exact mapping of statuses to intents has not been decided, see the uncovered list. What is settled is that **the intent must never fight the word.**
+**The style must agree with the sentiment of the value** — whether the value is good, bad, or neutral. A positive state never gets the negative treatment. `alert` reads as something wrong, so an approved, complete, or successful value must never carry it. That would be a badge actively contradicting its own text, and the colour wins on the first read. Where the exact mapping of statuses to intents has not been decided, see the uncovered list. What is settled is that the intent must never fight the word.
 
-**That is safe only because the badge's text always carries the difference.** Map several statuses to one intent on purpose, keep the label as the thing that identifies the status, and never let the color be what tells Ordered apart from Shipped. Required by `recursica-skill-system-conventions`. **Do not invent a fifth intent.** There is no prop for one, so making one means working around the component. A fifth colour is not a missing token to report — it is a colour the system has deliberately not given you. See `recursica-skill-design-router` on the escape hatch.
+**That is safe only because the badge's text always carries the difference.** Map several statuses to one intent on purpose, keep the label as the thing that identifies the status, and never let the color be what tells Ordered apart from Shipped. Required by `recursica-skill-system-conventions`. Do not invent a fifth intent. There is no prop for one, so making one means working around the component. A fifth colour is not a missing token to report — it is a colour the system has deliberately not given you. See `recursica-skill-design-router` on the escape hatch.
 
 ## Rules for using it
 
@@ -106,7 +106,7 @@ Do not implement, override, or tune any of these — the component owns them:
 
 - **The mapping of statuses to intents.** The principle is settled — the intent agrees with the sentiment, and `alert` never carries a positive value. But which intent each status takes has not been decided. With four intents and more statuses than that, the mapping needs to be stated, not made up on the spot.
 - **What `warning` and `alert` are for**, given that a badge must not show an error. Until this is answered, do not reach for either one.
-- **A size axis (default and large) and a content axis (message and counter) are documented outside the token inventory, with no token behind either.** Do not assume they are available, and do not rely on this without asking.
+- **A size axis, with default and large, and a content axis, with message and counter, are shown only on the design-system website, with no token behind either.** Do not assume they are available, and do not rely on this without asking.
 - **A limit on counts** — whether a large number is cut short, and how.
 - **Whether a badge may carry an icon beside its text.**
 - **Zero.** Whether a count badge is hidden at zero, or shown.

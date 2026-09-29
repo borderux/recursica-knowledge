@@ -36,11 +36,11 @@ A tooltip is a short text label for a control that has no visible one.
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.tooltip`. **The tooltip has no variant axes at all** — no placement axis, no size axis, no content-type axis. Every listed item is a fixed property.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.tooltip`. **The tooltip has no variant axes (variant properties, as Figma calls them — the ways a component varies, such as its size) at all** — no placement axis, no size axis, no content-type axis. Every listed item is a fixed property.
 
-**What the component provides:** a text area and a **beak** — the small pointer that connects the tooltip to its trigger. `beak-size` and `beak-inset` are set by tokens (named design values, such as colors or sizes, set by the design system).
+**What the component provides:** a text area and a beak — the small pointer that connects the tooltip to its trigger. `beak-size` and `beak-inset` are set by tokens (named design values, such as colors or sizes, set by the design system).
 
-**You cannot set placement.** There is no top, left, right, or bottom option, and no option for aligning the beak. Both are documented outside the token inventory, but the kit defines neither — see Uncovered. Do not pass a position prop, and do not position the beak by hand.
+**You cannot set placement.** There is no top, left, right, or bottom option, and no option for aligning the beak. Both are shown only on the design-system website, but the UI kit defines neither — see Uncovered. Do not pass a position prop, and do not position the beak by hand.
 
 **There is no size axis.** `min-width`, `max-width`, and `min-height` are fixed. If the content does not fit inside them, it is not tooltip content.
 
@@ -120,8 +120,8 @@ The beak is part of the component. Do not draw your own, and do not reposition t
 
 ## Uncovered — ask, do not invent
 
-- **Placement.** A position axis of top, left, right, and bottom, a beak-alignment axis of start, middle, and end, and a `position` prop are all documented outside the token inventory. The kit defines no placement axis at all — only `beak-size` and `beak-inset` as fixed properties. Do not rely on this without asking.
-- **Custom content.** Content types of "text" and "custom" are documented outside the token inventory. The kit has only `text`. Do not rely on this without asking.
+- **Placement.** A position axis of top, left, right, and bottom, a beak-alignment axis of start, middle, and end, and a `position` prop are all shown only on the design-system website. The UI kit defines no placement axis at all — only `beak-size` and `beak-inset` as fixed properties. Do not rely on this without asking.
+- **Custom content.** Content types of "text" and "custom" are shown only on the design-system website. The UI kit has only `text`. Do not rely on this without asking.
 - **The delay before showing, the delay before hiding, and any time before it hides on its own.** No token or rule defines them.
 - **Touch behavior.** Hover does not exist on touch screens, and no other pattern is given for reaching a tooltip's content there.
 - **Whether a tooltip may attach to an element the user cannot interact with** — a table cell with cut-off text, a chart label — given that a target that cannot take focus can never show the tooltip from the keyboard.

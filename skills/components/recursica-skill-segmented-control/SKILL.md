@@ -14,7 +14,7 @@ A segmented control is a horizontal radio group: exactly one of a few options, a
 ## Use it when
 
 - **The layout calls for a horizontal single-select.** This is how that is done here — radio buttons are never turned sideways into a row.
-- **A toggle is needed outside a form.** A switch belongs only in a form, so any two-state control in application chrome (the frame around the content), a filter bar, or a toolbar is a segmented control. In chrome, it shows **icons rather than text labels** — a light/dark theme control is the standard example. See `recursica-skill-screen-scaffolding` for where chrome sits.
+- **A toggle is needed outside a form.** A switch belongs only in a form, so any two-state control in application chrome (the frame around the content), a filter bar, or a toolbar is a segmented control. In chrome, it shows icons rather than text labels — a light/dark theme control is the standard example. See `recursica-skill-screen-scaffolding` for where chrome sits.
 - **The set is small: 2 to 5 options**, with short labels.
 - **The choice switches a view or a mode** — list or grid, daily or weekly — where the options are closely tied to what is on screen.
 - **Filtering in place** that would be too much for a dropdown or a modal.
@@ -34,7 +34,7 @@ A segmented control is a horizontal radio group: exactly one of a few options, a
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.segmented-control` and `segmented-control-item`. **Do not pass a variant that is not listed here.**
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.segmented-control` and `segmented-control-item`. **Do not pass a variant that is not listed here.**
 
 | Axis               | Options                  | On                       |
 | ------------------ | ------------------------ | ------------------------ |
@@ -44,17 +44,17 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.segmented-control` and
 
 **`fill-width: true` stretches the control to fill its container**, with the segments sharing the width equally. The default is `false`.
 
-**A `vertical` orientation exists in the kit, but it is not the house pattern.** Use `horizontal` — see the rule below.
+**A `vertical` orientation exists in the UI kit, but it is not the house pattern.** Use `horizontal` — see the rule below.
 
-**An item may have a leading icon** — documented outside the token inventory as part of the item.
+**An item may have a leading icon** — shown only on the design-system website as part of the item.
 
-**There is no size axis, no style axis, and no disabled state** on either the control or the item.
+**There is no size axis (a variant property, as Figma calls it — one way a component varies, such as its size), no style axis, and no disabled state** on either the control or the item.
 
 ## Rules for using it
 
 **This control's limit is 2–5, and it overrides the general one.** The house limit on options is 7 ± 2, but a segmented control is horizontal and compact, so the tighter limit wins. Owned by `recursica-skill-selection-controls`.
 
-**Use `horizontal`. The vertical orientation is not the house pattern.** A segmented control is the house answer for a _horizontal_ single-select, and nothing else. `recursica-skill-selection-controls` names the **radio group** as the vertical single-select, stacked one option per row. The `vertical` orientation exists in the token inventory, but a vertical single-select is a radio group — so do not reach for it.
+**Use `horizontal`. The vertical orientation is not the house pattern.** A segmented control is the house answer for a _horizontal_ single-select, and nothing else. `recursica-skill-selection-controls` names the **radio group** as the vertical single-select, stacked one option per row. The `vertical` orientation exists in the UI kit, but a vertical single-select is a radio group — so do not reach for it.
 
 **Labels are one or two words.** If a label needs more, the control is wrong, not the label.
 

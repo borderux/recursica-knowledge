@@ -35,7 +35,7 @@ A tree shows data arranged as parents and children, and lets the user open only 
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.tree`.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.tree`.
 
 | Axis               | Options                  |
 | ------------------ | ------------------------ |
@@ -45,11 +45,11 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.tree`.
 
 **`button-node-gap` tells you the expand control is separate from the node itself.** The control that opens and closes the node and the node's label are two things. That matters for both selection and keyboard behavior: selecting a node and expanding it are different actions.
 
-**There is no expanded or collapsed state in the kit** — only selection. So how an open node looks different from a closed one is not settled here. See the uncovered list, and do not invent a rotation or a second icon token.
+**There is no expanded or collapsed state in the UI kit** — only selection. So how an open node looks different from a closed one is not settled here. See the uncovered list, and do not invent a rotation or a second icon token.
 
-**There is no disabled state, no hover state, and no size axis.**
+**There is no disabled state, no hover state, and no size axis (a variant property, as Figma calls it — one way a component varies, such as its size).**
 
-**There are no checkboxes in the kit's tree.** A tree with checkboxes for choosing several items is not a setup this component provides.
+**There are no checkboxes in the UI kit's tree.** A tree with checkboxes for choosing several items is not a setup this component provides.
 
 ## Rules for using it
 
@@ -61,7 +61,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.tree`.
 
 **A node label must be clear enough to choose from while its children are hidden.** If the user must expand it to find out what is inside, the label has failed.
 
-**The line between a tree and an accordion is settled, and it is this: real hierarchy is a tree, and disclosure at one level is an accordion.** `recursica-skill-navigation` states that accordions are never nested, which is what sends structures with several levels here. So **never nest an accordion to fake a tree**, and never nest a tree inside an accordion panel. If the sections turn out to be peers at one level, the component is `recursica-skill-accordion` instead. There is no third case, and nothing to decide here.
+**The line between a tree and an accordion is settled, and it is this: real hierarchy is a tree, and disclosure at one level is an accordion.** `recursica-skill-navigation` states that accordions are never nested, which is what sends structures with several levels here. So never nest an accordion to fake a tree, and never nest a tree inside an accordion panel. If the sections turn out to be peers at one level, the component is `recursica-skill-accordion` instead. There is no third case, and nothing to decide here.
 
 **Do not put a form, a table, or a card inside a tree node.** A node is a label, not a container.
 
@@ -119,14 +119,14 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Uncovered — ask, do not invent
 
-- **How an expanded node looks different from a collapsed one.** The kit defines no state for it, and no icon token for showing it. This is the biggest gap in the component.
-- **Whether a tree lets the user choose several items**, with or without checkboxes. Neither exists in the kit, and the design rules do not cover choosing several items in a hierarchy.
+- **How an expanded node looks different from a collapsed one.** The UI kit defines no state for it, and no icon token for showing it. This is the biggest gap in the component.
+- **Whether a tree lets the user choose several items**, with or without checkboxes. Neither exists in the UI kit, and the design rules do not cover choosing several items in a hierarchy.
 - **A maximum depth.** No rule states one, and depth with no limit is a real usability problem.
 - **Whether a parent node can be selected**, or only a node with no children.
 - **Loading children only when the node is opened**, and what the node shows while they load. No loading state exists.
 - **Dragging to reorder or move a node to a new parent**, which would require a way to do it without dragging, under `recursica-skill-system-conventions`.
 - **The empty state**, and what a node with no children shows once expanded.
-- **Nothing about this component is documented outside the token inventory.** Unlike most component skills, the token inventory is its only source, so treat every gap above as truly unanswered, not just unrecorded.
+- **Nothing about this component is shown only on the design-system website.** Unlike most component skills, the UI kit is its only source, so treat every gap above as truly unanswered, not just unrecorded.
 
 ## Pre-flight checklist
 

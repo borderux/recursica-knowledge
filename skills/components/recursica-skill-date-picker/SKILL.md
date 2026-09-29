@@ -13,8 +13,8 @@ A date picker records a single calendar date, either by typing it or by picking 
 
 > **Built in the Mantine adapter only.** The MUI adapter's `DatePicker.module.css` is a
 > declared placeholder file with no CSS in it. It applies none of the 34 `date-picker` variables
-> the kit exports, while the Mantine adapter applies 31. On MUI, this component shows up unstyled,
-> with no error. Everything below is correct about the kit — but check which adapter you are on
+> the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) exports, while the Mantine adapter applies 31. On MUI, this component shows up unstyled,
+> with no error. Everything below is correct about the UI kit — but check which adapter you are on
 > before relying on how it looks.
 
 ## Use it when
@@ -44,7 +44,7 @@ Each of these has a different component. Switch to it, instead of adapting a dat
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.date-picker`. **Do not pass a variant or state that is not listed here** — other design systems have sizes, range variants, warning states, and inline calendars that this component does not.
 
-**The third column is the React prop that sets each axis.** The axis name comes from the token inventory. It is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis      | Options                   | React prop   |
 | --------- | ------------------------- | ------------ |
@@ -146,8 +146,8 @@ Never style an unfocused date picker so it reads as disabled. An editable field 
 ## Uncovered — ask, do not invent
 
 - **Date ranges.** No range axis exists. Whether a range is two date pickers or one control, and how the two ends are checked against each other, is not stated.
-- **A `read-only` state on this component is documented outside the token inventory, with no token behind it.** The kit defines none, and treats read-only as a separate component. Do not settle this yourself, and do not rely on it without asking.
-- **What the popover contains.** A month-and-year dropdown, navigation arrows, and Cancel/Confirm actions are documented outside the token inventory; the kit defines no popover tokens at all. Whether a selection is saved on click, or needs a Confirm, is not stated. Do not rely on any of it without asking.
+- **A `read-only` state on this component is shown only on the design-system website, with no token behind it.** The UI kit defines none, and treats read-only as a separate component. Do not settle this yourself, and do not rely on it without asking.
+- **What the popover contains.** A month-and-year dropdown, navigation arrows, and Cancel/Confirm actions are shown only on the design-system website; the UI kit defines no popover tokens at all. Whether a selection is saved on click, or needs a Confirm, is not stated. Do not rely on any of it without asking.
 - **Whether the calendar opens on focus**, or only when its trigger is activated.
 - **The earliest and latest dates that can be picked, and dates that are unavailable inside the calendar.** No state covers an unavailable date.
 - **Conventions for weeks, quarters, and fiscal periods** — see the same entry in `recursica-skill-dates-and-currency`.

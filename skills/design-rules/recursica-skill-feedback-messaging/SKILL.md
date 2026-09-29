@@ -43,7 +43,7 @@ A toast is a short message that appears briefly and then disappears. A modal is 
 
 **Applying it to a new case:** put the message in a sentence and check the tense. If it uses "will", "is about to", or "is still", it is a banner. If it uses "has", "was", or "did not", it is a toast.
 
-**The banner component is planned, but it is not in the token inventory yet.** The channel rule above is settled; the component to build it with is still coming. Until it ships, **do not improvise one** — no bordered `div` put to work as a banner, and no toast standing in for one. Raise it, and if the message cannot wait for the component, ask which surface to use in the meantime. See `recursica-skill-design-router`.
+**The banner component is planned, but it is not in the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) yet.** The channel rule above is settled; the component to build it with is still coming. Until it ships, **do not improvise one** — no bordered `div` put to work as a banner, and no toast standing in for one. Raise it, and if the message cannot wait for the component, ask which surface to use in the meantime. See `recursica-skill-design-router`.
 
 ## Do not use inline messaging
 
@@ -66,7 +66,7 @@ This applies to brief status and success messages placed in the flow of the page
 - **Saving happens bit by bit** as the user works, and interrupting the form would cost more than the reassurance is worth.
 - **The system failed.** A save that did not go through is reported here.
 
-**The duration belongs to the library.** Whatever Mantine, Material, or the underlying library sets is the duration. **Do not change it**, and do not build a separate timing scheme for each message.
+**The duration belongs to the library.** Whatever Mantine, Material, or the underlying library sets is the duration. Do not change it, and do not build a separate timing scheme for each message.
 
 **A dismiss control is always available.** The toast component has one, and the user can always remove the notification from the screen. Never ship a toast the user cannot dismiss.
 

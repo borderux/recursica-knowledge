@@ -15,7 +15,7 @@ These rules assume **complex enterprise web applications**, where people are doi
 
 ## The three governing principles
 
-1. **There is no attention budget to ration out.** These screens properly carry dozens or hundreds of pieces of information. Prioritizing is about **order**, not about how much — and any rule that starts by limiting the count has misunderstood the product.
+1. **There is no attention budget to ration out.** These screens properly carry dozens or hundreds of pieces of information. Prioritizing is about order, not about how much — and any rule that starts by limiting the count has misunderstood the product.
 2. **The user's workflow outranks everything that can be changed.** Stakeholders, business units, and taste all lose to it. Legal, compliance, and hard technical limits do not.
 3. **Simplifying is the last step, never the first.** Understand the workflow, connect the pieces, and only then remove what is not needed.
 
@@ -90,7 +90,7 @@ For every piece of information, ask: **is the user's workflow harmed if I remove
 
 - **Yes** → keep it.
 - **No** → remove it.
-- **Possibly, or maybe** → do not remove it; **reduce it.** Shorten it, lower its priority, or move it down the triangle.
+- **Possibly, or maybe** → do not remove it; reduce it. Shorten it, lower its priority, or move it down the triangle.
 
 **One stated exception: a decorative icon.** An icon that changes nothing about how the interface is used may still be kept as a visual anchor — beside a heading, on pages whose layouts are otherwise almost the same. Owned by `recursica-skill-icon-semantics`. Nothing else survives a "no."
 
@@ -111,7 +111,7 @@ Color is not available as a way to show hierarchy — meaning never depends on i
 - **Images**, where the content supports them.
 - **Position**, following the inverted triangle above.
 
-**Scan patterns inform this, but only up to a point.** The F-pattern — the way people tend to scan text in the shape of an F — applies to substantial blocks of text. It does **not** reliably apply to tables or to visual surfaces such as a dashboard. So do not lay out a dense data screen as though someone were reading prose.
+**Scan patterns inform this, but only up to a point.** The F-pattern — the way people tend to scan text in the shape of an F — applies to substantial blocks of text. It does not reliably apply to tables or to visual surfaces such as a dashboard. So do not lay out a dense data screen as though someone were reading prose.
 
 **No playful or decorative content.** Cat pictures and the like will never appear in a business application here.
 
@@ -119,7 +119,7 @@ Color is not available as a way to show hierarchy — meaning never depends on i
 
 **Rank by how often the reader needs something, not by how much it matters when they do.** An occasional task can be important and still not deserve a permanent region. Importance is an argument for making it easy to find — which is what a well-placed trigger does.
 
-**A form that is rarely used MUST NOT be kept permanently on the screen.** Creating a record, importing, configuring: each is occasional, each is large, and each takes up space all the time for something that almost every visit does not need. **The trigger stays visible; the form opens when asked for**, in a modal or a panel — see `recursica-skill-panels-modals`.
+**A form that is rarely used MUST NOT be kept permanently on the screen.** Creating a record, importing, configuring: each is occasional, each is large, and each takes up space all the time for something that almost every visit does not need. The trigger stays visible; the form opens when asked for, in a modal or a panel — see `recursica-skill-panels-modals`.
 
 **The giveaway is a screen where the frequent thing has to share space with the rare one.** A table the reader came for, with a create form permanently beneath it, has given the rare task the same standing as the common one.
 

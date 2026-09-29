@@ -24,20 +24,20 @@ These rules assume **complex enterprise web applications, designed for desktop f
 Work down this list; the first match wins.
 
 1. **One value, whose opposite is binary, known, and unique → switch.** See the binary-inverse test below.
-2. **Options that rule each other out, where one must be chosen → radio group**, up to the limit on the number of options. Where the layout calls for a horizontal arrangement, use a **segmented control** (a row of joined buttons, one of which is selected) instead.
+2. **Options that rule each other out, where one must be chosen → radio group**, up to the limit on the number of options. Where the layout calls for a horizontal arrangement, use a segmented control (a row of joined buttons, one of which is selected) instead.
 3. **Options that rule each other out, above the limit → dropdown** (single select).
-4. **Zero to many can be selected → checkbox group**, up to the limit on the number of options. Where the layout calls for a horizontal arrangement, use **selectable chips** instead.
+4. **Zero to many can be selected → checkbox group**, up to the limit on the number of options. Where the layout calls for a horizontal arrangement, use selectable chips instead.
 5. **Zero to many, above the limit, or the form is already very long → multi-select dropdown** (a checkbox group inside a dropdown).
 
 ## Switch vs. checkbox
 
-**A switch only ever appears inside a form.** That is the first test, and it comes before the tests below. Anywhere else — application chrome (the frame around the content), a filter bar, a toolbar, a page header — **a toggle is a segmented control**, not a switch. See `recursica-skill-segmented-control`.
+**A switch only ever appears inside a form.** That is the first test, and it comes before the tests below. Anywhere else — application chrome (the frame around the content), a filter bar, a toolbar, a page header — a toggle is a segmented control, not a switch. See `recursica-skill-segmented-control`.
 
 **A switch has a deliberately narrow use.** Inside a form, reach for a checkbox unless the switch test passes.
 
 **The binary-inverse test — MUST pass before you use a switch.** The opposite of the value must be binary, known, and unique: true/false, yes/no, on/off. Pairs based on qualities fail. "Black" is not a valid switch value, because _not black_ is not guaranteed to be white — it could be gray, or pink, or anything. If the opposite of the value is not the single, obvious other state, it is not a switch.
 
-**The label test — what separates a switch from a radio group.** A radio group is _one label with several values_: the user picks which value goes with the label. A switch is _one label whose value is implied_ — the label alone says what is being controlled, and the state is simply true or false. Use a switch only when both the value **and** the thing the label controls are binary.
+**The label test — what separates a switch from a radio group.** A radio group is _one label with several values_: the user picks which value goes with the label. A switch is _one label whose value is implied_ — the label alone says what is being controlled, and the state is simply true or false. Use a switch only when both the value and the thing the label controls are binary.
 
 **A checkbox turns a true/false flag on or off for a specific value**, and that value can be anything. That is why checkboxes work in groups and switches do not.
 
@@ -56,9 +56,9 @@ Work down this list; the first match wins.
 
 **Checkbox groups: pre-select freely.** Zero, some, or all checked in advance are all acceptable; there is no house rule either way.
 
-**Radio groups: be very careful about selecting a value in advance.** Most users do not know how to deselect a radio button once one is selected, so a default quietly becomes the answer. **A pre-selected radio button is the most costly default in the system.**
+**Radio groups: be very careful about selecting a value in advance.** Most users do not know how to deselect a radio button once one is selected, so a default quietly becomes the answer. A pre-selected radio button is the most costly default in the system.
 
-**The threshold is about 90 percent** — pre-select only where about that share of users would choose that option anyway. **And never pre-select an option that has major consequences later in the workflow, however likely it is.** Both tests are owned by `recursica-skill-defaults`.
+**The threshold is about 90 percent** — pre-select only where about that share of users would choose that option anyway. And never pre-select an option that has major consequences later in the workflow, however likely it is. Both tests are owned by `recursica-skill-defaults`.
 
 ## Option counts and dropdowns
 
@@ -69,7 +69,7 @@ Work down this list; the first match wins.
 
 **Above that limit, switch to a dropdown.** Dropdowns handle large sets of options well, and are usually single select. A multi-select dropdown — a checkbox group inside a dropdown — is available when many values can be selected.
 
-**The dropdown affordance test.** A dropdown hides its options, so the user has no affordance (a visible cue that tells the user they can act on something) for what is inside. Before choosing one, ask: **does the user know what is in there before they click it?**
+**The dropdown affordance test.** A dropdown hides its options, so the user has no affordance (a visible cue that tells the user they can act on something) for what is inside. Before choosing one, ask: does the user know what is in there before they click it?
 
 - **Good:** US states. A fixed list, in alphabetical order, and everyone has a rough idea of how many there are — predictable and familiar.
 - **Bad:** 50 unrelated values with nothing in common. Overwhelming, and mentally expensive to pick from.
@@ -88,7 +88,7 @@ Work down this list; the first match wins.
 
 **The header checkbox is not optional.** Every table with checkboxes in its rows has one. Without it, there is no way to select or release the whole set, and the reader is left clicking down a list to undo a selection they made by accident.
 
-**A row checkbox means one thing: include this row in what the bulk action does.** It is not a way to focus on a record, open it, or show actions for it. **NEVER let selecting a single row trigger an action on that one record.** A table that offers `Correct this name` when one row is selected and `Combine` when two are has made the checkbox mean two unrelated things, and the reader learns neither. Editing one record is started from that record; see `recursica-skill-tables`.
+**A row checkbox means one thing: include this row in what the bulk action does.** It is not a way to focus on a record, open it, or show actions for it. NEVER let selecting a single row trigger an action on that one record. A table that offers `Correct this name` when one row is selected and `Combine` when two are has made the checkbox mean two unrelated things, and the reader learns neither. Editing one record is started from that record; see `recursica-skill-tables`.
 
 **No separate clear or deselect-all control.** The header checkbox already is that control — click it when it is checked or indeterminate, and the set resolves. A second control doing the same job somewhere else is one more thing to read, and a second answer to "how do I start over?"
 
@@ -126,7 +126,7 @@ Both keep the edge of each value visible, which is exactly what a sideways radio
 
 **Avoid saving to the server immediately in any form with more than one field.**
 
-**Switches follow the same consistency rule.** A switch may save immediately or save with the form — immediately feels slightly more natural for a switch — but whichever it is, **use switches the same way throughout the system.**
+**Switches follow the same consistency rule.** A switch may save immediately or save with the form — immediately feels slightly more natural for a switch — but whichever it is, use switches the same way throughout the system.
 
 ## Uncommitted changes
 

@@ -47,7 +47,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 ### Load every typeface the brand names, and set the base family from a token
 
-**The brand names more than one typeface** — a primary, a secondary, a tertiary — **and the theme uses all of them.** Different components use different ones.
+**The brand names more than one typeface** — a primary, a secondary, a tertiary — and the theme uses all of them. Different components use different ones.
 
 **MUST load all of them.** Loading only the primary is not "one web font missing". The browser quietly swaps in a default for the others, so a component shows up in a typeface the theme never asked for, and nobody sees an error. The result is a screen that looks like two design systems — which is exactly how it gets reported: "the fonts are not the ones in the theme," rather than as a missing file.
 
@@ -187,7 +187,7 @@ W_max = 44 × 12.48                 = 555px
 
 **Follow the AP style guide** (the Associated Press rules for writing style). Checking typography and copy conventions both follow AP standards.
 
-**Sentence case versus title case is set by the token, and must not be changed.** Sentence case capitalizes only the first word; title case capitalizes every major word. Which one a heading uses is decided by the brand and built into the type style it carries, so it is settled before an agent ever sees it. **Do not change the capitalization of a heading or a label to suit a layout or a preference.** If a type style does not seem to include its capitalization, that is a gap to raise — not a decision to make. What things are _called_ is governed by `recursica-skill-naming-terminology`.
+**Sentence case versus title case is set by the token, and must not be changed.** Sentence case capitalizes only the first word; title case capitalizes every major word. Which one a heading uses is decided by the brand and built into the type style it carries, so it is settled before an agent ever sees it. Do not change the capitalization of a heading or a label to suit a layout or a preference. If a type style does not seem to include its capitalization, that is a gap to raise — not a decision to make. What things are _called_ is governed by `recursica-skill-naming-terminology`.
 
 ## Reading order
 

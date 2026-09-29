@@ -39,14 +39,14 @@ This is the single date format, and its purpose is to remove confusion: it reads
 
 A serialisation is a machine-readable text form of a value, meant for computers to store and exchange rather than for people to read.
 
-**MUST build the displayed value with a date-formatting API, in the reader's locale and time zone.** In a browser, that is `Intl.DateTimeFormat` with **no locale argument**. Passing a locale names one the reader did not choose — which means the tenant's locale wins, and that is forbidden above.
+**MUST build the displayed value with a date-formatting API, in the reader's locale and time zone.** In a browser, that is `Intl.DateTimeFormat` with no locale argument. Passing a locale names one the reader did not choose — which means the tenant's locale wins, and that is forbidden above.
 
 **NEVER make a displayed date by cutting characters out of a machine serialisation.** `toISOString().slice(0, 10)` and its variations are the pattern to look for. That one line breaks two separate rules at once:
 
 - **It is the numeric form with hyphens** — `2026-08-10` — which is the format this section forbids.
-- **It is in UTC, not the reader's time zone.** (UTC is the reference time zone that all other time zones are measured from.) So it is not just formatted wrong — it is **the wrong day**. An entry made at 6pm on the 10th, west of Greenwich, displays as the 11th. Nobody reviewing the screen sees a bug, because a believable date is showing.
+- **It is in UTC, not the reader's time zone.** (UTC is the reference time zone that all other time zones are measured from.) So it is not just formatted wrong — it is the wrong day. An entry made at 6pm on the 10th, west of Greenwich, displays as the 11th. Nobody reviewing the screen sees a bug, because a believable date is showing.
 
-**The second problem is the dangerous one**, and it survives a fix to the first. Reformatting the same UTC string into `Aug 10, 2026` still shows the wrong day. **Fix where the value comes from and how it is formatted, together.**
+**The second problem is the dangerous one**, and it survives a fix to the first. Reformatting the same UTC string into `Aug 10, 2026` still shows the wrong day. Fix where the value comes from and how it is formatted, together.
 
 **Format once, in one place.** Defining a formatter separately wherever it is used is how a screen ends up with three date formats. Building one for every row of a table is also measurably slow. Create the formatters once and export them.
 
@@ -98,7 +98,7 @@ The reason is principle 1. Telling someone an event happened at 2:23 p.m. when i
 
 **Label the currency in the cell when the reader is viewing a currency other than the one used in the transaction.** A transaction made in dollars and shown in Mexican pesos is not the original data, and the cell must say so.
 
-**Negative values may use accounting parentheses.** Where they do, **pad the values so the decimal points stay lined up** — a closing parenthesis must not push the number it wraps out of line.
+**Negative values may use accounting parentheses.** Where they do, pad the values so the decimal points stay lined up — a closing parenthesis must not push the number it wraps out of line.
 
 **Zero is `0` or `0.00`, depending on the locale. Zero is not null.** For values that are truly missing, see the null-cell rule in `recursica-skill-tables`.
 
@@ -128,7 +128,7 @@ The reason is principle 1. Telling someone an event happened at 2:23 p.m. when i
 | Across months, same year | `Jan 1 – Feb 2, 2026`       |
 | Across years             | `Jan 1, 2026 – Feb 1, 2027` |
 
-**Currency and number ranges put the symbol on the first value only** — `$5–6` — and **keep the same precision at both ends**: `$5.25–6.00`.
+**Currency and number ranges put the symbol on the first value only** — `$5–6` — and keep the same precision at both ends: `$5.25–6.00`.
 
 **NEVER mix levels of rounding within a range.** `1.2K–1 million` hides how big the gap is. Where the two ends are wildly different in size, show the full values so the difference is easy to see.
 
@@ -160,7 +160,7 @@ An input mask is a pattern in the field that guides what the user types.
 
 **The numeric form with slashes or hyphens exists only inside an input that has focus.** That is what makes the ban on read-only numeric dates absolute: the ambiguous form is an aid for typing, never a display format. When the field loses focus, it goes back to the readable form.
 
-**Alignment must not vary between read-only and editable values on the same screen.** A common mistake is left-aligning read-only values so they sit near their labels, while editable values are right-aligned. On one screen, that looks like two different systems. Right-aligned is the goal for numbers, and **being uniform matters more than which alignment wins.**
+**Alignment must not vary between read-only and editable values on the same screen.** A common mistake is left-aligning read-only values so they sit near their labels, while editable values are right-aligned. On one screen, that looks like two different systems. Right-aligned is the goal for numbers, and being uniform matters more than which alignment wins.
 
 ## Uncovered — ask, do not invent
 
@@ -177,7 +177,7 @@ Do not stretch a rule above to fit one of these. A wrong convention in a fiscal 
 - **Type styles, number fonts, and tabular figures.** Owned by the design system.
 - **Table structure** — columns, widths, sorting. Covered by `recursica-skill-tables`, which this skill provides cell formatting for.
 - **Null and missing values.** Covered by the null-cell rule in `recursica-skill-tables`.
-- **Abbreviating axis labels in charts.** Covered by `recursica-skill-data-visualization`.
+- **Abbreviating axis (a variant property, as Figma calls it — one way a component varies, such as its size) labels in charts.** Covered by `recursica-skill-data-visualization`.
 
 ## Pre-flight checklist
 

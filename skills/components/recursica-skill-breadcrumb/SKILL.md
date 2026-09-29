@@ -34,7 +34,7 @@ Wayfinding means knowing where you are and how to get where you want to go.
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.breadcrumb`. **Do not pass a variant, state, or content option — there are none.**
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.breadcrumb`. **Do not pass a variant, state, or content option — there are none.**
 
 | Axis       | Options                                        |
 | ---------- | ---------------------------------------------- |
@@ -42,11 +42,11 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.breadcrumb`. **Do not 
 
 **Two properties, and that is the whole component: `padding` and `item-gap`.**
 
-**There is no separator token.** What sits between items — a slash, a chevron, a dot — is not defined in the kit. Do not invent one; see the uncovered list.
+**There is no separator token.** What sits between items — a slash, a chevron, a dot — is not defined in the UI kit. Do not invent one; see the uncovered list.
 
 **There is no collapse, truncation, or overflow behavior.** How a long trail behaves is not defined. Whatever the answer turns out to be, it is not sideways scrolling — `recursica-skill-navigation` forbids that outright.
 
-**There is no current-page state, and no content axis.** An interactive item and a read-only item for the current page, plus a content axis of Label only, Icon + Label, Icon only, and Mixed, are documented outside the token inventory. The kit defines none of it. See the uncovered list.
+**There is no current-page state, and no content axis (a variant property, as Figma calls it — one way a component varies, such as its size).** An interactive item and a read-only item for the current page, plus a content axis of Label only, Icon + Label, Icon only, and Mixed, are shown only on the design-system website. The UI kit defines none of it. See the uncovered list.
 
 ## Rules for using it
 
@@ -66,7 +66,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.breadcrumb`. **Do not 
 
 **Never point a crumb at a modal or a panel.** A trigger opens those; the user does not navigate to them, and they get no history entry — `recursica-skill-navigation`.
 
-**Do not build a crumb that is only an icon.** The kit defines no content axis, and an icon on its own cannot name a destination. Where an icon really is clear — a home icon at the root — it still needs both a tooltip and an accessible name (the name a screen reader reads out for a control), as `recursica-skill-buttons-links` requires. Until the content axis is settled, use text.
+**Do not build a crumb that is only an icon.** The UI kit defines no content axis, and an icon on its own cannot name a destination. Where an icon really is clear — a home icon at the root — it still needs both a tooltip and an accessible name (the name a screen reader reads out for a control), as `recursica-skill-buttons-links` requires. Until the content axis is settled, use text.
 
 **Never let the trail wrap into a scrolling strip to make it fit.** A trail too long for its space is a depth problem to raise, not a layout problem to cover up — see `recursica-skill-system-conventions`.
 
@@ -121,7 +121,7 @@ Do not implement, override, or tune any of these — the component owns them:
 
 - **The separator.** No token defines it. The character, whether it is an icon, and its spacing are all unset — `item-gap` is the only spacing property.
 - **Long trails.** No collapse, truncation, or overflow behavior exists. Whether a deep trail drops its middle levels, shortens its labels, or wraps has not been answered — and sideways scrolling is not an option.
-- **A content axis — Label only, Icon + Label, Icon only, Mixed — and separate styles for read-only and interactive items are documented outside the token inventory, with no token behind any of them.** Do not rely on this without asking.
+- **A content axis — Label only, Icon + Label, Icon only, Mixed — and separate styles for read-only and interactive items are shown only on the design-system website, with no token behind any of them.** Do not rely on this without asking.
 - **The depth at which a breadcrumb becomes required.** `recursica-skill-navigation` says "where depth warrants it", but gives no number. The maximum nesting depth is listed as uncovered there too.
 - **Whether the start of the trail is the application's home, or the section's landing page.**
 - **How the trail handles a level above it that has no landing page of its own** — a level that exists in the hierarchy but has no route to link to.

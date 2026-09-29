@@ -36,9 +36,9 @@ A dropdown is a form field that hides its options until it is opened, and return
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.dropdown`. **Do not pass a variant, size, or state that is not listed here.**
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.dropdown`. **Do not pass a variant, size, or state that is not listed here.**
 
-**The third column is the React prop that sets each axis.** The axis name comes from the token inventory. It is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis      | Options                   | React prop   |
 | --------- | ------------------------- | ------------ |
@@ -49,15 +49,15 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.dropdown`. **Do not pa
 
 **`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Leave it out, and you get the fallback in a container of any width — the rule turned upside down. `layouts` is the name of the token axis, not a prop: `layouts="side-by-side"` is quietly ignored by React and leaves the control stacked, with no error. Pass `formLayout="side-by-side"` explicitly, on every field.
 
-**Placeholder and valued are not variants.** Both are documented outside the token inventory as content. In the kit, they are the same `text` property with different content, which is why there is no placeholder axis. The field's `colors` cover both.
+**Placeholder and valued are not variants.** Both are shown only on the design-system website as content. In the UI kit, they are the same `text` property with different content, which is why there is no placeholder axis. The field's `colors` cover both.
 
-**Focused is not a state.** It is listed as one outside the token inventory, but the kit handles it through `globals.form.field.colors.border-selected`. Do not build it as a state.
+**Focused is not a state.** It is listed as one outside the UI kit, but the UI kit handles it through `globals.form.field.colors.border-selected`. Do not build it as a state.
 
 **There is no size axis.** `min-height` is a fixed property, and `globals.form.field.size.single-line-input-height` sets the height for every single-line field.
 
 **There is no multi-select axis**, no axis for grouping options into sections, and no searchable variant — see the uncovered list.
 
-**The kit defines the closed field only.** `icon-size` and `icon-text-gap` cover a leading icon and the expand indicator. The open menu, its options, and their rows are not part of this component's inventory.
+**The UI kit defines the closed field only.** `icon-size` and `icon-text-gap` cover a leading icon and the expand indicator. The open menu, its options, and their rows are not part of this component's inventory.
 
 **Read-only is a separate component** — `read-only-field`, which shows text instead of an input.
 
@@ -155,8 +155,8 @@ Never style an unfocused dropdown so that it reads as disabled. An editable fiel
 
 ## Uncovered — ask, do not invent
 
-- **The multi-select dropdown does not exist, and this is now confirmed in the shipped adapter as well as in the token inventory** — the dropdown maps to a single-value select, with no multi-select variant. `recursica-skill-selection-controls` requires one in two places. It is a gap in the component inventory, **not an invitation to build one out of other parts**: do not put a checkbox group inside a dropdown, and do not substitute a transfer list without asking. Where several values must be filtered, a build test used separate single-value filters that AND together (a row appears only if it matches all of them) successfully as the workaround. Ask.
-- **The open menu itself.** Option rows, their height, hover and active styling, group headers, dividers, icons or descriptions inside an option, and the maximum height of the menu before it scrolls are all outside the component's token inventory.
+- **The multi-select dropdown does not exist, and this is now confirmed in the shipped adapter as well as in the UI kit** — the dropdown maps to a single-value select, with no multi-select variant. `recursica-skill-selection-controls` requires one in two places. It is a gap in the component inventory, not an invitation to build one out of other parts: do not put a checkbox group inside a dropdown, and do not substitute a transfer list without asking. Where several values must be filtered, a build test used separate single-value filters that AND together (a row appears only if it matches all of them) successfully as the workaround. Ask.
+- **The open menu itself.** Option rows, their height, hover and active styling, group headers, dividers, icons or descriptions inside an option, and the maximum height of the menu before it scrolls are all outside the component's UI kit.
 - **The point at which a dropdown becomes an autocomplete.** This component's own guidance says to consider a typeahead when the list is long and the user knows the options well. `recursica-skill-selection-controls` records the threshold as not set. Do not pick a number.
 - **Whether a dropdown may be cleared** back to no value once a selection is made, and whether an explicit "None" option is allowed.
 - **Grouped or sectioned options**, and dependent dropdowns, where one field's selection filters another's set.

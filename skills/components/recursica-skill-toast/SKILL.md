@@ -13,7 +13,7 @@ A toast reports what just happened, without interrupting the work.
 
 ## Use it when
 
-- **Confirming that an action worked** — saved, deleted, sent. **This is the only component in the system with a success style**, which is why a success confirmation belongs here and not on a field.
+- **Confirming that an action worked** — saved, deleted, sent. This is the only component in the system with a success style, which is why a success confirmation belongs here and not on a field.
 - **Offering an undo for the whole page.** `recursica-skill-buttons-links` says so directly: a global undo notification is a toast.
 - **Reporting an error that has no field to attach to** — a conflict on the server, a broken business rule, a background job that failed.
 - **A low-priority update about a task the user started**, or one being done for them, that does not need their attention now.
@@ -35,13 +35,13 @@ An "affordance" is a visible cue that tells the user they can act on something �
 
 **A toast reports something that just happened.** That is the house test. `recursica-skill-feedback-messaging` splits the channels (the ways a message reaches the user — a toast, a banner, a modal, and so on) by tense: an event that is finished is a toast, and a condition that has not happened yet is a banner. Check the tense of the sentence before you choose.
 
-**A toast is the wrong place for anything that must not be missed.** It appears away from where the user is looking, and leaves on its own, so a critical alert that needs action right away is not a toast. **And there is no component in this system for one yet** — the banner the tense rule calls for is planned, but not in the token inventory. Do not force a toast into that job, do not build your own alert that stays on screen, and do not send the reader to a component that does not exist. Raise it — see the uncovered list.
+**A toast is the wrong place for anything that must not be missed.** It appears away from where the user is looking, and leaves on its own, so a critical alert that needs action right away is not a toast. And there is no component in this system for one yet — the banner the tense rule calls for is planned, but not in the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has). Do not force a toast into that job, do not build your own alert that stays on screen, and do not send the reader to a component that does not exist. Raise it — see the uncovered list.
 
 ## What exists
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.toast`. **Do not pass a style that is not listed here.**
 
-**The third column is the React prop that sets each axis.** The axis name comes from the token inventory. It is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis     | Options                       | React prop |
 | -------- | ----------------------------- | ---------- |
@@ -49,11 +49,11 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.toast`. **Do not pass 
 
 **There are exactly three styles, and there is no warning.** Do not build one, and do not use `error` as a warning — an error style says something failed.
 
-**`default` is also called "Information"** in material documented outside the token inventory. It is one thing with two names.
+**`default` is also called "Information"** in material shown only on the design-system website. It is one thing with two names.
 
-**The kit defines an `icon` and a `text`, and nothing else inside the toast.** There is no token for an action button and none for a close control, though both are documented outside the token inventory. There is no duration or timer token either. See the uncovered list before you build any of the three.
+**The UI kit defines an `icon` and a `text`, and nothing else inside the toast.** There is no token for an action button and none for a close control, though both are shown only on the design-system website. There is no duration or timer token either. See the uncovered list before you build any of the three.
 
-**There is no size axis and no position axis.** `min-width`, `max-width`, and `min-height` are fixed properties, and nothing in the kit says where a toast appears or how several of them stack.
+**There is no size axis and no position axis.** `min-width`, `max-width`, and `min-height` are fixed properties, and nothing in the UI kit says where a toast appears or how several of them stack.
 
 **The three styles differ only by color and icon.** So the style is at best a second way of showing the message, and never the message itself.
 
@@ -108,7 +108,7 @@ This component also follows the accessibility baseline in `recursica-skill-syste
 ### Keyboard and non-mouse navigation
 
 - **Never move focus to the toast when it appears.** It pulls the caret (the text cursor) out of a field in the middle of a word, and drops the user somewhere they did not ask to go.
-- **A toast with an action cannot close on its own while someone is trying to reach it.** This is the main conflict. Reaching an undo by keyboard means leaving the current field, tabbing to the toast, and pressing it — and a timer running during that trip makes the action impossible to reach in practice. **Since the duration belongs to the library and is not changed, keeping the toast on screen longer is not an option.** So the undo must also live somewhere on the page that stays, with the toast pointing to it. **Never ship a timed toast whose action is the only way to undo.**
+- **A toast with an action cannot close on its own while someone is trying to reach it.** This is the main conflict. Reaching an undo by keyboard means leaving the current field, tabbing to the toast, and pressing it — and a timer running during that trip makes the action impossible to reach in practice. Since the duration belongs to the library and is not changed, keeping the toast on screen longer is not an option. So the undo must also live somewhere on the page that stays, with the toast pointing to it. Never ship a timed toast whose action is the only way to undo.
 - **The toast must be reachable in the tab order while it is visible**, at a predictable point — not after the whole rest of the page.
 - **If the timer pauses on hover, it must also pause on focus.** A pause that only works for a mouse is not a pause.
 - **Closing must not work only with a pointer.** If the toast can be closed, it can be closed from the keyboard.
@@ -139,10 +139,10 @@ Do not implement, override, or tune any of these — the component owns them for
 ## Uncovered — ask, do not invent
 
 - **What the durations actually are.** The house position is settled — see the rule above — but no token records what any given library's default is, so you cannot check a duration from this repository.
-- **Whether a toast may contain an action button.** "With action" and "without action" are documented outside the token inventory, but the kit defines no token for an action, only `icon` and `text`. Do not rely on this without asking.
-- **Where toasts appear on screen.** No position axis exists. "Towards the bottom" is documented outside the token inventory. Do not rely on this without asking.
+- **Whether a toast may contain an action button.** "With action" and "without action" are shown only on the design-system website, but the UI kit defines no token for an action, only `icon` and `text`. Do not rely on this without asking.
+- **Where toasts appear on screen.** No position axis exists. "Towards the bottom" is shown only on the design-system website. Do not rely on this without asking.
 - **Stacking.** How many toasts may be visible at once, in what order, and what happens past that limit.
-- **Warnings, and critical alerts.** No warning style exists, and **no alert that stays on screen for serious problems exists in this system yet** — nothing to hold an alert the user must not miss. The banner component is planned and may cover part of this. Until it ships, do not build a substitute, and do not name a component as though it were available.
+- **Warnings, and critical alerts.** No warning style exists, and no alert that stays on screen for serious problems exists in this system yet — nothing to hold an alert the user must not miss. The banner component is planned and may cover part of this. Until it ships, do not build a substitute, and do not name a component as though it were available.
 - **Whether a toast is ever right for a background job that finishes long after the action that started it.**
 
 ## Pre-flight checklist

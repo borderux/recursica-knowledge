@@ -48,7 +48,7 @@ React prop
 Passage:
 
 ```text
-**The third column is the React prop that sets each axis.** The axis name comes from the token inventory. It is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 ```
 
 ## layouts-axis
@@ -62,7 +62,7 @@ Starts with:
 Passage:
 
 ```text
-**`layouts` is the label-placement axis{, set by the `formLayout` prop|}.** `side-by-side` — the label beside the {field|control} — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's (the visible area of the browser window). See `recursica-skill-forms`.
+**`layouts` is the label-placement axis{ (a variant property, as Figma calls it — one way a component varies, such as its size)|}{, set by the `formLayout` prop|}.** `side-by-side` — the label beside the {field|control} — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's (the visible area of the browser window). See `recursica-skill-forms`.
 ```
 
 ## layouts-axis-group

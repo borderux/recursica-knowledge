@@ -46,7 +46,7 @@ The viewport is the visible area of the browser window. A breakpoint is the scre
 
 **A form that adds to or edits the collection on the page belongs on a surface that opens and closes — never inline on the page beside it.** Creating a row in the table, or editing a record in the list: both go in a modal or a panel.
 
-**The reason is the moment of saving, not the size of the form.** The list has to change visibly when the work succeeds, and **closing the surface is what says it is done** — the reader looks up and the row is there. An inline form leaves them looking at a form and a list at the same time, with no sign of which state either one is in, and no answer to "did that save?" except re-reading the list to check.
+**The reason is the moment of saving, not the size of the form.** The list has to change visibly when the work succeeds, and closing the surface is what says it is done — the reader looks up and the row is there. An inline form leaves them looking at a form and a list at the same time, with no sign of which state either one is in, and no answer to "did that save?" except re-reading the list to check.
 
 **Which of the two to use follows the ordinary test above.** A create form usually needs nothing from the page, so if it were only about context, it would be a page. But it is small, it is used now and then, and the reader wants to get back to exactly where they were — which is what these surfaces are for. Where the form really needs to read the list while it is open — picking rows to combine, or comparing against what already exists — that two-way dependence makes it a panel.
 
@@ -56,7 +56,7 @@ The viewport is the visible area of the browser window. A breakpoint is the scre
 
 **A panel is not modal. It is semi-modal.** The user is working in something that has a mode, but the mode is not exclusive — the rest of the page stays readable and reachable.
 
-**NEVER draw a shader, scrim (a dimmed overlay), tint, or overlay behind an open panel.** There is no value in hiding the content. The whole reason a panel exists is that the user can see and work with what is behind it, so dimming it removes the panel's only reason to exist. **This is not negotiable — it is the house's statement of how Recursica can work at all.**
+**NEVER draw a shader, scrim (a dimmed overlay), tint, or overlay behind an open panel.** There is no value in hiding the content. The whole reason a panel exists is that the user can see and work with what is behind it, so dimming it removes the panel's only reason to exist. This is not negotiable — it is the house's statement of how Recursica can work at all.
 
 **A panel that has to shade the page is the wrong surface.** If the content behind really must be blocked, build a page or a real modal instead. Opening something small, working in it, and going straight back is not worth all that machinery.
 
@@ -86,7 +86,7 @@ Hard work can properly live in a panel: a task with a high mental load may _need
 
 **Each panel is set to open from either the left or the right.** Both are standard, and the side belongs to that panel.
 
-**A top or bottom edge is allowed but extremely unusual, and no design exists for one.** It could happen. It is not something to reach for, and because there is no designed treatment, **a horizontal panel must be approved before you build it** — see `recursica-skill-design-router`.
+**A top or bottom edge is allowed but extremely unusual, and no design exists for one.** It could happen. It is not something to reach for, and because there is no designed treatment, a horizontal panel must be approved before you build it — see `recursica-skill-design-router`.
 
 **NEVER open panels on both sides at the same time.** Only one side is in use at a time.
 
@@ -100,7 +100,7 @@ Hard work can properly live in a panel: a task with a high mental load may _need
 
 **A modal on top of another modal, each with its own scrim over the content, must never happen.** Two overlays dimming the page is the anti-pattern that most reliably shows the flow was not designed.
 
-**The one exception is replacing, not stacking.** A shared confirmation modal used across the application may appear after an action finishes inside another modal — but it appears **in place of** the modal that was there. The first modal goes away, and the new one appears. It is never on top. This is not ideal, and it exists because secondary modals get reused. It is not permission to chain modals together.
+**The one exception is replacing, not stacking.** A shared confirmation modal used across the application may appear after an action finishes inside another modal — but it appears in place of the modal that was there. The first modal goes away, and the new one appears. It is never on top. This is not ideal, and it exists because secondary modals get reused. It is not permission to chain modals together.
 
 **NEVER nest a panel inside a panel.** A panel is a single object, not a container for another one. This ban is absolute.
 
@@ -108,7 +108,7 @@ Hard work can properly live in a panel: a task with a high mental load may _need
 
 **Prefer a structure that does not need the second panel.** Stacking is allowed where drilling down really is the shape of the work. It is not something to reach for by default.
 
-**There is no hard limit on how many panels may stack — but more than two needs the user's approval.** Two is the practical limit you may build to on your own. A third or more is not forbidden, and it is not a judgment call either: **stop and ask before building it.** See `recursica-skill-design-router`.
+**There is no hard limit on how many panels may stack — but more than two needs the user's approval.** Two is the practical limit you may build to on your own. A third or more is not forbidden, and it is not a judgment call either: stop and ask before building it. See `recursica-skill-design-router`.
 
 **A panel may open a modal.** A panel is not a mode, so opening a modal over one is not stacking modes. It is exactly how the unsaved-changes confirmation appears when a panel holding unsaved data is closed.
 
@@ -122,7 +122,7 @@ Hard work can properly live in a panel: a task with a high mental load may _need
 
 ## What a panel's content looks like
 
-**NEVER put a table inside a panel.** A panel is narrow and a table needs width. The result either scrolls sideways, which is absolutely forbidden, or cuts every column down until it is useless. Where a panel needs to show several records, or several attributes of one record, they become **groups of stacked fields**, not rows and columns.
+**NEVER put a table inside a panel.** A panel is narrow and a table needs width. The result either scrolls sideways, which is absolutely forbidden, or cuts every column down until it is useless. Where a panel needs to show several records, or several attributes of one record, they become groups of stacked fields, not rows and columns.
 
 **Repeating structures inside a panel are groups of stacked fields.** One group for each item, with each field on its own line under its label. That is the shape a narrow surface supports.
 
@@ -163,7 +163,7 @@ A panel gets its shape from sitting beside the page it depends on. Below the wid
 - **A small workflow, a form, or editing details in a modal → a page** below tablet size.
 - **A confirmation modal stays a modal** at every width. "Are you sure you want to delete this?" is not work.
 
-**MUST NOT reach for a surface native to one platform instead.** The iOS sheet (a panel that slides up from the bottom on iPhones) is the particular temptation, and it is forbidden. It does not exist on Android, and to someone who does not use that platform, it looks confusing rather than familiar. **Keep the interaction patterns the desktop application already uses** — see `recursica-skill-responsive-behavior`.
+**MUST NOT reach for a surface native to one platform instead.** The iOS sheet (a panel that slides up from the bottom on iPhones) is the particular temptation, and it is forbidden. It does not exist on Android, and to someone who does not use that platform, it looks confusing rather than familiar. Keep the interaction patterns the desktop application already uses — see `recursica-skill-responsive-behavior`.
 
 ## Focus and navigation priority
 
@@ -171,7 +171,7 @@ A panel gets its shape from sitting beside the page it depends on. Below the wid
 
 **A modal traps focus.** It blocks the Tab key from moving through the page — while the modal is open, keyboard focus always stays inside it.
 
-**A panel does not trap focus.** The user must be able to tab to other elements on the page, because a panel is not a modal state. **This settles the question directly: a panel is non-modal (it leaves the rest of the page usable), and building one that traps focus contradicts the reason it exists.**
+**A panel does not trap focus.** The user must be able to tab to other elements on the page, because a panel is not a modal state. This settles the question directly: a panel is non-modal (it leaves the rest of the page usable), and building one that traps focus contradicts the reason it exists.
 
 ## Not your decision
 

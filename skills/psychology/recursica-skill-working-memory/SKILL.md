@@ -15,7 +15,7 @@ Read this before you override a count limit. Cite it when someone asks where the
 
 ## The house rule
 
-**Aim for 7 ± 2 items, adjusted for the cognitive load** (the mental effort a task demands) **of the content.**
+**Aim for 7 ± 2 items, adjusted for the cognitive load** (the mental effort a task demands) of the content.
 
 - **Items that are similar, easy to tell apart, and familiar** → the high end of the range is fine.
 - **Items that are different from each other, hard to think about, or need expert knowledge** → use fewer, closer to 5.
@@ -36,15 +36,15 @@ No house limit has been set for table columns, toolbar actions, or steps in a fl
 
 **Miller's number is not a design law, and he did not present it as one.** He was describing how many items people can recall from memory, not how many options a person can choose from on a screen.
 
-**Cowan (2001)** looked at the evidence again, and put the true capacity of working memory closer to **four chunks**, plus or minus one, once repeating things to yourself and help from long-term memory are ruled out. The honest summary of the research is that the real capacity is _lower_ than seven, not higher.
+**Cowan (2001)** looked at the evidence again, and put the true capacity of working memory closer to four chunks, plus or minus one, once repeating things to yourself and help from long-term memory are ruled out. The honest summary of the research is that the real capacity is _lower_ than seven, not higher.
 
-**So why does the house rule say 7 ± 2?** Because it is **a limit on scanning and comparing**, not a claim about memory capacity. Past about nine items, a list can no longer be taken in at a glance, and starts to need a careful search — and that is the failure we are designing against. The number is a useful, widely understood convention that falls in the right place for scanning. It is not evidence that users can hold nine things in mind.
+**So why does the house rule say 7 ± 2?** Because it is a limit on scanning and comparing, not a claim about memory capacity. Past about nine items, a list can no longer be taken in at a glance, and starts to need a careful search — and that is the failure we are designing against. The number is a useful, widely understood convention that falls in the right place for scanning. It is not evidence that users can hold nine things in mind.
 
 **Chunking is the tool, not the limit.** Grouping items under headings, or by the object they belong to, lets a screen hold far more than nine items without going over the limit at any one level. Prefer reorganizing items into groups over cutting items.
 
 ## Recognition vs. recall — the boundary
 
-**The limit applies to sets where the user must compare options or hold them in mind.** It does **not** apply to a visible, well-ordered list where the user only has to recognize the answer.
+**The limit applies to sets where the user must compare options or hold them in mind.** It does not apply to a visible, well-ordered list where the user only has to recognize the answer.
 
 This is why a long list is not automatically a violation:
 

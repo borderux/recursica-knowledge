@@ -44,7 +44,7 @@ This applies equally to moving through primary navigation, secondary navigation,
 **There is no universal rule — but there is a test.** Decide using these two questions, in this order:
 
 1. **Does the layout need to work below desktop size?** An application used only on desktop can use either. A responsive target (tablet, mobile) limits the choice.
-2. **How many top-level items are there, and will that number grow?** With a known, fixed set of top-level items, this is a matter of preference — either pattern works, so pick one. **If the number of items is expected to grow over time, a horizontal top bar becomes a problem; prefer a vertical sidebar.**
+2. **How many top-level items are there, and will that number grow?** With a known, fixed set of top-level items, this is a matter of preference — either pattern works, so pick one. If the number of items is expected to grow over time, a horizontal top bar becomes a problem; prefer a vertical sidebar.
 
 Do not treat horizontal versus vertical as a matter of taste when growth is expected. That is the one case where the answer is decided for you.
 
@@ -104,15 +104,15 @@ Location is shown by three things, and you need more than the first one:
 
 **If the user moves back and forth between sections, keep the navigation visible at all times.** How often it is used is what decides this, not the size of the screen.
 
-**NEVER collapse a vertical navigation into a rail of icons only** (a narrow strip showing icons without labels). There is no real benefit to it. When space must be won back, hide the navigation behind a hamburger menu that opens **with its text labels** still in place. A fully hidden navigation that reads clearly when opened is better than one that is permanently visible but has to be decoded.
+**NEVER collapse a vertical navigation into a rail of icons only** (a narrow strip showing icons without labels). There is no real benefit to it. When space must be won back, hide the navigation behind a hamburger menu that opens with its text labels still in place. A fully hidden navigation that reads clearly when opened is better than one that is permanently visible but has to be decoded.
 
-**NEVER use icon-only primary navigation**, in any form. **A narrow viewport (the visible area of the browser window) is not an exception** — the ban holds at every width, and a rail of icons is not the way out for mobile or tablet. Beyond a handful of icons, nobody remembers what they mean, and without a hover state there is no affordance (a visible cue that tells the user they can act on something). **A rail of fifteen icons whose collapsed state shrinks down to bare dots you have to hover over is the real-world extreme — and it is a published design system doing it.** See `recursica-skill-responsive-behavior` and `recursica-skill-icon-semantics`.
+**NEVER use icon-only primary navigation**, in any form. A narrow viewport (the visible area of the browser window) is not an exception — the ban holds at every width, and a rail of icons is not the way out for mobile or tablet. Beyond a handful of icons, nobody remembers what they mean, and without a hover state there is no affordance (a visible cue that tells the user they can act on something). A rail of fifteen icons whose collapsed state shrinks down to bare dots you have to hover over is the real-world extreme — and it is a published design system doing it. See `recursica-skill-responsive-behavior` and `recursica-skill-icon-semantics`.
 
-**Below desktop size, global navigation collapses into a hamburger menu**, and what slides in shows **both the icon and the text**.
+**Below desktop size, global navigation collapses into a hamburger menu**, and what slides in shows both the icon and the text.
 
 **NEVER a bottom navigation bar.** It is not a house pattern at any width; below desktop, the hamburger menu is the answer.
 
-**A drawer is a panel.** The navigation surface that slides in is a panel holding navigation — no different in kind from a hamburger menu. **A sidebar is the permanent one**: the desktop alternative to a top navigation, down the left side. Do not treat the two as separate things. See `recursica-skill-panels-modals`.
+**A drawer is a panel.** The navigation surface that slides in is a panel holding navigation — no different in kind from a hamburger menu. A sidebar is the permanent one: the desktop alternative to a top navigation, down the left side. Do not treat the two as separate things. See `recursica-skill-panels-modals`.
 
 **You must ask whether the application will be used on a tablet or a phone before choosing the navigation pattern** — not make room for it afterward. Owned by `recursica-skill-responsive-behavior`.
 
@@ -129,7 +129,7 @@ Location is shown by three things, and you need more than the first one:
 - **NEVER scroll navigation sideways.** Horizontal navigation must be fully visible at all times. Avoid sideways scrolling anywhere in an enterprise application at almost any cost — and in navigation, there is no reason for it at all.
 - **NEVER put navigation in its own separate scrolling area.** Vertical navigation that scrolls _with the page_ is fine. A separate scrolling `div` just for the navigation is not.
 
-**The only exception — customization the user owns.** An ellipsis or "more" control that hides top-level items is acceptable **only when the user can customize the navigation, and the user chose what to hide.** Without that explicit choice by the user, no overflow state is acceptable in a horizontal navigation.
+**The only exception — customization the user owns.** An ellipsis or "more" control that hides top-level items is acceptable only when the user can customize the navigation, and the user chose what to hide. Without that explicit choice by the user, no overflow state is acceptable in a horizontal navigation.
 
 ## Permissions and unavailable items
 
@@ -143,7 +143,7 @@ Location is shown by three things, and you need more than the first one:
 
 **The first tab in reading order opens by default** — the leftmost one, in a locale that reads left to right, because that is where the eye starts. Owned by `recursica-skill-defaults`.
 
-**MUST NOT spread a form across tabs.** Tabs are for dividing content into sections, not for breaking up data entry. **A form with several parts uses a stepper component (which walks the user through numbered steps), not tabs.** Do not put several forms, or the fields of one form, on separate tabs.
+**MUST NOT spread a form across tabs.** Tabs are for dividing content into sections, not for breaking up data entry. A form with several parts uses a stepper component (which walks the user through numbered steps), not tabs. Do not put several forms, or the fields of one form, on separate tabs.
 
 **Keyboard interaction inside a set of tabs is not your decision.** Whether tabs move focus with the arrow keys or with the Tab key is owned by the underlying coded library (MUI, Mantine, or whatever the Recursica tab component wraps). Use the component and keep its behavior — do not add your own key handling.
 

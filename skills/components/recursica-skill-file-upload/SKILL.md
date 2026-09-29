@@ -12,8 +12,8 @@ metadata:
 A file upload is a bordered area for adding files, with a list below it of the files that have been added.
 
 > **Not built yet.** Both adapters ship `FileUpload` as a declared stub (an empty placeholder) that
-> shows a placeholder, and they apply none of the 32 `file-upload` variables the kit exports.
-> Everything below is the intended contract and is correct about the kit — but building against it
+> shows a placeholder, and they apply none of the 32 `file-upload` variables the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) exports.
+> Everything below is the intended contract and is correct about the UI kit — but building against it
 > today produces a placeholder, with no error. Raise it instead of working around it.
 
 ## Use it when
@@ -44,7 +44,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.file-upload`. **Do not
 | `layouts` | `stacked`, `side-by-side` |
 | `states`  | `error`, `disabled`       |
 
-**`layouts` is the label-placement axis.** `side-by-side` — the label beside the control — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's (the visible area of the browser window). See `recursica-skill-forms`.
+**`layouts` is the label-placement axis (a variant property, as Figma calls it — one way a component varies, such as its size).** `side-by-side` — the label beside the control — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's (the visible area of the browser window). See `recursica-skill-forms`.
 
 **Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints (the screen widths at which the layout changes), but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
@@ -64,7 +64,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.file-upload`. **Do not
 
 **Every added file needs a visible name and its own remove control.** The list is what makes this component worth its size — a queue the user cannot edit is just a receipt.
 
-**Choosing a file does not start an upload.** Choosing a file saves nothing, so it does not use the form's save mode at all. **The upload starts when the user clearly asks for it — never as a side effect of choosing a file.** Where the form saves everything together, the upload finishes before submit. This is settled, and it does not conflict with the one-save-mode rule in `recursica-skill-forms`.
+**Choosing a file does not start an upload.** Choosing a file saves nothing, so it does not use the form's save mode at all. The upload starts when the user clearly asks for it — never as a side effect of choosing a file. Where the form saves everything together, the upload finishes before submit. This is settled, and it does not conflict with the one-save-mode rule in `recursica-skill-forms`.
 
 **Never block the interface while an upload runs.** No spinner in a modal, no locked viewport, and no grayed-out form — the user must be able to keep reading what they entered. `recursica-skill-forms` bans blocking overlays on submit for the same reason.
 
@@ -129,9 +129,9 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Uncovered — ask, do not invent
 
-- **Upload feedback.** The kit defines no progress, no success, and no error state for each file. Upload feedback is a real need, and this component cannot show it — do not invent a bar, a spinner, or a checkmark on each row.
-- **A button versus a drop zone, as documented styles.** Both are documented outside the token inventory. The kit has a single `border-style` property and no styles axis, so which arrangement it produces, and whether both are available, is not settled — do not rely on this without asking.
-- **One file versus several, as documented types.** Both are documented outside the token inventory, but the kit has no such axis. Do not rely on this without asking.
+- **Upload feedback.** The UI kit defines no progress, no success, and no error state for each file. Upload feedback is a real need, and this component cannot show it — do not invent a bar, a spinner, or a checkmark on each row.
+- **A button versus a drop zone, as documented styles.** Both are shown only on the design-system website. The UI kit has a single `border-style` property and no styles axis, so which arrangement it produces, and whether both are available, is not settled — do not rely on this without asking.
+- **One file versus several, as documented types.** Both are shown only on the design-system website, but the UI kit has no such axis. Do not rely on this without asking.
 - **Retrying.** Nothing says what happens to a file that failed to upload, or whether the user can retry it in place.
 - **Overall limits.** A maximum number of files, or a total size across the whole set.
 - **Thumbnails or previews** of image files in the list.

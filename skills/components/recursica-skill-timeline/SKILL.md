@@ -37,22 +37,22 @@ A timeline lists events that already happened, in order, each with a timestamp.
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.timeline` and `ui-kit.components.timeline-bullet`. **This skill covers both; there is no separate bullet skill.** Do not pass a variant or state that is not listed here.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.timeline` and `ui-kit.components.timeline-bullet`. **This skill covers both; there is no separate bullet skill.** Do not pass a variant or state that is not listed here.
 
 | Component         | Axis               | Options                                         |
 | ----------------- | ------------------ | ----------------------------------------------- |
 | `timeline`        | `selection-states` | `active`, `inactive`                            |
 | `timeline-bullet` | `types`            | `default`, `icon`, `icon-alternative`, `avatar` |
 
-**An item has three parts: a title, a description, and a timestamp.** Each has its own type token (`title-text`, `description-text`, `timestamp-text`). A token is a named design value, such as a color or a size, set by the design system. **The timestamp is part of the component**, which means `recursica-skill-dates-and-currency` governs how it reads — that formatting is not optional.
+**An item has three parts: a title, a description, and a timestamp.** Each has its own type token (`title-text`, `description-text`, `timestamp-text`). A token is a named design value, such as a color or a size, set by the design system. The timestamp is part of the component, which means `recursica-skill-dates-and-currency` governs how it reads — that formatting is not optional.
 
 **`active` and `inactive` are selection states, not statuses.** A timeline item has no completed, current, upcoming, or error state. Do not reuse `active` to mean "done".
 
-**There is no connector token on the timeline.** A connecting line with a highlighted state for completed events is documented outside the token inventory, but the kit defines no such property here. Do not use the line to show progress.
+**There is no connector token on the timeline.** A connecting line with a highlighted state for completed events is shown only on the design-system website, but the UI kit defines no such property here. Do not use the line to show progress.
 
-**There is no alignment axis, no orientation axis, and no size axis.** Left and right alignment are documented outside the token inventory, but the kit defines neither, and nothing supports two opposing tracks or a timeline that compares two streams side by side. `max-text-width` is a fixed property.
+**There is no alignment axis (a variant property, as Figma calls it — one way a component varies, such as its size), no orientation axis, and no size axis.** Left and right alignment are shown only on the design-system website, but the UI kit defines neither, and nothing supports two opposing tracks or a timeline that compares two streams side by side. `max-text-width` is a fixed property.
 
-**`icon-alternative` is also called "theme icon"** in material documented outside the token inventory. It is one thing with two names — and no rule says when each name is used.
+**`icon-alternative` is also called "theme icon"** in material shown only on the design-system website. It is one thing with two names — and no rule says when each name is used.
 
 ## Rules for using it
 
@@ -63,7 +63,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.timeline` and `ui-kit.
 **Format every timestamp by `recursica-skill-dates-and-currency`:**
 
 - **Relative time for recent events** — `15 minutes ago`, `yesterday` — because working backward from now is effort the format should save the reader.
-- **Past the switchover point, the absolute date** — `Jan 7, 2026`. **Never the numeric slash or hyphen form**, which exists only inside an input that has focus.
+- **Past the switchover point, the absolute date** — `Jan 7, 2026`. Never the numeric slash or hyphen form, which exists only inside an input that has focus.
 - **State the time zone whenever the time is not in the user's own**, or the user's time zone is unknown.
 - **Where the event's location matters, show the time in the time zone where it happened, labeled, and do not convert it** — and give the user a way to convert it.
 - **Keep one format across the whole timeline.** Do not use relative time on some items and absolute dates on others when they fall on the same side of the switchover point.
@@ -91,10 +91,10 @@ A timeline is a list of events, and almost everything that makes it readable is 
 - **Announce the events as a list, with its length.** A run of unstructured text gives the user no sense of how many events there are, or which one they are on.
 - **Each item's title, description, and timestamp must be grouped together as one item.** Three separate lines with no grouping read as nine unrelated strings across three events, and the reader cannot tell which time belongs to which title.
 - **Each item starts with its title**, at the same heading level every time if headings are used, so the user can jump from event to event instead of reading everything.
-- **The reading order must match the visual order**, and the sequence must come from the order of the list — **the connecting line tells a screen reader nothing.**
+- **The reading order must match the visual order**, and the sequence must come from the order of the list — the connecting line tells a screen reader nothing.
 - **State the sort direction in text** above the timeline. A list read aloud does not reveal that it is "Newest first".
 - **A relative timestamp must also have its absolute value available.** "2 hours ago" is useless to someone piecing together a sequence later. Include the full, clear date and time in what the screen reader reads, alongside it.
-- **The bullet is decorative and must be silent.** An icon bullet is announced as nothing. An avatar bullet either has alternative text naming the person, or is marked decorative, with the name in the item's own text. **Never let an avatar or an icon be the only thing that identifies who or what an entry is about.**
+- **The bullet is decorative and must be silent.** An icon bullet is announced as nothing. An avatar bullet either has alternative text naming the person, or is marked decorative, with the name in the item's own text. Never let an avatar or an icon be the only thing that identifies who or what an entry is about.
 - **`active` must be set in code** — a current or selected state on the item — **never shown by color alone.**
 
 ### Keyboard and non-mouse navigation
@@ -130,9 +130,9 @@ Do not implement, override, or tune any of these — the components own them:
 
 ## Uncovered — ask, do not invent
 
-- **Alignment.** Left and right alignment are documented outside the token inventory, but the kit defines no alignment axis. Do not rely on this without asking.
-- **The connecting line.** A connector with a highlighted state for completed events is documented outside the token inventory, but the kit defines no connector property on the timeline, so whether progress may be shown at all is not settled. Do not rely on this without asking.
-- **Two-track or comparing timelines** — two streams of events compared side by side. Nothing in the kit supports it.
+- **Alignment.** Left and right alignment are shown only on the design-system website, but the UI kit defines no alignment axis. Do not rely on this without asking.
+- **The connecting line.** A connector with a highlighted state for completed events is shown only on the design-system website, but the UI kit defines no connector property on the timeline, so whether progress may be shown at all is not settled. Do not rely on this without asking.
+- **Two-track or comparing timelines** — two streams of events compared side by side. Nothing in the UI kit supports it.
 - **What `active` means in house terms** — the item the user selected, or the most recent event. Only the two selection states exist.
 - **Whether a timeline item may be selected, be a link, or have an action.** No rule for interaction is stated.
 - **The default sort direction** — newest first or oldest first.

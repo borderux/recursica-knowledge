@@ -37,9 +37,9 @@ Progressive disclosure means showing only what is needed now, with the rest avai
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.stepper`. **Do not pass a variant, size, or state that is not listed here.**
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.stepper`. **Do not pass a variant, size, or state that is not listed here.**
 
-**The third column is the React prop that sets each axis.** The axis name comes from the token inventory. It is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis          | Options                  | React prop |
 | ------------- | ------------------------ | ---------- |
@@ -48,13 +48,13 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.stepper`. **Do not pas
 
 **A step may have a second line.** `description-text` exists beside `label-text`, so a step has a name and an optional short description. It is not a place for a paragraph.
 
-**Finished steps and upcoming steps are told apart by the connector** (the line between them). `completed-connector-size` and `upcoming-connector-size` differ — which means progress depends on the thickness of a line and a color. **That is a single visual channel (a way of carrying meaning, such as color, shape, position, or text), and you must not rely on it alone**; see the accessibility section and `recursica-skill-system-conventions`.
+**Finished steps and upcoming steps are told apart by the connector** (the line between them). `completed-connector-size` and `upcoming-connector-size` differ — which means progress depends on the thickness of a line and a color. That is a single visual channel (a way of carrying meaning, such as color, shape, position, or text), and you must not rely on it alone; see the accessibility section and `recursica-skill-system-conventions`.
 
-**There is no state axis on the component.** "Done, Current, & Upcoming" behavior is documented outside the token inventory, but the kit defines no `states`. A step's status is data you supply, and you must express it in what assistive technology reads — it is not a variant you select.
+**There is no state axis on the component.** "Done, Current, & Upcoming" behavior is shown only on the design-system website, but the UI kit defines no `states`. A step's status is data you supply, and you must express it in what assistive technology reads — it is not a variant you select.
 
 **There is no error, warning, skipped, or optional step state.** The component cannot show that a step failed validation; the words have to carry it.
 
-**There is no token for what goes inside the indicator.** A step number and a checkmark are documented outside the token inventory, but the kit defines neither. See the uncovered list.
+**There is no token for what goes inside the indicator.** A step number and a checkmark are shown only on the design-system website, but the UI kit defines neither. See the uncovered list.
 
 ## Rules for using it
 
@@ -68,11 +68,11 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.stepper`. **Do not pas
 
 **Keep each step's primary action disabled until that step is complete and valid.** `recursica-skill-forms` forbids an enabled button that dumps validation errors when clicked, and that holds for each step.
 
-**The stepper does not add a second save mode.** The application either saves field by field everywhere, or saves everything together everywhere. **Saving everything together is the default: nothing is saved until the final submit.** In that mode, you show no status message and no indicator of unsaved changes — the enabled primary button is the whole signal. If the system saves field by field instead, a save status that stays on the page is required. Never mix them across steps.
+**The stepper does not add a second save mode.** The application either saves field by field everywhere, or saves everything together everywhere. Saving everything together is the default: nothing is saved until the final submit. In that mode, you show no status message and no indicator of unsaved changes — the enabled primary button is the whole signal. If the system saves field by field instead, a save status that stays on the page is required. Never mix them across steps.
 
 **Each step's content follows the form rules without change** — a single column, one field per row, and no custom spacing.
 
-**Label placement is one decision for the whole form — not one per step, and never one per field.** `recursica-skill-forms` allows labels side by side or stacked, and forbids both at the same breakpoint (the screen width at which the layout changes). The container-width test is applied once, to the form, and the answer governs every field in it. A step's container is exactly what triggers stacking — so if the label and field will not sit side by side there, **the whole form stacks in every step, not just the fields that feel cramped**, including the short ones that would have fitted. Never let one step sit side by side while another stacks.
+**Label placement is one decision for the whole form — not one per step, and never one per field.** `recursica-skill-forms` allows labels side by side or stacked, and forbids both at the same breakpoint (the screen width at which the layout changes). The container-width test is applied once, to the form, and the answer governs every field in it. A step's container is exactly what triggers stacking. So if the label and field will not sit side by side there, the whole form stacks in every step — not just the fields that feel cramped, and including the short ones that would have fitted. Never let one step sit side by side while another stacks.
 
 **Never put the step's content, or any part of the form, inside a card.** See `recursica-skill-card`.
 
@@ -89,7 +89,7 @@ The stepper's whole job is to show position and progress, and it does that visua
 ### Screen readers
 
 - **"Step 2 of 5" must exist in what assistive technology reads.** The current step's position and the total, as text or as a value set on the stepper in code. A visual indicator alone leaves the user with no idea how much is left.
-- **Each step's status must be announced in words** — complete, current, or upcoming. **Never let the connector or a color carry completion.** `completed-connector-size` versus `upcoming-connector-size` is one channel, and it is invisible to the users who most need the information.
+- **Each step's status must be announced in words** — complete, current, or upcoming. Never let the connector or a color carry completion. `completed-connector-size` versus `upcoming-connector-size` is one channel, and it is invisible to the users who most need the information.
 - **Each step is an item in an ordered list of steps**, announced in order, so the user can hear the whole shape of the process.
 - **`description-text` must be connected to its step**, not shown as a separate line beside it. Text that is not connected is announced out of context, or not at all.
 - **Step labels must make sense on their own.** A screen reader user hears "Payment details" with no layout around it to explain it.
@@ -99,7 +99,7 @@ The stepper's whole job is to show position and progress, and it does that visua
 
 ### Keyboard and non-mouse navigation
 
-- **When the step changes, move focus on purpose to the start of the new step's content** — its heading or its first field. **Do not leave focus on the Next button.** Left there, the keyboard user's next Tab lands somewhere random, and the screen reader user has no idea the page changed.
+- **When the step changes, move focus on purpose to the start of the new step's content** — its heading or its first field. Do not leave focus on the Next button. Left there, the keyboard user's next Tab lands somewhere random, and the screen reader user has no idea the page changed.
 - **Never move ahead automatically.** Finishing the last field of a step does not move the user forward; they press Next. `recursica-skill-forms` already forbids moving focus for the user.
 - **Step indicators that cannot be used to move between steps are not tab stops** (places the Tab key lands). No `tabindex`, no click handler, and nothing that looks as if it can receive focus.
 - **Step indicators that can be used to move between steps are real buttons**, reachable by Tab in visual order and activated by Enter and Space. Do not build your own roving tabindex (where the arrow keys move between items that share one tab stop) on top of them.
@@ -138,7 +138,7 @@ Do not implement, override, or tune any of these — the component owns them for
 - **Validation across steps.** Whether a step validates when the user leaves it, and what going back does to the data entered — named as uncovered in `recursica-skill-forms`.
 - **Whether a step may be optional or skipped**, and how that shows in the count.
 - **What a step with an error looks like.** The component has no error state.
-- **Whether the indicator shows a number or a checkmark.** Both are documented outside the token inventory, with no token behind either. Do not rely on this without asking.
+- **Whether the indicator shows a number or a checkmark.** Both are shown only on the design-system website, with no token behind either. Do not rely on this without asking.
 - **Where the stepper sits relative to the step's content**, and whether it stays in view while the step scrolls.
 
 ## Pre-flight checklist

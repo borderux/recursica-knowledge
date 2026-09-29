@@ -12,8 +12,8 @@ metadata:
 A transfer list is two lists side by side, with controls that move items between them. It is also called a dual listbox, because each side is a listbox (a list the user picks one or more options from).
 
 > **Not implemented yet.** Both adapters ship `TransferList` as an empty placeholder. It shows
-> placeholder content and applies none of the 31 `transfer-list` variables the kit exports. Everything below
-> is how the component is meant to work, and is correct about the kit — but building with it today gives you
+> placeholder content and applies none of the 31 `transfer-list` variables the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) exports. Everything below
+> is how the component is meant to work, and is correct about the UI kit — but building with it today gives you
 > a placeholder, with no error. Raise it instead of working around it.
 
 ## Use it when
@@ -41,7 +41,7 @@ A transfer list is two lists side by side, with controls that move items between
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.transfer-list`. **Do not pass a variant, size, or state that is not listed here.**
 
-**The third column is the React prop that sets each axis.** The axis name comes from the token inventory. It is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis      | Options                   | React prop   |
 | --------- | ------------------------- | ------------ |
@@ -68,7 +68,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.transfer-list`. **Do n
 
 **Selecting an item and moving it are two different things.** Ticking an item marks it to be moved. Moving it changes which list it is in. Do not mix the two up, and do not move an item the moment it is ticked — moving many at once is the reason this control exists.
 
-**Do not build move-all.** `recursica-skill-selection-controls` treats a need for select-all as a sign to rethink the control, and the kit defines no tokens for a move-all control. The filter is the real tool for working with a large set, and it stays. **If the set is so large that move-all feels necessary, that is the structural warning sign** — raise it with a person instead of adding the control, as `recursica-skill-system-conventions` says.
+**Do not build move-all.** `recursica-skill-selection-controls` treats a need for select-all as a sign to rethink the control, and the UI kit defines no tokens for a move-all control. The filter is the real tool for working with a large set, and it stays. If the set is so large that move-all feels necessary, that is the structural warning sign — raise it with a person instead of adding the control, as `recursica-skill-system-conventions` says.
 
 **Sort both lists the same way**, and keep that order the same after a move. An item that shows up somewhere unexpected after being moved back looks lost.
 
@@ -129,7 +129,7 @@ Do not implement, override, or tune any of these — the component owns them:
 ## Uncovered — ask, do not invent
 
 - **Where this control fits among the selection controls.** That skill sends zero-to-many sets above the limit to a multi-select dropdown, and never mentions a transfer list. The point where one gives way to the other is not stated.
-- **Checkboxes on each item.** A checkbox on every item is documented outside the token inventory, but the kit defines no item or checkbox properties on this component. Whether items are checkbox rows or a selectable listbox is not settled — do not rely on this without asking.
+- **Checkboxes on each item.** A checkbox on every item is shown only on the design-system website, but the UI kit defines no item or checkbox properties on this component. Whether items are checkbox rows or a selectable listbox is not settled — do not rely on this without asking.
 - **Overflow.** `height` is fixed, so a long list must scroll inside the control — which `recursica-skill-system-conventions` treats as a failure. No overflow behavior is stated.
 - **Narrow containers.** `layouts` moves the label only, and the lists have a fixed `width`. The old house note said to avoid this control on small screens, but no responsive behavior exists.
 - **Empty states** for either list, including the starting state where every item is on one side.
