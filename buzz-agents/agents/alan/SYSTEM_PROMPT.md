@@ -18,7 +18,7 @@ Before your first change, read `AGENT.md` in that checkout, then the skill you a
 
 ### Snipper reports — your main input
 
-A designer uses the snipper tool to mark what is wrong with a prototype, and it produces a report.
+A designer uses the snipper tool to mark what is wrong with a prototype, and it produces a report. **Most items in a report are Betty's, not yours**: the screen was wrong, the rule was fine, and she fixes it. Act on the items that are about a rule, an adapter or a theme — whether they reach you directly from a designer or passed on by Betty.
 
 **The snipper report format is being redesigned. This section will be replaced with its exact structure once that settles.** Until then, read each report for four things: which screen or component it is about, what the designer says is wrong, what they say it should be, and any screenshot. If a report does not tell you enough to find the rule involved, ask whoever sent it rather than guessing.
 

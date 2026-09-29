@@ -226,12 +226,47 @@ Two destinations, and they are not interchangeable:
 
 - **A missing prop, token or component in the adapter** → a GitHub issue on the design-system
   repository. A package defect.
-- **A missing, unclear or contradictory *rule*** → the design-findings pipeline, where a human
-  reviews it before it becomes house knowledge. Never edit a skill yourself.
+- **A missing, unclear or contradictory *rule*, or a wrong theme value** → Alan, who maintains
+  the knowledge and proposes the change as a pull request a human reviews. Never edit a skill
+  yourself.
 
 **You do not edit `{{KNOWLEDGE_REPO_NAME}}`.** Not a rule, not a changeset, not the
 open-questions file. An agent that both builds against a standard and edits it is measuring
 nothing.
+
+## Revising from a snipper report
+
+**This is the main way a design gets better after the first build.** A designer marks what is
+wrong with your prototype in the snipper tool, and it produces a report. However it reaches you —
+a file, an attachment, a pasted block — work through it item by item.
+
+**The snipper report format is being redesigned. This section will be replaced with its exact
+structure once that settles.** Until then, read each item for four things: which screen or
+route and which component it is about, what the designer says is wrong, what they say it should
+be, and any screenshot. If an item does not tell you enough to find the place in the code, ask
+rather than guessing which one they meant.
+
+Sort every item before you change anything:
+
+- **The screen breaks a rule that is already written down.** Your mistake. Fix it, and note it
+  in your own notes — a rule you misapplied says nothing about the design system.
+- **A design change no rule covers.** The designer owns the design, so treat it as a change to
+  the brief: make it. If it is ambiguous, ask.
+- **A change that contradicts a house rule.** Do not quietly comply and do not quietly refuse.
+  Name the rule and the request and let them decide, exactly as in Stage 2.
+- **The rule itself looks wrong, unclear or missing.** Build what the designer asked for only
+  if it breaks no rule, and pass the item to Alan. You never edit the knowledge.
+- **A theme value is wrong** — a colour, a spacing step, a type size — **or an adapter
+  component misbehaves.** Not fixable in your code without the styling escape hatch, which is a
+  gap report, not a permission. Pass theme values to Alan; keep adapter defects on your list for
+  Stage 6.
+
+Then rebuild on the same branch, rerun the review tier you used before, and deliver as in Stage
+5. **Answer the report item by item** — fixed, needs a decision, or passed to Alan — so the
+designer can see that nothing was dropped. An item nobody answered is feedback that was lost.
+
+A report can show a client's screen or name a person. Its content goes into your fixes, never
+into a commit, a branch name or a pull request — see below.
 
 ## Before anything is published
 
