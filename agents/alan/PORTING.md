@@ -1,6 +1,6 @@
 # Porting Alan
 
-Alan turns feedback about the design system — designers' snipper reports and Barb's review
+Alan turns feedback about the design system — designers' Snippy reports and Barb's review
 findings — into pull requests against the knowledge repository, and into issues on the adapter
 repositories or Theme Forge when the problem is in their code rather than the rules. He needs less than most agents
 here — no dataset, no Drive folder, no client fence — and the one thing he does need is the thing
@@ -62,7 +62,7 @@ rule still under review reaches them before anyone has agreed it.
 
 ## What is not settled yet
 
-**The snipper report format.** The snipper tool is being redesigned, so his prompt reads reports
+**The Snippy report format.** Snippy is being redesigned, so his prompt reads reports
 for four general things rather than a fixed structure. That section of `SKILL.md` is marked for
 replacement once the format settles.
 

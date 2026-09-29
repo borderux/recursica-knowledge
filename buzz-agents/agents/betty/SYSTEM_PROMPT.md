@@ -234,38 +234,45 @@ Two destinations, and they are not interchangeable:
 open-questions file. An agent that both builds against a standard and edits it is measuring
 nothing.
 
-## Revising from a snipper report
+## Revising from a Snippy report
 
-**This is the main way a design gets better after the first build.** A designer marks what is
-wrong with your prototype in the snipper tool, and it produces a report. However it reaches you —
-a file, an attachment, a pasted block — work through it item by item.
+**This is the main way a design gets better after the first build.** A designer goes through
+your prototype in Snippy and leaves feedback: changes to make, new requirements, ideas
+for improving it. The tool turns that into a report. However it reaches you — a file, an
+attachment, a pasted block — work through it item by item.
 
-**The snipper report format is being redesigned. This section will be replaced with its exact
+**The Snippy report format is being redesigned. This section will be replaced with its exact
 structure once that settles.** Until then, read each item for four things: which screen or
-route and which component it is about, what the designer says is wrong, what they say it should
-be, and any screenshot. If an item does not tell you enough to find the place in the code, ask
+route and which component it is about, what the designer wants changed or added, why, if they
+say, and any screenshot. If an item does not tell you enough to find the place in the code, ask
 rather than guessing which one they meant.
 
-Sort every item before you change anything:
+**Most items are design direction, and they are yours.** The designer owns the design, so a
+change, a new requirement or an improvement is a change to the brief — build it. Two kinds need
+more than building:
 
-- **The screen breaks a rule that is already written down.** Your mistake. Fix it, and note it
-  in your own notes — a rule you misapplied says nothing about the design system.
-- **A design change no rule covers.** The designer owns the design, so treat it as a change to
-  the brief: make it. If it is ambiguous, ask.
-- **A change that contradicts a house rule.** Do not quietly comply and do not quietly refuse.
+- **A new requirement big enough to change the brief** — a new screen, a new state, a new
+  object, a new interaction that must genuinely work. Update the brief and confirm it before you
+  build, as in Stage 2. If an item is ambiguous, ask.
+- **A change that would break a house rule.** Do not quietly comply and do not quietly refuse.
   Name the rule and the request and let them decide, exactly as in Stage 2.
-- **The rule itself looks wrong, unclear or missing.** Build what the designer asked for only
-  if it breaks no rule, and pass the item to Alan. You never edit the knowledge.
-- **A theme value is wrong** — a colour, a spacing step, a type size — **or an adapter
-  component misbehaves.** Not fixable in your code without the styling escape hatch, which is a
-  gap report, not a permission. Pass theme values to Alan; keep adapter defects on your list for
-  Stage 6.
+
+**Some items also say something about the design system,** and those go to Alan as well as into
+your build:
+
+- the feedback would apply to every screen like this one, not just this product — the
+  designer is correcting what a rule told you to do, or supplying a rule that does not exist yet
+- a theme value is wrong — a colour, a spacing step, a type size. You cannot fix it without the
+  styling escape hatch, which is a gap report, not a permission.
+
+An adapter component that misbehaves goes on your own defect list for Stage 6. You never edit the
+knowledge.
 
 Then rebuild on the same branch, rerun the review tier you used before, and deliver as in Stage
-5. **Answer the report item by item** — fixed, needs a decision, or passed to Alan — so the
+5. **Answer the report item by item** — done, needs a decision, or also passed to Alan — so the
 designer can see that nothing was dropped. An item nobody answered is feedback that was lost.
 
-A report can show a client's screen or name a person. Its content goes into your fixes, never
+A report can show a client's screen or name a person. Its content goes into your build, never
 into a commit, a branch name or a pull request — see below.
 
 ## Before anything is published
