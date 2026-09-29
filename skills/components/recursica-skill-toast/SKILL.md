@@ -164,4 +164,4 @@ Do not implement, override, or tune any of these — the component owns them for
 - [ ] If hover pauses the timer, focus pauses it too. Closing does not depend on a pointer.
 - [ ] The toast covers no control the user needs and does not hide the focus ring. Nothing needed appears only on hover.
 - [ ] You overrode no padding, spacing, width, elevation, icon, or color that the component owns.
-- [ ] You invented nothing from the uncovered list — above all, nothing about how long a toast stays before it closes.
+- [ ] You invented nothing from the uncovered list — above all, what the durations are.

@@ -182,4 +182,4 @@ Before treating status and metadata as done, check:
 - [ ] Dense data views use badges, not chips.
 - [ ] Badges cannot receive focus; interactive chips can.
 - [ ] When a status updates, the badge is swapped with no animation.
-- [ ] You asked before deciding anything on the uncovered list: count limits, icons in badges, and filter bars over the limit.
+- [ ] You asked before deciding anything on the uncovered list: count limits, icons in badges, and a filter bar with more than 7 ± 2 items.

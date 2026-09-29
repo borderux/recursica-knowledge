@@ -196,4 +196,4 @@ Before treating navigation as done, check:
 - [ ] You added no custom keyboard handling inside tab sets.
 - [ ] Forms with several parts use a stepper.
 - [ ] Where forms on tabs cannot be avoided, switching tabs asks about unsaved changes.
-- [ ] You asked before deciding anything on the uncovered list: the order of items, how deep the nesting goes, and where a dashboard goes.
+- [ ] You asked before deciding anything on the uncovered list: the order of items, the maximum depth, and where a dashboard goes.

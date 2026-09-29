@@ -239,4 +239,4 @@ Before treating a chart as done, check:
 - [ ] Notes sit beside the chart, not on top of it.
 - [ ] Overlapping series use different techniques, not just different point shapes.
 - [ ] At smaller sizes, the chart adapts instead of shrinking, and anything left out is pointed out.
-- [ ] You asked before deciding anything on the uncovered list: sparklines, legends, titles, empty states, and export.
+- [ ] You asked before deciding anything on the uncovered list: sparklines, legends, chart titles, empty states, and export.

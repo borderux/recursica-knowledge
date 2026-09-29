@@ -196,4 +196,4 @@ Before treating a set of selection controls as done, check:
 - [ ] Revealed fields submit together with the control that revealed them.
 - [ ] Choices that are unavailable for now are disabled. Values that are permanently not editable use the read-only control, or are not form controls at all.
 - [ ] Selection rules (minimums and maximums) appear as assistive text under the control.
-- [ ] You asked before deciding anything on the uncovered list: when autocomplete takes over, radio buttons in rows, and limits on selection.
+- [ ] You asked before deciding anything on the uncovered list: when autocomplete replaces a dropdown, radio buttons in rows, and limits on selection.

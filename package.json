@@ -48,6 +48,7 @@
     "skills:glossary:check": "node scripts/check-glossary.mjs",
     "skills:structure:check": "node scripts/check-skill-structure.mjs",
     "skills:passages:check": "node scripts/check-shared-passages.mjs",
+    "skills:uncovered:check": "node scripts/check-uncovered.mjs",
     "test": "node --test 'nest/bin/*.test.mjs' 'nest/mcp/*/*.test.mjs' 'scripts/*.test.mjs' 'buzz-agents/lib/*.test.mjs'"
   },
   "packageManager": "npm@10.9.0",

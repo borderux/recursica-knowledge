@@ -177,4 +177,4 @@ Before treating a dashboard as done, check:
 - [ ] No unrelated data, and no data on different scales, is placed side by side.
 - [ ] A maximum width is set, and there are no inner scrolling areas anywhere.
 - [ ] Smaller viewports get an adapted design, not a squeezed one.
-- [ ] You asked before deciding anything on the uncovered list: the all-clear state, CTAs for several personas, where it sits in the navigation, and loading behavior.
+- [ ] You asked before deciding anything on the uncovered list: what fills the main position when everything is fine, CTAs for several personas, where it sits in the navigation, and loading behavior.
