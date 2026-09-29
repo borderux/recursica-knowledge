@@ -103,7 +103,7 @@ A build test confirmed that all four are needed, and that they survive the adapt
 
 ## Accessibility
 
-The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
 
 **Decide, and state, whether you are building a modal panel or a non-modal one — then build it consistently as one or the other.** Almost every panel accessibility failure is a half-modal: a surface that looks like it does not block, but traps focus like a dialog, or hides the page from assistive technology (tools such as screen readers that help people with disabilities use a computer) while leaving it clickable. The default here is non-modal — the page behind stays usable, readable, and reachable.
 

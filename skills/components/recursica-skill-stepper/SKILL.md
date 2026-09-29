@@ -82,7 +82,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.stepper`. **Do not pas
 
 ## Accessibility
 
-The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
 
 The stepper's whole job is to show position and progress, and it does that visually — an indicator, a color, and the thickness of a connector. **None of that reaches a screen reader** (software that reads the screen aloud). Everything the sighted user learns at a glance has to be stated in what assistive technology reads, and the riskiest moment is when the step changes.
 

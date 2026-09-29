@@ -99,7 +99,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.dropdown`. **Do not pa
 
 ## Accessibility
 
-The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring, hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
 The component connects the label to the field, provides the focus ring (the outline that shows which element has keyboard focus), and owns the open-and-select interaction. What that interaction announces, and everything below, is up to you. A dropdown is the control where "it works with a mouse" hides the most failures.
 

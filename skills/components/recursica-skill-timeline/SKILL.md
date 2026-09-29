@@ -82,7 +82,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.timeline` and `ui-kit.
 
 ## Accessibility
 
-The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
 
 A timeline is a list of events, and almost everything that makes it readable is visual: a vertical line that suggests sequence, a bullet that suggests a type, a color that suggests selection, and a relative timestamp that hides the real date. **All four have to be replaced with something in the code** that assistive technology (tools such as screen readers that help people with disabilities use a computer) can read.
 

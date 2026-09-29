@@ -91,7 +91,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.switch`, `switch-group
 
 ## Accessibility
 
-The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring, hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
 The component pairs the switch with its item label, makes on and off available, and provides the focus ring (the outline that shows which element has keyboard focus). Everything below is up to you — and a switch is unusually easy to get wrong, because its whole meaning lives in a position and a colour.
 

@@ -91,7 +91,7 @@ A surface that opens on hover and has a control in it is not a third option; it 
 
 ## Accessibility
 
-The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
 
 The two kinds have truly different requirements, and there is no safe middle ground. Name which one you are building, then meet that column completely. A build that half-meets both is the pointer trap this section exists to prevent.
 

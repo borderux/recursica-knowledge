@@ -89,7 +89,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.toast`. **Do not pass 
 
 ## Accessibility
 
-The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring, hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
 **This is the riskiest component in the system.** It appears without the user asking, disappears without the user doing anything, and does all its work away from where the user is looking. A toast that is not announced is invisible to a screen reader user (someone using software that reads the screen aloud). A toast that takes focus interrupts typing. And a toast that closes on its own while holding an undo offers an action nobody can reach with a keyboard.
 

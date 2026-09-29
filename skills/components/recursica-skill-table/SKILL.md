@@ -91,7 +91,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.table`, `table-cell`, 
 
 ## Accessibility
 
-The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring, hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
 A data table can only be used without sight if its structure is real. The failures here are serious: a grid of `div`s gives a screen reader (software that reads the screen aloud) user no way to know which column a value belongs to — and that is the whole content of a table.
 

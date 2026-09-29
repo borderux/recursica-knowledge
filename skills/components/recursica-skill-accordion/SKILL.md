@@ -86,7 +86,7 @@ Taken from `recursica_ui-kit.json`. Four specs make up one accordion, and **only
 
 ## Accessibility
 
-The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
 
 The component draws the header and the chevron. Whether the collapsed state is real, and whether the header is a real button, are entirely up to you — and they are the two things most often done wrong.
 

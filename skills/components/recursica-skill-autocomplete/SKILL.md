@@ -105,7 +105,7 @@ Those states are not kit axes and must not be passed as variants — `Focused` a
 
 ## Accessibility
 
-The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring, hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
 The component connects the label to the input, provides the focus ring (the outline that shows which element has keyboard focus), and owns the filter-and-select interaction. What that interaction announces is up to you — and it is the hardest part of any control in this system to get right. The list changes under the user on every keystroke, and none of that reaches a screen reader (software that reads the screen aloud) unless it is announced.
 

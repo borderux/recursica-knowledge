@@ -72,7 +72,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.breadcrumb`. **Do not 
 
 ## Accessibility
 
-The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
 
 A breadcrumb is a short row of links, and assistive technology (tools such as screen readers that help people with disabilities use a computer) has no way to recognize it as a trail unless you say so. Three failures account for nearly all the problems: a navigation region with no name, a separator read aloud between every item, and a current page that links to itself.
 

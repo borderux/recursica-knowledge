@@ -140,3 +140,23 @@ Passage:
 ```text
 **Focus and placeholder are not variants.** The component handles them: `placeholder-opacity` here, and the focused border through `globals.form.field.colors.border-selected`. Do not build them as states.
 ```
+
+## accessibility-baseline-pointer
+
+Starts with:
+
+```text
+This component also follows the accessibility baseline
+```
+
+Required when:
+
+```text
+Taken from
+```
+
+Passage:
+
+```text
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`{, including the focus ring (the outline that shows which element has keyboard focus)|}. Only what is specific to it is listed here.
+```

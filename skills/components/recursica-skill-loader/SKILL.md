@@ -75,7 +75,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.loader`. **Do not pass
 
 ## Accessibility
 
-The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
 
 A spinner is pure animation. That means that to a screen reader (software that reads the screen aloud) user, it is nothing at all unless you announce it. The typical failure is not a control that cannot be reached — it is a wait that starts and ends in complete silence, leaving the user with no idea that anything happened.
 

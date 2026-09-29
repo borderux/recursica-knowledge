@@ -82,7 +82,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.slider`. **Do not pass
 
 ## Accessibility
 
-The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring, hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
 The component provides the focus ring (the outline that shows which element has keyboard focus), the thumb, and the keys inside the track. Everything below is up to you — and this is where sliders fail most often, because dragging is the only interaction most builds actually finish.
 

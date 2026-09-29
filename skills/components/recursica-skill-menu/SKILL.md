@@ -77,7 +77,7 @@ Taken from `recursica_ui-kit.json`. Two specs, with one axis between them.
 
 ## Accessibility
 
-The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
 
 A menu is a component about managing focus. The list itself is easy. The trigger's state, the arrow keys, and returning focus when it closes are where menus fail — and a menu that opens on hover fails all three at once.
 

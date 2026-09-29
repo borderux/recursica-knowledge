@@ -81,7 +81,7 @@ Never reach for a disabled text field as a way to show a value.
 
 ## Accessibility
 
-The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring, hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
 The component connects the label to the input, provides the focus ring (the outline that shows which element has keyboard focus), and handles the keys inside the field. Everything below is up to you to get right — and it is the part most often missed.
 

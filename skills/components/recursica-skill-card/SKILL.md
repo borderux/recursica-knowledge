@@ -109,7 +109,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.card`. **The kit defin
 
 ## Accessibility
 
-The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
 
 A card set is a list of objects, and it must be announced as one. Two failures matter: a set that reads as one long run of text with no boundaries, and a "clickable card" that a keyboard user cannot activate, or that swallows the controls inside it.
 

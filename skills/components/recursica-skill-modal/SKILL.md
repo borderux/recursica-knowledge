@@ -62,7 +62,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.modal`. **The modal ha
 
 ## Accessibility
 
-The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
 
 A modal is the component where accessibility failures are most serious. Get the focus handling wrong, and a keyboard or screen reader user is either trapped, or reading a page they cannot see. Most of this is behavior you must make sure of, not styling.
 

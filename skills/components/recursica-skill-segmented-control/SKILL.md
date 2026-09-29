@@ -72,7 +72,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.segmented-control` and
 
 ## Accessibility
 
-The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
 
 In meaning, this is a radio group, and it must be built as one. The usual failure is a row of buttons where the selected one is just a different color. That tells a screen reader (software that reads the screen aloud) user nothing, and leaves keyboard users tabbing through every segment.
 

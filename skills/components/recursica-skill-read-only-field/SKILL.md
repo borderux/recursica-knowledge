@@ -76,7 +76,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.read-only-field`.
 
 ## Accessibility
 
-The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
 
 The rules here are different from every editable field, and that difference is the point: **this must read as a labeled value, not as a control — while still being connected in code, and free to copy.**
 

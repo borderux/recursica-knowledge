@@ -96,7 +96,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.date-picker`. **Do not
 
 ## Accessibility
 
-The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring, hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
 The component connects the label to the input, and provides the focus ring (the outline that shows which element has keyboard focus). The calendar trigger and the popover (the small panel that opens next to its trigger) are where date pickers fail, and both are up to you to get right.
 

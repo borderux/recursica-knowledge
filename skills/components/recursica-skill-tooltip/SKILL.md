@@ -73,7 +73,7 @@ Neither may hold anything the user needs to complete a task, and neither may be 
 
 ## Accessibility
 
-The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring (the outline that shows which element has keyboard focus), hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
 
 A tooltip is the component most often used to cover up a missing accessible name, and it cannot do that job. Everything below is behavior you must make sure of.
 

@@ -97,7 +97,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.checkbox`, `checkbox-g
 
 ## Accessibility
 
-The accessibility baseline in `recursica-skill-system-conventions` applies here too — the focus ring, hover, tab order, disabled reasons, form text, and icons. This section adds only what is specific to this component.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
 The component pairs each box with its item label, and provides the focus ring (the outline that shows which element has keyboard focus). The group's name, making the state available, and everything below are up to you — and they are the parts most often missed.
 
