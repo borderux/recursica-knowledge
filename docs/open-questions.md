@@ -114,6 +114,34 @@ Two site-side copy notes: **File input** reuses Date picker's label-placement wo
 - **Table is fixed.** It had no `specs` and no `anatomy` at all, and a title reading "Tabs". All four spec sections, thirteen items, and six anatomy items are now in from the site, along with a `skill:` block and the site's verbatim intro sentence.
 - **Autocomplete now has a page** — recovered from the site's `search` page, since Search was renamed Autocomplete.
 
+## 7. Skills that contradict the token file
+
+Found by `npm run skills:kit:check`, which compares every component skill's `## What exists` inventory with `recursica_ui-kit.json` from `@recursica/official-release` (pinned in `package.json`). The skills match release 2.7.0 — the chip's nested `error` state and the slider's `active` state both arrived there — but each item below disagrees with every release from 2.6.0 to 2.8.0, so none of them was caused by a release moving on.
+
+Correcting any of these changes what an agent is told it may pass, and the adapters may or may not expose a prop for it, so each is yours to decide. Until then each is listed in `KNOWN` in `scripts/check-kit-inventory.mjs`: CI stays green, the run prints them, and an entry fails the check once the skill and the kit agree — at which point move it to [Now resolved](#now-resolved).
+
+- **Button** — the skill says "There is no disabled variant on this component — the disabled look comes from `globals.states.disabled`." The kit has a `states` axis with `disabled` under each of the three styles.
+- **Label** — the skill says "There is no size axis." The kit has `sizes`: `default` and `small`.
+- **Menu** — the skill says "There is no disabled item." The kit has `states`: `disabled` on `menu-item`.
+- **Tabs, orientation** — the skill says "The kit defines no orientation axis, but horizontal and vertical tab sets are documented outside the token inventory." The kit has `orientation`: `horizontal` and `vertical`, under each style on `tabs` and on `tabs-item`.
+- **Tabs, selected state** — the skill says selected and unselected "are documented outside the token inventory as states." The kit has `selection-states`: `active` and `inactive` on `tabs-item`. Whether they are passed or worked out by the component is a separate question from whether they exist.
+- **Avatar** — the kit has a `types` axis — `solid`, `outline`, `ghost` — under the `text` and `icon` styles, which the skill never mentions. Its note that the website's Ghost style "does not exist in the kit" needs rechecking against it. §2 above describes the avatar's kit axes as `text` / `icon` / `image` only.
+
+## 8. Skills that contradict themselves
+
+Found while rewriting the skills for readability. Each is two passages that cannot both be followed. The rewrite kept both sides' original meaning, because choosing between them changes a rule. The first is the shape `npm run skills:uncovered:check` looks for — a checklist naming a topic as uncovered that `## Uncovered` does not list — and is in `KNOWN` in `scripts/check-uncovered.mjs` until resolved. The rest need a reader: no script can tell which of two rules was meant.
+
+- **Autocomplete, clearing.** The checklist lists clearing among the uncovered topics. `## Rules` decides it: "The clear control appears only when the field has a value, and clearing returns the field to empty and the collection to unfiltered."
+- **Toast, dismissal.** `## Rules`: "A dismiss control is always present … Never ship a toast that cannot be dismissed." The keyboard section says "If the toast can be closed". The checklist names the durations as uncovered, while `## Uncovered` calls the house position on them settled and only the library's actual values unknown.
+- **Toast, actions.** `## Rules` allows at most one action, such as Undo. `## Uncovered` says not to rely on an action button without asking.
+- **Buttons and links, bulk actions.** The checklist decides "disabled until selected" against "revealed on selection" by how much space there is. The body decides by how many bulk actions there are.
+- **Dates and currency, alignment.** Principle 2 keeps an existing screen's uniform left alignment. The currency section says right alignment has one override, an explicit human instruction. Which override wins is unstated.
+- **Screen scaffolding, footer.** The body says no page element is mandatory, and that the shell is "not a checklist". The checklist says "Every page has a footer."
+- **Selection controls, switch timing.** "Instant save and deferred save must never coexist", yet "a switch may commit immediately" inside a form that saves on submit. `recursica-skill-switch` reads as the intended answer: one commit timing for the whole system.
+- **Tables.** Horizontal scrolling has "no exception", then is called sometimes unavoidable. Frozen columns: "at most one" and "never more than three" in the same rule. The checklist says a loading table shows nothing, but `## Uncovered` lists loading states as undecided.
+- **Panel.** Deep linking is "modals only" early in the rules and "a panel may be deep-linkable" later; the checklist allows no route at all. The rules say a panel is never modal; the accessibility section says to decide whether it is. Clicking outside is listed as uncovered, but the rules require `closeOnClickOutside={false}`.
+- **Tabs, default tab.** The tabs skill says which tab opens by default is "not settled". `recursica-skill-defaults` settles it — the first tab in reading order — and the router assigns the question there. The tabs entry looks out of date.
+
 ## What is settled
 
 The shared form-field substrate turned out to be real and consistent, which resolves the question of whether the field skills need a common text block. They do not — three components own it and every field skill points at them:
