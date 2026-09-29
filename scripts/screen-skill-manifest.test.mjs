@@ -13,13 +13,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import {
-  adapterImports,
-  resolveImport,
-  manifest,
-  localGraph,
-  skillFor,
-} from "./screen-skill-manifest.mjs";
+import { adapterImports, resolveImport, manifest, localGraph, skillFor } from "./screen-skill-manifest.mjs";
 
 test("adapterImports reads a multi-line import and ignores other packages", () => {
   const source = `
@@ -43,40 +37,22 @@ test("adapterImports matches every adapter package name, not one hardcoded line"
   // components at all while the regex pinned `mantine-adapter`, and `uncovered` stayed empty —
   // so the shortfall was invisible in the output as well as in the review built on it.
   assert.deepEqual(
-    adapterImports(
-      `import { Button, Table, TextField } from "@recursica/adapter-mantine-v8"`,
-    ),
+    adapterImports(`import { Button, Table, TextField } from "@recursica/adapter-mantine-v8"`),
     ["Button", "Table", "TextField"],
   );
-  assert.deepEqual(
-    adapterImports(`import { Modal } from '@recursica/mui-adapter'`),
-    ["Modal"],
-  );
+  assert.deepEqual(adapterImports(`import { Modal } from '@recursica/mui-adapter'`), ["Modal"]);
 });
 
 test("adapterImports ignores the adapter packages that are not a component surface", () => {
   // Shared types and the test harness. A name imported from either is not a component on screen,
   // and counting one would put a skill in the manifest that the screen never renders.
-  assert.deepEqual(
-    adapterImports(
-      `import { RECURSICA_COMPONENTS } from '@recursica/adapter-common'`,
-    ),
-    [],
-  );
-  assert.deepEqual(
-    adapterImports(
-      `import { renderWithTheme } from '@recursica/adapter-tester'`,
-    ),
-    [],
-  );
+  assert.deepEqual(adapterImports(`import { RECURSICA_COMPONENTS } from '@recursica/adapter-common'`), []);
+  assert.deepEqual(adapterImports(`import { renderWithTheme } from '@recursica/adapter-tester'`), []);
 });
 
 test("a component whose skill slug matches its name resolves straight through", () => {
   assert.deepEqual(resolveImport("Badge"), {
-    name: "Badge",
-    kind: "component",
-    skills: ["recursica-skill-badge"],
-    match: "exact",
+    name: "Badge", kind: "component", skills: ["recursica-skill-badge"], match: "exact",
   });
 });
 
@@ -94,22 +70,12 @@ test("Radio, HoverCard and Popover resolve by matching, with no alias table", ()
   // Each of these differs from its skill's slug by more than punctuation, and all three resolve
   // without an entry anywhere. The assertion that matters is `match: "partial"` — it is the proof
   // that comparison did the work, so re-adding a hardcoded alias would fail this test.
-  assert.deepEqual(resolveImport("Radio").skills, [
-    "recursica-skill-radio-button",
-  ]);
+  assert.deepEqual(resolveImport("Radio").skills, ["recursica-skill-radio-button"]);
   assert.equal(skillFor("Radio").match, "partial");
 
-  assert.deepEqual(resolveImport("HoverCard").skills, [
-    "recursica-skill-hover-card-popover",
-  ]);
-  assert.deepEqual(resolveImport("Popover").skills, [
-    "recursica-skill-hover-card-popover",
-  ]);
-  assert.equal(
-    skillFor("Popover").match,
-    "partial",
-    "matches the tail of the slug",
-  );
+  assert.deepEqual(resolveImport("HoverCard").skills, ["recursica-skill-hover-card-popover"]);
+  assert.deepEqual(resolveImport("Popover").skills, ["recursica-skill-hover-card-popover"]);
+  assert.equal(skillFor("Popover").match, "partial", "matches the tail of the slug");
 });
 
 test("an ambiguous name is reported rather than guessed at", () => {
@@ -128,10 +94,7 @@ test("an ambiguous name is reported rather than guessed at", () => {
 test("a name matching nothing and having no route surfaces in uncovered", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "barb-"));
   const file = path.join(dir, "Screen.jsx");
-  fs.writeFileSync(
-    file,
-    `import { Zzyzx } from '@recursica/mantine-adapter'\n`,
-  );
+  fs.writeFileSync(file, `import { Zzyzx } from '@recursica/mantine-adapter'\n`);
   assert.deepEqual(manifest([file]).uncovered.unmappedImports, ["Zzyzx"]);
   fs.rmSync(dir, { recursive: true, force: true });
 });
@@ -154,16 +117,10 @@ test("cross-links parse to a non-empty list for a component skill", () => {
   // must reach the badges design rules. The broken version returned [] here and threw nothing.
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "barb-"));
   const file = path.join(dir, "Screen.jsx");
-  fs.writeFileSync(
-    file,
-    `import { Badge } from '@recursica/mantine-adapter'\n`,
-  );
+  fs.writeFileSync(file, `import { Badge } from '@recursica/mantine-adapter'\n`);
   const slugs = manifest([file]).skills.map((s) => s.slug);
   assert.ok(slugs.includes("recursica-skill-badge"), "the component skill");
-  assert.ok(
-    slugs.includes("recursica-skill-badges-chips"),
-    "reached only through ## Load these too",
-  );
+  assert.ok(slugs.includes("recursica-skill-badges-chips"), "reached only through ## Load these too");
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
@@ -171,25 +128,15 @@ test("a table rendered through a local wrapper still reaches the tables skill", 
   // The other silent failure. The screen imports no adapter Table; the wrapper it renders does.
   // Scanning the screen alone yields no table component and no tables rules.
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "barb-"));
-  fs.writeFileSync(
-    path.join(dir, "DataTable.jsx"),
-    `import { Table } from '@recursica/mantine-adapter'\nexport function DataTable() {}\n`,
-  );
+  fs.writeFileSync(path.join(dir, "DataTable.jsx"),
+    `import { Table } from '@recursica/mantine-adapter'\nexport function DataTable() {}\n`);
   const screen = path.join(dir, "Screen.jsx");
-  fs.writeFileSync(
-    screen,
-    `import { Text } from '@recursica/mantine-adapter'\nimport { DataTable } from './DataTable.jsx'\n`,
-  );
+  fs.writeFileSync(screen,
+    `import { Text } from '@recursica/mantine-adapter'\nimport { DataTable } from './DataTable.jsx'\n`);
 
   const slugs = manifest([screen]).skills.map((s) => s.slug);
-  assert.ok(
-    slugs.includes("recursica-skill-table"),
-    "component skill via the wrapper",
-  );
-  assert.ok(
-    slugs.includes("recursica-skill-tables"),
-    "design rules via the wrapper",
-  );
+  assert.ok(slugs.includes("recursica-skill-table"), "component skill via the wrapper");
+  assert.ok(slugs.includes("recursica-skill-tables"), "design rules via the wrapper");
 
   // And the narrow claim, so a future refactor cannot pass this test by widening ALWAYS instead.
   assert.deepEqual(adapterImports(fs.readFileSync(screen, "utf8")), ["Text"]);
@@ -201,10 +148,7 @@ test("localGraph follows relative imports transitively and stops at packages", (
   fs.writeFileSync(path.join(dir, "c.jsx"), `export const c = 1\n`);
   fs.writeFileSync(path.join(dir, "b.jsx"), `import { c } from './c.jsx'\n`);
   const a = path.join(dir, "a.jsx");
-  fs.writeFileSync(
-    a,
-    `import { b } from './b.jsx'\nimport React from 'react'\n`,
-  );
+  fs.writeFileSync(a, `import { b } from './b.jsx'\nimport React from 'react'\n`);
 
   const files = [...localGraph(a)].map((f) => path.basename(f)).sort();
   assert.deepEqual(files, ["a.jsx", "b.jsx", "c.jsx"]);
@@ -226,10 +170,7 @@ test("the always-on skills are present even for a screen importing nothing", () 
   fs.writeFileSync(file, `export function Empty() { return null }\n`);
   const slugs = manifest([file]).skills.map((s) => s.slug);
   // These are the rules about the screen itself, which no import can ever signal.
-  for (const s of [
-    "recursica-skill-screen-scaffolding",
-    "recursica-skill-screen-priority",
-  ]) {
+  for (const s of ["recursica-skill-screen-scaffolding", "recursica-skill-screen-priority"]) {
     assert.ok(slugs.includes(s), s);
   }
   fs.rmSync(dir, { recursive: true, force: true });
@@ -238,10 +179,7 @@ test("the always-on skills are present even for a screen importing nothing", () 
 test("every skill in a manifest carries a resolvable path", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "barb-"));
   const file = path.join(dir, "Screen.jsx");
-  fs.writeFileSync(
-    file,
-    `import { Table, Modal } from '@recursica/mantine-adapter'\n`,
-  );
+  fs.writeFileSync(file, `import { Table, Modal } from '@recursica/mantine-adapter'\n`);
   for (const s of manifest([file]).skills) {
     assert.ok(s.path, `${s.slug} has no path`);
     assert.ok(fs.existsSync(s.path), `${s.path} does not exist`);

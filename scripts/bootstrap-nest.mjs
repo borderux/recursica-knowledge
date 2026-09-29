@@ -24,12 +24,7 @@ import crypto from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-import {
-  loadValues,
-  detokenize,
-  deriveValues,
-  localValuesPath,
-} from "../buzz-agents/lib/placeholders.mjs";
+import { loadValues, detokenize, deriveValues, localValuesPath } from "../buzz-agents/lib/placeholders.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.join(__dirname, "..");
@@ -44,9 +39,7 @@ const opt = (name, dflt) => {
 };
 
 const CHECK = has("--check") || has("--dry-run");
-const NEST = path.resolve(
-  opt("nest", process.env.BUZZ_HOME || path.join(os.homedir(), ".buzz")),
-);
+const NEST = path.resolve(opt("nest", process.env.BUZZ_HOME || path.join(os.homedir(), ".buzz")));
 if (NEST === repoRoot || NEST.startsWith(repoRoot + path.sep)) {
   console.error(`Refusing to install nest inside repository checkout: ${NEST}`);
   process.exit(1);
@@ -89,16 +82,12 @@ const section = (t) => console.log(`\n\x1b[1m${t}\x1b[0m`);
 /* ── 0. manifest ───────────────────────────────────────────────────────────── */
 
 if (!fs.existsSync(manifestPath)) {
-  console.error(
-    `No manifest at ${manifestPath}. Is this the recursica-knowledge checkout?`,
-  );
+  console.error(`No manifest at ${manifestPath}. Is this the recursica-knowledge checkout?`);
   process.exit(1);
 }
 const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
 
-console.log(
-  `\n\x1b[1mBootstrapping nest\x1b[0m → ${NEST}${CHECK ? "   (--check: nothing will be written)" : ""}`,
-);
+console.log(`\n\x1b[1mBootstrapping nest\x1b[0m → ${NEST}${CHECK ? "   (--check: nothing will be written)" : ""}`);
 
 /* ── 1. prerequisites ──────────────────────────────────────────────────────── */
 
@@ -109,21 +98,14 @@ const which = (cmd) => {
     // sh -c directly, rather than shell:true, which is deprecated as of DEP0190 and
     // printed a scary security warning on every run of the very first script an
     // operator runs. cmd values come from the manifest, not from user input.
-    return execFileSync("/bin/sh", ["-c", `command -v "${cmd}"`], {
-      encoding: "utf8",
-    }).trim();
+    return execFileSync("/bin/sh", ["-c", `command -v "${cmd}"`], { encoding: "utf8" }).trim();
   } catch {
     return null;
   }
 };
 
 for (const p of manifest.prerequisites ?? []) {
-  const found =
-    p.kind === "file"
-      ? fs.existsSync(p.check)
-        ? p.check
-        : null
-      : which(p.check);
+  const found = p.kind === "file" ? (fs.existsSync(p.check) ? p.check : null) : which(p.check);
   if (found) {
     ok(`${p.name} — ${found}`);
   } else if (p.optional) {
@@ -212,9 +194,7 @@ if (!insideRepo) {
         cwd: repoRoot,
         stdio: "ignore",
       });
-      wrote(
-        "core.hooksPath = .husky — commit messages are now checked for names",
-      );
+      wrote("core.hooksPath = .husky — commit messages are now checked for names");
     } catch {
       bad(
         `could not set core.hooksPath, so commit messages are NOT checked for client or\n` +
@@ -252,12 +232,8 @@ if (!hadTranscriptDir) ok(`TRANSCRIPT_DIR derived → ${values.TRANSCRIPT_DIR}`)
 // checkout it was pointed at. Moving the clone breaks the launcher until bootstrap re-runs.
 ok(`STU_APP derived → ${values.STU_APP}`);
 
-const provided = Object.entries(values).filter(
-  ([k, v]) => !k.startsWith("$") && v,
-).length;
-ok(
-  `${provided} value${provided === 1 ? "" : "s"} loaded from ${path.relative(repoRoot, valuesFile) || valuesFile}`,
-);
+const provided = Object.entries(values).filter(([k, v]) => !k.startsWith("$") && v).length;
+ok(`${provided} value${provided === 1 ? "" : "s"} loaded from ${path.relative(repoRoot, valuesFile) || valuesFile}`);
 
 /* ── 4. directories ────────────────────────────────────────────────────────── */
 
@@ -302,9 +278,7 @@ for (const f of manifest.files ?? []) {
   const dst = path.join(NEST, f.to);
 
   if (!fs.existsSync(src)) {
-    bad(
-      `${f.from} missing from ${f.fromRoot ? "the repository root" : "nest/"} — manifest and tree disagree${f.fromRoot ? ". If it is a build output, run `npm run agents:build` first" : ""}`,
-    );
+    bad(`${f.from} missing from ${f.fromRoot ? "the repository root" : "nest/"} — manifest and tree disagree${f.fromRoot ? ". If it is a build output, run `npm run agents:build` first" : ""}`);
     continue;
   }
 
@@ -318,8 +292,7 @@ for (const f of manifest.files ?? []) {
 
   const mode = parseInt(f.mode, 8);
   const exists = fs.existsSync(dst);
-  const same =
-    exists && sha(fs.readFileSync(dst)) === sha(Buffer.from(body, "utf8"));
+  const same = exists && sha(fs.readFileSync(dst)) === sha(Buffer.from(body, "utf8"));
   const modeOk = exists && (fs.statSync(dst).mode & 0o777) === mode;
 
   if (same && modeOk) {
@@ -391,16 +364,11 @@ for (const f of manifest.files ?? []) {
   if (declared && fs.existsSync(installedPath)) {
     try {
       const source = JSON.parse(
-        detokenize(
-          fs.readFileSync(path.join(nestSrc, declared.from), "utf8"),
-          values,
-        ).text,
+        detokenize(fs.readFileSync(path.join(nestSrc, declared.from), "utf8"), values).text,
       );
       const installed = JSON.parse(fs.readFileSync(installedPath, "utf8"));
       const have = new Set(
-        commandsIn(installed).map((c) =>
-          key(c.event, c.matcher, c.hook.command),
-        ),
+        commandsIn(installed).map((c) => key(c.event, c.matcher, c.hook.command)),
       );
       const missing = [];
       const seen = new Set();
@@ -433,9 +401,7 @@ for (const f of manifest.files ?? []) {
         ok(`${settingsRel} registers every hook this branch ships`);
       }
     } catch (e) {
-      warn(
-        `${settingsRel} could not be compared against the branch: ${e.message}`,
-      );
+      warn(`${settingsRel} could not be compared against the branch: ${e.message}`);
     }
   }
 }
@@ -456,9 +422,7 @@ if (unresolvedByFile.size) {
   }
   console.log(`\n      Add to buzz-agents/local-values.json, then re-run:\n`);
   for (const t of all) console.log(`        "${t}": ""`);
-  console.log(
-    `\n      buzz-agents/placeholders.json says where to find each value.\n`,
-  );
+  console.log(`\n      buzz-agents/placeholders.json says where to find each value.\n`);
   failed++;
 }
 
@@ -475,9 +439,7 @@ const tbUrl = tb.sourceUrlTemplate
   .replace("{os}", process.platform)
   .replace("{arch}", process.arch);
 
-const installedSha = fs.existsSync(tbPath)
-  ? sha(fs.readFileSync(tbPath))
-  : null;
+const installedSha = fs.existsSync(tbPath) ? sha(fs.readFileSync(tbPath)) : null;
 
 if (installedSha && installedSha === wantSha) {
   ok(`toolbox ${tb.referenceVersion} present and checksum matches`);
@@ -492,9 +454,7 @@ if (installedSha && installedSha === wantSha) {
   if (CHECK) {
     wrote(`toolbox would download from ${tbUrl}`);
   } else {
-    process.stdout.write(
-      `  downloading toolbox ${tb.referenceVersion} (154 MB) … `,
-    );
+    process.stdout.write(`  downloading toolbox ${tb.referenceVersion} (154 MB) … `);
     const res = await fetch(tbUrl);
     if (!res.ok) {
       console.log("");
@@ -504,9 +464,7 @@ if (installedSha && installedSha === wantSha) {
       const got = sha(buf);
       if (wantSha && got !== wantSha) {
         console.log("");
-        bad(
-          `checksum mismatch — refusing to install.\n      got ${got}\n      want ${wantSha}`,
-        );
+        bad(`checksum mismatch — refusing to install.\n      got ${got}\n      want ${wantSha}`);
       } else {
         fs.mkdirSync(path.dirname(tbPath), { recursive: true });
         fs.writeFileSync(tbPath, buf);
@@ -553,9 +511,7 @@ console.log(`  These are separate steps, each with its own tool:
 
 console.log("");
 if (failed) {
-  console.log(
-    `\x1b[31m✗ ${failed} problem${failed > 1 ? "s" : ""}.\x1b[0m Fix the above and re-run — this script is idempotent.\n`,
-  );
+  console.log(`\x1b[31m✗ ${failed} problem${failed > 1 ? "s" : ""}.\x1b[0m Fix the above and re-run — this script is idempotent.\n`);
   process.exit(1);
 }
 console.log(
@@ -563,7 +519,4 @@ console.log(
     ? `\x1b[1m--check complete.\x1b[0m ${changed} change${changed === 1 ? "" : "s"} pending. Re-run without --check to apply.\n`
     : `\x1b[32m✓ Nest ready\x1b[0m at ${NEST}. ${changed} change${changed === 1 ? "" : "s"}.\n`,
 );
-if (notes.length)
-  console.log(
-    `  ${notes.length} warning${notes.length > 1 ? "s" : ""} above worth reading.\n`,
-  );
+if (notes.length) console.log(`  ${notes.length} warning${notes.length > 1 ? "s" : ""} above worth reading.\n`);
