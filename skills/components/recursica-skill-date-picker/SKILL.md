@@ -137,12 +137,15 @@ Never style an unfocused date picker so it reads as disabled. An editable field 
 
 ## Load these too
 
-- [`recursica-skill-dates-and-currency`](../../design-rules/recursica-skill-dates-and-currency/SKILL.md) — the date format, time zones, relative vs. absolute time, ranges, and the format-follows-focus rule.
-- [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — label placement and one placement per form, the compound-control exception, validation timing, pre-fill, save mode, and the rule that no form control goes inside a card.
-- [`recursica-skill-label`](../recursica-skill-label/SKILL.md) — the label component, its placement axis, and required vs. optional marking.
-- [`recursica-skill-assistive-element`](../recursica-skill-assistive-element/SKILL.md) — the help and error text below the field, and why the error replaces the help.
-- [`recursica-skill-text-field`](../recursica-skill-text-field/SKILL.md) — the control to use when a calendar is the wrong affordance.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel.
+- `recursica-skill-dates-and-currency` — the date format, time zones, relative vs. absolute time, ranges, and the format-follows-focus rule.
+- `recursica-skill-forms` — label placement and one placement per form, the compound-control exception, validation timing, pre-fill, save mode, and the rule that no form control goes inside a card.
+- `recursica-skill-label` — the label component, its placement axis, and required vs. optional marking.
+- `recursica-skill-assistive-element` — the help and error text below the field, and why the error replaces the help.
+- `recursica-skill-system-conventions` — never carry meaning in a single channel.
+
+### Only if the screen also uses it
+
+- `recursica-skill-text-field` — the control to use when a calendar is the wrong affordance.
 
 ## Uncovered — ask, do not invent
 

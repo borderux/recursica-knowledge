@@ -132,11 +132,14 @@ The beak is part of the component. Do not draw your own, and do not reposition t
 
 ## Load these too
 
-- [`recursica-skill-tooltip`](../recursica-skill-tooltip/SKILL.md) — the sibling component for a short text label on an unlabeled control, and why the two are not interchangeable despite matching tokens.
-- [`recursica-skill-menu`](../recursica-skill-menu/SKILL.md) — where a list of actions or options goes, and its focus-return requirements.
-- [`recursica-skill-discoverability`](../../psychology/recursica-skill-discoverability/SKILL.md) — progressive disclosure, the three cases where hiding is not safe, and the rule that it never defends a dark pattern.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel; a hidden affordance must stay keyboard and assistive-technology reachable.
-- [`recursica-skill-panel`](../recursica-skill-panel/SKILL.md) — the surface for content the user needs while working in the page.
+- `recursica-skill-discoverability` — progressive disclosure, the three cases where hiding is not safe, and the rule that it never defends a dark pattern.
+- `recursica-skill-system-conventions` — never carry meaning in a single channel; a hidden affordance must stay keyboard and assistive-technology reachable.
+
+### Only if the screen also uses it
+
+- `recursica-skill-tooltip` — the sibling component for a short text label on an unlabeled control, and why the two are not interchangeable despite matching tokens.
+- `recursica-skill-menu` — where a list of actions or options goes, and its focus-return requirements.
+- `recursica-skill-panel` — the surface for content the user needs while working in the page.
 
 ## Uncovered — ask, do not invent
 

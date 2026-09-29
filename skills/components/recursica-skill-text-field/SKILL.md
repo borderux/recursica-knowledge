@@ -118,10 +118,12 @@ Never style an unfocused field so that it reads as disabled. An editable field m
 
 ## Load these too
 
-- [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — label placement and alignment, one placement per form, single-column layout, required vs. optional marking, validation timing, error presentation, save mode, and the rule that no form control goes inside a card.
-- [`recursica-skill-selection-controls`](../../design-rules/recursica-skill-selection-controls/SKILL.md) — when a predefined-option control replaces free-form entry, and disabled vs. read-only.
-- [`recursica-skill-dates-and-currency`](../../design-rules/recursica-skill-dates-and-currency/SKILL.md) — date, time, currency, and numeric formatting inside the field.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel.
+- `recursica-skill-forms` — label placement and alignment, one placement per form, single-column layout, required vs. optional marking, validation timing, error presentation, save mode, and the rule that no form control goes inside a card.
+- `recursica-skill-selection-controls` — when a predefined-option control replaces free-form entry, and disabled vs. read-only.
+- `recursica-skill-dates-and-currency` — date, time, currency, and numeric formatting inside the field.
+- `recursica-skill-system-conventions` — never carry meaning in a single channel.
+- `recursica-skill-label` — label copy that names the object and stands alone, and the required and optional markers.
+- `recursica-skill-assistive-element` — the help and error text below the field, and why the error replaces rather than joins it.
 
 ## Uncovered — ask, do not invent
 

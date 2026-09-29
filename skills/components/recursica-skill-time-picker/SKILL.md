@@ -132,13 +132,16 @@ Never style an unfocused time picker so it reads as disabled. An editable field 
 
 ## Load these too
 
-- [`recursica-skill-dates-and-currency`](../../design-rules/recursica-skill-dates-and-currency/SKILL.md) — 12- vs 24-hour, time zones, when not to localize, seconds, duration formatting, and format follows focus.
-- [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — label placement and one placement per form, the compound-control exception that puts date and time on one row, validation timing, and save mode.
-- [`recursica-skill-label`](../recursica-skill-label/SKILL.md) — the label component, its placement axis, and the one-label rule for a compound control.
-- [`recursica-skill-assistive-element`](../recursica-skill-assistive-element/SKILL.md) — the help and error text below the field, and why the error replaces the help.
-- [`recursica-skill-date-picker`](../recursica-skill-date-picker/SKILL.md) — the date half of a date-and-time row.
-- [`recursica-skill-selection-controls`](../../design-rules/recursica-skill-selection-controls/SKILL.md) — when a preset list replaces free entry, and disabled vs. read-only.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel.
+- `recursica-skill-dates-and-currency` — 12- vs 24-hour, time zones, when not to localize, seconds, duration formatting, and format follows focus.
+- `recursica-skill-forms` — label placement and one placement per form, the compound-control exception that puts date and time on one row, validation timing, and save mode.
+- `recursica-skill-label` — the label component, its placement axis, and the one-label rule for a compound control.
+- `recursica-skill-assistive-element` — the help and error text below the field, and why the error replaces the help.
+- `recursica-skill-selection-controls` — when a preset list replaces free entry, and disabled vs. read-only.
+- `recursica-skill-system-conventions` — never carry meaning in a single channel.
+
+### Only if the screen also uses it
+
+- `recursica-skill-date-picker` — the date half of a date-and-time row.
 
 ## Uncovered — ask, do not invent
 

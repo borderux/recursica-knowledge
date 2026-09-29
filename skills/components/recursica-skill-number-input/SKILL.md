@@ -131,13 +131,16 @@ Never style an unfocused number input so it reads as disabled. An editable field
 
 ## Load these too
 
-- [`recursica-skill-dates-and-currency`](../../design-rules/recursica-skill-dates-and-currency/SKILL.md) — right alignment, two-decimal currency, precision consistency, the symbol in the column header, accounting parentheses, ranges, rounding, and abbreviation.
-- [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — label placement and one placement per form, validation timing, pre-fill and defaults, save mode, and the rule that no form control goes inside a card.
-- [`recursica-skill-label`](../recursica-skill-label/SKILL.md) — the label component, its placement axis, and required vs. optional marking.
-- [`recursica-skill-assistive-element`](../recursica-skill-assistive-element/SKILL.md) — the help and error text below the field, and why the error replaces the help.
-- [`recursica-skill-slider`](../recursica-skill-slider/SKILL.md) — the control for an approximate value across a range.
-- [`recursica-skill-text-field`](../recursica-skill-text-field/SKILL.md) — the control for digit strings that are not quantities.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel.
+- `recursica-skill-dates-and-currency` — right alignment, two-decimal currency, precision consistency, the symbol in the column header, accounting parentheses, ranges, rounding, and abbreviation.
+- `recursica-skill-forms` — label placement and one placement per form, validation timing, pre-fill and defaults, save mode, and the rule that no form control goes inside a card.
+- `recursica-skill-label` — the label component, its placement axis, and required vs. optional marking.
+- `recursica-skill-assistive-element` — the help and error text below the field, and why the error replaces the help.
+- `recursica-skill-system-conventions` — never carry meaning in a single channel.
+
+### Only if the screen also uses it
+
+- `recursica-skill-slider` — the control for an approximate value across a range.
+- `recursica-skill-text-field` — the control for digit strings that are not quantities.
 
 ## Uncovered — ask, do not invent
 

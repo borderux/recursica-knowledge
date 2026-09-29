@@ -114,11 +114,11 @@ The selected item's visual treatment comes with `selection-states`. Do not resty
 
 ## Load these too
 
-- [`recursica-skill-buttons-links`](../../design-rules/recursica-skill-buttons-links/SKILL.md) — when row actions collapse into an ellipsis menu, icon-only versus text triggers, label copy, tooltips on icon-only triggers, and toolbar overflow by frequency.
-- [`recursica-skill-navigation`](../../design-rules/recursica-skill-navigation/SKILL.md) — sub-navigation opens on click and never on hover, no overflow menu to make a nav fit, item counts, and permissions.
-- [`recursica-skill-tables`](../../design-rules/recursica-skill-tables/SKILL.md) — the row-action menu, the column-visibility gear, and why a row with a menu cannot be clickable.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — fix the structure rather than scrolling a long list; never carry meaning in a single channel; the unadvertised affordance and its keyboard requirement.
-- [`recursica-skill-working-memory`](../../psychology/recursica-skill-working-memory/SKILL.md) — 7 ± 2 as a scannability ceiling, and why a menu is a recognition surface rather than a recall test.
+- `recursica-skill-buttons-links` — when row actions collapse into an ellipsis menu, icon-only versus text triggers, label copy, tooltips on icon-only triggers, and toolbar overflow by frequency.
+- `recursica-skill-navigation` — sub-navigation opens on click and never on hover, no overflow menu to make a nav fit, item counts, and permissions.
+- `recursica-skill-tables` — the row-action menu, the column-visibility gear, and why a row with a menu cannot be clickable.
+- `recursica-skill-system-conventions` — fix the structure rather than scrolling a long list; never carry meaning in a single channel; the unadvertised affordance and its keyboard requirement.
+- `recursica-skill-working-memory` — 7 ± 2 as a scannability ceiling, and why a menu is a recognition surface rather than a recall test.
 
 ## Uncovered — ask, do not invent
 

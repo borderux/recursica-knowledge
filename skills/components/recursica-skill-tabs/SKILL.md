@@ -100,10 +100,10 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Load these too
 
-- [`recursica-skill-navigation`](../../design-rules/recursica-skill-navigation/SKILL.md) — what tabs may contain, tab routes and history, the prohibition on overflow, active states, breadcrumbs.
-- [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — the stepper, which is the correct alternative to a tabbed form.
-- [`recursica-skill-working-memory`](../../psychology/recursica-skill-working-memory/SKILL.md) — the basis for the item-count ceiling.
-- [`recursica-skill-badges-chips`](../../design-rules/recursica-skill-badges-chips/SKILL.md) — the counter on a tab.
+- `recursica-skill-navigation` — what tabs may contain, tab routes and history, the prohibition on overflow, active states, breadcrumbs.
+- `recursica-skill-forms` — the stepper, which is the correct alternative to a tabbed form.
+- `recursica-skill-working-memory` — the basis for the item-count ceiling.
+- `recursica-skill-badges-chips` — the counter on a tab.
 
 ## Uncovered — ask, do not invent
 

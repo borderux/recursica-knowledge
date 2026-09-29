@@ -93,9 +93,9 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Load these too
 
-- [`recursica-skill-buttons-links`](../../design-rules/recursica-skill-buttons-links/SKILL.md) — link vs. button semantics, label copy, table row usage, new-tab behavior, modal triggers.
-- [`recursica-skill-navigation`](../../design-rules/recursica-skill-navigation/SKILL.md) — routing, browser history, permissions, and where links belong in the app shell.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel.
+- `recursica-skill-buttons-links` — link vs. button semantics, label copy, table row usage, new-tab behavior, modal triggers.
+- `recursica-skill-navigation` — routing, browser history, permissions, and where links belong in the app shell.
+- `recursica-skill-system-conventions` — never carry meaning in a single channel.
 
 ## Uncovered — ask, do not invent
 

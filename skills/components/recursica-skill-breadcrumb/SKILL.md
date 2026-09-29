@@ -107,11 +107,14 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Load these too
 
-- [`recursica-skill-navigation`](../../design-rules/recursica-skill-navigation/SKILL.md) — what counts as a location, routing and browser history, indicating location with selected state plus headings plus breadcrumbs, semantic list markup, and the prohibition on horizontal scrolling.
-- [`recursica-skill-link`](../recursica-skill-link/SKILL.md) — real `href`s, labels that name the destination, never disabling a link, and modifier-key behavior.
-- [`recursica-skill-buttons-links`](../../design-rules/recursica-skill-buttons-links/SKILL.md) — link vs. button semantics, link label copy, and the tooltip requirement for an icon-only control.
-- [`recursica-skill-tabs`](../recursica-skill-tabs/SKILL.md) — switching between parts of one whole on a single page, which is not a trail.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel, and fix the structure rather than adding a mechanism to cope with it.
+- `recursica-skill-navigation` — what counts as a location, routing and browser history, indicating location with selected state plus headings plus breadcrumbs, semantic list markup, and the prohibition on horizontal scrolling.
+- `recursica-skill-buttons-links` — link vs. button semantics, link label copy, and the tooltip requirement for an icon-only control.
+- `recursica-skill-system-conventions` — never carry meaning in a single channel, and fix the structure rather than adding a mechanism to cope with it.
+
+### Only if the screen also uses it
+
+- `recursica-skill-link` — real `href`s, labels that name the destination, never disabling a link, and modifier-key behavior.
+- `recursica-skill-tabs` — switching between parts of one whole on a single page, which is not a trail.
 
 ## Uncovered — ask, do not invent
 

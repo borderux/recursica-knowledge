@@ -132,12 +132,15 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Load these too
 
-- [`recursica-skill-tables`](../../design-rules/recursica-skill-tables/SKILL.md) — the owning design-rules skill: table vs. cards, column widths and alignment, truncation vs. wrapping, two-value cells, pagination vs. infinite scroll, fixed header and footer, default sort, multi-sort, column visibility, frozen columns, clickable rows, inline editing, totals.
-- [`recursica-skill-dates-and-currency`](../../design-rules/recursica-skill-dates-and-currency/SKILL.md) — currency alignment and precision, date format, and the symbol in the column header.
-- [`recursica-skill-card`](../recursica-skill-card/SKILL.md) — the boundary: when a repeating set is cards instead.
-- [`recursica-skill-pagination`](../recursica-skill-pagination/SKILL.md) — the footer control for paging.
-- [`recursica-skill-checkbox`](../recursica-skill-checkbox/SKILL.md) — row selection and the header's select-all, including the indeterminate state.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — one behavioral mode per system, the unadvertised affordance and its keyboard requirement, never carry meaning in a single channel.
+- `recursica-skill-tables` — the owning design-rules skill: table vs. cards, column widths and alignment, truncation vs. wrapping, two-value cells, pagination vs. infinite scroll, fixed header and footer, default sort, multi-sort, column visibility, frozen columns, clickable rows, inline editing, totals.
+- `recursica-skill-dates-and-currency` — currency alignment and precision, date format, and the symbol in the column header.
+- `recursica-skill-system-conventions` — one behavioral mode per system, the unadvertised affordance and its keyboard requirement, never carry meaning in a single channel.
+
+### Only if the screen also uses it
+
+- `recursica-skill-card` — the boundary: when a repeating set is cards instead.
+- `recursica-skill-pagination` — the footer control for paging.
+- `recursica-skill-checkbox` — row selection and the header's select-all, including the indeterminate state.
 
 ## Uncovered — ask, do not invent
 

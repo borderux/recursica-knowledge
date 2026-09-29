@@ -111,12 +111,15 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Load these too
 
-- [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — label placement, the container-width trigger, one placement per form, the rule that read-only is a distinct component rather than a styled-down input, and the rule that no form control goes inside a card.
-- [`recursica-skill-dates-and-currency`](../../design-rules/recursica-skill-dates-and-currency/SKILL.md) — the read-only date format, right alignment, precision, durations, and the format-follows-focus rule this component sits at one end of.
-- [`recursica-skill-label`](../recursica-skill-label/SKILL.md) — the label component, its placement axis, and the reserved edit-icon gap.
-- [`recursica-skill-selection-controls`](../../design-rules/recursica-skill-selection-controls/SKILL.md) — disabled vs. read-only, and when a value should not be a form control at all.
-- [`recursica-skill-text-field`](../recursica-skill-text-field/SKILL.md) — the editable counterpart, and why a disabled field is never a display mechanism.
-- [`recursica-skill-tables`](../../design-rules/recursica-skill-tables/SKILL.md) — where repeating read-only values belong instead.
+- `recursica-skill-forms` — label placement, the container-width trigger, one placement per form, the rule that read-only is a distinct component rather than a styled-down input, and the rule that no form control goes inside a card.
+- `recursica-skill-dates-and-currency` — the read-only date format, right alignment, precision, durations, and the format-follows-focus rule this component sits at one end of.
+- `recursica-skill-label` — the label component, its placement axis, and the reserved edit-icon gap.
+- `recursica-skill-selection-controls` — disabled vs. read-only, and when a value should not be a form control at all.
+- `recursica-skill-tables` — where repeating read-only values belong instead.
+
+### Only if the screen also uses it
+
+- `recursica-skill-text-field` — the editable counterpart, and why a disabled field is never a display mechanism.
 
 ## Uncovered — ask, do not invent
 

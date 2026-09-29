@@ -49,7 +49,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.label`.
 
 ## Rules for using it
 
-**Side by side is the default.** The label sits to the left of the field, on the same row, right-aligned so it sits close to its field. Stack it above only when the container is too narrow to fit both — and what decides this is the width of the form's container, not the viewport (the visible area of the browser window). Owned by [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md).
+**Side by side is the default.** The label sits to the left of the field, on the same row, right-aligned so it sits close to its field. Stack it above only when the container is too narrow to fit both — and what decides this is the width of the form's container, not the viewport (the visible area of the browser window). Owned by `recursica-skill-forms`.
 
 **Label placement is one decision per form, and the label owns it.** A single form uses labels side by side, or stacked labels — **never both at the same breakpoint** (the screen width at which the layout changes).
 
@@ -58,7 +58,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.label`.
 - **Across breakpoints, a whole form may switch** — side by side in a wide container, stacked in a narrow drawer. That is still one placement per form, decided once for each breakpoint. What is forbidden is a mix within a single breakpoint.
 - **Sections do not get their own placement.** A form's sections are parts of one form. A section whose labels stack while the section above sits side by side is the same defect.
 
-Mixing the two placements in one form causes three problems. It destroys the single scan straight down the column of values that the side-by-side rule exists to create. It creates two competing left edges, so the user cannot tell whether the next thing they read is a label or a value. And it makes the odd field out look as if it means something different. Owned by [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md).
+Mixing the two placements in one form causes three problems. It destroys the single scan straight down the column of values that the side-by-side rule exists to create. It creates two competing left edges, so the user cannot tell whether the next thing they read is a label or a value. And it makes the odd field out look as if it means something different. Owned by `recursica-skill-forms`.
 
 **Name the object clearly.** The label must make sense on its own: a screen reader user hears it without the content around it. If a verb is involved, make it clear and active — never passive, and never a linking verb (a verb such as "is" or "seems" that connects words instead of showing an action).
 
@@ -107,9 +107,9 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Load these too
 
-- [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — label placement and alignment, the container-width trigger, one placement per form at any given breakpoint, required vs. optional policy, label copy, and group-level optionality.
-- [`recursica-skill-assistive-element`](../recursica-skill-assistive-element/SKILL.md) — the help and error text below the field.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel.
+- `recursica-skill-forms` — label placement and alignment, the container-width trigger, one placement per form at any given breakpoint, required vs. optional policy, label copy, and group-level optionality.
+- `recursica-skill-assistive-element` — the help and error text below the field.
+- `recursica-skill-system-conventions` — never carry meaning in a single channel.
 
 ## Uncovered — ask, do not invent
 

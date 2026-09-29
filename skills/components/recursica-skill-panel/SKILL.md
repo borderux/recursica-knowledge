@@ -141,14 +141,16 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Load these too
 
-- [`recursica-skill-panels-modals`](../../design-rules/recursica-skill-panels-modals/SKILL.md) — the owning design-rules skill: panel vs. modal vs. page, the context test, the scrolling threshold, the prohibition on stacking modes, forms in a panel, unsaved-change protection, and the focus-trapping difference.
+- `recursica-skill-panels-modals` — the owning design-rules skill: panel vs. modal vs. page, the context test, the scrolling threshold, the prohibition on stacking modes, forms in a panel, unsaved-change protection, and the focus-trapping difference.
+- `recursica-skill-navigation` — a location is a route; a trigger-invoked panel is not one and gets no history entry.
+- `recursica-skill-forms` — one label placement per form and the container-width test behind it, single-column layout, validation, and save mode for any form the panel holds.
+- `recursica-skill-buttons-links` — the trigger is a button, one primary action per surface, footer placement.
 
-- [`recursica-skill-modal`](../recursica-skill-modal/SKILL.md) — the blocking alternative, and the focus-trap and inert-background rules a genuinely modal panel inherits.
-- [`recursica-skill-navigation`](../../design-rules/recursica-skill-navigation/SKILL.md) — a location is a route; a trigger-invoked panel is not one and gets no history entry.
-- [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — one label placement per form and the container-width test behind it, single-column layout, validation, and save mode for any form the panel holds.
-- [`recursica-skill-buttons-links`](../../design-rules/recursica-skill-buttons-links/SKILL.md) — the trigger is a button, one primary action per surface, footer placement.
-- [`recursica-skill-card`](../recursica-skill-card/SKILL.md) — why the panel's content is not wrapped in a card, and why no form goes in one.
-- [`recursica-skill-toast`](../recursica-skill-toast/SKILL.md) — transient confirmation and undo, which never belong in a panel.
+### Only if the screen also uses it
+
+- `recursica-skill-modal` — the blocking alternative, and the focus-trap and inert-background rules a genuinely modal panel inherits.
+- `recursica-skill-card` — why the panel's content is not wrapped in a card, and why no form goes in one.
+- `recursica-skill-toast` — transient confirmation and undo, which never belong in a panel.
 
 ## Uncovered — ask, do not invent
 

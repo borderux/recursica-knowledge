@@ -139,13 +139,13 @@ Do not add margins or spacer elements between items or between the group and its
 
 ## Load these too
 
-- [`recursica-skill-selection-controls`](../../design-rules/recursica-skill-selection-controls/SKILL.md) — which control a field gets, checkbox vs. switch vs. radio, option counts, pre-selection, select-all, table selection mechanics, vertical-only layout, and commit timing.
-- [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — single-column layout, label placement, its container-width trigger, and one placement per form, required vs. optional marking, validation timing, save mode, and the rule that no form control goes inside a card.
-- [`recursica-skill-label`](../recursica-skill-label/SKILL.md) — the group label and the item labels, copy that stands alone, and the required and optional markers.
-- [`recursica-skill-assistive-element`](../recursica-skill-assistive-element/SKILL.md) — the help and error text below the group, and the copy rules for both.
-- [`recursica-skill-working-memory`](../../psychology/recursica-skill-working-memory/SKILL.md) — the 7 ± 2 basis, and the recognition-versus-comparison boundary that decides when a long list is acceptable.
-- [`recursica-skill-tables`](../../design-rules/recursica-skill-tables/SKILL.md) — table structure around row and header selection.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel; fix the structure rather than adding a mechanism to cope with it.
+- `recursica-skill-selection-controls` — which control a field gets, checkbox vs. switch vs. radio, option counts, pre-selection, select-all, table selection mechanics, vertical-only layout, and commit timing.
+- `recursica-skill-forms` — single-column layout, label placement, its container-width trigger, and one placement per form, required vs. optional marking, validation timing, save mode, and the rule that no form control goes inside a card.
+- `recursica-skill-label` — the group label and the item labels, copy that stands alone, and the required and optional markers.
+- `recursica-skill-assistive-element` — the help and error text below the group, and the copy rules for both.
+- `recursica-skill-working-memory` — the 7 ± 2 basis, and the recognition-versus-comparison boundary that decides when a long list is acceptable.
+- `recursica-skill-tables` — table structure around row and header selection.
+- `recursica-skill-system-conventions` — never carry meaning in a single channel; fix the structure rather than adding a mechanism to cope with it.
 
 ## Uncovered — ask, do not invent
 

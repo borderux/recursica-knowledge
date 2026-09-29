@@ -118,12 +118,15 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Load these too
 
-- [`recursica-skill-label`](../recursica-skill-label/SKILL.md) — the field's name, placement, and the required or optional marker.
-- [`recursica-skill-assistive-element`](../recursica-skill-assistive-element/SKILL.md) — the help text carrying unit, range, and step, and the error message.
-- [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — single-column layout, one label placement per form and the container-width trigger for it, validation timing, save mode, and the no-form-control-in-a-card rule.
-- [`recursica-skill-selection-controls`](../../design-rules/recursica-skill-selection-controls/SKILL.md) — when a discrete-option control replaces a range, and disabled versus read-only.
-- [`recursica-skill-number-input`](../recursica-skill-number-input/SKILL.md) — the control that owns exact numeric entry.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel.
+- `recursica-skill-label` — the field's name, placement, and the required or optional marker.
+- `recursica-skill-assistive-element` — the help text carrying unit, range, and step, and the error message.
+- `recursica-skill-forms` — single-column layout, one label placement per form and the container-width trigger for it, validation timing, save mode, and the no-form-control-in-a-card rule.
+- `recursica-skill-selection-controls` — when a discrete-option control replaces a range, and disabled versus read-only.
+- `recursica-skill-system-conventions` — never carry meaning in a single channel.
+
+### Only if the screen also uses it
+
+- `recursica-skill-number-input` — the control that owns exact numeric entry.
 
 ## Uncovered — ask, do not invent
 

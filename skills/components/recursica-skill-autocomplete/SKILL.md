@@ -154,14 +154,17 @@ Never style an unfocused field so that it reads as disabled. An editable field m
 
 ## Load these too
 
-- [`recursica-skill-selection-controls`](../../design-rules/recursica-skill-selection-controls/SKILL.md) — which control a field gets, option counts, the dropdown affordance test, pre-selection, disabled vs. read-only, and commit timing.
-- [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — single-column layout, label placement, its container-width trigger, and one placement per form, required vs. optional marking, validation timing, pre-fill limits, and save mode.
-- [`recursica-skill-dropdown`](../recursica-skill-dropdown/SKILL.md) — the control this one replaces, its four-option floor, and the affordance test.
-- [`recursica-skill-label`](../recursica-skill-label/SKILL.md) — label copy that names the object and stands alone, and the required and optional markers.
-- [`recursica-skill-assistive-element`](../recursica-skill-assistive-element/SKILL.md) — the help and error text below the field, and why the error replaces rather than joins it.
-- [`recursica-skill-text-field`](../recursica-skill-text-field/SKILL.md) — the control for genuinely free-form values, and the placeholder rules this field shares.
-- [`recursica-skill-working-memory`](../../psychology/recursica-skill-working-memory/SKILL.md) — recognition versus recall, which is what separates this control from a dropdown.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel.
+- `recursica-skill-selection-controls` — which control a field gets, option counts, the dropdown affordance test, pre-selection, disabled vs. read-only, and commit timing.
+- `recursica-skill-forms` — single-column layout, label placement, its container-width trigger, and one placement per form, required vs. optional marking, validation timing, pre-fill limits, and save mode.
+- `recursica-skill-label` — label copy that names the object and stands alone, and the required and optional markers.
+- `recursica-skill-assistive-element` — the help and error text below the field, and why the error replaces rather than joins it.
+- `recursica-skill-working-memory` — recognition versus recall, which is what separates this control from a dropdown.
+- `recursica-skill-system-conventions` — never carry meaning in a single channel.
+
+### Only if the screen also uses it
+
+- `recursica-skill-dropdown` — the control this one replaces, its four-option floor, and the affordance test.
+- `recursica-skill-text-field` — the control for genuinely free-form values, and the placeholder rules this field shares.
 
 ## Uncovered — ask, do not invent
 

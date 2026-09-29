@@ -107,11 +107,14 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Load these too
 
-- [`recursica-skill-navigation`](../../design-rules/recursica-skill-navigation/SKILL.md) — collapsed by default, click not hover for sub-levels, the accordion-never-nested rule that sends you here, routing if the tree is navigation, and permissions.
-- [`recursica-skill-accordion`](../recursica-skill-accordion/SKILL.md) — the single-level alternative, and the boundary between them.
-- [`recursica-skill-table`](../recursica-skill-table/SKILL.md) — the alternative when the data turns out to be flat.
-- [`recursica-skill-working-memory`](../../psychology/recursica-skill-working-memory/SKILL.md) — the basis for the breadth ceiling.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel.
+- `recursica-skill-navigation` — collapsed by default, click not hover for sub-levels, the accordion-never-nested rule that sends you here, routing if the tree is navigation, and permissions.
+- `recursica-skill-working-memory` — the basis for the breadth ceiling.
+- `recursica-skill-system-conventions` — never carry meaning in a single channel.
+
+### Only if the screen also uses it
+
+- `recursica-skill-accordion` — the single-level alternative, and the boundary between them.
+- `recursica-skill-table` — the alternative when the data turns out to be flat.
 
 ## Uncovered — ask, do not invent
 

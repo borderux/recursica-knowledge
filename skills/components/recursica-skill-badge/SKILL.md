@@ -97,8 +97,8 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Load these too
 
-- [`recursica-skill-badges-chips`](../../design-rules/recursica-skill-badges-chips/SKILL.md) — when a badge is the right component, how many are allowed, and placement in tables, cards, tabs, headings, and navigation.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel.
+- `recursica-skill-badges-chips` — when a badge is the right component, how many are allowed, and placement in tables, cards, tabs, headings, and navigation.
+- `recursica-skill-system-conventions` — never carry meaning in a single channel.
 
 ## Uncovered — ask, do not invent
 

@@ -107,11 +107,14 @@ Do not implement, override, or tune any of these — the component owns them for
 
 ## Load these too
 
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel, and one behavioral mode per system.
-- [`recursica-skill-dashboards`](../../design-rules/recursica-skill-dashboards/SKILL.md) — disclosing how current the data is, per component where intervals differ, and the prohibition on shipping an empty dashboard.
-- [`recursica-skill-tables`](../../design-rules/recursica-skill-tables/SKILL.md) — which lists loading and error states for a table as unowned, including partial failure.
-- [`recursica-skill-buttons-links`](../../design-rules/recursica-skill-buttons-links/SKILL.md) — which lists pending state on non-submit actions as unowned; the button component has no loading state.
-- [`recursica-skill-toast`](../recursica-skill-toast/SKILL.md) — stating an outcome once the wait is over.
+- `recursica-skill-system-conventions` — never carry meaning in a single channel, and one behavioral mode per system.
+- `recursica-skill-dashboards` — disclosing how current the data is, per component where intervals differ, and the prohibition on shipping an empty dashboard.
+- `recursica-skill-tables` — which lists loading and error states for a table as unowned, including partial failure.
+- `recursica-skill-buttons-links` — which lists pending state on non-submit actions as unowned; the button component has no loading state.
+
+### Only if the screen also uses it
+
+- `recursica-skill-toast` — stating an outcome once the wait is over.
 
 ## Uncovered — ask, do not invent
 

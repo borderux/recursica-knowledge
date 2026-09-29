@@ -132,13 +132,16 @@ Do not add margins or spacer elements between switches or around the group; the 
 
 ## Load these too
 
-- [`recursica-skill-selection-controls`](../../design-rules/recursica-skill-selection-controls/SKILL.md) — the binary-inverse and label tests, switch vs. checkbox, the lone binary field, no switches in table rows, and system-wide commit timing.
-- [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — the save-mode table and its status-message requirement, single-column layout, label placement and one placement per form, and progressive disclosure.
-- [`recursica-skill-label`](../recursica-skill-label/SKILL.md) — label copy that names the object and stands alone, and the required and optional markers.
-- [`recursica-skill-assistive-element`](../recursica-skill-assistive-element/SKILL.md) — the help and error text below the switch, and the copy rules for both.
-- [`recursica-skill-checkbox`](../recursica-skill-checkbox/SKILL.md) — the control a switch becomes whenever either test fails.
-- [`recursica-skill-buttons-links`](../../design-rules/recursica-skill-buttons-links/SKILL.md) — confirmation for high-consequence changes, and undo.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — one behavioural mode per system, and never carry meaning in a single channel.
+- `recursica-skill-selection-controls` — the binary-inverse and label tests, switch vs. checkbox, the lone binary field, no switches in table rows, and system-wide commit timing.
+- `recursica-skill-forms` — the save-mode table and its status-message requirement, single-column layout, label placement and one placement per form, and progressive disclosure.
+- `recursica-skill-label` — label copy that names the object and stands alone, and the required and optional markers.
+- `recursica-skill-assistive-element` — the help and error text below the switch, and the copy rules for both.
+- `recursica-skill-buttons-links` — confirmation for high-consequence changes, and undo.
+- `recursica-skill-system-conventions` — one behavioural mode per system, and never carry meaning in a single channel.
+
+### Only if the screen also uses it
+
+- `recursica-skill-checkbox` — the control a switch becomes whenever either test fails.
 
 ## Uncovered — ask, do not invent
 

@@ -62,7 +62,7 @@ It is narrow:
 
 **A form, a form section, or any single form control MUST NOT be placed inside a card. There is no exception.**
 
-This follows from the tests: a form is the properties of one object, not a set of repeating peers, so the boundary has nothing to separate it from. Form layout is governed by [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md), and the spacing it calls for is already built into the field components.
+This follows from the tests: a form is the properties of one object, not a set of repeating peers, so the boundary has nothing to separate it from. Form layout is governed by `recursica-skill-forms`, and the spacing it calls for is already built into the field components.
 
 ## Use spacing instead
 
@@ -142,12 +142,12 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Load these too
 
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — the general convention that a visible container must be earned.
-- [`recursica-skill-tables`](../../design-rules/recursica-skill-tables/SKILL.md) — the alternative whenever plurality is high or the content is purely data, and the clickable-row rule.
-- [`recursica-skill-dashboards`](../../design-rules/recursica-skill-dashboards/SKILL.md) — why a wall of equal-weight cards has no hierarchy, and what to build instead.
-- [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — form layout and the spacing already built into the field components.
-- [`recursica-skill-badges-chips`](../../design-rules/recursica-skill-badges-chips/SKILL.md) — badge and chip placement within a card.
-- [`recursica-skill-data-visualization`](../../design-rules/recursica-skill-data-visualization/SKILL.md) — the chart in the slot, and its required data table.
+- `recursica-skill-system-conventions` — the general convention that a visible container must be earned.
+- `recursica-skill-tables` — the alternative whenever plurality is high or the content is purely data, and the clickable-row rule.
+- `recursica-skill-dashboards` — why a wall of equal-weight cards has no hierarchy, and what to build instead.
+- `recursica-skill-forms` — form layout and the spacing already built into the field components.
+- `recursica-skill-badges-chips` — badge and chip placement within a card.
+- `recursica-skill-data-visualization` — the chart in the slot, and its required data table.
 
 ## Uncovered — ask, do not invent
 

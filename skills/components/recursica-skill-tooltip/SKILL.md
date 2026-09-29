@@ -109,10 +109,13 @@ The beak is part of the component. Do not draw your own, and do not reposition t
 
 ## Load these too
 
-- [`recursica-skill-buttons-links`](../../design-rules/recursica-skill-buttons-links/SKILL.md) — which controls must have a tooltip, which may, and the rule that a tooltip never rescues a weak label.
-- [`recursica-skill-hover-card-popover`](../recursica-skill-hover-card-popover/SKILL.md) — the sibling component for richer or interactive content, and the hover-only failure mode it must avoid.
-- [`recursica-skill-text-field`](../recursica-skill-text-field/SKILL.md) — visible labels, assistive text, and error text, all of which are persistent and none of which is a tooltip.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel; fix the structure rather than truncating and annotating.
+- `recursica-skill-buttons-links` — which controls must have a tooltip, which may, and the rule that a tooltip never rescues a weak label.
+- `recursica-skill-system-conventions` — never carry meaning in a single channel; fix the structure rather than truncating and annotating.
+
+### Only if the screen also uses it
+
+- `recursica-skill-hover-card-popover` — the sibling component for richer or interactive content, and the hover-only failure mode it must avoid.
+- `recursica-skill-text-field` — visible labels, assistive text, and error text, all of which are persistent and none of which is a tooltip.
 
 ## Uncovered — ask, do not invent
 

@@ -117,12 +117,15 @@ Do not implement, override, or tune any of these — the component owns them for
 
 ## Load these too
 
-- [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — the single-page vs. multi-step test, layout and labels within each step, validation timing, submit behavior, and the one-save-mode rule.
-- [`recursica-skill-navigation`](../../design-rules/recursica-skill-navigation/SKILL.md) — the prohibition on spreading a form across tabs, and what counts as a location with a route.
-- [`recursica-skill-buttons-links`](../../design-rules/recursica-skill-buttons-links/SKILL.md) — Next and Back as actions, label copy, and footer placement.
-- [`recursica-skill-tabs`](../recursica-skill-tabs/SKILL.md) — the structure a stepper replaces, and what tabs are legitimately for.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel; fix the structure instead of shrinking to fit.
-- [`recursica-skill-card`](../recursica-skill-card/SKILL.md) — why no step's content is wrapped in a card.
+- `recursica-skill-forms` — the single-page vs. multi-step test, layout and labels within each step, validation timing, submit behavior, and the one-save-mode rule.
+- `recursica-skill-navigation` — the prohibition on spreading a form across tabs, and what counts as a location with a route.
+- `recursica-skill-buttons-links` — Next and Back as actions, label copy, and footer placement.
+- `recursica-skill-system-conventions` — never carry meaning in a single channel; fix the structure instead of shrinking to fit.
+
+### Only if the screen also uses it
+
+- `recursica-skill-tabs` — the structure a stepper replaces, and what tabs are legitimately for.
+- `recursica-skill-card` — why no step's content is wrapped in a card.
 
 ## Uncovered — ask, do not invent
 

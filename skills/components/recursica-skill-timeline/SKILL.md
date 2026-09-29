@@ -117,12 +117,15 @@ Do not implement, override, or tune any of these — the components own them:
 
 ## Load these too
 
-- [`recursica-skill-dates-and-currency`](../../design-rules/recursica-skill-dates-and-currency/SKILL.md) — the disambiguated date format, relative versus absolute time and the switchover, time zones, and duration formatting for every timestamp in the component.
-- [`recursica-skill-stepper`](../recursica-skill-stepper/SKILL.md) — the forward-looking process the user is walking through, as opposed to a record of what happened.
-- [`recursica-skill-tables`](../../design-rules/recursica-skill-tables/SKILL.md) — the alternative whenever volume is high or the records need sorting, filtering, or comparison.
-- [`recursica-skill-avatar`](../recursica-skill-avatar/SKILL.md) — what an avatar bullet needs in its own right.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel, and fix the structure rather than rendering an unbounded history.
-- [`recursica-skill-card`](../recursica-skill-card/SKILL.md) — why the timeline is not wrapped in a card and holds no form.
+- `recursica-skill-dates-and-currency` — the disambiguated date format, relative versus absolute time and the switchover, time zones, and duration formatting for every timestamp in the component.
+- `recursica-skill-tables` — the alternative whenever volume is high or the records need sorting, filtering, or comparison.
+- `recursica-skill-avatar` — what an avatar bullet needs in its own right.
+- `recursica-skill-system-conventions` — never carry meaning in a single channel, and fix the structure rather than rendering an unbounded history.
+
+### Only if the screen also uses it
+
+- `recursica-skill-stepper` — the forward-looking process the user is walking through, as opposed to a record of what happened.
+- `recursica-skill-card` — why the timeline is not wrapped in a card and holds no form.
 
 ## Uncovered — ask, do not invent
 

@@ -103,10 +103,10 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Load these too
 
-- [`recursica-skill-selection-controls`](../../design-rules/recursica-skill-selection-controls/SKILL.md) — when a segmented control is the right control, the rules it inherits from radio groups, pre-selection, and commit timing.
-- [`recursica-skill-working-memory`](../../psychology/recursica-skill-working-memory/SKILL.md) — the basis for option-count limits.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — one behavioral mode per system; never carry meaning in a single channel.
-- [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — label placement and validation when the control is a form field.
+- `recursica-skill-selection-controls` — when a segmented control is the right control, the rules it inherits from radio groups, pre-selection, and commit timing.
+- `recursica-skill-working-memory` — the basis for option-count limits.
+- `recursica-skill-system-conventions` — one behavioral mode per system; never carry meaning in a single channel.
+- `recursica-skill-forms` — label placement and validation when the control is a form field.
 
 ## Uncovered — ask, do not invent
 

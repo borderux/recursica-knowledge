@@ -136,12 +136,15 @@ Never style an unfocused textarea so it reads as disabled. An editable field mus
 
 ## Load these too
 
-- [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — label placement and one placement per form, single-column layout, the no-custom-spacing rule, validation timing, microcopy, save mode, and the rule that no form control goes inside a card.
-- [`recursica-skill-label`](../recursica-skill-label/SKILL.md) — the label component, its placement axis, and required vs. optional marking.
-- [`recursica-skill-assistive-element`](../recursica-skill-assistive-element/SKILL.md) — the help and error text below the field, and why the error replaces the help.
-- [`recursica-skill-text-field`](../recursica-skill-text-field/SKILL.md) — the control for single-line entry, and the overflow rule that sends a long value here.
-- [`recursica-skill-read-only-field`](../recursica-skill-read-only-field/SKILL.md) — the component for text the user never edits here.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel.
+- `recursica-skill-forms` — label placement and one placement per form, single-column layout, the no-custom-spacing rule, validation timing, microcopy, save mode, and the rule that no form control goes inside a card.
+- `recursica-skill-label` — the label component, its placement axis, and required vs. optional marking.
+- `recursica-skill-assistive-element` — the help and error text below the field, and why the error replaces the help.
+- `recursica-skill-system-conventions` — never carry meaning in a single channel.
+
+### Only if the screen also uses it
+
+- `recursica-skill-text-field` — the control for single-line entry, and the overflow rule that sends a long value here.
+- `recursica-skill-read-only-field` — the component for text the user never edits here.
 
 ## Uncovered — ask, do not invent
 

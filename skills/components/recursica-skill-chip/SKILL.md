@@ -107,11 +107,11 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Load these too
 
-- [`recursica-skill-badges-chips`](../../design-rules/recursica-skill-badges-chips/SKILL.md) — chip vs. badge, tags, dismissible and toggled chips, group counts, and placement.
-- [`recursica-skill-selection-controls`](../../design-rules/recursica-skill-selection-controls/SKILL.md) — when selectable chips are the right control, and the rules they inherit from checkbox groups.
-- [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — commit model, and error presentation for the group.
-- [`recursica-skill-assistive-element`](../recursica-skill-assistive-element/SKILL.md) — the element that carries the group's validation error below it, and the wording it takes.
-- [`recursica-skill-working-memory`](../../psychology/recursica-skill-working-memory/SKILL.md) — the basis for option-count limits.
+- `recursica-skill-badges-chips` — chip vs. badge, tags, dismissible and toggled chips, group counts, and placement.
+- `recursica-skill-selection-controls` — when selectable chips are the right control, and the rules they inherit from checkbox groups.
+- `recursica-skill-forms` — commit model, and error presentation for the group.
+- `recursica-skill-assistive-element` — the element that carries the group's validation error below it, and the wording it takes.
+- `recursica-skill-working-memory` — the basis for option-count limits.
 
 ## Uncovered — ask, do not invent
 

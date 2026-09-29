@@ -96,9 +96,9 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Load these too
 
-- [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — validation timing, error presentation across a form, microcopy, the prevention-first order, and the one-label-placement-per-form rule this element's position inherits.
-- [`recursica-skill-label`](../recursica-skill-label/SKILL.md) — the field's name, and what belongs there rather than here.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel.
+- `recursica-skill-forms` — validation timing, error presentation across a form, microcopy, the prevention-first order, and the one-label-placement-per-form rule this element's position inherits.
+- `recursica-skill-label` — the field's name, and what belongs there rather than here.
+- `recursica-skill-system-conventions` — never carry meaning in a single channel.
 
 ## Uncovered — ask, do not invent
 

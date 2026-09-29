@@ -107,11 +107,14 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Load these too
 
-- [`recursica-skill-tables`](../../design-rules/recursica-skill-tables/SKILL.md) — whether this table paginates at all, the five-to-ten row count for an interior table, the prohibition on inner scrolling, the fixed header and footer, default sort, and totals scope on a paginated table.
-- [`recursica-skill-buttons-links`](../../design-rules/recursica-skill-buttons-links/SKILL.md) — link vs. button semantics, the tooltip requirement for icon-only controls, and disabled controls.
-- [`recursica-skill-navigation`](../../design-rules/recursica-skill-navigation/SKILL.md) — what makes something a location, routing and browser history, and semantic list markup for navigation.
-- [`recursica-skill-link`](../recursica-skill-link/SKILL.md) — real `href`s, names that identify the destination, and why a link is never disabled.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — one behavioral mode per system, and never carry meaning in a single channel.
+- `recursica-skill-tables` — whether this table paginates at all, the five-to-ten row count for an interior table, the prohibition on inner scrolling, the fixed header and footer, default sort, and totals scope on a paginated table.
+- `recursica-skill-buttons-links` — link vs. button semantics, the tooltip requirement for icon-only controls, and disabled controls.
+- `recursica-skill-navigation` — what makes something a location, routing and browser history, and semantic list markup for navigation.
+- `recursica-skill-system-conventions` — one behavioral mode per system, and never carry meaning in a single channel.
+
+### Only if the screen also uses it
+
+- `recursica-skill-link` — real `href`s, names that identify the destination, and why a link is never disabled.
 
 ## Uncovered — ask, do not invent
 

@@ -484,7 +484,7 @@ If you (the AI assistant) are tasked with creating, editing, or registering cust
 
 Every skill in `skills/components/` follows one structure, and a new one must match it. Its only job is to help an agent use the component correctly — nothing goes in that does not serve that:
 
-`## Use it when` · `## Do not use it when` (a table naming the alternative) · `## What exists` (the variant and state inventory from the token file) · `## Rules for using it` · `## Accessibility` (with `### Screen readers` and `### Keyboard and non-mouse navigation`) · `## Not your decision` (token-owned properties) · `## Load these too` · `## Uncovered — ask, do not invent` · `## Pre-flight checklist`
+`## Use it when` · `## Do not use it when` (a table naming the alternative) · `## What exists` (the variant and state inventory from the token file) · `## Rules for using it` · `## Accessibility` (with `### Screen readers` and `### Keyboard and non-mouse navigation`) · `## Not your decision` (token-owned properties) · `## Load these too` (skill names, what the component needs; alternatives and neighbours under `### Only if the screen also uses it`, which loaders follow only when the screen imports that component) · `## Uncovered — ask, do not invent` · `## Pre-flight checklist`
 
 Anatomy diagrams, spec imagery, external documentation links, and generic best practices belong to the website, not the skill.
 

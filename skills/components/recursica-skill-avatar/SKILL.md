@@ -103,12 +103,15 @@ Do not implement, override, or tune any of these — the component owns them for
 
 ## Load these too
 
-- [`recursica-skill-navigation`](../../design-rules/recursica-skill-navigation/SKILL.md) — that the user and account menu stay out of primary navigation, what counts as a location, and how the page states where the user is.
-- [`recursica-skill-menu`](../recursica-skill-menu/SKILL.md) — the menu an avatar trigger opens, and focus handling on open and close.
-- [`recursica-skill-badge`](../recursica-skill-badge/SKILL.md) — status and counts as read-only metadata beside the name, since this component has no status dot.
-- [`recursica-skill-buttons-links`](../../design-rules/recursica-skill-buttons-links/SKILL.md) — the tooltip and naming requirements for an icon-only control, and button vs. link semantics.
-- [`recursica-skill-tables`](../../design-rules/recursica-skill-tables/SKILL.md) — whether a person column earns a picture at table density, and what earns a column at all.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel.
+- `recursica-skill-navigation` — that the user and account menu stay out of primary navigation, what counts as a location, and how the page states where the user is.
+- `recursica-skill-buttons-links` — the tooltip and naming requirements for an icon-only control, and button vs. link semantics.
+- `recursica-skill-tables` — whether a person column earns a picture at table density, and what earns a column at all.
+- `recursica-skill-system-conventions` — never carry meaning in a single channel.
+
+### Only if the screen also uses it
+
+- `recursica-skill-menu` — the menu an avatar trigger opens, and focus handling on open and close.
+- `recursica-skill-badge` — status and counts as read-only metadata beside the name, since this component has no status dot.
 
 ## Uncovered — ask, do not invent
 

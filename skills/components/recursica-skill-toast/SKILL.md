@@ -126,12 +126,14 @@ Do not implement, override, or tune any of these — the component owns them for
 
 ## Load these too
 
-- [`recursica-skill-feedback-messaging`](../../design-rules/recursica-skill-feedback-messaging/SKILL.md) — the owning design-rules skill: whether success needs confirming at all, banner versus toast by tense, why inline messaging is avoided, consolidation, the waiting thresholds, and what the library owns.
+- `recursica-skill-feedback-messaging` — the owning design-rules skill: whether success needs confirming at all, banner versus toast by tense, why inline messaging is avoided, consolidation, the waiting thresholds, and what the library owns.
+- `recursica-skill-buttons-links` — undo policy, when a reversible action is performed rather than confirmed, in-place undo versus global undo, and action label copy.
+- `recursica-skill-forms` — field-level errors, the persistent status message field-level saving requires, and the no-status rule under batch saving.
+- `recursica-skill-system-conventions` — never carry meaning in a single channel, which is why the style is never the message.
 
-- [`recursica-skill-buttons-links`](../../design-rules/recursica-skill-buttons-links/SKILL.md) — undo policy, when a reversible action is performed rather than confirmed, in-place undo versus global undo, and action label copy.
-- [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — field-level errors, the persistent status message field-level saving requires, and the no-status rule under batch saving.
-- [`recursica-skill-modal`](../recursica-skill-modal/SKILL.md) — the blocking alternative for a decision that cannot wait, and the narrow case for confirming up front.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel, which is why the style is never the message.
+### Only if the screen also uses it
+
+- `recursica-skill-modal` — the blocking alternative for a decision that cannot wait, and the narrow case for confirming up front.
 
 ## Uncovered — ask, do not invent
 

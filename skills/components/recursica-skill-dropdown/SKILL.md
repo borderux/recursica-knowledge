@@ -144,13 +144,16 @@ Never style an unfocused dropdown so that it reads as disabled. An editable fiel
 
 ## Load these too
 
-- [`recursica-skill-selection-controls`](../../design-rules/recursica-skill-selection-controls/SKILL.md) — when a dropdown replaces a visible group, the affordance test, option counts, pre-selection, disabled vs. read-only, and commit timing.
-- [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — single-column layout, label placement, its container-width trigger, and one placement per form, required vs. optional marking, validation timing, pre-fill limits, save mode, and the rule that no form control goes inside a card.
-- [`recursica-skill-label`](../recursica-skill-label/SKILL.md) — label copy that names the object and stands alone, and the required and optional markers.
-- [`recursica-skill-assistive-element`](../recursica-skill-assistive-element/SKILL.md) — the help and error text below the field, and why the error replaces rather than joins it.
-- [`recursica-skill-working-memory`](../../psychology/recursica-skill-working-memory/SKILL.md) — the 7 ± 2 basis and the recognition-versus-comparison boundary that decides when a long list is acceptable.
-- [`recursica-skill-autocomplete`](../recursica-skill-autocomplete/SKILL.md) — the typeahead control for sets too large to scan.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel; fix the structure rather than adding a mechanism to cope with it.
+- `recursica-skill-selection-controls` — when a dropdown replaces a visible group, the affordance test, option counts, pre-selection, disabled vs. read-only, and commit timing.
+- `recursica-skill-forms` — single-column layout, label placement, its container-width trigger, and one placement per form, required vs. optional marking, validation timing, pre-fill limits, save mode, and the rule that no form control goes inside a card.
+- `recursica-skill-label` — label copy that names the object and stands alone, and the required and optional markers.
+- `recursica-skill-assistive-element` — the help and error text below the field, and why the error replaces rather than joins it.
+- `recursica-skill-working-memory` — the 7 ± 2 basis and the recognition-versus-comparison boundary that decides when a long list is acceptable.
+- `recursica-skill-system-conventions` — never carry meaning in a single channel; fix the structure rather than adding a mechanism to cope with it.
+
+### Only if the screen also uses it
+
+- `recursica-skill-autocomplete` — the typeahead control for sets too large to scan.
 
 ## Uncovered — ask, do not invent
 

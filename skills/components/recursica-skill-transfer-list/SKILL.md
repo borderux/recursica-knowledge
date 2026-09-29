@@ -119,12 +119,12 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Load these too
 
-- [`recursica-skill-selection-controls`](../../design-rules/recursica-skill-selection-controls/SKILL.md) — the control-choice ladder, the option ceiling, select-all as a signal that the structure is wrong, disabled versus read-only, and the commit model.
-- [`recursica-skill-working-memory`](../../psychology/recursica-skill-working-memory/SKILL.md) — the 7 ± 2 basis, and why a recognition list may be long while a comparison set may not.
-- [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — single-column layout, one label placement per form and the container-width trigger for it, validation, save mode, and the no-form-control-in-a-card rule.
-- [`recursica-skill-label`](../recursica-skill-label/SKILL.md) — the control's name and the group-level label.
-- [`recursica-skill-assistive-element`](../recursica-skill-assistive-element/SKILL.md) — the selection rules and the error message.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel; fix the structure rather than adding a mechanism to cope with it.
+- `recursica-skill-selection-controls` — the control-choice ladder, the option ceiling, select-all as a signal that the structure is wrong, disabled versus read-only, and the commit model.
+- `recursica-skill-working-memory` — the 7 ± 2 basis, and why a recognition list may be long while a comparison set may not.
+- `recursica-skill-forms` — single-column layout, one label placement per form and the container-width trigger for it, validation, save mode, and the no-form-control-in-a-card rule.
+- `recursica-skill-label` — the control's name and the group-level label.
+- `recursica-skill-assistive-element` — the selection rules and the error message.
+- `recursica-skill-system-conventions` — never carry meaning in a single channel; fix the structure rather than adding a mechanism to cope with it.
 
 ## Uncovered — ask, do not invent
 

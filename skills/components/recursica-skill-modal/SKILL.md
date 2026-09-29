@@ -97,12 +97,14 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Load these too
 
-- [`recursica-skill-panels-modals`](../../design-rules/recursica-skill-panels-modals/SKILL.md) — the owning design-rules skill: modal vs. panel vs. page, why mode is the only real difference, the prohibition on stacking, and unsaved-change protection.
+- `recursica-skill-panels-modals` — the owning design-rules skill: modal vs. panel vs. page, why mode is the only real difference, the prohibition on stacking, and unsaved-change protection.
+- `recursica-skill-buttons-links` — modal triggers, destructive-action confirmation, undo, footer button hierarchy.
+- `recursica-skill-navigation` — routing and browser history, including the deep-linkable modal exception.
+- `recursica-skill-forms` — save mode and validation for any form the modal contains.
 
-- [`recursica-skill-buttons-links`](../../design-rules/recursica-skill-buttons-links/SKILL.md) — modal triggers, destructive-action confirmation, undo, footer button hierarchy.
-- [`recursica-skill-navigation`](../../design-rules/recursica-skill-navigation/SKILL.md) — routing and browser history, including the deep-linkable modal exception.
-- [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — save mode and validation for any form the modal contains.
-- [`recursica-skill-card`](../recursica-skill-card/SKILL.md) — why the modal's content is not wrapped in a card.
+### Only if the screen also uses it
+
+- `recursica-skill-card` — why the modal's content is not wrapped in a card.
 
 ## Uncovered — ask, do not invent
 

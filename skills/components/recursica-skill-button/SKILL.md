@@ -118,9 +118,9 @@ Do not implement, override, or tune any of these — the component owns them for
 
 ## Load these too
 
-- [`recursica-skill-buttons-links`](../../design-rules/recursica-skill-buttons-links/SKILL.md) — button vs. link semantics, label copy, hierarchy and placement, destructive confirmation, undo, toggles, row and bulk actions, modal triggers.
-- [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — submit and cancel behavior, save mode, and where the footer sits.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel; fix the structure rather than shrinking to fit.
+- `recursica-skill-buttons-links` — button vs. link semantics, label copy, hierarchy and placement, destructive confirmation, undo, toggles, row and bulk actions, modal triggers.
+- `recursica-skill-forms` — submit and cancel behavior, save mode, and where the footer sits.
+- `recursica-skill-system-conventions` — never carry meaning in a single channel; fix the structure rather than shrinking to fit.
 
 ## Uncovered — ask, do not invent
 

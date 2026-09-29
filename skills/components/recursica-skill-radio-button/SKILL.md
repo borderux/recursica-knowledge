@@ -127,13 +127,16 @@ Do not add margins or spacer elements between options or around the group; the c
 
 ## Load these too
 
-- [`recursica-skill-selection-controls`](../../design-rules/recursica-skill-selection-controls/SKILL.md) — radio vs. checkbox vs. switch vs. dropdown, option counts, the pre-selection caution, vertical-only layout, the horizontal alternatives, and commit timing.
-- [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — single-column layout, label placement, its container-width trigger, and one placement per form, required vs. optional marking, validation timing, progressive disclosure, and save mode.
-- [`recursica-skill-label`](../recursica-skill-label/SKILL.md) — the group label and the item labels, copy that stands alone, and the required and optional markers.
-- [`recursica-skill-assistive-element`](../recursica-skill-assistive-element/SKILL.md) — the help and error text below the group, and the copy rules for both.
-- [`recursica-skill-working-memory`](../../psychology/recursica-skill-working-memory/SKILL.md) — the 7 ± 2 basis and the recognition-versus-comparison boundary.
-- [`recursica-skill-segmented-control`](../recursica-skill-segmented-control/SKILL.md) — the horizontal single-select control that replaces a rotated radio group.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel.
+- `recursica-skill-selection-controls` — radio vs. checkbox vs. switch vs. dropdown, option counts, the pre-selection caution, vertical-only layout, the horizontal alternatives, and commit timing.
+- `recursica-skill-forms` — single-column layout, label placement, its container-width trigger, and one placement per form, required vs. optional marking, validation timing, progressive disclosure, and save mode.
+- `recursica-skill-label` — the group label and the item labels, copy that stands alone, and the required and optional markers.
+- `recursica-skill-assistive-element` — the help and error text below the group, and the copy rules for both.
+- `recursica-skill-working-memory` — the 7 ± 2 basis and the recognition-versus-comparison boundary.
+- `recursica-skill-system-conventions` — never carry meaning in a single channel.
+
+### Only if the screen also uses it
+
+- `recursica-skill-segmented-control` — the horizontal single-select control that replaces a rotated radio group.
 
 ## Uncovered — ask, do not invent
 

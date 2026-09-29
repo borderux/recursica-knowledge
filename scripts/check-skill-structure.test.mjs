@@ -18,6 +18,7 @@ import {
   checkTables,
   cells,
   checkAll,
+  checkLoadLinks,
   COMPONENT_SECTIONS,
 } from "./check-skill-structure.mjs";
 
@@ -158,4 +159,13 @@ test("every skill in the repository passes", () => {
     problems.map((p) => `${p.file}:${p.line} ${p.message}`),
     [],
   );
+});
+
+test("Load these too: a link, a stray heading, and a design-rules skill under 'only if used' are caught", () => {
+  const comps = new Set(["recursica-skill-card"]);
+  const ok = "## Load these too\n\n- `recursica-skill-forms` — why.\n\n### Only if the screen also uses it\n\n- `recursica-skill-card` — alt.\n\n## Uncovered — ask, do not invent\n";
+  assert.deepEqual(checkLoadLinks(ok, comps), []);
+  const bad = "## Load these too\n\n- [`recursica-skill-forms`](../forms/SKILL.md) — why.\n\n### Maybe\n\n### Only if the screen also uses it\n\n- `recursica-skill-tables` — rules.\n";
+  const messages = checkLoadLinks(bad, comps).map((p) => p.message);
+  assert.equal(messages.length, 3, messages.join("\n"));
 });

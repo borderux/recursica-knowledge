@@ -119,11 +119,14 @@ Never style an unfocused field so that it reads as disabled. An editable field m
 
 ## Load these too
 
-- [`recursica-skill-file-upload`](../recursica-skill-file-upload/SKILL.md) — the larger drop area with a list of uploaded files, and when it replaces this field.
-- [`recursica-skill-label`](../recursica-skill-label/SKILL.md) — the field's name, placement, and the required or optional marker.
-- [`recursica-skill-assistive-element`](../recursica-skill-assistive-element/SKILL.md) — the help text carrying accepted types and the size limit, and the error message.
-- [`recursica-skill-forms`](../../design-rules/recursica-skill-forms/SKILL.md) — single-column layout, one label placement per form and the container-width trigger for it, validation timing, save mode, and the no-form-control-in-a-card rule.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel; a drag or long-press always needs a second mechanism.
+- `recursica-skill-label` — the field's name, placement, and the required or optional marker.
+- `recursica-skill-assistive-element` — the help text carrying accepted types and the size limit, and the error message.
+- `recursica-skill-forms` — single-column layout, one label placement per form and the container-width trigger for it, validation timing, save mode, and the no-form-control-in-a-card rule.
+- `recursica-skill-system-conventions` — never carry meaning in a single channel; a drag or long-press always needs a second mechanism.
+
+### Only if the screen also uses it
+
+- `recursica-skill-file-upload` — the larger drop area with a list of uploaded files, and when it replaces this field.
 
 ## Uncovered — ask, do not invent
 

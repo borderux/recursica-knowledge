@@ -123,12 +123,15 @@ The chevron, its rotation, and the per-appearance colors come with the component
 
 ## Load these too
 
-- [`recursica-skill-navigation`](../../design-rules/recursica-skill-navigation/SKILL.md) — the never-nest rule, collapsed-by-default, sub-navigation on click rather than hover, permissions, and why a top-level item with no children stays a link.
-- [`recursica-skill-tree`](../recursica-skill-tree/SKILL.md) — the component for real hierarchy, which is the other side of the boundary this skill sits on.
-- [`recursica-skill-tabs`](../recursica-skill-tabs/SKILL.md) — parts of one whole, and why no form is split across sections.
-- [`recursica-skill-discoverability`](../../psychology/recursica-skill-discoverability/SKILL.md) — progressive disclosure, and the three cases where hiding is not safe.
-- [`recursica-skill-working-memory`](../../psychology/recursica-skill-working-memory/SKILL.md) — 7 ± 2 as a scannability ceiling, and what it does not claim.
-- [`recursica-skill-system-conventions`](../../design-rules/recursica-skill-system-conventions/SKILL.md) — never carry meaning in a single channel; fix the structure instead of collapsing to cope with it.
+- `recursica-skill-navigation` — the never-nest rule, collapsed-by-default, sub-navigation on click rather than hover, permissions, and why a top-level item with no children stays a link.
+- `recursica-skill-discoverability` — progressive disclosure, and the three cases where hiding is not safe.
+- `recursica-skill-working-memory` — 7 ± 2 as a scannability ceiling, and what it does not claim.
+- `recursica-skill-system-conventions` — never carry meaning in a single channel; fix the structure instead of collapsing to cope with it.
+
+### Only if the screen also uses it
+
+- `recursica-skill-tree` — the component for real hierarchy, which is the other side of the boundary this skill sits on.
+- `recursica-skill-tabs` — parts of one whole, and why no form is split across sections.
 
 ## Uncovered — ask, do not invent
 

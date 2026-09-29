@@ -16,6 +16,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import YAML from "yaml";
+import { IF_USED_HEADING } from "./screen-skill-manifest.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SKILLS = path.join(ROOT, "skills");
@@ -162,6 +163,33 @@ export function checkReferences(text, file, slugs) {
   return problems;
 }
 
+/**
+ * A component's `## Load these too`: skill names only, and its "only if used" list names other
+ * components. A design-rules skill there would be skipped by every loader, and a component's
+ * rules would arrive without the design rules that govern them.
+ */
+export function checkLoadLinks(text, components) {
+  const start = text.search(/^## Load these too\s*$/m);
+  if (start < 0) return [];
+  const line0 = text.slice(0, start).split("\n").length;
+  const body = text.slice(start).split(/^## (?!Load these too)/m)[0];
+  const problems = [];
+  let conditional = false;
+  body.split("\n").forEach((l, i) => {
+    if (l.startsWith("### ")) {
+      conditional = l.trim() === IF_USED_HEADING;
+      if (!conditional) problems.push({ line: line0 + i, message: `unexpected heading in \`## Load these too\` — the only one allowed is \`${IF_USED_HEADING}\`` });
+    }
+    if (/\]\(/.test(l)) problems.push({ line: line0 + i, message: "a link in `## Load these too` — write the skill name alone; a relative path means nothing outside this repository" });
+    if (conditional) {
+      for (const m of l.matchAll(/recursica-skill-[a-z0-9-]*[a-z0-9]/g)) {
+        if (!components.has(m[0])) problems.push({ line: line0 + i, message: `\`${m[0]}\` is not a component, so it cannot be "only if the screen also uses it" — move it above the heading` });
+      }
+    }
+  });
+  return problems;
+}
+
 /** Cells in a table row as GitHub splits them: on every pipe not escaped with a backslash. */
 export function cells(row) {
   const parts = row
@@ -228,12 +256,13 @@ export function checkTables(text) {
 export function checkAll({ skills = SKILLS } = {}) {
   const list = listSkills(skills);
   const slugs = new Set(list.map((s) => s.slug));
+  const components = new Set(list.filter((s) => s.category === "components").map((s) => s.slug));
   const problems = [];
   for (const { slug, category, file } of list) {
     const text = fs.readFileSync(file, "utf8");
     const found = [
       ...checkFrontmatter(text, slug),
-      ...(category === "components" ? checkComponentShape(text) : []),
+      ...(category === "components" ? [...checkComponentShape(text), ...checkLoadLinks(text, components)] : []),
       ...checkReferences(text, file, slugs),
       ...checkTables(text),
     ];
