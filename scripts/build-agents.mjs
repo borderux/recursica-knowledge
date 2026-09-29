@@ -15,6 +15,11 @@
  *                   in underneath the installer without touching restore-agents.mjs, the
  *                   deploy, or the onboarding path.
  *
+ *   circlechat    → portable/circlechat/agents/<name>/SOUL.md
+ *                   The persona file a CircleChat Hermes agent reads from its home. Optional
+ *                   per agent: only agents with a platform/circlechat.md are built for it, so
+ *                   adding the target did not oblige every agent to grow a fragment at once.
+ *
  *   claude-code   → portable/claude-code/agents/<name>.md
  *   opencode      → portable/opencode/agents/<name>.md
  *                   Committed rather than generated into a gitignored dist/, because the
@@ -63,7 +68,7 @@ if (argv.includes("--help") || argv.includes("-h")) {
   --accept    allow the Buzz prompt to change (it is asserted identical by default)
   --help
 
-Targets: buzz, claude-code, opencode. See the header of this file for where each lands.`);
+Targets: buzz, claude-code, opencode, circlechat (optional per agent). See the header of this file for where each lands.`);
   process.exit(0);
 }
 
@@ -78,6 +83,7 @@ const TARGETS = {
   buzz: { fragments: "buzz.md", out: (n) => `buzz-agents/agents/${n}/SYSTEM_PROMPT.md`, frontmatter: false, pinned: true },
   "claude-code": { fragments: "session.md", out: (n) => `portable/claude-code/agents/${n}.md`, frontmatter: "claude-code" },
   opencode: { fragments: "session.md", out: (n) => `portable/opencode/agents/${n}.md`, frontmatter: "opencode" },
+  circlechat: { fragments: "circlechat.md", out: (n) => `portable/circlechat/agents/${n}/SOUL.md`, frontmatter: false, optional: true },
 };
 
 /**
@@ -194,7 +200,10 @@ const declaredDeployTokens = placeholders.deployTokens ?? {};
  */
 function buildArtifact({ source, base, target, spec, outName, label }) {
   const fragFile = path.join(base, "platform", spec.fragments);
-  if (!fs.existsSync(fragFile)) { bad(`${target}: no platform/${spec.fragments}`); return; }
+  if (!fs.existsSync(fragFile)) {
+    if (spec.optional) return;
+    bad(`${target}: no platform/${spec.fragments}`); return;
+  }
   const frags = loadFragments(fragFile);
 
   let out = source.body;
