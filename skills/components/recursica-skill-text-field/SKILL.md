@@ -46,7 +46,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.text-field`. **Do not 
 
 **`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Leave it out, and you get the fallback in a container of any width — the rule turned upside down. `layouts` is the name of the token axis, not a prop: `layouts="side-by-side"` is quietly ignored by React and leaves the control stacked, with no error. Pass `formLayout="side-by-side"` explicitly, on every field.
 
-**Focus and placeholder are not variants.** The component handles them: `placeholder-opacity` on this component, and the focused border through `globals.form.field.colors.border-selected`. Do not build them as states.
+**Focus and placeholder are not variants.** The component handles them: `placeholder-opacity` here, and the focused border through `globals.form.field.colors.border-selected`. Do not build them as states.
 
 **There is no size axis.** `min-height` is a fixed property, and `globals.form.field.size.single-line-input-height` sets the height for every single-line field.
 
