@@ -37,6 +37,14 @@ mkdir -p hermes-homes "$WS" "$WS/reviews"
 # Alan's own clone, for his proposal branches. Kept apart so an unmerged rule never reaches
 # the checkout Betty builds from and Barb reviews against.
 [ -d "$WS/kb-proposals" ]          || git clone "$KNOWLEDGE_REPO" "$WS/kb-proposals"
+# The repository's own hooks, so Alan's commits get the same name, email and phone checks as
+# anyone's: commit-msg on the message, pre-commit on the lines he adds. Both need only node.
+git -C "$WS/kb-proposals" config core.hooksPath .husky
+# Client names are only checked where the operator's gitignored list of them exists. Copy it
+# in if you have one; without it the email, phone and structural rules still run.
+if [ -n "${LOCAL_REDACTIONS:-}" ] && [ -f "$LOCAL_REDACTIONS" ]; then
+  cp "$LOCAL_REDACTIONS" "$WS/kb-proposals/buzz-agents/local-redactions.json"
+fi
 [ -d "$WS/betty-test-proto-repo" ] || git clone "$PROTO_REPO" "$WS/betty-test-proto-repo"
 
 # Kev, Barb's quick first pass. Copied out of the knowledge checkout so its cache and

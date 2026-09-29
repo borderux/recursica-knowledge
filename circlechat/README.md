@@ -12,7 +12,10 @@ Run everything in the **Ubuntu (WSL) terminal**, never PowerShell (except the tw
 1. Clone CircleChat to `~/circlechat` and this repo anywhere.
 2. `TS_HOST=<your-pc>.<tailnet>.ts.net ./circlechat/setup-host.sh` — fixes `.env` (including
    `HERMES_TIMEOUT`), ports, the shared workspace and its checkouts, copies Kev, pulls images,
-   starts the stack and the prototype dev server.
+   starts the stack and the prototype dev server. It also turns on the repository's commit
+   hooks in Alan's checkout, which refuse a commit that adds a name, a personal email address or
+   a phone number. Add `LOCAL_REDACTIONS=<path to your local-redactions.json>` so client names
+   are checked too.
 3. In PowerShell, run the two `tailscale serve` lines the script prints.
 4. For each agent: add it in the CircleChat UI (**Members → Add agent**: Hermes, provider
    Anthropic, paste that agent's key, **Install + link**), wait for it to finish, then:
