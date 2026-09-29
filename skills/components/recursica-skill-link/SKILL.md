@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-link
-description: How to use the Recursica link correctly — when navigation is a link and when it is really a button, what the component provides, label copy that names the destination, external and download links, new-tab behavior, why a link is never disabled, and the screen-reader and keyboard requirements. Use whenever adding, reviewing, or refactoring anything the user clicks to end up somewhere else — inline links in prose, standalone links, links out of a table row, footer and menu links, breadcrumb trails, or an external reference. Trigger on "link", "hyperlink", "anchor", "href", "navigate to", "inline link", "external link", "open in new tab", "click here", "screen reader", "tab order", or a request to send the user to another page or resource. Do NOT use for actions that change data or state — that is recursica-skill-button. Do NOT use for app-shell structure, routing, or breadcrumbs — that is recursica-skill-navigation.
+description: How to use the Recursica link — link versus button, labels that name the destination, external and download links, new tabs, never disabled, and link accessibility. Use for anything the user clicks to go somewhere. Not for actions that change data — see recursica-skill-button.
 license: MIT
 metadata:
   author: hi@borderux.com

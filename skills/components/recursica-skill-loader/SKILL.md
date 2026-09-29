@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-loader
-description: How to use the Recursica loader correctly — when a wait warrants a spinner and when it does not, the three sizes and the indicator color, the fact that the kit provides an indeterminate spinner and nothing else, the text that must accompany it, and the screen-reader and keyboard requirements for announcing that loading started and that content arrived. Use whenever adding, reviewing, or refactoring a loading state, a pending region, an in-flight submit, or a data fetch. Trigger on "loader", "spinner", "loading", "activity indicator", "pending", "busy", "in flight", "skeleton", "progress", "screen reader", "live region", "reduced motion", or a request to show that something is happening. Do NOT use for a determinate progress bar or a percentage — no such variant exists. Do NOT use for stating an outcome once the wait is over — that is recursica-skill-toast. Do NOT use for a screen with no data — that is recursica-skill-dashboards.
+description: How to use the Recursica loader, the only loading indicator, a spinner — when a wait needs one, sizes, the text that must go with it, and announcing start and finish. Use for loading states, pending regions, and in-flight actions. There is no progress bar. Not for the outcome — see recursica-skill-toast.
 license: MIT
 metadata:
   author: hi@borderux.com

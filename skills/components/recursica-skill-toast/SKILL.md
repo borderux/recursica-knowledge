@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-toast
-description: How to use the Recursica toast correctly — when transient feedback is right and when a field error, a modal, or an in-place undo is the answer instead, why only default, success, and error styles exist and there is no warning, why success confirmation lives here rather than on a field, how a toast carrying an undo must stay reachable, and the screen-reader and keyboard requirements including polite versus assertive announcement and never stealing focus. Use whenever adding, reviewing, or refactoring a toast, snackbar, notification, or undo affordance. Trigger on "toast", "snackbar", "notification", "undo", "auto-dismiss", "aria-live", "live region", "success message", "screen reader", "tab order", or a request to tell the user something just happened. Do NOT use for a decision that must be made now — that is recursica-skill-modal. Do NOT use for field validation — that is recursica-skill-forms. Do NOT use for undo policy — that is recursica-skill-buttons-links.
+description: How to use the Recursica toast — when brief feedback is right, only default, success, and error styles, success confirmations, keeping an undo reachable, and announcing without taking focus. Use for toasts, snackbars, and just-happened notifications. Not for decisions — see recursica-skill-modal; not for field errors — see recursica-skill-forms.
 license: MIT
 metadata:
   author: hi@borderux.com

@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-data-visualization
-description: House rules for charts and data visualization in enterprise web applications — when to visualize at all, chart type selection, the near-ban on pie and donut charts, zero baselines and linear scales, time as a dimension, sequence integrity, gridlines, axis and value labels, thresholds and benchmarks, tooltips as supplementary only, encoding beyond color, accompanying data tables, missing data, projections, real-time updates, annotations, drill-down, and adaptive behavior at smaller sizes. Use whenever adding, reviewing, or refactoring any chart, graph, plot, or visual data display. Trigger on "chart", "graph", "plot", "bar chart", "line chart", "pie chart", "donut", "axis", "legend", "trend line", "sparkline", "visualize this data", or any request to show numbers visually. Do NOT use for dashboard composition — that is a separate topic. Do NOT use for data tables as a primary surface.
+description: House rules for charts — whether to chart at all, choosing the chart type, the near-ban on pie and donut charts, honest scales and baselines, labels and gridlines, thresholds, encoding that does not rely on color, the companion data table, and missing or live data. Use for any chart, graph, plot, or sparkline. Not for dashboard layout — see recursica-skill-dashboards.
 license: MIT
 metadata:
   author: hi@borderux.com

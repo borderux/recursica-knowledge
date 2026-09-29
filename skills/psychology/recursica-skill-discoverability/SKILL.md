@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-discoverability
-description: The cognitive-science basis for Recursica's unadvertised-affordance rule, with citations — the paradox of the active user, satisficing over learning, progressive disclosure, and why strong defaults outperform configurability. Use whenever deciding whether to promote, hide, or build a customization or configuration feature — dashboard configuration, table column visibility, multi-sort, saved views, or any control a minority of users need. Also use when asked to justify hiding an affordance, when someone proposes a tour or onboarding to teach a feature, or when configurability is offered as the answer to not knowing what users need. Trigger on "should this be discoverable", "hidden affordance", "progressive disclosure", "paradox of the active user", "will users customize", "power user feature", "add a settings option", or "why not surface this". Do NOT use for item counts — that is recursica-skill-working-memory. This skill supplies reasoning; the rules live in the topic skills.
+description: The research behind Recursica's rule that rarely needed settings get a real but unpromoted entry point — the paradox of the active user, satisficing, and progressive disclosure, with citations. Use when deciding whether to hide, promote, or build a configuration or customization feature, or to justify that choice. Not for item counts — see recursica-skill-working-memory.
 license: MIT
 metadata:
   author: hi@borderux.com

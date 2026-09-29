@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-breadcrumb
-description: How to use the Recursica breadcrumb correctly — when depth warrants a trail, what belongs in it, why the last item is the current page and not a link, that a breadcrumb is supplementary wayfinding and never primary navigation, and the screen-reader and keyboard requirements for a named navigation region, a list, a current page, and silent separators. Use whenever adding, reviewing, or refactoring a breadcrumb trail, a hierarchy path, or the way a deep page states where it is. Trigger on "breadcrumb", "crumb", "trail", "path", "hierarchy", "where am I", "you are here", "back to parent", "separator", "screen reader", "tab order", or a request to show the user's location in a nested structure. Do NOT use for the app shell, sidebars, menus, or tabs — that is recursica-skill-navigation. Do NOT use for an individual crumb's href and label copy — that is recursica-skill-link. Do NOT use for progress through a process — that is recursica-skill-stepper.
+description: How to use the Recursica breadcrumb — when depth warrants a trail, what goes in it, the current page as plain text, and navigation-region accessibility. Use for breadcrumb trails and hierarchy paths. Not for the app shell — see recursica-skill-navigation; not for steps in a process — see recursica-skill-stepper.
 license: MIT
 metadata:
   author: hi@borderux.com

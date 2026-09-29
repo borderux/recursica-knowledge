@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-button
-description: How to use the Recursica button correctly — when an action needs a button and when it is really a link, which styles, sizes, and content configurations exist, hierarchy and how many primaries per surface, label copy, destructive actions, icon-only rules, and the screen-reader and keyboard requirements. Use whenever adding, reviewing, or refactoring a button, a form's submit and cancel pair, a modal footer, a toolbar, or a table row action. Trigger on "button", "CTA", "call to action", "submit button", "primary button", "icon button", "solid", "outline", "ghost", "button size", "screen reader", "tab order", or a request to let the user do something. Do NOT use for moving the user to another location — that is recursica-skill-link. Do NOT use for choosing one value from a small set — recursica-skill-segmented-control. Do NOT use for cross-screen hierarchy, destructive-action policy, or undo — that is recursica-skill-buttons-links.
+description: How to use the Recursica button — button versus link, its styles, sizes, and content, how many primaries, labels, destructive actions, icon-only buttons, and accessibility. Use for any button, submit and cancel pair, toolbar, or row action. Not for going somewhere — see recursica-skill-link; hierarchy and undo policy live in recursica-skill-buttons-links.
 license: MIT
 metadata:
   author: hi@borderux.com

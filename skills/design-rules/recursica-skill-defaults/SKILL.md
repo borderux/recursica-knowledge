@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-defaults
-description: House rules for defaults and initial state in enterprise web applications — that a default is a starting value the user can always move off, which tab opens first and why reading order decides it, why a filter should arrive unapplied and what to do when one obvious filter must be on, pre-populating a form that edits an existing object, the 90 percent likelihood test for pre-selecting an option, the veto on pre-selecting anything with downstream consequences, why a pre-selected radio is the costliest default, remembering the user's place and data rather than resetting, and who picks a default when no safe one exists. Use when deciding what a screen shows before the user touches it. Trigger on "default", "initial state", "pre-selected", "pre-filled", "pre-applied", "which tab opens", or "remember state". Do NOT use for which control a field gets — that is recursica-skill-selection-controls. Do NOT use for default sort order or rows per page — that is recursica-skill-tables.
+description: House rules for what a screen shows before the user touches it — which tab opens first, filters arriving unapplied, pre-filling an edit form, the 90 percent test for pre-selecting an option, never pre-selecting anything with consequences, and remembering the user's place. Use for any default or initial state. Not for which control a field gets — see recursica-skill-selection-controls.
 license: MIT
 metadata:
   author: hi@borderux.com

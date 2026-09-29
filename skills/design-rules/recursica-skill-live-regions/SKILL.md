@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-live-regions
-description: House rules for announcing changes to assistive technology in enterprise web applications — the test for what gets announced, that new content and new interactive elements always do while a purely visual state change never does, that components announce for themselves while the application covers what falls between them, that a toast always carries its own announcement, that changes the user did not cause are announced too, and where established accessibility practice governs rather than a house rule. Use when content changes without a page reload, when a filter or search updates a result count, when something appears or disappears, or when deciding whether an update needs announcing. Trigger on "announce", "screen reader", "live region", "aria-live", "assistive technology", "polite or assertive", or content changing in place. Do NOT use for a component's own accessible name or keyboard behavior — each component skill covers its own.
+description: House rules for announcing changes to screen readers — what gets announced, what components announce for themselves, what the application must cover, toasts, and changes the user did not cause. Use when content changes without a page reload, a result count updates, or something appears or disappears. Not for a component's own name or keyboard behavior.
 license: MIT
 metadata:
   author: hi@borderux.com

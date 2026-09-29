@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-tables
-description: House rules for tables and data grids in enterprise web applications — one table per object type with status as a column, not a section per state, rows awaiting approval and undo after it, what earns a column including that it must be populated and that an exception never gets one, no horizontal scrolling, stacked cell text, column widths by data type, alignment, truncate vs. wrap, infinite scroll vs. pagination, null cells, sorting, how a record is opened, where the add affordance sits, what the bulk region may hold, inline editing, totals, and frozen columns. Use when building or reviewing a table, data grid, or list view. Trigger on "table", "data grid", "columns", "sort", "pagination", "truncate", "column width", "inline edit", "status section", "pending approval", "empty column", "warnings column", "add button", or "bulk action". Do NOT use for row action buttons — that is recursica-skill-buttons-links. Do NOT use for row selection checkboxes — that is recursica-skill-selection-controls.
+description: House rules for tables and data grids — one table per object type, what earns a column, no horizontal scrolling, column widths and alignment, truncating versus wrapping, pagination versus infinite scroll, empty cells, sorting, opening a record, add and bulk actions, inline editing, totals, and frozen columns. Use when building or reviewing a table or list view. Not for row selection — see recursica-skill-selection-controls.
 license: MIT
 metadata:
   author: hi@borderux.com

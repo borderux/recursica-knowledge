@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-system-conventions
-description: Cross-surface house conventions that recur throughout the Recursica design rules, generalized so they can be applied where no surface-specific rule exists yet — one behavioral mode per system, the unadvertised affordance, never carrying meaning in a single channel, fixing the structure instead of engineering around a symptom, earning a visible container before drawing one, and one control doing one thing. Use when no owning topic skill covers a decision, when a requirement would introduce a second mode of an existing behavior, when deciding whether to hide a configuration entry point, when a design is about to gain a mechanism to cope with a structural problem, or when a region is about to be wrapped in a card or box. Trigger on "is there a convention for", "should this be configurable", "consistent across the app", "no rule covers this", or "wrap this in a card". Load alongside the owning topic skill, never instead of it — a surface-specific rule always wins.
+description: Conventions that recur across all the Recursica rules, for decisions no topic skill covers — one behavior per system, the unadvertised affordance, never one channel for meaning, fixing structure not symptoms, earning a container, one control one outcome — plus the accessibility baseline every component follows. Load it with the owning skill, which always wins.
 license: MIT
 metadata:
   author: hi@borderux.com

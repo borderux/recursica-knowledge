@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-layers
-description: House rules for Recursica layers — the four stacking levels 0 to 3, layer 0 declared exactly once on the root element and never re-declared, containment as the only reason a region leaves layer 0, why the header and nav and main content may all sit on layer 0, raising either the nav or the main content to layer 1 when one of them needs containing, the depth budget that makes 0 and 1 ordinary and 3 almost never right, a layer being a token scope from which every component resolves its colors, and every layer property coming from the Forge theme rather than the build agent. Use when nesting containers, setting up an application shell, or deciding whether a region needs its own surface. Trigger on "layer", "layer-0", "data-recursica-layer", "nested container", "surface", "background", or "does this need its own layer". Do NOT use for whether repeating objects belong in cards — that is recursica-skill-card. Do NOT use for page composition — that is recursica-skill-screen-scaffolding.
+description: House rules for Recursica layers, the numbered levels 0 to 3 that set component colors — layer 0 declared once, containment as the only reason to raise a region, the depth budget, and layer properties coming from the theme. Use when nesting containers, building an app shell, or deciding whether a region needs its own surface. Not for cards — see recursica-skill-card.
 license: MIT
 metadata:
   author: hi@borderux.com

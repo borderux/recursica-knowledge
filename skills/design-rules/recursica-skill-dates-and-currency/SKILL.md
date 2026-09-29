@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-dates-and-currency
-description: House rules for formatting dates, times, currency, and numeric values in enterprise web applications — whose locale wins, the disambiguated date format, deriving the value from a formatting API rather than slicing a UTC serialisation, when to state a time zone, when not to localize a time at all, relative vs. absolute time and the switchover threshold, right-aligned currency, two-decimal precision, the currency symbol in the column header, accounting parentheses, precision consistency across rows, rounding and abbreviation, date and value ranges, 12- vs 24-hour time, duration formatting, and the format-follows-focus rule. Use whenever a date, time, timestamp, money amount, or number is displayed or entered. Trigger on "date format", "timestamp", "time zone", "relative time", "ago", "duration", "toISOString", "UTC", "currency", "money", "decimal", "precision", "rounding", "date range", or "align the numbers". Do NOT use for table structure — that is recursica-skill-tables.
+description: House rules for showing and entering dates, times, currency, and numbers — whose locale and time zone win, the unambiguous date format, relative versus absolute time, currency alignment and precision, rounding, ranges, 12- or 24-hour time, durations, and formatting on focus. Use whenever a date, time, amount, or number appears. Not for table structure — see recursica-skill-tables.
 license: MIT
 metadata:
   author: hi@borderux.com

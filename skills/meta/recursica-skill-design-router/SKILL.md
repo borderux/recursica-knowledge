@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-design-router
-description: The entry point for building or reviewing any screen with Recursica. Establishes what to decide in what order, which skill owns each decision, how to resolve conflicts between rules, and the hard requirement to ask the user rather than guess whenever requirements compete or no rule covers the case. Load this FIRST, before any other Recursica skill, whenever asked to design, build, lay out, review, or refactor a screen, page, view, panel, or flow. Also load when two rules appear to disagree, when a requirement contradicts a house rule, when no house rule seems to cover the situation, or when deciding whether to ask a clarifying question. Trigger on "design a screen", "build a page", "lay out this view", "which skill applies", "conflicting requirements", "the rules disagree", "is there a rule for", or any UI work whose scope is larger than a single component. This skill routes and arbitrates; it never replaces the owning skill's rules.
+description: Start here for any Recursica screen work. Says what to decide in what order, which skill owns each decision, which rule wins when two conflict, and when to ask the user instead of guessing. Load it first to design, build, review, or refactor a screen, page, panel, or flow, or when rules seem to disagree or none applies. It routes; the owning skill holds the rules.
 license: MIT
 metadata:
   author: hi@borderux.com

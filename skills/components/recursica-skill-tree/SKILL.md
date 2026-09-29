@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-tree
-description: How to use the Recursica tree correctly — when data is a genuine hierarchy that needs a tree rather than a table, an accordion, or navigation, what the component provides (indent, node button, selection states), collapsed-by-default and depth discipline, why indentation alone cannot carry the hierarchy, and the screen-reader and keyboard requirements for a tree including level announcement, expand and collapse keys, and single-tab-stop navigation. Use whenever adding, reviewing, or refactoring a hierarchical list — a folder structure, a category taxonomy, an org chart as a list, or nested nodes the user expands. Trigger on "tree", "tree view", "hierarchy", "nested list", "folder structure", "parent and child nodes", "expand", "collapse", "indent", "screen reader", "arrow keys", or a request to show nested data. Do NOT use for flat repeating records — that is recursica-skill-table. Do NOT use for stacked disclosure sections — that is recursica-skill-accordion.
+description: How to use the Recursica tree — when data is a real hierarchy, collapsed by default, depth limits, why indentation alone is not enough, and tree keyboard and screen-reader behavior. Use for folder structures, category trees, and nested lists. Not for flat records — see recursica-skill-table; not for single-level sections — see recursica-skill-accordion.
 license: MIT
 metadata:
   author: hi@borderux.com

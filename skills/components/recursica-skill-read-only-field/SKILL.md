@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-read-only-field
-description: How to use the Recursica read-only field correctly — the component that shows a label and a value with no input, why it is not a disabled input and not plain text, that it has no states at all, how to format the value, and the screen-reader and keyboard requirements for something that must be readable and copyable without being a control or a tab stop. Use whenever a form shows a value this user cannot edit here — a view mode, a confirmation summary, or a system-generated value. Trigger on "read-only", "read only field", "view mode", "non-editable", "display value", "disabled or read-only", "system generated", "screen reader", "tab order", or a question about showing a value inside a form. Do NOT use for an editable field — see recursica-skill-text-field. Do NOT use for value formatting rules — that is recursica-skill-dates-and-currency. Do NOT use for form layout or save behavior — that is recursica-skill-forms.
+description: How to use the Recursica read-only field — a label and value with no input, why it is not a disabled field, value formatting, and readable, copyable accessibility with no tab stop. Use for view modes, summaries, and system-set values in a form. Not for an editable field — see recursica-skill-text-field.
 license: MIT
 metadata:
   author: hi@borderux.com

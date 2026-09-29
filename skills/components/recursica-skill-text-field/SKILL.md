@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-text-field
-description: How to use the Recursica text field correctly — when free-form entry is the right control and when another control replaces it, which variants and states exist, label and placeholder and assistive-text rules, error copy, prefixes and suffixes, read-only vs. disabled, and the screen-reader and keyboard requirements. Use whenever adding, reviewing, or refactoring a single-line text input, or deciding between free-form entry and a control with predefined options. Trigger on "text field", "text input", "input", "textbox", "placeholder", "helper text", "assistive text", "prefix", "suffix", "aria-describedby", "screen reader", "tab order", or a request to let a user type a value. Do NOT use for multi-line entry — that is recursica-skill-textarea. Do NOT use for a quantity you can do arithmetic on — recursica-skill-number-input. Do NOT use for form layout, validation timing, or save behavior — that is recursica-skill-forms.
+description: How to use the Recursica text field — when free text is right, states and label placement, labels, placeholders, and help text, error copy, prefixes and suffixes, and disabled versus read-only. Use for any single-line text input. Not for multi-line text — see recursica-skill-textarea; not for quantities — see recursica-skill-number-input.
 license: MIT
 metadata:
   author: hi@borderux.com

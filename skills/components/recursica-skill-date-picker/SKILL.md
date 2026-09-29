@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-date-picker
-description: How to use the Recursica date picker correctly — when a calendar control is right and when a plain text field beats it, which states and layouts exist, the readable `Jan 7, 2026` format at rest and the masked numeric form that exists only inside a focused input, time zones, and the screen-reader and keyboard requirements for the calendar trigger and its popover. Use whenever adding, reviewing, or refactoring a date field or a calendar popover. Trigger on "date picker", "calendar", "date field", "date input", "date format", "date mask", "screen reader", "tab order", or a request to let a user choose a date. Do NOT use for a time of day — that is recursica-skill-time-picker. Do NOT use for the formatting rules themselves — that is recursica-skill-dates-and-currency. Do NOT use for form layout, validation timing, or save behavior — that is recursica-skill-forms.
+description: How to use the Recursica date picker — when a calendar helps and when typing is better, states and label placement, the readable date format, time zones, and calendar popover accessibility. Use for date fields and calendars. Not for a time of day — see recursica-skill-time-picker; formatting rules live in recursica-skill-dates-and-currency.
 license: MIT
 metadata:
   author: hi@borderux.com

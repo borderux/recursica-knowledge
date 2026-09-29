@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-filters
-description: House rules for filtering a collection in enterprise web applications — that every filter must be understandable before it is used, why a filter label is a noun naming the field rather than a verb, keeping defaults consistent so one convention means unfiltered, choosing relative date ranges over a pair of empty date fields, when a filter is multi-select, why a lone boolean toggle is usually a badly named filter, and making the applied state visible. Use when adding, reviewing, or refactoring a filter bar, a search field over a list, a date range, or any control that narrows a table or collection. Trigger on "filter", "filter bar", "search field", "date range", "narrow the list", "clear filters", "applied filters", or a control that reduces what a table shows. Do NOT use for the table itself — that is recursica-skill-tables. Do NOT use for which control a form field gets — that is recursica-skill-selection-controls.
+description: House rules for filtering a collection — filters understandable before use, noun labels, one convention for unfiltered, relative date ranges, multi-select filters, lone on/off toggles, and showing what is applied. Use for a filter bar, a search over a list, or a date range. Not for the table itself — see recursica-skill-tables.
 license: MIT
 metadata:
   author: hi@borderux.com

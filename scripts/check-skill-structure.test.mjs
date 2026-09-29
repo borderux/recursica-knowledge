@@ -58,7 +58,7 @@ test("frontmatter: a name that differs from the folder, and an over-long descrip
   ).map((p) => p.message);
   assert.equal(messages.length, 2);
   assert.match(messages[0], /folder is "recursica-skill-x"/);
-  assert.match(messages[1], /1025 characters/);
+  assert.match(messages[1], /1025 characters; the house limit is 450/);
 });
 
 test("component shape: all nine sections in order, extra sections between them allowed", () => {

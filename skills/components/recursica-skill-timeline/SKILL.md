@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-timeline
-description: How to use the Recursica timeline correctly — when a chronological record is the right structure and when a table, a list, or a stepper is the answer instead, what the timeline and its timeline-bullet sub-component provide, why the bullet is decorative, how timestamps must be formatted, and the screen-reader and keyboard requirements. Use whenever adding, reviewing, or refactoring a timeline, activity feed, audit trail, or history view. Trigger on "timeline", "timeline bullet", "activity feed", "audit trail", "event history", "chronological", "relative time", "ago", "timestamp", "screen reader", "tab order", or a request to show what happened when. Do NOT use for a process the user is completing now — that is recursica-skill-stepper. Do NOT use for sortable or high-volume records — that is recursica-skill-tables. Do NOT use for date and time formatting rules themselves — that is recursica-skill-dates-and-currency.
+description: How to use the Recursica timeline — when a record of past events is right, the timeline and its decorative bullet, timestamp formatting, and list accessibility. Use for activity feeds, audit trails, and history views. Not for a process in progress — see recursica-skill-stepper; not for sortable records — see recursica-skill-tables.
 license: MIT
 metadata:
   author: hi@borderux.com

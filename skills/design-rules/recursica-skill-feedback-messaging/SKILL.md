@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-feedback-messaging
-description: House rules for telling the user what happened in enterprise web applications — whether a successful action needs confirming at all, the banner-versus-toast distinction, why inline messaging is avoided, consolidating duplicate messages instead of stacking toasts, where system errors surface, the threshold for showing a loading indication, and what belongs to the underlying library rather than to the design. Use whenever adding, reviewing, or refactoring a toast, a banner, an on-page notification, a success or error message, an undo affordance, or any waiting state. Trigger on "toast", "notification", "banner", "snackbar", "success message", "error message", "confirmation", "undo", "loading indicator", "spinner", "taking longer than usual", or a question about how to tell the user something happened. Do NOT use for field-level validation copy or timing — that is recursica-skill-forms. Do NOT use for a decision that must block the page — that is recursica-skill-modal.
+description: House rules for telling the user what happened — whether a success needs confirming, banner versus toast, avoiding inline messages, combining duplicates, where system errors appear, and when to show loading. Use for toasts, banners, success or error messages, undo, and waiting states. Not for field validation — see recursica-skill-forms.
 license: MIT
 metadata:
   author: hi@borderux.com

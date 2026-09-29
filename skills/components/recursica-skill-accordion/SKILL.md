@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-accordion
-description: How to use the Recursica accordion correctly — when collapsing content is justified, why an accordion is never nested, the collapsed-by-default rule, what accordion, accordion-item, accordion-header, and accordion-content each own, the limits on what may be hidden behind a header, and the screen-reader and keyboard requirements for expand and collapse. Use whenever adding, reviewing, or refactoring an accordion, an expand/collapse section, a collapsible navigation group, or an FAQ list. Trigger on "accordion", "expand", "collapse", "disclosure", "show more", "collapsible section", "expanded state", "screen reader", "tab order", or a request to hide sections until the user wants them. Do NOT use for multi-level hierarchy — that needs a tree, not an accordion. Do NOT use for parts of one whole the user flips between — that is recursica-skill-tabs. Do NOT use for navigation structure, item counts, or sub-nav disclosure — that is recursica-skill-navigation.
+description: How to use the Recursica accordion — when collapsing content is justified, collapsed by default, never nested, what each part owns, and expand and collapse accessibility. Use for accordions, expandable sections, and FAQ lists. Not for multi-level hierarchy — see recursica-skill-tree; not for switching views — see recursica-skill-tabs.
 license: MIT
 metadata:
   author: hi@borderux.com

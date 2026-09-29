@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-number-input
-description: How to use the Recursica number input correctly — when a value is a quantity and when it is a digit string or a slider instead, which states and layouts exist, right alignment and fixed precision, units and currency symbols as in-field affixes, stating minimums and maximums up front, and the screen-reader and keyboard requirements for a numeric field and any in-field controls. Use whenever adding, reviewing, or refactoring a numeric field, a quantity, or an amount. Trigger on "number input", "numeric field", "quantity", "amount", "decimal", "min", "max", "stepper", "increment", "currency field", "screen reader", "tab order", or a request to let a user enter a number. Do NOT use for free-form text — that is recursica-skill-text-field. Do NOT use for the formatting rules themselves — that is recursica-skill-dates-and-currency. Do NOT use for form layout, validation timing, or save behavior — that is recursica-skill-forms.
+description: How to use the Recursica number input — quantity versus digit string, right alignment and fixed precision, units and currency as affixes, stating limits up front, and numeric-field accessibility. Use for quantities and amounts. Not for free text — see recursica-skill-text-field; formatting rules live in recursica-skill-dates-and-currency.
 license: MIT
 metadata:
   author: hi@borderux.com

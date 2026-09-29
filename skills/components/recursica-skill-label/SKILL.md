@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-label
-description: How to use the Recursica label correctly — the label is a real component every form field uses, with side-by-side and stacked placement driven by container width, a required indicator, optional text, and an edit affordance. Covers label copy that names the object and stands alone, marking only the exception rather than both required and optional, why a label is never a heading and never replaced by a placeholder, and the screen-reader and keyboard requirements for label-to-control association. Use whenever adding, reviewing, or refactoring the label on any form control or control group. Trigger on "label", "field label", "label placement", "stacked", "side-by-side", "required indicator", "asterisk", "optional", "aria-label", "screen reader", or a question about what to call a field. Do NOT use for help or error text below a field — that is recursica-skill-assistive-element. Do NOT use for form layout, alignment, or required-vs-optional policy across a whole form — that is recursica-skill-forms.
+description: How to use the Recursica label that every form field uses — side-by-side or stacked placement by container width, the required indicator and optional text it displays, label copy, and label-to-field association. Use for any field or group label. Not for help or error text — see recursica-skill-assistive-element; which fields a form marks, and how, is decided in recursica-skill-forms.
 license: MIT
 metadata:
   author: hi@borderux.com

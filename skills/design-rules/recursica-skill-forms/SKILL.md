@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-forms
-description: House rules for designing and building forms in enterprise web applications — layout, label alignment, grouping, required/optional marking, validation timing, error presentation, microcopy, pre-fill, progressive disclosure, autosave, confirmation, accessibility, password fields, and CAPTCHA. Use this skill whenever generating, laying out, reviewing, or refactoring any form, form section, multi-step flow, wizard, settings page, or data-entry screen — including single-field edit patterns. Trigger on mentions of "form", "input", "field", "validation", "error state", "submit", "wizard", "multi-step", "help text", "label", or any request to build a screen where a user enters or edits data. Do NOT use this skill to choose between control types (dropdown vs. radio vs. checkbox) — that is covered by a separate skill. Do NOT use for submission logging or data-retention policy, which are backend concerns.
+description: House rules for forms — layout and label placement, grouping, whether to mark required or optional fields, validation timing, error display, microcopy, pre-fill, progressive disclosure, save modes, multi-step flows, and accessibility. Use for any form, settings page, wizard, or data-entry screen. Not for choosing between controls — see recursica-skill-selection-controls.
 license: MIT
 metadata:
   author: hi@borderux.com

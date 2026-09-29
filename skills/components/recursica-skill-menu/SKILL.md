@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-menu
-description: How to use the Recursica menu correctly — when a temporary list of choices or actions is right, what menu and menu-item own including supporting text, why a menu never opens on hover, what a scrolling menu signals, item labels, selected and unavailable items, permissions, and the screen-reader and keyboard requirements including focus return to the trigger. Use whenever adding, reviewing, or refactoring a menu, an ellipsis or "more" menu, a row-action menu, a table's column-visibility menu, an account menu, or the option list a control opens. Trigger on "menu", "menu item", "ellipsis menu", "more menu", "context menu", "overflow menu", "submenu", "arrow keys", "escape to close", "screen reader", "tab order". Do NOT use for the field that holds the chosen value — that is recursica-skill-dropdown. Do NOT use for nav structure or overflow policy — that is recursica-skill-navigation. Do NOT use for whether a trigger is a button or a link — that is recursica-skill-buttons-links.
+description: How to use the Recursica menu — a temporary list of actions or choices, never opened on hover, item labels and states, what a scrolling menu signals, and focus returning to the trigger. Use for ellipsis, more, row-action, column, and account menus. Not for a field's value — see recursica-skill-dropdown.
 license: MIT
 metadata:
   author: hi@borderux.com

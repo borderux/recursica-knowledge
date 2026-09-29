@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-radio-button
-description: How to use the Recursica radio button correctly — radio-button, radio-button-item, and radio-button-group as one three-part control, when an exclusive choice belongs to a radio group and when a dropdown or segmented control replaces it, the option-count ceiling, the caution against pre-selecting a value, disabled vs. read-only, and the screen-reader and keyboard requirements including the single tab stop and arrow-key selection. Use whenever adding, reviewing, or refactoring a radio button or a radio group. Trigger on "radio button", "radio group", "radio", "single select", "one of", "mutually exclusive", "pre-selected", "default option", "screen reader", "tab order", or a request to let a user choose exactly one option. Do NOT use for zero-to-many selection — that is recursica-skill-checkbox. Do NOT use for a horizontal single-select row — recursica-skill-segmented-control. Do NOT use for which control a field gets or option counts — that is recursica-skill-selection-controls.
+description: How to use the Recursica radio button and group — one exclusive choice, option counts, caution with pre-selection, disabled versus read-only, and single-tab-stop arrow-key accessibility. Use for choosing exactly one option. Not for many — see recursica-skill-checkbox; not for a horizontal row — see recursica-skill-segmented-control.
 license: MIT
 metadata:
   author: hi@borderux.com

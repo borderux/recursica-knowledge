@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-modal
-description: How to use the Recursica modal correctly — when interrupting the user is justified and when a panel, page, inline edit, or toast is the right answer instead, what the component provides, how a modal is triggered and why it creates no history entry, when a confirmation is warranted, footer button hierarchy, the prohibition on modals opening modals, and the screen-reader and keyboard requirements including focus trapping and return. Use whenever adding, reviewing, or refactoring a modal, dialog, confirmation, or any overlay that blocks the page. Trigger on "modal", "dialog", "popup", "confirmation", "are you sure", "overlay", "focus trap", "escape to close", "screen reader", "tab order", or a request to interrupt the user for a decision. Do NOT use for a non-blocking side surface — that is recursica-skill-panel. Do NOT use for transient feedback — that is recursica-skill-toast. Do NOT use for destructive-action policy or undo — that is recursica-skill-buttons-links.
+description: How to use the Recursica modal — when interrupting the user is justified, triggers and history, confirmations, footer buttons, never a modal from a modal, and focus trapping and return. Use for dialogs, confirmations, and blocking overlays. Not for a side surface — see recursica-skill-panel; not for brief feedback — see recursica-skill-toast.
 license: MIT
 metadata:
   author: hi@borderux.com

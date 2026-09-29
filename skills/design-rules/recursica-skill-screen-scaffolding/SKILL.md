@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-screen-scaffolding
-description: House rules for composing a page in enterprise web applications — the header, left rail, and footer, top nav vs. left rail by navigation item count, where the page title and breadcrumb sit, the empty slot under a heading and why an unused prose prop is deleted rather than left empty, whether a summary figure group is warranted at all, the primary action, positioning filters by content width not breakpoint, dividing regions with space not containers, maximum content width and centring within it, never sizing a region to a bare viewport height inside a layer, loading, and the layering ladder. Use when laying out a page, placing application chrome, or deciding whether something needs a container. Trigger on "page layout", "scaffolding", "header", "left rail", "footer", "breadcrumb", "max width", "centered", "100vh", "unwanted scrollbar", "skeleton", "loading state", "layer", "container", "summary figures", "count boxes", or "sub-text". Do NOT use for whether a card is right — that is recursica-skill-card.
+description: House rules for composing a page — header, left rail, and footer, top navigation versus rail, page title and breadcrumb, summary figures, the primary action, filter placement, dividing regions with space, maximum content width, loading, and when a region needs a container. Use when laying out a page or its chrome. Not for whether a card is right — see recursica-skill-card.
 license: MIT
 metadata:
   author: hi@borderux.com

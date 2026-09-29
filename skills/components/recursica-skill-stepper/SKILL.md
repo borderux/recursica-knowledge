@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-stepper
-description: How to use the Recursica stepper correctly — when a form becomes multi-step and why a stepper is the house replacement for a form split across tabs, which sizes and orientations exist, step labels and descriptions, Next and Back as actions rather than navigation, save mode across steps, and the screen-reader and keyboard requirements including announcing "Step 2 of 5" and moving focus when the step changes. Use whenever adding, reviewing, or refactoring a stepper, wizard, multi-step form, or checkout flow. Trigger on "stepper", "wizard", "multi-step", "step indicator", "next and back", "progress steps", "checkout flow", "onboarding flow", "screen reader", "tab order", or a request to break a long form into stages. Do NOT use for form layout, validation timing, or save behavior — that is recursica-skill-forms. Do NOT use for sections of one body of content — that is recursica-skill-tabs. Do NOT use for a record of past events — that is recursica-skill-timeline.
+description: How to use the Recursica stepper — when a form becomes multi-step instead of tabbed, sizes and orientation, step labels, Next and Back as actions, saving across steps, and announcing the step and moving focus. Use for wizards, multi-step forms, and checkout flows. Not for sections of one whole — see recursica-skill-tabs; not for past events — see recursica-skill-timeline.
 license: MIT
 metadata:
   author: hi@borderux.com

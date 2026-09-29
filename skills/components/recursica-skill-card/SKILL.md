@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-card
-description: How to use the Recursica card correctly — the five tests a card set must pass, the narrow aesthetic exception, why high plurality is a table and a single object is not a card, the absolute prohibition on putting a form or form control in a card, what the component provides (header, sections, footer, slot), using spacing instead of a drawn container, and the screen-reader and keyboard requirements for a card set. Use whenever adding, reviewing, or refactoring a card, deciding whether a region needs a visible container, or converting a wall of cards into something with hierarchy. Trigger on "card", "cards", "tile", "wrap this in a card", "container", "box", "panel around", "card grid", "screen reader", "tab order", or any layout where content is about to be given a border. Do NOT use for tabular sets — that is recursica-skill-tables. Do NOT use for the general convention that a container must be earned — that is recursica-skill-system-conventions.
+description: How to use the Recursica card — the five tests a card set must pass, why many items is a table and one object is not a card, never a form in a card, and using space instead of a container. Use before wrapping anything in a card, tile, or box. Not for tabular sets — see recursica-skill-tables.
 license: MIT
 metadata:
   author: hi@borderux.com

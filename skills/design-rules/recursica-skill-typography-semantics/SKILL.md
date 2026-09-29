@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-typography-semantics
-description: House rules for typography and semantic markup in enterprise web applications — always using the real element rather than styling a div into one, one H1 per page even when hidden, type styles from tokens and never custom values, loading every typeface the brand names and setting the base family from a token, when a heading is hidden but kept for screen readers, why vertical spacing between headings is contextual, em and strong over visual emphasis, abbreviations written out on first use, and AP style. Use when adding, reviewing, or refactoring headings, body copy, emphasis, abbreviations, or the markup beneath a visual hierarchy. Trigger on "typography", "type style", "heading", "H1", "semantic HTML", "visually hidden", "em", "strong", "abbreviation", "line length", "measure", "font family", "typeface", "webfont", or "AP style". Do NOT use for announcing dynamic updates — that is recursica-skill-feedback-messaging. Do NOT use for what things are called — that is recursica-skill-naming-terminology.
+description: House rules for type and semantic markup — real elements instead of styled divs, one H1 per page, type styles from tokens only, loading the brand typefaces, hidden headings, emphasis with em and strong, abbreviations, and AP style. Use for headings, body copy, emphasis, and the markup under a visual hierarchy. Not for what things are called — see recursica-skill-naming-terminology.
 license: MIT
 metadata:
   author: hi@borderux.com

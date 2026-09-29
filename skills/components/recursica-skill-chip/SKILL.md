@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-chip
-description: How to use the Recursica chip correctly — when chips are the right control and when a badge, checkbox group, segmented control, or dropdown is, the selected and unselected states, selectable versus removable chips, why a status is never a chip, how many chips a group may hold, when a chip may be dismissed, and the screen-reader and keyboard requirements for a chip group. Use whenever adding, reviewing, or refactoring filter chips, tag chips, a horizontal multi-select, or a set of removable values on an object. Trigger on "chip", "chips", "tag", "tags", "filter chips", "horizontal multi-select", "removable", "dismissible", "selectable chip", "screen reader", "tab order", or a request to show or select several short values. Do NOT use for a single read-only value the system sets — that is recursica-skill-badge. Do NOT use for an exclusive choice — that is recursica-skill-segmented-control. Do NOT use for chip-vs-badge policy or group counts — that is recursica-skill-badges-chips.
+description: How to use the Recursica chip — when chips are right, selected and unselected states, selectable versus removable chips, never a status, group size, and chip-group accessibility. Use for filter chips, tags, and a horizontal multi-select. Not for a read-only value — see recursica-skill-badge; not for one choice — see recursica-skill-segmented-control.
 license: MIT
 metadata:
   author: hi@borderux.com

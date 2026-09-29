@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-assistive-element
-description: How to use the Recursica assistive element correctly — the single component that renders both help text and error text below a form field, with types help and error. Covers writing help text that states the rule before the user breaks it, error copy that restates the rule rather than saying "invalid", why the error replaces the help text instead of joining it, the non-color indicator requirement, and the screen-reader requirements for announcing help and errors. Use whenever adding, reviewing, or refactoring the text below a field, an error message, a validation message, or field-level guidance. Trigger on "help text", "helper text", "assistive text", "hint text", "error message", "validation message", "field error", "invalid input", "screen reader", or a question about what to put under a field. Do NOT use for the field's name — that is recursica-skill-label. Do NOT use for validation timing, submit behavior, or where errors appear across a whole form — that is recursica-skill-forms.
+description: How to use the Recursica assistive element, the help and error text below a form field — help that states the rule up front, errors that restate it, why the error replaces the help, and how both are announced. Use for help text, hints, and validation messages. Not for the field's name — see recursica-skill-label.
 license: MIT
 metadata:
   author: hi@borderux.com

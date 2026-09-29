@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-dashboards
-description: House rules for dashboards in enterprise web applications — what a dashboard is for, the dashboard vs. workbench test, layout stability across visits, opinionated hierarchy, how many charts and cards, numbers over charts, one or two calls to action, no work on the dashboard, max width, no inner scrolling, the funnel structure, empty and first-run states, customization, data freshness disclosure, and adaptive behavior at smaller sizes. Use whenever asked to design, review, or refactor a dashboard, landing page, overview page, home screen, summary view, or widget layout. Trigger on "dashboard", "widget", "KPI", "overview page", "landing page", "home screen", "at a glance", "summary cards", or a request to surface key metrics. Do NOT use for the internals of an individual chart — that is recursica-skill-data-visualization. Do NOT use for table structure.
+description: House rules for dashboards and overview pages — the dashboard versus workbench test, a stable opinionated layout, numbers over charts, one or two calls to action, no work on the dashboard, empty and first-run states, customization, and data freshness. Use for any dashboard, landing, home, or KPI screen. Not for chart internals — see recursica-skill-data-visualization.
 license: MIT
 metadata:
   author: hi@borderux.com

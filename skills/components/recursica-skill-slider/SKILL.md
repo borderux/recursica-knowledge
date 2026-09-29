@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-slider
-description: How to use the Recursica slider correctly — when a bounded range beats typed numeric entry, which layouts and states exist including the kit's only `active` state, the paired numeric input, min and max labels, step indicators, and the read-only value treatment, plus the screen-reader and keyboard requirements that make the value settable without dragging. Use whenever adding, reviewing, or refactoring a slider, a range control, a volume or brightness control, or deciding between a slider and a typed number. Trigger on "slider", "range", "track", "thumb", "handle", "step", "min", "max", "drag to set", "screen reader", or "tab order". Do NOT use for exact numeric entry with steppers — that is recursica-skill-number-input. Do NOT use for form layout, validation timing, or save mode — that is recursica-skill-forms. Do NOT use to show how far a task has progressed — that is recursica-skill-loader.
+description: How to use the Recursica slider — when a bounded range beats typing, states and label placement, the paired number input, min and max labels, steps, and setting the value without dragging. Use for sliders and range controls. Not for exact numbers — see recursica-skill-number-input; not for progress — see recursica-skill-loader.
 license: MIT
 metadata:
   author: hi@borderux.com

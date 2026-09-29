@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-transfer-list
-description: How to use the Recursica transfer list correctly — the two-column control for moving items between an excluded and an included list, when a large set with a meaningful unselected half earns it and when a checkbox group or a dropdown is right instead, which layouts and states exist, the header and filter, and the screen-reader and keyboard requirements that make the transfer work with no drag. Use whenever adding, reviewing, or refactoring a transfer list, a dual listbox, or an assign-items-to-a-group control. Trigger on "transfer list", "dual listbox", "move items", "assign to group", "pick columns", "available and selected", "move all", "screen reader", or "tab order". Do NOT use for small option sets — that is recursica-skill-checkbox. Do NOT use for choosing one value — recursica-skill-dropdown. Do NOT use for form layout or save mode — recursica-skill-forms.
+description: How to use the Recursica transfer list — two lists with controls to move items between them, when a large set earns it, the filter, and moving items without dragging. Use for assigning items to a group or picking columns. Not for small sets — see recursica-skill-checkbox; not for one value — see recursica-skill-dropdown.
 license: MIT
 metadata:
   author: hi@borderux.com

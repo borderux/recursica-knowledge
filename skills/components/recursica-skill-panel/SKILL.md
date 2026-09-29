@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-panel
-description: How to use the Recursica panel correctly — when a non-blocking side surface is justified and when a modal, a page, or an inline edit is the right answer instead, why the panel has no side, size, or width axis, why it creates no history entry, what its header, content, and footer hold, and the screen-reader and keyboard requirements including focus return, Escape, and the decision not to trap focus. Use whenever adding, reviewing, or refactoring a panel, drawer, side sheet, or filter surface. Trigger on "panel", "drawer", "side sheet", "slide-out", "flyout", "filter panel", "details pane", "escape to close", "focus return", "focus trap", "screen reader", "tab order", or a request to show supplementary content without leaving the page. Do NOT use for a surface that blocks the page for one decision — that is recursica-skill-modal. Do NOT use for transient feedback or undo — that is recursica-skill-toast. Do NOT use for routing and history rules — that is recursica-skill-navigation.
+description: How to use the Recursica panel — when a side surface that leaves the page usable is right, no side or width options, no history entry, header, content, and footer, and focus return with no focus trap. Use for panels, drawers, side sheets, and filter panels. Not for blocking decisions — see recursica-skill-modal.
 license: MIT
 metadata:
   author: hi@borderux.com

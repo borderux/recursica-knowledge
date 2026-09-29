@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-panels-modals
-description: House rules for choosing between a panel, a modal, and a dedicated page in enterprise web applications — mode as the only real difference, the context test that decides which one, why cognitive load is not the criterion, never stacking modals, never nesting a panel though stacking is permitted, edge anchoring with one side at a time, no horizontal scrolling ever, forms in a panel, unsaved-change protection, route changes, and panels becoming pages at smaller breakpoints. Use when deciding where a task belongs, or adding or reviewing a panel, drawer, modal, or dialog. Trigger on "panel", "modal", "dialog", "drawer", "should this be a page", "stacked panels", "nested panel", "which side", "unsaved changes", or a question about where a task lives. Do NOT use for the components' own internals — those are recursica-skill-panel and recursica-skill-modal.
+description: House rules for choosing between a panel, a modal, and a page — mode as the real difference, the context test, never stacking modals, stacking and sides for panels, forms in panels, unsaved changes, and routes. Use when deciding where a task belongs. Not for the components themselves — see recursica-skill-panel and recursica-skill-modal.
 license: MIT
 metadata:
   author: hi@borderux.com

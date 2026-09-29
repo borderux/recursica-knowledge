@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-naming-terminology
-description: House rules for what things are called in enterprise web applications — whose vocabulary wins when the users, the business, and the data model disagree, why a navigation label, page title, and table header need not match exactly and how far a label may expand as the user goes deeper, when a name is singular and when plural, why primary navigation uses object labels rather than actions, how far a term may be shortened before it stops being the same term, acronyms, reconciling terms between personas, and mapping an integration's names onto yours. Use when naming an object, a navigation item, a page title, a column header, or a button, or when the same thing is called different things in different places. Trigger on "what should we call", "label", "naming", "terminology", "singular or plural", "acronym", "abbreviate", "rename", or a term that differs between screens. Do NOT use for case, capitalization, or any type treatment — that is token-owned, see recursica-skill-typography-semantics.
+description: House rules for what things are called — whose vocabulary wins, how navigation labels, page titles, and column headers relate, singular or plural, object labels in navigation, shortening and acronyms, and matching an integration's names. Use when naming anything, or when one thing has different names in different places. Not for capitalization — see recursica-skill-typography-semantics.
 license: MIT
 metadata:
   author: hi@borderux.com

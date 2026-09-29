@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-textarea
-description: How to use the Recursica textarea correctly — when multi-line entry is the right control and when a single-line field or another component replaces it, which states and layouts exist, why row count is token-owned rather than yours, character limits and why a limit needs a stated rule, label and help and error text rules, and the screen-reader and keyboard requirements for a multi-line field. Use whenever adding, reviewing, or refactoring a comment box, a description, a message composer, or any field expected to run past one line. Trigger on "textarea", "text area", "multi-line", "multiline", "comment box", "description field", "rows", "character count", "character limit", "resize", "screen reader", "tab order", or a request to let a user write more than a sentence. Do NOT use for single-line entry — that is recursica-skill-text-field. Do NOT use for form layout, validation timing, or save behavior — that is recursica-skill-forms.
+description: How to use the Recursica textarea — when multi-line entry is right, states and label placement, the fixed row count, character limits with a stated rule, and multi-line accessibility. Use for comments, descriptions, and message fields. Not for single-line text — see recursica-skill-text-field.
 license: MIT
 metadata:
   author: hi@borderux.com

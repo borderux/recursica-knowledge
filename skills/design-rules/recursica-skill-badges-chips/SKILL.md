@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-badges-chips
-description: House rules for badges vs. chips in enterprise web applications — why a badge is heavy enough that an icon is the default and a badge the earned exception, status and metadata display vs. selection, the one-badge-per-object rule, tags, pills, dismissible and toggleable chips, when a status earns a table column at all, placement in rows, cards, tabs, headings and sidebar navigation, chip group counts, error states, data density, and keyboard behavior. Use whenever labeling an object with status, counts, tags, or metadata, or when building filter bars and chip groups. Trigger on "badge or chip", "icon or badge", "tag", "pill", "status indicator", "status column", "filter chips", "dismissible chip", "selectable chip", "count badge", or any question about how to mark an object's state. Do NOT use to choose between form controls like checkbox vs. radio — that is recursica-skill-selection-controls, though selectable chips inherit its rules. Do NOT use for buttons or links.
+description: House rules for marking an object's status, counts, tags, or metadata — badge versus chip versus icon, one badge per object, selectable and dismissible chips, placement in rows, cards, tabs, and navigation, and chip-group counts. Use when labeling objects or building filter chips. Not for choosing a form control — see recursica-skill-selection-controls.
 license: MIT
 metadata:
   author: hi@borderux.com

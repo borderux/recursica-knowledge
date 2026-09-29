@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-tabs
-description: How to use the Recursica tabs component correctly — when content is parts of one whole and belongs in tabs versus a stepper, separate pages, or an accordion, which tab styles and orientations exist, giving each tab its own route, counters on tabs, why a form is never split across tabs, and the screen-reader and keyboard requirements. Use whenever adding, reviewing, or refactoring a tab set, deciding what goes in each tab, or converting tabbed content to something else. Trigger on "tabs", "tab set", "tabbed", "tab bar", "switch views", "pills", "tab styles", "vertical tabs", "tab panel", "screen reader", "tab order", "arrow keys", or a request to divide one screen's content into switchable sections. Do NOT use for moving between areas of the app — that is recursica-skill-navigation. Do NOT use for a sequential process — that is a stepper, see recursica-skill-forms.
+description: How to use the Recursica tabs — when content is parts of one whole, styles and orientation, a route per tab, counters, never a form across tabs, and tab accessibility. Use for tab sets and switchable sections of one screen. Not for app navigation — see recursica-skill-navigation; not for a sequence — see recursica-skill-stepper.
 license: MIT
 metadata:
   author: hi@borderux.com

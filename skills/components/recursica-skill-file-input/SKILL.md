@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-file-input
-description: How to use the Recursica file input correctly — the compact single-line "choose a file" field for a form, when it is right and when the larger file upload area is, which layouts and states exist, stating accepted types and the size limit before the user picks, and the screen-reader and keyboard requirements that keep a file reachable without a pointer. Use whenever adding, reviewing, or refactoring a file picker inside a form, an attachment field, or an avatar or document field. Trigger on "file input", "file picker", "choose file", "attach a file", "browse", "accepted file types", "max file size", "screen reader", or "tab order". Do NOT use for a drop area with a list of uploaded files — that is recursica-skill-file-upload. Do NOT use for form layout, validation timing, or save mode — that is recursica-skill-forms.
+description: How to use the Recursica file input, the compact choose-a-file field — when it fits and when the larger upload area does, stating accepted types and size limits up front, and keyboard access. Use for a file or attachment field in a form. Not for a drop area with a file list — see recursica-skill-file-upload.
 license: MIT
 metadata:
   author: hi@borderux.com

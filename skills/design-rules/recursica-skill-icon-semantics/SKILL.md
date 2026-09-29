@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-icon-semantics
-description: House rules for icons in enterprise web applications — one icon set and one style across the whole system, when an icon may stand alone and when it must carry a text label, the tooltip requirement on every icon-only button, icons inside established components that need no explanation, fixed meanings including X for close and a trash can for delete, horizontal ellipsis rather than a vertical kebab, tying an icon to a verb so one icon never means two things, when a decorative icon is legitimate, status expressed as an icon, and the ban on a lone non-interactive icon in a table cell. Use when choosing an icon, deciding whether it needs a label, or reviewing a screen for icon consistency. Trigger on "icon", "icon set", "icon-only", "which icon", "close or delete", "kebab", "decorative icon", or "status icon". Do NOT use for whether a trigger is a button or a link — that is recursica-skill-buttons-links. Do NOT use for tooltip content and behavior — that is recursica-skill-tooltip.
+description: House rules for icons — one icon set, when an icon needs a text label, tooltips on icon-only buttons, fixed meanings such as X for close and a trash can for delete, one meaning per icon, decorative icons, and status icons. Use when choosing an icon or deciding whether it needs a label. Not for tooltip behavior — see recursica-skill-tooltip.
 license: MIT
 metadata:
   author: hi@borderux.com

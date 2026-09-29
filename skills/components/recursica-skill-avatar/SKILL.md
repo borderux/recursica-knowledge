@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-avatar
-description: How to use the Recursica avatar correctly — when a visual identity marker earns its place, which of the three styles applies and the order they fall back in, the three sizes, when an avatar is a control and when it is decoration, and the screen-reader and keyboard requirements. Use whenever adding, reviewing, or refactoring a profile picture, a user menu trigger, an author marker on a comment, or a person column in a list. Trigger on "avatar", "profile picture", "profile photo", "user image", "initials", "monogram", "user menu", "account menu", "who posted this", "screen reader", "tab order", or a request to show who someone is. Do NOT use for the menu an avatar trigger opens — that is recursica-skill-menu. Do NOT use for status, presence, or a count attached to a person — that is recursica-skill-badge. Do NOT use for where the account menu belongs in the app shell — that is recursica-skill-navigation.
+description: How to use the Recursica avatar — when an identity marker earns its place, its styles and fallback order, sizes, and when it is a control or decoration. Use for profile pictures, initials, user-menu triggers, and author markers. Not for the menu it opens — see recursica-skill-menu; not for status — see recursica-skill-badge.
 license: MIT
 metadata:
   author: hi@borderux.com

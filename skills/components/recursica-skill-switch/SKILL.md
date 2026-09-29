@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-switch
-description: How to use the Recursica switch correctly — switch, switch-item, and switch-group as one three-part control, the binary-inverse and label tests that must pass before a switch is allowed, how commit timing follows the application's single save mode, why switches stay out of table rows and away from high-consequence settings, disabled vs. read-only, and the screen-reader and keyboard requirements. Use whenever adding, reviewing, or refactoring a switch, a toggle, or an on/off setting. Trigger on "switch", "toggle", "on off", "enable disable setting", "instant save", "settings toggle", "screen reader", "tab order", or a request to let a user turn something on or off. Do NOT use for zero-to-many selection or a value that commits on Save — that is recursica-skill-checkbox. Do NOT use for one of several values against one label — recursica-skill-radio-button. Do NOT use for which control a field gets or commit timing across a system — that is recursica-skill-selection-controls.
+description: How to use the Recursica switch — the tests a value must pass for a switch, commit timing that follows the app's save mode, no switches in table rows or for high-stakes settings, and disabled versus read-only. Use for on/off settings and toggles. Not for values saved with a form — see recursica-skill-checkbox; control choice lives in recursica-skill-selection-controls.
 license: MIT
 metadata:
   author: hi@borderux.com

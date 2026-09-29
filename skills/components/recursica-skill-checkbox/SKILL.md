@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-checkbox
-description: How to use the Recursica checkbox correctly — checkbox, checkbox-item, and checkbox-group as one three-part control, when zero-to-many selection is right and when a radio group, switch, or dropdown replaces it, the option-count ceiling, select-all and indeterminate mechanics, table row and header selection, disabled vs. read-only, and the screen-reader and keyboard requirements. Use whenever adding, reviewing, or refactoring a checkbox, a checkbox group, or row selection in a table. Trigger on "checkbox", "checkbox group", "checklist", "select all", "indeterminate", "row selection", "header checkbox", "screen reader", "tab order", or a request to let a user pick any number of options. Do NOT use for one mutually exclusive choice — that is recursica-skill-radio-button. Do NOT use for a setting that applies the instant it is flipped — recursica-skill-switch. Do NOT use for which control a field gets, option counts, or commit timing — that is recursica-skill-selection-controls.
+description: How to use the Recursica checkbox and checkbox group — zero-to-many selection, option counts, select-all and the indeterminate state, table row selection, and disabled versus read-only. Use for checkboxes, checklists, and row selection. Not for one choice — see recursica-skill-radio-button; not for instant on/off settings — see recursica-skill-switch.
 license: MIT
 metadata:
   author: hi@borderux.com

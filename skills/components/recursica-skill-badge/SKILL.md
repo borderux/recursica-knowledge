@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-badge
-description: How to use the Recursica badge correctly — when a value is a badge and when it is a chip, an icon, or plain text, which styles exist, the rule that a badge is singular and never interactive, why an error condition is not a badge, where a badge sits relative to the thing it describes, counts and their units, and the screen-reader and keyboard requirements. Use whenever adding, reviewing, or refactoring a status indicator, a count, a tag on a tab or nav item, or read-only metadata on an object. Trigger on "badge", "status", "count", "counter", "pill", "label on a tab", "notification count", "unread count", "screen reader", "tab order", or a request to show a single piece of state alongside something. Do NOT use for anything the user selects, toggles, or dismisses — that is recursica-skill-chip. Do NOT use for badge-vs-chip policy, cardinality, or placement rules — that is recursica-skill-badges-chips.
+description: How to use the Recursica badge — when a value is a badge rather than a chip, icon, or text, its styles, one badge and never interactive, no error badges, placement, and counts. Use for status, counts, and read-only tags. Not for anything the user selects or removes — see recursica-skill-chip.
 license: MIT
 metadata:
   author: hi@borderux.com

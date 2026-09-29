@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-dropdown
-description: How to use the Recursica dropdown correctly — when a hidden option list beats a visible one, the four-option floor and the count ceiling above which a radio group becomes a dropdown, the affordance test the option set must pass, placeholder vs. valued text, sensible defaults, keeping the menu unclipped, disabled vs. read-only, and the screen-reader and keyboard requirements for a listbox including expanded state, the active option, Escape, and Home and End. Use whenever adding, reviewing, or refactoring a dropdown or select field. Trigger on "dropdown", "select", "select field", "option list", "listbox", "combobox", "expanded", "menu clipped", "screen reader", "tab order", or a request to let a user pick one value from a set. Do NOT use for a small visible set — that is recursica-skill-radio-button. Do NOT use for typing to filter a large set — recursica-skill-autocomplete. Do NOT use for a list of actions — recursica-skill-menu.
+description: How to use the Recursica dropdown — when a hidden option list beats a visible one, the option-count thresholds, placeholder versus value, defaults, an unclipped menu, and listbox accessibility. Use for select fields that pick one value. Not for small sets — see recursica-skill-radio-button; not for type-to-filter — see recursica-skill-autocomplete.
 license: MIT
 metadata:
   author: hi@borderux.com

@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-screen-priority
-description: House rules for deciding what matters most on an enterprise screen and how that ranking becomes layout — why there is no cap on how much information a screen may carry, the inverted triangle from broadest at the top to persona-specific at the bottom, what earns the top-left position, the three tenets of workflow then physicality then simplicity, the removal test, ranking the user's workflow above every stakeholder, establishing hierarchy without color, keeping information in view with sticky regions, and the prohibition on inner scrolling. Use when deciding what goes where on a screen, what to cut, whether a screen is finished, or how to rank competing requests. Trigger on "what matters most", "hierarchy", "priority", "too much on this screen", "overloaded", "density", "what should we cut", "sticky", "inner scroll", "is this screen done". Do NOT use for the page's structural composition — that is recursica-skill-screen-scaffolding.
+description: House rules for ranking what matters on a screen and turning that into layout — no cap on information, the inverted triangle, the top-left position, workflow then physicality then simplicity, the removal test, hierarchy without color, sticky regions, and no inner scrolling. Use when deciding what goes where or what to cut. Not for page structure — see recursica-skill-screen-scaffolding.
 license: MIT
 metadata:
   author: hi@borderux.com

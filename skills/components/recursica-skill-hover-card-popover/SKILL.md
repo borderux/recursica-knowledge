@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-hover-card-popover
-description: How to use the Recursica hover card and popover correctly — when richer content beside a target is justified, the required decision between a hover-opened read-only card and a click-opened interactive popover, why the component has no placement or size axis, the prohibition on holding anything the user needs, and the screen-reader and keyboard requirements that differ between the two varieties. Use whenever adding, reviewing, or refactoring a hover card, popover, preview card, profile preview, or link preview. Trigger on "hover card", "popover", "preview on hover", "profile card", "link preview", "beak", "hover-only", "escape to close", "screen reader", "tab order", or a request to reveal detail beside an element. Do NOT use for a short text label on an icon-only control — that is recursica-skill-tooltip. Do NOT use for a list of actions or options — that is recursica-skill-menu. Do NOT use for a surface that blocks the page — that is recursica-skill-modal.
+description: How to use the Recursica hover card and popover — richer content beside a target, choosing a read-only hover card or a click-opened interactive popover, and the accessibility each needs. Use for preview cards, profile previews, and popovers. Not for a short label — see recursica-skill-tooltip; not for a list of actions — see recursica-skill-menu.
 license: MIT
 metadata:
   author: hi@borderux.com

@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-autocomplete
-description: How to use the Recursica autocomplete correctly — the typeahead field for a set too large to scan but familiar enough to type, why the value still comes from a defined set, placeholder rules, sensible defaults, keeping the filtered list unclipped, disabled vs. read-only, and the screen-reader and keyboard requirements for a combobox, including announcing filtered result counts and the active option. Use when adding, reviewing, or refactoring an autocomplete, typeahead, or search-as-you-type field. Trigger on "autocomplete", "typeahead", "search", "search field", "combobox", "filter as you type", "suggestions", "screen reader", or a request to let a user type to narrow a list of options. Do NOT use for a set small enough to show at once — that is recursica-skill-dropdown or recursica-skill-radio-button. Do NOT use for unconstrained free text — recursica-skill-text-field. Do NOT use for a list of actions — recursica-skill-menu.
+description: How to use the Recursica autocomplete, the type-to-filter field for a large but familiar set — values from a defined set, placeholder rules, an unclipped list, and combobox accessibility including result counts. Use for typeahead and search-as-you-type fields. Not for small sets — see recursica-skill-dropdown; not for free text — see recursica-skill-text-field.
 license: MIT
 metadata:
   author: hi@borderux.com

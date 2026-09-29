@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-selection-controls
-description: House rules for choosing among selection controls in enterprise web applications — checkbox vs. switch vs. radio group vs. dropdown vs. multi-select, option counts and 7 ± 2, pre-selected defaults, select-all and indeterminate states, table header checkbox mechanics, disabled vs. read-only, vertical-only layout, and immediate vs. batch submit. Use whenever picking or reviewing the control for a set of options — checkboxes, switches, toggles, radio buttons, selects, multi-selects, selectable chips, or row and header selection in a table. Trigger on "checkbox or switch", "radio or dropdown", "toggle", "multi-select", "select all", "indeterminate", "pre-selected", "how many options", or any question about which control a field should use. Do NOT use for form layout, validation timing, or error presentation — that is recursica-skill-forms. Do NOT use for button or link triggers — that is recursica-skill-buttons-links.
+description: House rules for choosing a selection control — checkbox, switch, radio group, dropdown, or multi-select, option counts, pre-selection, select-all and the indeterminate state, disabled versus read-only, vertical layout, and instant versus batch saving. Use when deciding which control a set of options gets. Not for form layout — see recursica-skill-forms.
 license: MIT
 metadata:
   author: hi@borderux.com

@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-file-upload
-description: How to use the Recursica file upload correctly — the larger bordered area for adding files with a list of what has been added, when it replaces the compact file input, which layouts and states exist, stating accepted types and the size limit before the user picks, and the screen-reader and keyboard requirements that keep a drop zone from being the only way in. Use whenever adding, reviewing, or refactoring an upload area, an attachments section, a drop zone, or a multi-file picker. Trigger on "file upload", "drop zone", "drag and drop files", "upload area", "attachments", "uploaded files list", "remove file", "accepted file types", "max file size", "screen reader", or "tab order". Do NOT use for a single file inside a dense form — that is recursica-skill-file-input. Do NOT use for form layout, validation timing, or save mode — that is recursica-skill-forms.
+description: How to use the Recursica file upload, the larger area with a list of added files — when it replaces the file input, stating types and size limits up front, and never making drag and drop the only way in. Use for upload areas, drop zones, and attachment lists. Not for one file in a dense form — see recursica-skill-file-input.
 license: MIT
 metadata:
   author: hi@borderux.com

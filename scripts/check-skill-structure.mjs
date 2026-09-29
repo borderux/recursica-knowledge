@@ -38,6 +38,13 @@ export const ACCESSIBILITY_SUBSECTIONS = [
   "Keyboard and non-mouse navigation",
 ];
 export const DESCRIPTION_LIMIT = 1024;
+/**
+ * The house limit, well under the format's. A description is loaded to choose a skill — every
+ * session in some hosts, every list_skills call over MCP — so its length is paid whether or not
+ * the skill is used. They were cut from about 950 characters to about 350 with no loss in
+ * routing (scripts/routing-eval.mjs), and this keeps them there.
+ */
+export const DESCRIPTION_TARGET = 450;
 
 /** Every skill: `{ slug, category, file }`, found the way the packager and MCP server find them. */
 export function listSkills(dir = SKILLS) {
@@ -90,10 +97,10 @@ export function checkFrontmatter(text, slug) {
     });
   if (typeof data?.description !== "string" || !data.description.trim()) {
     problems.push({ line: 1, message: "frontmatter has no `description`" });
-  } else if (data.description.length > DESCRIPTION_LIMIT) {
+  } else if (data.description.length > DESCRIPTION_TARGET) {
     problems.push({
       line: 1,
-      message: `\`description\` is ${data.description.length} characters; the limit is ${DESCRIPTION_LIMIT}`,
+      message: `\`description\` is ${data.description.length} characters; the house limit is ${DESCRIPTION_TARGET} (the format allows ${DESCRIPTION_LIMIT}) — say what it covers, when to use it, and what to use instead, then rerun scripts/routing-eval.mjs`,
     });
   }
   return problems;

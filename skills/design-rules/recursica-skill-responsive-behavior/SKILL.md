@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-responsive-behavior
-description: House rules for behavior below desktop in enterprise web applications — the tablet and small-device breakpoints and the 1200 max content width, the difference between responsive reflow and adaptive removal and why adaptive is the forgotten half, context of use as the only thing that decides what may be dropped, the four questions to ask before choosing a navigation pattern, driving adaptation by viewport rather than container, panels and work-bearing modals becoming pages, the ban on importing iOS or Android patterns, horizontal scrolling and the carousel exception, why tables do not appear below tablet, and one primary input method for the whole application. Use when a layout must work below desktop. Trigger on "mobile", "tablet", "breakpoint", "responsive", "adaptive", "small screen", "touch", or "narrow viewport". Do NOT use for panel-versus-modal-versus-page at desktop — that is recursica-skill-panels-modals.
+description: House rules below desktop — tablet and small breakpoints, the 1200 content width, responsive reflow versus adaptive removal, what may be dropped, navigation patterns, panels and modals becoming pages, no native mobile patterns, and tables below tablet. Use when a layout must work on tablets, phones, or narrow screens. Not for panel, modal, or page at desktop — see recursica-skill-panels-modals.
 license: MIT
 metadata:
   author: hi@borderux.com

@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-table
-description: How to use the Recursica table correctly — what the table, cell, header, and footer specs provide, sorting as a first-class part of the header, why a cell's value must never be wrapped in a text component, the inert cell max-width, the currency style on cells and footers, why there is no density axis and no horizontal scrolling, null cells, totals in the footer, and the screen-reader and keyboard requirements for a data table including sort announcement, row selection, and the keyboard alternative to long-press multi-sort. Use whenever adding, reviewing, or refactoring a table, data grid, or list of records with columns. Trigger on "table", "data grid", "column header", "sort", "row selection", "totals row", "sticky header", "cell font", "wrong typeface", "screen reader", or "tab order". Do NOT use for small repeating sets with a chart or image each — that is recursica-skill-card. Do NOT use for column choice, widths, truncation, or pagination policy — that is recursica-skill-tables.
+description: How to use the Recursica table component — the table, cell, header, and footer, sorting, cell text and width, currency cells, no density option, empty cells, footer totals, and data-table accessibility including row selection. Use for tables and data grids. Column, width, and pagination policy lives in recursica-skill-tables.
 license: MIT
 metadata:
   author: hi@borderux.com

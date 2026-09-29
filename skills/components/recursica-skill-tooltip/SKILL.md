@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-tooltip
-description: How to use the Recursica tooltip correctly — when a short label for an unlabeled control is right and when the content belongs on the page instead, why the tooltip has no placement or size axis, the prohibition on controls, links, and information that exists nowhere else, and the screen-reader and keyboard requirements including appearing on focus and dismissing with Escape. Use whenever adding, reviewing, or refactoring a tooltip, labeling an icon-only button, or revealing truncated text. Trigger on "tooltip", "hover text", "title attribute", "icon button label", "truncated text", "ellipsis text", "beak", "aria-describedby", "screen reader", "tab order", or a request to explain a control on hover. Do NOT use for richer content or anything interactive — that is recursica-skill-hover-card-popover. Do NOT use for a field's format rule or error text — that is recursica-skill-text-field. Do NOT use for whether a control needs a tooltip at all — that is recursica-skill-buttons-links.
+description: How to use the Recursica tooltip — a short label for a control with no visible one, nothing essential or interactive inside, showing on focus, and closing with Escape. Use for icon-only button labels and cut-off text. Not for rich or interactive content — see recursica-skill-hover-card-popover; not for field help — see recursica-skill-text-field.
 license: MIT
 metadata:
   author: hi@borderux.com

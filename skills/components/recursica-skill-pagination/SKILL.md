@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-pagination
-description: How to use the Recursica pagination correctly — which tables paginate and which scroll, that pagination is a table's footer control, the row counts that come from the table, why a page number is a link rather than a button, the separately styled page and navigation controls, and the screen-reader and keyboard requirements for announcing the current page and handling focus after a page change. Use whenever adding, reviewing, or refactoring paging on an interior table, a list, or a result set. Trigger on "pagination", "paging", "page numbers", "next page", "previous page", "rows per page", "page size", "load more", "infinite scroll", "screen reader", "tab order", or a request to break a long set of records into pages. Do NOT use for whether a table paginates at all, its footer, or its default sort — that is recursica-skill-tables. Do NOT use for showing the user where they are in the application — that is recursica-skill-breadcrumb.
+description: How to use the Recursica pagination, a table's footer control — which tables page and which scroll, row counts from the table, page numbers as links, and announcing the page and handling focus. Use for paging a table or result set. Whether a table pages at all is in recursica-skill-tables.
 license: MIT
 metadata:
   author: hi@borderux.com
