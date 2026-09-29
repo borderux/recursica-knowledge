@@ -185,12 +185,25 @@ export function checkLoadLinks(text, components) {
   body.split("\n").forEach((l, i) => {
     if (l.startsWith("### ")) {
       conditional = l.trim() === IF_USED_HEADING;
-      if (!conditional) problems.push({ line: line0 + i, message: `unexpected heading in \`## Load these too\` — the only one allowed is \`${IF_USED_HEADING}\`` });
+      if (!conditional)
+        problems.push({
+          line: line0 + i,
+          message: `unexpected heading in \`## Load these too\` — the only one allowed is \`${IF_USED_HEADING}\``,
+        });
     }
-    if (/\]\(/.test(l)) problems.push({ line: line0 + i, message: "a link in `## Load these too` — write the skill name alone; a relative path means nothing outside this repository" });
+    if (/\]\(/.test(l))
+      problems.push({
+        line: line0 + i,
+        message:
+          "a link in `## Load these too` — write the skill name alone; a relative path means nothing outside this repository",
+      });
     if (conditional) {
       for (const m of l.matchAll(/recursica-skill-[a-z0-9-]*[a-z0-9]/g)) {
-        if (!components.has(m[0])) problems.push({ line: line0 + i, message: `\`${m[0]}\` is not a component, so it cannot be "only if the screen also uses it" — move it above the heading` });
+        if (!components.has(m[0]))
+          problems.push({
+            line: line0 + i,
+            message: `\`${m[0]}\` is not a component, so it cannot be "only if the screen also uses it" — move it above the heading`,
+          });
       }
     }
   });
@@ -263,13 +276,17 @@ export function checkTables(text) {
 export function checkAll({ skills = SKILLS } = {}) {
   const list = listSkills(skills);
   const slugs = new Set(list.map((s) => s.slug));
-  const components = new Set(list.filter((s) => s.category === "components").map((s) => s.slug));
+  const components = new Set(
+    list.filter((s) => s.category === "components").map((s) => s.slug),
+  );
   const problems = [];
   for (const { slug, category, file } of list) {
     const text = fs.readFileSync(file, "utf8");
     const found = [
       ...checkFrontmatter(text, slug),
-      ...(category === "components" ? [...checkComponentShape(text), ...checkLoadLinks(text, components)] : []),
+      ...(category === "components"
+        ? [...checkComponentShape(text), ...checkLoadLinks(text, components)]
+        : []),
       ...checkReferences(text, file, slugs),
       ...checkTables(text),
     ];

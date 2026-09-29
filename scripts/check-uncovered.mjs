@@ -24,13 +24,10 @@ import { listSkills } from "./check-skill-structure.mjs";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 /**
- * Known and logged in docs/open-questions.md §8, keyed `slug: topic`. An entry whose topic now
+ * Known and logged as an open item in docs/open-questions.md, keyed `slug: topic`. An entry whose topic now
  * matches fails the check, so this cannot outlive the problem it records.
  */
-export const KNOWN = {
-  "recursica-skill-autocomplete: clearing":
-    "the checklist names clearing as uncovered; `## Rules` decides it — resolve which, then drop the entry",
-};
+export const KNOWN = {};
 
 const STOP = new Set(
   "a an the and or of to in on for with that it its is are be by as at from any how what when where which who whether nothing above all more than one two own this there their they you your has have not no".split(

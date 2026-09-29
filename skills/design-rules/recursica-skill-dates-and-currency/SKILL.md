@@ -16,7 +16,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 ## Governing principles
 
 1. **Never make the reader decode or calculate.** A date the reader has to figure out, or a timestamp they have to subtract from the current time, pushes work onto them that the format should have done.
-2. **Consistency matters more than the specific choice.** Use the same alignment, the same precision, and the same format across rows, columns, states, and screens. Where a rule below says "right-aligned" and an existing screen is left-aligned throughout, keeping it uniform is the more important thing to protect.
+2. **Consistency matters more than the specific choice.** Use the same alignment, the same precision, and the same format across rows, columns, states, and screens. Where a rule below says "right-aligned" and an existing screen is left-aligned throughout, keeping it uniform is the more important thing to protect — except for currency, which is right-aligned unless a person explicitly says otherwise.
 3. **Say when the data is not in the reader's own terms.** A different time zone, a converted currency, a rounded value — the reader must never assume they are seeing the original.
 
 ## Whose locale wins

@@ -40,6 +40,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 | `styles`  | `solid`, `text`, `outline`         | `variant`  |
 | `sizes`   | `default`, `small`                 | `size`     |
 | `content` | `icon-label`, `label`, `icon-only` |            |
+| `states`  | `disabled`                         |            |
 
 **`text` is the style called "Ghost" outside the UI kit.** One thing, two names.
 
@@ -47,7 +48,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no destructive or danger style.** A destructive action (one that deletes something or cannot easily be undone) cannot be signalled by color here. The label must carry it, and actions that cannot be undone are handled by confirmation. See `recursica-skill-buttons-links`.
 
-**There is no disabled variant on this component** — the disabled look comes from `globals.states.disabled`.
+**`disabled` is a state of every style.** The UI kit defines it under `solid`, `text`, and `outline`, and its opacity comes from `globals.states.disabled`. How it is set is in the uncovered list.
 
 **Loading is not a separate state; it is a combination of the axes above.** A button in flight — while its action is still running — is the `disabled` look with `icon-only` or `icon-label` content, where the icon may animate. Nothing new is needed, and nothing may be invented: no spinner placed beside the button, no swapped label, and no third state.
 
@@ -129,6 +130,7 @@ Do not implement, override, or tune any of these — the component owns them for
 - **Whether a full-width button is ever allowed**, and if so where. No axis supports it.
 - **Which icon marks a button in flight**, and whether the animation is defined anywhere. How it is put together is settled; the specific icon is not.
 - **Split buttons and button groups.** Neither exists in the UI kit; do not build one.
+- **How the disabled state is set.** The UI kit defines `disabled` under each style. Whether the adapter exposes it as a prop has not been confirmed. Check the component's props, or ask, before relying on it.
 
 ## Pre-flight checklist
 

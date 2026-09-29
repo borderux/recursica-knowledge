@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-tables
-description: House rules for tables and data grids — one table per object type, what earns a column, no horizontal scrolling, column widths and alignment, truncating versus wrapping, pagination versus infinite scroll, empty cells, sorting, opening a record, add and bulk actions, inline editing, totals, and frozen columns. Use when building or reviewing a table or list view. Not for row selection — see recursica-skill-selection-controls.
+description: House rules for tables and data grids — one table per object type, what earns a column, horizontal scrolling as a last resort, column widths and alignment, truncating versus wrapping, pagination versus infinite scroll, empty cells, sorting, opening a record, add and bulk actions, inline editing, totals, and frozen columns. Use when building or reviewing a table or list view. Not for row selection — see recursica-skill-selection-controls.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -72,9 +72,9 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 ## Horizontal scrolling
 
-**MUST NOT scroll sideways. There is no exception to this rule.** It is unusual in an application, awkward with a mouse, and has almost no affordance (a visible cue that tells the user they can act on something) — a user may never find out that there is more table to the right.
+**Avoid scrolling sideways.** It is unusual in an application, awkward with a mouse, and has almost no affordance (a visible cue that tells the user they can act on something) — a user may never find out that there is more table to the right.
 
-It is occasionally unavoidable, when a client insists that every field gets its own column and will not accept splitting the view. Treat that as a forced defeat, not a pattern: **the goal is always to fit.**
+It is sometimes unavoidable — for example, when a client insists that every field gets its own column and will not accept splitting the view. When it is, say so, and treat it as a last resort, not a pattern: the goal is always to fit.
 
 ## Stacked cell content
 
@@ -266,14 +266,14 @@ A frozen column stays in place while the rest of the table scrolls sideways.
 
 **The header and footer are always sticky. Columns usually do not need freezing** — with the headers already fixed, there is little left for a frozen column to solve.
 
-**Freeze at most one column. Never more than three.**
+**Never freeze more than three columns.**
 
 ## Uncovered — ask, do not invent
 
 No house rule covers these yet. **Ask the person instead of choosing** — see the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule above to fit them.
 
 - **Which data types cannot be sorted.** The rule leaves out types with no logical order, but no list of them has been made.
-- **Loading and error states for a table**, including partial failure.
+- **Error states for a table**, including partial failure.
 - **How full a sparse column has to be before it stops earning its place.** "Filled in for most rows" is the rule; the exact share is a judgment call, and no number has been given.
 - **How a pending row's status reads when several rows are pending for different reasons.** One pending state per table is covered; telling different kinds of pending apart is not.
 
@@ -290,12 +290,12 @@ No house rule covers these yet. **Ask the person instead of choosing** — see t
 Before treating a table as done, check:
 
 - [ ] The sorted column is clearly marked, including on tables whose sort cannot be changed.
-- [ ] A loading table shows nothing, instead of skeleton rows.
+- [ ] A loading table shows the loader (a spinner) by default, or plain text or another custom component in its place — never skeleton rows.
 - [ ] One object type is in one table. No section heading on the page names a status, a state, or a filter value — every one of those is a column value instead.
 - [ ] A row waiting for a decision shows the proposed result with a pending status, reveals what went into it through one expansion, panel, or modal, and keeps that same control — with undo in it — after approval.
 - [ ] Every column serves either acting on the records or understanding them. The rest moved to an expansion, a panel, or a detail page.
 - [ ] Every column is filled in for most rows. No column exists for an exception — warnings, errors, flags, conflicts. Those attach beside the object's identifying value as an icon, not a badge, and never alone in a cell of their own.
-- [ ] The table fits the main desktop dimensions, with no sideways scrolling.
+- [ ] The table fits the main desktop dimensions. Where sideways scrolling could not be avoided, you said so.
 - [ ] No cell holds more than two values, and the column header explains both.
 - [ ] You combined no unrelated values into one column.
 - [ ] Widths are set by data type: an explicit width on every narrow column — counts, dates, statuses, currency, short terms — and none on the sentence column, which takes what is left. Widths are defined once for the whole application, not for each table.
@@ -318,5 +318,5 @@ Before treating a table as done, check:
 - [ ] Totals sit in the fixed footer, and a paginated table's totals say what they cover.
 - [ ] Showing and reordering columns sits behind an unadvertised settings control, with a way to do it that is not dragging.
 - [ ] There are no grouped rows; extra detail uses one level of expand and collapse.
-- [ ] At most one column is frozen, and never more than three.
-- [ ] You asked before deciding anything on the uncovered list: types that cannot be sorted, loading and error states, the fill level at which a sparse column stops earning its place, and kinds of pending.
+- [ ] No more than three columns are frozen.
+- [ ] You asked before deciding anything on the uncovered list: types that cannot be sorted, error states, the fill level at which a sparse column stops earning its place, and kinds of pending.

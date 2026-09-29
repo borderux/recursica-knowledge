@@ -49,7 +49,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Rules for using it
 
-**A button opens a panel; the user does not navigate to it, and it creates no browser history entry.** `recursica-skill-navigation` says this for modals and panels together: a surface opened by a trigger is not a location. The deep-linking exception in that skill is written for modals only, so a panel that really needs a URL that can be shared is a question to raise, not a pattern to copy.
+**A button opens a panel; the user does not navigate to it, and it creates no browser history entry.** `recursica-skill-navigation` says this for modals and panels together: a surface opened by a trigger is not a location. The one exception is a panel deliberately built to be linked to: it gets a route and a link trigger together, exactly as a modal may.
 
 **The header says what the panel is for**, and it is the panel's accessible name (the name a screen reader reads out for a control). Not "Panel", and not "Details" — the object or the job.
 
@@ -105,12 +105,12 @@ A build test confirmed that all four are needed, and that they survive the adapt
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
 
-**Decide, and state, whether you are building a modal panel or a non-modal one — then build it consistently as one or the other.** Almost every panel accessibility failure is a half-modal: a surface that looks like it does not block, but traps focus like a dialog, or hides the page from assistive technology (tools such as screen readers that help people with disabilities use a computer) while leaving it clickable. The default here is non-modal — the page behind stays usable, readable, and reachable.
+**A panel is never modal, so build every part of it as non-modal.** Almost every panel accessibility failure is a half-modal: a surface that looks like it does not block, but traps focus like a dialog, or hides the page from assistive technology (tools such as screen readers that help people with disabilities use a computer) while leaving it clickable. The page behind stays usable, readable, and reachable.
 
 ### Screen readers
 
 - **The panel's accessible name is its header.** Connect the two. An unnamed panel is announced as a region with no name, and "Panel" is not a name.
-- **The role must match the behavior you chose.** A non-modal panel is a named region the user can browse into and out of. A truly modal panel is a dialog marked as modal, with everything behind it inert (impossible to reach or read). At that point, read `recursica-skill-modal`, because that is what you have built.
+- **The role is a named region the user can browse into and out of**, not a modal dialog. A surface that needs everything behind it inert (impossible to reach or read) is a modal — use `recursica-skill-modal` instead.
 - **Never mark a panel as modal while the page behind stays interactive.** Assistive technology stays inside a modal dialog. If the page is still usable for a mouse user, the two experiences have split apart.
 - **In a non-modal panel, do not hide the page behind it from assistive technology.** It is not inert. A screen reader user must be able to read the page, and get back into the panel.
 - **The panel's content must sit in a sensible reading position in the DOM (the page's structure in code)** — where it appears visually, not added to the end of the document. The reading order follows the visual order.
@@ -159,7 +159,6 @@ Do not implement, override, or tune any of these — the component owns them:
 - **Whether it slides in or expands** when it opens. The side is set, and how it is anchored is settled, but the transition is not.
 - **Panel width.** `min-width` and `max-width` are fixed, and there is no size axis, so a "wide panel" cannot be built. Stacked panels may still differ in width from each other, and nothing says whether a left panel and a right panel share a width.
 - **What a top or bottom panel looks like.** Allowed, not designed, and so it needs approval instead of following a rule.
-- **Whether clicking outside the panel closes it.**
 - **When the divider appears.** "Standard" and "Scrollable" types are shown only on the design-system website, with no token behind either, and no types axis — the UI kit defines only `divider-size`. Do not rely on this without asking.
 - **A loading state inside a panel**, while its content is being fetched. There is no such state on the component.
 
@@ -168,7 +167,7 @@ Do not implement, override, or tune any of these — the component owns them:
 - [ ] The page underneath really is needed while the panel is open, and nothing critical is hidden inside it.
 - [ ] Anything that must be finished or given up first went to a modal, and brief feedback went to a toast.
 - [ ] You passed no side, width, size, or type variant — none exist.
-- [ ] A button triggers it, with no route and no browser history entry.
+- [ ] A button triggers it, with no route and no browser history entry — unless it is deliberately built to be linked to, with a route and a link trigger together.
 - [ ] The header names the panel's purpose, and is connected as its accessible name.
 - [ ] No card wraps the content, and no form, section, or control sits inside a card.
 - [ ] Any form inside stacks its labels, stays in a single column, and follows the application's one save mode.
@@ -177,7 +176,7 @@ Do not implement, override, or tune any of these — the component owns them:
 - [ ] You decided and stated whether it is modal or non-modal, and the role, what is inert, and the focus behavior all match that decision.
 - [ ] Focus moves into the panel when it opens, and returns to the trigger when it closes.
 - [ ] Escape closes it without saving, and closing it is never pointer-only.
-- [ ] Focus is not trapped, unless the panel really is modal, with an inert page behind it that does not scroll.
+- [ ] Focus is not trapped, and the page behind is not made inert.
 - [ ] The page behind a non-modal panel stays readable and reachable by assistive technology.
 - [ ] The tab order follows the visual order, and does not jump unpredictably between the panel and the page.
 - [ ] The close control has a real accessible name, the focus ring is intact, and nothing needed appears only on hover.

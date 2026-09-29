@@ -39,6 +39,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 | -------- | --------------------------- | ---------- |
 | `styles` | `text`, `icon`, `image`     |            |
 | `sizes`  | `small`, `default`, `large` | `size`     |
+| `types`  | `solid`, `outline`, `ghost` |            |
 
 **The three styles are three sources of content, and they are ranked.** `image` is a photograph, `text` is initials, and `icon` is a generic person or placeholder. Pick the highest one you actually have data for, and fall back down the list.
 
@@ -46,7 +47,9 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no group, stack, or overlapping-cluster variant**, and no shape axis. Do not build an avatar group out of several avatars.
 
-**A different set of styles is shown only on the design-system website** — styles named Image, Primary, Background, and Ghost, plus a Border true/false axis — along with spacing out overlapping avatars in a group. None of that exists in the UI kit, whose only property is `elevation`. See the uncovered list before relying on any of it.
+**`types` applies to the `text` and `icon` styles only** — `solid`, `outline`, or `ghost`. An `image` avatar has no type. When to use each is in the uncovered list.
+
+**A different set of styles is shown only on the design-system website** — styles named Image, Primary, Background, and Ghost, plus a Border true/false axis — along with spacing out overlapping avatars in a group. Of those, only Ghost has a match in the UI kit: the `ghost` type. The rest do not exist in the UI kit, whose only other property is `elevation`. See the uncovered list before relying on any of it.
 
 ## Rules for using it
 
@@ -116,12 +119,13 @@ Do not implement, override, or tune any of these — the component owns them for
 
 ## Uncovered — ask, do not invent
 
-- **Two sets of styles that do not agree.** Styles named Image, Primary, Background, and Ghost, plus a Border true/false axis, are shown only on the design-system website. The UI kit defines `text`, `icon`, and `image`, with `elevation` as its only property. Which one is the authority has not been settled — do not rely on this without asking.
+- **Two sets of styles that do not agree.** Styles named Image, Primary, Background, and Ghost, plus a Border true/false axis, are shown only on the design-system website. The UI kit defines `text`, `icon`, and `image`, with `solid`, `outline`, and `ghost` types under the first two, and `elevation` as its only other property. Which one is the authority has not been settled — do not rely on this without asking.
 - **Avatar groups.** Overlapping avatars in a group are shown only on the design-system website, but no group or stack exists in the UI kit. Do not build one, and do not rely on this without asking.
 - **Which size belongs on which surface.** No rule says where `small`, `default`, and `large` each apply.
 - **How initials are chosen** — one letter or two, and what happens with a one-word, hyphenated, or non-Latin name.
 - **Whether an avatar may stand for something that is not a person** — a company, a team, a system — and what its fallback is.
 - **Presence and status.** No status dot exists, and no rule says how presence is shown.
+- **When to use each type.** The UI kit defines `solid`, `outline`, and `ghost` for `text` and `icon` avatars, and no rule says which to use when. Whether the adapter exposes it as a prop has not been confirmed. Check the component's props, or ask, before relying on it.
 
 ## Pre-flight checklist
 

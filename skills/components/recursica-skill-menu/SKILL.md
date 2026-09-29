@@ -42,12 +42,15 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 | ----------- | ------------------ | ------------------------ |
 | `menu`      | (none)             | —                        |
 | `menu-item` | `selection-states` | `unselected`, `selected` |
+| `menu-item` | `states`           | `disabled`               |
 
 **Which one owns what:** `menu` is the container — its width limits, padding, `max-height`, the gap between items, and the dividers. `menu-item` is one row: a leading icon, a trailing icon, a label, and supporting text.
 
 **A menu item can have a second line.** `supporting-text` and `text-gap` exist, so an item may be a label plus one line of description. Use it where the label alone is unclear. It is a line, not a paragraph.
 
-**`selection-states` is an axis for selection, not for state.** `selected` marks a chosen value in a list of options. There is no disabled item, no destructive item, and no danger item. Hover, focus, and active come from the component.
+**`selection-states` is an axis for selection, not for state.** `selected` marks a chosen value in a list of options. There is no destructive item and no danger item. Hover, focus, and active come from the component.
+
+**`menu-item` has a `disabled` state**, for an item the user can unlock — see the permissions rule below. How it is set is in the uncovered list.
 
 **The menu has a `max-height`, which means a long menu scrolls.** There are two consequences. First, a menu that scrolls hides its own length — the user cannot see how many options exist, and keyboard navigation has to scroll the list to follow focus. Second, and more important: **a long menu is a sign that the structure is wrong.** `recursica-skill-system-conventions` requires fixing the structure instead of adding a workaround to cope with it — and the scrolling area is that workaround. Group the items, or cut them down. Above about nine items, a list can no longer be scanned easily — see `recursica-skill-working-memory` for what that limit actually claims.
 
@@ -126,7 +129,7 @@ The selected item's visual treatment comes with `selection-states`. Do not resty
 - **Submenus.** A trailing chevron that opens a nested submenu "on hover or click" is shown only on the design-system website. The UI kit defines no submenu, and opening on hover contradicts the navigation rule. Both whether it exists and how it is triggered need a decision — do not rely on this without asking.
 - **Menus with multi-select.** A type axis of single select, multi-select, and custom content is shown only on the design-system website. The UI kit defines only `unselected` and `selected` on `menu-item`. Do not rely on this without asking.
 - **Custom content inside a menu item.** Shown only on the design-system website, and nothing in the UI kit supports it. Do not rely on this without asking.
-- **How an unavailable item is shown.** `menu-item` has no disabled state, yet the permissions rule requires disabling what the user can unlock.
+- **How the disabled state is set.** The UI kit defines `disabled` on `menu-item`. Whether the adapter exposes it as a prop has not been confirmed. Check the component's props, or ask, before relying on it.
 - **The number of items at which a menu is too long.** `max-height` implies scrolling, but no threshold is stated. `recursica-skill-buttons-links` leaves the overflow threshold open too.
 - **Where the menu appears relative to its trigger**, and how it behaves near the edge of the viewport. There is no placement axis.
 - **Right-click context menus.** Whether they are supported at all, and what happens to the browser's own menu.

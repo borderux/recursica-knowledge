@@ -36,6 +36,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 | Axis      | Options                   | React prop   |
 | --------- | ------------------------- | ------------ |
 | `layouts` | `stacked`, `side-by-side` | `formLayout` |
+| `sizes`   | `default`, `small`        |              |
 
 **`layouts` is the placement axis, set by the `formLayout` prop, and it is the same axis every field has.** Set it consistently: the label's layout and its field's layout are one decision, not two — and that decision belongs to the form, not to this label. See the placement rule below.
 
@@ -45,7 +46,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is a gap for an edit icon**, so a label can carry an edit control. What that control is for is not stated; see the uncovered list.
 
-**There is no size axis, and no disabled state.** The label's color across states comes from the field's tokens.
+**There are two sizes, `default` and `small`, and no disabled state.** The label's color across states comes from the field's tokens. When a label is small is in the uncovered list.
 
 ## Rules for using it
 
@@ -119,6 +120,7 @@ Do not implement, override, or tune any of these — the component owns them:
 - **Which form-wide signal marks required fields** when asterisks are avoided. Bold is given as an example, not a rule.
 - **Whether the required indicator and the optional text may both appear in one application**, on different forms.
 - **Truncating a label** when it is longer than the space available in side-by-side placement.
+- **When a label is `small`.** The UI kit defines `default` and `small`, and no rule says when to use `small`. Whether the adapter exposes it as a prop has not been confirmed. Check the component's props, or ask, before relying on it.
 
 ## Pre-flight checklist
 

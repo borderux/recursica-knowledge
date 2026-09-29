@@ -21,14 +21,21 @@ const frontmatter = (file) => {
   const m = /^---\n([\s\S]*?)\n---\n/.exec(fs.readFileSync(file, "utf8"));
   assert.ok(m, `${path.relative(repoRoot, file)} has no front matter`);
   return Object.fromEntries(
-    m[1].split("\n").map((l) => /^([a-z_]+):\s*(.*)$/.exec(l)).filter(Boolean).map((kv) => [kv[1], kv[2]]),
+    m[1]
+      .split("\n")
+      .map((l) => /^([a-z_]+):\s*(.*)$/.exec(l))
+      .filter(Boolean)
+      .map((kv) => [kv[1], kv[2]]),
   );
 };
 
-const toolsOf = (file) => (frontmatter(file).tools ?? "").split(/,\s*/).filter(Boolean);
+const toolsOf = (file) =>
+  (frontmatter(file).tools ?? "").split(/,\s*/).filter(Boolean);
 
-const agentNames = fs.readdirSync(agentsDir, { withFileTypes: true })
-  .filter((d) => d.isDirectory()).map((d) => d.name);
+const agentNames = fs
+  .readdirSync(agentsDir, { withFileTypes: true })
+  .filter((d) => d.isDirectory())
+  .map((d) => d.name);
 
 /**
  * A file in .claude/agents/ with no `tools:` line inherits the session's tools. That is a
@@ -38,12 +45,25 @@ const agentNames = fs.readdirSync(agentsDir, { withFileTypes: true })
  */
 test("every claude-code artifact carries its runtime tool allowlist", () => {
   for (const name of agentNames) {
-    const runtimeFile = path.join(agentsDir, name, "runtime", "claude-code.json");
+    const runtimeFile = path.join(
+      agentsDir,
+      name,
+      "runtime",
+      "claude-code.json",
+    );
     const artifact = path.join(artifactDir, `${name}.md`);
     if (!fs.existsSync(runtimeFile) || !fs.existsSync(artifact)) continue;
     const runtime = JSON.parse(fs.readFileSync(runtimeFile, "utf8"));
-    assert.deepEqual(toolsOf(artifact), runtime.tools ?? [], `${name}.md tools differ from runtime/claude-code.json`);
-    assert.equal(frontmatter(artifact).model, runtime.model, `${name}.md model differs from runtime/claude-code.json`);
+    assert.deepEqual(
+      toolsOf(artifact),
+      runtime.tools ?? [],
+      `${name}.md tools differ from runtime/claude-code.json`,
+    );
+    assert.equal(
+      frontmatter(artifact).model,
+      runtime.model,
+      `${name}.md model differs from runtime/claude-code.json`,
+    );
   }
 });
 
@@ -59,7 +79,10 @@ test("Barb and her checkers hold no write tool", () => {
   for (const name of ["barb", "checker", "feisty"]) {
     const artifact = path.join(artifactDir, `${name}.md`);
     const tools = toolsOf(artifact);
-    assert.ok(tools.length > 0, `${name}.md declares no tools — it would inherit the session's`);
+    assert.ok(
+      tools.length > 0,
+      `${name}.md declares no tools — it would inherit the session's`,
+    );
     for (const forbidden of ["Write", "Edit", "MultiEdit", "NotebookEdit"]) {
       assert.ok(!tools.includes(forbidden), `${name}.md holds ${forbidden}`);
     }
@@ -76,13 +99,22 @@ test("every subagent artifact declares a tool allowlist", () => {
   const subagentDirs = agentNames.flatMap((name) => {
     const dir = path.join(agentsDir, name, "subagents");
     if (!fs.existsSync(dir)) return [];
-    return fs.readdirSync(dir, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name);
+    return fs
+      .readdirSync(dir, { withFileTypes: true })
+      .filter((d) => d.isDirectory())
+      .map((d) => d.name);
   });
-  assert.ok(subagentDirs.length > 0, "found no subagents — this test is checking nothing");
+  assert.ok(
+    subagentDirs.length > 0,
+    "found no subagents — this test is checking nothing",
+  );
   for (const sub of subagentDirs) {
     const artifact = path.join(artifactDir, `${sub}.md`);
     if (!fs.existsSync(artifact)) continue; // narrowed by `targets:` — the drift test covers that
-    assert.ok(toolsOf(artifact).length > 0, `${sub}.md declares no tools — it would inherit the session's`);
+    assert.ok(
+      toolsOf(artifact).length > 0,
+      `${sub}.md declares no tools — it would inherit the session's`,
+    );
   }
 });
 
@@ -91,8 +123,14 @@ test("every subagent artifact declares a tool allowlist", () => {
  * too. Without it she can only read the corpus one context at a time, which is a skim.
  */
 test("the ALAN-to-Barb dispatch chain has Task at every hop", () => {
-  assert.ok(toolsOf(path.join(artifactDir, "alan.md")).includes("Task"), "alan.md cannot dispatch Barb");
-  assert.ok(toolsOf(path.join(artifactDir, "barb.md")).includes("Task"), "barb.md cannot fan out to its checkers");
+  assert.ok(
+    toolsOf(path.join(artifactDir, "alan.md")).includes("Task"),
+    "alan.md cannot dispatch Barb",
+  );
+  assert.ok(
+    toolsOf(path.join(artifactDir, "barb.md")).includes("Task"),
+    "barb.md cannot fan out to its checkers",
+  );
 });
 
 /**
@@ -100,11 +138,19 @@ test("the ALAN-to-Barb dispatch chain has Task at every hop", () => {
  * looks like a clean review.
  */
 test("the nest manifest installs Barb with both of her checkers", () => {
-  const manifest = JSON.parse(fs.readFileSync(path.join(repoRoot, "nest", "nest-manifest.json"), "utf8"));
+  const manifest = JSON.parse(
+    fs.readFileSync(path.join(repoRoot, "nest", "nest-manifest.json"), "utf8"),
+  );
   for (const name of ["barb", "checker", "feisty"]) {
-    const entry = manifest.files.find((f) => f.to === `.claude/agents/${name}.md`);
+    const entry = manifest.files.find(
+      (f) => f.to === `.claude/agents/${name}.md`,
+    );
     assert.ok(entry, `${name} is not installed into .claude/agents/`);
-    assert.equal(entry.fromRoot, true, `${name} is read from nest/, where its artifact does not live`);
+    assert.equal(
+      entry.fromRoot,
+      true,
+      `${name} is read from nest/, where its artifact does not live`,
+    );
   }
 });
 
@@ -124,10 +170,14 @@ test("the nest manifest installs Barb with both of her checkers", () => {
  * than a rule broken.
  */
 test("no committed artifact has drifted from its source", () => {
-  const out = execFileSync(process.execPath, [path.join(repoRoot, "scripts", "build-agents.mjs"), "--check"], {
-    cwd: repoRoot,
-    encoding: "utf8",
-  });
+  const out = execFileSync(
+    process.execPath,
+    [path.join(repoRoot, "scripts", "build-agents.mjs"), "--check"],
+    {
+      cwd: repoRoot,
+      encoding: "utf8",
+    },
+  );
   // --check writes nothing, so a failure here is a report, never a repair.
   assert.match(
     out.replace(/\x1b\[[0-9;]*m/g, ""),
@@ -138,9 +188,17 @@ test("no committed artifact has drifted from its source", () => {
 
 /** A manifest entry naming a file that is not there installs nothing and says so only at run time. */
 test("every manifest source exists where the manifest says it does", () => {
-  const manifest = JSON.parse(fs.readFileSync(path.join(repoRoot, "nest", "nest-manifest.json"), "utf8"));
+  const manifest = JSON.parse(
+    fs.readFileSync(path.join(repoRoot, "nest", "nest-manifest.json"), "utf8"),
+  );
   for (const f of manifest.files) {
-    const src = path.join(f.fromRoot ? repoRoot : path.join(repoRoot, "nest"), f.from);
-    assert.ok(fs.existsSync(src), `${f.from} is missing from ${f.fromRoot ? "the repository root" : "nest/"}`);
+    const src = path.join(
+      f.fromRoot ? repoRoot : path.join(repoRoot, "nest"),
+      f.from,
+    );
+    assert.ok(
+      fs.existsSync(src),
+      `${f.from} is missing from ${f.fromRoot ? "the repository root" : "nest/"}`,
+    );
   }
 });

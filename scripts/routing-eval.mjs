@@ -30,11 +30,19 @@ export const REQUESTS = path.join(HERE, "fixtures", "routing-requests.json");
 
 export function descriptions() {
   return Object.fromEntries(
-    listSkills().map(({ slug, file }) => [slug, YAML.parse(fs.readFileSync(file, "utf8").match(/^---\n([\s\S]*?)\n---/)[1]).description]),
+    listSkills().map(({ slug, file }) => [
+      slug,
+      YAML.parse(
+        fs.readFileSync(file, "utf8").match(/^---\n([\s\S]*?)\n---/)[1],
+      ).description,
+    ]),
   );
 }
 
-export function prompt(requests = JSON.parse(fs.readFileSync(REQUESTS, "utf8")), skills = descriptions()) {
+export function prompt(
+  requests = JSON.parse(fs.readFileSync(REQUESTS, "utf8")),
+  skills = descriptions(),
+) {
   return [
     "You are routing requests to skills. Below is a list of skills, each with a name and a description, then a numbered list of requests. For each request, choose the ONE skill whose description best says it should handle that request.",
     "",
@@ -49,28 +57,48 @@ export function prompt(requests = JSON.parse(fs.readFileSync(REQUESTS, "utf8")),
 }
 
 /** Score a model's answer: `{ correct, total, misses: [{ n, request, expected, got }] }`. */
-export function score(answer, requests = JSON.parse(fs.readFileSync(REQUESTS, "utf8"))) {
+export function score(
+  answer,
+  requests = JSON.parse(fs.readFileSync(REQUESTS, "utf8")),
+) {
   const misses = [];
   requests.forEach((r, i) => {
     const got = answer[String(i + 1)] ?? null;
-    if (got !== r.skill) misses.push({ n: i + 1, request: r.request, expected: r.skill, got });
+    if (got !== r.skill)
+      misses.push({ n: i + 1, request: r.request, expected: r.skill, got });
   });
-  return { correct: requests.length - misses.length, total: requests.length, misses };
+  return {
+    correct: requests.length - misses.length,
+    total: requests.length,
+    misses,
+  };
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (
+  process.argv[1] &&
+  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+) {
   const [cmd, file] = process.argv.slice(2);
   if (cmd === "prompt") {
     process.stdout.write(prompt() + "\n");
   } else if (cmd === "score" && file) {
     const raw = fs.readFileSync(file, "utf8");
-    const json = JSON.parse(raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1));
+    const json = JSON.parse(
+      raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1),
+    );
     const { correct, total, misses } = score(json);
-    for (const m of misses) console.log(`${m.n}. ${m.request}\n    expected ${m.expected}, got ${m.got}`);
-    console.log(`${correct === total ? "✓" : "✗"} ${correct} of ${total} requests routed to the expected skill.`);
+    for (const m of misses)
+      console.log(
+        `${m.n}. ${m.request}\n    expected ${m.expected}, got ${m.got}`,
+      );
+    console.log(
+      `${correct === total ? "✓" : "✗"} ${correct} of ${total} requests routed to the expected skill.`,
+    );
     process.exit(correct === total ? 0 : 1);
   } else {
-    console.error("usage: routing-eval.mjs prompt | routing-eval.mjs score <answer.json>");
+    console.error(
+      "usage: routing-eval.mjs prompt | routing-eval.mjs score <answer.json>",
+    );
     process.exit(2);
   }
 }

@@ -50,7 +50,12 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.join(__dirname, "..");
 const agentsDir = path.join(repoRoot, "agents");
-const CHECKER = path.join(repoRoot, "buzz-agents", "scripts", "check-text-for-names.mjs");
+const CHECKER = path.join(
+  repoRoot,
+  "buzz-agents",
+  "scripts",
+  "check-text-for-names.mjs",
+);
 
 const argv = process.argv.slice(2);
 const CHECK = argv.includes("--check") || argv.includes("--dry-run");
@@ -75,9 +80,22 @@ Targets: buzz, claude-code, opencode. See the header of this file for where each
  * identical files is how drift starts. Split them the day they genuinely differ.
  */
 const TARGETS = {
-  buzz: { fragments: "buzz.md", out: (n) => `buzz-agents/agents/${n}/SYSTEM_PROMPT.md`, frontmatter: false, pinned: true },
-  "claude-code": { fragments: "session.md", out: (n) => `portable/claude-code/agents/${n}.md`, frontmatter: "claude-code" },
-  opencode: { fragments: "session.md", out: (n) => `portable/opencode/agents/${n}.md`, frontmatter: "opencode" },
+  buzz: {
+    fragments: "buzz.md",
+    out: (n) => `buzz-agents/agents/${n}/SYSTEM_PROMPT.md`,
+    frontmatter: false,
+    pinned: true,
+  },
+  "claude-code": {
+    fragments: "session.md",
+    out: (n) => `portable/claude-code/agents/${n}.md`,
+    frontmatter: "claude-code",
+  },
+  opencode: {
+    fragments: "session.md",
+    out: (n) => `portable/opencode/agents/${n}.md`,
+    frontmatter: "opencode",
+  },
 };
 
 /**
@@ -92,15 +110,28 @@ const TARGETS = {
  * than something rendered around it, so it stays in SKILL.md where the markers can reach it.
  */
 const SUBAGENT_TARGETS = {
-  nest: { fragments: "nest.md", out: (n) => `nest/mcp/templates/agents/${n}.md.tmpl`, pinned: true },
-  "claude-code": { fragments: "session.md", out: (n) => `portable/claude-code/agents/${n}.md` },
+  nest: {
+    fragments: "nest.md",
+    out: (n) => `nest/mcp/templates/agents/${n}.md.tmpl`,
+    pinned: true,
+  },
+  "claude-code": {
+    fragments: "session.md",
+    out: (n) => `portable/claude-code/agents/${n}.md`,
+  },
 };
 
 let changed = 0;
 let failed = 0;
 const ok = (m) => console.log(`  \x1b[32m✓\x1b[0m ${m}`);
-const wrote = (m) => { changed++; console.log(`  \x1b[36m${CHECK ? "would write" : "wrote"}\x1b[0m ${m}`); };
-const bad = (m) => { failed++; console.log(`  \x1b[31m✗\x1b[0m ${m}`); };
+const wrote = (m) => {
+  changed++;
+  console.log(`  \x1b[36m${CHECK ? "would write" : "wrote"}\x1b[0m ${m}`);
+};
+const bad = (m) => {
+  failed++;
+  console.log(`  \x1b[31m✗\x1b[0m ${m}`);
+};
 
 /**
  * Split `## fragment-name` blocks out of a platform fragment file, ignoring the leading comment.
@@ -116,10 +147,17 @@ function loadFragments(file) {
   const out = {};
   let current = null;
   const buf = [];
-  const flush = () => { if (current) out[current] = buf.join("\n").trim(); buf.length = 0; };
+  const flush = () => {
+    if (current) out[current] = buf.join("\n").trim();
+    buf.length = 0;
+  };
   for (const line of raw.split("\n")) {
     const header = /^## ([a-z0-9-]+)$/.exec(line);
-    if (header) { flush(); current = header[1]; continue; }
+    if (header) {
+      flush();
+      current = header[1];
+      continue;
+    }
     if (current) buf.push(line);
   }
   flush();
@@ -150,7 +188,8 @@ function renderFrontmatter(kind, meta, runtime) {
   if (kind === "claude-code") {
     const lines = [`name: ${meta.name}`, `description: ${meta.description}`];
     if (runtime?.model) lines.push(`model: ${runtime.model}`);
-    if (runtime?.tools?.length) lines.push(`tools: ${runtime.tools.join(", ")}`);
+    if (runtime?.tools?.length)
+      lines.push(`tools: ${runtime.tools.join(", ")}`);
     return `---\n${lines.join("\n")}\n---\n\n`;
   }
   // opencode: `mode` is required to say this is a primary agent rather than a subagent,
@@ -172,16 +211,27 @@ function parseSkill(file) {
 
 function nameCheck(text, label) {
   try {
-    execFileSync(process.execPath, [CHECKER], { input: text, encoding: "utf8", stdio: ["pipe", "pipe", "pipe"] });
+    execFileSync(process.execPath, [CHECKER], {
+      input: text,
+      encoding: "utf8",
+      stdio: ["pipe", "pipe", "pipe"],
+    });
     return true;
   } catch (err) {
     if (err.status !== 2) return true;
-    bad(`${label} names something that must not be published — not written. Run the checker on it.`);
+    bad(
+      `${label} names something that must not be published — not written. Run the checker on it.`,
+    );
     return false;
   }
 }
 
-const placeholders = JSON.parse(fs.readFileSync(path.join(repoRoot, "buzz-agents", "placeholders.json"), "utf8"));
+const placeholders = JSON.parse(
+  fs.readFileSync(
+    path.join(repoRoot, "buzz-agents", "placeholders.json"),
+    "utf8",
+  ),
+);
 const declaredTokens = placeholders.tokens;
 const declaredDeployTokens = placeholders.deployTokens ?? {};
 
@@ -194,20 +244,30 @@ const declaredDeployTokens = placeholders.deployTokens ?? {};
  */
 function buildArtifact({ source, base, target, spec, outName, label }) {
   const fragFile = path.join(base, "platform", spec.fragments);
-  if (!fs.existsSync(fragFile)) { bad(`${target}: no platform/${spec.fragments}`); return; }
+  if (!fs.existsSync(fragFile)) {
+    bad(`${target}: no platform/${spec.fragments}`);
+    return;
+  }
   const frags = loadFragments(fragFile);
 
   let out = source.body;
-  const markers = [...source.body.matchAll(/<!-- platform:([a-z0-9-]+) -->/g)].map((m) => m[1]);
+  const markers = [
+    ...source.body.matchAll(/<!-- platform:([a-z0-9-]+) -->/g),
+  ].map((m) => m[1]);
   for (const marker of markers) {
-    if (!(marker in frags)) { bad(`${target}: platform/${spec.fragments} has no "## ${marker}" block`); return; }
+    if (!(marker in frags)) {
+      bad(`${target}: platform/${spec.fragments} has no "## ${marker}" block`);
+      return;
+    }
     out = out.split(`<!-- platform:${marker} -->`).join(frags[marker]);
   }
   if (spec.frontmatter) {
     // Only claude-code reads a runtime file here, and only for the two keys its front matter
     // has. `$`-prefixed keys in those files are commentary for a human and are ignored.
     const runtimeFile = path.join(base, "runtime", `${target}.json`);
-    const runtime = fs.existsSync(runtimeFile) ? JSON.parse(fs.readFileSync(runtimeFile, "utf8")) : null;
+    const runtime = fs.existsSync(runtimeFile)
+      ? JSON.parse(fs.readFileSync(runtimeFile, "utf8"))
+      : null;
     out = renderFrontmatter(spec.frontmatter, source.meta, runtime) + out;
   }
 
@@ -222,7 +282,9 @@ function buildArtifact({ source, base, target, spec, outName, label }) {
    * meant it.
    */
   if (spec.pinned && prev !== null && prev !== out && !ACCEPT) {
-    bad(`${target}: composed output differs from the committed ${rel} (${prev.length} → ${out.length} bytes).\n      A refactor must not change what is already shipping. Diff it, and pass --accept only if\n      the change is deliberate.`);
+    bad(
+      `${target}: composed output differs from the committed ${rel} (${prev.length} → ${out.length} bytes).\n      A refactor must not change what is already shipping. Diff it, and pass --accept only if\n      the change is deliberate.`,
+    );
     return;
   }
   /**
@@ -234,10 +296,13 @@ function buildArtifact({ source, base, target, spec, outName, label }) {
    * and the person porting the agent has no way to learn what to put there. Writing this
    * check is how I caught myself inventing {{WORKSPACE_ROOT}} in the first draft.
    */
-  const undeclared = [...new Set([...out.matchAll(/\{\{([A-Z0-9_]+)\}\}/g)].map((m) => m[1]))]
-    .filter((t) => !(t in declaredTokens));
+  const undeclared = [
+    ...new Set([...out.matchAll(/\{\{([A-Z0-9_]+)\}\}/g)].map((m) => m[1])),
+  ].filter((t) => !(t in declaredTokens));
   if (undeclared.length) {
-    bad(`${target}: undeclared token${undeclared.length > 1 ? "s" : ""} ${undeclared.map((t) => "{{" + t + "}}").join(", ")} — declare in buzz-agents/placeholders.json or remove`);
+    bad(
+      `${target}: undeclared token${undeclared.length > 1 ? "s" : ""} ${undeclared.map((t) => "{{" + t + "}}").join(", ")} — declare in buzz-agents/placeholders.json or remove`,
+    );
     return;
   }
   /**
@@ -248,10 +313,13 @@ function buildArtifact({ source, base, target, spec, outName, label }) {
    * syntaxes rather than one plus an oversight. But only `{{TOKEN}}` had a declaration check,
    * so an `@ANYTHING@` could reach a public artifact undocumented and nothing would say so.
    */
-  const undeclaredDeploy = [...new Set([...out.matchAll(/@([A-Z0-9_]+)@/g)].map((m) => m[1]))]
-    .filter((t) => !(t in declaredDeployTokens));
+  const undeclaredDeploy = [
+    ...new Set([...out.matchAll(/@([A-Z0-9_]+)@/g)].map((m) => m[1])),
+  ].filter((t) => !(t in declaredDeployTokens));
   if (undeclaredDeploy.length) {
-    bad(`${target}: undeclared deploy token${undeclaredDeploy.length > 1 ? "s" : ""} ${undeclaredDeploy.map((t) => "@" + t + "@").join(", ")} — declare in buzz-agents/placeholders.json under deployTokens, or remove`);
+    bad(
+      `${target}: undeclared deploy token${undeclaredDeploy.length > 1 ? "s" : ""} ${undeclaredDeploy.map((t) => "@" + t + "@").join(", ")} — declare in buzz-agents/placeholders.json under deployTokens, or remove`,
+    );
     return;
   }
   /**
@@ -264,15 +332,21 @@ function buildArtifact({ source, base, target, spec, outName, label }) {
    * prompt with the one warning that would have caught it switched off by hand.
    */
   if (spec.pinned) {
-    const leaked = [...new Set([...out.matchAll(/\{\{([A-Z0-9_]+)\}\}/g)].map((m) => m[1]))]
-      .filter((t) => declaredTokens[t]?.portableOnly);
+    const leaked = [
+      ...new Set([...out.matchAll(/\{\{([A-Z0-9_]+)\}\}/g)].map((m) => m[1])),
+    ].filter((t) => declaredTokens[t]?.portableOnly);
     if (leaked.length) {
-      bad(`${target}: ${leaked.map((t) => "{{" + t + "}}").join(", ")} is declared portableOnly and must not reach ${rel} — move it into the portable platform fragment, or drop the flag in buzz-agents/placeholders.json`);
+      bad(
+        `${target}: ${leaked.map((t) => "{{" + t + "}}").join(", ")} is declared portableOnly and must not reach ${rel} — move it into the portable platform fragment, or drop the flag in buzz-agents/placeholders.json`,
+      );
       return;
     }
   }
   if (!nameCheck(out, `${label}/${target}`)) return;
-  if (prev === out) { ok(`${target}: ${rel} up to date`); return; }
+  if (prev === out) {
+    ok(`${target}: ${rel} up to date`);
+    return;
+  }
   if (!CHECK) {
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(outPath, out);
@@ -280,10 +354,18 @@ function buildArtifact({ source, base, target, spec, outName, label }) {
   wrote(`${target}: ${rel} (${out.length} bytes)`);
 }
 
-const names = fs.readdirSync(agentsDir, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name);
-if (!names.length) { console.log("No agents/ sources yet."); process.exit(0); }
+const names = fs
+  .readdirSync(agentsDir, { withFileTypes: true })
+  .filter((d) => d.isDirectory())
+  .map((d) => d.name);
+if (!names.length) {
+  console.log("No agents/ sources yet.");
+  process.exit(0);
+}
 
-console.log(`\n\x1b[1mBuilding agents\x1b[0m${CHECK ? "   (--check: nothing will be written)" : ""}`);
+console.log(
+  `\n\x1b[1mBuilding agents\x1b[0m${CHECK ? "   (--check: nothing will be written)" : ""}`,
+);
 
 for (const name of names) {
   const base = path.join(agentsDir, name);
@@ -299,15 +381,35 @@ for (const name of names) {
    * that with. Shipping an artifact that quietly drops a boundary is worse than shipping no
    * artifact, so the omission is declared here rather than left to whoever reads the diff.
    */
-  const wanted = meta.targets ? meta.targets.split(/[\s,]+/).filter(Boolean) : Object.keys(TARGETS);
+  const wanted = meta.targets
+    ? meta.targets.split(/[\s,]+/).filter(Boolean)
+    : Object.keys(TARGETS);
   const unknown = wanted.filter((t) => !(t in TARGETS));
-  if (unknown.length) { bad(`unknown target${unknown.length > 1 ? "s" : ""} in front matter: ${unknown.join(", ")}`); continue; }
-  for (const skipped of Object.keys(TARGETS).filter((t) => !wanted.includes(t))) {
-    console.log(`  \x1b[90m—\x1b[0m ${skipped}: not a target for this agent (front matter \`targets:\`)`);
+  if (unknown.length) {
+    bad(
+      `unknown target${unknown.length > 1 ? "s" : ""} in front matter: ${unknown.join(", ")}`,
+    );
+    continue;
+  }
+  for (const skipped of Object.keys(TARGETS).filter(
+    (t) => !wanted.includes(t),
+  )) {
+    console.log(
+      `  \x1b[90m—\x1b[0m ${skipped}: not a target for this agent (front matter \`targets:\`)`,
+    );
   }
 
-  for (const [target, spec] of Object.entries(TARGETS).filter(([t]) => wanted.includes(t))) {
-    buildArtifact({ source: { meta, body }, base, target, spec, outName: name, label: name });
+  for (const [target, spec] of Object.entries(TARGETS).filter(([t]) =>
+    wanted.includes(t),
+  )) {
+    buildArtifact({
+      source: { meta, body },
+      base,
+      target,
+      spec,
+      outName: name,
+      label: name,
+    });
   }
 
   /**
@@ -329,7 +431,10 @@ for (const name of names) {
    */
   const subDir = path.join(base, "subagents");
   if (!fs.existsSync(subDir)) continue;
-  for (const sub of fs.readdirSync(subDir, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name)) {
+  for (const sub of fs
+    .readdirSync(subDir, { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .map((d) => d.name)) {
     const subBase = path.join(subDir, sub);
     // Read whole. Unlike an agent, a subagent's front matter IS the artifact — `name`,
     // `description` and `tools` are what make the file a subagent — and both targets want the
@@ -343,32 +448,57 @@ for (const name of names) {
     // Trailing newlines are trimmed after the removal: when `targets:` is the last line of the
     // block, dropping it otherwise leaves the newline that preceded it and the artifact ships with
     // a blank line before its closing `---`.
-    const body = declared === null ? raw
-      : raw.slice(0, fm.index + 4)
-        + fm[1].replace(/^targets:[ \t]*.*\n?/m, "").replace(/\n+$/, "")
-        + raw.slice(fm.index + 4 + fm[1].length);
+    const body =
+      declared === null
+        ? raw
+        : raw.slice(0, fm.index + 4) +
+          fm[1].replace(/^targets:[ \t]*.*\n?/m, "").replace(/\n+$/, "") +
+          raw.slice(fm.index + 4 + fm[1].length);
 
-    const wantedSubs = declared ? declared.split(/[\s,]+/).filter(Boolean) : Object.keys(SUBAGENT_TARGETS);
+    const wantedSubs = declared
+      ? declared.split(/[\s,]+/).filter(Boolean)
+      : Object.keys(SUBAGENT_TARGETS);
     const unknownSubs = wantedSubs.filter((t) => !(t in SUBAGENT_TARGETS));
     console.log(`  \x1b[1m${sub}\x1b[0m`);
     if (unknownSubs.length) {
-      console.log(`    \x1b[31m✗\x1b[0m unknown target${unknownSubs.length > 1 ? "s" : ""}: ${unknownSubs.join(", ")}`);
+      console.log(
+        `    \x1b[31m✗\x1b[0m unknown target${unknownSubs.length > 1 ? "s" : ""}: ${unknownSubs.join(", ")}`,
+      );
       failed++;
       continue;
     }
-    for (const skipped of Object.keys(SUBAGENT_TARGETS).filter((t) => !wantedSubs.includes(t))) {
-      console.log(`    \x1b[90m—\x1b[0m ${skipped}: not a target for this subagent (front matter \`targets:\`)`);
+    for (const skipped of Object.keys(SUBAGENT_TARGETS).filter(
+      (t) => !wantedSubs.includes(t),
+    )) {
+      console.log(
+        `    \x1b[90m—\x1b[0m ${skipped}: not a target for this subagent (front matter \`targets:\`)`,
+      );
     }
-    for (const [target, spec] of Object.entries(SUBAGENT_TARGETS).filter(([t]) => wantedSubs.includes(t))) {
-      buildArtifact({ source: { meta: {}, body }, base: subBase, target, spec, outName: sub, label: `${name}/${sub}` });
+    for (const [target, spec] of Object.entries(SUBAGENT_TARGETS).filter(
+      ([t]) => wantedSubs.includes(t),
+    )) {
+      buildArtifact({
+        source: { meta: {}, body },
+        base: subBase,
+        target,
+        spec,
+        outName: sub,
+        label: `${name}/${sub}`,
+      });
     }
   }
 }
 
 console.log("");
-if (failed) { console.log(`\x1b[31m✗ ${failed} problem${failed > 1 ? "s" : ""}.\x1b[0m\n`); process.exit(1); }
-console.log(CHECK ? `\x1b[1m--check complete.\x1b[0m ${changed} change${changed === 1 ? "" : "s"} pending.\n`
-                  : `\x1b[32m✓ Built.\x1b[0m ${changed} change${changed === 1 ? "" : "s"}.\n`);
+if (failed) {
+  console.log(`\x1b[31m✗ ${failed} problem${failed > 1 ? "s" : ""}.\x1b[0m\n`);
+  process.exit(1);
+}
+console.log(
+  CHECK
+    ? `\x1b[1m--check complete.\x1b[0m ${changed} change${changed === 1 ? "" : "s"} pending.\n`
+    : `\x1b[32m✓ Built.\x1b[0m ${changed} change${changed === 1 ? "" : "s"}.\n`,
+);
 
 /**
  * `--check` exits non-zero when an artifact has drifted from its source.

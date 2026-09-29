@@ -196,4 +196,4 @@ Never style an unfocused field so that it reads as disabled. An editable field m
 - [ ] Disabled is used only for fields that are unavailable for now, with the reason in text. Values that can never be edited use the read-only field.
 - [ ] You passed no variant, size, or state outside the inventory above, overrode no property the component owns, and no field without focus looks disabled.
 - [ ] The field saves with the form, in the same save mode as everything else in the system.
-- [ ] You invented nothing from the uncovered list — the replacement threshold, free text, how many characters to type, match order, no results, loading, multi-select, list details, and clearing.
+- [ ] You invented nothing from the uncovered list — the replacement threshold, free text, how many characters to type, match order, no results, loading, multi-select, and list details.

@@ -111,7 +111,7 @@ This component also follows the accessibility baseline in `recursica-skill-syste
 - **A toast with an action cannot close on its own while someone is trying to reach it.** This is the main conflict. Reaching an undo by keyboard means leaving the current field, tabbing to the toast, and pressing it — and a timer running during that trip makes the action impossible to reach in practice. Since the duration belongs to the library and is not changed, keeping the toast on screen longer is not an option. So the undo must also live somewhere on the page that stays, with the toast pointing to it. Never ship a timed toast whose action is the only way to undo.
 - **The toast must be reachable in the tab order while it is visible**, at a predictable point — not after the whole rest of the page.
 - **If the timer pauses on hover, it must also pause on focus.** A pause that only works for a mouse is not a pause.
-- **Closing must not work only with a pointer.** If the toast can be closed, it can be closed from the keyboard.
+- **Closing must not work only with a pointer.** Every toast can be closed, so every toast can be closed from the keyboard.
 - **A toast must never cover a control the user needs**, and must not sit over the focused element or the focus ring (the outline that shows which element has keyboard focus).
 - **Nothing the user needs may appear only on hover** — not the action, not the close control, and not the full text.
 
@@ -139,7 +139,7 @@ Do not implement, override, or tune any of these — the component owns them for
 ## Uncovered — ask, do not invent
 
 - **What the durations actually are.** The house position is settled — see the rule above — but no token records what any given library's default is, so you cannot check a duration from this repository.
-- **Whether a toast may contain an action button.** "With action" and "without action" are shown only on the design-system website, but the UI kit defines no token for an action, only `icon` and `text`. Do not rely on this without asking.
+- **How a toast's action button is styled.** One action is allowed — see the rules above — but the UI kit defines no token for it, only `icon` and `text`. Ask before styling it.
 - **Where toasts appear on screen.** No position axis exists. "Towards the bottom" is shown only on the design-system website. Do not rely on this without asking.
 - **Stacking.** How many toasts may be visible at once, in what order, and what happens past that limit.
 - **Warnings, and critical alerts.** No warning style exists, and no alert that stays on screen for serious problems exists in this system yet — nothing to hold an alert the user must not miss. The banner component is planned and may cover part of this. Until it ships, do not build a substitute, and do not name a component as though it were available.

@@ -200,7 +200,7 @@ Before treating a set of triggers as done, check:
 - [ ] Row actions that are unavailable are plain disabled buttons.
 - [ ] Each row has one primary action, and any other row actions are in an ellipsis menu.
 - [ ] Row actions whose label is the same on every row are icon-only with tooltips; row actions whose label changes are text.
-- [ ] Bulk actions are either visible but disabled until a row is selected, or appear on the first selection where space is tight.
+- [ ] A single bulk action appears on the first selection. Several bulk actions are always visible, and disabled until a row is selected.
 - [ ] The bulk region holds only controls. It has no list of the selected records, no clear or deselect-all control competing with the header checkbox, no "nothing selected" placeholder, and no action on a single record.
 - [ ] Confirmation modals appear only for destruction that cannot be undone and is hard to recreate. Everything that can be undone happens immediately.
 - [ ] Cancel in a confirmation modal is the secondary button.

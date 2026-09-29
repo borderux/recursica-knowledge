@@ -36,15 +36,17 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
-| Axis     | Options                       | React prop |
-| -------- | ----------------------------- | ---------- |
-| `styles` | `default`, `pills`, `outline` | `variant`  |
+| Axis               | Options                       | React prop | On          |
+| ------------------ | ----------------------------- | ---------- | ----------- |
+| `styles`           | `default`, `pills`, `outline` | `variant`  | `tabs`      |
+| `orientation`      | `horizontal`, `vertical`      |            | `tabs`      |
+| `selection-states` | `active`, `inactive`          |            | `tabs-item` |
 
 **The same three styles exist on `tabs` and on `tabs-item`** — they are one choice applied to the whole set, not mixed within it.
 
-**Orientation.** The UI kit defines no orientation axis, but horizontal and vertical tab sets are shown only on the design-system website. Both are approved — see the vertical rule below.
+**Orientation is horizontal or vertical**, on the tab set and on each tab. Both are approved — see the vertical rule below. How it is set is in the uncovered list.
 
-**Selected and unselected are not variants you pass.** They are shown only on the design-system website as states; the component works them out from which tab is active.
+**`active` and `inactive` are states of each tab, not variants you pass.** The component works them out from which tab is active.
 
 **A tab item may have a leading icon and a counter** — both shown only on the design-system website as parts of the item. A counter is a badge; see `recursica-skill-badges-chips`.
 
@@ -52,7 +54,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Every tab gets its own route.** A sub-path under the parent route, so the tab can be linked to, survives a refresh, and works with back and forward. This is a house preference, stated outright.
 
-**The default tab is the first one**, unless a rule says otherwise — and which tab opens by default on any given screen is not settled; see the uncovered list.
+**The first tab in reading order opens by default.** `recursica-skill-defaults` owns this rule.
 
 **Label each tab with the noun it contains** — not a verb, and not a step number. "Overview", "Members", "Billing" — never "Step 2".
 
@@ -109,10 +111,10 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Uncovered — ask, do not invent
 
-- **Which tab opens by default** on a screen where the first one is not the obvious answer. Named as having no owner in `recursica-skill-design-router`.
 - **Whether the three styles mean different things**, or are purely a visual choice for the whole house.
 - **What a tab shows when its panel has no content**, and whether an empty tab is hidden or disabled.
 - **Whether a tab may ever be disabled**, and what would justify it.
+- **How orientation is set.** The UI kit defines `horizontal` and `vertical`. Whether the adapter exposes it as a prop has not been confirmed. Check the component's props, or ask, before relying on it.
 
 ## Pre-flight checklist
 

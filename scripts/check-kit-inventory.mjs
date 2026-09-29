@@ -32,20 +32,7 @@ const PACKAGE = "@recursica/official-release";
  * here keeps CI green without hiding it — the run still prints every entry — and an entry the
  * skill and kit have stopped disagreeing about fails the check, so this list cannot go stale.
  */
-export const KNOWN = {
-  "button.states":
-    "skill says there is no disabled variant; the kit has `disabled` under every style",
-  "label.sizes":
-    "skill says there is no size axis; the kit has `default` and `small`",
-  "menu-item.states":
-    "skill says there is no disabled item; the kit has `disabled`",
-  "tabs.orientation": "skill says the kit defines no orientation axis; it does",
-  "tabs-item.orientation": "as `tabs.orientation`, on the item",
-  "tabs-item.selection-states":
-    "skill says selected and unselected are documented outside the token inventory; the kit has `active` and `inactive`",
-  "avatar.types":
-    "skill does not mention the kit's `solid`, `outline`, and `ghost` types",
-};
+export const KNOWN = {};
 
 /** Load the kit's component map and the release version it came from. */
 export function loadKit() {

@@ -37,12 +37,53 @@ const SKILLS = path.join(ROOT, "skills");
  * package installed; `--self-check` reports drift if the package is present and disagrees.
  */
 const ADAPTER_COMPONENTS = [
-  "Accordion", "AssistiveElement", "Autocomplete", "Avatar", "Badge", "Breadcrumb", "Button",
-  "Card", "Checkbox", "Chip", "Container", "DatePicker", "Dropdown", "EmptyValueRenderer", "Flex",
-  "FormControlLayout", "FormControlWrapper", "Grid", "Group", "HoverCard", "Label", "Layer",
-  "Link", "Loader", "Menu", "Modal", "NumberInput", "Pagination", "Panel", "Popover", "Radio",
-  "ReadOnlyField", "SegmentedControl", "Slider", "Stack", "Stepper", "Switch", "Table", "Tabs",
-  "Text", "TextArea", "TextField", "TimePicker", "Timeline", "Title", "Toast", "Tooltip",
+  "Accordion",
+  "AssistiveElement",
+  "Autocomplete",
+  "Avatar",
+  "Badge",
+  "Breadcrumb",
+  "Button",
+  "Card",
+  "Checkbox",
+  "Chip",
+  "Container",
+  "DatePicker",
+  "Dropdown",
+  "EmptyValueRenderer",
+  "Flex",
+  "FormControlLayout",
+  "FormControlWrapper",
+  "Grid",
+  "Group",
+  "HoverCard",
+  "Label",
+  "Layer",
+  "Link",
+  "Loader",
+  "Menu",
+  "Modal",
+  "NumberInput",
+  "Pagination",
+  "Panel",
+  "Popover",
+  "Radio",
+  "ReadOnlyField",
+  "SegmentedControl",
+  "Slider",
+  "Stack",
+  "Stepper",
+  "Switch",
+  "Table",
+  "Tabs",
+  "Text",
+  "TextArea",
+  "TextField",
+  "TimePicker",
+  "Timeline",
+  "Title",
+  "Toast",
+  "Tooltip",
   "TransferList",
 ];
 
@@ -145,11 +186,15 @@ function locate(slug) {
  */
 export function adapterImports(source) {
   const found = new Set();
-  const re = /import\s*\{([^}]*)\}\s*from\s*["']@recursica\/(?!adapter-common["']|adapter-tester["'])[a-z0-9-]*adapter[a-z0-9-]*["']/g;
+  const re =
+    /import\s*\{([^}]*)\}\s*from\s*["']@recursica\/(?!adapter-common["']|adapter-tester["'])[a-z0-9-]*adapter[a-z0-9-]*["']/g;
   for (const m of source.matchAll(re)) {
     for (const raw of m[1].split(",")) {
       // `Link as RouterLink` is a rename; the imported name is what identifies the component.
-      const name = raw.trim().split(/\s+as\s+/)[0].trim();
+      const name = raw
+        .trim()
+        .split(/\s+as\s+/)[0]
+        .trim();
       if (name) found.add(name);
     }
   }
@@ -159,9 +204,13 @@ export function adapterImports(source) {
 /** Every component skill slug on disk, with punctuation stripped for comparison. */
 function componentSkills() {
   const dir = path.join(SKILLS, "components");
-  return fs.readdirSync(dir)
+  return fs
+    .readdirSync(dir)
     .filter((slug) => fs.existsSync(path.join(dir, slug, "SKILL.md")))
-    .map((slug) => ({ slug, flat: slug.replace("recursica-skill-", "").replace(/-/g, "") }));
+    .map((slug) => ({
+      slug,
+      flat: slug.replace("recursica-skill-", "").replace(/-/g, ""),
+    }));
 }
 
 /**
@@ -189,9 +238,13 @@ export function skillFor(name) {
 
   // A skill whose name extends the component's — `Radio` inside `radio-button` — or ends with it,
   // as `Popover` does in `hover-card-popover`.
-  const partial = skills.filter((s) => s.flat.startsWith(flat) || s.flat.endsWith(flat));
-  if (partial.length === 1) return { match: "partial", slugs: [partial[0].slug] };
-  if (partial.length > 1) return { match: "ambiguous", slugs: partial.map((s) => s.slug).sort() };
+  const partial = skills.filter(
+    (s) => s.flat.startsWith(flat) || s.flat.endsWith(flat),
+  );
+  if (partial.length === 1)
+    return { match: "partial", slugs: [partial[0].slug] };
+  if (partial.length > 1)
+    return { match: "ambiguous", slugs: partial.map((s) => s.slug).sort() };
 
   return { match: "none", slugs: [] };
 }
@@ -203,9 +256,11 @@ export function resolveImport(name) {
   if (ROUTES[name]) return { name, ...ROUTES[name] };
 
   const { match, slugs } = skillFor(name);
-  if (match === "exact" || match === "partial") return { name, kind: "component", skills: slugs, match };
+  if (match === "exact" || match === "partial")
+    return { name, kind: "component", skills: slugs, match };
   // Reported, never guessed at. An ambiguous name is a gap in ROUTES, and it says so.
-  if (match === "ambiguous") return { name, kind: "ambiguous", skills: [], candidates: slugs };
+  if (match === "ambiguous")
+    return { name, kind: "ambiguous", skills: [], candidates: slugs };
   return { name, kind: "unmapped", skills: [] };
 }
 
@@ -247,7 +302,9 @@ export function crossLinks(text) {
   const body = section(text, "Load these too");
   if (!body) return { needs: [], ifUsed: [] };
   const [needs, ifUsed = ""] = body.split(IF_USED_HEADING);
-  const slugs = (s) => [...new Set(s.match(/recursica-skill-[a-z0-9-]*[a-z0-9]/g) ?? [])];
+  const slugs = (s) => [
+    ...new Set(s.match(/recursica-skill-[a-z0-9-]*[a-z0-9]/g) ?? []),
+  ];
   return { needs: slugs(needs), ifUsed: slugs(ifUsed) };
 }
 
@@ -274,8 +331,16 @@ export function localGraph(entry, seen = new Set()) {
   const source = fs.readFileSync(abs, "utf8");
   for (const m of source.matchAll(/(?:from|import)\s*["'](\.[^"']+)["']/g)) {
     const target = path.resolve(path.dirname(abs), m[1]);
-    for (const candidate of [target, `${target}.jsx`, `${target}.js`, path.join(target, "index.jsx")]) {
-      if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) { localGraph(candidate, seen); break; }
+    for (const candidate of [
+      target,
+      `${target}.jsx`,
+      `${target}.js`,
+      path.join(target, "index.jsx"),
+    ]) {
+      if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+        localGraph(candidate, seen);
+        break;
+      }
     }
   }
   return seen;
@@ -295,12 +360,16 @@ export function manifest(entries) {
 
   const imports = new Set();
   for (const f of files) {
-    for (const name of adapterImports(fs.readFileSync(f, "utf8"))) imports.add(name);
+    for (const name of adapterImports(fs.readFileSync(f, "utf8")))
+      imports.add(name);
   }
 
   const resolved = [...imports].sort().map(resolveImport);
-  const unmapped = resolved.filter((r) => r.kind === "unmapped").map((r) => r.name);
-  const ambiguous = resolved.filter((r) => r.kind === "ambiguous")
+  const unmapped = resolved
+    .filter((r) => r.kind === "unmapped")
+    .map((r) => r.name);
+  const ambiguous = resolved
+    .filter((r) => r.kind === "ambiguous")
     .map((r) => `${r.name} (could be ${r.candidates.join(" or ")})`);
 
   // Breadth-first over `## Load these too`, so a skill reached only through another still lands.
@@ -314,7 +383,10 @@ export function manifest(entries) {
     const slug = queue.shift();
     if (seen.has(slug)) continue;
     const where = locate(slug);
-    if (!where) { missing.push(slug); continue; }
+    if (!where) {
+      missing.push(slug);
+      continue;
+    }
     seen.add(slug);
     const links = loadTheseToo(where);
     queue.push(...links.needs, ...links.ifUsed.filter((s) => used.has(s)));
@@ -343,16 +415,28 @@ function selfCheck() {
 
   for (const name of ADAPTER_COMPONENTS) {
     const r = resolveImport(name);
-    if (r.kind === "unmapped") problems.push(`${name}: no skill matched and no entry in ROUTES`);
-    if (r.kind === "ambiguous") problems.push(`${name}: matches ${r.candidates.join(" and ")} — needs a ROUTES entry`);
-    for (const slug of r.skills) if (!locate(slug)) problems.push(`${name} -> ${slug}: no such skill on disk`);
+    if (r.kind === "unmapped")
+      problems.push(`${name}: no skill matched and no entry in ROUTES`);
+    if (r.kind === "ambiguous")
+      problems.push(
+        `${name}: matches ${r.candidates.join(" and ")} — needs a ROUTES entry`,
+      );
+    for (const slug of r.skills)
+      if (!locate(slug))
+        problems.push(`${name} -> ${slug}: no such skill on disk`);
   }
-  for (const slug of ALWAYS) if (!locate(slug)) problems.push(`ALWAYS names ${slug}, which is not on disk`);
+  for (const slug of ALWAYS)
+    if (!locate(slug))
+      problems.push(`ALWAYS names ${slug}, which is not on disk`);
   for (const name of Object.keys(ROUTES)) {
-    if (!ADAPTER_COMPONENTS.includes(name)) problems.push(`ROUTES has ${name}, which the adapter does not export`);
+    if (!ADAPTER_COMPONENTS.includes(name))
+      problems.push(`ROUTES has ${name}, which the adapter does not export`);
     // A route for a component that *does* have its own skill is a route that should not exist.
     const m = skillFor(name);
-    if (m.match === "exact") problems.push(`ROUTES has ${name}, but ${m.slugs[0]} matches it exactly — drop the route`);
+    if (m.match === "exact")
+      problems.push(
+        `ROUTES has ${name}, but ${m.slugs[0]} matches it exactly — drop the route`,
+      );
   }
 
   // Every skill must have a checklist, because that is what a checker walks. A skill with none
@@ -374,12 +458,16 @@ function selfCheck() {
       const text = fs.readFileSync(p, "utf8");
       const checklist = section(text, "Pre-flight checklist");
       const n = checklist ? (checklist.match(/^- \[ \]/gm) ?? []).length : 0;
-      if (n === 0) problems.push(`${category}/${slug}: no pre-flight checklist items`);
+      if (n === 0)
+        problems.push(`${category}/${slug}: no pre-flight checklist items`);
       items += n;
 
       if (category === "components") {
         const cross = loadTheseToo(path.relative(ROOT, p));
-        if (cross.needs.length === 0) problems.push(`components/${slug}: '## Load these too' has no links it needs`);
+        if (cross.needs.length === 0)
+          problems.push(
+            `components/${slug}: '## Load these too' has no links it needs`,
+          );
         links += cross.needs.length;
         ifUsed += cross.ifUsed.length;
       }
@@ -387,20 +475,27 @@ function selfCheck() {
   }
 
   if (problems.length) {
-    console.error(`✗ ${problems.length} problem${problems.length > 1 ? "s" : ""}:`);
+    console.error(
+      `✗ ${problems.length} problem${problems.length > 1 ? "s" : ""}:`,
+    );
     for (const p of problems) console.error(`  - ${p}`);
     process.exit(2);
   }
   console.log(`✓ ${ADAPTER_COMPONENTS.length} adapter components all resolve.`);
-  console.log(`✓ ${Object.keys(ROUTES).length} routes for components with no skill of their own, ${ALWAYS.length} always-on skills.`);
+  console.log(
+    `✓ ${Object.keys(ROUTES).length} routes for components with no skill of their own, ${ALWAYS.length} always-on skills.`,
+  );
   console.log(`✓ ${items} pre-flight checklist items across every skill.`);
-  console.log(`✓ ${links} cross-links the 39 component skills need, and ${ifUsed} loaded only if the screen uses them.`);
+  console.log(
+    `✓ ${links} cross-links the 39 component skills need, and ${ifUsed} loaded only if the screen uses them.`,
+  );
 }
 
 // Only when run as a command. Without this guard the CLI executes on import, so the test file
 // printing a usage message and exiting 1 was the first thing `node --test` did.
-const invokedDirectly = process.argv[1]
-  && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+const invokedDirectly =
+  process.argv[1] &&
+  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 
 const args = invokedDirectly ? process.argv.slice(2) : null;
 if (!invokedDirectly) {
@@ -411,7 +506,9 @@ if (!invokedDirectly) {
   const json = args.includes("--json");
   const files = args.filter((a) => !a.startsWith("--"));
   if (!files.length) {
-    console.error("usage: screen-skill-manifest.mjs [--json] <file.jsx> ...   |   --self-check");
+    console.error(
+      "usage: screen-skill-manifest.mjs [--json] <file.jsx> ...   |   --self-check",
+    );
     process.exit(1);
   }
   const result = manifest(files);
@@ -419,22 +516,35 @@ if (!invokedDirectly) {
     console.log(JSON.stringify(result, null, 2));
   } else {
     console.log(`${result.entries.join(", ")}`);
-    console.log(`reads ${result.files.length} local file${result.files.length === 1 ? "" : "s"}: ${result.files.map((f) => path.basename(f)).join(", ")}\n`);
+    console.log(
+      `reads ${result.files.length} local file${result.files.length === 1 ? "" : "s"}: ${result.files.map((f) => path.basename(f)).join(", ")}\n`,
+    );
     console.log(`imports (${result.imports.length}):`);
     for (const i of result.imports) {
-      const tail = i.kind === "unmapped" ? "UNMAPPED"
-        : i.kind === "ambiguous" ? `AMBIGUOUS — ${i.candidates.join(" or ")}`
-        : `${i.kind} → ${i.skills.join(", ")}${i.match === "partial" ? " (matched)" : ""}`;
+      const tail =
+        i.kind === "unmapped"
+          ? "UNMAPPED"
+          : i.kind === "ambiguous"
+            ? `AMBIGUOUS — ${i.candidates.join(" or ")}`
+            : `${i.kind} → ${i.skills.join(", ")}${i.match === "partial" ? " (matched)" : ""}`;
       console.log(`  ${i.name.padEnd(20)} ${tail}`);
     }
     console.log(`\nskills to load (${result.skills.length}):`);
     for (const s of result.skills) console.log(`  ${s.slug}`);
-    const { unmappedImports, ambiguousImports, missingSkills } = result.uncovered;
-    if (unmappedImports.length || ambiguousImports.length || missingSkills.length) {
+    const { unmappedImports, ambiguousImports, missingSkills } =
+      result.uncovered;
+    if (
+      unmappedImports.length ||
+      ambiguousImports.length ||
+      missingSkills.length
+    ) {
       console.log("\nuncovered — reported rather than skipped:");
-      for (const u of unmappedImports) console.log(`  import with no skill: ${u}`);
-      for (const a of ambiguousImports) console.log(`  import matching several skills: ${a}`);
-      for (const m of missingSkills) console.log(`  cross-link to a missing skill: ${m}`);
+      for (const u of unmappedImports)
+        console.log(`  import with no skill: ${u}`);
+      for (const a of ambiguousImports)
+        console.log(`  import matching several skills: ${a}`);
+      for (const m of missingSkills)
+        console.log(`  cross-link to a missing skill: ${m}`);
     }
   }
   if (result.uncovered.unmappedImports.length) process.exit(1);

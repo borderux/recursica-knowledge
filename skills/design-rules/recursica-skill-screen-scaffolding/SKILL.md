@@ -250,7 +250,7 @@ The number one sign, and then the rest, in order:
 
 - [ ] You chose the shell on purpose: a top nav for few items, and a left rail beyond about three or four. You asked the user where the choice was not obvious.
 - [ ] A left rail puts navigation at the top, and the profile and settings at the bottom.
-- [ ] Every page has a footer.
+- [ ] Every page has a footer, or you said why it does not.
 - [ ] The page title sits in the page, and you did not treat repeating the navigation label as a defect.
 - [ ] Every line under a page title or section heading survived being deleted — it carries an order, limit, consequence, or state that the heading cannot. No `lede` or `note` is filled in just because the prop exists. Where you found the defect across several call sites, you removed the prop itself, not only its strings.
 - [ ] A breadcrumb appears on every page below the top level, and nowhere above it.

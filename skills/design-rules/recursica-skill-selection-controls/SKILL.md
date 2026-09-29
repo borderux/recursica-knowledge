@@ -126,7 +126,7 @@ Both keep the edge of each value visible, which is exactly what a sideways radio
 
 **Avoid saving to the server immediately in any form with more than one field.**
 
-**Switches follow the same consistency rule.** A switch may save immediately or save with the form — immediately feels slightly more natural for a switch — but whichever it is, use switches the same way throughout the system.
+**Switches follow the same consistency rule.** A switch saves the same way everything else in the system does: immediately in a system that saves on change, and with the form in a system that saves on submit. It never differs from the fields around it.
 
 ## Uncommitted changes
 

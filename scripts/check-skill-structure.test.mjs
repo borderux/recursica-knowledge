@@ -163,9 +163,11 @@ test("every skill in the repository passes", () => {
 
 test("Load these too: a link, a stray heading, and a design-rules skill under 'only if used' are caught", () => {
   const comps = new Set(["recursica-skill-card"]);
-  const ok = "## Load these too\n\n- `recursica-skill-forms` — why.\n\n### Only if the screen also uses it\n\n- `recursica-skill-card` — alt.\n\n## Uncovered — ask, do not invent\n";
+  const ok =
+    "## Load these too\n\n- `recursica-skill-forms` — why.\n\n### Only if the screen also uses it\n\n- `recursica-skill-card` — alt.\n\n## Uncovered — ask, do not invent\n";
   assert.deepEqual(checkLoadLinks(ok, comps), []);
-  const bad = "## Load these too\n\n- [`recursica-skill-forms`](../forms/SKILL.md) — why.\n\n### Maybe\n\n### Only if the screen also uses it\n\n- `recursica-skill-tables` — rules.\n";
+  const bad =
+    "## Load these too\n\n- [`recursica-skill-forms`](../forms/SKILL.md) — why.\n\n### Maybe\n\n### Only if the screen also uses it\n\n- `recursica-skill-tables` — rules.\n";
   const messages = checkLoadLinks(bad, comps).map((p) => p.message);
   assert.equal(messages.length, 3, messages.join("\n"));
 });
