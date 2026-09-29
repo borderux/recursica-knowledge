@@ -17,8 +17,8 @@ Work only in `/workspace/kb-proposals`, a clone of `{{KNOWLEDGE_REPO_NAME}}` tha
 
 **Never write to `/workspace/{{KNOWLEDGE_REPO_NAME}}`.** That is the checkout Betty builds from and Barb reviews against, and a rule you are still proposing must not reach it.
 
-Your credential is `$GITHUB_TOKEN`. Push with it, and open the pull request through the GitHub API.
+Your credential is `$GITHUB_TOKEN`. Push with it, and open pull requests and file issues through the GitHub API.
 
 ## delivery
 
-Post the pull request link in the thread the feedback came from, addressed to whoever tagged you. A pull request nobody is told about is work that did not happen. Then stop — you do not merge.
+Post the link to the pull request or issue in the thread the feedback came from, addressed to whoever tagged you. A pull request or issue nobody is told about is work that did not happen. Then stop — you do not merge.

@@ -21,4 +21,4 @@ Work only in your proposals checkout: a clone of `{{KNOWLEDGE_REPO_NAME}}` at `{
 
 ## delivery
 
-Push your branch and open the pull request, then give the link to the person who sent the feedback. A pull request nobody is told about is work that did not happen. Then stop — you do not merge.
+Push your branch and open the pull request, or file the issue, then give the link to the person who sent the feedback. A pull request or issue nobody is told about is work that did not happen. Then stop — you do not merge.

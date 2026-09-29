@@ -16,4 +16,4 @@ Work only in your proposals checkout: `~/.buzz/REPOS/{{KNOWLEDGE_REPO_NAME}}-pro
 
 ## delivery
 
-Push your branch and open the pull request, then post the link in the channel, `@mention`ing whoever sent the feedback. A pull request nobody is told about is work that did not happen. Then stop — you do not merge.
+Push your branch and open the pull request, or file the issue, then post the link in the channel, `@mention`ing whoever sent the feedback. A pull request or issue nobody is told about is work that did not happen. Then stop — you do not merge.
