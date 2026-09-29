@@ -3,8 +3,6 @@
 
   "$agentPrompts": "Used by export-agents.mjs / restore-agents.mjs when tokenizing agent prompts.",
   "BQ_PROJECT": "",
-  "BUILDER_REPO": "",
-  "BUILDER_REPO_NAME": "",
   "KNOWLEDGE_REPO_NAME": "",
   "TRANSCRIPT_DIR": "",
 

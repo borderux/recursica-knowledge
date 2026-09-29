@@ -1,6 +1,6 @@
 # Porting Betty
 
-Betty is portable for the same reason ALAN is: **she needs no client data and no data fence.**
+Betty is portable for the same reason Barb and Alan are: **she needs no client data and no data fence.**
 She reads two repositories, runs `npm` and `git`, dispatches one subagent, and opens a pull
 request. That is the whole surface.
 

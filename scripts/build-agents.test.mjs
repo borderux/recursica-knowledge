@@ -87,11 +87,11 @@ test("every subagent artifact declares a tool allowlist", () => {
 });
 
 /**
- * ALAN dispatches Barb, so he needs Task; Barb dispatches checker and feisty, so she needs it
- * too. Without it she can only read the corpus one context at a time, which is a skim.
+ * Betty dispatches Barb, so she needs Task; Barb dispatches checker and feisty, so she needs it
+ * too. Without it Barb can only read the corpus one context at a time, which is a skim.
  */
-test("the ALAN-to-Barb dispatch chain has Task at every hop", () => {
-  assert.ok(toolsOf(path.join(artifactDir, "alan.md")).includes("Task"), "alan.md cannot dispatch Barb");
+test("the Betty-to-Barb dispatch chain has Task at every hop", () => {
+  assert.ok(toolsOf(path.join(artifactDir, "betty.md")).includes("Task"), "betty.md cannot dispatch Barb");
   assert.ok(toolsOf(path.join(artifactDir, "barb.md")).includes("Task"), "barb.md cannot fan out to its checkers");
 });
 

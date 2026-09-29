@@ -29,7 +29,7 @@ set -uo pipefail
 
 # The research team, plus any agent whose turns make cross-repo claims nobody re-runs.
 # Ivan is the second kind: he reports discrepancies across three repositories and the
-# report is the deliverable, so an unchecked claim in it is the whole failure. ALAN stays
+# report is the deliverable, so an unchecked claim in it is the whole failure. Alan stays
 # unwatched — see GUIDES/JANICE_REVIEW_CHECKLIST.md for the roster and the reasoning.
 #
 # An agent added here needs a `building-<name>` channel in the checklist's routing table
@@ -86,7 +86,7 @@ AGENT="${BUZZ_ACP_SESSION_TITLE:-}"
 # with no trace anywhere. Strip the suffix before comparing.
 AGENT_NAME="${AGENT%% (*}"
 
-# Not a watched agent — the common case (Fizz, Janice, ALAN, Honey, Bumble, humans).
+# Not a watched agent — the common case (Fizz, Janice, Alan, Honey, Bumble, humans).
 matched=0
 for w in "${WATCHED_AGENTS[@]}"; do
   [[ "$AGENT_NAME" == "$w" ]] && matched=1 && break

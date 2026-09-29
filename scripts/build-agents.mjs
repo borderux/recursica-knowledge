@@ -147,7 +147,7 @@ function loadFragments(file) {
  * Barb's whole guarantee is that she cannot write — an agent that can edit the code it reviews
  * can make a finding disappear instead of reporting it, and one that can edit `skills/` can
  * resolve a violation by softening the rule. Both are silent. Her runtime file said `Read,
- * Grep, Glob, Bash, Task`; her artifact said nothing, so ALAN dispatching that artifact would
+ * Grep, Glob, Bash, Task`; her artifact said nothing, so Betty dispatching that artifact would
  * have got a reviewer holding `Write` and `Edit` with no warning anywhere. Her own PORTING.md
  * names per-subagent tools as a thing to check rather than assume, and this build was the
  * thing not honouring it.
@@ -306,7 +306,7 @@ for (const name of names) {
   /**
    * `targets:` in the front matter narrows which platforms an agent is built for.
    *
-   * Absent means all of them, which is the ALAN case. It exists because not every agent can
+   * Absent means all of them, which is the Alan case. It exists because not every agent can
    * honestly be built for every target: Claire's subagents each hold a different set of tools
    * on purpose, and opencode's documented agent model has no per-tool allowlist to express
    * that with. Shipping an artifact that quietly drops a boundary is worse than shipping no

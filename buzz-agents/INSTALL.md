@@ -13,7 +13,7 @@ Buzz.app. There is no Linux build and no container option.
 
 > **Setting up a brand-new client?** Read
 > [NEW_CLIENT_COMMUNITY.md](NEW_CLIENT_COMMUNITY.md) instead. One community per client, and
-> that file is the whole path in order. This file is about getting *your* Mac running.
+> that file is the whole path in order. This file is about getting _your_ Mac running.
 
 ## What you are installing
 
@@ -21,7 +21,7 @@ Two halves, and it is worth knowing which is which when something breaks:
 
 | Half           | What it is                                                     | Where it comes from                                 |
 | -------------- | -------------------------------------------------------------- | --------------------------------------------------- |
-| **The agents** | Claire, Stu, Janice, ALAN — their prompts and settings         | `buzz-agents/` → drafts you approve in Buzz Desktop |
+| **The agents** | Claire, Stu, Janice, Alan — their prompts and settings         | `buzz-agents/` → drafts you approve in Buzz Desktop |
 | **The nest**   | The scripts, fenced MCP servers and guides they use at runtime | `nest/` → `~/.buzz/` via one command                |
 
 An agent without the nest starts up and then cannot do anything, because every tool it
@@ -91,13 +91,13 @@ owner's side — what to send, what never to send, and how to revoke it later.
 
 ## Step 1 — Prerequisites
 
-|                         | Why                                                                          | Get it                |
-| ----------------------- | ---------------------------------------------------------------------------- | --------------------- |
+|                         | Why                                                                          | Get it                                                                    |
+| ----------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
 | **Buzz Desktop**        | Supplies the `buzz` CLI _and_ `buzz-acp`. Neither is distributed separately. | Ask whoever invited you for the build — there is no link here to give you |
-| **Claude Code**         | The runtime every agent is configured against                                | `claude` on your PATH |
-| **Node 18+**            | Runs the Drive fence server and these scripts                                | `node` on your PATH   |
-| **`gcloud`**            | Only if you will create a _new_ client dataset                               | Google Cloud SDK      |
-| **`ANTHROPIC_API_KEY`** | Your own. Never shared between operators.                                    | Your account          |
+| **Claude Code**         | The runtime every agent is configured against                                | `claude` on your PATH                                                     |
+| **Node 18+**            | Runs the Drive fence server and these scripts                                | `node` on your PATH                                                       |
+| **`gcloud`**            | Only if you will create a _new_ client dataset                               | Google Cloud SDK                                                          |
+| **`ANTHROPIC_API_KEY`** | Your own. Never shared between operators.                                    | Your account                                                              |
 
 Step 4 checks all of these and names anything missing, so you do not have to verify by hand.
 
@@ -228,11 +228,6 @@ their own agents, so a shared channel otherwise holds several bots called `Clair
 way to tell whose is whose. Only the display name changes — the definition in the repo stays
 canonical and shared.
 
-> **ALAN is created as `Alan (Your Name)`.** These pages and his own prompt style him ALAN,
-> but the name in [`agents/alan/agent.json`](agents/alan/agent.json) is `Alan`, and that is
-> the one Buzz registers. `@ALAN (Your Name)` will not resolve. The script prints every name
-> it is about to create — take it from there rather than from prose.
-
 Use the flag rather than renaming an agent in Buzz Desktop afterwards. A hand-rename is not
 recognised as the same agent by `sync-prompts.mjs` or `export-agents.mjs`.
 
@@ -261,7 +256,7 @@ agents have no tools.
 **Everyone runs this, including if you are joining a client that already exists.** Past the
 dataset work, it is the only thing that registers your MCP servers (`bq-<slug>`,
 `bq-<slug>-ro`, `drive-<slug>`) and writes your five subagents into
-`~/.buzz/.claude/agents/`. Step 4 installs the *templates* for those and never renders
+`~/.buzz/.claude/agents/`. Step 4 installs the _templates_ for those and never renders
 them, so skipping this leaves you with Claire, no tools and no subagents — and nothing
 downstream notices.
 
@@ -319,19 +314,19 @@ Then smoke-test in your channel:
 
 ## When it goes wrong
 
-| Symptom                                              | Cause                                               | Fix                                      |
-| ---------------------------------------------------- | --------------------------------------------------- | ---------------------------------------- |
-| Bootstrap stops on prerequisites                     | Missing app or binary                               | Install what it named, re-run            |
-| Bootstrap stops on unresolved tokens                 | Blank values                                        | Fill in `local-values.json`, re-run      |
-| …and the only one named is `JANICE_PUBKEY`           | Expected on a first install — it cannot exist yet   | Step 5, save Janice's draft, re-run Step 4 |
-| `stu: no Stu app at …`                               | The checkout moved after bootstrap baked its path   | Re-run Step 4 from the checkout          |
-| Your agent has no tools                              | Buzz not restarted since install                    | Restart Buzz Desktop                     |
+| Symptom                                              | Cause                                               | Fix                                                                 |
+| ---------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------- |
+| Bootstrap stops on prerequisites                     | Missing app or binary                               | Install what it named, re-run                                       |
+| Bootstrap stops on unresolved tokens                 | Blank values                                        | Fill in `local-values.json`, re-run                                 |
+| …and the only one named is `JANICE_PUBKEY`           | Expected on a first install — it cannot exist yet   | Step 5, save Janice's draft, re-run Step 4                          |
+| `stu: no Stu app at …`                               | The checkout moved after bootstrap baked its path   | Re-run Step 4 from the checkout                                     |
+| Your agent has no tools                              | Buzz not restarted since install                    | Restart Buzz Desktop                                                |
 | …and restarting did not help                         | Step 6 never ran, so nothing was registered         | `claude mcp list` — expect three `<slug>` servers. None? Run Step 6 |
-| A tool is missing entirely                           | `toolbox` download failed or was interrupted        | Re-run Step 4; it refetches and verifies |
-| `Access Denied` on your own dataset                  | Dataset grant missing, or wrong region (must be US) | Check both                               |
-| Janice never says anything                           | Normal — a clean turn gets no message               | Nothing to fix                           |
-| Janice posts to a channel named `{{JANICE_CHANNEL}}` | Nest installed with tokens unresolved               | Re-run Step 4                            |
-| `ISOLATION BROKEN`                                   | Project-level BigQuery role on the service account  | Leave only `jobUser`, re-run Step 7      |
+| A tool is missing entirely                           | `toolbox` download failed or was interrupted        | Re-run Step 4; it refetches and verifies                            |
+| `Access Denied` on your own dataset                  | Dataset grant missing, or wrong region (must be US) | Check both                                                          |
+| Janice never says anything                           | Normal — a clean turn gets no message               | Nothing to fix                                                      |
+| Janice posts to a channel named `{{JANICE_CHANNEL}}` | Nest installed with tokens unresolved               | Re-run Step 4                                                       |
+| `ISOLATION BROKEN`                                   | Project-level BigQuery role on the service account  | Leave only `jobUser`, re-run Step 7                                 |
 
 ---
 
@@ -373,9 +368,9 @@ none. It checks the server actually starts before writing anything.
 
 **4. Wire her up in Buzz Desktop**, then restart her:
 
-| Field | Value |
-| --- | --- |
-| Runtime | `claude` |
+| Field   | Value                                                     |
+| ------- | --------------------------------------------------------- |
+| Runtime | `claude`                                                  |
 | Env var | `CLAUDE_CONFIG_DIR` = `~/.buzz/proxy/claude-config-betty` |
 
 **No `env_vars` field on the agent?** It is absent on newer managed-agent records, where the
