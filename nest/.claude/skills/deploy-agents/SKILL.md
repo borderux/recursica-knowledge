@@ -1,6 +1,6 @@
 ---
 name: deploy-agents
-description: Set up Claire, Stu, Janice and ALAN on this Mac when someone asks you to deploy, install, or set up the agents — or asks for help joining a client, fixing a half-finished install, or updating an existing one. Walks the operator through supplying their values, installs the nest, opens the agent drafts for approval, and proves the client-data fence before any data moves. Use this instead of reading INSTALL.md aloud.
+description: Set up Claire, Stu, Janice and Alan on this Mac when someone asks you to deploy, install, or set up the agents — or asks for help joining a client, fixing a half-finished install, or updating an existing one. Walks the operator through supplying their values, installs the nest, opens the agent drafts for approval, and proves the client-data fence before any data moves. Use this instead of reading INSTALL.md aloud.
 ---
 
 # Deploy the agents onto this Mac
@@ -14,7 +14,7 @@ else's Mac — if the person asking is not the owner of this machine, say so and
 | Half | What | Result if missing |
 |---|---|---|
 | **The nest** — `nest/` → `~/.buzz/` | Scripts, fenced MCP servers, guides, `settings.json` | Agents start, then find no tools |
-| **The agents** — `buzz-agents/` → Buzz Desktop | Prompts and settings for Claire, Stu, Janice, ALAN | Nothing to talk to |
+| **The agents** — `buzz-agents/` → Buzz Desktop | Prompts and settings for Claire, Stu, Janice, Alan | Nothing to talk to |
 
 Both, in that order. An agent created before the nest exists is a name with nothing behind it.
 
@@ -68,7 +68,7 @@ identifiers, and they are the same for everyone in the community:
 - `TAG_SHEET_ID` — the shared tag dictionary sheet id
 - `CLAIRE_CHANNEL`, `STU_CHANNEL`, `IVAN_CHANNEL`, `ALAN_CHANNEL`, `JANICE_CHANNEL` — channel UUIDs
 - `JANICE_PUBKEY` — this community's Janice, hex
-- `BUILDER_REPO`, `BUILDER_REPO_NAME`, `KNOWLEDGE_REPO_NAME` — only if they want ALAN
+- `KNOWLEDGE_REPO_NAME` — only if they want Alan
 - **their name**, for the agent display names — see below. Ask for the form they want
   shown, not their account id
 
@@ -105,8 +105,7 @@ the right channel before falling back to asking for everything.
 | `drive_folder` | `DRIVE_FOLDER` | |
 | `tag_sheet` | `TAG_SHEET_ID` | |
 | `claire_channel`, `stu_channel`, `alan_channel`, `janice_channel` | the four `*_CHANNEL` tokens | Janice's routing table, **not** the channel you are installing in |
-| `builder_repo` | `BUILDER_REPO`, and `BUILDER_REPO_NAME` = the part after the slash | ALAN only |
-| `knowledge_repo` | `KNOWLEDGE_REPO_NAME` | ALAN only |
+| `knowledge_repo` | `KNOWLEDGE_REPO_NAME` | Alan only |
 
 Those four routing UUIDs are a common trap: they are where Janice files findings, and none of
 them is the channel this install is running in. Do not point `--channel` at a `building-*`
@@ -172,9 +171,8 @@ whole document, so it has to carry what was already there.
 - alan_channel: 00000000-0000-0000-0000-000000000000
 - janice_channel: 00000000-0000-0000-0000-000000000000
 
-## ALAN — omit this section if the community has no ALAN
+## Alan — omit this section if the community has no Alan
 
-- builder_repo: acme/design-sandbox
 - knowledge_repo: recursica-knowledge
 ```
 
@@ -344,11 +342,6 @@ transcripts. His fence is an environment variable no CLI flag reaches, so until
 client Drive and dataset on the machine in reach and a prompt that states they are absent. Say
 that plainly, in the channel, in the same message as the names: discard Loki's draft for now, or
 save it and leave him stopped. He is not part of this install and nothing in it waits on him.
-
-**ALAN registers as `Alan (Alex)`, not `ALAN (Alex)`.** This skill and his own prompt style
-him ALAN; `agents/alan/agent.json` says `Alan`, and that is what Buzz gets. Quote the names
-the script prints, never the ones in this prose — a mention of `@ALAN (Alex)` resolves to
-nothing.
 
 Someone else's `Claire (…)` already in the channel is **not** a conflict and not a reason to
 reuse it — it is theirs, on their machine, spending their budget. Two owner-suffixed Claires

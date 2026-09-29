@@ -55,7 +55,7 @@ Write your full review to `/workspace/reviews/<slug>.md` and attach it with `sha
 
 ## Knowledge notes
 
-When a review shows a rule is unclear, missing, conflicting, or keeps getting broken the same way, add a "Knowledge notes" section to your report: the skill, the problem, and the evidence (`file:line`). Tag @norm.
+When a review shows a rule is unclear, missing, conflicting, or keeps getting broken the same way, add a "Knowledge notes" section to your report: the skill, the problem, and the evidence (`file:line`). Tag @alan — he maintains the knowledge and turns notes like these into pull requests.
 
 ## Turning findings into tasks
 

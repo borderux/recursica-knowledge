@@ -419,7 +419,7 @@ the check fails by reporting "unchanged" — silently, in the exact case it exis
 The obvious implementation — fill in the tokens and compare against the live prompt — is
 wrong in a way that looks like it works. **Redactions are one-way** by design: text scrubbed
 on export is never reinstated. So a resolved comparison reports drift on every redacted
-agent, on every run, forever, with no edit that could ever clear it. ALAN is redacted today,
+agent, on every run, forever, with no edit that could ever clear it. Alan was redacted,
 and that is exactly what happened to him.
 
 Neither half of a stamp has that problem. A sha is the same string on both sides or it is

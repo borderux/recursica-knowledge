@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // Recursica knowledge MCP server.
 //
-// Serves the design system's own skills to the agents that build and review against them —
-// Betty, Barb, ALAN — without any of them holding the corpus in context. There are 64 skill
+// Serves the design system's own skills to the agents that build, review and maintain them —
+// Betty, Barb, Alan — without any of them holding the corpus in context. There are 64 skill
 // files totalling roughly a quarter of a million tokens, which does not fit alongside an
 // application.
 //

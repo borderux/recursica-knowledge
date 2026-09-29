@@ -1,7 +1,7 @@
 # The knowledge MCP server
 
-Serves this repository's skills to the agents that build and review against them — Betty, Barb,
-ALAN — so none of them has to hold the corpus in context. There are 64 skill files totalling
+Serves this repository's skills to the agents that build, review and maintain them — Betty, Barb,
+Alan — so none of them has to hold the corpus in context. There are 64 skill files totalling
 roughly a quarter of a million tokens, which does not fit alongside an application.
 
 **It holds no copy of the skills.** It reads `skills/` in the checkout it runs from. An earlier

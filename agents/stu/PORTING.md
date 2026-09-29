@@ -9,7 +9,7 @@ every client you have, with nothing to warn you.
 
 ## Stu is the inverse of the other three
 
-ALAN and Claire's subagents port because their prompt is nearly all portable knowledge. Stu's is
+Alan, Betty and Claire's subagents port because their prompt is nearly all portable knowledge. Stu's is
 not: **55–76% of it is platform-coupled**, against 23.5% for Claire and 1.89% for her subagents.
 
 That figure is much less alarming than it sounds, and the reason is the interesting part. Nearly

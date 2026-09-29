@@ -19,7 +19,7 @@ terms and holds no Drive tools at all. That is not tidiness — it is what stops
 a correction from also manufacturing the evidence justifying it. It is enforced by each
 subagent's tool allowlist, and it survives the port only if you rebuild those allowlists.
 
-Claire is not ALAN. ALAN ports because it touches no client data. Claire ports only if you
+Claire is not Alan or Betty. They port because they touch no client data. Claire ports only if you
 rebuild both fences first.
 
 ## What ships today, and what does not

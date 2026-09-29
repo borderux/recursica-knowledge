@@ -10,7 +10,7 @@ For detailed step-by-step setup guides (using the npm package or the Claude plug
 
 ## 🐝 Running the Buzz agents
 
-This repository is also the durable record of the Buzz agents built around this knowledge — Claire, Stu, Janice and Alan — and of the runtime tooling they need. Nothing here is loaded when you install the design-system plugin; it is a separate stack with its own install path.
+This repository is also the durable record of the Buzz agents built around this knowledge — Claire, Stu, Janice, Betty, Barb and Alan — and of the runtime tooling they need. Nothing here is loaded when you install the design-system plugin; it is a separate stack with its own install path.
 
 | If you want to…                                | Read                                                                     |
 | ---------------------------------------------- | ------------------------------------------------------------------------ |
