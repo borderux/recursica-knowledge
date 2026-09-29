@@ -31,7 +31,7 @@ looking like it helped. **There is deliberately no search tool here.**
 | --- | --- |
 | `router` | The decision order, the precedence when rules collide, and when to stop and ask. Call it first. |
 | `skills_for_screen` | Which skills apply to real files, computed from their adapter imports rather than judged. |
-| `skill_family` | The rules themselves — always as a family. `detail: "contract"` returns only each skill's checklist, uncovered list and, for a component, its inventory and "Do not use it when" table: every rule in checkable form, at about a quarter of the size. |
+| `skill_family` | The rules themselves — always as a family. `detail: "contract"` returns only each skill's checklist, uncovered list and, for a component, its inventory and "Do not use it when" table, at about a quarter of the size — for when the full family will not fit (see below). |
 | `skill_section` | One section of one skill, for the reasoning behind a contract item. |
 | `list_skills` | Slugs, categories and one-line descriptions, for when there are no files to compute from. |
 | `component_api` | Real prop types from the adapter version a given project installs. |
@@ -41,17 +41,18 @@ it. That is a correctness requirement: Barb computes applicability with the same
 second implementation would drift from hers silently — a review that checked the wrong set of
 skills reads exactly like a review that found nothing.
 
-## Contract first
+## Full text first, contracts when it will not fit
 
-An ordinary ten-component screen needs 31 skills. In full that is about 120,000 tokens, more than
-most models can hold beside the application. As contracts it is about 30,000. The router tells
-agents to build from the contract and fetch a section when an item is unclear, when two items
-seem to conflict, or before deciding something a skill may cover.
+An ordinary ten-component screen needs 31 skills. In full that is about 120,000 tokens; as
+contracts it is about 30,000. The router tells agents to read the full family when it fits, and
+to fall back to contracts, plus each component's Accessibility section, only when it does not.
 
-The default is still `full`, so nothing changes for a caller that does not ask. **Whether
-contract-first builds are as accurate as full-text builds has not been measured yet**: the test
-is to build the same screen both ways and have Barb review each. Make `contract` the default only
-after that.
+**The default stays `full`, and the test says it should.** Two screens were each built twice by
+the same model, once from contracts and once from full text, and reviewed blind against the full
+skills. The contract builds read 59–66% less skill text and broke more rules: 9 high-severity
+findings against 3, most of them accessibility rules that were in the contract's checklists but
+applied less reliably without the prose that explains them. Use `contract` only where the full
+family will not fit, and fetch each component's Accessibility section with it.
 
 Responses carry no frontmatter. The description is for choosing a skill, and repeating it for
 every skill in a family cost 6% of the response. `list_skills` still returns it.
