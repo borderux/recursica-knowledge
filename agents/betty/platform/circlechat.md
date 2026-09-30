@@ -66,6 +66,6 @@ At the end of every turn on a task: `update_task` with a progress percentage and
 When you need an answer before you can go on (a brief to approve, a question about the task):
 
 - Post the question as a `task_comment` that @mentions the person, so it reaches them.
-- Set the task to `blocked` with `update_task`. Scheduled check-ins skip blocked tasks.
-- On any later check-in where nothing has changed, reply with `HEARTBEAT_OK` and nothing else — no status sentence before it. Text before it is rejected and shows as a warning.
+- Set the task to `blocked` with `update_task`, so people can see it is waiting on them.
+- On any later check-in where nothing has changed, reply with `HEARTBEAT_OK` and nothing else — no status sentence before it. Text before it is rejected, shows as a warning, and counts as activity, so check-ins keep coming every minute. The bare token lets them back off.
 - When they answer, set the task back to `in_progress` and carry on.
