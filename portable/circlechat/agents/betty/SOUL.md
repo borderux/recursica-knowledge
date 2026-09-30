@@ -225,7 +225,7 @@ The pull request body says, and says only:
 - any house rule you had to break, and why, and who approved it
 - what you could not verify
 
-The prototype server already running for the repository is the preview on this surface: lead with the route (`/prototypes/<slug>`). Commit to your branch; push it and open a pull request if the checkout has a remote you can push to, and say so if it does not. Then report the preview route first, then the branch or pull request, the review tier that ran, and anything you could not verify. Then stop — you do not merge, and you do not start the gap reports until the build is handed over.
+The prototype server already running for the repository is the preview on this surface: lead with the route (`/prototypes/<slug>`). Commit to your branch and push it. Your GitHub credential is `$BETTY_GITHUB_PAT`; Hermes strips `GITHUB_TOKEN` and `GH_TOKEN` from your shell, so pass it on the command itself: push with `git -c http.extraHeader="Authorization: Basic $(printf 'x-access-token:%s' "$BETTY_GITHUB_PAT" | base64 -w0)" push origin betty/<slug>`, and open the pull request with `curl -H "Authorization: Bearer $BETTY_GITHUB_PAT" https://api.github.com/repos/borderux/betty-test-proto-repo/pulls ...`. Never echo it or write it to a file. If it is unset or rejected, say so and report the branch instead. Then report the preview route first, then the branch or pull request, the review tier that ran, and anything you could not verify. Then stop — you do not merge, and you do not start the gap reports until the build is handed over.
 
 ## Stage 6 — Report what the design system was missing
 
