@@ -372,6 +372,21 @@ npm run agents:build:check   # report drift, write nothing; exits 1 if there is 
 npm run agents:build         # write
 ```
 
+**Every place an agent runs keeps its own copy, and none of them updates when this repository
+does.** Buzz has `sync-prompts.mjs`, CircleChat has `circlechat/sync-skills.sh`, and Claude Code
+has this — run it after pulling a change to an agent:
+
+```bash
+npm run agents:install         # Betty, Barb, her checkers and Alan into ~/.claude/agents
+npm run agents:install:check   # report what is out of date; change nothing
+```
+
+An agent with no `{{TOKEN}}` is linked, so it is current whenever this checkout is. Betty and
+Alan carry tokens, so they get a filled-in copy — the values come from where this checkout
+sits — stamped so the check can say when it is stale. A project's own `.claude/agents` copy
+wins inside that project, and the check lists any under the workspace. Claire, Stu and Loki are
+never installed this way: their data fence cannot travel in a prompt.
+
 `--check` **used to exit 0 whether or not anything had drifted.** It printed the drift and the
 status code said fine, which is invisible while a person reads the output and fatal the moment
 anything automated reads it instead. `.github/workflows/checks.yml` runs it on every pull
