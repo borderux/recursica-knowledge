@@ -102,3 +102,21 @@ export function findPersonalData(text) {
 
   return labels;
 }
+
+/**
+ * The same rules as findPersonalData, applied as a rewrite: every personal email address and
+ * phone number becomes a marker. Allowed addresses and fictional numbers are left alone.
+ *
+ * For text that has to be read but must never be passed on as written — a Snippy comment, the
+ * HTML captured from a reviewed page — so an agent working from it cannot quote what it never saw.
+ */
+export function redactPersonalData(text) {
+  let out = text.replace(EMAIL, (address, domain, tld) =>
+    isAllowedAddress(address, domain, tld) ? address : "[email removed]",
+  );
+  out = out.replace(NANP, (number, _area, exchange) =>
+    exchange === "555" ? number : "[phone removed]",
+  );
+  out = out.replace(INTL, "[phone removed]");
+  return out;
+}

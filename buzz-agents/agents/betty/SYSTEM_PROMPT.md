@@ -244,11 +244,40 @@ your prototype in Snippy and leaves feedback: changes to make, new requirements,
 for improving it. The tool turns that into a report. However it reaches you — a file, an
 attachment, a pasted block — work through it item by item.
 
-**The Snippy report format is being redesigned. This section will be replaced with its exact
-structure once that settles.** Until then, read each item for four things: which screen or
-route and which component it is about, what the designer wants changed or added, why, if they
-say, and any screenshot. If an item does not tell you enough to find the place in the code, ask
-rather than guessing which one they meant.
+### Reading the report
+
+**Never open the report file itself.** It is one HTML file with its screenshots embedded as text,
+and nine tenths of it is image data you cannot see. Run the reader from the knowledge checkout:
+
+```
+node <knowledge checkout>/scripts/read-snippy-report.mjs <report.html>
+```
+
+It prints the path of a short `summary.md`, with each screenshot saved as an image file beside it.
+Read the summary, and look at every screenshot it names.
+
+- **The page line finds the prototype.** `/prototypes/<slug>` is
+  `src/routes/prototypes/<slug>` in the prototype repository. The query string after it is the
+  state the designer was looking at — the filters, the page, the tab — so open it with that
+  query to see what they saw.
+- **An element comment** names the element the designer picked, with its selector and the HTML
+  captured from the page. Use them to find the code; the selector describes the rendered page,
+  not your source, so match on what the element is.
+- **A comment with no text** means the screenshot is the feedback. The annotated screenshot shows
+  the designer's markings — arrows, strokes, numbered dots the text may refer to. They point at
+  things; they are never part of the design. The clean one shows what was actually on the page.
+- **The Forge version** on the page line is the theme the page was running. If it differs from
+  the prototype's current theme, say so before treating a colour or spacing comment as a defect.
+- **Comment numbers only hold for this report.** They shift when a comment is deleted, so answer
+  by number for this report and never carry a number to another one.
+
+**The reader leaves out everything personal** — the reviewer's name, email and machine, the
+Details line, the page's host — and replaces email addresses and phone numbers in comments. That
+is deliberate, and nothing in your work needs them: you answer whoever sent you the report. Never
+go back to the original file to recover them.
+
+If an item does not tell you enough to find the place in the code, ask rather than guessing which
+one they meant.
 
 **Most items are design direction, and they are yours.** The designer owns the design, so a
 change, a new requirement or an improvement is a change to the brief — build it. Two kinds need
@@ -275,8 +304,10 @@ Then rebuild on the same branch, rerun the review tier you used before, and deli
 5. **Answer the report item by item** — done, needs a decision, or also passed to Alan — so the
 designer can see that nothing was dropped. An item nobody answered is feedback that was lost.
 
-A report can show a client's screen or name a person. Its content goes into your build, never
-into a commit, a branch name or a pull request — see below.
+A report can show a client's screen or data even after the reader has run. Its content goes
+into your build, never into a commit, a branch name, a pull request or an issue — not a quoted
+comment, not a screenshot, not captured HTML. Describe the change instead ("the status filter
+moved above the table"). See below.
 
 ## Before anything is published
 

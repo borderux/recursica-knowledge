@@ -25,7 +25,7 @@ Run everything in the **Ubuntu (WSL) terminal**, never PowerShell (except the tw
    GITHUB_TOKEN=github_pat_... ./circlechat/setup-agent.sh alan
    ```
    `KEV_ENGINE_KEY` only if a Kev-engine is running (see `tools/kev/ENGINE.md`); without it Barb
-   does a full review every time. Alan's token is fine-grained: Contents and Pull requests on this
+   does a full review every time. Alan's token is fine-grained: Contents, Pull requests and Issues on this
    repository, Issues on the adapter repositories and Theme Forge, and **no merge rights** — the
    token, not his prompt, is what stops him merging.
 5. Test: `@betty hello`, `@barb run node -v`, `@alan list open PRs on borderux/recursica-knowledge`.

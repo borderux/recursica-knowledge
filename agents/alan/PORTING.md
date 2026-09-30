@@ -2,7 +2,8 @@
 
 Alan turns feedback about the design system — designers' Snippy reports and Barb's review
 findings — into pull requests against the knowledge repository, and into issues on the adapter
-repositories or Theme Forge when the problem is in their code rather than the rules. He needs less than most agents
+repositories or Theme Forge when the problem is in their code rather than the rules — and into an
+issue on the knowledge repository when feedback needs a decision rather than a fix. He needs less than most agents
 here — no dataset, no Drive folder, no client fence — and the one thing he does need is the thing
 a prompt cannot carry.
 
@@ -20,7 +21,7 @@ without rebuilding the fence.
 | | |
 |---|---|
 | A checkout he may write to | A clone of the knowledge repository, separate from any checkout something else reads. `{{WORKSPACE_ROOT}}` and `{{KNOWLEDGE_REPO_NAME}}` name it. |
-| A forge credential | Contents and pull requests on the knowledge repository; issues only on the adapter repositories and Theme Forge (`borderux/recursica-forge`). Nothing else — no merge, no admin, no code access to the adapters. |
+| A forge credential | Contents, pull requests and issues on the knowledge repository; issues only on the adapter repositories and Theme Forge (`borderux/recursica-forge`). Nothing else — no merge, no admin, no code access to the adapters. |
 | Somewhere to report the link | Whatever surface handed him the feedback. |
 
 ## What you get
@@ -56,7 +57,7 @@ it is a preference.
 
 The same is true of the repository boundary. "Work only in the proposals checkout" holds because
 his credential can write code to one repository — not because the sentence is in his prompt.
-Issues on the adapters and Theme Forge are the only other thing it should allow. And his
+Issues — on the knowledge repository, the adapters and Theme Forge — are the only other thing it should allow. And his
 proposals checkout has to be a different directory from the one builders and reviewers read, or a
 rule still under review reaches them before anyone has agreed it.
 
