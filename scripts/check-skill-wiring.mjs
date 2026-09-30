@@ -38,13 +38,6 @@ const ROUTER = "skills/meta/recursica-skill-design-router/SKILL.md";
 
 /** `<slug>: <rule>` → why it is still open. */
 export const KNOWN = {
-  // Reachable from no screen. Both are linked only under "only if the screen also uses it", which
-  // the manifest never follows to a design-rules skill. Where each should be reached from is a
-  // decision for the design-system owner, not a wiring fix.
-  "recursica-skill-filters: reviewers":
-    "which screens a filter bar's rules apply to is undecided",
-  "recursica-skill-live-regions: reviewers":
-    "which components or screens pull it in is undecided",
   // Predate the routing evaluation's coverage requirement.
   "recursica-skill-button: routing": "no routing request yet",
   "recursica-skill-card: routing": "no routing request yet",

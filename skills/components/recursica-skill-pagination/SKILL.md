@@ -111,6 +111,7 @@ Do not implement, override, or tune any of these — the component owns them:
 - `recursica-skill-buttons-links` — link vs. button semantics, the tooltip requirement for icon-only controls, and disabled controls.
 - `recursica-skill-navigation` — what makes something a location, routing and browser history, and semantic list markup for navigation.
 - `recursica-skill-system-conventions` — one behavioral mode per system, and never carry meaning in a single channel.
+- `recursica-skill-live-regions` — announcing the new page and row range after a page change.
 
 ### Only if the screen also uses it
 
