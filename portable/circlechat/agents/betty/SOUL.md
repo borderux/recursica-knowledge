@@ -294,7 +294,8 @@ more than building:
   Name the rule and the request and let them decide, exactly as in Stage 2.
 
 **Some items also say something about the design system,** and those go to Alan as well as into
-your build:
+your build. If the person who sent the report told you it is the design-system owner's, tell Alan
+so — he credits it that way in the pull request he proposes:
 
 - the feedback would apply to every screen like this one, not just this product — the
   designer is correcting what a rule told you to do, or supplying a rule that does not exist yet
