@@ -73,15 +73,22 @@ set_secret() { # set_secret NAME VALUE
   sudo sed -i "/^$1=/d" "$H/.env"
   echo "$1=$2" | sudo tee -a "$H/.env" >/dev/null
 }
+# Alan's GitHub token is stored as ALAN_GITHUB_PAT, not GITHUB_TOKEN: Hermes strips GITHUB_TOKEN
+# and GH_TOKEN from every shell it spawns, with no setting to allow them, so under those names
+# the token is saved but never reaches him. You still pass it in as GITHUB_TOKEN=... here.
 if [ "$HANDLE" = alan ]; then
   if [ -n "${GITHUB_TOKEN:-}" ]; then
-    set_secret GITHUB_TOKEN "$GITHUB_TOKEN"
-  elif ! sudo grep -q '^GITHUB_TOKEN=' "$H/.env"; then
+    set_secret ALAN_GITHUB_PAT "$GITHUB_TOKEN"
+  elif sudo grep -q '^GITHUB_TOKEN=' "$H/.env" && ! sudo grep -q '^ALAN_GITHUB_PAT=' "$H/.env"; then
+    old="$(sudo sed -n 's/^GITHUB_TOKEN=//p' "$H/.env" | tail -1)"
+    set_secret ALAN_GITHUB_PAT "$old"
+  elif ! sudo grep -q '^ALAN_GITHUB_PAT=' "$H/.env"; then
     echo "alan needs GITHUB_TOKEN=... on the first run (fine-grained: Contents + Pull requests +"
     echo "Issues on the knowledge repo, Issues on the adapter repos and Theme Forge). Without merge rights on"
     echo "it, he cannot merge — that is the point."
     exit 1
   fi
+  sudo sed -i '/^GITHUB_TOKEN=/d' "$H/.env"
 fi
 if [ "$HANDLE" = barb ] && [ -n "${KEV_ENGINE_KEY:-}" ]; then
   set_secret KEV_ENGINE_KEY "$KEV_ENGINE_KEY"

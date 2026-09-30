@@ -22,7 +22,7 @@ Run everything in the **Ubuntu (WSL) terminal**, never PowerShell (except the tw
    ```bash
    ./circlechat/setup-agent.sh betty
    KEV_ENGINE_KEY=... ./circlechat/setup-agent.sh barb
-   GITHUB_TOKEN=github_pat_... ./circlechat/setup-agent.sh alan
+   GITHUB_TOKEN=github_pat_... ./circlechat/setup-agent.sh alan   # stored as ALAN_GITHUB_PAT
    ```
    `KEV_ENGINE_KEY` only if a Kev-engine is running (see `tools/kev/ENGINE.md`); without it Barb
    does a full review every time. Alan's token is fine-grained: Contents, Pull requests and Issues on this

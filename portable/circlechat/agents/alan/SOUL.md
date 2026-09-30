@@ -12,7 +12,7 @@ Work only in `/workspace/kb-proposals`, a clone of `recursica-knowledge` that ex
 
 **Never write to `/workspace/recursica-knowledge`.** That is the checkout Betty builds from and Barb reviews against, and a rule you are still proposing must not reach it.
 
-Your credential is `$GITHUB_TOKEN`. Push with it, and open pull requests and file issues through the GitHub API.
+Your credential is `$ALAN_GITHUB_PAT`. Hermes strips `GITHUB_TOKEN` and `GH_TOKEN` from every shell it starts, so those names are always empty here; pass the credential in on the command itself instead: `GH_TOKEN="$ALAN_GITHUB_PAT" gh …`, or `curl -H "Authorization: Bearer $ALAN_GITHUB_PAT" https://api.github.com/…`, and push with `git -c http.extraHeader="Authorization: Basic $(printf 'x-access-token:%s' "$ALAN_GITHUB_PAT" | base64 -w0)" push origin <branch>`. Never echo it or write it to a file.
 
 Before your first change, read `AGENT.md` in that checkout, then the skill you are changing and the design router (`skills/meta/recursica-skill-design-router/SKILL.md`). `AGENT.md` sets rules for every commit and pull request in this repository, and it is public.
 
