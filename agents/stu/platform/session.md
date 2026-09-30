@@ -1,7 +1,7 @@
 <!--
 Platform fragments for Stu on a plain session surface — Claude Code with no Buzz.
 
-Unlike ALAN's, this file maps to claude-code only. opencode is not a target: Stu's central rule
+Unlike Alan's, this file maps to claude-code only. opencode is not a target: Stu's central rule
 is that he does not write to the data, and on Claude Code that is enforced by putting him on the
 read-only BigQuery server rather than merely asserted in the prose below. opencode's documented
 agent model has no per-tool allowlist to express it with, so an opencode Stu would ship the rule

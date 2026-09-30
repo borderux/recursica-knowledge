@@ -63,6 +63,8 @@ The template you hand them, verbatim, with the blanks left blank:
 
 <!-- platform:config-key-names -->
 
+<!-- platform:config-second-channel -->
+
 And how to fill each one:
 
 - **slug** — a short lowercase name for this client, letters, numbers and hyphens only. Their

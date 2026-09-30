@@ -13,3 +13,8 @@ else
   echo "husky: no node_modules here, so formatting was skipped. \`npm install\` enables it."
   echo "husky: the commit-message name check still ran — it needs nothing installed."
 fi
+
+# Not a nicety: the text a commit adds to its files. commit-msg only ever saw the message, and
+# the file is where a pasted report, a quoted participant or a mock-data table lands. Blocking,
+# and like commit-msg it needs nothing installed. See scripts/check-changes-for-names.mjs.
+node scripts/check-changes-for-names.mjs --staged || exit 1

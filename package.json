@@ -41,11 +41,20 @@
     "agents:check": "node buzz-agents/scripts/export-agents.mjs --check",
     "agents:restore": "node buzz-agents/scripts/restore-agents.mjs",
     "check:names": "node buzz-agents/scripts/check-text-for-names.mjs",
+    "check:changes": "node scripts/check-changes-for-names.mjs",
     "agents:build": "node scripts/build-agents.mjs",
     "agents:build:check": "node scripts/build-agents.mjs --check",
     "skills:manifest": "node scripts/screen-skill-manifest.mjs",
     "skills:manifest:check": "node scripts/screen-skill-manifest.mjs --self-check",
-    "test": "node --test 'nest/bin/*.test.mjs' 'scripts/*.test.mjs' 'buzz-agents/lib/*.test.mjs'"
+    "skills:glossary:check": "node scripts/check-glossary.mjs",
+    "skills:structure:check": "node scripts/check-skill-structure.mjs",
+    "skills:passages:check": "node scripts/check-shared-passages.mjs",
+    "skills:uncovered:check": "node scripts/check-uncovered.mjs",
+    "skills:kit:check": "node scripts/check-kit-inventory.mjs",
+    "skills:check": "npm run -s skills:manifest:check && npm run -s skills:structure:check && npm run -s skills:glossary:check && npm run -s skills:passages:check && npm run -s skills:uncovered:check && npm run -s skills:kit:check",
+    "skills:review": "node scripts/review-skill-diff.mjs",
+    "skills:routing": "node scripts/routing-eval.mjs",
+    "test": "node --test 'nest/bin/*.test.mjs' 'nest/mcp/*/*.test.mjs' 'scripts/*.test.mjs' 'buzz-agents/lib/*.test.mjs'"
   },
   "packageManager": "npm@10.9.0",
   "engines": {
@@ -54,8 +63,10 @@
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.1",
     "@changesets/cli": "^2.29.4",
+    "@recursica/official-release": "2.8.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.5.2",
-    "prettier": "3.5.3"
+    "prettier": "3.5.3",
+    "yaml": "2.9.0"
   }
 }

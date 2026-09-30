@@ -30,114 +30,73 @@
   "tokens": {
     "BQ_PROJECT": {
       "description": "Google Cloud project holding the BigQuery datasets Claire reads.",
-      "usedBy": [
-        "claire"
-      ],
+      "usedBy": ["claire"],
       "example": "acme-research-123456",
       "howToFind": "Canvas key `bq_project` in the install channel. Otherwise: Google Cloud console → project picker → the project ID (not the display name)."
     },
-    "BUILDER_REPO": {
-      "description": "owner/name of the prototype repository ALAN builds in.",
-      "usedBy": [
-        "alan"
-      ],
-      "example": "acme/design-sandbox",
-      "howToFind": "Canvas key `builder_repo` in the install channel. Otherwise: the GitHub path of the repo ALAN should build prototypes in."
-    },
-    "BUILDER_REPO_NAME": {
-      "description": "Bare repository name from BUILDER_REPO. Used for checkout paths.",
-      "usedBy": [
-        "alan"
-      ],
-      "example": "design-sandbox",
-      "howToFind": "The part of BUILDER_REPO after the slash. Derived from canvas key `builder_repo`, not looked up."
-    },
     "KNOWLEDGE_REPO_NAME": {
-      "description": "Bare name of the design-knowledge repository ALAN promotes findings into and must never edit directly.",
-      "usedBy": [
-        "alan"
-      ],
+      "description": "Bare name of the design-knowledge repository. Builder agents read skills from it and must never edit it; Alan proposes changes to it through pull requests from a separate checkout.",
+      "usedBy": ["alan", "betty"],
       "example": "design-knowledge",
-      "howToFind": "Canvas key `knowledge_repo` in the install channel. The repository holding the design-rule skills, which ALAN promotes findings into and must never edit directly."
+      "howToFind": "Canvas key `knowledge_repo` in the install channel. The repository holding the design-rule skills."
     },
     "TRANSCRIPT_DIR": {
       "description": "Directory holding the agent session transcripts Janice reads as evidence. Contains one <session-id>.jsonl per session.",
-      "usedBy": [
-        "janice"
-      ],
+      "usedBy": ["janice"],
       "example": "/Users/you/.claude/projects/-Users-you--buzz",
       "howToFind": "Claude Code writes transcripts to ~/.claude/projects/<encoded-cwd>/, where the encoded name is the agent nest's absolute path with each slash and dot replaced by a dash — /Users/you/.buzz becomes -Users-you--buzz. bootstrap-nest.mjs derives this for you."
     },
     "TAG_SHEET_ID": {
       "description": "Google Sheet holding the shared tag dictionary every research channel tags against. Research taxonomy, no client content.",
-      "usedBy": [
-        "nest"
-      ],
+      "usedBy": ["nest"],
       "example": "1AbCdEfGhIjKlMnOpQrStUvWxYz0123456789",
       "howToFind": "Canvas key `tag_sheet` in the install channel. Otherwise: open the Tag Dictionary sheet; it is the part of the URL between /d/ and /edit. Must be shared as Viewer with the claire-tag-dictionary-reader service account — see Step 0 of CLAIRE_ZERO_TO_RUNNING.md."
     },
     "DRIVE_FOLDER": {
       "description": "Drive folder id for one client. The entire world a channel's Drive service account can see.",
-      "usedBy": [
-        "nest"
-      ],
+      "usedBy": ["nest"],
       "example": "1AbCdEfGhIjKlMnOpQrStUvWxYz_",
       "howToFind": "Canvas key `drive_folder` in the install channel. Otherwise: open the client folder in Drive; it is the part of the URL after /folders/."
     },
     "CLAIRE_CHANNEL": {
       "description": "UUID of the building-claire channel in this community. Janice routes findings about Claire here.",
-      "usedBy": [
-        "nest"
-      ],
+      "usedBy": ["nest"],
       "example": "00000000-0000-0000-0000-000000000000",
       "howToFind": "Canvas key `claire_channel` in the install channel. Otherwise `buzz channels list`, or the channel header in Buzz. This is Janice's routing table, not the channel the install runs in."
     },
     "STU_CHANNEL": {
       "description": "UUID of the building-stu channel in this community. Janice routes findings about Stu here.",
-      "usedBy": [
-        "nest"
-      ],
+      "usedBy": ["nest"],
       "example": "00000000-0000-0000-0000-000000000000",
       "howToFind": "Canvas key `stu_channel` in the install channel. Otherwise `buzz channels list`, or the channel header in Buzz. This is Janice's routing table, not the channel the install runs in."
     },
     "IVAN_CHANNEL": {
       "description": "UUID of the building-ivan channel in this community. Janice routes findings about Ivan here.",
-      "usedBy": [
-        "nest"
-      ],
+      "usedBy": ["nest"],
       "example": "00000000-0000-0000-0000-000000000000",
       "howToFind": "Canvas key `ivan_channel` in the install channel. Otherwise `buzz channels list`, or the channel header in Buzz. This is Janice's routing table, not the channel the install runs in."
     },
     "ALAN_CHANNEL": {
-      "description": "UUID of the building-alan channel in this community. Janice routes findings about ALAN here.",
-      "usedBy": [
-        "nest"
-      ],
+      "description": "UUID of the building-alan channel in this community. Janice routes findings about Alan here.",
+      "usedBy": ["nest"],
       "example": "00000000-0000-0000-0000-000000000000",
       "howToFind": "Canvas key `alan_channel` in the install channel. Otherwise `buzz channels list`, or the channel header in Buzz. This is Janice's routing table, not the channel the install runs in."
     },
     "JANICE_CHANNEL": {
       "description": "UUID of the building-janice channel in this community. Janice's wake messages land here, and it is the fallback for findings about an agent with no channel of its own.",
-      "usedBy": [
-        "nest",
-        "janice"
-      ],
+      "usedBy": ["nest", "janice"],
       "example": "00000000-0000-0000-0000-000000000000",
       "howToFind": "Canvas key `janice_channel` in the install channel. Otherwise `buzz channels list`, or the channel header in Buzz. This is Janice's routing table, not the channel the install runs in."
     },
     "JANICE_PUBKEY": {
       "description": "Hex pubkey of the Janice instance on this machine, used by the wake hook to address her. One per operator, not one per community.",
-      "usedBy": [
-        "nest"
-      ],
+      "usedBy": ["nest"],
       "example": "0000000000000000000000000000000000000000000000000000000000000000",
       "howToFind": "Not on the canvas: each operator runs their own Janice, so this is per-machine, not per-community, and it does not exist until that Janice's draft has been saved. Then: buzz channels members --channel <janice-channel-uuid>, or the agent's profile in Buzz Desktop. Bootstrap therefore runs twice; it is idempotent."
     },
     "WORKSPACE_ROOT": {
       "description": "Directory holding the repository checkouts an agent works in. Appears only in the portable artifacts under portable/ — never in a prompt Buzz receives, which is what portableOnly means. On a Buzz install the equivalent path is written out in full; on a plain checkout it is wherever the operator keeps their repos.",
-      "usedBy": [
-        "alan"
-      ],
+      "usedBy": ["alan", "betty"],
       "example": "~/src",
       "portableOnly": true,
       "howToFind": "Nothing to find on a Buzz machine — leave it unset. Whoever ports the agent fills it in with their own checkout directory."

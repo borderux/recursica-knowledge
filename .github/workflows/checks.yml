@@ -38,6 +38,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The name check below compares with the base branch and reads every commit
+          # message in the pull request, so it needs the history, not one commit.
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -63,3 +67,47 @@ jobs:
       # rather than a rule broken — the shape of a badly resolved conflict in a build output.
       - name: Agent artifacts match their sources
         run: npm run agents:build:check
+
+      # The skill checks also run inside `node --test`, which is what fails the job. This step
+      # runs them again as their own commands, so a failure reads as the check's own report —
+      # which skill, which line, what was expected — instead of a test assertion diff.
+      - name: Skill checks
+        run: npm run skills:check
+
+      # A name, an email address or a phone number in anything this pull request publishes:
+      # the lines it adds, its commit messages, its title and its description.
+      #
+      # Client and participant names come from the LOCAL_REDACTIONS_JSON repository secret —
+      # the same file operators keep as buzz-agents/local-redactions.json, which is gitignored
+      # because it IS the list of names. It is written to the runner, read, and never printed.
+      # Without the secret (a pull request from a fork gets none) the email, phone and
+      # structural rules still run, and the log says the name rules did not.
+      #
+      # Everything reaches the script through env, never interpolated into it: a pull request
+      # title is attacker-controlled text.
+      #
+      # Before the step below, whose shallow fetch of the base would cut the history this reads.
+      - name: No names or personal contact details
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          LOCAL_REDACTIONS_JSON: ${{ secrets.LOCAL_REDACTIONS_JSON }}
+        run: |
+          if [ -n "$LOCAL_REDACTIONS_JSON" ]; then
+            umask 077
+            printf '%s' "$LOCAL_REDACTIONS_JSON" > buzz-agents/local-redactions.json
+          fi
+          node scripts/check-changes-for-names.mjs --base "origin/$BASE_REF"
+
+      # Warnings, never a failure: a rule change and a careless rewrite leave the same signals,
+      # and only a reviewer can tell them apart. Each one is an annotation on the changed file.
+      # The base branch is passed through env, not interpolated into the script.
+      - name: Skill edits that may change a rule
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git fetch --no-tags --depth=1 origin "$BASE_REF"
+          node scripts/review-skill-diff.mjs --base "origin/$BASE_REF"

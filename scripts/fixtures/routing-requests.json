@@ -1,0 +1,210 @@
+[
+  {
+    "request": "Should the invoice status be a badge or a chip on each row?",
+    "skill": "recursica-skill-badges-chips"
+  },
+  {
+    "request": "Add a spinner while the monthly report loads",
+    "skill": "recursica-skill-loader"
+  },
+  {
+    "request": "Build the country select field (about 12 options)",
+    "skill": "recursica-skill-dropdown"
+  },
+  {
+    "request": "Which control should I use for three mutually exclusive shipping speeds?",
+    "skill": "recursica-skill-selection-controls"
+  },
+  {
+    "request": "Make the date column show Jan 7, 2026 instead of 1/7/26",
+    "skill": "recursica-skill-dates-and-currency"
+  },
+  {
+    "request": "Add a calendar field for the contract start date",
+    "skill": "recursica-skill-date-picker"
+  },
+  {
+    "request": "Our table scrolls sideways because it has too many columns — what do we cut?",
+    "skill": "recursica-skill-tables"
+  },
+  {
+    "request": "Should we show any confirmation after a record saves successfully?",
+    "skill": "recursica-skill-feedback-messaging"
+  },
+  {
+    "request": "Implement the Undo snackbar that appears after deleting an email",
+    "skill": "recursica-skill-toast"
+  },
+  {
+    "request": "What should the placeholder in the single-line name input say?",
+    "skill": "recursica-skill-text-field"
+  },
+  {
+    "request": "Let users attach one PDF receipt inside the expense form",
+    "skill": "recursica-skill-file-input"
+  },
+  {
+    "request": "Build a drag-and-drop area that lists all uploaded documents",
+    "skill": "recursica-skill-file-upload"
+  },
+  {
+    "request": "Should editing a customer happen in a side drawer, a modal, or a full page?",
+    "skill": "recursica-skill-panels-modals"
+  },
+  {
+    "request": "Build the filters drawer that slides in from the right edge",
+    "skill": "recursica-skill-panel"
+  },
+  {
+    "request": "Add a 'Step 2 of 4' wizard for onboarding",
+    "skill": "recursica-skill-stepper"
+  },
+  {
+    "request": "Show the audit history of changes to this contract",
+    "skill": "recursica-skill-timeline"
+  },
+  {
+    "request": "Display a folder hierarchy the user can expand and collapse",
+    "skill": "recursica-skill-tree"
+  },
+  {
+    "request": "Collapsible FAQ sections on the help page",
+    "skill": "recursica-skill-accordion"
+  },
+  {
+    "request": "Breadcrumb trail for a deeply nested settings page",
+    "skill": "recursica-skill-breadcrumb"
+  },
+  {
+    "request": "Which tab should be open when the page first loads?",
+    "skill": "recursica-skill-defaults"
+  },
+  {
+    "request": "Design the home page that shows our key KPIs at a glance",
+    "skill": "recursica-skill-dashboards"
+  },
+  {
+    "request": "Is a pie chart OK for six categories of spend?",
+    "skill": "recursica-skill-data-visualization"
+  },
+  {
+    "request": "Should we call these objects Requests or Tickets across the app?",
+    "skill": "recursica-skill-naming-terminology"
+  },
+  {
+    "request": "Our page has two H1 headings — is that a problem?",
+    "skill": "recursica-skill-typography-semantics"
+  },
+  {
+    "request": "Pick an icon for the archive action",
+    "skill": "recursica-skill-icon-semantics"
+  },
+  {
+    "request": "Announce the new result count to screen readers after filtering",
+    "skill": "recursica-skill-live-regions"
+  },
+  {
+    "request": "Should the status filter let users pick more than one status at once?",
+    "skill": "recursica-skill-filters"
+  },
+  {
+    "request": "Mark required fields with asterisks, or mark the optional ones instead?",
+    "skill": "recursica-skill-forms"
+  },
+  {
+    "request": "Does the side navigation need its own layer for its background?",
+    "skill": "recursica-skill-layers"
+  },
+  {
+    "request": "How should this screen behave on a tablet?",
+    "skill": "recursica-skill-responsive-behavior"
+  },
+  {
+    "request": "There is too much on this screen — how do we decide what to remove?",
+    "skill": "recursica-skill-screen-priority"
+  },
+  {
+    "request": "Why is 7 plus or minus 2 the limit for navigation items? Cite the research.",
+    "skill": "recursica-skill-working-memory"
+  },
+  {
+    "request": "Should the rarely used column-visibility setting be hidden behind a gear icon? Justify it.",
+    "skill": "recursica-skill-discoverability"
+  },
+  {
+    "request": "No skill covers this new kind of surface — is there a general house convention?",
+    "skill": "recursica-skill-system-conventions"
+  },
+  {
+    "request": "Two house rules seem to contradict each other — which one wins?",
+    "skill": "recursica-skill-design-router"
+  },
+  {
+    "request": "Add a volume control that goes from 0 to 100",
+    "skill": "recursica-skill-slider"
+  },
+  {
+    "request": "A compact toggle between List view and Grid view",
+    "skill": "recursica-skill-segmented-control"
+  },
+  {
+    "request": "On/off switch for email notifications in settings",
+    "skill": "recursica-skill-switch"
+  },
+  {
+    "request": "Move people from an Available list into a Team list",
+    "skill": "recursica-skill-transfer-list"
+  },
+  {
+    "request": "Profile picture that falls back to initials",
+    "skill": "recursica-skill-avatar"
+  },
+  {
+    "request": "Show a '3 unread' count next to the Inbox navigation item",
+    "skill": "recursica-skill-badge"
+  },
+  {
+    "request": "Removable tag chips on a product record",
+    "skill": "recursica-skill-chip"
+  },
+  {
+    "request": "Preview card that appears when pointing at a user's name",
+    "skill": "recursica-skill-hover-card-popover"
+  },
+  {
+    "request": "The '...' row-actions menu on each table row",
+    "skill": "recursica-skill-menu"
+  },
+  {
+    "request": "Page numbers under an interior table",
+    "skill": "recursica-skill-pagination"
+  },
+  {
+    "request": "Make the 'Learn more' text take the user to the docs page",
+    "skill": "recursica-skill-link"
+  },
+  {
+    "request": "Help text under the password field that states the password rule",
+    "skill": "recursica-skill-assistive-element"
+  },
+  {
+    "request": "Amount field with a $ prefix and two decimal places",
+    "skill": "recursica-skill-number-input"
+  },
+  {
+    "request": "Multi-line comment box with a 500 character limit",
+    "skill": "recursica-skill-textarea"
+  },
+  {
+    "request": "Field for the meeting start time",
+    "skill": "recursica-skill-time-picker"
+  },
+  {
+    "request": "Type-ahead search to pick one customer from 5,000 records",
+    "skill": "recursica-skill-autocomplete"
+  },
+  {
+    "request": "Show the read-only customer ID inside the edit form",
+    "skill": "recursica-skill-read-only-field"
+  }
+]

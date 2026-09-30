@@ -1,6 +1,6 @@
 ---
 name: deploy-agents
-description: Set up Claire, Stu, Janice and ALAN on this Mac when someone asks you to deploy, install, or set up the agents — or asks for help joining a client, fixing a half-finished install, or updating an existing one. Walks the operator through supplying their values, installs the nest, opens the agent drafts for approval, and proves the client-data fence before any data moves. Use this instead of reading INSTALL.md aloud.
+description: Set up Claire, Stu, Janice and Alan on this Mac when someone asks you to deploy, install, or set up the agents — or asks for help joining a client, fixing a half-finished install, or updating an existing one. Walks the operator through supplying their values, installs the nest, opens the agent drafts for approval, and proves the client-data fence before any data moves. Use this instead of reading INSTALL.md aloud.
 ---
 
 # Deploy the agents onto this Mac
@@ -14,7 +14,7 @@ else's Mac — if the person asking is not the owner of this machine, say so and
 | Half | What | Result if missing |
 |---|---|---|
 | **The nest** — `nest/` → `~/.buzz/` | Scripts, fenced MCP servers, guides, `settings.json` | Agents start, then find no tools |
-| **The agents** — `buzz-agents/` → Buzz Desktop | Prompts and settings for Claire, Stu, Janice, ALAN | Nothing to talk to |
+| **The agents** — `buzz-agents/` → Buzz Desktop | Prompts and settings for Claire, Stu, Janice, Alan | Nothing to talk to |
 
 Both, in that order. An agent created before the nest exists is a name with nothing behind it.
 
@@ -68,7 +68,7 @@ identifiers, and they are the same for everyone in the community:
 - `TAG_SHEET_ID` — the shared tag dictionary sheet id
 - `CLAIRE_CHANNEL`, `STU_CHANNEL`, `IVAN_CHANNEL`, `ALAN_CHANNEL`, `JANICE_CHANNEL` — channel UUIDs
 - `JANICE_PUBKEY` — this community's Janice, hex
-- `BUILDER_REPO`, `BUILDER_REPO_NAME`, `KNOWLEDGE_REPO_NAME` — only if they want ALAN
+- `KNOWLEDGE_REPO_NAME` — only if they want Alan
 - **their name**, for the agent display names — see below. Ask for the form they want
   shown, not their account id
 
@@ -105,8 +105,7 @@ the right channel before falling back to asking for everything.
 | `drive_folder` | `DRIVE_FOLDER` | |
 | `tag_sheet` | `TAG_SHEET_ID` | |
 | `claire_channel`, `stu_channel`, `alan_channel`, `janice_channel` | the four `*_CHANNEL` tokens | Janice's routing table, **not** the channel you are installing in |
-| `builder_repo` | `BUILDER_REPO`, and `BUILDER_REPO_NAME` = the part after the slash | ALAN only |
-| `knowledge_repo` | `KNOWLEDGE_REPO_NAME` | ALAN only |
+| `knowledge_repo` | `KNOWLEDGE_REPO_NAME` | Alan only |
 
 Those four routing UUIDs are a common trap: they are where Janice files findings, and none of
 them is the channel this install is running in. Do not point `--channel` at a `building-*`
@@ -126,7 +125,31 @@ Only add it when the two genuinely differ — omitted, everything derives from `
 the normal case. Do not "fix" a mismatch by renaming the account in the console: you cannot,
 and creating a replacement means re-granting the dataset and re-sharing the Drive folder.
 
-**If a value is missing from the canvas, the fix is to add it to the canvas** — not to
+### The community note is where these belong now
+
+`~/.buzz/bin/client-config.mjs resolve --channel <uuid>` answers this whole section in one
+command, reading the community and the channel together and refusing rather than guessing.
+Use it before asking anybody anything.
+
+A client's details are recorded once for the whole community, so a **second** channel for a
+client that already has one needs a single line naming the client, not the block above:
+
+```markdown
+## Claire config
+- client: <slug>
+```
+
+`client-config.mjs publish --from-channel <uuid>` promotes an existing channel's block to the
+community; without `--write` it prints what it would publish. Say out loud before writing it
+that a note is readable by everyone in the community where a canvas is readable by that
+channel's members — it carries names and ids only, never a key, but that is a wider audience.
+
+**The channel line is not optional and must not be "simplified" away.** A channel that names
+no client is unconfigured, and that is the fence doing its job: most channels in a community
+are not client channels, and moving everything to the community would quietly configure all
+of them for that client.
+
+**If a value is missing, the fix is to add it to the community note** — not to
 collect it in chat and move on. The next operator hits the identical gap otherwise.
 `TAG_SHEET_ID` is the one most often absent and it is not derivable; ask the owner for it,
 then **write it back**. Show them the block before you set it: `buzz canvas set` replaces the
@@ -148,9 +171,8 @@ whole document, so it has to carry what was already there.
 - alan_channel: 00000000-0000-0000-0000-000000000000
 - janice_channel: 00000000-0000-0000-0000-000000000000
 
-## ALAN — omit this section if the community has no ALAN
+## Alan — omit this section if the community has no Alan
 
-- builder_repo: acme/design-sandbox
 - knowledge_repo: recursica-knowledge
 ```
 
@@ -321,11 +343,6 @@ client Drive and dataset on the machine in reach and a prompt that states they a
 that plainly, in the channel, in the same message as the names: discard Loki's draft for now, or
 save it and leave him stopped. He is not part of this install and nothing in it waits on him.
 
-**ALAN registers as `Alan (Alex)`, not `ALAN (Alex)`.** This skill and his own prompt style
-him ALAN; `agents/alan/agent.json` says `Alan`, and that is what Buzz gets. Quote the names
-the script prints, never the ones in this prose — a mention of `@ALAN (Alex)` resolves to
-nothing.
-
 Someone else's `Claire (…)` already in the channel is **not** a conflict and not a reason to
 reuse it — it is theirs, on their machine, spending their budget. Two owner-suffixed Claires
 in one room is the convention working. What is a real problem is two agents on *one* Mac
@@ -451,15 +468,51 @@ of output to explain rather than a decision anybody made.
 
 ## Step 5b — One Claire and one Stu **per client channel**
 
-Step 5 wrote two launchers. Point a **new** agent identity at each, in Buzz Desktop:
+**First, ask which runtime the agent is on. It decides whether any of this applies.**
+
+| Runtime | What to do |
+|---|---|
+| `buzz-agent` | Nothing here. That runtime does not read the Claude MCP registry at all, so there is no registry to redirect and no fence to set. |
+| `claude` | Everything below. This runtime reads `~/.claude.json`, the **user-scope** registry, which holds every client's servers on this machine. |
+
+This question used to be missing, and its absence was invisible for a month: every agent on
+this machine happened to be on `buzz-agent`, where the step is a no-op, so nobody noticed the
+instruction was never followed. The first agent put on the `claude` runtime inherited three
+clients' BigQuery and Drive servers, silently and immediately.
+
+For a `claude`-runtime agent, set **one environment variable** on the agent in Buzz Desktop:
 
 | Field | Value |
 |---|---|
 | Runtime | `claude` |
-| Agent command | `~/.buzz/proxy/agent-claire-<slug>.sh` — and `agent-stu-<slug>.sh` for Stu |
+| Env var | `CLAUDE_CONFIG_DIR` = `~/.buzz/proxy/claude-config-claire-<slug>` — and `claude-config-stu-<slug>` for Stu |
 
-**Set both fields in one save.** Runtime alone, saved first, is the unfenced state: the agent
-starts, reads the user-scope registry, and holds every client on this machine.
+**Then restart the agent.** A configuration change never reaches a process that is already
+running, and the agent will keep serving from the unfenced registry until it is restarted.
+
+**Then log in inside each fence.** A config directory is its own account: the credential lives
+in the login keychain under an entry keyed to that directory, so a fence written by step 5 is
+correctly isolated and signed out. Nothing step 5 writes can change that — only a login mints
+one, and it survives restarts.
+
+```bash
+CLAUDE_CONFIG_DIR=~/.buzz/proxy/claude-config-claire-<slug> claude auth login
+CLAUDE_CONFIG_DIR=~/.buzz/proxy/claude-config-claire-<slug> claude auth status   # "loggedIn": true
+```
+
+**If the agent answers every turn with `Authentication required`, the fence is working and the
+login is missing.** The instinct is to undo the isolation; that is exactly backwards. Copying
+the account block out of `~/.claude.json` does not work either — it is profile data, not the
+credential, and it leaves a directory that looks signed in and still fails. Save-and-assume is
+the failure here.
+
+> **The launchers are the older path, and they are not what to use.** Step 5 also writes
+> `~/.buzz/proxy/agent-<who>-<slug>.sh`, which exports the same variable and was meant to be
+> named in an agent-command field. That field is not what an operator is shown, and on this
+> machine no agent has ever held a launcher path — verified across every config backup since
+> the launchers were first generated. The scripts still work if your build exposes the field;
+> the environment variable is the path that is known to work, so prefer it. If you set both,
+> the launcher wins, because it runs last and is the final writer of the agent's environment.
 
 **Do not reuse a Claire or Stu that already sits in another client's channel.** This is the
 mistake to expect, it looks entirely reasonable, and it fails silently. The fence is
@@ -479,8 +532,19 @@ report in Step 6 is necessary and not sufficient — it is about keys, not about
 and a small local model asked to read another client's table did it on the first attempt and
 named the other client's tool in its answer. Prompt discipline is not a control.
 
-If Buzz Desktop has no agent-command field on this build, stop and report it rather than
-saving runtime on its own — that combination is the unfenced state, not a partial install.
+**Verify from the process, never by asking the agent.** A model will describe a fence it does
+not have. Two checks, and the second is the stronger one:
+
+```bash
+# 1. the variable reached the real process
+ps eww -p $(pgrep -f claude-agent-acp) | tr ' ' '\n' | grep CLAUDE_CONFIG_DIR
+
+# 2. the agent's own session wrote into that config — proof it was read, not just present
+grep firstStartTime ~/.buzz/proxy/claude-config-<who>-<slug>/.claude.json
+```
+
+An agent on the `claude` runtime with no `CLAUDE_CONFIG_DIR` is not partially installed. It is
+holding every client on the machine, and it looks completely normal from the outside.
 
 ## Step 6 — Prove the fence, before any client data moves
 

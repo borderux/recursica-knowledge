@@ -32,6 +32,24 @@ test("adapterImports keeps the imported name, not the local alias", () => {
   assert.deepEqual(adapterImports(source), ["Link", "Text"]);
 });
 
+test("adapterImports matches every adapter package name, not one hardcoded line", () => {
+  // The versioned line. A real screen importing these from `adapter-mantine-v8` resolved to no
+  // components at all while the regex pinned `mantine-adapter`, and `uncovered` stayed empty —
+  // so the shortfall was invisible in the output as well as in the review built on it.
+  assert.deepEqual(
+    adapterImports(`import { Button, Table, TextField } from "@recursica/adapter-mantine-v8"`),
+    ["Button", "Table", "TextField"],
+  );
+  assert.deepEqual(adapterImports(`import { Modal } from '@recursica/mui-adapter'`), ["Modal"]);
+});
+
+test("adapterImports ignores the adapter packages that are not a component surface", () => {
+  // Shared types and the test harness. A name imported from either is not a component on screen,
+  // and counting one would put a skill in the manifest that the screen never renders.
+  assert.deepEqual(adapterImports(`import { RECURSICA_COMPONENTS } from '@recursica/adapter-common'`), []);
+  assert.deepEqual(adapterImports(`import { renderWithTheme } from '@recursica/adapter-tester'`), []);
+});
+
 test("a component whose skill slug matches its name resolves straight through", () => {
   assert.deepEqual(resolveImport("Badge"), {
     name: "Badge", kind: "component", skills: ["recursica-skill-badge"], match: "exact",

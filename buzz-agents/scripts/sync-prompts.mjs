@@ -11,7 +11,8 @@
  *   node buzz-agents/scripts/sync-prompts.mjs [--channel <uuid>] [--agent <name>]
  *                                             [--values <file>] [--input <path>]
  *                                             [--config <path>]
- *                                             [--diff] [--check] [--run]
+ *                                             [--diff] [--json] [--check] [--run]
+ *                                             [--bind <slug>=<agent>] [--unbind <slug>]
  *                                             [--no-stamp] [--force-apply]
  *
  *   --channel <uuid>   channel to open the drafts in. Without it the report still
@@ -21,11 +22,26 @@
  *   --input <path>     Buzz Desktop agent state (default: the usual macOS location)
  *   --config <path>    Buzz global agent config holding the stamps
  *   --diff             print the drift as a unified diff
+ *   --json             machine-readable verdicts instead of the prose report
+ *   --bind <slug>=<agent>  record which definition an install came from, by hand.
+ *                      Repeatable. Use when a rename has left an install unplaceable.
+ *   --unbind <slug>    forget a binding, so it is guessed again on the next run
  *   --check            exit 1 if anything is out of sync; write and send nothing
  *   --run              execute the draft-update commands instead of printing them
  *   --no-stamp         never write a version stamp, only read them
  *   --force-apply      also offer a command for an agent whose live prompt is not the
  *                      committed one. Read --diff first: this overwrites local edits.
+ *
+ * ## An install is tied to its definition, not to its name
+ *
+ * Matching by name failed twice here in opposite directions, silently and both times
+ * towards "not installed" — so the agents were never compared and drifted while every
+ * report said they were fine. Names are now used to guess once and the guess is recorded
+ * against the persona's slug, which no rename touches. See ../lib/agent-bindings.mjs.
+ *
+ * The consequence worth knowing: rename an agent to anything at all and the next run still
+ * finds it. An install nothing can place is reported with its slug and `--bind`, rather
+ * than being quietly left out, which is the failure this replaced.
  *
  * ## The check is a version comparison, not a prompt comparison
  *
@@ -91,7 +107,15 @@ import {
   detokenize,
   deriveValues,
 } from "../lib/placeholders.mjs";
-import { matchAgents } from "../lib/agent-names.mjs";
+import { matchAgents, installQualifier } from "../lib/agent-names.mjs";
+import {
+  bindingKey,
+  bindingFor,
+  readBindings,
+  definitionsRunning,
+  definitionsEverRunning,
+  buildHistoryIndex,
+} from "../lib/agent-bindings.mjs";
 import {
   globalConfigPath,
   readEnvVars,
@@ -101,6 +125,8 @@ import {
   parseStamp,
   promptFingerprint,
   promptCommit,
+  promptCommitHistory,
+  filesAtCommits,
   describeCommit,
   fileAtCommit,
   promptCommitsBetween,
@@ -165,6 +191,9 @@ const only = optAll("--agent").map((s) => s.toLowerCase());
 const valuesFile = opt("--values") ?? localValuesPath;
 const configPath = opt("--config") ?? globalConfigPath();
 const showDiff = flag("--diff");
+const asJson = flag("--json");
+const bindArgs = optAll("--bind");
+const unbindArgs = optAll("--unbind");
 const checkOnly = flag("--check");
 const run = flag("--run");
 const forceApply = flag("--force-apply");
@@ -277,13 +306,30 @@ function unifiedDiff(a, b, labelA, labelB) {
 const sameIgnoringWhitespace = (a, b) =>
   a.replace(/\s+/g, " ").trim() === b.replace(/\s+/g, " ").trim();
 
+/**
+ * A filename for one install's resolved prompt.
+ *
+ * Per install, not per agent. Four Claires all writing `.resolved/claire.md` would leave
+ * one file on disk and four commands reading it, so the last one written would be sent to
+ * all four — and the fenced installs are exactly the ones whose token values differ.
+ */
+const slugify = (r) =>
+  [r.dir, r.install]
+    .filter(Boolean)
+    .join("-")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
 /* ------------------------------------------------------------------ classify */
 
-let dirs = fs
+const allDirs = fs
   .readdirSync(agentsDir, { withFileTypes: true })
   .filter((d) => d.isDirectory())
   .map((d) => d.name)
   .sort();
+
+let dirs = allDirs;
 
 if (only.length) {
   const unknown = only.filter((o) => !dirs.includes(o));
@@ -299,231 +345,448 @@ if (only.length) {
 
 const reports = [];
 
-for (const dir of dirs) {
+/* ------------------------------------------------------- the definitions */
+
+/**
+ * Every definition in the repository, read once. All of them, never only the `--agent`
+ * selection: an install is placed against the whole repository, and narrowing the
+ * candidates would make where an agent lands depend on which agent was asked about.
+ */
+const definitions = new Map();
+for (const dir of allDirs) {
   const base = path.join(agentsDir, dir);
   const config = JSON.parse(
     fs.readFileSync(path.join(base, "agent.json"), "utf8"),
   );
   const promptPath = path.join(base, config.system_prompt_file);
   const relPromptPath = path.relative(repoRoot, promptPath);
-  const stored = fs.readFileSync(promptPath, "utf8");
-
-  const key = stampKey(dir);
-  const { sha: stamp, witness } = parseStamp(envVars[key]);
-  const report = {
+  definitions.set(dir, {
     dir,
     config,
-    stored,
     relPromptPath,
-    key,
-    stamp,
-    witness,
+    stored: fs.readFileSync(promptPath, "utf8"),
     repoCommit: promptCommit(repoRoot, relPromptPath),
-    notes: [],
-    settings: [],
-  };
-  reports.push(report);
+  });
+}
 
-  // Match on `name`, the field the export derives the directory from. display_name is
-  // what a human sees and what draft-update wants, but it is also what a human renames.
-  //
-  // Compared canonically, because the owner suffix in `Claire (Alex)` is exactly such a
-  // rename and Buzz stores it verbatim in `name` too. An exact comparison found nothing,
-  // called an installed agent `absent`, and advised creating her — a second Claire.
-  // All matches, not the first. `.find()` resolved a Mac holding both `Claire` and
-  // `Claire (Alex)` to whichever came first in the file — and the draft-update that
-  // followed would have quietly updated an agent the operator never named.
-  const matches = matchAgents(personas, config);
-  const live = matches.length === 1 ? matches[0] : null;
+/**
+ * Names are used to guess, once. See ../lib/agent-bindings.mjs for why they cannot be
+ * the answer, and `portableAgentName` for how a bracketed one is read.
+ */
+const storedNames = [...definitions.values()].flatMap((d) =>
+  [d.dir, d.config.name, d.config.display_name].filter(Boolean),
+);
 
-  if (!live) {
-    if (matches.length > 1) {
-      report.state = "ambiguous";
+const storedByDir = new Map(
+  [...definitions.entries()].map(([dir, d]) => [dir, d.stored]),
+);
+
+/* ------------------------------------------------------- place the installs */
+
+/**
+ * Explicit bindings first, so everything below sees them.
+ *
+ * Honoured even under `--check`, which otherwise writes nothing: `--bind` is not a
+ * side effect of checking, it is the operator stating a fact, and refusing to record it
+ * because of another flag on the same line would be obtuse. `--check` still writes no
+ * stamp and sends no draft.
+ */
+if (bindArgs.length || unbindArgs.length) {
+  const updates = {};
+  for (const arg of bindArgs) {
+    const eq = arg.indexOf("=");
+    if (eq === -1) {
+      console.error(`--bind wants <slug>=<agent>, got: ${arg}`);
+      process.exit(1);
+    }
+    const slug = arg.slice(0, eq).trim();
+    const target = arg.slice(eq + 1).trim();
+    if (!allDirs.includes(target)) {
+      console.error(`No such agent in buzz-agents/agents/: ${target}`);
+      console.error(`Available: ${allDirs.join(", ")}`);
+      process.exit(1);
+    }
+    updates[bindingKey(slug)] = target;
+  }
+  for (const slug of unbindArgs) updates[bindingKey(slug)] = null;
+  try {
+    const wrote = writeStamps(updates, configPath);
+    console.log(
+      wrote.length
+        ? `  Recorded ${wrote.length} binding change(s): ${wrote.join(", ")}\n`
+        : "  Bindings already as asked; nothing written.\n",
+    );
+  } catch (err) {
+    console.error(`  ! could not write bindings: ${err.message}`);
+    process.exit(1);
+  }
+}
+
+const bindings = readBindings(configPath);
+const newBindings = {};
+const unplaced = [];
+const installsOf = new Map(allDirs.map((d) => [d, []]));
+
+/**
+ * Every recent revision of every prompt, indexed by content — built at most once, and only
+ * if an install gets far enough down to need it.
+ */
+let historyIndexCache = null;
+const historyIndex = () =>
+  (historyIndexCache ??= buildHistoryIndex(
+    [...definitions.keys()],
+    (dir) =>
+      promptCommitHistory(repoRoot, definitions.get(dir).relPromptPath).map(
+        (sha) => `${sha}:${definitions.get(dir).relPromptPath}`,
+      ),
+    (refs) => filesAtCommits(repoRoot, refs),
+  ));
+
+/** A live prompt reduced to the space a committed one lives in. */
+function imageOf(live) {
+  let t = live.system_prompt ?? "";
+  if (!t.endsWith("\n")) t += "\n";
+  return applyRedactions(tokenize(t, vals), [...redactions, ...localRedactions]);
+}
+
+for (const live of personas) {
+  const liveName = live.display_name ?? live.name;
+
+  const bound = bindingFor(bindings, live.slug);
+  if (bound && definitions.has(bound)) {
+    installsOf.get(bound).push({ live, how: "bound" });
+    continue;
+  }
+
+  // A binding naming a definition this branch does not have is not authoritative and not
+  // an error either — the operator may be on a branch that predates the agent. Fall
+  // through to guessing rather than reporting the install as unplaceable.
+  const staleBinding = bound && !definitions.has(bound) ? bound : null;
+
+  const named = [...definitions.values()]
+    .filter((d) => matchAgents([live], d.config, storedNames).length)
+    .map((d) => d.dir);
+
+  if (named.length === 1) {
+    installsOf.get(named[0]).push({ live, how: "name", staleBinding });
+    newBindings[bindingKey(live.slug)] = named[0];
+    continue;
+  }
+
+  /**
+   * What the agent is running identifies it when its name no longer does.
+   *
+   * Skipped with no local redactions loaded, for the same reason the `unverifiable` state
+   * exists: the stored form cannot be reproduced without them, so every comparison here
+   * would fail and the silence would be indistinguishable from a genuine non-match. A
+   * binding written on that basis would be wrong and sticky.
+   */
+  let running = [];
+  if (localRedactions.length !== 0) {
+    const image = imageOf(live);
+    running = definitionsRunning(image, storedByDir);
+    // Only walk history when the current revision placed nothing. An install that is up to
+    // date is the cheap case and stays cheap; on a settled machine the index is never built.
+    if (running.length === 0) running = definitionsEverRunning(image, historyIndex());
+  }
+
+  if (running.length === 1) {
+    installsOf.get(running[0]).push({ live, how: "prompt", staleBinding });
+    newBindings[bindingKey(live.slug)] = running[0];
+    continue;
+  }
+
+  unplaced.push({ liveName, slug: live.slug, named, running, staleBinding });
+}
+
+/**
+ * A guess, once written down, stops being a guess.
+ *
+ * This is the point of the whole mechanism: the name resolved an install this run, and
+ * recording it means the name is never consulted for that install again. Rename it
+ * tomorrow and the binding still holds.
+ *
+ * Gated on the same flag as the stamps, so `--check` stays read-only. The cost is that a
+ * machine only ever running `--check` never accumulates bindings and keeps guessing from
+ * names — which is the old behaviour, not a regression, and the watcher is pointed at a
+ * checkout whose whole job is to write nothing.
+ */
+let boundNow = [];
+if (Object.keys(newBindings).length && mayStamp) {
+  try {
+    boundNow = writeStamps(newBindings, configPath);
+  } catch (err) {
+    console.error(`  ! could not write bindings: ${err.message}`);
+  }
+}
+
+/* ------------------------------------------------------- classify */
+
+for (const dir of dirs) {
+  const { config, stored, relPromptPath, repoCommit } = definitions.get(dir);
+  const matches = installsOf.get(dir);
+
+  if (!matches.length) {
+    reports.push({
+      dir,
+      label: dir,
+      config,
+      stored,
+      relPromptPath,
+      key: stampKey(dir),
+      stamp: null,
+      witness: null,
+      repoCommit,
+      notes: [],
+      settings: [],
+      state: "absent",
+    });
+    continue;
+  }
+
+  /**
+   * One report per install, not per definition.
+   *
+   * Several installs of one agent used to be reported as `ambiguous` and told to rename
+   * or remove one, on the reasoning that the repo could not tell which was meant. On a
+   * Mac running one agent per client that advice is wrong in both directions: the installs
+   * are all meant, and following it would delete a client's fenced agent. Each is compared
+   * and updated on its own.
+   */
+  for (const { live, how, staleBinding } of matches) {
+    const liveName = live.display_name ?? live.name;
+    // Keyed by slug only once there is more than one install; see stampKey.
+    const key = stampKey(dir, matches.length > 1 ? live.slug : null);
+
+    /**
+     * A qualified key with nothing under it falls back to the unqualified one.
+     *
+     * The day a second install appears, every stamp for that agent is under the old key,
+     * and reading only the new one turns an agent that was tracked and merely behind into
+     * one carrying "no stamp, so there is no record of which version was installed" — a
+     * warning that is false, and that withholds the update command the operator came for.
+     * Observed on the first run of this change against four Claires.
+     *
+     * Inheriting one install's stamp for all of them is a starting hypothesis, not a
+     * conclusion. The sha sends the comparison down the slow path and the fingerprint
+     * fails there for every install but the one it was written for, so each is still
+     * decided by its own prompt. The next stamp written is under the qualified key.
+     */
+    const raw = envVars[key] ?? envVars[stampKey(dir)];
+    const { sha: stamp, witness } = parseStamp(raw);
+    /**
+     * What distinguishes this install in the report. The bracketed half of its name when
+     * it has one, and otherwise the slug prefix already in its stamp key — a renamed
+     * install still has to be tellable from its siblings, and after a rename the name is
+     * exactly what cannot do that.
+     */
+    const install =
+      matches.length > 1
+        ? (installQualifier(liveName, config.name ?? dir) ??
+          String(live.slug).slice(0, 8))
+        : null;
+    const report = {
+      dir,
+      label: install ? `${dir}[${install}]` : dir,
+      config,
+      stored,
+      relPromptPath,
+      key,
+      stamp,
+      witness,
+      repoCommit,
+      install,
+      notes: [],
+      settings: [],
+      // `--agent-name` is taken from the live entry rather than from agent.json on
+      // purpose. draft-update does not verify that the agent exists: an unmatched name
+      // returns `accepted: true` and opens a draft that updates nothing. Verified
+      // 2026-08-04. The only name guaranteed to hit something is the one Buzz Desktop
+      // is holding.
+      liveName,
+      how,
+      slug: live.slug,
+    };
+    if (staleBinding)
       report.notes.push(
-        `matches ${matches.length} installed agents (${matches
-          .map((m) => m.display_name ?? m.name)
-          .join(", ")}) — rename or remove one in Buzz Desktop so there is a single answer`,
+        `was bound to \`${staleBinding}\`, which this branch does not have — placed by ` +
+          `${how} and rebound`,
+      );
+    if (how === "prompt")
+      report.notes.push(
+        "placed by what it is running, not by its name — bound now, so a further rename is safe",
+      );
+    reports.push(report);
+
+    /**
+     * Settings drift splits in two, and conflating them would print a broken command.
+     * The flags only ever *set* a value — there is no way to clear one. So a repo value
+     * of null against a live value of something is real drift that no `draft-update` can
+     * express, and `--model null` would set the model to the literal string "null".
+     * Those are reported and kept out of the command.
+     */
+    for (const field of SYNCABLE_SETTINGS) {
+      if (config[field] === undefined) continue;
+      if (live[field] === config[field]) continue;
+      const repo = config[field];
+      const settable = typeof repo === "string" && repo !== "";
+      report.settings.push({ field, repo, live: live[field], settable });
+    }
+
+    if (!report.repoCommit) {
+      // No commit means no version to compare against, and inventing one from the file
+      // on disk would stamp an agent with a sha that no clone of this repo can resolve.
+      report.state = "unversioned";
+      report.notes.push(
+        "no commit touches this prompt yet — commit it before it can be versioned",
       );
       continue;
     }
-    report.state = "absent";
-    continue;
-  }
 
-  // `--agent-name` is taken from the live entry rather than from agent.json on purpose.
-  // draft-update does not verify that the agent exists: an unmatched name returns
-  // `accepted: true` and opens a draft that updates nothing. Verified 2026-08-04. The
-  // only name guaranteed to hit something is the one Buzz Desktop is holding.
-  report.liveName = live.display_name ?? live.name;
+    let livePrompt = live.system_prompt ?? "";
+    if (!livePrompt.endsWith("\n")) livePrompt += "\n";
+    report.fingerprint = promptFingerprint(livePrompt);
 
-  /**
-   * Settings drift splits in two, and conflating them would print a broken command.
-   * The flags only ever *set* a value — there is no way to clear one. So a repo value
-   * of null against a live value of something is real drift that no `draft-update` can
-   * express, and `--model null` would set the model to the literal string "null".
-   * Those are reported and kept out of the command.
-   */
-  for (const field of SYNCABLE_SETTINGS) {
-    if (config[field] === undefined) continue;
-    if (live[field] === config[field]) continue;
-    const repo = config[field];
-    const settable = typeof repo === "string" && repo !== "";
-    report.settings.push({ field, repo, live: live[field], settable });
-  }
-
-  if (!report.repoCommit) {
-    // No commit means no version to compare against, and inventing one from the file
-    // on disk would stamp an agent with a sha that no clone of this repo can resolve.
-    report.state = "unversioned";
-    report.notes.push(
-      "no commit touches this prompt yet — commit it before it can be versioned",
-    );
-    continue;
-  }
-
-  let livePrompt = live.system_prompt ?? "";
-  if (!livePrompt.endsWith("\n")) livePrompt += "\n";
-  report.fingerprint = promptFingerprint(livePrompt);
-
-  // A persona's prompt is copied to its instance at creation. If they have diverged,
-  // "what is running" has two answers and neither should be reported as if it were the
-  // only one. Same warning the export raises. Checked before the fast path: a current
-  // stamp says the persona is the committed version and says nothing about the instance,
-  // so this is exactly the case a stamp cannot see.
-  const instance = instances.find((i) => i.persona_id === live.slug);
-  if (
-    instance &&
-    (instance.system_prompt ?? "") !== (live.system_prompt ?? "")
-  ) {
-    report.notes.push(
-      `persona and running instance disagree (${(live.system_prompt ?? "").length} vs ` +
-        `${(instance.system_prompt ?? "").length} chars) — comparing the persona`,
-    );
-  }
-
-  /* ---- the fast path: two string comparisons, both within one space ---- */
-  if (
-    report.stamp === report.repoCommit &&
-    report.witness === report.fingerprint
-  ) {
-    report.state = report.settings.length ? "settings-only" : "in-sync";
-    continue;
-  }
-
-  /* ---- the exception path: the shas disagree, or the prompt has moved ---- */
-
-  // The sha says the branch has not moved, so a witness that no longer matches means the
-  // prompt was edited in Buzz Desktop after being stamped. Or there is no witness, from a
-  // stamp written before this script recorded one. Either way the stamp cannot be taken
-  // on trust and the prompt has to be looked at properly.
-  if (report.stamp === report.repoCommit) {
-    report.recheck = true;
-  }
-
-  // What export-agents.mjs would write if it ran right now. Comparing in stored form
-  // rather than resolving the stored prompt is what keeps a one-way redaction from
-  // reading as a difference; see the export for the transformation itself. That means
-  // the redaction set has to match the export's exactly, local ones included — a
-  // shorter list here would report permanent, unfixable drift on any prompt the export
-  // redacts.
-  const image = applyRedactions(tokenize(livePrompt, vals), [
-    ...redactions,
-    ...localRedactions,
-  ]);
-  report.image = image;
-
-  if (image === stored) {
-    // The agent already runs the committed prompt; only the stamp was missing, stale, or
-    // no longer trusted. This is the one state in which a stamp may be written, because
-    // it is the only one that has been observed rather than merely requested.
-    report.state = "stampable";
-    if (report.recheck) {
+    // A persona's prompt is copied to its instance at creation. If they have diverged,
+    // "what is running" has two answers and neither should be reported as if it were the
+    // only one. Same warning the export raises. Checked before the fast path: a current
+    // stamp says the persona is the committed version and says nothing about the instance,
+    // so this is exactly the case a stamp cannot see.
+    const instance = instances.find((i) => i.persona_id === live.slug);
+    if (
+      instance &&
+      (instance.system_prompt ?? "") !== (live.system_prompt ?? "")
+    ) {
       report.notes.push(
-        report.witness === null
-          ? "stamp carried no fingerprint, so it was re-derived from the prompt — re-stamping"
-          : // The fingerprint covers the live prompt, the comparison above covers its
-            // tokenized form. Both moving apart means a value behind a `{{TOKEN}}` changed
-            // while the prompt around it did not — a real change, but not one the repo
-            // holds or should.
-            "the live prompt changed but its stored form did not — a token value moved; re-stamping",
+        `persona and running instance disagree (${(live.system_prompt ?? "").length} vs ` +
+          `${(instance.system_prompt ?? "").length} chars) — comparing the persona`,
       );
     }
-    continue;
-  }
 
-  /**
-   * A mismatch means nothing when the redaction set is incomplete.
-   *
-   * The image above has to be built with exactly the redactions the export applies,
-   * local ones included. Those literals used to sit in placeholders.json, so every clone
-   * had them and this comparison always held. They are gitignored now — a client's name
-   * does not belong in a versioned file — which means a checkout that has not built
-   * local-redactions.json reproduces a DIFFERENT stored form for any prompt the export
-   * redacts, and the difference is indistinguishable from real drift.
-   *
-   * Guessing here is not cheap: the wrong guess is `update-available`, which offers an
-   * apply command that would overwrite the live prompt with the committed one. So when
-   * there are no local redactions loaded and the image does not match, say that the
-   * comparison could not be made, and offer nothing.
-   *
-   * Agents whose prompts carry nothing redactable are unaffected — their image matches
-   * and they never reach this path.
-   */
-  if (localRedactions.length === 0) {
-    report.state = "unverifiable";
-    report.notes.push(
-      "no local-redactions.json, so the stored form cannot be reproduced — this may be " +
-        "drift or may be a missing redaction rule, and the two look identical",
-    );
-    continue;
-  }
+    /* ---- the fast path: two string comparisons, both within one space ---- */
+    if (
+      report.stamp === report.repoCommit &&
+      report.witness === report.fingerprint
+    ) {
+      report.state = report.settings.length ? "settings-only" : "in-sync";
+      continue;
+    }
 
-  if (report.stamp) {
-    const atStamp = fileAtCommit(repoRoot, report.stamp, relPromptPath);
-    if (atStamp === null) {
-      // The stamp cannot be resolved, so there is no way to confirm the live prompt is a
-      // version this repository once held. Treated as unrecognised rather than as behind:
-      // offering an apply command here would risk overwriting work on the strength of a
-      // sha that means nothing in this checkout.
-      report.state = "live-edited";
-      report.notes.push(
-        `stamped ${report.stamp.slice(0, 7)} is not a commit in this checkout — ` +
-          "fetch, or the stamp came from a branch you do not have",
-      );
-    } else if (atStamp === image) {
-      // Running exactly what it was stamped at, and the branch has moved on since.
-      report.state = "update-available";
-      report.behind = promptCommitsBetween(
-        repoRoot,
-        report.stamp,
-        report.repoCommit,
-        relPromptPath,
-      );
-    } else {
-      // Neither the current commit nor the stamped one. Someone edited it in Buzz
-      // Desktop after it was installed, and that work exists nowhere else.
-      report.state = "live-edited";
+    /* ---- the exception path: the shas disagree, or the prompt has moved ---- */
+
+    // The sha says the branch has not moved, so a witness that no longer matches means the
+    // prompt was edited in Buzz Desktop after being stamped. Or there is no witness, from a
+    // stamp written before this script recorded one. Either way the stamp cannot be taken
+    // on trust and the prompt has to be looked at properly.
+    if (report.stamp === report.repoCommit) {
+      report.recheck = true;
+    }
+
+    // What export-agents.mjs would write if it ran right now. Comparing in stored form
+    // rather than resolving the stored prompt is what keeps a one-way redaction from
+    // reading as a difference; see the export for the transformation itself. That means
+    // the redaction set has to match the export's exactly, local ones included — a
+    // shorter list here would report permanent, unfixable drift on any prompt the export
+    // redacts.
+    const image = applyRedactions(tokenize(livePrompt, vals), [
+      ...redactions,
+      ...localRedactions,
+    ]);
+    report.image = image;
+
+    if (image === stored) {
+      // The agent already runs the committed prompt; only the stamp was missing, stale, or
+      // no longer trusted. This is the one state in which a stamp may be written, because
+      // it is the only one that has been observed rather than merely requested.
+      report.state = "stampable";
       if (report.recheck) {
         report.notes.push(
-          `the prompt was edited after it was stamped: fingerprint ` +
-            `${report.witness ?? "unrecorded"} → ${report.fingerprint}`,
+          report.witness === null
+            ? "stamp carried no fingerprint, so it was re-derived from the prompt — re-stamping"
+            : // The fingerprint covers the live prompt, the comparison above covers its
+              // tokenized form. Both moving apart means a value behind a `{{TOKEN}}` changed
+              // while the prompt around it did not — a real change, but not one the repo
+              // holds or should.
+              "the live prompt changed but its stored form did not — a token value moved; re-stamping",
         );
       }
+      continue;
     }
-  } else {
-    // No stamp and a prompt that is not the committed one. Which side is newer is
-    // genuinely unknown, and the dangerous guess is the one that overwrites.
-    report.state = "live-edited";
-    report.notes.push(
-      "no stamp, so there is no record of which version was installed",
-    );
-  }
 
-  if (
-    report.state === "live-edited" &&
-    sameIgnoringWhitespace(image, stored)
-  ) {
-    report.notes.push("differs only in whitespace and line wrapping");
+    /**
+     * A mismatch means nothing when the redaction set is incomplete.
+     *
+     * The image above has to be built with exactly the redactions the export applies,
+     * local ones included. Those literals used to sit in placeholders.json, so every clone
+     * had them and this comparison always held. They are gitignored now — a client's name
+     * does not belong in a versioned file — which means a checkout that has not built
+     * local-redactions.json reproduces a DIFFERENT stored form for any prompt the export
+     * redacts, and the difference is indistinguishable from real drift.
+     *
+     * Guessing here is not cheap: the wrong guess is `update-available`, which offers an
+     * apply command that would overwrite the live prompt with the committed one. So when
+     * there are no local redactions loaded and the image does not match, say that the
+     * comparison could not be made, and offer nothing.
+     *
+     * Agents whose prompts carry nothing redactable are unaffected — their image matches
+     * and they never reach this path.
+     */
+    if (localRedactions.length === 0) {
+      report.state = "unverifiable";
+      report.notes.push(
+        "no local-redactions.json, so the stored form cannot be reproduced — this may be " +
+          "drift or may be a missing redaction rule, and the two look identical",
+      );
+      continue;
+    }
+
+    if (report.stamp) {
+      const atStamp = fileAtCommit(repoRoot, report.stamp, relPromptPath);
+      if (atStamp === null) {
+        // The stamp cannot be resolved, so there is no way to confirm the live prompt is a
+        // version this repository once held. Treated as unrecognised rather than as behind:
+        // offering an apply command here would risk overwriting work on the strength of a
+        // sha that means nothing in this checkout.
+        report.state = "live-edited";
+        report.notes.push(
+          `stamped ${report.stamp.slice(0, 7)} is not a commit in this checkout — ` +
+            "fetch, or the stamp came from a branch you do not have",
+        );
+      } else if (atStamp === image) {
+        // Running exactly what it was stamped at, and the branch has moved on since.
+        report.state = "update-available";
+        report.behind = promptCommitsBetween(
+          repoRoot,
+          report.stamp,
+          report.repoCommit,
+          relPromptPath,
+        );
+      } else {
+        // Neither the current commit nor the stamped one. Someone edited it in Buzz
+        // Desktop after it was installed, and that work exists nowhere else.
+        report.state = "live-edited";
+        if (report.recheck) {
+          report.notes.push(
+            `the prompt was edited after it was stamped: fingerprint ` +
+              `${report.witness ?? "unrecorded"} → ${report.fingerprint}`,
+          );
+        }
+      }
+    } else {
+      // No stamp and a prompt that is not the committed one. Which side is newer is
+      // genuinely unknown, and the dangerous guess is the one that overwrites.
+      report.state = "live-edited";
+      report.notes.push(
+        "no stamp, so there is no record of which version was installed",
+      );
+    }
+
+    if (
+      report.state === "live-edited" &&
+      sameIgnoringWhitespace(image, stored)
+    ) {
+      report.notes.push("differs only in whitespace and line wrapping");
+    }
   }
 }
 
@@ -534,15 +797,42 @@ let stamped = [];
 
 if (stampable.length && mayStamp) {
   try {
-    stamped = writeStamps(
-      Object.fromEntries(
-        stampable.map((r) => [
-          r.key,
-          formatStamp(r.repoCommit, r.fingerprint),
-        ]),
-      ),
-      configPath,
+    const updates = Object.fromEntries(
+      stampable.map((r) => [r.key, formatStamp(r.repoCommit, r.fingerprint)]),
     );
+
+    /**
+     * The unqualified key is retired only once nothing reads it any more.
+     *
+     * It has to be retired eventually: left in place it holds a sha from before the
+     * installs split, and it becomes live again the moment they drop back to one —
+     * decommission a client, and the survivor is measured against a stamp months out of
+     * date and reported as behind something it is already running.
+     *
+     * But retiring it the first time *any* install is stamped strands the siblings. They
+     * are still inheriting it, and this script stamps only what it has observed, so on a
+     * run where one install matches the branch and three do not, clearing the key turns
+     * three tracked agents into three carrying "no stamp, so there is no record of which
+     * version was installed" — false, and it withholds the update command. Seen on the
+     * run that introduced it.
+     *
+     * So it goes when every install of that agent has a key of its own, counting the ones
+     * being written in this same call.
+     */
+    const stampedDirs = new Set(
+      stampable.filter((r) => r.install).map((r) => r.dir),
+    );
+    for (const dir of stampedDirs) {
+      const legacy = stampKey(dir);
+      if (envVars[legacy] === undefined) continue;
+      const siblings = reports.filter((r) => r.dir === dir && r.liveName);
+      const allCovered = siblings.every(
+        (r) => r.key !== legacy && (envVars[r.key] !== undefined || r.key in updates),
+      );
+      if (allCovered) updates[legacy] = null;
+    }
+
+    stamped = writeStamps(updates, configPath);
     for (const r of stampable) {
       r.state = r.settings.length ? "settings-only" : "in-sync";
       r.justStamped = true;
@@ -551,6 +841,49 @@ if (stampable.length && mayStamp) {
     console.error(`  ! could not write version stamps: ${err.message}`);
     console.error(`      ${configPath}`);
   }
+}
+
+/* ------------------------------------------------------------------ json */
+
+/**
+ * The same verdicts, for something that is not a person.
+ *
+ * A watcher that polls this script has to decide whether to interrupt somebody, and
+ * parsing the prose report to do it makes every later wording change a silent breakage.
+ * The exit code stays the contract for "is anything out of sync"; this is the contract
+ * for "what, exactly".
+ *
+ * `install` is the one field here that is not safe to forward anywhere: the qualifier
+ * distinguishing one install from another is, on a per-client Mac, the client's name. It
+ * is included because a caller running on that Mac needs to tell the installs apart, and
+ * it must be dropped from anything the caller then publishes.
+ */
+if (asJson) {
+  const clean = reports.every(
+    (r) => r.state === "in-sync" && !r.settings.length,
+  );
+  console.log(
+    JSON.stringify(
+      {
+        clean,
+        agents: reports.map((r) => ({
+          agent: r.dir,
+          install: r.install ?? null,
+          placedBy: r.how ?? null,
+          state: r.state,
+          repoCommit: r.repoCommit ?? null,
+          stamp: r.stamp ?? null,
+          behind: r.behind ?? null,
+          settings: r.settings.map((s) => s.field),
+          notes: r.notes,
+        })),
+        unplaced: unplaced.length,
+      },
+      null,
+      2,
+    ),
+  );
+  process.exit(checkOnly && !clean ? 1 : 0);
 }
 
 /* ------------------------------------------------------------------ report */
@@ -563,7 +896,6 @@ const label = {
   "live-edited": "has local edits not in git",
   unversioned: "prompt not committed yet",
   absent: "not installed on this Mac",
-  ambiguous: "more than one match on this Mac",
   unverifiable: "cannot compare — no local-redactions.json",
 };
 
@@ -575,7 +907,7 @@ console.log(`Version stamps in ${configPath}\n`);
 for (const r of reports) {
   const version = r.repoCommit ? r.repoCommit.slice(0, 7) : "—";
   console.log(
-    `  ${r.dir.padEnd(8)} ${label[r.state].padEnd(37)} ${version}` +
+    `  ${r.label.padEnd(18)} ${label[r.state].padEnd(37)} ${version}` +
       (r.justStamped ? "  (stamped now)" : ""),
   );
   if (r.state === "update-available") {
@@ -612,10 +944,10 @@ if (showDiff) {
   for (const r of reports) {
     if (!r.image || r.image === r.stored) continue;
     console.log(
-      `\n${"=".repeat(72)}\n${r.dir}: committed (a) vs live (b), both in stored form\n`,
+      `\n${"=".repeat(72)}\n${r.label}: committed (a) vs live (b), both in stored form\n`,
     );
     console.log(
-      unifiedDiff(r.stored, r.image, `${r.dir}-committed`, `${r.dir}-live`),
+      unifiedDiff(r.stored, r.image, `${slugify(r)}-committed`, `${slugify(r)}-live`),
     );
   }
 }
@@ -635,7 +967,7 @@ if (unverifiable.length) {
   console.log(
     `\n! ${unverifiable.length} agent(s) could not be compared at all:`,
   );
-  for (const r of unverifiable) console.log(`    ${r.dir}`);
+  for (const r of unverifiable) console.log(`    ${r.label}`);
   console.log(
     "  Their stored form is built with the literal redactions, and there are none loaded,\n" +
       "  so a difference here is as likely to be a missing rule as real drift. No command is\n" +
@@ -651,7 +983,7 @@ if (behind.length) {
     `\n${behind.length} agent(s) have a newer prompt on this branch than the one they were ` +
       "installed from:",
   );
-  for (const r of behind) console.log(`    ${r.dir}`);
+  for (const r of behind) console.log(`    ${r.label}`);
   console.log(
     "  Update from the repo? The commands below open a draft for each; nothing changes\n" +
       "  until you save it in Buzz Desktop.",
@@ -662,7 +994,7 @@ if (ahead.length) {
   console.log(
     `\n! ${ahead.length} agent(s) are running a prompt this repository does not hold:`,
   );
-  for (const r of ahead) console.log(`    ${r.dir}`);
+  for (const r of ahead) console.log(`    ${r.label}`);
   console.log(
     "  That is unversioned work, so applying the branch over it would delete it.\n" +
       "  Capture it first, review the diff, and commit:\n\n" +
@@ -679,7 +1011,7 @@ if (ahead.length) {
 if (absent.length) {
   console.log(
     `\n  ${absent.length} agent(s) in the repo are not installed here: ` +
-      `${absent.map((r) => r.dir).join(", ")}`,
+      `${absent.map((r) => r.label).join(", ")}`,
   );
   console.log(
     "  Create them with: node buzz-agents/scripts/restore-agents.mjs --channel <uuid>",
@@ -690,6 +1022,47 @@ if (unversioned.length) {
   console.log(
     "\n  Commit the prompts above, then re-run: a stamp is a commit sha, so an " +
       "uncommitted\n  prompt has no version to compare against.",
+  );
+}
+
+if (boundNow.length) {
+  console.log(
+    `\n  Recorded ${boundNow.length} binding(s) so a later rename cannot lose them: ` +
+      `${boundNow.join(", ")}`,
+  );
+}
+
+/**
+ * An install nothing could place.
+ *
+ * Reported rather than ignored, because being ignored is the failure this whole mechanism
+ * exists to stop: an agent nobody is comparing looks exactly like an agent that is fine.
+ * The slug is printed because it is what `--bind` takes, and because after a rename it is
+ * the only handle left.
+ */
+if (unplaced.length) {
+  console.log(
+    `\n! ${unplaced.length} installed agent(s) could not be matched to a definition:`,
+  );
+  for (const u of unplaced) {
+    const why =
+      u.named.length > 1
+        ? `its name matches ${u.named.length} definitions (${u.named.join(", ")})`
+        : u.running.length > 1
+          ? `it runs a prompt ${u.running.length} definitions share (${u.running.join(", ")})`
+          : "neither its name nor the prompt it runs matches anything here";
+    console.log(`    ${u.liveName}  ${u.slug}`);
+    console.log(`      ${why}`);
+    if (u.staleBinding)
+      console.log(
+        `      bound to \`${u.staleBinding}\`, which this branch does not have`,
+      );
+  }
+  console.log(
+    "\n  Say which, and it stays said — a binding survives any later rename:\n\n" +
+      "    node buzz-agents/scripts/sync-prompts.mjs --bind <slug>=<agent>\n\n" +
+      "  Or leave it: an agent this repository does not define is not a problem, it is\n" +
+      "  just not ours to version.\n",
   );
 }
 
@@ -732,7 +1105,7 @@ for (const r of applicable) {
   // project by that name. Same fail-closed rule as restore-agents.mjs.
   if (missing.length) {
     blocked.push({
-      dir: r.dir,
+      label: r.label,
       reason: `unresolved tokens: ${missing.join(", ")}`,
     });
     continue;
@@ -740,7 +1113,7 @@ for (const r of applicable) {
 
   if (resolved.length > PROMPT_LIMIT) {
     blocked.push({
-      dir: r.dir,
+      label: r.label,
       reason:
         `resolved prompt is ${resolved.length} characters, ` +
         `${resolved.length - PROMPT_LIMIT} over the ${PROMPT_LIMIT} limit draft-update enforces`,
@@ -760,7 +1133,7 @@ for (const r of applicable) {
 
   if (r.state !== "settings-only") {
     fs.mkdirSync(resolvedDir, { recursive: true });
-    stdinFile = path.join(resolvedDir, `${r.dir}.md`);
+    stdinFile = path.join(resolvedDir, `${slugify(r)}.md`);
     fs.writeFileSync(stdinFile, resolved);
     args.push("--system-prompt", "-");
   }
@@ -770,7 +1143,7 @@ for (const r of applicable) {
   }
 
   commands.push({
-    label: `${r.dir} → ${r.liveName}`,
+    label: `${r.label} → ${r.liveName}`,
     argv: args,
     stdin: stdinFile,
     headroom: PROMPT_LIMIT - resolved.length,
@@ -779,7 +1152,7 @@ for (const r of applicable) {
 
 if (blocked.length) {
   console.log("\nCannot apply:");
-  for (const b of blocked) console.log(`    ${b.dir}: ${b.reason}`);
+  for (const b of blocked) console.log(`    ${b.label}: ${b.reason}`);
   console.log(
     "  For an over-length prompt, move a section out to a GUIDES/*.md the agent is told\n" +
       "  to read rather than shaving prose — see nest/GUIDES/JANICE_REVIEW_CHECKLIST.md.",

@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-selection-controls
-description: House rules for choosing among selection controls in enterprise web applications — checkbox vs. switch vs. radio group vs. dropdown vs. multi-select, option counts and 7 ± 2, pre-selected defaults, select-all and indeterminate states, table header checkbox mechanics, disabled vs. read-only, vertical-only layout, and immediate vs. batch submit. Use whenever picking or reviewing the control for a set of options — checkboxes, switches, toggles, radio buttons, selects, multi-selects, selectable chips, or row and header selection in a table. Trigger on "checkbox or switch", "radio or dropdown", "toggle", "multi-select", "select all", "indeterminate", "pre-selected", "how many options", or any question about which control a field should use. Do NOT use for form layout, validation timing, or error presentation — that is recursica-skill-forms. Do NOT use for button or link triggers — that is recursica-skill-buttons-links.
+description: House rules for choosing a selection control — checkbox, switch, radio group, dropdown, or multi-select, option counts, pre-selection, select-all and the indeterminate state, disabled versus read-only, vertical layout, and instant versus batch saving. Use when deciding which control a set of options gets. Not for form layout — see recursica-skill-forms.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -9,193 +9,191 @@ metadata:
 
 # Selection controls
 
-House rules for deciding which selection control a field gets — checkbox, switch, radio group, dropdown, or multi-select — and how that control behaves. These are opinions, not neutral best practices. Apply them as constraints.
+These are the house rules for deciding which selection control a field gets — checkbox, switch, radio group, dropdown, or multi-select — and how that control behaves. They are opinions, not neutral best practices. Treat them as constraints.
 
-Context these rules assume: **complex enterprise web applications, desktop-first**, built on the Recursica design system. Control styling, states, and keyboard interaction within a control are inherited from the components and are never your decision. Your decisions are which control, how many options, what is pre-selected, and when the change commits.
+These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. How a control looks, its states, and keyboard interaction inside it all come from the components, and are never your decision. Your decisions are which control to use, how many options it has, what is selected in advance, and when a change is saved.
 
 ## Governing principles
 
-1. **The shape of the data picks the control.** How many values are selectable, are they mutually exclusive, and is the inverse of the value knowable? Answer those and the control is determined. Appearance is the last consideration, not the first.
-2. **Options should be visible and scannable.** Vertical, and within working memory. Hiding options inside a dropdown has to be earned by the set being predictable enough that the user knows what's in there before opening it.
-3. **One commit boundary per form.** Batch submit is the default, and instant-save and deferred-save must never coexist in the same system. The user needs one reliable answer to "is my work saved?"
+1. **The shape of the data picks the control.** How many values can be selected? Do they rule each other out? Is the opposite of the value obvious? Answer those questions, and the control is decided. How it looks comes last, not first.
+2. **Options should be visible and easy to scan.** Arrange them vertically, and keep them within working memory (how much a person can hold in mind at once). Hiding options inside a dropdown has to be earned, by the set being predictable enough that the user knows what is in it before opening it.
+3. **One saving point per form.** Submitting everything together is the default, and saving instantly and saving later must never exist side by side in the same system. The user needs one reliable answer to "is my work saved?"
 
 ## Choosing the control
 
 Work down this list; the first match wins.
 
-1. **One value, and its inverse is binary, known, and unique → switch.** See the binary-inverse test below.
-2. **Mutually exclusive options, one must be chosen → radio group**, up to the option-count ceiling. Where the layout calls for a horizontal arrangement, use a **segmented control** instead.
-3. **Mutually exclusive options above the ceiling → dropdown** (single select).
-4. **Zero to many selectable → checkbox group**, up to the option-count ceiling. Where the layout calls for a horizontal arrangement, use **selectable chips** instead.
-5. **Zero to many above the ceiling, or the form is already very long → multi-select dropdown** (a checkbox group inside a dropdown).
+1. **One value, whose opposite is binary, known, and unique → switch.** See the binary-inverse test below.
+2. **Options that rule each other out, where one must be chosen → radio group**, up to the limit on the number of options. Where the layout calls for a horizontal arrangement, use a segmented control (a row of joined buttons, one of which is selected) instead.
+3. **Options that rule each other out, above the limit → dropdown** (single select).
+4. **Zero to many can be selected → checkbox group**, up to the limit on the number of options. Where the layout calls for a horizontal arrangement, use selectable chips instead.
+5. **Zero to many, above the limit, or the form is already very long → multi-select dropdown** (a checkbox group inside a dropdown).
 
 ## Switch vs. checkbox
 
-**A switch only ever appears inside a form.** That is the outer gate, and it comes before the tests below. Anywhere else — application chrome, a filter bar, a toolbar, a page header — **a toggle is a segmented control**, not a switch. See `recursica-skill-segmented-control`.
+**A switch only ever appears inside a form.** That is the first test, and it comes before the tests below. Anywhere else — application chrome (the frame around the content), a filter bar, a toolbar, a page header — a toggle is a segmented control, not a switch. See `recursica-skill-segmented-control`.
 
 **A switch has a deliberately narrow use.** Inside a form, reach for a checkbox unless the switch test passes.
 
-**The binary-inverse test — MUST pass before using a switch.** The inverse of the value must be binary, known, and unique: true/false, yes/no, on/off. Qualitative pairs fail. "Black" is not a valid switch value, because _not black_ is not guaranteed to be white — it could be gray, or pink, or anything. If the opposite of the value is not the single obvious other state, it is not a switch.
+**The binary-inverse test — MUST pass before you use a switch.** The opposite of the value must be binary, known, and unique: true/false, yes/no, on/off. Pairs based on qualities fail. "Black" is not a valid switch value, because _not black_ is not guaranteed to be white — it could be gray, or pink, or anything. If the opposite of the value is not the single, obvious other state, it is not a switch.
 
-**The label test — what distinguishes a switch from a radio group.** A radio group is _one label with multiple values_: the user picks which value to associate with the label. A switch is _one label whose value is implied_ — the label alone says what is being controlled, and the state is simply true or false. Use a switch only when both the value **and** the thing the label governs are binary.
+**The label test — what separates a switch from a radio group.** A radio group is _one label with several values_: the user picks which value goes with the label. A switch is _one label whose value is implied_ — the label alone says what is being controlled, and the state is simply true or false. Use a switch only when both the value and the thing the label controls are binary.
 
-**A checkbox flips a true/false flag on a specific value**, and that value can be anything. That is why checkboxes work in groups and switches do not.
+**A checkbox turns a true/false flag on or off for a specific value**, and that value can be anything. That is why checkboxes work in groups and switches do not.
 
-**The lone binary field.** A single checkbox sitting alone in a checkbox group looks odd; a switch usually reads better in a form. Functionally the two are interchangeable here, so this is the one case where appearance may decide.
+**The lone binary field.** A single checkbox sitting alone in a checkbox group looks odd; a switch usually reads better in a form. Here the two work the same way, so this is the one case where appearance may decide.
 
 ## Checkbox vs. radio
 
-**MUST use radio buttons for mutually exclusive options.** Never checkboxes. Checkboxes mean "select as many as apply" by definition, so using them for an exclusive choice misstates the data.
+**MUST use radio buttons for options that rule each other out.** Never checkboxes. Checkboxes mean "select as many as apply" by definition, so using them for a choice of one gets the data wrong.
 
-- **Radio group** = exactly one of N. Traditionally an answer is required, and the user cannot progress until one option is selected.
+- **Radio group** = exactly one of N. Traditionally an answer is required, and the user cannot move on until one option is selected.
 - **Checkbox group** = zero through N.
 
-**A radio group with nothing selected and no requirement to select is unusual and confusing.** It happens, but treat it as a smell — if nothing needs to be chosen, question whether it is really an exclusive choice.
+**A radio group with nothing selected, and no requirement to select anything, is unusual and confusing.** It happens, but treat it as a warning sign — if nothing needs to be chosen, question whether it is really a choice of one.
 
 ## Defaults and pre-selection
 
-**Checkbox groups: pre-select freely.** Zero, some, or all pre-checked are all acceptable; there is no house rule either way.
+**Checkbox groups: pre-select freely.** Zero, some, or all checked in advance are all acceptable; there is no house rule either way.
 
-**Radio groups: be very cautious about pre-selecting a value.** Most users do not know how to deselect a radio button once one is selected, so a default silently becomes the answer. **A pre-selected radio is the costliest default in the system.**
+**Radio groups: be very careful about selecting a value in advance.** Most users do not know how to deselect a radio button once one is selected, so a default quietly becomes the answer. A pre-selected radio button is the most costly default in the system.
 
-**The threshold is roughly 90 percent** — pre-select only where that likely a share of users would choose that option anyway. **And never pre-select an option with major downstream consequences in the workflow, however likely it is.** Both gates are owned by `recursica-skill-defaults`.
+**The threshold is about 90 percent** — pre-select only where about that share of users would choose that option anyway. And never pre-select an option that has major consequences later in the workflow, however likely it is. Both tests are owned by `recursica-skill-defaults`.
 
 ## Option counts and dropdowns
 
-**Target 7 ± 2 options, scaled by cognitive load.** See `recursica-skill-working-memory` for the basis and the boundary — the ceiling governs comparison sets, not lists the user merely recognizes from:
+**Aim for 7 ± 2 options, adjusted for cognitive load** (the mental effort a task demands). See `recursica-skill-working-memory` for the reasoning and its limits — the limit applies to sets of options the user compares, not to lists they simply recognize an item from:
 
-- **Similar, easily understood options** → the upper end of the range is fine.
-- **Dissimilar or cognitively challenging options, or ones that need domain expertise** → use fewer.
+- **Options that are similar and easy to understand** → the upper end of the range is fine.
+- **Options that are different from each other, hard to grasp, or need specialist knowledge** → use fewer.
 
-**Above that ceiling, convert to a dropdown.** Dropdowns handle large option sets well, and are typically single select. A multi-select dropdown — a checkbox group inside a dropdown — is available when many values are selectable.
+**Above that limit, switch to a dropdown.** Dropdowns handle large sets of options well, and are usually single select. A multi-select dropdown — a checkbox group inside a dropdown — is available when many values can be selected.
 
-**The dropdown affordance test.** A dropdown hides its options, so the user has no affordance for what is inside. Before choosing one, ask: **does the user know what is in there before they click it?**
+**The dropdown affordance test.** A dropdown hides its options, so the user has no affordance (a visible cue that tells the user they can act on something) for what is inside. Before choosing one, ask: does the user know what is in there before they click it?
 
-- **Good:** US states. Finite, alphabetized, and everyone has a rough sense of the quantity — predictable and conventional.
-- **Bad:** 50 disparate values with nothing in common. Overwhelming and cognitively expensive to pick from.
+- **Good:** US states. A fixed list, in alphabetical order, and everyone has a rough idea of how many there are — predictable and familiar.
+- **Bad:** 50 unrelated values with nothing in common. Overwhelming, and mentally expensive to pick from.
 
-**Checkboxes vs. multi-select dropdown** turns on quantity of options, similarity of topic, complexity of differentiating them, and the size of the form overall. Six easily-read options are normally checkboxes — but if the form is already long, collapsing them into a multi-select dropdown to avoid a large vertical scroll is a legitimate trade.
+**Choosing between checkboxes and a multi-select dropdown** depends on the number of options, how similar their topics are, how hard they are to tell apart, and the overall size of the form. Six options that are easy to read are normally checkboxes. But if the form is already long, collapsing them into a multi-select dropdown to avoid a lot of scrolling down the page is a fair trade.
 
 ## Select all and indeterminate state
 
-**Select all is fine to include in a checkbox group**, and the group component provides the indeterminate state: select all, deselect one item, and the select-all control moves to indeterminate.
+**Select all is fine to include in a checkbox group**, and the group component provides the indeterminate state (the partly selected state, shown as a dash, when some but not all items are selected). Select all, then deselect one item, and the select-all control moves to indeterminate.
 
-**Treat the need for select all as a signal.** If the user would find checking items one by one arduous — twenty checkboxes, say — the control is probably wrong. Reconsider the form design before adding the affordance.
+**Treat the need for select all as a warning sign.** If checking the items one by one would be tiring for the user — twenty checkboxes, say — the control is probably wrong. Rethink the form design before adding the affordance.
 
 ## Selection in tables
 
-**Row selection is a checkbox in the leftmost cell, with a checkbox in the table header.** Table structure itself is `recursica-skill-tables`.
+**Selecting a row uses a checkbox in the leftmost cell, with a checkbox in the table header.** Table structure itself is owned by `recursica-skill-tables`.
 
-**The header checkbox is not optional.** Any table with checkboxes in its rows has one. Without it there is no way to take or release the whole set, and the reader is left clicking down a list to undo a selection they made by accident.
+**The header checkbox is not optional.** Every table with checkboxes in its rows has one. Without it, there is no way to select or release the whole set, and the reader is left clicking down a list to undo a selection they made by accident.
 
-**A row checkbox means one thing: include this row in what the bulk action does.** It is not a way to focus a record, open it, or reveal actions for it. **NEVER let selecting a single row invoke a single-record action** — a table offering `Correct this name` at one selection and `Combine` at two has made the checkbox mean two unrelated things, and the reader learns neither. Editing one record is reached from that record; see `recursica-skill-tables`.
+**A row checkbox means one thing: include this row in what the bulk action does.** It is not a way to focus on a record, open it, or show actions for it. NEVER let selecting a single row trigger an action on that one record. A table that offers `Correct this name` when one row is selected and `Combine` when two are has made the checkbox mean two unrelated things, and the reader learns neither. Editing one record is started from that record; see `recursica-skill-tables`.
 
-**No separate clear or deselect-all control.** The header checkbox already is that affordance — click it from checked or indeterminate and the set resolves. A second control doing the same job somewhere else is one more thing to read and a second answer to "how do I start over".
+**No separate clear or deselect-all control.** The header checkbox already is that control — click it when it is checked or indeterminate, and the set resolves. A second control doing the same job somewhere else is one more thing to read, and a second answer to "how do I start over?"
 
-**Header checkbox mechanics — MUST behave this way:**
+**How the header checkbox works — it MUST behave this way:**
 
-- Indeterminate (a mix of selected and unselected rows) + click → **always goes to fully checked.** Never to unchecked.
-- From fully checked or fully unchecked, a click flips to the other.
-- Indeterminate is reachable **only** by selecting or deselecting individual rows. It is never a state the header control is clicked into.
+- Indeterminate + click → **always becomes fully checked.** Never unchecked.
+- From fully checked or fully unchecked, a click switches to the other.
+- Indeterminate can be reached **only** by selecting or deselecting individual rows. Clicking the header control never puts it into that state.
 
-**Avoid switches in table rows.** A switch is bulky and takes space inelegantly at row density; a checkbox is far more efficient. Prefer a checkbox or radio in the row and handle the toggle another way. Not impossible, but avoid it.
+**Avoid switches in table rows.** A switch is bulky and takes up space awkwardly in a dense row; a checkbox is far more efficient. Prefer a checkbox or radio in the row, and handle the toggle another way. It is not impossible, but avoid it.
 
 ## Layout
 
-**MUST arrange checkboxes and radio buttons vertically. NEVER horizontally.** Horizontal arrangement is hard to scan and makes it hard to tell which control belongs to which label — the pairing between control and value stops being discrete. The system should never produce a horizontal checkbox or radio group.
+**MUST arrange checkboxes and radio buttons vertically. NEVER horizontally.** A horizontal arrangement is hard to scan, and it is hard to tell which control belongs to which label — the pairing between each control and its value stops being clear. The system should never produce a horizontal checkbox or radio group.
 
-**When the layout genuinely calls for a horizontal arrangement, change the control rather than rotating the group:**
+**When the layout really calls for a horizontal arrangement, change the control instead of turning the group sideways:**
 
-| Need                               | Horizontal control                                                    |
-| ---------------------------------- | --------------------------------------------------------------------- |
-| Single select (mutually exclusive) | **Segmented control** — this is how horizontal radio buttons are done |
-| Multi-select                       | **Selectable chips**                                                  |
+| Need                                        | Horizontal control                                                    |
+| ------------------------------------------- | --------------------------------------------------------------------- |
+| Single select (options rule each other out) | **Segmented control** — this is how horizontal radio buttons are done |
+| Multi-select                                | **Selectable chips**                                                  |
 
-Both keep each value's boundary visible, which is exactly what a rotated radio or checkbox group loses. All the other rules still apply — the option-count ceiling, pre-selection caution for single select, and the commit model.
+Both keep the edge of each value visible, which is exactly what a sideways radio or checkbox group loses. All the other rules still apply — the limit on the number of options, care with pre-selection for single select, and how saving works.
 
-**The segmented control caps at 2–5 options**, tighter than the general 7 ± 2 ceiling, because it is horizontal and compact. Above five, go back to a vertical radio group, or a dropdown if the set also exceeds the general ceiling. Never fall back to tabs.
+**The segmented control is limited to 2–5 options**, tighter than the general 7 ± 2 limit, because it is horizontal and compact. Above five, go back to a vertical radio group — or a dropdown, if the set is also over the general limit. Never fall back to tabs.
 
 ## Immediate vs. batch submit
 
-**Default: batch submit behind a submit button.** Rationale, in order:
+**Default: submit everything together, behind a submit button.** The reasons, in order:
 
-1. The user must be able to change their mind before anything is written.
-2. Record tracking and logging are far easier — one timestamp, one update, much less noise than field-level writes.
+1. The user must be able to change their mind before anything is saved.
+2. Tracking and logging records is far easier — one timestamp and one update, with much less noise than saving field by field.
 
-**MUST NOT mix field-level instant writes with batch submit.** Either every field commits on change or every field commits on submit. Mixing them is genuinely confusing, because the user can no longer tell which of their changes are live.
+**MUST NOT mix instant saving of individual fields with submitting everything together.** Either every field saves when it changes, or every field saves on submit. Mixing them is truly confusing, because the user can no longer tell which of their changes are live.
 
-**Avoid immediate server-side saving in any form with multiple fields.**
+**Avoid saving to the server immediately in any form with more than one field.**
 
-**Switches follow the same consistency rule.** A switch may commit immediately or commit with the form — immediate is slightly more natural for a switch — but whichever it is, **use switches the same way throughout the system.**
+**Switches follow the same consistency rule.** A switch saves the same way everything else in the system does: immediately in a system that saves on change, and with the form in a system that saves on submit. It never differs from the fields around it.
 
 ## Uncommitted changes
 
 **A form is in exactly one save mode, and the mode decides what you show:**
 
-- **Batch save → no status, no dirty indicator.** Showing that a form has unsaved changes is very rarely worth doing. The signal the user needs is the submit button becoming enabled once every editable control is valid — nothing else.
-- **Field-level / instant save → a persistent status message is required.** If the server commits on every field change, the user must be able to see that state on the page at all times.
+- **Batch save → no status, and no indicator of unsaved changes.** Showing that a form has unsaved changes is very rarely worth doing. The signal the user needs is the submit button becoming enabled once every editable control is valid — nothing else.
+- **Field-level / instant save → a status message that stays on the page is required.** If the server saves on every field change, the user must be able to see that state on the page at all times.
 
-Never mix the two modes within a system. See `recursica-skill-forms` for the full save-mode table.
+Never mix the two modes within a system. See `recursica-skill-forms` for the full table of save modes.
 
 ## Progressive disclosure
 
-**Selection controls may reveal further fields, and this does not change the commit model.** A checkbox that introduces a field or group further down the form is fine, and the whole thing still submits as one batch — which is easier, not harder.
+**Selection controls may reveal more fields, and this does not change how saving works.** A checkbox that brings in a field or group further down the form is fine, and the whole thing still submits together — which is easier, not harder.
 
-Example: a set of transportation modes where checking "Car" reveals a car attributes group with make, model, and color.
+Example: a set of ways to travel, where checking "Car" reveals a group of car details with make, model, and color.
 
 ## Disabled vs. read-only
 
-**Disable a control when the user could take some action to enable it.** Every control — switch, checkbox, radio, dropdown — has a disabled state, and that is the correct presentation for a temporarily unavailable choice.
+**Disable a control when the user could do something to enable it.** Every control — switch, checkbox, radio, dropdown — has a disabled state, and that is the right way to show a choice that is unavailable for now.
 
-**Use the read-only control when the value is not editable and the user has no mechanism in this form to make it editable.** The read-only control presents a label with its values and fits the form layout.
+**Use the read-only control when the value cannot be edited, and the user has no way in this form to make it editable.** The read-only control shows a label with its values, and it fits the form layout.
 
-**If a value will never be editable by the user, it should not be a form control at all.**
+**If the user will never be able to edit a value, it should not be a form control at all.**
 
 ## Assistive text
 
-**Every control supports assistive text below it — use it to carry selection rules**, regardless of control type. "At least two options required" belongs under the checkbox group, not in a validation message the user only sees after failing.
+**Every control supports assistive text below it — use it to state the selection rules**, whatever the type of control. "At least two options required" belongs under the checkbox group, not in a validation message the user only sees after they fail.
 
 ## Resetting
 
-**Reset is a form-level concern, not a control-level one.** Where a reset is warranted, use a button labeled with a verb and its object — "Reset form", "Clear form" — calling the native HTML reset. There is no per-control restore behavior.
+**Resetting belongs to the whole form, not to one control.** Where a reset is called for, use a button labeled with a verb and its object — "Reset form", "Clear form" — that calls the native HTML reset. No control has its own restore behavior.
 
 ## Uncovered — ask, do not invent
 
-No house rule covers these yet. **Ask the human rather than choosing** — see the never-guess rule in `recursica-skill-design-router`. Do not pattern-match them to a rule above.
+No house rule covers these yet. **Ask the person instead of choosing** — see the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule above to fit them.
 
-- **When autocomplete or typeahead replaces a dropdown.** A dropdown handles many options; the point at which search beats scanning is unset.
-- **Radio buttons inside a table row.** Mentioned in passing as an alternative to a switch; not established as a pattern.
-- **Multi-select maximums.** Whether a user may be limited to selecting _n_ of many.
+- **When autocomplete or typeahead replaces a dropdown.** A dropdown handles many options, but the point at which searching beats scanning has not been set.
+- **Radio buttons inside a table row.** Mentioned in passing as an alternative to a switch, but not established as a pattern.
+- **Limits on multi-select.** Whether a user may be limited to selecting _n_ out of many.
 
 ## Out of scope
 
-- **All color, visual design, and styling**, plus keyboard interaction within a control. Handled by Recursica components.
-- **Form layout, validation timing, error presentation, and save-status display.** Covered by `recursica-skill-forms`.
-- **Confirmation of high-risk or destructive operations**, including bulk deletes. Covered by `recursica-skill-buttons-links`.
+- **All color, visual design, and styling**, plus keyboard interaction inside a control. The Recursica components handle these.
+- **Form layout, when validation happens, how errors are shown, and how save status is displayed.** Covered by `recursica-skill-forms`.
+- **Confirming high-risk or destructive operations**, including bulk deletes. Covered by `recursica-skill-buttons-links`.
 
 ## Pre-flight checklist
 
-Before considering a set of selection controls done, verify:
+Before treating a set of selection controls as done, check:
 
-- [ ] Every switch is inside a form; every toggle outside a form is a segmented control.
-- [ ] Mutually exclusive options use a radio group, never checkboxes.
+- [ ] Every switch is inside a form, and every toggle outside a form is a segmented control.
+- [ ] Options that rule each other out use a radio group, never checkboxes.
 - [ ] Every switch passes the binary-inverse test — the opposite state is known, unique, and binary.
 - [ ] Every switch passes the label test — the label alone names what is controlled, with no competing values.
-- [ ] Checkbox groups are used wherever zero-to-many selection is possible.
-- [ ] Each group holds 7 ± 2 options, fewer where the options are dissimilar or need domain knowledge.
-- [ ] Sets above the ceiling use a dropdown, and the set is predictable enough that the user knows what's inside before opening it.
-- [ ] No radio value is pre-selected unless the default is right for nearly everyone.
-- [ ] Select all appears only where the group is genuinely long, and the group exposes an indeterminate state.
-- [ ] Table row selection is a leftmost checkbox with a header checkbox — present on every table that
-      has row checkboxes; clicking an indeterminate header selects all.
-- [ ] Selecting rows only feeds bulk actions. No single-record action is invoked by selecting one row,
-      and there is no separate clear or deselect-all control beside the header checkbox.
-- [ ] No switches in table rows.
-- [ ] Checkboxes and radios are stacked vertically — never horizontal. Horizontal needs use a segmented control (single select) or selectable chips (multi-select).
-- [ ] The form commits as one batch behind a submit button; no field-level instant writes anywhere in it.
-- [ ] Switch commit timing is consistent across the whole system.
-- [ ] No dirty-state indicator; the enabled submit button is the only signal.
-- [ ] Disclosed fields submit with the same batch as their trigger.
-- [ ] Temporarily unavailable choices are disabled; permanently non-editable values use the read-only control or are not form controls at all.
-- [ ] Selection rules (minimums, maximums) appear as assistive text under the control.
-- [ ] Nothing in the uncovered list — autocomplete thresholds, radios in rows, selection maximums — was decided without asking.
+- [ ] Checkbox groups are used wherever zero to many can be selected.
+- [ ] Each group holds 7 ± 2 options, and fewer where the options are different from each other or need specialist knowledge.
+- [ ] Sets above the limit use a dropdown, and the set is predictable enough that the user knows what is inside before opening it.
+- [ ] No radio value is selected in advance unless the default is right for nearly everyone.
+- [ ] Select all appears only where the group really is long, and the group shows an indeterminate state.
+- [ ] Row selection in a table uses a leftmost checkbox with a header checkbox, on every table that has row checkboxes. Clicking an indeterminate header selects all.
+- [ ] Selecting rows only feeds bulk actions. Selecting one row triggers no action on that single record, and there is no separate clear or deselect-all control beside the header checkbox.
+- [ ] There are no switches in table rows.
+- [ ] Checkboxes and radio buttons are stacked vertically — never horizontally. Where horizontal is needed, a segmented control is used for single select, or selectable chips for multi-select.
+- [ ] The form saves everything together, behind a submit button, with no instant saving of individual fields anywhere in it.
+- [ ] Switches save at the same point everywhere in the system.
+- [ ] There is no indicator of unsaved changes; the enabled submit button is the only signal.
+- [ ] Revealed fields submit together with the control that revealed them.
+- [ ] Choices that are unavailable for now are disabled. Values that are permanently not editable use the read-only control, or are not form controls at all.
+- [ ] Selection rules (minimums and maximums) appear as assistive text under the control.
+- [ ] You asked before deciding anything on the uncovered list: when autocomplete replaces a dropdown, radio buttons in rows, and limits on selection.

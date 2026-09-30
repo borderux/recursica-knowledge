@@ -1,21 +1,27 @@
-# Porting ALAN
+# Porting Alan
 
-ALAN is the first agent here to be portable, because it is the only one that needs **no MCP
-server and no client data**. It reads a repository, runs `npm`, and writes four markdown
-files. That is the whole surface.
+Alan turns feedback about the design system — designers' Snippy reports and Barb's review
+findings — into pull requests against the knowledge repository, and into issues on the adapter
+repositories or Theme Forge when the problem is in their code rather than the rules. He needs less than most agents
+here — no dataset, no Drive folder, no client fence — and the one thing he does need is the thing
+a prompt cannot carry.
 
 ## Read this before you port anything else from this repo
 
-**A prompt does not carry a data fence.** ALAN is safe to lift because it touches no client
-data at all. The other agents in this repository are not in that position: their isolation —
-one client per Google service account, read-only and read-write credentials kept separate, an
-IAM boundary the agent cannot cross — is enforced by the service accounts and the query proxy,
-**not by a single word in any prompt**.
+**A prompt does not carry a data fence.** Alan is safe to lift because he touches no client data
+at all. The research agents in this repository are not in that position: their isolation — one
+client per Google service account, read-only and read-write credentials kept separate, an IAM
+boundary the agent cannot cross — is enforced by the service accounts and the query proxy,
+**not by a single word in any prompt**. Port Alan freely. Do not port the research pipeline
+without rebuilding the fence.
 
-So copying a prompt gets you the behaviour and none of the protection. If you wire an agent
-from this repo to one broad credential because that was easier, you get an agent that will
-happily read every client you have, and nothing will warn you. Port ALAN freely. Do not port
-the research pipeline without rebuilding the fence.
+## What he needs
+
+| | |
+|---|---|
+| A checkout he may write to | A clone of the knowledge repository, separate from any checkout something else reads. `{{WORKSPACE_ROOT}}` and `{{KNOWLEDGE_REPO_NAME}}` name it. |
+| A forge credential | Contents and pull requests on the knowledge repository; issues only on the adapter repositories and Theme Forge (`borderux/recursica-forge`). Nothing else — no merge, no admin, no code access to the adapters. |
+| Somewhere to report the link | Whatever surface handed him the feedback. |
 
 ## What you get
 
@@ -23,70 +29,51 @@ the research pipeline without rebuilding the fence.
 |---|---|
 | `portable/claude-code/agents/alan.md` | Claude Code — drop into `.claude/agents/` |
 | `portable/opencode/agents/alan.md` | opencode — drop into `.opencode/agents/` |
-| `portable/claude-code/agents/{barb,checker,feisty}.md` | Barb, who reviews what ALAN builds — same directory, all three |
+| `portable/circlechat/agents/alan/SOUL.md` | CircleChat on the Hermes runtime |
 | `agents/alan/runtime/claude-code.json` | model and tool allowlist |
 | `agents/alan/runtime/opencode.json` | merge the `agent` block into your `opencode.json` |
 
-Both prompt files are generated from `agents/alan/SKILL.md` by
-`node scripts/build-agents.mjs`. Edit the source, not the artifact — the build overwrites it,
-and `--check` will tell you if they have diverged.
+Every prompt file is generated from `agents/alan/SKILL.md` by `node scripts/build-agents.mjs`.
+Edit the source, not the artifact — the build overwrites it, and `--check` will tell you if they
+have diverged.
 
 ## The tokens you must fill in
 
-The artifacts deliberately still contain `{{TOKEN}}` markers. They are per-installation
-values, and guessing them for you would be wrong:
-
 | Token | What to put there |
 |---|---|
-| `{{BUILDER_REPO}}` | `owner/name` of the repository ALAN builds prototypes in |
-| `{{BUILDER_REPO_NAME}}` | the bare repository name from the above |
-| `{{KNOWLEDGE_REPO_NAME}}` | the design-system repository ALAN must **not** edit |
+| `{{KNOWLEDGE_REPO_NAME}}` | the design-system knowledge repository he proposes changes to |
 | `{{WORKSPACE_ROOT}}` | where you keep checkouts, e.g. `~/src` |
 
-Every token in an artifact is declared in `buzz-agents/placeholders.json`; the build fails on
-one that is not, so this table cannot silently fall behind.
+Every token in an artifact is declared in `buzz-agents/placeholders.json`; the build fails on one
+that is not, so this table cannot silently fall behind.
 
-## Barb comes with him now, and she is not optional scaffolding
+## What a prompt does not carry
 
-Stage 3 dispatches `barb` on every screen ALAN builds, before the designer sees it. Install
-all three files — `barb.md`, `checker.md`, `feisty.md` — into the same `.claude/agents/`
-directory. **A partial install fails silently:** Barb without her checkers still runs, and what
-she does instead is skim a 220k-token corpus in one context, which returns a clean report.
+**The absence of a merge.** His prompt says he never merges, and that sentence is worth exactly
+as much as the credential behind it. A token with merge rights makes him an agent that has been
+asked nicely not to merge. Scope the credential and the property is real; rely on the prompt and
+it is a preference.
 
-Two things the platform has to be true of, and both are worth checking rather than assuming:
+The same is true of the repository boundary. "Work only in the proposals checkout" holds because
+his credential can write code to one repository — not because the sentence is in his prompt.
+Issues on the adapters and Theme Forge are the only other thing it should allow. And his
+proposals checkout has to be a different directory from the one builders and reviewers read, or a
+rule still under review reaches them before anyone has agreed it.
 
-- **An agent must be able to dispatch an agent that dispatches an agent.** ALAN → Barb →
-  checker is two levels. Verified on Claude Code 2.1.220; if your platform flattens or caps
-  that, Barb loses her fan-out and you are back to the skim.
-- **Per-agent `tools:` lines must be honoured.** Barb's read-only guarantee is the absence of
-  `Write` and `Edit` from her front matter, nothing else. See `agents/barb/PORTING.md` for the
-  two leaks that survive even where they are honoured.
+## What is not settled yet
 
-Where you cannot have both, ALAN still runs — say out loud that his screens are unreviewed
-rather than letting Stage 3 quietly become a no-op.
+**The Snippy report format.** Snippy is being redesigned, so his prompt reads reports
+for four general things rather than a fixed structure. That section of `SKILL.md` is marked for
+replacement once the format settles.
 
-ALAN reads the design system's skills anyway, so Barb adds no checkout he did not already
-need. What she does add is the requirement that he **tell her where it is**: her manifest
-script and the corpus are in that repository, his source is in another, and his working
-directory is usually neither.
+## What he does not have
 
-## What does not come with it
+No data access of any kind. No building — that is Betty. No review duty — he acts on findings
+rather than producing them, and giving him both would make him a reviewer who can rewrite the rule
+he just enforced. That split between him and Barb is the point of having two agents rather than
+one.
 
-- **The `run-design-test` skill and its references.** ALAN's Stage 2 and 3 read
-  `.agents/skills/run-design-test/` **in the builder repository**, not here. Without it ALAN
-  can still interview and capture findings, but the build and evaluation stages have nothing
-  to follow.
-- **The design-system skills.** ALAN builds "exclusively from Recursica components and
-  tokens". Point it at your own system's skills, or that instruction means nothing.
-- **`promote-findings`.** The handoff target is a separate workflow that does not exist
-  outside this setup. On a plain session ALAN stops after writing the two files, which is the
-  correct place to stop anyway.
+## What changes between platforms
 
-## What changes between the Buzz version and this one
-
-Only the surface. Five passages differ — where to interview, where to post the dev-server
-URL, how to ask for feedback, how to hand off, and where the checkout lives. Everything else
-— the six interview sections, the build rules, the self-evaluation, the findings format, the
-hard prohibitions — is byte-for-byte the same text, from one source.
-
-You can see exactly which five in `agents/alan/platform/`.
+Only the surface. Three passages differ — who he is introduced as, where his checkout lives, and
+where the pull request link goes. You can see them in `agents/alan/platform/`.

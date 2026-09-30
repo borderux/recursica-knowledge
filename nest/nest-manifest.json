@@ -36,6 +36,13 @@
     "                         nothing to render. They use fromRoot — see that entry.",
     "  drive-fence/diag-export.mjs  A one-off investigation into a Drive 403, not runtime.",
     "  .secrets/*             Service-account keys. Never versioned, never templated.",
+    "  mcp/knowledge/server.mjs   Runs from the checkout, like Stu's app above and for a sharper",
+    "                         version of the same reason: it serves skills/ and imports",
+    "                         scripts/screen-skill-manifest.mjs, both of which live in the",
+    "                         checkout. Copying the server here would separate it from the only",
+    "                         thing it reads, leaving a KNOWLEDGE_ROOT path to get wrong for no",
+    "                         benefit. Register it by absolute path into the checkout; see",
+    "                         mcp/knowledge/README.md.",
     "  .claude/skills/buzz-cli/  Ships with Buzz Desktop; not ours to install or update."
   ],
   "$resolveComment": [
@@ -156,12 +163,74 @@
     {
       "path": "mcp",
       "mode": "0700"
+    },
+    {
+      "path": "proxy",
+      "mode": "0700"
+    },
+    {
+      "path": "proxy/fences",
+      "mode": "0700"
+    },
+    {
+      "path": "proxy/fences/_shared",
+      "mode": "0700"
+    },
+    {
+      "path": "proxy/fences/_unknown",
+      "mode": "0700"
+    },
+    {
+      "path": "proxy/fences/_unknown/_default",
+      "mode": "0700"
     }
   ],
   "files": [
     {
       "from": "bin/deploy-claire-channel.sh",
       "to": "bin/deploy-claire-channel.sh",
+      "mode": "0755",
+      "resolve": true
+    },
+    {
+      "$comment": [
+        "Gives Betty her knowledge server and nothing else. Unlike the Claire deploy",
+        "this takes no client arguments, because Betty is client-independent: the",
+        "registry it writes holds one credential-free server, which is what makes",
+        "\"she holds no client data\" a file somebody can read rather than a claim in a",
+        "prompt. It also turns the claude.ai connectors off, which the registry alone",
+        "does not do — that connector rides on the account login and reaches all of",
+        "Drive.",
+        "",
+        "It refuses a linked worktree rather than warning: baking a worktree path into",
+        "a launcher works until the branch merges, and then the agent starts with no",
+        "tools and reports having none, which reads as a broken agent."
+      ],
+      "from": "bin/deploy-betty.sh",
+      "to": "bin/deploy-betty.sh",
+      "mode": "0755",
+      "resolve": true
+    },
+    {
+      "$comment": [
+        "Gives Loki his sandbox drive and nothing else. The mirror image of the Claire",
+        "deploy: that one fences an agent INTO one client's data, this one fences what",
+        "Loki manufactures OUT of every client's — the failure it exists to prevent is a",
+        "synthetic transcript ingested as real research months later.",
+        "",
+        "Most of it is the two-directional fence proof. LOKI_SANDBOX_SETUP.md step 6 asks",
+        "an operator to run four preflights by hand and read four exit codes, three of",
+        "which must FAIL to pass; that is the step most likely to be skipped and the only",
+        "one that establishes the property. Here it is a gate, and nothing is written",
+        "until it holds. The client folders it proves against are read from the drive-*",
+        "servers in the user registry, so the set grows as clients are added.",
+        "",
+        "It also writes the launcher, because Buzz Desktop's per-agent env_vars field does",
+        "not exist on every build — where it is absent, the agent command is the only hook",
+        "that can fence one agent, and the launcher is what it has to name."
+      ],
+      "from": "bin/deploy-loki.sh",
+      "to": "bin/deploy-loki.sh",
       "mode": "0755",
       "resolve": true
     },
@@ -176,6 +245,68 @@
       "to": "bin/sync-tag-dictionary.mjs",
       "mode": "0755",
       "resolve": true
+    },
+    {
+      "$comment": [
+        "Resolves a channel's client settings from the community and the channel together.",
+        "",
+        "The lookup has an order, a precedence rule and a refusal case, and the cost of",
+        "getting any of them wrong is reading another client's data. That is a script's job",
+        "rather than three paragraphs in a prompt — see the file's own header.",
+        "",
+        "resolve:false. It carries no {{TOKEN}}, and resolving it would rewrite the example",
+        "slugs in its help text into whichever client this machine was installed for."
+      ],
+      "from": "bin/client-config.mjs",
+      "to": "bin/client-config.mjs",
+      "mode": "0755",
+      "resolve": false
+    },
+    {
+      "from": "bin/lib/client-config.mjs",
+      "to": "bin/lib/client-config.mjs",
+      "mode": "0644",
+      "resolve": false
+    },
+    {
+      "$comment": [
+        "Reports whether a community holds exactly one client and only that client's",
+        "agents. The second half is the one nothing else can see: an agent's presence in a",
+        "community is invisible in Buzz Desktop and invisible in the config files, and shows",
+        "up only in the running processes."
+      ],
+      "from": "bin/verify-client-community.mjs",
+      "to": "bin/verify-client-community.mjs",
+      "mode": "0755",
+      "resolve": false
+    },
+    {
+      "$comment": [
+        "Probes an agent's fence through its own settings, in the permission mode it really",
+        "runs in. Takes a manifest of ALLOW/DENY paths built outside the fence — a correct",
+        "fence blocks directory listing, so a glob evaluated inside expands to nothing and a",
+        "globbing verifier reports a clean pass having tested zero files.",
+        "",
+        "It insists on at least one must-be-readable path. An all-BLOCKED result is not a",
+        "pass: the first build of this fence put the re-allow in permissions.allow instead of",
+        "sandbox.filesystem.allowRead, and the agent's own key came back blocked along with",
+        "everyone else's. The probe output looked more secure, not less."
+      ],
+      "from": "bin/verify-agent-fence.sh",
+      "to": "bin/verify-agent-fence.sh",
+      "mode": "0755",
+      "resolve": false
+    },
+    {
+      "$comment": [
+        "Reads the fence off the running processes rather than the config file. Saving an",
+        "agent's config restarts it only on the community the operator was standing in, so",
+        "the file can be correct while three stale copies keep running the old environment."
+      ],
+      "from": "bin/check-agent-fence-live.sh",
+      "to": "bin/check-agent-fence-live.sh",
+      "mode": "0755",
+      "resolve": false
     },
     {
       "$comment": [
@@ -311,6 +442,21 @@
       "resolve": true
     },
     {
+      "$comment": [
+        "Asks on a schedule the question sync-prompts.mjs answers only when somebody",
+        "runs it. On the machine this was written for nobody ever did, and three of four",
+        "installs of one agent had drifted unreported.",
+        "",
+        "No launchd plist ships with it. The invocation needs a channel UUID and the",
+        "operator's pubkey, and a channel UUID is one of the things that must not reach",
+        "this repository. The recipe is in the script's own header."
+      ],
+      "from": "bin/watch-agent-drift.mjs",
+      "to": "bin/watch-agent-drift.mjs",
+      "mode": "0755",
+      "resolve": true
+    },
+    {
       "from": "bin/janice-turn-window.py",
       "to": "bin/janice-turn-window.py",
       "mode": "0755",
@@ -387,6 +533,18 @@
       "to": "mcp/templates/agents/persona.md.tmpl",
       "mode": "0644",
       "resolve": true
+    },
+    {
+      "from": "GUIDES/PER_CLIENT_AGENT_FENCE.md",
+      "to": "GUIDES/PER_CLIENT_AGENT_FENCE.md",
+      "mode": "0644",
+      "resolve": false
+    },
+    {
+      "from": "GUIDES/PER_COMMUNITY_TOOL_FENCE.md",
+      "to": "GUIDES/PER_COMMUNITY_TOOL_FENCE.md",
+      "mode": "0644",
+      "resolve": false
     },
     {
       "from": "GUIDES/RESEARCH_CHANNEL_DATASET_SCHEMA.md",
@@ -493,6 +651,75 @@
       "mode": "0644",
       "resolve": false,
       "fromRoot": true
+    },
+    {
+      "$comment": [
+        "The per-agent, per-community tool fence. One agent record joined to several",
+        "communities gets a different MCP registry in each, because Buzz spawns one process",
+        "per (pubkey, relayUrl) and puts BUZZ_RELAY_URL and BUZZ_ACP_DISPLAY_NAME in it — so",
+        "the launcher can pick the config directory at spawn even though nothing on the",
+        "record can. See GUIDES/PER_COMMUNITY_TOOL_FENCE.md.",
+        "",
+        "Keyed on BOTH dimensions, which is not an elaboration. Keyed on community alone,",
+        "every agent in a client community shares one registry — handing an agent whose",
+        "whole property is holding no client data the same BigQuery and Drive access as the",
+        "one that ingests it, and undoing PER_CLIENT_AGENT_FENCE.md in the process.",
+        "",
+        "resolve:false, and it must stay that way. The script resolves the nest from its own",
+        "location and the ACP agent from $HOME, so it carries no {{TOKEN}} — and a `{{` baked",
+        "into a shell script by a future edit would be resolved into an install-time value",
+        "inside a file that is supposed to work in a moved nest.",
+        "",
+        "Installing it IS enabling it. The fence applies from the first agent start, with no",
+        "flag to switch it off — an optional fence is the same as no fence, because the",
+        "machine that most needs one is the machine nobody got round to configuring. So the",
+        "logins for every fence directory must be done BEFORE any agent is pointed here:",
+        "a directory is its own account, and one nobody has logged into answers",
+        "'Authentication required' to everything."
+      ],
+      "from": "proxy/buzz-agent-launcher.sh",
+      "to": "proxy/buzz-agent-launcher.sh",
+      "mode": "0755",
+      "resolve": false
+    },
+    {
+      "from": "proxy/verify-fence.sh",
+      "to": "proxy/verify-fence.sh",
+      "mode": "0755",
+      "resolve": false
+    },
+    {
+      "$comment": [
+        "The operator's map of relay host to fence, so ifAbsent — a `git pull` must not",
+        "overwrite the list of clients they have granted. Shipped from a .example source for",
+        "the same reason local-values.example.json is: the installed file is theirs, and the",
+        "one in the repository is a template nobody's machine is running."
+      ],
+      "from": "proxy/communities.map.example",
+      "to": "proxy/communities.map",
+      "mode": "0644",
+      "resolve": false,
+      "ifAbsent": true
+    },
+    {
+      "$comment": [
+        "The deny-all fallback for an unmapped community, and the template every real fence",
+        "is copied from. ifAbsent because a fence directory is also a Claude config",
+        "directory: the harness writes its own bookkeeping into .claude.json on first use,",
+        "so a bootstrap that kept these in sync would fight the thing using them."
+      ],
+      "from": "proxy/fences/_unknown/_default/settings.json",
+      "to": "proxy/fences/_unknown/_default/settings.json",
+      "mode": "0644",
+      "resolve": false,
+      "ifAbsent": true
+    },
+    {
+      "from": "proxy/fences/_unknown/_default/.claude.json",
+      "to": "proxy/fences/_unknown/_default/.claude.json",
+      "mode": "0644",
+      "resolve": false,
+      "ifAbsent": true
     }
   ],
   "$settingsComment": [

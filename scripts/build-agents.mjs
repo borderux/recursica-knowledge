@@ -15,6 +15,11 @@
  *                   in underneath the installer without touching restore-agents.mjs, the
  *                   deploy, or the onboarding path.
  *
+ *   circlechat    → portable/circlechat/agents/<name>/SOUL.md
+ *                   The persona file a CircleChat Hermes agent reads from its home. Optional
+ *                   per agent: only agents with a platform/circlechat.md are built for it, so
+ *                   adding the target did not oblige every agent to grow a fragment at once.
+ *
  *   claude-code   → portable/claude-code/agents/<name>.md
  *   opencode      → portable/opencode/agents/<name>.md
  *                   Committed rather than generated into a gitignored dist/, because the
@@ -63,7 +68,7 @@ if (argv.includes("--help") || argv.includes("-h")) {
   --accept    allow the Buzz prompt to change (it is asserted identical by default)
   --help
 
-Targets: buzz, claude-code, opencode. See the header of this file for where each lands.`);
+Targets: buzz, claude-code, opencode, circlechat (optional per agent). See the header of this file for where each lands.`);
   process.exit(0);
 }
 
@@ -78,6 +83,10 @@ const TARGETS = {
   buzz: { fragments: "buzz.md", out: (n) => `buzz-agents/agents/${n}/SYSTEM_PROMPT.md`, frontmatter: false, pinned: true },
   "claude-code": { fragments: "session.md", out: (n) => `portable/claude-code/agents/${n}.md`, frontmatter: "claude-code" },
   opencode: { fragments: "session.md", out: (n) => `portable/opencode/agents/${n}.md`, frontmatter: "opencode" },
+  circlechat: { fragments: "circlechat.md", out: (n) => `portable/circlechat/agents/${n}/SOUL.md`, frontmatter: false, optional: true,
+    // CircleChat has no install step to swap tokens back in, so the values are fixed here. They
+    // are paths inside the agent container, identical on every CircleChat install.
+    values: { KNOWLEDGE_REPO_NAME: "recursica-knowledge", WORKSPACE_ROOT: "/workspace" } },
 };
 
 /**
@@ -138,7 +147,7 @@ function loadFragments(file) {
  * Barb's whole guarantee is that she cannot write — an agent that can edit the code it reviews
  * can make a finding disappear instead of reporting it, and one that can edit `skills/` can
  * resolve a violation by softening the rule. Both are silent. Her runtime file said `Read,
- * Grep, Glob, Bash, Task`; her artifact said nothing, so ALAN dispatching that artifact would
+ * Grep, Glob, Bash, Task`; her artifact said nothing, so Betty dispatching that artifact would
  * have got a reviewer holding `Write` and `Edit` with no warning anywhere. Her own PORTING.md
  * names per-subagent tools as a thing to check rather than assume, and this build was the
  * thing not honouring it.
@@ -194,7 +203,10 @@ const declaredDeployTokens = placeholders.deployTokens ?? {};
  */
 function buildArtifact({ source, base, target, spec, outName, label }) {
   const fragFile = path.join(base, "platform", spec.fragments);
-  if (!fs.existsSync(fragFile)) { bad(`${target}: no platform/${spec.fragments}`); return; }
+  if (!fs.existsSync(fragFile)) {
+    if (spec.optional) return;
+    bad(`${target}: no platform/${spec.fragments}`); return;
+  }
   const frags = loadFragments(fragFile);
 
   let out = source.body;
@@ -203,6 +215,7 @@ function buildArtifact({ source, base, target, spec, outName, label }) {
     if (!(marker in frags)) { bad(`${target}: platform/${spec.fragments} has no "## ${marker}" block`); return; }
     out = out.split(`<!-- platform:${marker} -->`).join(frags[marker]);
   }
+  for (const [k, v] of Object.entries(spec.values ?? {})) out = out.split(`{{${k}}}`).join(v);
   if (spec.frontmatter) {
     // Only claude-code reads a runtime file here, and only for the two keys its front matter
     // has. `$`-prefixed keys in those files are commentary for a human and are ignored.
@@ -293,7 +306,7 @@ for (const name of names) {
   /**
    * `targets:` in the front matter narrows which platforms an agent is built for.
    *
-   * Absent means all of them, which is the ALAN case. It exists because not every agent can
+   * Absent means all of them, which is the Alan case. It exists because not every agent can
    * honestly be built for every target: Claire's subagents each hold a different set of tools
    * on purpose, and opencode's documented agent model has no per-tool allowlist to express
    * that with. Shipping an artifact that quietly drops a boundary is worse than shipping no

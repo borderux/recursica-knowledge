@@ -11,13 +11,17 @@ Buzz.app. There is no Linux build and no container option.
 
 ---
 
+> **Setting up a brand-new client?** Read
+> [NEW_CLIENT_COMMUNITY.md](NEW_CLIENT_COMMUNITY.md) instead. One community per client, and
+> that file is the whole path in order. This file is about getting _your_ Mac running.
+
 ## What you are installing
 
 Two halves, and it is worth knowing which is which when something breaks:
 
 | Half           | What it is                                                     | Where it comes from                                 |
 | -------------- | -------------------------------------------------------------- | --------------------------------------------------- |
-| **The agents** | Claire, Stu, Janice, ALAN — their prompts and settings         | `buzz-agents/` → drafts you approve in Buzz Desktop |
+| **The agents** | Claire, Stu, Janice, Alan — their prompts and settings         | `buzz-agents/` → drafts you approve in Buzz Desktop |
 | **The nest**   | The scripts, fenced MCP servers and guides they use at runtime | `nest/` → `~/.buzz/` via one command                |
 
 An agent without the nest starts up and then cannot do anything, because every tool it
@@ -28,6 +32,13 @@ the pipeline can be tested without real research in it. He is not part of this i
 nothing here depends on him: he needs a sandbox Drive of his own before he is safe to run, and
 that is [`nest/GUIDES/LOKI_SANDBOX_SETUP.md`](../nest/GUIDES/LOKI_SANDBOX_SETUP.md). Step 5 says
 what to do with his draft in the meantime.
+
+And a seventh — **Betty**, the designer agent, who takes a product request and builds the UI on
+Recursica. She installs in minutes and independently of everything else here, because she needs
+no service-account key, no dataset, no Drive folder and no client: research reaches her through
+Claire rather than through credentials of her own. See
+[**Installing Betty on her own**](#installing-betty-on-her-own) at the end — you do not need any
+of Steps 3 to 7 for her.
 
 And a sixth — **Barb**, who reviews screens built on Recursica against the design system's own
 rules. She is the odd one out in a useful way: no key, no dataset, no values-file entry, nothing
@@ -80,13 +91,13 @@ owner's side — what to send, what never to send, and how to revoke it later.
 
 ## Step 1 — Prerequisites
 
-|                         | Why                                                                          | Get it                |
-| ----------------------- | ---------------------------------------------------------------------------- | --------------------- |
+|                         | Why                                                                          | Get it                                                                    |
+| ----------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
 | **Buzz Desktop**        | Supplies the `buzz` CLI _and_ `buzz-acp`. Neither is distributed separately. | Ask whoever invited you for the build — there is no link here to give you |
-| **Claude Code**         | The runtime every agent is configured against                                | `claude` on your PATH |
-| **Node 18+**            | Runs the Drive fence server and these scripts                                | `node` on your PATH   |
-| **`gcloud`**            | Only if you will create a _new_ client dataset                               | Google Cloud SDK      |
-| **`ANTHROPIC_API_KEY`** | Your own. Never shared between operators.                                    | Your account          |
+| **Claude Code**         | The runtime every agent is configured against                                | `claude` on your PATH                                                     |
+| **Node 18+**            | Runs the Drive fence server and these scripts                                | `node` on your PATH                                                       |
+| **`gcloud`**            | Only if you will create a _new_ client dataset                               | Google Cloud SDK                                                          |
+| **`ANTHROPIC_API_KEY`** | Your own. Never shared between operators.                                    | Your account                                                              |
 
 Step 4 checks all of these and names anything missing, so you do not have to verify by hand.
 
@@ -217,11 +228,6 @@ their own agents, so a shared channel otherwise holds several bots called `Clair
 way to tell whose is whose. Only the display name changes — the definition in the repo stays
 canonical and shared.
 
-> **ALAN is created as `Alan (Your Name)`.** These pages and his own prompt style him ALAN,
-> but the name in [`agents/alan/agent.json`](agents/alan/agent.json) is `Alan`, and that is
-> the one Buzz registers. `@ALAN (Your Name)` will not resolve. The script prints every name
-> it is about to create — take it from there rather than from prose.
-
 Use the flag rather than renaming an agent in Buzz Desktop afterwards. A hand-rename is not
 recognised as the same agent by `sync-prompts.mjs` or `export-agents.mjs`.
 
@@ -250,7 +256,7 @@ agents have no tools.
 **Everyone runs this, including if you are joining a client that already exists.** Past the
 dataset work, it is the only thing that registers your MCP servers (`bq-<slug>`,
 `bq-<slug>-ro`, `drive-<slug>`) and writes your five subagents into
-`~/.buzz/.claude/agents/`. Step 4 installs the *templates* for those and never renders
+`~/.buzz/.claude/agents/`. Step 4 installs the _templates_ for those and never renders
 them, so skipping this leaves you with Claire, no tools and no subagents — and nothing
 downstream notices.
 
@@ -308,19 +314,19 @@ Then smoke-test in your channel:
 
 ## When it goes wrong
 
-| Symptom                                              | Cause                                               | Fix                                      |
-| ---------------------------------------------------- | --------------------------------------------------- | ---------------------------------------- |
-| Bootstrap stops on prerequisites                     | Missing app or binary                               | Install what it named, re-run            |
-| Bootstrap stops on unresolved tokens                 | Blank values                                        | Fill in `local-values.json`, re-run      |
-| …and the only one named is `JANICE_PUBKEY`           | Expected on a first install — it cannot exist yet   | Step 5, save Janice's draft, re-run Step 4 |
-| `stu: no Stu app at …`                               | The checkout moved after bootstrap baked its path   | Re-run Step 4 from the checkout          |
-| Your agent has no tools                              | Buzz not restarted since install                    | Restart Buzz Desktop                     |
+| Symptom                                              | Cause                                               | Fix                                                                 |
+| ---------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------- |
+| Bootstrap stops on prerequisites                     | Missing app or binary                               | Install what it named, re-run                                       |
+| Bootstrap stops on unresolved tokens                 | Blank values                                        | Fill in `local-values.json`, re-run                                 |
+| …and the only one named is `JANICE_PUBKEY`           | Expected on a first install — it cannot exist yet   | Step 5, save Janice's draft, re-run Step 4                          |
+| `stu: no Stu app at …`                               | The checkout moved after bootstrap baked its path   | Re-run Step 4 from the checkout                                     |
+| Your agent has no tools                              | Buzz not restarted since install                    | Restart Buzz Desktop                                                |
 | …and restarting did not help                         | Step 6 never ran, so nothing was registered         | `claude mcp list` — expect three `<slug>` servers. None? Run Step 6 |
-| A tool is missing entirely                           | `toolbox` download failed or was interrupted        | Re-run Step 4; it refetches and verifies |
-| `Access Denied` on your own dataset                  | Dataset grant missing, or wrong region (must be US) | Check both                               |
-| Janice never says anything                           | Normal — a clean turn gets no message               | Nothing to fix                           |
-| Janice posts to a channel named `{{JANICE_CHANNEL}}` | Nest installed with tokens unresolved               | Re-run Step 4                            |
-| `ISOLATION BROKEN`                                   | Project-level BigQuery role on the service account  | Leave only `jobUser`, re-run Step 7      |
+| A tool is missing entirely                           | `toolbox` download failed or was interrupted        | Re-run Step 4; it refetches and verifies                            |
+| `Access Denied` on your own dataset                  | Dataset grant missing, or wrong region (must be US) | Check both                                                          |
+| Janice never says anything                           | Normal — a clean turn gets no message               | Nothing to fix                                                      |
+| Janice posts to a channel named `{{JANICE_CHANNEL}}` | Nest installed with tokens unresolved               | Re-run Step 4                                                       |
+| `ISOLATION BROKEN`                                   | Project-level BigQuery role on the service account  | Leave only `jobUser`, re-run Step 7                                 |
 
 ---
 
@@ -335,6 +341,83 @@ Not oversights — each is deliberate:
 - **Your `ANTHROPIC_API_KEY` and any service-account key.** Yours, not shared.
 - **Google Cloud console steps** for a brand-new client that need permissions a channel
   service account deliberately does not have.
+
+---
+
+## Installing Betty on her own
+
+Betty needs none of the client plumbing above. No key, no dataset, no Drive folder, no values
+file. If she is the only agent you want, this section is the whole install.
+
+**1. Prerequisites and the nest** — Step 1 and Step 4 above. `node`, Buzz Desktop, a checkout
+of this repository, and `node scripts/bootstrap-nest.mjs`.
+
+**2. Create her.** Approve her draft in Buzz Desktop the same way as any other agent (Step 5).
+Leave `respond_to` as `owner-only` unless you want other people bringing her work — **each
+person runs their own Betty**, which is the expected shape rather than a limitation.
+
+**3. Give her the knowledge server.**
+
+```bash
+~/.buzz/bin/deploy-betty.sh
+```
+
+Run it from the **main checkout**, not a worktree — it refuses a worktree, because a path that
+disappears when a branch merges produces an agent that starts with no tools and reports having
+none. It checks the server actually starts before writing anything.
+
+**4. Wire her up in Buzz Desktop**, then restart her:
+
+| Field   | Value                                                     |
+| ------- | --------------------------------------------------------- |
+| Runtime | `claude`                                                  |
+| Env var | `CLAUDE_CONFIG_DIR` = `~/.buzz/proxy/claude-config-betty` |
+
+**No `env_vars` field on the agent?** It is absent on newer managed-agent records, where the
+only command-shaped fields are the agent command and its override. Then this recipe cannot be
+followed as written and the launcher in
+[`nest/GUIDES/PER_COMMUNITY_TOOL_FENCE.md`](../nest/GUIDES/PER_COMMUNITY_TOOL_FENCE.md) is the
+way in — it sets the same variable, from the agent command, at spawn.
+
+The variable is the point. Without it a `claude`-runtime agent reads the **user-scope**
+registry at `~/.claude.json`, which on a machine that also runs Claire holds every client's
+BigQuery and Drive server. Betty's whole safety property is that she holds no client data, and
+this one line is what makes that true rather than aspirational. **Restart her afterwards** — a
+config change never reaches a running process.
+
+**5. Prove it, from the process rather than from her.** A model will describe a fence it does
+not have.
+
+```bash
+ps eww -p $(pgrep -f claude-agent-acp) | tr ' ' '\n' | grep CLAUDE_CONFIG_DIR
+grep firstStartTime ~/.buzz/proxy/claude-config-betty/.claude.json
+CLAUDE_CONFIG_DIR=~/.buzz/proxy/claude-config-betty claude auth status
+```
+
+The second is the stronger check for the fence: that key is written by her own session, so it is
+evidence the file was read rather than evidence it exists. The third is the login. Then ask her to call `router` — if she returns the
+design router's decision order, the whole chain works.
+
+**A fenced agent needs its own login, and this is not optional.** A config directory is its own
+account: the credential lives in the login keychain under an entry keyed to that directory, so a
+fence written by the deploy script is correctly isolated and signed out. No file the script
+writes can change that — only a login mints a credential:
+
+```bash
+CLAUDE_CONFIG_DIR=~/.buzz/proxy/claude-config-betty claude auth login
+CLAUDE_CONFIG_DIR=~/.buzz/proxy/claude-config-betty claude auth status   # "loggedIn": true
+```
+
+One browser round-trip, once per fence, and it survives restarts. Restart her afterwards.
+
+**If every turn comes back `Authentication required`, the fence is working and the login is
+missing.** The instinct is to undo the isolation, which is exactly backwards — run the login
+above against that directory instead. Copying the account block out of `~/.claude.json` does not
+work either: that is profile data, not the credential, and it leaves a file that looks signed in.
+
+**Barb comes with her.** Betty's review tiers assume Barb exists. Installing Betty without
+`barb`, `checker` and `feisty` leaves her describing a review she cannot run, which reads to a
+user exactly like a review that found nothing.
 
 ---
 

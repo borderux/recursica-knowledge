@@ -1,7 +1,7 @@
 # Onboarding an operator
 
 For the **community owner**. What you hand a new teammate so they can run their own Claire,
-Stu, Janice and ALAN, and what you must not hand them.
+Stu, Janice and Alan, and what you must not hand them.
 
 They do the installing — see [INSTALL.md](INSTALL.md), or they just ask their Fizz. Your job
 is this handoff, and it is the only part that cannot be automated, because it is the part
@@ -32,15 +32,15 @@ These are the same for everyone in the community. They are already `{{TOKEN}}`s 
 repo precisely so they do not have to be published, but a leaked project id is an
 inconvenience, not a breach. A DM or a channel message is fine.
 
-| Value                                                          | Where you get it                                    |
-| -------------------------------------------------------------- | --------------------------------------------------- |
-| `BQ_PROJECT`                                                   | Cloud console → project picker → project **id**     |
-| `sa_slug`                                                      | Only when the account is not named after the slug   |
-| `DRIVE_FOLDER`                                                 | The client Drive folder URL, after `/folders/`      |
-| `TAG_SHEET_ID`                                                 | Tag Dictionary sheet URL, between `/d/` and `/edit` |
-| `CLAIRE_CHANNEL` `STU_CHANNEL` `IVAN_CHANNEL` `ALAN_CHANNEL` `JANICE_CHANNEL` | `buzz channels list`                  |
-| `JANICE_PUBKEY`                                                | `buzz channels members --channel <janice-uuid>`     |
-| `BUILDER_REPO` `BUILDER_REPO_NAME` `KNOWLEDGE_REPO_NAME`       | Only if they want ALAN                              |
+| Value                                                                         | Where you get it                                    |
+| ----------------------------------------------------------------------------- | --------------------------------------------------- |
+| `BQ_PROJECT`                                                                  | Cloud console → project picker → project **id**     |
+| `sa_slug`                                                                     | Only when the account is not named after the slug   |
+| `DRIVE_FOLDER`                                                                | The client Drive folder URL, after `/folders/`      |
+| `TAG_SHEET_ID`                                                                | Tag Dictionary sheet URL, between `/d/` and `/edit` |
+| `CLAIRE_CHANNEL` `STU_CHANNEL` `IVAN_CHANNEL` `ALAN_CHANNEL` `JANICE_CHANNEL` | `buzz channels list`                                |
+| `JANICE_PUBKEY`                                                               | `buzz channels members --channel <janice-uuid>`     |
+| `KNOWLEDGE_REPO_NAME`                                                         | Only if they want Alan                              |
 
 Their Fizz can find the channel UUIDs herself, so in practice you are sending the first
 three — and better than sending them is **putting them in the channel canvas.**
@@ -93,7 +93,7 @@ difference that is entirely legitimate. The operator cannot tell that from the r
 it is there to catch, which is a key belonging to another client. So the stall lands on them
 looking like a security problem.
 
-A symlink at the slug-named path makes it work on *your* machine and hides the problem from
+A symlink at the slug-named path makes it work on _your_ machine and hides the problem from
 you specifically. That is worth knowing before you conclude the derivation is fine.
 
 The **key file** is still a secret and still travels out of band — see below.
@@ -165,7 +165,7 @@ people get stuck:
 - **Checks for `node` and `claude` before installing anything.** Most Macs that get this
   message already have both.
 - **Explains the 👀 reaction.** It is the only signal that Fizz received the message, and the
-  work takes minutes — so anyone waiting for a *reply* concludes it is broken and gives up.
+  work takes minutes — so anyone waiting for a _reply_ concludes it is broken and gives up.
   Without a mention there is no reaction at all, which is how you tell the two apart.
 - **Never names the key file.** They make the folder, drag whatever file you sent them into
   Terminal, then lock it down — three steps that work whatever it is called. That matters more
@@ -210,6 +210,15 @@ travels out of band, separately, and never in the message.
 - **Two operators on one client dataset is defended but untested at the time of writing** —
   deterministic keys plus `MERGE`, and `ingest_runs` claiming. Worth one deliberate test
   before two people ingest the same client simultaneously.
+- **An agent in several client communities needs a fence per agent _and_ per community.**
+  An agent record is community-agnostic, so nothing stored on it can differ between them —
+  the launcher in
+  [`nest/GUIDES/PER_COMMUNITY_TOOL_FENCE.md`](../nest/GUIDES/PER_COMMUNITY_TOOL_FENCE.md)
+  reads the agent name and the relay at spawn and picks the config directory from both.
+  Worth knowing before you add a second client to an operator who already has one, because
+  the default is that their agents reach both from either. Per community alone is not
+  enough: it would give every agent in a client community the same access, including the
+  ones that are supposed to hold no client data.
 - **Updates are pull-based.** `git pull && node scripts/bootstrap-nest.mjs` picks up script
   and guide changes. Prompt changes need a `draft-update` they approve; agents never rewrite
   themselves.

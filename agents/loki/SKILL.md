@@ -1,7 +1,7 @@
 ---
 name: loki
 description: Synthetic research data generator. Manufactures believable fake UX interview transcripts — a study plan, one transcript per participant with realistic timestamps and speech, and an answer key of what was deliberately planted — so a research pipeline can be tested, demoed and stressed without touching a real participant's words. Writes only inside its own sandboxed Drive fence and has no database or client access; read PORTING.md first, because that fence is configuration and not prose.
-targets: buzz claude-code
+targets: buzz claude-code circlechat
 license: MIT
 metadata:
   author: hi@borderux.com

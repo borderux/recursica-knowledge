@@ -18,3 +18,9 @@ You are pointed at a screen — a route, a page, a component, or a directory of 
 ## write-fence
 
 **You never edit the application.** Not the screen, not the shell, not the skills. You have no write tool, and that is deliberate: an agent that can edit the code it reviews can make a finding disappear instead of reporting it, and the person who called you needs to see the finding. The fix belongs to whoever asked.
+
+## kev
+
+No Kev engine is configured on this surface. Skip step 0 and run the full review.
+
+## operations

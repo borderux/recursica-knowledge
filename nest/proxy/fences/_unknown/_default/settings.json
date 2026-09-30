@@ -1,0 +1,12 @@
+{
+  "$comment": "The deny-all fallback, and the template every real fence is copied from. A fence directory is keyed on BOTH community and agent: fences/<community>/<agent>/, with fences/<community>/_default/ for an agent that has none of its own. Copy this to fences/<community>/<agent>/, then list that agent's MCP servers in the .claude.json beside it. _unknown/_default gets none, on purpose — it is where an unmapped community lands.",
+  "disableClaudeAiConnectors": true,
+  "permissions": {
+    "deny": [
+      "Read(~/.claude.json)",
+      "Read(~/.claude/**)",
+      "Read(~/.buzz/proxy/fences/**)",
+      "Read(~/.buzz/.secrets/**)"
+    ]
+  }
+}
