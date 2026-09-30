@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Run AFTER installing the agent through the CircleChat UI. Safe to rerun.
 # Usage: setup-agent.sh <handle>
-#   alan: GITHUB_TOKEN=... on the first run (fine-grained: Contents + Pull requests on the
-#         knowledge repo, Issues on the adapter repos and Theme Forge — no merge rights)
+#   alan: GITHUB_TOKEN=... on the first run (fine-grained: Contents + Pull requests + Issues on
+#         the knowledge repo, Issues on the adapter repos and Theme Forge — no merge rights)
 #   barb: KEV_ENGINE_KEY=... if a Kev-engine is running (optional)
 set -euo pipefail
 
@@ -77,8 +77,8 @@ if [ "$HANDLE" = alan ]; then
   if [ -n "${GITHUB_TOKEN:-}" ]; then
     set_secret GITHUB_TOKEN "$GITHUB_TOKEN"
   elif ! sudo grep -q '^GITHUB_TOKEN=' "$H/.env"; then
-    echo "alan needs GITHUB_TOKEN=... on the first run (fine-grained: Contents + Pull requests on"
-    echo "the knowledge repo, Issues on the adapter repos and Theme Forge). Without merge rights on"
+    echo "alan needs GITHUB_TOKEN=... on the first run (fine-grained: Contents + Pull requests +"
+    echo "Issues on the knowledge repo, Issues on the adapter repos and Theme Forge). Without merge rights on"
     echo "it, he cannot merge — that is the point."
     exit 1
   fi

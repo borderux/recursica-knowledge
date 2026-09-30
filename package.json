@@ -46,6 +46,7 @@
     "agents:build:check": "node scripts/build-agents.mjs --check",
     "agents:install": "node scripts/install-agents.mjs",
     "agents:install:check": "node scripts/install-agents.mjs --check",
+    "snippy:read": "node scripts/read-snippy-report.mjs",
     "skills:manifest": "node scripts/screen-skill-manifest.mjs",
     "skills:manifest:check": "node scripts/screen-skill-manifest.mjs --self-check",
     "skills:glossary:check": "node scripts/check-glossary.mjs",
