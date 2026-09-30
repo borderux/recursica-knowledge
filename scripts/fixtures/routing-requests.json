@@ -206,5 +206,61 @@
   {
     "request": "Show the read-only customer ID inside the edit form",
     "skill": "recursica-skill-read-only-field"
+  },
+  {
+    "request": "Should line items get their own item in the sidebar, or only show inside an order?",
+    "skill": "recursica-skill-information-architecture"
+  },
+  {
+    "request": "Plan the sections for a new invoicing app before we build any screens",
+    "skill": "recursica-skill-information-architecture"
+  },
+  {
+    "request": "Which button style and size should the Save action in the form footer use?",
+    "skill": "recursica-skill-button"
+  },
+  {
+    "request": "A page has Approve, Reject and Export actions — which one is primary, and which go in an overflow menu?",
+    "skill": "recursica-skill-buttons-links"
+  },
+  {
+    "request": "Should each team member's summary on the About page be wrapped in its own card?",
+    "skill": "recursica-skill-card"
+  },
+  {
+    "request": "Build a checklist of onboarding tasks the user can tick off",
+    "skill": "recursica-skill-checkbox"
+  },
+  {
+    "request": "How should the Email field's label show that it is required, and how is it tied to the input for screen readers?",
+    "skill": "recursica-skill-label"
+  },
+  {
+    "request": "Build the 'Delete project?' confirmation dialog so focus stays inside it and returns to the button afterwards",
+    "skill": "recursica-skill-modal"
+  },
+  {
+    "request": "Make the delivery speed choice — standard, express or overnight — work with the arrow keys",
+    "skill": "recursica-skill-radio-button"
+  },
+  {
+    "request": "Add a totals row to the footer of the invoices table, and make its column headers work with screen readers",
+    "skill": "recursica-skill-table"
+  },
+  {
+    "request": "Make the Overview, Activity and Files tabs on the project page keyboard accessible, each with its own URL",
+    "skill": "recursica-skill-tabs"
+  },
+  {
+    "request": "The app has nine sections — should they go in a top bar or a left sidebar?",
+    "skill": "recursica-skill-navigation"
+  },
+  {
+    "request": "Where do the page title, breadcrumb and main action go on the Orders page?",
+    "skill": "recursica-skill-screen-scaffolding"
+  },
+  {
+    "request": "Show the full name when a long project name is cut off in the sidebar",
+    "skill": "recursica-skill-tooltip"
   }
 ]

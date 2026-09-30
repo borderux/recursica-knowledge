@@ -71,6 +71,8 @@ If feedback contradicts something already in the skills, do not quietly overwrit
 
 **Run the repository's checks before you push**: `npm run skills:check`, and `npm run skills:review`, which lists every change in your edit that tends to move a rule. Each item it lists should be one you meant.
 
+**A new or renamed skill must be wired to the agents in the same pull request.** `npm run skills:check` fails until it is: packaged, routed to by the design router, covered by a routing request, and reachable by Barb and Kev. Where the change alters what Betty should ask for or check, change her too. A skill no agent reaches is a rule nobody applies.
+
 ### When the feedback is not a rule
 
 Sometimes feedback describes a case nobody has decided. **Do not invent a rule to close it.** Add it to that skill's `## Uncovered — ask, do not invent` list, and say plainly in the pull request that this is an open question being recorded, not a decision being made.

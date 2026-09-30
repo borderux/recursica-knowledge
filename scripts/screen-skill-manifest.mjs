@@ -63,7 +63,7 @@ const ADAPTER_COMPONENTS = [
  * `kind` is what the reviewer does with it:
  *   design — no component skill exists; these design-rules skills own it instead
  */
-const ROUTES = {
+export const ROUTES = {
   // Layout primitives. No component skill by design — how regions are divided is a composition
   // question, so the rules live in the design-rules layer.
   Group: { kind: "design", skills: ["recursica-skill-screen-scaffolding"] },
@@ -105,7 +105,7 @@ const ROUTES = {
  * it names things — so no import can signal them. A reviewer that only followed imports would
  * never check any of them, and the defects found by hand on this app were mostly here.
  */
-const ALWAYS = [
+export const ALWAYS = [
   "recursica-skill-screen-scaffolding",
   "recursica-skill-screen-priority",
   "recursica-skill-system-conventions",
@@ -115,6 +115,10 @@ const ALWAYS = [
   "recursica-skill-responsive-behavior",
   "recursica-skill-defaults",
   "recursica-skill-icon-semantics",
+  // What the application is structured around — which objects get a place in the navigation, and
+  // where a child object is reached. No import signals it, and a wrong structure shows on every
+  // screen at once.
+  "recursica-skill-information-architecture",
 ];
 
 const CATEGORIES = ["components", "design-rules", "meta", "psychology"];

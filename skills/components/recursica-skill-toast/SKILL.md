@@ -131,6 +131,7 @@ Do not implement, override, or tune any of these — the component owns them for
 - `recursica-skill-buttons-links` — undo policy, when a reversible action is performed rather than confirmed, in-place undo versus global undo, and action label copy.
 - `recursica-skill-forms` — field-level errors, the persistent status message field-level saving requires, and the no-status rule under batch saving.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel, which is why the style is never the message.
+- `recursica-skill-live-regions` — what the application must announce around a toast, and changes the user did not cause.
 
 ### Only if the screen also uses it
 

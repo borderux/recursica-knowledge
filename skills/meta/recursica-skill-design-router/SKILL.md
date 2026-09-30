@@ -85,7 +85,7 @@ Work from top to bottom. Each answer limits the ones below it.
 
 | #   | Decision                                                                                                                           | Owner                                              |
 | --- | ---------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| 1   | What object is this screen about, and is it one object or many?                                                                    | **No skill yet — ask if unclear**                  |
+| 1   | What object is this screen about, and is it one object or many?                                                                    | `recursica-skill-information-architecture`         |
 | 2   | Is this a location? If so it needs a unique route, a URL, and a history entry                                                      | `recursica-skill-navigation`                       |
 | 3   | Where does it sit in the app shell — nav pattern, nav item, breadcrumbs, page heading                                              | `recursica-skill-navigation`                       |
 | 4   | The page's layout, and whether a region needs its own surface                                                                      | `recursica-skill-screen-scaffolding`               |

@@ -112,6 +112,7 @@ Do not implement, override, or tune any of these — the component owns them for
 - `recursica-skill-dashboards` — disclosing how current the data is, per component where intervals differ, and the prohibition on shipping an empty dashboard.
 - `recursica-skill-tables` — which lists loading and error states for a table as unowned, including partial failure.
 - `recursica-skill-buttons-links` — which lists pending state on non-submit actions as unowned; the button component has no loading state.
+- `recursica-skill-live-regions` — announcing that loading started and finished, and what the application must cover beyond the loader's own announcement.
 
 ### Only if the screen also uses it
 

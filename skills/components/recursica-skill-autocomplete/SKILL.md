@@ -158,6 +158,7 @@ Never style an unfocused field so that it reads as disabled. An editable field m
 - `recursica-skill-assistive-element` — the help and error text below the field, and why the error replaces rather than joins it.
 - `recursica-skill-working-memory` — recognition versus recall, which is what separates this control from a dropdown.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel.
+- `recursica-skill-live-regions` — announcing the result count as the list filters, and when the application must cover it.
 
 ### Only if the screen also uses it
 

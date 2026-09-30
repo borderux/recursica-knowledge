@@ -137,6 +137,8 @@ Do not implement, override, or tune any of these — the component owns them:
 - `recursica-skill-tables` — the owning design-rules skill: table vs. cards, column widths and alignment, truncation vs. wrapping, two-value cells, pagination vs. infinite scroll, fixed header and footer, default sort, multi-sort, column visibility, frozen columns, clickable rows, inline editing, totals.
 - `recursica-skill-dates-and-currency` — currency alignment and precision, date format, and the symbol in the column header.
 - `recursica-skill-system-conventions` — one behavioral mode per system, the unadvertised affordance and its keyboard requirement, never carry meaning in a single channel.
+- `recursica-skill-live-regions` — announcing a row count or result count that changes when the table is filtered, sorted or refreshed.
+- `recursica-skill-filters` — narrowing the table: the filter bar, search, date ranges, noun labels, and showing which filters are applied.
 
 ### Only if the screen also uses it
 
