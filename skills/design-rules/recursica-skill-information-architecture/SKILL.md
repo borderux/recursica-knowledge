@@ -1,145 +1,126 @@
 ---
 name: recursica-skill-information-architecture
-description: House rules for the structure beneath an enterprise web application — what wayfinding requires, resolving the structure before the layout, a taxonomy that absorbs content added later, naming a concept the user has no model for, why standard labels beat creative ones, the signals that say the structure is wrong rather than the labels, and open versus closed card sorting. Use when organising unstructured content, deciding a product's sections, judging whether a structure will scale, or diagnosing why users cannot find things. Trigger on "IA", "information architecture", "site map", "taxonomy", "how should this be organised", "where does this belong", "users can't find it", or "card sort". Do NOT use for navigation patterns, item counts, nesting depth, or breadcrumbs — that is recursica-skill-navigation. Do NOT use for what things are called — that is recursica-skill-naming-terminology. Do NOT use for page composition — that is recursica-skill-screen-scaffolding.
+description: House rules for an application's structure — which objects it is about and how they relate, the object map approved before building, which objects get a top-level navigation item, where a child object or one with several parents lives, sections that are not objects, and room to grow. Use when planning an app's sections or a multi-screen flow, or deciding where something belongs. Not for navigation patterns — see recursica-skill-navigation.
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.1.0
+  version: 0.2.0
 ---
 
 # Information architecture
 
-House rules for how a product's content is divided, grouped, and made findable — the structure that every navigation pattern, page, and label is then built on top of. These are opinions, not neutral best practices. Apply them as constraints.
+These are the house rules for how an application is structured: which objects it is about, how they relate, and where each one can be reached. They are opinions, not neutral best practices — treat them as constraints.
 
-Context these rules assume: **complex enterprise web applications, desktop-first**, built on the Recursica design system. This skill decides how the information is organised. It does not decide how that organisation is rendered — nearly every mechanism named below has its own skill, and this file points at it rather than restating it.
+These rules assume **complex enterprise web applications, designed for desktop first**, built for users who come back every day and already know their own field. This skill decides what exists and what can be reached from where. How any of it is shown on a screen belongs to other skills, named below.
 
 ## The three governing principles
 
-1. **Wayfinding is what the architecture is for.** At any point a user must be able to answer four questions without hunting: where am I, where did I come from, what is this application for, and what is the primary action here. A structure that cannot answer all four has failed, however defensible its categories are.
-2. **The structure comes from the user's world, not the product's.** Groupings and names come from the world the user already works in. A structure they recognise costs nothing to learn, and one they do not costs them every visit. What that model is made of, and where it comes from, is the next section.
-3. **Change the structure; do not add a mechanism to cope with it.** When a core feature goes undiscovered, when a navigation level overflows, when a label needs a tooltip to make sense — change the grouping. Reach for the mechanism that would paper over it, and the fault stays where it is with one more thing to maintain on top. This is convention 4 in `recursica-skill-system-conventions` applied to structure; `recursica-skill-navigation` states it as its own second principle.
+1. **Objects first, then screens.** An object is a kind of thing the user works with and would point at and name — an order, a customer, an invoice. Settle which objects the application is about, and how they relate, before deciding any screen. Every screen is a view of one object or of many, and the structure is only as sound as that list.
+2. **The user's objects, not the database's.** Objects and their groupings come from how the users' work is already arranged, which is their mental model (a person's picture of how something works). That comes from three places: how the work is done outside software, the terms of the users' own field, and products they already use. **NEVER from the team's shorthand or the shape of the data.** A table in the database is not an object because it exists, and one object can span several tables.
+3. **Decide what can be reached from where — not how it looks.** This skill says that an order's line items are reached from the order. Whether they appear in a tab, a section or a table on that page is decided by the skills that own those components.
 
-## What this skill owns, and where it stops
+## What counts as an object
 
-**Information architecture defines relationships, categories, labels, navigation paths, and structural priority.**
+**An object has its own identity, its own properties, and more than one of it exists.** The test is whether a user would point at one and say "that one" — by its name, its number, or its title.
 
-**Visual design defines affordance, aesthetic hierarchy, and brand.** These are different jobs, and the boundary matters in one direction especially: **a structural problem is never solved by a visual one.** Emphasis, colour, and a larger heading do not repair a category that is in the wrong place. See `recursica-skill-screen-priority` on establishing hierarchy without colour.
+These are not objects, and must not be given a place of their own in the structure:
 
-## What the user's model is, and where it comes from
+- **A property of an object.** A status, a date or an owner is a column on the object's table, not a section. See `recursica-skill-tables`.
+- **A filtered view of an object.** Overdue orders are orders. One object type is one table, filtered — never a second section. See `recursica-skill-tables`.
+- **An action.** Approving, exporting and importing are things done to an object. They are buttons, not places. See `recursica-skill-buttons-links`.
 
-**A mental model here means the way the user already expects this kind of thing to be arranged, before they ever open the product.** It is not a guess about them, and it is not the structure that seems most logical to the team. It has three sources:
+**Find the objects in what you were given** — the nouns the request keeps returning to, and the domain model from the interview. Where the users call an object something different from the request, the users' word wins; see `recursica-skill-naming-terminology`. Where it is unclear whether something is an object or a property of one, ask.
 
-1. **How the thing works outside software.** The real-world arrangement is the default for a concept the product introduces — the same source the UI components are named from.
-2. **The conventions of the users' domain.** In a niche product the domain's own terms are the users' everyday terms, so a domain model is a user model. Do not translate the domain out on the grounds that an outsider would not follow it. `recursica-skill-naming-terminology` owns the wording that results.
-3. **Established patterns from comparable products.** What the user has already learned elsewhere arrives pre-loaded, concepts and rules together, which is why a standard structure beats a better one nobody recognises.
+**Whether a screen shows one object or many decides what the screen is.** Many of one object type is a list, and a list is a table by default — see `recursica-skill-tables`. One object is its detail view. Where that detail opens — a page of its own or a panel beside the list — is decided by the context test in `recursica-skill-panels-modals`.
 
-**NEVER the product's internal model.** Team shorthand, project jargon, and the shape of the data are the one source that does not count, however obvious they look from the inside. They are the model of the people who built the thing, not the people using it.
+## The object map, agreed before any code
 
-**Where the model is not known, learn it before drawing the structure.** It is not inferable from the content — the content is what the team already has, arranged the way the team already thinks. An open card sort is how it is learned; see **Validating the structure** below, and `recursica-skill-design-router` on asking rather than assuming.
+**Before anything is built, write an object map and get it approved with the rest of the brief.** A structure nobody agreed gets argued again on every screen, and a structure that changes after screens exist changes every one of them.
 
-## Resolving the structure
+The object map says, for each object:
 
-**Given an unstructured pile of content, answer these in order. Each answer constrains the next:**
+- **what it relates to** — its parent, its children, and any object it belongs to more than one of
+- **where it lives** — a top-level navigation item, or under which parent or parents
+- **where its list and its detail are reached** — each is a location, so each has a route (see `recursica-skill-navigation`)
 
-1. **How does the user move through this, and how do they know where they are?** The navigation comes first because it is the map everything else hangs off.
-2. **What is this page, and what is the primary thing to do on it?** The page title as `H1`, and the primary contextual actions.
-3. **What is the content, and what are its own contextual actions?**
+It also lists **the sections that are not objects** and where each came from — see below.
 
-**This is the order the questions get answered in, not a layout.** Where each region physically sits, how wide it is, and what surface it takes are `recursica-skill-screen-scaffolding`. What ranks highest once the structure exists is `recursica-skill-screen-priority`.
+A short table is enough:
 
-## Taxonomy
+| Object    | Relates to                       | Lives                           | Reached at                                             |
+| --------- | -------------------------------- | ------------------------------- | ------------------------------------------------------ |
+| Customer  | has orders                       | top level                       | list; detail                                           |
+| Order     | belongs to a customer; has items | top level                       | list; detail                                           |
+| Line item | belongs to one order             | under Order                     | from its order's detail                                |
+| Document  | belongs to orders and customers  | under Order, and under Customer | from each parent's detail; one detail route of its own |
 
-**Group along a model the user already recognises**, so they find things by pattern rather than by memory. The value of a taxonomy is that the user can predict where an unfamiliar item lives without being told.
+**The map is what the built application is checked against.** Every object on it is reachable where the map says, and nothing reachable is missing from it.
 
-**Build for extension.** Establish the groups from patterns broad enough that content added later has an obvious home. **A taxonomy that only fits today's content is a defect**, not a structure that will be revisited — the revisit does not happen, and new items get filed wherever there is room.
+## Which objects get a top-level navigation item
 
-**Grouping works because recognition is cheaper than recall.** A user scanning categories should recognise where an item lives rather than remember where it was put. See `recursica-skill-working-memory` for the basis and the boundary.
+**Only an object people look for on its own, across every parent it belongs to.** The test: would anyone ask for a list of all of them, whatever they belong to? "Show me all customers" — yes, so Customer is top level.
 
-**Do not justify a category count with 7 ± 2.** That ceiling governs sets the user has to hold in mind and compare; a category listing is a recognition surface, where the item-per-level ceiling exists for scannability rather than memory. The count rule that does apply is `recursica-skill-navigation`'s, and its basis and its limits are in `recursica-skill-working-memory`.
+**An object that only makes sense inside another lives under that parent, and never gets a top-level item.** Nobody asks for every line item across every order; they ask for this order's line items. A top-level Line items section would be a list nobody uses, taking a place in the navigation from something they do.
 
-**A category that will not compress to two or three words is usually two categories.** `recursica-skill-naming-terminology` makes this point about labels — one that will not compress is usually two labels. At the structural level the same symptom means the group bundles two ideas, and the fix is to split it rather than to accept a longer name for it.
+**When a child object starts being looked for on its own, it becomes top level.** That is a change to the map, and it is agreed the same way the map was.
 
-**What groups a navigation level in particular — object type first, then task, then frequency of use — is owned by `recursica-skill-navigation`.** Apply it there; this section governs the categories themselves.
+How the top-level items are arranged, how many there may be and how deep they may nest are owned by `recursica-skill-navigation`. What each is called is owned by `recursica-skill-naming-terminology`.
 
-**How deep the resulting structure may go is owned by `recursica-skill-navigation`.** Do not set a depth here.
+## An object with several parents
 
-## Naming a concept the user does not have
+**It is reachable from every parent it belongs to, and it is the same object everywhere.** A document attached to three orders appears under each of them, and each one leads to the same document.
 
-**Name a new concept from a real-world mental model**, the same way the UI components are named. Do not coin a term and expect the label to teach it — a name the user has to be taught is a name they will not recognise on the second visit either.
+**It has one detail route of its own**, not one per parent. No parent owns it, and a change made from any of them shows under all of them. **NEVER copy it into each parent** — two copies of one object disagree the first time one is edited, and the user cannot tell which is true.
 
-**Descriptive, industry-standard labels beat creative or catchy ones.** They align with what the user already expects, and the familiarity is the whole benefit: the concepts and their rules come pre-loaded. Cleverness in a structural label is a cost the user pays and the product does not recover. The mechanism is recognition rather than memory — see `recursica-skill-working-memory`.
+It still gets no top-level item unless people look for it on its own. Belonging to several parents is not the same as being looked for.
 
-**A label that does not say what action is about to be taken is a blocking defect.** Send the work back. **Do not resolve it by attaching a tooltip** — a tooltip gives context about the system, most often on an icon-only control, and never carries what a user needs in order to operate something. See `recursica-skill-tooltip` and `recursica-skill-icon-semantics`.
+## Sections that are not objects
 
-**Everything else about names is `recursica-skill-naming-terminology`** — whose vocabulary wins, singular versus plural, how far a term may be shortened, acronyms, and reconciling terms across personas.
+**These follow the request.** An approvals queue, reports, settings — where the product owner describes the work that way, it is a section. Record each one in the object map with where it came from.
 
-## Wayfinding in practice
+**Where the request says nothing, ask.** Do not invent a task section to organise the work, and do not force work the request describes as a task into an object's list.
 
-**The requirement is this skill's. The mechanisms are not.** Location is carried by the selected state in the navigation, by breadcrumbs, and by the page's own heading hierarchy — all owned by `recursica-skill-navigation`, `recursica-skill-screen-scaffolding`, and `recursica-skill-breadcrumb`.
+A section like this is still named with a noun — `Approvals`, never `Approve requests`. See `recursica-skill-naming-terminology`.
 
-**Where the user is must be answerable from the page itself**, not only from a highlighted item in the navigation — see governing principle 3 of `recursica-skill-navigation`. Test it by covering the nav: if the page no longer says where it sits, the H1 and the breadcrumb are not carrying their share.
+## Room to grow
 
-## Signals the architecture is wrong
+**Every group must have an obvious home for what will be added later.** A structure that only fits today's content is a defect, not something that will be revisited — the revisit does not happen, and new things get filed wherever there is room.
 
-Any of these is evidence of a structural fault, not a copy or visual one:
-
-- **Low discovery rates for core features.**
-- **Users searching for items that sit in the top-level navigation.** They are routing around the structure rather than using it.
-- **Poor discoverability generally** — users needing to be shown where things are.
-- **Labels that do not make sense to the user.**
-
-**Do not propose onboarding, a tour, or training as the fix.** Users do not invest in learning a structure — they satisfice with the method they already have, however costly. See `recursica-skill-discoverability` for the paradox of the active user and where it does not apply. A tour laid over a structure users cannot navigate leaves the structure in place.
-
-**Rewriting labels is a legitimate fix only when labels are the only failure.** Where discovery is low across the board, renaming is a symptom-level change and the grouping is the thing to revisit.
-
-## Validating the structure
-
-**An open card sort learns the users' mental model** — how they group information, before a structure exists. Use it early, while the categories are still open questions.
-
-**A closed card sort validates a structure that already exists.** It tests whether an established website or application organisation matches how users expect to find things.
+**Test it before the map is agreed.** Ask the product owner what is likely to be added next, and check that the map says where it would go without moving anything that is already there.
 
 ## Not your decision
 
-- **Affordance, aesthetic hierarchy, and brand.** Visual design's territory.
-- **Sentence case versus title case, and any other type treatment.** Token-owned, and must not be modified — `recursica-skill-typography-semantics`.
-- **What an object, navigation item, page title, or column is called** — `recursica-skill-naming-terminology`.
-- **The navigation pattern, item counts per level, nesting depth, overflow, and selected state** — `recursica-skill-navigation`.
+- **Which sections that are not objects exist.** The product owner's, through the request.
+- **What any object or section is called.** The users' words — `recursica-skill-naming-terminology`.
 
 ## Out of scope
 
-- **Page composition, region placement, and maximum widths** — `recursica-skill-screen-scaffolding`.
-- **What ranks highest on a screen and what to cut** — `recursica-skill-screen-priority`, which also owns progressive disclosure, with `recursica-skill-discoverability` behind it.
-- **Whether a task lives on a page, in a panel, or in a modal, and what gets a route** — `recursica-skill-panels-modals` and `recursica-skill-navigation`.
-- **Search, filter, and sort controls, and when a collection earns a search field** — `recursica-skill-filters` and `recursica-skill-tables`.
-- **Content authoring and editorial strategy.** Not a UI concern.
+- **How related objects appear on a detail page** — tabs, sections or tables. See `recursica-skill-tabs`, `recursica-skill-screen-scaffolding` and `recursica-skill-tables`.
+- **Whether a detail view is a page or a panel** — `recursica-skill-panels-modals`.
+- **The navigation pattern, item counts, nesting depth, overflow, breadcrumbs and routing** — `recursica-skill-navigation`.
+- **Page composition and what ranks highest on a screen** — `recursica-skill-screen-scaffolding` and `recursica-skill-screen-priority`.
+- **Search, filters and sorting within a list** — `recursica-skill-filters` and `recursica-skill-tables`.
+- **Designing the database.** The object map describes what the user works with. How it is stored is not a UI concern.
 
 ## Uncovered — ask, do not invent
 
-- **When validation is required.** Both card sort methods are defined, but nothing states at what point a structure must be tested before it is built, or who runs it.
-- **What counts as a low discovery rate.** The signal is named; no threshold or measurement method is given.
-- **Ordering of items within a level** — frequency, alphabetical, workflow sequence. Listed as uncovered in `recursica-skill-navigation` too.
-- **How many top-level sections a product should have before it is really two products.** 7 ± 2 governs items per level, not whether one architecture is being asked to cover too much.
-- **Which source of the user's model wins when two disagree** — a domain convention pointing one way and a widespread pattern from comparable products pointing another. Each is a legitimate source; nothing ranks them against each other.
-- **Whether the architecture may differ per persona.** `recursica-skill-naming-terminology` covers per-persona wording; nothing covers per-persona structure.
-- **Whether the number of categories at a level is bounded by anything beyond the navigation item ceiling.** `recursica-skill-working-memory` sets no house ceiling outside the surfaces it lists, and a taxonomy is not one of them.
-- **How a structure migrates when categories change** — whether existing URLs redirect, and what happens to a section that is dissolved.
+- **How a parent's related objects appear on its detail page.** No skill decides between tabs, sections and links for this yet.
+- **The order of items within a level** — by how often they are used, alphabetically, or in workflow order. Also uncovered in `recursica-skill-navigation`.
+- **An object that exists only once per account** — the organisation's own profile, for example. Whether it is top level, a setting, or somewhere else.
+- **How deep objects may nest** — an order's line items' adjustments — before the deepest one needs a place of its own.
+- **Whether the structure may differ by persona.** `recursica-skill-naming-terminology` covers different words for different personas; nothing covers different structures.
+- **What happens to routes when the map changes after launch** — whether old routes redirect, and what happens to a section that is removed.
 
 ## Pre-flight checklist
 
-Before considering a structure done, verify:
-
-- [ ] A user at any point can answer where they are, where they came from, what the application is for, and what the primary action is.
-- [ ] Those four answers come from the page itself, not only from the navigation being visible.
-- [ ] The structure was resolved in order: movement and location, then page identity and primary action, then content.
-- [ ] Categories follow a model the user already recognises, not one the product invented.
-- [ ] That model came from the real world, the users' domain, or an established pattern — never from team shorthand or the shape of the data.
-- [ ] Where the model was unknown, it was learned rather than inferred from the content.
-- [ ] Content added later has an obvious home in the existing groups.
-- [ ] Any new concept is named from a real-world mental model, in standard descriptive terms rather than creative ones.
-- [ ] No label is ambiguous about the action it takes, and no tooltip is patching one.
-- [ ] Any category that would not compress to two or three words was split rather than given a longer name.
-- [ ] No category count was justified by working-memory limits on a surface where the user only has to recognise.
-- [ ] No tour, onboarding, or training was proposed as the fix for a structure users cannot navigate.
-- [ ] No structural problem was answered with emphasis, colour, or a bigger heading.
-- [ ] Where discovery is failing broadly, the grouping was revisited rather than only the labels.
-- [ ] Nothing in the uncovered list — validation timing, discovery thresholds, item ordering, conflicting model sources, per-persona structure, migration — was decided without asking.
+- [ ] An object map was written and approved with the brief, before any code.
+- [ ] Every object on the map has its own identity and more than one instance. No property, filtered view or action is on it as an object.
+- [ ] The objects and groupings come from the users' work — their field's terms, how the work is done outside software, products they already use — and not from the database or the team's shorthand.
+- [ ] Every object is reachable where the map says, and nothing reachable is missing from the map.
+- [ ] Only objects people look for on their own, across all their parents, have a top-level navigation item.
+- [ ] No object that only makes sense inside another has a top-level item. It is reached from its parent.
+- [ ] An object with several parents is reachable from each of them, has one detail route of its own, and is never copied per parent.
+- [ ] Every section that is not an object came from the request, and the map says so. None was invented.
+- [ ] The map says where the next likely addition would go, without moving anything already there.
+- [ ] Nothing in this skill decided how anything looks — tabs, sections, page or panel were left to their own skills.
+- [ ] You invented nothing from the uncovered list.

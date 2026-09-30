@@ -206,5 +206,13 @@
   {
     "request": "Show the read-only customer ID inside the edit form",
     "skill": "recursica-skill-read-only-field"
+  },
+  {
+    "request": "Should line items get their own item in the sidebar, or only show inside an order?",
+    "skill": "recursica-skill-information-architecture"
+  },
+  {
+    "request": "Plan the sections for a new invoicing app before we build any screens",
+    "skill": "recursica-skill-information-architecture"
   }
 ]

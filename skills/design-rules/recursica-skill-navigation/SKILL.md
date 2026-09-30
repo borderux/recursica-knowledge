@@ -20,7 +20,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 ## Governing principles
 
 1. **A location is a route.** If something is navigation, it has its own URL and an entry in the browser history. If a trigger opens it — a modal, a panel — it has neither. This test is the most important thing in this file, because it is the one broken most often.
-2. **Fix the information architecture instead of working around it.** Information architecture is how the application's content is organized and labeled. Navigation that overflows, wraps, or scrolls, or forms spread across tabs, are symptoms of a mistake in the structure. Change the structure; do not add a workaround to cope with it.
+2. **Fix the information architecture instead of working around it.** Information architecture is how the application's content is organized and labeled, and `recursica-skill-information-architecture` owns it. Navigation that overflows, wraps, or scrolls, or forms spread across tabs, are symptoms of a mistake in the structure. Change the structure; do not add a workaround to cope with it.
 3. **The page itself must answer where the user is**, not only the navigation. A selected state alone is not enough; headings, breadcrumbs, or both carry it.
 
 ## Routing and browser history

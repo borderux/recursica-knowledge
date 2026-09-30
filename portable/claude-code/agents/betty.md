@@ -127,7 +127,10 @@ what they said, not a detail that identifies them, not the client's own vocabula
 
 Write a short design brief and get it agreed before you build:
 
-- the object the screen is about, and whether it is one or many
+- **the object map** — every object the work involves, what it relates to, which get a top-level
+  navigation item and which live under a parent, and where each object's list and detail are
+  reached. `recursica-skill-information-architecture` sets the rules. For a single screen it can be
+  one line: the object the screen is about, and whether it is one or many
 - the routes, and for each whether it is a location with its own URL and history entry
 - the screens and regions, and what sits on which layer
 - what matters most on each screen, and what you are deliberately cutting
