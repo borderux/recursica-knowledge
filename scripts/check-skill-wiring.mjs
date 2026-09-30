@@ -21,8 +21,9 @@
  *   psychology            cited by a design-rules skill or the router, which is the only way an
  *                         agent is ever sent to one
  *
- * KNOWN holds the gaps that predate the check, each with its reason. An entry fails once its gap
- * is closed, so the list cannot outlive the problem — same convention as check-uncovered.mjs.
+ * KNOWN is empty: every gap found when this was written has been closed. An entry is for a gap
+ * that genuinely has to wait, with its reason, and it fails once the gap is closed, so the list
+ * cannot outlive the problem — same convention as check-uncovered.mjs.
  *
  * Exit: 0 wired, 1 a gap.
  */
@@ -37,21 +38,7 @@ const CATEGORIES = ["components", "design-rules", "psychology", "meta"];
 const ROUTER = "skills/meta/recursica-skill-design-router/SKILL.md";
 
 /** `<slug>: <rule>` → why it is still open. */
-export const KNOWN = {
-  // Predate the routing evaluation's coverage requirement.
-  "recursica-skill-button: routing": "no routing request yet",
-  "recursica-skill-card: routing": "no routing request yet",
-  "recursica-skill-checkbox: routing": "no routing request yet",
-  "recursica-skill-label: routing": "no routing request yet",
-  "recursica-skill-modal: routing": "no routing request yet",
-  "recursica-skill-radio-button: routing": "no routing request yet",
-  "recursica-skill-table: routing": "no routing request yet",
-  "recursica-skill-tabs: routing": "no routing request yet",
-  "recursica-skill-tooltip: routing": "no routing request yet",
-  "recursica-skill-buttons-links: routing": "no routing request yet",
-  "recursica-skill-navigation: routing": "no routing request yet",
-  "recursica-skill-screen-scaffolding: routing": "no routing request yet",
-};
+export const KNOWN = {};
 
 const read = (rel) => fs.readFileSync(path.join(ROOT, rel), "utf8");
 
