@@ -44,6 +44,8 @@
     "check:changes": "node scripts/check-changes-for-names.mjs",
     "agents:build": "node scripts/build-agents.mjs",
     "agents:build:check": "node scripts/build-agents.mjs --check",
+    "agents:install": "node scripts/install-agents.mjs",
+    "agents:install:check": "node scripts/install-agents.mjs --check",
     "skills:manifest": "node scripts/screen-skill-manifest.mjs",
     "skills:manifest:check": "node scripts/screen-skill-manifest.mjs --self-check",
     "skills:glossary:check": "node scripts/check-glossary.mjs",
