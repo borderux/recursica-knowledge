@@ -46,7 +46,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **`icon-label` is one setup, not two.** A leading icon, a trailing icon, or both are all `icon-label`, and the props do not change between them. Do not look for separate leading and trailing variants.
 
-**There is no destructive or danger style.** A destructive action (one that deletes something or cannot easily be undone) cannot be signalled by color here. The label must carry it, and actions that cannot be undone are handled by confirmation. See `recursica-skill-buttons-links`.
+**There is no destructive or danger style.** A destructive action (one that deletes something or cannot easily be undone) cannot be signaled by color here. The label must carry it, and actions that cannot be undone are handled by confirmation. See `recursica-skill-buttons-links`.
 
 **`disabled` is a state of every style.** The UI kit defines it under `solid`, `text`, and `outline`, and its opacity comes from `globals.states.disabled`. How it is set is in the uncovered list.
 
@@ -108,7 +108,7 @@ The component provides the focus ring (the outline that shows which element has 
 - **Disabling a button while it works will drop focus.** A disabled control leaves the tab order, and the user who just pressed Enter on it is sent back to the top of the document. Keep the button able to receive focus while it is in flight — show the disabled state without removing it from the tab order — or move focus on purpose to whatever comes next.
 - **The animated loading icon must respect a reduced-motion preference** (a setting that asks for less animation).
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them for every combination of style, size, and content:
 

@@ -44,11 +44,11 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **No disabled state, no interactive state, and no hover effect.** A badge has no states, because it is not a control.
 
-**Four intents is a closed set, and most fields of work have more statuses than that.** An intent is the kind of meaning a style carries — positive, a warning, a problem, or neutral. A provisioning workflow with Pending, Approved, Ordered, Shipped, Delivered, Blocked, and Cancelled has seven statuses and only four styles to show them. So styles have to repeat — two different statuses will look identical.
+**Four intents is a closed set, and most fields of work have more statuses than that.** An intent is the kind of meaning a style carries — positive, a warning, a problem, or neutral. A provisioning workflow with Pending, Approved, Ordered, Shipped, Delivered, Blocked, and Canceled has seven statuses and only four styles to show them. So styles have to repeat — two different statuses will look identical.
 
-**The style must agree with the sentiment of the value** — whether the value is good, bad, or neutral. A positive state never gets the negative treatment. `alert` reads as something wrong, so an approved, complete, or successful value must never carry it. That would be a badge actively contradicting its own text, and the colour wins on the first read. Where the exact mapping of statuses to intents has not been decided, see the uncovered list. What is settled is that the intent must never fight the word.
+**The style must agree with the sentiment of the value** — whether the value is good, bad, or neutral. A positive state never gets the negative treatment. `alert` reads as something wrong, so an approved, complete, or successful value must never carry it. That would be a badge actively contradicting its own text, and the color wins on the first read. Where the exact mapping of statuses to intents has not been decided, see the uncovered list. What is settled is that the intent must never fight the word.
 
-**That is safe only because the badge's text always carries the difference.** Map several statuses to one intent on purpose, keep the label as the thing that identifies the status, and never let the color be what tells Ordered apart from Shipped. Required by `recursica-skill-system-conventions`. Do not invent a fifth intent. There is no prop for one, so making one means working around the component. A fifth colour is not a missing token to report — it is a colour the system has deliberately not given you. See `recursica-skill-design-router` on the escape hatch.
+**That is safe only because the badge's text always carries the difference.** Map several statuses to one intent on purpose, keep the label as the thing that identifies the status, and never let the color be what tells Ordered apart from Shipped. Required by `recursica-skill-system-conventions`. Do not invent a fifth intent. There is no prop for one, so making one means working around the component. A fifth color is not a missing token to report — it is a color the system has deliberately not given you. See `recursica-skill-design-router` on the escape hatch.
 
 ## Rules for using it
 
@@ -88,7 +88,7 @@ A badge is text, not a control. That makes the risk the opposite of most compone
 - **A badge inside an interactive element** — a tab, a nav item, a row link — is part of that element's name, not a separate stop inside it.
 - **Never put a badge where it only appears on hover.** Its whole purpose is to be seen at a glance.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them:
 

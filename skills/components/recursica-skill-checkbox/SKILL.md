@@ -15,7 +15,7 @@ A checkbox turns a true/false flag on or off for one specific value. A group of 
 
 - **Zero to many options may be selected** — the options are independent, and they do not rule each other out.
 - **The user should see every option at once**, stacked and easy to scan, instead of opening something to find out what is available.
-- **The options have a parent-child relationship** — a parent checkbox summarising a sub-list, which is what the indeterminate state is for.
+- **The options have a parent-child relationship** — a parent checkbox summarizing a sub-list, which is what the indeterminate state is for.
 - **The change is saved with the form**, on submit, not the moment the box is ticked.
 
 ## Do not use it when
@@ -106,7 +106,7 @@ The component pairs each box with its item label, and provides the focus ring (t
 - **Every item needs a real label passed to `checkbox-item`.** That label is the accessible name (the name a screen reader reads out for a control). Text just drawn beside a box is not a label, and it leaves the checkbox with no name.
 - **The group needs its own label passed to `checkbox-group`**, and it must be announced when focus enters the group — not just sit above it in the reading order. Without it, the user hears a list of options with no question attached.
 - **The group label and the item labels do different jobs.** Never use one to do the other's work; see `recursica-skill-label`.
-- **The checked state must be available in code**, never shown only by a fill colour or a tick mark. A user who cannot see the box must still hear "checked" or "not checked". Required by `recursica-skill-system-conventions`.
+- **The checked state must be available in code**, never shown only by a fill color or a tick mark. A user who cannot see the box must still hear "checked" or "not checked". Required by `recursica-skill-system-conventions`.
 - **Indeterminate must be made available as a mixed state**, not as a dash that exists only on screen. "Partially checked" is information; a horizontal bar is not.
 - **A select-all control must name what it selects** — "Select all rows", not "Select all" floating in a table header.
 - **In a table, each row checkbox must name its row.** Thirteen announcements of "checkbox, unchecked" tell the user nothing. Either the name carries the object, or the row supplies it in code.
@@ -116,23 +116,23 @@ The component pairs each box with its item label, and provides the focus ring (t
 ### Keyboard and non-mouse navigation
 
 - **Space toggles a checkbox.** That is the expected key. Do not remap it, do not require Enter instead, and do not swallow it.
-- **The library owns how keys work inside the control.** Do not attach your own key listeners to the box, or rebuild the toggling — you will break behaviour that already works.
+- **The library owns how keys work inside the control.** Do not attach your own key listeners to the box, or rebuild the toggling — you will break behavior that already works.
 - **Every checkbox in a group is its own tab stop** (a place the Tab key lands). This is the opposite of a radio group. Do not add roving focus (where the arrow keys move between items that share one tab stop) inside a checkbox group, and do not repurpose Home and End — they belong to the page.
 - **Clicking or tapping the item label toggles its checkbox.** That comes free with a real connected label, and it gives the user a bigger target. Do not break it by showing the label as loose text.
 - **Do not move focus for the user.** When a checkbox reveals fields below, focus stays on the checkbox, and the user reaches the new fields with the next Tab. Pulling focus into the revealed content strands both keyboard and screen reader users.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the components own them:
 
 - On `checkbox`: `border-radius`, `border-size`, `size`, `icon-size`.
 - On `checkbox-group`: `item-gap`, `padding`.
 - On `checkbox-item`: `label-gap`, `max-width`, `text`, `colors`.
-- Field colours and sizes from `globals.form.field`, and the disabled treatment from `globals.states.disabled`.
+- Field colors and sizes from `globals.form.field`, and the disabled treatment from `globals.states.disabled`.
 - The label-to-field gaps and the spacing between items in a form — `globals.form.properties.label-field-gap-horizontal`, `label-field-gap-vertical`, `vertical-item-gap`.
 - The tick and indeterminate glyphs, hover and active styling, and the focus ring.
 
-Do not add margins or spacer elements between items or between the group and its neighbours; the components carry the spacing.
+Do not add margins or spacer elements between items or between the group and its neighbors; the components carry the spacing.
 
 ## Load these too
 

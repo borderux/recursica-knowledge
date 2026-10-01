@@ -101,7 +101,7 @@ The filter controls themselves are owned by `recursica-skill-filters`.
 
 **Space beyond it stays empty.** That is the correct result, not a gap to fill.
 
-**MUST centre the main content horizontally.** Empty space on the right is not the same as empty space on both sides. A maximum width with no alignment leaves the content stuck wherever the layout happens to start it — against the left rail. So on a wide display, every screen sits in the top-left corner with a third of the monitor blank beside it. That looks like a window that failed to resize, not like deliberate restraint. What it is centred within is a choice, made once — see below.
+**MUST center the main content horizontally.** Empty space on the right is not the same as empty space on both sides. A maximum width with no alignment leaves the content stuck wherever the layout happens to start it — against the left rail. So on a wide display, every screen sits in the top-left corner with a third of the monitor blank beside it. That looks like a window that failed to resize, not like deliberate restraint. What it is centered within is a choice, made once — see below.
 
 **This is the rule most often half done**, because a maximum width alone looks correct at the viewport it was built on, and only goes wrong on a larger one. Check it at a viewport well beyond the maximum, not just at the one on your desk.
 
@@ -109,8 +109,8 @@ The filter controls themselves are owned by `recursica-skill-filters`.
 
 **Two ways of centring are both correct, and it is one decision per application:**
 
-- **Centre the main content in the space left over beside the chrome.** The rail keeps the left edge, and the content is centred in what remains.
-- **Centre the main content in the whole viewport, ignoring the rail.** The content lands on the true centre of the display, and the rail overlaps the space to its left.
+- **Center the main content in the space left over beside the chrome.** The rail keeps the left edge, and the content is centered in what remains.
+- **Center the main content in the whole viewport, ignoring the rail.** The content lands on the true center of the display, and the rail overlaps the space to its left.
 
 **Pick one and use it on every page.** Neither is a compromise, and neither needs justifying. What does need justifying is two screens in one application doing it differently — see convention 1 in `recursica-skill-system-conventions`.
 
@@ -154,7 +154,7 @@ A peer is an object of the same kind as the ones around it, such as a row in a l
 
 **A layer does not excuse something from the card tests.** Needing a surface does not make something a peer.
 
-**Layers are their own system, and `recursica-skill-layers` owns it.** There are four levels, 0 to 3. **The root element is always layer 0. Every component takes its colours from the layer it sits on. And every layer property — surface, border, radius, padding, shadow — comes from the Forge theme, and you never set it.** Read that skill before opening a layer.
+**Layers are their own system, and `recursica-skill-layers` owns it.** There are four levels, 0 to 3. **The root element is always layer 0. Every component takes its colors from the layer it sits on. And every layer property — surface, border, radius, padding, shadow — comes from the Forge theme, and you never set it.** Read that skill before opening a layer.
 
 **Layers 0 and 1 do nearly all the work.** Layer 2 needs a stated reason, and layer 3 is almost always a sign that the structure is wrong.
 
@@ -224,7 +224,7 @@ The number one sign, and then the rest, in order:
 4. **Lines that are long for no reason.**
 5. **Explanatory text standing in for a good heading or label** — most often a line under a page title or section heading that only repeats it.
 
-## Not your decision
+## Decided elsewhere
 
 - **The spacing and gutter token values, the maximum content width, and the layout grid.** All of these come from the design system.
 - **How the surface of any layer or card looks** — elevation, border, padding.
@@ -258,7 +258,7 @@ The number one sign, and then the rest, in order:
 - [ ] Filters are placed by the width of the content they act on, not by a breakpoint, and no filter rail is merged with the navigation rail.
 - [ ] Regions are divided by space and headings, with a rule only where space was not enough — and never by cards.
 - [ ] No form field is inside a card.
-- [ ] Content stays within the system's maximum width and is centred — either in the space beside the chrome or in the whole viewport, as one choice for the whole application. Leftover space is left empty, not filled. You checked this at a viewport well beyond the maximum, not only at the one it was built on.
+- [ ] Content stays within the system's maximum width and is centered — either in the space beside the chrome or in the whole viewport, as one choice for the whole application. Leftover space is left empty, not filled. You checked this at a viewport well beyond the maximum, not only at the one it was built on.
 - [ ] No region is sized to a bare viewport height inside a declared layer. You subtracted the layer's padding by reading its token, and you measured a page with little content to confirm the document does not scroll at all.
 - [ ] A loading page shows nothing — no skeleton, no ghost text — and a spinner appears only past about three seconds, or for slow regions of an otherwise loaded page.
 - [ ] Layer 0 is declared once on the root and never declared again. You tried every region with space first, added a surface only where regions really blurred together, and gave a region without peers a layer instead of a card.

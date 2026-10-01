@@ -197,7 +197,7 @@ W_max = 44 × 12.48                 = 555px
 
 **Do not twist markup to reduce how much a screen reader says.** Accessibility must be handled — correct structure, correct elements, and content that matches the screen. But how wordy a screen reader is, is not something to optimize against, and neither is semantic confusion that exists only in theory. A correct structure that reads long is better than a clever one that reads short.
 
-## Not your decision
+## Decided elsewhere
 
 - **The values behind every type style** — font size, line height, letter spacing, weight. Delivered as tokens.
 - **Capitalization.** Sentence case or title case belongs to the token, and is decided by the brand.

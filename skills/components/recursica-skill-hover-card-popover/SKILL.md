@@ -119,7 +119,7 @@ The two kinds have truly different requirements, and there is no safe middle gro
 - **A hover card never takes focus.** Focus is never moved for the user by something they only hovered over.
 - **Nothing needed may appear only on hover.** This is the single rule the whole component depends on.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them:
 

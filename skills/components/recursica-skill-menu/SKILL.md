@@ -107,7 +107,7 @@ A menu is a component about managing focus. The list itself is easy. The trigger
 - **Do not move focus anywhere except back to the trigger.** Not to the top of the page, and not into the content the action affected.
 - **Nothing needed may appear only on hover.** A row-action menu whose trigger only appears when the row is hovered cannot be reached by keyboard or by touch. If the action exists, its trigger is visible.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the components own them:
 

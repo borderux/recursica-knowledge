@@ -115,7 +115,7 @@ This component also follows the accessibility baseline in `recursica-skill-syste
 - **A toast must never cover a control the user needs**, and must not sit over the focused element or the focus ring (the outline that shows which element has keyboard focus).
 - **Nothing the user needs may appear only on hover** — not the action, not the close control, and not the full text.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them for every style:
 

@@ -160,7 +160,7 @@ Plurality means how many of something there are. A peer is one of a set of repea
 
 **The theme control is application chrome** (the frame around the content), not page content — `recursica-skill-screen-scaffolding`.
 
-## Not your decision
+## Decided elsewhere
 
 - **Every value in the layer tokens** — surfaces, borders, radii, padding, shadows, emphasis transparencies, and meaning-based colors. All of these belong to the theme and are written in Forge.
 - **The number of levels.** Four.

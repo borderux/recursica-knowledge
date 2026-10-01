@@ -96,7 +96,7 @@ A breadcrumb is a short row of links, and assistive technology (tools such as sc
 - **Enter activates a crumb; Space does not.** That is correct browser behavior for a link. If you find yourself adding a Space handler, you have built a button.
 - **Do not intercept the modifier keys.** Ctrl, Cmd, Shift, and middle-click must reach the browser, so the user stays in control of where the parent page opens.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them:
 

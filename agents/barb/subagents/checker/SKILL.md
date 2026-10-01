@@ -33,7 +33,7 @@ For each item, return:
 
 ## Rules that source cannot answer
 
-Some items are about the rendered result: whether content is centred at a viewport beyond the maximum width, whether a region overflows by a layer's padding, whether a long unbroken value wraps inside its column, what type style or colour actually resolved.
+Some items are about the rendered result: whether content is centered at a viewport beyond the maximum width, whether a region overflows by a layer's padding, whether a long unbroken value wraps inside its column, what type style or color actually resolved.
 
 **Mark those `not-applicable` only if the screen genuinely cannot hit them. Otherwise return `violation` with `evidence` saying it needs a rendered check.** Do not pass them. One of these arrived from a token default with no code change at all, so source is silent on it in both directions — and a false pass is worse than an admitted gap.
 

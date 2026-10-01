@@ -108,7 +108,7 @@ Two lists and a set of arrow buttons is the pattern most often shipped so that i
 - **Do not move focus for the user**, other than placing it on purpose after a move. Typing in the filter must not throw focus into the list.
 - **Nothing the user needs may appear only on hover** — not the move controls, not a remove control on each item, and not the counts.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them:
 

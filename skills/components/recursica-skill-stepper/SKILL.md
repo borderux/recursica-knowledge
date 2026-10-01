@@ -107,7 +107,7 @@ The stepper's whole job is to show position and progress, and it does that visua
 - **Back must not lose the user's place.** Going back to a step puts focus at the start of that step's content, with the values they entered still there.
 - **Nothing needed may appear only on hover** — not a step's description, and not the reason a step is disabled.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them for every size and orientation:
 

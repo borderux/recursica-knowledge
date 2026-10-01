@@ -111,7 +111,7 @@ The component draws the header and the chevron. Whether the collapsed state is r
 - **Never collapse a panel that contains focus.** If single-open behavior closes a panel the user is working in, their focus is destroyed, and they are sent back to the top of the document.
 - **The header must never open on hover**, and nothing needed inside a panel may be revealed only by hover.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the four specs own them for both appearances:
 

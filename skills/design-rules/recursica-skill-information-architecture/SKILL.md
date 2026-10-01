@@ -78,7 +78,7 @@ It still gets no top-level item unless people look for it on its own. Belonging 
 
 **These follow the request.** An approvals queue, reports, settings — where the product owner describes the work that way, it is a section. Record each one in the object map with where it came from.
 
-**Where the request says nothing, ask.** Do not invent a task section to organise the work, and do not force work the request describes as a task into an object's list.
+**Where the request says nothing, ask.** Do not invent a task section to organize the work, and do not force work the request describes as a task into an object's list.
 
 A section like this is still named with a noun — `Approvals`, never `Approve requests`. See `recursica-skill-naming-terminology`.
 
@@ -88,7 +88,7 @@ A section like this is still named with a noun — `Approvals`, never `Approve r
 
 **Test it before the map is agreed.** Ask the product owner what is likely to be added next, and check that the map says where it would go without moving anything that is already there.
 
-## Not your decision
+## Decided elsewhere
 
 - **Which sections that are not objects exist.** The product owner's, through the request.
 - **What any object or section is called.** The users' words — `recursica-skill-naming-terminology`.
@@ -106,7 +106,7 @@ A section like this is still named with a noun — `Approvals`, never `Approve r
 
 - **How a parent's related objects appear on its detail page.** No skill decides between tabs, sections and links for this yet.
 - **The order of items within a level** — by how often they are used, alphabetically, or in workflow order. Also uncovered in `recursica-skill-navigation`.
-- **An object that exists only once per account** — the organisation's own profile, for example. Whether it is top level, a setting, or somewhere else.
+- **An object that exists only once per account** — the organization's own profile, for example. Whether it is top level, a setting, or somewhere else.
 - **How deep objects may nest** — an order's line items' adjustments — before the deepest one needs a place of its own.
 - **Whether the structure may differ by persona.** `recursica-skill-naming-terminology` covers different words for different personas; nothing covers different structures.
 - **What happens to routes when the map changes after launch** — whether old routes redirect, and what happens to a section that is removed.

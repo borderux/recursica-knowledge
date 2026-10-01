@@ -117,7 +117,7 @@ The component connects the label to the input, and provides the focus ring (the 
 - **Never make resizing necessary to read or finish the value.** A drag handle cannot be used from the keyboard, so the field must be usable at the size it is given.
 - **Nothing needed to complete the field may appear only on hover** — not the limit, and not the rule.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them:
 
@@ -146,7 +146,7 @@ Never style an unfocused textarea so it reads as disabled. An editable field mus
 ## Uncovered — ask, do not invent
 
 - **Growing to fit the content.** The UI kit fixes `rows`, and **a vertical-resize axis with `auto` and `custom` is shown only on the design-system website, with no token behind it. These disagree.** Whether the field grows with its content, and whether there is a handle the user can drag, must be settled by a person. Do not rely on a resize axis without asking.
-- **What a fixed `rows` does with a longer value.** A "default fixed height before content truncation" is described outside the UI kit. Whether the extra text scrolls or is cut off is not stated — and cutting off a user's own entry would be a serious problem. Do not rely on either behaviour without asking.
+- **What a fixed `rows` does with a longer value.** A "default fixed height before content truncation" is described outside the UI kit. Whether the extra text scrolls or is cut off is not stated — and cutting off a user's own entry would be a serious problem. Do not rely on either behavior without asking.
 - **The character counter.** One is shown only on the design-system website, with no token behind it, and the UI kit shows none. Where a count lives, and what happens at the limit, is not settled — the same gap is open in `recursica-skill-assistive-element`. Do not rely on a counter without asking.
 - **A rich text editor.** No component in the UI kit produces formatted content. Do not build one out of a textarea.
 - **A minimum length.** Nothing says whether a minimum is a supported limit, or only a validation message.

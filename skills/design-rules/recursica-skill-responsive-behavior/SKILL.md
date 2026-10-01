@@ -144,7 +144,7 @@ There are two good signs, and the absence of both gives it away:
 
 **The anti-pattern, described as the worst of them all:** a fixed-width layout that does not reflow at all. The user gets a zoomed-out page with tiny text and lines far too long, and has to zoom in and scroll around to read anything. Nothing else was named as worse.
 
-## Not your decision
+## Decided elsewhere
 
 - **What gets dropped on a narrow screen.** A conversation with the designer, every time.
 - **Whether the application is built around touch.** A property of the application, decided at the start.

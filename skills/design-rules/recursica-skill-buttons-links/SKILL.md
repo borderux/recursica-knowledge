@@ -15,7 +15,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **A button label is a verb plus an object — `Save form`. A navigation label is the object alone — `Forms`.** In terms of wording, that split is the whole difference. The naming side of it is owned by `recursica-skill-naming-terminology`.
 
-**The label must name what actually happens.** A control labelled `View` that opens something you can edit is mislabelled — the user was promised reading and given writing. If the surface it opens can change data, the label must say so: `Edit`, or `Manage`. The check is simple: open the thing, and see whether its label described it.
+**The label must name what actually happens.** A control labeled `View` that opens something you can edit is mislabeled — the user was promised reading and given writing. If the surface it opens can change data, the label must say so: `Edit`, or `Manage`. The check is simple: open the thing, and see whether its label described it.
 
 **A button opens a panel or a modal (a window that blocks the rest of the page until the user closes it); a link does not.** Opening a surface is an action, so it takes a button, even where a link would look lighter. A link is for going somewhere.
 

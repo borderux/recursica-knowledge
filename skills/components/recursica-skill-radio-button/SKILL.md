@@ -95,7 +95,7 @@ The component pairs each control with its item label, manages focus within the g
 - **Every option needs a real label passed to `radio-button-item`.** That label is the accessible name (the name a screen reader reads out for a control). Text just drawn beside a control is not a label.
 - **The group needs its own label passed to `radio-button-group`**, and it must be announced when focus enters the group — not just sit above it in the reading order. Without it, the user hears values with no question attached, which is the single worst way this control fails.
 - **The group must be announced as a group**, with a position within it — "option 2 of 5". That is what tells the user the options are alternatives, rather than separate fields.
-- **The selected state must be available in code**, never shown only by a fill colour or a dot. A user who cannot see the control must still hear "selected" or "not selected". Required by `recursica-skill-system-conventions`.
+- **The selected state must be available in code**, never shown only by a fill color or a dot. A user who cannot see the control must still hear "selected" or "not selected". Required by `recursica-skill-system-conventions`.
 - **A value selected in advance is announced as the current answer.** This is exactly why the caution about pre-selection exists: the default is heard as a decision already made.
 - **A disabled option is announced as disabled, but the arrow keys skip it**, so any explanation carried only by how it looks cannot be reached. Put the reason in text.
 - **When an option reveals more fields, say so before it is chosen** — in the item label, or in the group's assistive text.
@@ -105,18 +105,18 @@ The component pairs each control with its item label, manages focus within the g
 - **The whole group is one tab stop** (a place the Tab key lands). Tab moves to the group and then out of it; it does not step through the options. Do not make each option its own tab stop — that is how checkboxes behave, not radio buttons.
 - **The arrow keys move between options within the group, and moving selects.** Up and Left move to the previous option, and Down and Right to the next, wrapping around at the ends. Home and End move to the first and last option.
 - **Space selects the focused option**, where it is not already selected. Do not remap it, and do not require Enter.
-- **The library owns how keys work and the roving focus inside the group** — roving focus is where the arrow keys move between options that share one tab stop. Do not attach your own key listeners, do not manage tabindex yourself, and do not rebuild the wrapping — you will break behaviour that already works.
+- **The library owns how keys work and the roving focus inside the group** — roving focus is where the arrow keys move between options that share one tab stop. Do not attach your own key listeners, do not manage tabindex yourself, and do not rebuild the wrapping — you will break behavior that already works.
 - **Clicking or tapping the item label selects its option.** That comes free with a real connected label, and it gives the user a bigger target. Do not break it by showing the label as loose text.
 - **Do not move focus for the user.** When an option reveals fields below, focus stays in the group, and the user reaches the new fields with the next Tab. Never jump ahead because a choice seems made.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the components own them:
 
 - On `radio-button`: `border-radius`, `border-size`, `size`, `icon-size`.
 - On `radio-button-group`: `item-gap`, `padding`.
 - On `radio-button-item`: `label-gap`, `max-width`, `text`, `colors`.
-- Field colours and sizes from `globals.form.field`, and the disabled treatment from `globals.states.disabled`.
+- Field colors and sizes from `globals.form.field`, and the disabled treatment from `globals.states.disabled`.
 - The label-to-field gaps and the spacing between items in a form — `globals.form.properties.label-field-gap-horizontal`, `label-field-gap-vertical`, `vertical-item-gap`.
 - The selected dot, hover and active styling, the focus ring, and roving focus within the group.
 
@@ -154,7 +154,7 @@ Do not add margins or spacer elements between options or around the group; the c
 - [ ] The selected state is available in code, never shown only by a fill or a dot.
 - [ ] Selection rules are in assistive text passed through the component, and the required state is available in code.
 - [ ] The group is a single tab stop. The arrow keys move and select, Home and End reach the ends, and Space selects.
-- [ ] You overrode no key handling, tabindex, or wrapping behaviour inside the group.
+- [ ] You overrode no key handling, tabindex, or wrapping behavior inside the group.
 - [ ] Clicking the item label selects the option.
 - [ ] Focus is never moved for the user, including when an option reveals fields below.
 - [ ] Disabled is used only for options that are unavailable for now, with the reason in text. Values that can never be edited use the read-only field.

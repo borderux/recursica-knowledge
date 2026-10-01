@@ -63,7 +63,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.table`, `table-cell`, 
 
 ## Rules for using it
 
-**Null is `NA` — never an empty cell, and never `0`.** An empty cell looks like something was forgotten, and a zero looks like a real value. **This rule is owned by `recursica-skill-tables`**, which sets the text, the italics, and the neutral-500 colour, and it is extended to every surface by `recursica-skill-system-conventions`. It is repeated here only because it has an effect on accessibility. Read the owning skill for the rule itself — and where it differs from this line, it is correct.
+**Null is `NA` — never an empty cell, and never `0`.** An empty cell looks like something was forgotten, and a zero looks like a real value. **This rule is owned by `recursica-skill-tables`**, which sets the text, the italics, and the neutral-500 color, and it is extended to every surface by `recursica-skill-system-conventions`. It is repeated here only because it has an effect on accessibility. Read the owning skill for the rule itself — and where it differs from this line, it is correct.
 
 **Every table has a default sort, and the sorted column always shows its indicator** — including when the sort cannot be changed. The header component provides `sorted-text-style` and the sort icon; your job is making sure one column carries them. A table whose order cannot be seen makes the reader guess. Owned by `recursica-skill-tables`.
 
@@ -71,7 +71,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.table`, `table-cell`, 
 
 **Currency is right-aligned, has two decimal places on every value, and puts its symbol in the column header** instead of repeating it in every cell. None of this is owned here. `recursica-skill-dates-and-currency` owns the format — right alignment, a fixed precision of two decimals, and the symbol in the header — and `recursica-skill-tables` owns column alignment by data type. Read those skills rather than this summary; where they differ from it, they are correct. All this file adds is which token carries it: the `currency-style` on `table-cell` and `table-footer`.
 
-**MUST NOT wrap a cell's value in a text component.** A cell already has `table-cell`'s `text-style` — font family, size, weight, spacing — and a text component brings its own. Putting one inside a cell replaces the type the table owns with the type that component owns, which is the override the `Not your decision` list below forbids. Put the value in the cell directly.
+**MUST NOT wrap a cell's value in a text component.** A cell already has `table-cell`'s `text-style` — font family, size, weight, spacing — and a text component brings its own. Putting one inside a cell replaces the type the table owns with the type that component owns, which is the override the `Decided elsewhere` list below forbids. Put the value in the cell directly.
 
 **This is by far the most common way a table's type goes wrong**, and it is worth stating apart from the token list, because it does not look like an override while you are writing it. A cell reading `<Text>{value}</Text>` looks like careful markup, and it is the opposite. What it produces is one column in a different typeface from every other column in the same table — the brand's secondary typeface where the UI kit asked for the primary. Anyone looking at the screen can see the difference, while it stays invisible in the code changes.
 
@@ -118,7 +118,7 @@ A data table can only be used without sight if its structure is real. The failur
 - **No sideways scrolling area.** Beyond the house rule, a table that scrolls sideways is close to unusable for a keyboard user, who has no way to bring a column that is off screen into view except by tabbing blindly.
 - **Focus must be visible on every control in the table**, and never hidden on a focused row or cell.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them:
 
@@ -152,7 +152,7 @@ Do not implement, override, or tune any of these — the component owns them:
 - **Row hover.** No hover state is defined, yet a clickable row needs an affordance.
 - **Rows that expand, and nested detail.** No tokens, and no rule.
 - **What `disabled` means on a cell, a header, or a footer** — a value that is unavailable, a column that cannot be sorted, or something else.
-- **A supported way to mark one value as missing.** The style itself is settled — `recursica-skill-tables` sets the literal text `NA`, in italics, in neutral 500 — but the UI kit offers no way to apply it. `disabled` is the one state a cell has, it applies to the whole cell, and something that draws only the value cannot reach the cell it will land in. Until a way exists, read the neutral palette token. Do not reach for the cell's disabled colour, which is a different value.
+- **A supported way to mark one value as missing.** The style itself is settled — `recursica-skill-tables` sets the literal text `NA`, in italics, in neutral 500 — but the UI kit offers no way to apply it. `disabled` is the one state a cell has, it applies to the whole cell, and something that draws only the value cannot reach the cell it will land in. Until a way exists, read the neutral palette token. Do not reach for the cell's disabled color, which is a different value.
 - **The empty state**, and the difference between "no records yet" and "no results for these filters". Named as having no owner in `recursica-skill-design-router`.
 - **Loading.** No skeleton or determinate loader exists; see `recursica-skill-loader`.
 - **Behavior below desktop size.** Named as having no owner in `recursica-skill-design-router`.

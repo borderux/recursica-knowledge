@@ -54,7 +54,7 @@ a finding disappear instead of reporting it, and a reviewer that can edit `skill
 violation by softening the rule. Both are silent, and both destroy the only thing she produces.
 
 **A prompt does not carry this.** The sentence "you never edit the application" in her prompt is a
-statement of intent that a model can fail to honour under pressure — the absence of a write tool is
+statement of intent that a model can fail to honor under pressure — the absence of a write tool is
 what makes it true. If the platform you are porting to has no per-agent tool allowlist, **she is
 weaker there and you should say so out loud** rather than assume the prose holds. That is the same
 reason Claire is not built for opencode.

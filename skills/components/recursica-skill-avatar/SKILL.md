@@ -94,7 +94,7 @@ An avatar is either a picture or a control, and the two fail in different ways. 
 - **An avatar inside an interactive element** — a row link, a list item — is part of that element's name, not a separate stop inside it.
 - **Nothing about the avatar may depend on hover.** A name that appears only in a hover tooltip cannot be reached by keyboard and touch users — and it was never what identified the person anyway.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them for every combination of style and size:
 

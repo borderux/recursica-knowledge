@@ -14,7 +14,7 @@ An autocomplete is a text field whose value comes from a defined set. The user t
 ## Use it when
 
 - **The set is too large to scan comfortably in a dropdown**, so opening it and reading down the list is worse than typing.
-- **The user knows the options well** and can start typing a value they already have in mind. Typing relies on recall (remembering the answer); if the user needs to recognise the answer from what is shown, they need a visible set instead.
+- **The user knows the options well** and can start typing a value they already have in mind. Typing relies on recall (remembering the answer); if the user needs to recognize the answer from what is shown, they need a visible set instead.
 - **The value must still come from the set.** The typing is a filter, not free entry.
 
 ## Do not use it when
@@ -68,7 +68,7 @@ Those states are not kit axes and must not be passed as variants — `Focused` a
 
 ## Rules for using it
 
-**The set, not the field, decides whether this is the right control.** A large set the user recognises items from belongs in a dropdown; a large set the user recalls items from belongs here. Length alone does not decide it — see `recursica-skill-working-memory` on recognition versus recall.
+**The set, not the field, decides whether this is the right control.** A large set the user recognizes items from belongs in a dropdown; a large set the user recalls items from belongs here. Length alone does not decide it — see `recursica-skill-working-memory` on recognition versus recall.
 
 **Never below the dropdown floor.** If a dropdown would be wrong because there are fewer than four options, an autocomplete is wrong for the same reason. Small sets go on the page.
 
@@ -80,7 +80,7 @@ Those states are not kit axes and must not be passed as variants — `Focused` a
 
 **Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints (the screen widths at which the layout changes), but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
-**On error, the assistive text is replaced, not added to.** The message must restate the rule that was broken, and the error state must have a signal that is not color, as well as the colour change.
+**On error, the assistive text is replaced, not added to.** The message must restate the rule that was broken, and the error state must have a signal that is not color, as well as the color change.
 
 **The filtered list must not be cut off by the viewport, or by any scrolling ancestor** (a container further up the page that scrolls). Check it near the bottom of the page, inside a panel, and inside a modal.
 
@@ -136,7 +136,7 @@ The component connects the label to the input, provides the focus ring (the outl
 - **Do not move focus for the user after a selection.** No jumping ahead to the next field because a value now exists, and no focus jump when the filter narrows down to exactly one result.
 - **Everything reachable by mouse must be reachable by key.** Nothing about filtering, moving through results, or choosing may depend on a pointer, and nothing needed may appear only on hover.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them:
 
@@ -146,7 +146,7 @@ Do not implement, override, or tune any of these — the component owns them:
 - Field width and height — `globals.form.field.size` supplies `min-width`, `max-width`, and `single-line-input-height`; `globals.form.field` also supplies `border-radius`, the paddings, and `border-selected`.
 - The disabled treatment from `globals.states.disabled`.
 - The label-to-field gaps and the spacing between fields — `globals.form.properties.label-field-gap-horizontal`, `label-field-gap-vertical`, `vertical-item-gap`.
-- The label-to-input association, the filtering and matching behaviour, hover and active styling, the focus ring, and the keyboard behaviour inside the field.
+- The label-to-input association, the filtering and matching behavior, hover and active styling, the focus ring, and the keyboard behavior inside the field.
 
 Never style an unfocused field so that it reads as disabled. An editable field must look editable at rest.
 

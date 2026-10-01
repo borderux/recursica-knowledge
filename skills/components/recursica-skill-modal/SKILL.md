@@ -85,7 +85,7 @@ A modal is the component where accessibility failures are most serious. Get the 
 - **The page behind must not scroll**, and no element behind it may take focus.
 - **Never make closing it pointer-only.** A click on the overlay may close it, but Escape and the cancel action must both work.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them:
 
@@ -112,7 +112,7 @@ Do not implement, override, or tune any of these — the component owns them:
 
 - **Whether clicking the overlay closes the modal.** Not stated either way.
 - **A loading state inside a modal**, while an action is in flight. There is no such state on the component.
-- **Whether a modal that cannot be closed is ever allowed** — a forced acknowledgement, with no cancel.
+- **Whether a modal that cannot be closed is ever allowed** — a forced acknowledgment, with no cancel.
 - **Confirming inside a modal** — confirming a destructive action from inside a modal, given the ban on stacking.
 
 ## Pre-flight checklist

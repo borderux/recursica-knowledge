@@ -15,8 +15,8 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 ## The three governing principles
 
-1. **The user's words win.** They win over the business's term, over the data model's field name, and over whatever sounds more precise to a designer. The people using the product are the ones who have to recognise the thing.
-2. **Short and accurate beats identical everywhere.** A label may grow as the user goes deeper, but only while the extra words make it more accurate. Consistency is not the highest value here — being recognisable is.
+1. **The user's words win.** They win over the business's term, over the data model's field name, and over whatever sounds more precise to a designer. The people using the product are the ones who have to recognize the thing.
+2. **Short and accurate beats identical everywhere.** A label may grow as the user goes deeper, but only while the extra words make it more accurate. Consistency is not the highest value here — being recognizable is.
 3. **The object must stay traceable.** A user should be able to follow the same thing from a navigation item, to a page, to a column header, without it disappearing or being renamed into something else.
 
 ## Whose vocabulary
@@ -89,9 +89,9 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 ## Shortening and acronyms
 
-**A term may be shortened when the user already knows the short form and it cannot be misread.** Administrator to Admin is fine. Administrator to Add is not — it can no longer be recognised as the same term.
+**A term may be shortened when the user already knows the short form and it cannot be misread.** Administrator to Admin is fine. Administrator to Add is not — it can no longer be recognized as the same term.
 
-**If the shortened form could be misread in this context, do not shorten it.** Whether a short form is known depends on the context, and the test is whether the user recognises it, not how many characters it saves.
+**If the shortened form could be misread in this context, do not shorten it.** Whether a short form is known depends on the context, and the test is whether the user recognizes it, not how many characters it saves.
 
 **An acronym is fine when it is well known.** When you are not sure whether it is, ask — see `recursica-skill-design-router`. Where an acronym is not well known, `recursica-skill-typography-semantics` applies: write the term out the first time, with the acronym in parentheses.
 
@@ -101,7 +101,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **That mapping does not exist in the Recursica system.** It has to be built into each application, one case at a time — so plan for it, instead of assuming there is a shared tool for it.
 
-## Not your decision
+## Decided elsewhere
 
 - **Sentence case versus title case.** Sentence case capitalizes only the first word; title case capitalizes every major word. This is set by the typography token (a named design value, such as a color or a size, set by the design system), decided by the brand, and must not be changed. Whether a heading is in title case or sentence case is decided in advance by the type style it uses — see `recursica-skill-typography-semantics`.
 - **Any other type styling** — size, weight, letter spacing. Tokens own all of it.
@@ -136,7 +136,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 - [ ] The data model's term appears only where the user does not already know the concept from everyday use.
 - [ ] You used any term the client insisted on as they asked, and flagged it for usability testing, instead of quietly correcting it.
 - [ ] Where two personas share a screen, one term is chosen. Where they do not, each keeps its own.
-- [ ] The navigation label, the page title, and the column header can be recognised as the same object, getting longer deeper in only while the extra words add accuracy.
+- [ ] The navigation label, the page title, and the column header can be recognized as the same object, getting longer deeper in only while the extra words add accuracy.
 - [ ] No object loses its name on the screen it leads to.
 - [ ] Singular or plural matches what the destination actually holds.
 - [ ] Primary navigation labels are objects, never actions. The verb-plus-object shape is kept for buttons.

@@ -113,7 +113,7 @@ The component connects the label to the input, and provides the focus ring (the 
 - **Do not move focus for the user** when a value looks complete, and do not close the popover into a different field.
 - **Nothing needed to complete the field may appear only on hover** — not the format, not the time zone, and not the trigger.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them:
 

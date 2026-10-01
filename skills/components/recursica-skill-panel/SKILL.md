@@ -24,7 +24,7 @@ A panel puts extra content beside the page, without blocking it.
 | The task must be finished or given up before continuing             | `recursica-skill-modal`                                                              |
 | The action cannot be undone, and needs a confirmation               | `recursica-skill-modal`                                                              |
 | Confirming that something succeeded, or offering undo               | `recursica-skill-toast`                                                              |
-| A brief alert, or a simple acknowledgement                          | `recursica-skill-toast`                                                              |
+| A brief alert, or a simple acknowledgment                           | `recursica-skill-toast`                                                              |
 | The content is a long form, a form with several parts, or a big one | A page — and `recursica-skill-stepper` if it has several parts                       |
 | The destination is a location the user can link to                  | A page with a route — see `recursica-skill-navigation`                               |
 | The feature is critical, and the user must find it                  | The page itself. A panel's contents do not exist until someone opens it              |
@@ -128,7 +128,7 @@ This component also follows the accessibility baseline in `recursica-skill-syste
 - **The tab order inside the panel follows the visual order** — the content, then the footer buttons, then the close control where it sits visually — and must not jump between the panel and the page unpredictably.
 - **Never make closing it pointer-only.** Escape and the close control both work, whatever a click outside does.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them:
 

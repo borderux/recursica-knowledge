@@ -98,7 +98,7 @@ A spinner is pure animation. That means that to a screen reader (software that r
 - **Do not trap the keyboard behind a loader.** Content that is covered, or not there yet, must not stay behind the spinner as a set of silent, invisible tab stops.
 - **Nothing needed may appear only on hover** — least of all the text explaining what is loading, which must stay visible.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them for every size:
 

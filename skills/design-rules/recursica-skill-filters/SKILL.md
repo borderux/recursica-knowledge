@@ -28,7 +28,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **The label must match the column it filters.** If the filter says one thing and the column header says another, the user cannot tell what the control works on. Where they disagree, one of the two names is wrong — see `recursica-skill-naming-terminology`.
 
-**The placeholder is not the label**, and it never does the label's job. (A placeholder is the hint text shown inside an empty field.) Once the label is a real noun that names the field, the placeholder is free to do its actual job: show the form an accepted value takes. A field labelled `Name` with the placeholder `New hire or requester` is clear. A field labelled `Search` with the same placeholder is not.
+**The placeholder is not the label**, and it never does the label's job. (A placeholder is the hint text shown inside an empty field.) Once the label is a real noun that names the field, the placeholder is free to do its actual job: show the form an accepted value takes. A field labeled `Name` with the placeholder `New hire or requester` is clear. A field labeled `Search` with the same placeholder is not.
 
 **Never use a trailing ellipsis in place of a label.** A control whose only identification is `Change status to…` inside its own input has no label at all.
 
@@ -48,7 +48,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **Two bare date fields are the pattern to avoid.** `Start date on/after` and `Start date on/before` are two controls for one idea. Both are empty, and the connection between them is only implied, not shown. The user has to work out that it is a range at all.
 
-**Name the date field for the event it records.** A column headed `Start date` that actually holds the date a request was raised is mislabelled, and every filter built on it inherits the confusion. `Requested` or `Request date` names the event. See `recursica-skill-naming-terminology`.
+**Name the date field for the event it records.** A column headed `Start date` that actually holds the date a request was raised is mislabeled, and every filter built on it inherits the confusion. `Requested` or `Request date` names the event. See `recursica-skill-naming-terminology`.
 
 ## Which control a filter gets
 
@@ -80,7 +80,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **Do not add a filter for a field that is not in the collection.** If it is worth filtering by, it is worth showing.
 
-## Not your decision
+## Decided elsewhere
 
 - **How the controls look**, their spacing, and how the bar wraps — owned by the components and the layout.
 - **Which columns exist in the table** — `recursica-skill-tables`.
@@ -100,7 +100,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 - **Whether filters are kept** across navigation, sessions, or users, and whether a filtered view can be saved or shared.
 - **Where the applied-filter chips sit** relative to the bar and the collection, and whether there is a clear-all.
 - **How many filters a bar may hold** before it needs a different structure, and whether rarely used filters may be hidden behind a control.
-- **Whether a filter may ever be a text search across several fields at once**, and how it would be labelled if the label must name one field.
+- **Whether a filter may ever be a text search across several fields at once**, and how it would be labeled if the label must name one field.
 - **The neutral-state convention itself** — whether the house uses an explicit `All` option or an empty control. The rule is that it must be consistent; which one has not been chosen.
 
 ## Pre-flight checklist

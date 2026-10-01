@@ -58,7 +58,7 @@ Same tool, `--plan` instead of `--document`. No document is named and no bodies 
 ~/.buzz/bin/scribe-ingest.mjs --slug @SLUG@ --dataset @DATASET@ --plan
 ```
 
-Return the JSON verbatim — do not summarise, re-order or renumber it. Claire dispatches from
+Return the JSON verbatim — do not summarize, re-order or renumber it. Claire dispatches from
 its positions and reports them to a person. `to_dispatch: 0` is a real and complete answer.
 
 `changed` means the revision moved, not that the content did; the ingest run decides supersede

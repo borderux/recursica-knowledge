@@ -52,7 +52,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **`layouts` is the label-placement axis, the same axis every field has.** `side-by-side` puts the group's label beside the switches; `stacked` puts it above.
 
-**The thumb can carry an icon** — `thumb-icon-size` exists — and that icon is a second visual signal of the state, alongside the thumb's position and the track's colour.
+**The thumb can carry an icon** — `thumb-icon-size` exists — and that icon is a second visual signal of the state, alongside the thumb's position and the track's color.
 
 **There is no size axis**, none of the three has an error state, and there is no required axis. `Enabled Selected`, `Disabled Selected`, `Enabled Unselected`, and `Disabled Unselected` are shown only on the design-system website. Those are the item's `disabled` combined with the switch's selection state — not four selection states.
 
@@ -93,13 +93,13 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
-The component pairs the switch with its item label, makes on and off available, and provides the focus ring (the outline that shows which element has keyboard focus). Everything below is up to you — and a switch is unusually easy to get wrong, because its whole meaning lives in a position and a colour.
+The component pairs the switch with its item label, makes on and off available, and provides the focus ring (the outline that shows which element has keyboard focus). Everything below is up to you — and a switch is unusually easy to get wrong, because its whole meaning lives in a position and a color.
 
 ### Screen readers
 
-- **Every switch needs a real label passed to `switch-item`.** That label is the accessible name (the name a screen reader reads out for a control). Text just drawn beside the track is not a label, and a switch with no name is announced as an unlabelled control.
+- **Every switch needs a real label passed to `switch-item`.** That label is the accessible name (the name a screen reader reads out for a control). Text just drawn beside the track is not a label, and a switch with no name is announced as an unlabeled control.
 - **The label must state what is controlled, and make sense on its own**, out of context, because that is how it is announced. "Notifications" beside a track tells a screen reader (software that reads the screen aloud) user nothing about what turning it off does.
-- **The on/off state must be available in code**, never shown only by the thumb's position or the track's colour. The user must hear "on" or "off" — as `recursica-skill-system-conventions` requires.
+- **The on/off state must be available in code**, never shown only by the thumb's position or the track's color. The user must hear "on" or "off" — as `recursica-skill-system-conventions` requires.
 - **The thumb icon is decorative, and must be silent.** It is the second visual signal; the state made available in code carries the meaning.
 - **Never put the state in the visible label.** A label that reads "On" is announced as the name, so the user hears "On, off", and cannot tell which is the name and which is the state.
 - **A group of switches needs a group label passed to `switch-group`**, announced when focus enters the group.
@@ -118,14 +118,14 @@ The component pairs the switch with its item label, makes on and off available, 
 - **Do not move focus for the user.** Focus stays on the switch after it is flipped — including when flipping it reveals fields below — so the user can flip it straight back.
 - **Nothing needed may appear only on hover** — not the consequence, and not a tooltip explaining what off means.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the components own them:
 
 - On `switch`: `thumb-height`, `thumb-width`, `track-inner-padding`, `thumb-border-radius`, `track-border-radius`, `thumb-icon-size`, `track-width`, `thumb-elevation`, `track-elevation`.
 - On `switch-group`: `item-gap`, `padding`.
 - On `switch-item`: `label-gap`, `label-max-width`, `text`, `colors`.
-- Field colours and sizes from `globals.form.field`, and the disabled treatment from `globals.states.disabled`.
+- Field colors and sizes from `globals.form.field`, and the disabled treatment from `globals.states.disabled`.
 - The label-to-field gaps and the spacing between items in a form — `globals.form.properties.label-field-gap-horizontal`, `label-field-gap-vertical`, `vertical-item-gap`.
 - The thumb's travel and any animation, hover and active styling, and the focus ring.
 
@@ -138,7 +138,7 @@ Do not add margins or spacer elements between switches or around the group; the 
 - `recursica-skill-label` — label copy that names the object and stands alone, and the required and optional markers.
 - `recursica-skill-assistive-element` — the help and error text below the switch, and the copy rules for both.
 - `recursica-skill-buttons-links` — confirmation for high-consequence changes, and undo.
-- `recursica-skill-system-conventions` — one behavioural mode per system, and never carry meaning in a single channel.
+- `recursica-skill-system-conventions` — one behavioral mode per system, and never carry meaning in a single channel.
 
 ### Only if the screen also uses it
 
@@ -164,7 +164,7 @@ Do not add margins or spacer elements between switches or around the group; the 
 - [ ] `switch`, `switch-item`, and `switch-group` are used together, and groups are stacked vertically.
 - [ ] `layouts` matches every other field in the same form — one placement per form at any given breakpoint, with no mixing between fields or sections.
 - [ ] Consequences and rules are in assistive text passed through the component.
-- [ ] The on/off state is available in code, never shown only by the thumb's position or the track's colour, and the thumb icon is silent.
+- [ ] The on/off state is available in code, never shown only by the thumb's position or the track's color, and the thumb icon is silent.
 - [ ] A group of switches has a group label, announced when focus enters it.
 - [ ] Space toggles, no drag or swipe is needed, and you overrode no key handling.
 - [ ] Each switch is its own tab stop, and you added no arrow-key or roving focus.

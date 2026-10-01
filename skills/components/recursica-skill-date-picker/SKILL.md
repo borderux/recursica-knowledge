@@ -117,7 +117,7 @@ The component connects the label to the input, and provides the focus ring (the 
 - **Never move focus ahead automatically between the parts of a date.** Jumping from month to day to year as the user types strands keyboard and screen reader users partway through, and it fights anyone fixing a typo.
 - **Do not move focus for the user** when a value looks complete, and do not close the popover into a different field.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them:
 

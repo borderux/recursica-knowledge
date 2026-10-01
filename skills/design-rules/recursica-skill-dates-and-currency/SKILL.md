@@ -35,13 +35,13 @@ This is the single date format, and its purpose is to remove confusion: it reads
 
 **This is the single biggest pet peeve in this topic.** A screen showing numeric dates with slashes or hyphens looks lazy, because the clear alternative costs nothing.
 
-### Derive the value, never slice a serialisation
+### Derive the value, never slice a serialization
 
-A serialisation is a machine-readable text form of a value, meant for computers to store and exchange rather than for people to read.
+A serialization is a machine-readable text form of a value, meant for computers to store and exchange rather than for people to read.
 
 **MUST build the displayed value with a date-formatting API, in the reader's locale and time zone.** In a browser, that is `Intl.DateTimeFormat` with no locale argument. Passing a locale names one the reader did not choose — which means the tenant's locale wins, and that is forbidden above.
 
-**NEVER make a displayed date by cutting characters out of a machine serialisation.** `toISOString().slice(0, 10)` and its variations are the pattern to look for. That one line breaks two separate rules at once:
+**NEVER make a displayed date by cutting characters out of a machine serialization.** `toISOString().slice(0, 10)` and its variations are the pattern to look for. That one line breaks two separate rules at once:
 
 - **It is the numeric form with hyphens** — `2026-08-10` — which is the format this section forbids.
 - **It is in UTC, not the reader's time zone.** (UTC is the reference time zone that all other time zones are measured from.) So it is not just formatted wrong — it is the wrong day. An entry made at 6pm on the 10th, west of Greenwich, displays as the 11th. Nobody reviewing the screen sees a bug, because a believable date is showing.
@@ -112,7 +112,7 @@ The reason is principle 1. Telling someone an event happened at 2:23 p.m. when i
 
 **MUST group digits once a value reaches four figures.** `2,046`, never `2046`. This applies to every quantity a reader might compare or read out loud — counts, totals, row tallies — not only to money. An ungrouped four-figure number is read one digit at a time, and two of them in a column cannot be compared at a glance — which is the whole reason the column is right-aligned.
 
-**The separator belongs to the locale, so let the platform choose it.** Use `Intl.NumberFormat` or `toLocaleString`: a comma in one locale, a period or a thin space in another. Never write your own regex to insert commas. It produces the wrong separator everywhere the locale is not yours, and it is the same kind of mistake as slicing a date serialisation.
+**The separator belongs to the locale, so let the platform choose it.** Use `Intl.NumberFormat` or `toLocaleString`: a comma in one locale, a period or a thin space in another. Never write your own regex to insert commas. It produces the wrong separator everywhere the locale is not yours, and it is the same kind of mistake as slicing a date serialization.
 
 **NEVER group an identifier.** A year, a version, a port, an account or record number, a postcode: `2026`, not `2,026`. Grouping says "this is a quantity you may compare." On an identifier that claim is false, and the reader believes it for a moment. If doing math on the value makes no sense, it is not a number for this purpose.
 
@@ -183,7 +183,7 @@ Do not stretch a rule above to fit one of these. A wrong convention in a fiscal 
 
 - [ ] Dates use a three-letter month, a day of one or two digits, and a four-digit year.
 - [ ] No read-only date appears as numbers separated by slashes or hyphens.
-- [ ] Every displayed date and time is built by a formatting API, in the reader's locale and time zone. No value is cut out of a machine serialisation, and no `toISOString()` slice reaches a screen.
+- [ ] Every displayed date and time is built by a formatting API, in the reader's locale and time zone. No value is cut out of a machine serialization, and no `toISOString()` slice reaches a screen.
 - [ ] Formatters are created once and shared, not separately wherever they are used or for each row.
 - [ ] You identified every field that holds a date with no time, and a time-zone conversion does not shift it.
 - [ ] Times are in the user's own time zone, not the tenant's.

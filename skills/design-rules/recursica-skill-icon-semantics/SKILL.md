@@ -112,7 +112,7 @@ There are two tests. If either one applies, the control gets **an icon plus a la
 
 How icons line up in a cell, and which columns exist at all, are owned by `recursica-skill-tables`.
 
-## Not your decision
+## Decided elsewhere
 
 - **Which icon set the system uses.** There is always a default set, and the designer's chosen set is configured in the development tools. Use what is configured.
 - **How icons are drawn** — line thickness, corner roundness, fill, size, and color. All of this is inherited.

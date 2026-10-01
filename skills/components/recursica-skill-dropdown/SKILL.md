@@ -70,7 +70,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Four options is the minimum.** Below four, the options belong on the page as radio buttons; hiding three things gains nothing.
 
-**Length costs little when the user is recognising a value, and a lot when they are comparing choices.** Fifty states is fine; fifty things the user must read and weigh up is not. See `recursica-skill-working-memory`.
+**Length costs little when the user is recognizing a value, and a lot when they are comparing choices.** Fifty states is fine; fifty things the user must read and weigh up is not. See `recursica-skill-working-memory`.
 
 **Provide a sensible default where one really is correct** for nearly everyone. Never pre-select a value the user would have to think about, look up, or check. A default the user cannot check is worse than an empty field, because it gets submitted without being checked.
 
@@ -82,7 +82,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Put the selection rule in assistive text** — "You can only select one option", a minimum, a limit — through `recursica-skill-assistive-element`. Do not put it in a validation message the user only sees after they fail.
 
-**On error, the assistive text is replaced, not added to.** The message must restate the rule that was broken, and the error state must have a signal that is not color, as well as the colour change.
+**On error, the assistive text is replaced, not added to.** The message must restate the rule that was broken, and the error state must have a signal that is not color, as well as the color change.
 
 **Choosing a dropdown option may reveal more fields**, kept right below it and appearing immediately. The form still submits everything together.
 
@@ -112,7 +112,7 @@ The component connects the label to the field, provides the focus ring (the outl
 - **The active option must be announced as the user moves through the list**, including its position and whether it is selected. Moving the highlight silently makes the list unusable without sight.
 - **Selection must be available in code, never shown by a checkmark or a highlight alone.** Required by `recursica-skill-system-conventions`.
 - **On error, the message is the only text announced**, because it has replaced the assistive text — so it has to state the rule. "Invalid input" is not an error message.
-- **Give the expand indicator no separate announcement.** It is part of the field, not a second control. It must not show up as an unlabelled graphic or as its own button.
+- **Give the expand indicator no separate announcement.** It is part of the field, not a second control. It must not show up as an unlabeled graphic or as its own button.
 - **A disabled dropdown is announced as disabled, but Tab skips it**, so any explanation carried only by how it looks cannot be reached. Put the reason in text.
 - **If choosing an option reveals more fields, say so before the choice is made** — in the label or in the assistive text.
 
@@ -126,7 +126,7 @@ The component connects the label to the field, provides the focus ring (the outl
 - **Do not move focus for the user after a selection.** No jumping ahead to the next field because a value now exists.
 - **Everything reachable by mouse must be reachable by key.** Nothing about opening, moving through, or choosing may depend on a pointer, and nothing needed may appear only on hover.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them:
 
@@ -136,7 +136,7 @@ Do not implement, override, or tune any of these — the component owns them:
 - Field width and height — `globals.form.field.size` supplies `min-width`, `max-width`, and `single-line-input-height`; `globals.form.field` also supplies `border-radius`, the paddings, and `border-selected`.
 - The disabled treatment from `globals.states.disabled`.
 - The label-to-field gaps and the spacing between fields — `globals.form.properties.label-field-gap-horizontal`, `label-field-gap-vertical`, `vertical-item-gap`.
-- The label-to-field association, the expand indicator, hover and active styling, the focus ring, and the open-and-select keyboard behaviour.
+- The label-to-field association, the expand indicator, hover and active styling, the focus ring, and the open-and-select keyboard behavior.
 
 Never style an unfocused dropdown so that it reads as disabled. An editable field must look editable at rest.
 

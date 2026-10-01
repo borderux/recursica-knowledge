@@ -93,7 +93,7 @@ In meaning, this is a radio group, and it must be built as one. The usual failur
 - **Focus lands on the selected segment** when the user tabs in — not on the first segment.
 - **Focus and selection must look different** — a user can have focus on the group while a different segment is selected, and both need to be visible.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them:
 
@@ -113,7 +113,7 @@ Do not implement, override, or tune any of these — the component owns them:
 
 - **When `fill-width: true` applies** — no rule says which surfaces get a stretched control.
 - **Whether a single segment may be disabled**, and how that is shown.
-- **Whether this control may be used as a labelled form field** instead of a view switcher, and if so, where its label goes.
+- **Whether this control may be used as a labeled form field** instead of a view switcher, and if so, where its label goes.
 - **Behavior below desktop size**, where five short labels may not fit. Named as having no owner in `recursica-skill-design-router`.
 
 ## Pre-flight checklist

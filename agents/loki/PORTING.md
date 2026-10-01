@@ -86,7 +86,7 @@ for the fence — it holds only until somebody runs him without it.
 
 ## Why opencode is not a target
 
-Not a judgement about opencode; nobody has tried it. Loki's one guarantee is where his output can
+Not a judgment about opencode; nobody has tried it. Loki's one guarantee is where his output can
 land, and that guarantee is a per-tool boundary — one Drive server, no database, nothing else.
 Shipping an artifact for a surface where that has not been demonstrated would put a synthetic-data
 agent in front of somebody with the boundary unproven. Build it the day somebody proves it, and

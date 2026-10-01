@@ -84,7 +84,7 @@ The component owns the underline, the color, and the focus ring (the outline tha
 - **Focus must be visible on the link itself**, not just implied by the underline. Never hide the focus ring.
 - **After navigating, focus belongs at the start of the new content**, not left behind on the old page.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them:
 

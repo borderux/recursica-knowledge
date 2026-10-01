@@ -58,7 +58,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **An exception attaches to the object instead**, as a marker beside its identifying value. There, it reads as a fact about that row, instead of as a field every row was meant to have.
 
-**That marker is an icon, not a badge.** A badge is a filled, bordered, coloured box carrying a word. It is heavy enough that a scattering of them down a table pulls the eye away from the data. Prefer an icon, and use a badge only where something really needs that weight — the icon is the default. Owned by `recursica-skill-badges-chips`; the icon itself is `recursica-skill-icon-semantics`.
+**That marker is an icon, not a badge.** A badge is a filled, bordered, colored box carrying a word. It is heavy enough that a scattering of them down a table pulls the eye away from the data. Prefer an icon, and use a badge only where something really needs that weight — the icon is the default. Owned by `recursica-skill-badges-chips`; the icon itself is `recursica-skill-icon-semantics`.
 
 **The icon goes beside the identifying value, in that cell — not alone in a cell of its own.** `recursica-skill-icon-semantics` forbids a non-interactive icon sitting by itself with no other information, and a column of bare icons is both that and the empty column this rule just rejected. Beside the name, it has the name for company, which is the whole point of putting it there.
 
@@ -101,7 +101,7 @@ It is sometimes unavoidable — for example, when a client insists that every fi
 
 **Doing it the other way round is the failure.** Fixing a width on the wide column instead keeps that column's size while everything beside it gets squeezed. So the date column wraps `Aug 10,` onto one line and `2026` onto the next. A wrapped date beside a comfortable sentence is the mark of this mistake.
 
-**Setting no widths at all is the other failure.** Left alone, the layout divides the table up by its content, and the identity column — the one the reader scans — loses out to however many number columns sit to its right. A long value there then crashes into its neighbour instead of wrapping inside its own column.
+**Setting no widths at all is the other failure.** Left alone, the layout divides the table up by its content, and the identity column — the one the reader scans — loses out to however many number columns sit to its right. A long value there then crashes into its neighbor instead of wrapping inside its own column.
 
 **Widths belong to the data type, not to the screen.** Define them once for the whole application, so that a count column is the same width in every table, and refer to that definition. Pixel values set separately for each table drift apart right away.
 
@@ -154,9 +154,9 @@ Decide in this order:
 
 **The text is literally `NA`, and it is the same in every column.** Different wording in each column — `Not recorded`, `No name`, `Not set`, `None` — is the mistake here. It reads as a value instead of as the absence of one, and it gives the same fact a different spelling in every column of the same table. **One string, everywhere.**
 
-**Neutral 500, not the component's disabled colour.** They are not the same value — a cell's `text-color-disabled` works out one step lighter — and this treatment is a stated rule, not a reuse of the disabled state. Take it from the neutral palette token (a named design value, such as a color or a size, set by the design system), so it changes when the theme does.
+**Neutral 500, not the component's disabled color.** They are not the same value — a cell's `text-color-disabled` works out one step lighter — and this treatment is a stated rule, not a reuse of the disabled state. Take it from the neutral palette token (a named design value, such as a color or a size, set by the design system), so it changes when the theme does.
 
-**The italics matter.** They are the second channel (a way of carrying meaning, such as color, shape, position, or text). `recursica-skill-system-conventions` forbids carrying meaning through colour alone, and a gray `NA` on its own does exactly that.
+**The italics matter.** They are the second channel (a way of carrying meaning, such as color, shape, position, or text). `recursica-skill-system-conventions` forbids carrying meaning through color alone, and a gray `NA` on its own does exactly that.
 
 **`NA` must be real text in the cell**, not a background, an icon, or an empty cell styled to look empty. An empty cell is announced as nothing at all.
 

@@ -99,7 +99,7 @@ The label is where a field becomes usable by a screen reader (software that read
 - **If the label carries an edit icon, that icon is a control**, and it must be its own tab stop with its own accessible name.
 - **A stacked label must not change the tab order.** Placement is visual; the order is label, then field, either way.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them:
 

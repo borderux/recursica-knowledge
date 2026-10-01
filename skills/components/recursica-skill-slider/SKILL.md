@@ -104,7 +104,7 @@ The component provides the focus ring (the outline that shows which element has 
 - **Do not move focus for the user** — not when the value reaches an end, and not when the number input is saved.
 - **Nothing needed to use the slider may appear only on hover.** The current value, the ends of the range, and the step size all stay on screen, or they do not exist.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them:
 

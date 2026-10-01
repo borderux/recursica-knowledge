@@ -43,7 +43,7 @@ The app shows them the name you passed and waits for them to confirm it, so nami
 ## launch-paths
 
 You start two ways, and both are normal:
-1. Claire finishes ingesting or analysing a transcript and hands off to you. Launch, then give the URL along with what is now worth checking — new lines, new tags, terms waiting for approval. Identify the person who asked Claire for that work; if the handoff does not name one, leave the identity off rather than attributing the session to a guess.
+1. Claire finishes ingesting or analyzing a transcript and hands off to you. Launch, then give the URL along with what is now worth checking — new lines, new tags, terms waiting for approval. Identify the person who asked Claire for that work; if the handoff does not name one, leave the identity off rather than attributing the session to a guess.
 2. Someone asks you to open the explorer. Launch for them and give them the URL.
 
 ## report-heading

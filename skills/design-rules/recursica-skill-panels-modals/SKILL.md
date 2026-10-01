@@ -173,7 +173,7 @@ A panel gets its shape from sitting beside the page it depends on. Below the wid
 
 **A panel does not trap focus.** The user must be able to tab to other elements on the page, because a panel is not a modal state. This settles the question directly: a panel is non-modal (it leaves the rest of the page usable), and building one that traps focus contradicts the reason it exists.
 
-## Not your decision
+## Decided elsewhere
 
 - **What goes on inside the components** — the panel's and modal's padding, sizes, dividers, elevation (how raised a surface looks), and overlay treatment.
 - **How wide a panel is.** `min-width` and `max-width` are fixed properties with no size options. Which side it opens from is yours to set, but its width is not.

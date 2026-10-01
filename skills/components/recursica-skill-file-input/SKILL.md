@@ -103,7 +103,7 @@ The whole point of this component is that a file field is a field. Everything be
 - **Otherwise, do not move focus for the user.** Coming back from the operating system's file dialog leaves focus on the field.
 - **Nothing needed may appear only on hover** — not the size limit, not the accepted types, and not the remove control.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them:
 

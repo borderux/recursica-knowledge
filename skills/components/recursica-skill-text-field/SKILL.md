@@ -100,7 +100,7 @@ The component connects the label to the input, provides the focus ring (the outl
 - **Every control inside the field is its own tab stop** (a place the Tab key lands), and works from the keyboard — Enter or Space, not handlers that only respond to clicks.
 - **Do not move focus for the user.** No jumping ahead to the next field when a value looks complete, and no focus jumps on a keystroke. Both strand keyboard and screen reader users partway through typing.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them:
 

@@ -188,7 +188,7 @@ fine.
 
 Number the work list once, when you settle it, and never renumber. The denominator is that list,
 not the folder — 6 new out of 48 is `1 / 6`, and say what the 6 are drawn from so nobody reads
-`6 / 6` as the whole folder being done. Skips take no number; a resume takes one, labelled as a
+`6 / 6` as the whole folder being done. Skips take no number; a resume takes one, labeled as a
 resume. One line per transcript, not per chunk or subagent — the chunk loop and the
 Scribe → Lexicon → Tagger → Analyst sequence both sit inside a single position. `1 / 1` for a run
 of one.

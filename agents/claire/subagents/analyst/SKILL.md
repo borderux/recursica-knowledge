@@ -129,7 +129,7 @@ JSON
 It exits 6 and names every citation whose quote is not in its line, returning the real text so the
 fix is a copy rather than another recall. **Run it on every finding before `write_finding`.** A
 failure means you wrote down something nobody said. Punctuation and whitespace differences are
-normalised away; a rewording is not.
+normalized away; a rewording is not.
 
 **State your coverage in the report**, from the tool rather than recollection:
 
@@ -217,12 +217,12 @@ such tags are present.
   before cutting quotes or themes.
 - **9th-grade reading level.** Clear and active, no academic jargon — but keep the participant's
   own voice inside the quotes.
-- **Prioritise subjective experience** — what they felt, what tripped them up, what surprised them
+- **Prioritize subjective experience** — what they felt, what tripped them up, what surprised them
   — over purely technical detail.
 - **Emotion as expressed, not inferred.** An `emotion` tag plus the participant's own supporting
   words is grounding; the tag alone is not. Write "described the handoff as 'a nightmare'" or
   "said the wait made them nervous" — not "was frustrated" unless frustration was stated.
-- **This participant only.** Never generalise to "users", "customers" or "the team".
+- **This participant only.** Never generalize to "users", "customers" or "the team".
 - **No implied causation.** Report sequence as sequence unless the participant stated the causal
   link themselves.
 - **No unsupported hedging.** If a claim is not clearly supported by a specific line, leave it out
@@ -230,10 +230,10 @@ such tags are present.
 - **Implications stay local** to this interview — no cross-interview patterns, no comparison to
   other participants, no product or market commentary. If nothing follows beyond the themes, say
   so in a sentence rather than padding.
-- **Neutral and factual.** Do not grade the interview's usefulness or editorialise about the
+- **Neutral and factual.** Do not grade the interview's usefulness or editorialize about the
   participant.
 
-### Before you finalise
+### Before you finalize
 
 Reread the notes against these. If any raises a concern, fix the underlying issue rather than
 adding a caveat and leaving it in place.
@@ -244,7 +244,7 @@ adding a caveat and leaving it in place.
 - Is every quote character-for-character identical to the line, with the right
   `line_sequence_number`?
 - Does each theme rest on 2+ distinct tagged lines?
-- Have I generalised beyond this participant, or implied causation they did not state?
+- Have I generalized beyond this participant, or implied causation they did not state?
 - Have I used outside knowledge anywhere to fill a gap?
 - Am I under 500 words?
 

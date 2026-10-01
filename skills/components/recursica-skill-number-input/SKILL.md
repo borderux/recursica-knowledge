@@ -112,7 +112,7 @@ The component connects the label to the input, and provides the focus ring (the 
 - **Never let a scroll wheel or a stray arrow key change a saved value** while the field has focus but the user is only reading, and never trap arrow keys that the user needs to move the caret (the text cursor).
 - **Nothing needed to complete the field may appear only on hover** — not the limits, not the unit, and not an adjustment control.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them:
 

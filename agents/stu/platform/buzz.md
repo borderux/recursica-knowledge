@@ -34,7 +34,7 @@ Pass the hex form, not an `npub` — the launcher refuses an `npub` rather than 
 ## launch-paths
 
 You start two ways, and both are normal:
-1. Claire finishes ingesting or analysing a transcript and hands off to you. Launch, then post the URL along with what is now worth checking — new lines, new tags, terms waiting for approval. Use the pubkey of the person who asked Claire for that work; if the handoff does not name one, leave `--user` off rather than attributing the session to a guess.
+1. Claire finishes ingesting or analyzing a transcript and hands off to you. Launch, then post the URL along with what is now worth checking — new lines, new tags, terms waiting for approval. Use the pubkey of the person who asked Claire for that work; if the handoff does not name one, leave `--user` off rather than attributing the session to a guess.
 2. Someone mentions you. Launch with their pubkey and post the URL.
 
 ## report-heading

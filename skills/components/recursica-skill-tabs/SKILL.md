@@ -91,7 +91,7 @@ A tab set is one of the few components where getting the meaning in the markup w
 - **Never activate a tab just because it receives focus** where activating it is costly or navigates — the user must be able to move across the set and then choose.
 - **A tab is activated with Enter or Space**, never by click only.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them:
 

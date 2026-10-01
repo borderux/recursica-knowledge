@@ -20,14 +20,14 @@ A chip is one of several short values the user can see, select, or remove.
 
 ## Do not use it when
 
-| Instead of a chip                           | Use                                                                        |
-| ------------------------------------------- | -------------------------------------------------------------------------- |
-| One read-only value the system sets         | `recursica-skill-badge`                                                    |
-| A single choice that rules out the others   | `recursica-skill-segmented-control` horizontally, radio buttons vertically |
-| A status of any kind                        | `recursica-skill-badge` — never a chip, and never one the user can act on  |
-| Space is tight, as in a table row           | `recursica-skill-badge`. A chip carries padding, an icon, a dismiss        |
-| There are more options than a row can hold  | A dropdown or autocomplete — see `recursica-skill-selection-controls`      |
-| Primary navigation, or labelling a nav item | Links for navigation; a badge for the label                                |
+| Instead of a chip                          | Use                                                                        |
+| ------------------------------------------ | -------------------------------------------------------------------------- |
+| One read-only value the system sets        | `recursica-skill-badge`                                                    |
+| A single choice that rules out the others  | `recursica-skill-segmented-control` horizontally, radio buttons vertically |
+| A status of any kind                       | `recursica-skill-badge` — never a chip, and never one the user can act on  |
+| Space is tight, as in a table row          | `recursica-skill-badge`. A chip carries padding, an icon, a dismiss        |
+| There are more options than a row can hold | A dropdown or autocomplete — see `recursica-skill-selection-controls`      |
+| Primary navigation, or labeling a nav item | Links for navigation; a badge for the label                                |
 
 **A status shown as a chip is the misuse to watch for.** A chip looks like something you can operate; a status is not the user's to change.
 
@@ -50,7 +50,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **The error state exists in the UI kit and in both adapters, and the house rule forbids using it.** Both facts are true, and neither cancels the other. The UI kit defines seven error colors for each selection state — background, border, text, icon, leading icon, selected icon, and close icon — and both adapters offer an `error` prop that applies them. "Error-selected" is not a fourth state; it is `error` combined with `selected`, which is why the axis is nested.
 
-**Do not pass it.** `recursica-skill-badges-chips` says it plainly: do not use a chip to show an error, ever. A required chip group with nothing selected is a form validation error that the group reports below itself, and no chip changes how it looks to report it. The axis is listed above so that you recognise it, instead of assuming a stray `error` prop is a typo — not so that you reach for it.
+**Do not pass it.** `recursica-skill-badges-chips` says it plainly: do not use a chip to show an error, ever. A required chip group with nothing selected is a form validation error that the group reports below itself, and no chip changes how it looks to report it. The axis is listed above so that you recognize it, instead of assuming a stray `error` prop is a typo — not so that you reach for it.
 
 ## Rules for using it
 
@@ -96,7 +96,7 @@ A chip group is a form control that happens to be laid out horizontally, and it 
 - **After a chip is removed, move focus on purpose** — to the next chip, or to the group if none are left. Focus left on a removed element is lost, and the user is quietly sent back to the top of the document.
 - **Never require hover to reveal the close control.** A dismiss that appears on hover cannot be reached by keyboard or by touch.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them:
 

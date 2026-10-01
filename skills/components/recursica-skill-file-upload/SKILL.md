@@ -107,7 +107,7 @@ A drop zone is the single most common control in an enterprise application that 
 - **The tab order follows the visual order**: the label, the add control, then the list from top to bottom.
 - **Nothing needed may appear only on hover** — not the remove control, not the file name, and not the size limit. A remove button that appears when hovering over a row cannot be reached by keyboard or by touch.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them:
 

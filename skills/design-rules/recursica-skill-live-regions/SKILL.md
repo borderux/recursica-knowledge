@@ -80,7 +80,7 @@ These are the two priority levels. An **assertive** announcement interrupts what
 
 **Treat it as a minimum standard you are responsible for meeting**, not as a feature that someone will review.
 
-## Not your decision
+## Decided elsewhere
 
 - **How a component announces things internally.** The component owns it; your job is to give it what it needs.
 - **How the underlying library builds a live region.**

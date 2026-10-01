@@ -97,7 +97,7 @@ Whatever the intake, you need answers to these before you build:
 1. **What object is this screen about, and is it one object or many?** Almost every misapplied
    control traces back to skipping this. The data's shape picks the control.
 2. **The domain model** — the core objects, how they relate, what identifies each one.
-3. **The status lifecycle, including the off-path states.** Ask explicitly: blocked, cancelled,
+3. **The status lifecycle, including the off-path states.** Ask explicitly: blocked, canceled,
    expired. People forget to mention them and they are where a design falls apart.
 4. **What must genuinely work.** Filters that filter, sorts that sort, edits that persist.
    Name the interactions, not just the screens.
@@ -162,7 +162,7 @@ have to ask.
 ## Stage 3 — Build
 
 Build exclusively from Recursica components and tokens. No raw adapter primitives where a
-Recursica component exists, no custom CSS values, no one-off colours, no hand-rolled
+Recursica component exists, no custom CSS values, no one-off colors, no hand-rolled
 components. Follow the target repository's conventions for where things live.
 
 **The styling escape hatch is a gap report, not a permission.** Before using it, ask: is there
@@ -195,7 +195,7 @@ file and a line. She writes nothing, so the fixes stay yours.
 | **1** | One Barb pass over the skills the changed components pull in. | **The default.** |
 | **2** | Full Barb fan-out, repeated until two consecutive clean rounds. | On request, or before anything merges that matters. |
 
-**State the tier in the pull request.** An unlabelled review is the dangerous one — a reader
+**State the tier in the pull request.** An unlabeled review is the dangerous one — a reader
 cannot tell a cheap pass from a thorough one, so they assume the thorough one.
 
 When you dispatch her:
@@ -274,7 +274,7 @@ Read the summary, and look at every screenshot it names.
   the designer's markings — arrows, strokes, numbered dots the text may refer to. They point at
   things; they are never part of the design. The clean one shows what was actually on the page.
 - **The Forge version** on the page line is the theme the page was running. If it differs from
-  the prototype's current theme, say so before treating a colour or spacing comment as a defect.
+  the prototype's current theme, say so before treating a color or spacing comment as a defect.
 - **Comment numbers only hold for this report.** They shift when a comment is deleted, so answer
   by number for this report and never carry a number to another one.
 
@@ -302,7 +302,7 @@ so — he credits it that way in the pull request he proposes:
 
 - the feedback would apply to every screen like this one, not just this product — the
   designer is correcting what a rule told you to do, or supplying a rule that does not exist yet
-- a theme value is wrong — a colour, a spacing step, a type size. You cannot fix it without the
+- a theme value is wrong — a color, a spacing step, a type size. You cannot fix it without the
   styling escape hatch, which is a gap report, not a permission.
 
 An adapter component that misbehaves goes on your own defect list for Stage 6. You never edit the
@@ -364,7 +364,7 @@ around by writing components outside the system.
 ## How you talk
 
 Direct and brief. Name what you did, what you found, or what you need. Never post a bare
-acknowledgement. When you are mid-build, say so with the URL rather than going quiet. If you do
+acknowledgment. When you are mid-build, say so with the URL rather than going quiet. If you do
 not know something, say so and then find out — by reading the code, running the app, or asking
 the person who knows.
 

@@ -91,7 +91,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Do not choose between Elevation and Outline at random** — which one a surface uses is not stated. See the uncovered list.
 
-**A card sits on a layer; it is not an alternative to one.** A layer is a numbered level that sets which colors the components inside it use. The card has its own set of colours for each of the four layer levels, so the layer it is placed on changes how it looks. A layer is a surface and a token scope (the area in which one set of design values applies); a card is the boundary of an object among repeating peers. See `recursica-skill-layers`.
+**A card sits on a layer; it is not an alternative to one.** A layer is a numbered level that sets which colors the components inside it use. The card has its own set of colors for each of the four layer levels, so the layer it is placed on changes how it looks. A layer is a surface and a token scope (the area in which one set of design values applies); a card is the boundary of an object among repeating peers. See `recursica-skill-layers`.
 
 ## Rules for using it
 
@@ -131,7 +131,7 @@ A card set is a list of objects, and it must be announced as one. Two failures m
 - **Nothing may appear on hover.** Actions revealed by hovering over a card cannot be reached by keyboard or by touch. A card's actions stay visible, or they are in a menu that can itself be reached.
 - **The tab order runs card by card**, following the visual order — not column by column against the layout.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them:
 

@@ -38,7 +38,7 @@ node <knowledge checkout>/scripts/read-snippy-report.mjs <report.html>
 
 It prints the path of a short `summary.md`, with each screenshot saved beside it. The summary gives each comment's page (the path and query only), its text, the element the designer picked with its captured HTML and styles, and its screenshots — the annotated one shows the designer's markings, which point and are never part of the design, and the clean one shows the page. A comment with no text is feedback carried by its screenshot. The page line also gives the Forge theme version the page was running, which a Forge issue needs.
 
-**Comment numbers shift between reports**, so a correction repeated across reports is recognised by what it says and which rule it touches, never by its number.
+**Comment numbers shift between reports**, so a correction repeated across reports is recognized by what it says and which rule it touches, never by its number.
 
 **The reader removes everything personal** — the reviewer's name, email and machine, the Details line, the page's host — and replaces email addresses and phone numbers. Never go back to the original file for them. What is left can still show a client's screen or data, so it is evidence you describe, never text you quote: no comment text, captured HTML or screenshot goes into a commit, a pull request or an issue.
 
@@ -66,7 +66,7 @@ Most feedback is not a new rule. Work out which of these it is before you write 
 - **A new or changed rule.** The skills are silent or wrong, and the feedback says what should be true in general.
 - **A decision nobody has made.** See "When the feedback is not a rule" below.
 - **A defect in an adapter.** A component that ships behaving differently from its skill, a prop that does not exist, or a component using the wrong token. File an issue on that adapter — see "When the problem is in an adapter or a theme" below. **A library default is not a house rule** — where a Mantine or Material default disagrees with a Recursica rule, the rule wins and the default is a defect to report. It never becomes evidence that the rule is wrong.
-- **A theme problem.** The right token is used, but its value is wrong — a colour, a spacing step, a radius, a type size, a contrast that fails in one theme. Values like these are what each component skill's `## Not your decision` section hands to the tokens, so they are never fixed in a skill. File an issue on Theme Forge.
+- **A theme problem.** The right token is used, but its value is wrong — a color, a spacing step, a radius, a type size, a contrast that fails in one theme. Values like these are what each component skill's `## Decided elsewhere` section hands to the tokens, so they are never fixed in a skill. File an issue on Theme Forge.
 - **A complaint about a builder or a tool.** These are never design rules.
 
 ### Treat feedback as directive but verifiable
@@ -79,7 +79,7 @@ If feedback contradicts something already in the skills, do not quietly overwrit
 
 **One issue per pull request, on its own branch from `origin/main`.** A branch carrying two unrelated rule changes forces whoever reviews it to accept both or neither.
 
-**Change the smallest thing that fixes the problem.** Keep the skill's voice and structure: every skill follows one shape, and a section that reads differently from its neighbours is read as an exception to them. Match the surrounding prose rather than improving it.
+**Change the smallest thing that fixes the problem.** Write it the way `WRITING.md` in that checkout says — American English, no "you", concrete words — and keep the skill's structure: every skill follows one shape, and a section that reads differently from its neighbors is read as an exception to them. Match the surrounding prose rather than improving it.
 
 **If you add a rule, add its pre-flight checklist item too.** A rule with no checklist line is a rule a reviewer cannot test, which makes it documentation rather than a standard — and it will be broken as often as the rule that prompted you.
 

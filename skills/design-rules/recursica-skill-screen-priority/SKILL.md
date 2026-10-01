@@ -57,7 +57,7 @@ These rules assume **complex enterprise web applications**, where people are doi
 
 **The user's actual workflow wins over any stakeholder.** If the user needs it, it comes first.
 
-**A stakeholder may overrule you anyway**, even where it harms the workflow. That is a real outcome, not a failure of the rule — good user-centred design still means arguing from the user's point of view.
+**A stakeholder may overrule you anyway**, even where it harms the workflow. That is a real outcome, not a failure of the rule — good user-centered design still means arguing from the user's point of view.
 
 **Business units rarely have competing requirements — they have different ones.** Treat them as fitting together, and resolve them by understanding the workflow and matching the user's mental model (a person's picture of how something works), rather than by judging between departments.
 
@@ -179,7 +179,7 @@ Treating the two as one leaves the user unable to tell whether to change their f
 
 **When you find a breach, raise it instead of quietly fixing it.** Bring it to the user, let them decide which way it should go, and then apply that decision across the whole application.
 
-## Not your decision
+## Decided elsewhere
 
 - **Type styles, spacing tokens, and the layout grid.** These come from the design system.
 - **The page's structure** — header, rail, footer, title, breadcrumb. `recursica-skill-screen-scaffolding`.

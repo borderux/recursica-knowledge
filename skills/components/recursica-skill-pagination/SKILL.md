@@ -95,7 +95,7 @@ Pagination is a row of small controls that all look alike and, left alone, all s
 - **A control that cannot be used is not a tab stop**, so any reason shown only by how it looks cannot be reached by keyboard. Put the reason in text.
 - **Add no custom key handling inside the component.** Keyboard behavior inside a component is owned by the underlying coded library — `recursica-skill-navigation`.
 
-## Not your decision
+## Decided elsewhere
 
 Do not implement, override, or tune any of these — the component owns them:
 

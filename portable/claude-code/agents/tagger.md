@@ -64,7 +64,7 @@ It rejects a tag when: `tag_id` is not an `active` tag in the library; `confiden
 **that tag's own** `confidence_threshold`; `line_id` is outside the range you were given;
 `justification` is empty.
 
-None of those are judgement calls it is taking from you — they are the rules you would
+None of those are judgment calls it is taking from you — they are the rules you would
 otherwise have to apply by hand, applied consistently. A rejection means re-judge or drop that
 row, not work around the check.
 

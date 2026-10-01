@@ -104,7 +104,7 @@ There are two tests, and a value must pass both.
 
 **There is no rule for measuring that.** This was said outright. So it is never settled by an agent's own judgment: where a default has a real cost for a minority of users, point out the trade-off and let a person decide.
 
-## Not your decision
+## Decided elsewhere
 
 - **Which default applies where no safe one exists.** A stakeholder decides this, as part of the user flow.
 - **Whether a default that serves the majority is worth what it costs the minority.** There is no way to measure it, so escalate.
