@@ -484,9 +484,9 @@ error rather than a guess. Run `skills:manifest:check` after an adapter upgrade.
 
 For detailed information on what this project is, what it does, and how it is structured, please read **[README.md](README.md)**.
 
-## ✍️ How everything here is written
+## ✍️ Writing rules
 
-**[WRITING.md](WRITING.md) is the writing guide for skills, agent instructions, docs, commits, pull requests and issues.** American English, no "you" (apart from an agent's identity line), concrete words, short and direct. Read it before writing or reviewing any text in this repository. `npm run writing:check` enforces the parts a script can check.
+**Follow [WRITING.md](WRITING.md) when writing or reviewing any text in this repository, including commits, pull requests and issues.**
 
 ---
 

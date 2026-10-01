@@ -6,7 +6,7 @@ This guide sets the writing rules for this repository. Agents are the main reade
 
 ### 1. American English
 
-Use American spelling and the AP style guide, the copy standard `recursica-skill-typography-semantics` already sets.
+Use American spelling and the AP style guide.
 
 | Write     | Not       |
 | --------- | --------- |
@@ -59,11 +59,11 @@ Name the specific component, action or result. A reader should be able to pictur
 
 **Say what to do, not what something must earn or deserve.** Write "Leave out a column that most rows have no value for", not "A column has to earn its place." Swapping one metaphor for another ("worth its width") does not fix it.
 
-**Say it in the affirmative, the simplest way.** No double negatives and no complicated negative statements. Write "Keep markup correct, even when a screen reader reads more because of it", not "Do not change correct markup to reduce how much a screen reader says." A plain prohibition is fine when it is already the simplest form: "Never use a badge to show an error."
+**Say it in the affirmative, the simplest way.** No double negatives and no complicated negative statements. Write "Keep markup correct, even when a screen reader reads more because of it", not "Do not change correct markup to reduce how much a screen reader says." A plain prohibition is fine when it is the simplest form: "Never use a badge to show an error."
 
 **Name the cost.** "Has a cost" says nothing until the cost is named. Write what happens: "KPI tiles take the top of the page and push the content down."
 
-**Use the term designers already use.** "Skeleton screen", not "gray bars where text will be"; "KPI tiles", not "summary figures". Look the term up when unsure.
+**Use the term designers use.** "Skeleton screen", not "gray bars where text will be"; "KPI tiles", not "summary figures". Look the term up when unsure.
 
 **No metaphors.** A summary row is not "furniture", and a misused badge is not "wearing another component's clothes". Say what is wrong.
 
@@ -74,7 +74,8 @@ Name the specific component, action or result. A reader should be able to pictur
 - **Lead with the rule.** The first sentence of a paragraph says what to do. The reason follows.
 - **Give the reason once, in one sentence.** The reason lets a reader apply the rule to a case it does not name.
 - **One idea per sentence.** Split a sentence that needs a semicolon and a dash. Split a run-on joined by "so" into two sentences, and name what each one is about: not "The rest takes judgment, so read this before any change", but "Review catches what the check cannot."
-- **Cut filler:** "really", "genuinely", "actually", "simply", "just", "in practice", "it is worth noting". Use "quietly" only for something that happens without notice, as in "React ignores it without an error".
+- **Cut filler:** "really", "genuinely", "actually", "simply", "just", "already", "in practice", "it is worth noting". Use "quietly" only for something that happens without notice, as in "React ignores it without an error".
+- **State each rule in one place.** Either state the rule or link to the file that states it. Do not summarize another file's rule and then point to that file, which leaves two copies to keep in step.
 - **No setups.** Not "This is the judgment that matters most:" before a rule. State the rule.
 
 ### 5. Define only what a designer would not know
