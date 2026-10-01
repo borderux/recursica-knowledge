@@ -100,9 +100,9 @@ The component connects the label to the input, provides the focus ring, and hand
 - **Every control inside the field is its own tab stop** (a place the Tab key lands), and works from the keyboard — Enter or Space, not handlers that only respond to clicks.
 - **Do not move focus for the user.** No jumping ahead to the next field when a value looks complete, and no focus jumps on a keystroke. Both strand keyboard and screen reader users partway through typing.
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them:
+Do not set or override any of these. The component sets them:
 
 - `min-height`, `horizontal-padding`, `vertical-padding`, `border-size`, `border-radius`, and every gap.
 - Field width — `globals.form.field.size` sets `min-width` and `max-width`.

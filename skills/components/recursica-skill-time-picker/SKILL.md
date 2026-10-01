@@ -113,9 +113,9 @@ The component connects the label to the input, and provides the focus ring. The 
 - **Do not move focus for the user** when a value looks complete, and do not close the popover into a different field.
 - **Nothing needed to complete the field may appear only on hover** — not the format, not the time zone, and not the trigger.
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them:
+Do not set or override any of these. The component sets them:
 
 - `border-radius`, `horizontal-padding`, `vertical-padding`, `border-size`.
 - `width`, plus the field sizing from `globals.form.field.size`.

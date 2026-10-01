@@ -96,9 +96,9 @@ A tree is the component where the keyboard rules are the most specific, and the 
 - **Focus must never be moved for the user** when a node expands. Focus stays on the node they acted on.
 - **Never require hover to show a node's actions or its expand control.**
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them:
+Do not set or override any of these. The component sets them:
 
 - `indent` — the depth offset for every level.
 - `item-gap`, `button-node-gap`.

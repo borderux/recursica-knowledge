@@ -1,6 +1,6 @@
 # Writing guide
 
-How everything in this repository is written: skills, agent instructions, the glossary, `AGENT.md`, `README.md`, contribution guides, commit messages, pull requests and issues.
+This guide sets the writing rules for this repository. They apply to skills, agent instructions, the glossary, `AGENT.md`, `README.md`, the contribution guides, commit messages, pull requests and issues.
 
 Agents are the main readers, and people read the same text. Clear writing serves both. A sentence a designer has to read twice is one an agent can misapply.
 
@@ -31,14 +31,14 @@ The check fails on these and their other forms.
 
 ### 2. No "you"
 
-The reader is never the subject. Write about the thing, or give the instruction directly.
+The reader is never the subject. Write about the component or the screen, or give the instruction directly.
 
 | Kind of text   | Write it as                         | Example                                                                |
 | -------------- | ----------------------------------- | ---------------------------------------------------------------------- |
 | An instruction | the imperative                      | "Use a table for many records of one type."                            |
-| A rule         | a statement about the thing         | "A badge holds one value."                                             |
+| A rule         | a statement about the component     | "A badge holds one value."                                             |
 | A checklist    | a short fact a reviewer can confirm | "- [ ] Where horizontal scrolling must be used, a reason is provided." |
-| A heading      | the topic                           | "## Decided elsewhere", not "## Not your decision"                     |
+| A heading      | the topic                           | "## Set by the component", not "## Not your decision"                  |
 
 **Removing "you" means rewriting the sentence, not making it passive.** "Side by side is the value you have to pass" does not improve as "the value that has to be passed". Say what to do: "Set `formLayout=\"side-by-side\"` on every field to put the label beside the input." If a rewrite is no clearer than the original, it is not finished.
 
@@ -76,6 +76,7 @@ Name the actual thing, the actual action, the actual result. A reader should be 
 
 ### 4. Short and direct
 
+- **Write complete sentences, with a subject and a verb.** Never open a document, a paragraph or a list item with a fragment such as "How everything is written:" or "How wide a panel is." Write "This guide sets the writing rules for this repository." A list item that names a topic uses a plain noun phrase: "Panel width."
 - **Lead with the rule.** The first sentence of a paragraph says what to do. The reason follows.
 - **Give the reason once, in a sentence.** A reason helps a reader apply a rule to a case the rule does not name. An essay does not.
 - **One idea per sentence.** Split a sentence that needs a semicolon and a dash.

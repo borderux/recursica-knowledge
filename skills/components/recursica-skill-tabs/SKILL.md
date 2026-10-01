@@ -91,9 +91,9 @@ A tab set is one of the few components where getting the meaning in the markup w
 - **Never activate a tab just because it receives focus** where activating it is costly or navigates — the user must be able to move across the set and then choose.
 - **A tab is activated with Enter or Space**, never by click only.
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them:
+Do not set or override any of these. The component sets them:
 
 - Padding, gaps, the active indicator, and its animation.
 - Type styling and selected-state weight.

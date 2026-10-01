@@ -15,7 +15,7 @@ A hover card or a popover reveals richer content beside the element that trigger
 
 - **A preview saves the user a trip** — a mini profile from an avatar or a username, a product summary from a product name, a page preview from a link.
 - **The content is richer than a phrase** — more than one line, an image, or a small set of structured details.
-- **Everything inside really is optional.** If the user never opens it, they lose nothing.
+- **Everything inside is optional.** If the user never opens it, they lose nothing.
 
 ## Do not use it when
 
@@ -28,9 +28,9 @@ A hover card or a popover reveals richer content beside the element that trigger
 | The user needs the content while working in the page | `recursica-skill-panel`, or a region on the page itself   |
 | The content is a form, or any form control           | A page or a modal — `recursica-skill-forms`               |
 | A primary action needs somewhere to live             | A button on the surface — `recursica-skill-buttons-links` |
-| The content is the only place a value exists         | The page, plus this if you still want the preview         |
+| The content is the only place a value exists         | The page, plus this as an optional preview                |
 
-**A path that only a pointer can follow is the failure most often built into this component.** A surface revealed on hover that contains a button, a link, or a value found nowhere else cannot be reached by keyboard, and cannot be used on touch. `recursica-skill-discoverability` says clearly that it does not allow hiding something the user would want to reach — and hiding it behind hover is the worst version of that.
+**A path that only a pointer can follow is the failure most often built into this component.** A surface revealed on hover that contains a button, a link, or a value found nowhere else cannot be reached by keyboard, and cannot be used on touch. `recursica-skill-discoverability` forbids hiding anything the user would want to reach, and hiding it behind hover is the worst case.
 
 ## What exists
 
@@ -38,13 +38,13 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **What the component provides:** a content area and a beak — the pointer connecting the card to its target. `beak-size` is set by tokens; unlike the tooltip, there is no `beak-inset`.
 
-**You cannot set the placement.** There is no top, left, right, or bottom option. Do not pass a position prop, and do not position the beak by hand.
+**There is no placement option.** There is no top, left, right, or bottom option. Do not pass a position prop, and do not position the beak by hand.
 
 **There is no size axis.** `min-width` and `max-width` are fixed. Content that does not fit inside them is page content.
 
 **There is no content-type axis.** `content-text` is the only content property in the UI kit. A custom content type is shown only on the design-system website — see Uncovered.
 
-**Nothing in the UI kit tells hover behavior apart from click behavior — but the house does, and the two are different components.** One token spec is behind both. The behavior you build decides which one you have made, and it decides every accessibility requirement below. State which one you are building.
+**Nothing in the UI kit tells hover behavior apart from click behavior — but the house does, and the two are different components.** One token spec is behind both. Its behavior decides which of the two it is, and that decides every accessibility requirement below. Before building, state whether it is a hover card or a popover.
 
 |                                 | **Hover card**                                  | **Popover**                                                                                         |
 | ------------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------- |
@@ -62,14 +62,14 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Rules for using it
 
-**Decide, and state, which of the two you are building before you build it.** There are exactly two valid shapes, and their requirements differ:
+**Before building, decide and state which of the two it is.** There are exactly two valid choices, and their requirements differ:
 
 - **Hover card** — opens on pointer hover, contains nothing interactive, and holds nothing the user needs. A read-only preview, and nothing else.
 - **Popover** — opened by a real trigger with a click, Enter, or Space. May contain interactive content, and can be fully used by keyboard, including returning focus.
 
 A surface that opens on hover and has a control in it is not a third option; it is the failure.
 
-**If it contains anything interactive, it is a popover.** One link inside is enough to push it over the line — and that means a real button trigger, opening from the keyboard, and managing focus.
+**If it contains anything interactive, it is a popover.** One link inside is enough to make it a popover — and that means a real button trigger, opening from the keyboard, and managing focus.
 
 **A hover card holds nothing the user needs.** Not the only copy of a value, not an action, and not an explanation needed to move forward. If the content is required, it belongs on the page.
 
@@ -85,7 +85,7 @@ A surface that opens on hover and has a control in it is not a third option; it 
 
 **Anything interactive means it is a popover, so build it as one** — with a real button as the trigger, the ability to open from the keyboard, and focus moving in when it opens and back to the trigger when it closes. A hover card with a button inside it cannot be reached by anyone not using a pointer.
 
-**On a touch device, a hover card has no trigger at all.** Where the content matters on touch, the answer is a popover — not a hover card with a tap fallback tacked on.
+**On a touch device, a hover card has no trigger at all.** Where the content matters on touch, build a popover — not a hover card that also opens on tap.
 
 **It is not where a primary action goes.** One primary action per surface, out in the open — `recursica-skill-buttons-links`.
 
@@ -93,14 +93,14 @@ A surface that opens on hover and has a control in it is not a third option; it 
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
 
-The two kinds have truly different requirements, and there is no safe middle ground. Name which one you are building, then meet that column completely. A build that half-meets both is the pointer trap this section exists to prevent.
+The two kinds have different requirements, and no build between them is safe. Name the kind, then meet every requirement in its column. A build that meets half of each leaves content that only a pointer can reach, which is what this section prevents.
 
 ### Screen readers
 
 - **A popover's trigger must announce that it opens something, and whether it is open right now.** Without the open state, activating it seems to do nothing.
 - **A popover needs an accessible name** (the name a screen reader reads out for a control) — its heading, or the name of the trigger that opened it — so a user who lands in it knows what they are in.
 - **A hover card's content must be connected to its target as a description**, if it carries any meaning at all. Content that appears next to a target but is connected to nothing is announced as unrelated text, or not announced at all.
-- **A hover card's content may go unread, and that must be acceptable.** This is the whole reason a hover card may hold nothing that is needed. If you cannot accept it going unread, you are building a popover.
+- **A hover card's content may go unread, and that must be acceptable.** This is the whole reason a hover card may hold nothing that is needed. Content that must be read belongs in a popover.
 - **Anything interactive inside a popover needs a real accessible name**, exactly as it would on the page.
 - **Never put meaning here that exists nowhere else.** `recursica-skill-system-conventions` requires a second channel for any meaning the user must receive.
 - **Do not announce the card as an alert.** It is content revealed when asked for, not something that interrupts.
@@ -108,20 +108,20 @@ The two kinds have truly different requirements, and there is no safe middle gro
 
 ### Keyboard and non-mouse navigation
 
-- **A popover must open from the keyboard.** Its trigger is a real button in the tab order, opened with Enter or Space. If it opens only on hover, everything inside cannot be reached.
+- **A popover must open from the keyboard.** Its trigger is a real button in the tab order, opened with Enter or Space. If it opens only on hover, nothing inside can be reached by keyboard.
 - **Focus moves into the popover when it opens, and returns to the trigger when it closes.** Every way of closing it — Escape, activating something inside, clicking away — returns focus to the trigger.
 - **Escape closes the popover**, and returns focus to the trigger.
 - **Every control inside a popover is a tab stop (a place the Tab key lands), in visual order.** Nothing interactive may live in a surface that only a pointer can reach.
 - **Do not trap focus.** A popover does not block the page. `recursica-skill-modal` is the component that does, and it is the only one that traps focus.
-- **A hover card must contain no tab stops at all.** It has none of the machinery above. The moment you need a tab stop, you are building a popover.
+- **A hover card must contain no tab stops at all.** It has none of the machinery above. Content that needs a tab stop belongs in a popover.
 - **A hover card must also appear when its target receives keyboard focus**, if the target can receive focus, and it must close with Escape without moving focus.
 - **A hover card must stay open while the pointer travels from the target into the card.** One that disappears in the gap cannot be read — and cannot be read at all by anyone with unsteady pointer control.
 - **A hover card never takes focus.** Focus is never moved for the user by something they only hovered over.
 - **Nothing needed may appear only on hover.** This is the single rule the whole component depends on.
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them:
+Do not set or override any of these. The component sets them:
 
 - `colors`, `content-text`.
 - `border-radius`, `border-size`.
@@ -129,7 +129,7 @@ Do not implement, override, or tune any of these — the component owns them:
 - `min-width`, `max-width`.
 - `beak-size`, `elevation`.
 
-The beak is part of the component. Do not draw your own, and do not reposition the one provided.
+The beak is part of the component. Do not draw a separate beak, and do not reposition the one provided.
 
 ## Load these too
 
@@ -144,7 +144,7 @@ The beak is part of the component. Do not draw your own, and do not reposition t
 
 ## Uncovered — ask, do not invent
 
-- **Whether the single token spec should become two.** The behaviors are settled and documented separately, but one spec is behind both, so nothing in the inventory tells you which properties a popover uses versus a hover card. Ask before assuming they can look different.
+- **Whether the single token spec should become two.** The behaviors are settled and documented separately, but one spec is behind both, so the inventory does not say which properties a popover uses and which a hover card uses. Ask before assuming they can look different.
 - **Placement.** Four positions — top, left, right, bottom — and three beak alignments — start, middle, end — are shown only on the design-system website, with no tokens behind them. Do not rely on them without asking, and no rule covers what happens at the edge of the viewport.
 - **The delay before showing, the delay before hiding, and the grace period** while the pointer crosses from the target to the card. No token or rule defines any of them.
 - **Custom content.** Content types of text and custom are shown only on the design-system website, but the UI kit only offers `content-text`. Do not rely on this without asking.
@@ -154,8 +154,8 @@ The beak is part of the component. Do not draw your own, and do not reposition t
 
 ## Pre-flight checklist
 
-- [ ] Which of the two you are building — hover card or popover — is a clear, stated decision.
-- [ ] The content is richer than a phrase, and you sent any short label to `recursica-skill-tooltip` instead.
+- [ ] Whether it is a hover card or a popover is decided and stated.
+- [ ] The content is richer than a phrase, and any short label uses `recursica-skill-tooltip` instead.
 - [ ] Nothing inside is needed to finish a task, and nothing inside exists only here.
 - [ ] No form, form control, primary action, or list of actions is inside it.
 - [ ] No card wraps the content.
@@ -166,6 +166,6 @@ The beak is part of the component. Do not draw your own, and do not reposition t
 - [ ] A hover card's meaning is connected to its target as a description, and it is acceptable for it to go unread.
 - [ ] Images inside have alternative text, or are marked as decorative.
 - [ ] Nothing needed appears only on hover, and the focus ring is intact everywhere.
-- [ ] You passed no placement, size, or content variant — none exists.
-- [ ] You overrode no padding, width, color, elevation, or beak styling that the component owns.
-- [ ] You invented nothing from the uncovered list.
+- [ ] No placement, size, or content variant is set on it — none exists.
+- [ ] Padding, width, color, elevation, and beak styling come from the component.
+- [ ] Uncovered items were asked about, not decided: whether the single token spec should become two, placement, the show and hide delays and the grace period, custom content, behavior on touch, a popover opened from a menu, a modal, or another popover, and closing a popover by clicking the page behind it.

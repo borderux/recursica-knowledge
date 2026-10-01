@@ -104,9 +104,9 @@ The component provides the focus ring, the thumb, and the keys inside the track.
 - **Do not move focus for the user** — not when the value reaches an end, and not when the number input is saved.
 - **Nothing needed to use the slider may appear only on hover.** The current value, the ends of the range, and the step size all stay on screen, or they do not exist.
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them:
+Do not set or override any of these. The component sets them:
 
 - `track-height`, `track-border-radius`, `thumb-size`, `thumb-border-radius`, `thumb-elevation`.
 - `step-indicator-width`, `step-indicator-border-radius`.

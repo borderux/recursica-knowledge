@@ -87,9 +87,9 @@ This component helps only when it is connected to its field in code. Text shown 
 - **Do not move focus when an error appears.** The user is in the middle of typing, and pulling focus to the message loses their place. Managing focus on submit belongs to `recursica-skill-forms`.
 - **A field with an error must stay reachable in its place** — never reorder fields to group the errors together.
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them:
+Do not set or override any of these. The component sets them:
 
 - `text` styling per type.
 - `icon-size`, `icon-text-gap`, and the icon itself.

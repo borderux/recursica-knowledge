@@ -117,9 +117,9 @@ The component connects the label to the input, and provides the focus ring. Ever
 - **Never make resizing necessary to read or finish the value.** A drag handle cannot be used from the keyboard, so the field must be usable at the size it is given.
 - **Nothing needed to complete the field may appear only on hover** — not the limit, and not the rule.
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them:
+Do not set or override any of these. The component sets them:
 
 - `border-radius`, `horizontal-padding`, `vertical-padding`, `border-size`.
 - `rows` — the field's height. It is fixed by the component.

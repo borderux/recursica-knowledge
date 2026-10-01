@@ -131,9 +131,9 @@ A card set is a list of objects, and it must be announced as one. Two failures m
 - **Nothing may appear on hover.** Actions revealed by hovering over a card cannot be reached by keyboard or by touch. A card's actions stay visible, or they are in a menu that can itself be reached.
 - **The tab order runs card by card**, following the visual order — not column by column against the layout.
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them:
+Do not set or override any of these. The component sets them:
 
 - `padding`, `header-padding`, `footer-padding`, `section-gap`, `vertical-gutter`.
 - `borders`, `elevations`, `divider-size`, `colors`.

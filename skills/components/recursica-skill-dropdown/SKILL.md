@@ -15,7 +15,7 @@ A dropdown is a form field that hides its options until it is opened, and return
 
 - **The set of answers is specific and finite**, and the user picks from it instead of typing.
 - **There are more options than the limit for a visible group** — more than 7 ± 2.
-- **Space is the constraint.** A dropdown is compact, so it can replace a checklist or a radio group where a long form cannot afford the extra scrolling.
+- **Space is the constraint.** A dropdown is compact, so it can replace a checklist or a radio group in a long form where the visible options would add too much scrolling.
 - **The user already knows what is inside before they open it.** See the affordance test below.
 
 ## Do not use it when
@@ -32,7 +32,7 @@ A dropdown is a form field that hides its options until it is opened, and return
 | The value is binary, with a known opposite                          | `recursica-skill-switch`                                                       |
 | This user can never edit the value                                  | `recursica-skill-read-only-field` — shows the label and text, with no input    |
 
-**A disabled dropdown is not a way to show a value.** If nobody can ever change it here, it is not a form control.
+**Never use a disabled dropdown to show a value.** If nobody can ever change it here, it is not a form control.
 
 ## What exists
 
@@ -66,13 +66,13 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 **Run the affordance test before choosing this control: does the user know what is in there before they click it?** A dropdown hides its options, so there is no affordance (a visible cue that a control can be used, such as the underline on a link) for what is inside. The set has to be predictable.
 
 - **Good:** US states. A fixed list, in alphabetical order, and everyone has a rough idea of how many there are.
-- **Bad:** fifty unrelated values with nothing in common. Overwhelming, and mentally expensive to pick from.
+- **Bad:** fifty unrelated values with nothing in common. The user has to read and compare every option to pick one.
 
 **Four options is the minimum.** Below four, the options belong on the page as radio buttons; hiding three things gains nothing.
 
-**Length costs little when the user is recognizing a value, and a lot when they are comparing choices.** Fifty states is fine; fifty things the user must read and weigh up is not. See `recursica-skill-working-memory`.
+**A long list is acceptable when the user is recognizing a value, and not when the user is comparing choices.** Fifty states is fine; fifty things the user must read and weigh up is not. See `recursica-skill-working-memory`.
 
-**Provide a sensible default where one really is correct** for nearly everyone. Never pre-select a value the user would have to think about, look up, or check. A default the user cannot check is worse than an empty field, because it gets submitted without being checked.
+**Provide a sensible default where one is correct** for nearly everyone. Never pre-select a value the user would have to think about, look up, or check. A default the user cannot check is worse than an empty field, because it gets submitted without being checked.
 
 **Where there is no sensible default, the field shows placeholder text.** That placeholder never carries required information, and never stands in for the label.
 
@@ -92,7 +92,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Disabled and read-only are different components, not two styles of one.**
 
-- **Disabled dropdown** — still a field, still clearly an input, just not usable right now. Use it when the user could make it usable by doing something else first.
+- **Disabled dropdown** — still a field, still clearly an input, but not usable right now. Use it when the user could make it usable by doing something else first.
 - **Read-only field** — a different component entirely, with no input. Use it when this user never changes this value here.
 
 **Never disable a dropdown as the only explanation.** The keyboard skips a disabled field, so the reason must be in text nearby.
@@ -101,7 +101,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
-The component connects the label to the field, provides the focus ring, and owns the open-and-select interaction. What that interaction announces, and everything below, is up to you. A dropdown is the control where "it works with a mouse" hides the most failures.
+The component connects the label to the field, provides the focus ring, and owns the open-and-select interaction. Everything listed below, including what that interaction announces, is the application's responsibility. Of all controls, a dropdown is the one most likely to work with a mouse and fail with a keyboard or a screen reader.
 
 ### Screen readers
 
@@ -121,14 +121,14 @@ The component connects the label to the field, provides the focus ring, and owns
 - **The dropdown is one tab stop (a place the Tab key lands), whether open or closed.** Tab must never step through the options. While the list is open, Tab either closes it or moves past the whole field.
 - **Enter, Space, and Down open the list.** Arrow Up and Down move the active option, Home and End jump to the first and last option, and Enter selects the active option and closes the list.
 - **Escape closes the list without changing the value, and focus returns to the field.** This is not optional, and focus must never drop to the top of the page or to the body.
-- **The library owns how keys work inside the control**, including type-ahead on a letter key (typing a letter jumps to an option that starts with it) and any wrapping around at the ends of the list. Do not attach your own key listeners, and do not rebuild moving or selecting.
-- **Do not move focus into the list.** The field keeps focus and points to the active option. A dropdown that moves real focus into a popup breaks the way back.
+- **The library handles every key press inside the control**, including type-ahead on a letter key (typing a letter jumps to an option that starts with it) and any wrapping around at the ends of the list. Do not attach extra key listeners, and do not rebuild moving or selecting.
+- **Do not move focus into the list.** The field keeps focus and points to the active option. If real focus moves into a popup, it can be lost when the popup closes instead of returning to the field.
 - **Do not move focus for the user after a selection.** No jumping ahead to the next field because a value now exists.
 - **Everything reachable by mouse must be reachable by key.** Nothing about opening, moving through, or choosing may depend on a pointer, and nothing needed may appear only on hover.
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them:
+Do not set or override any of these. The component sets them:
 
 - `border-radius`, `min-height`, `horizontal-padding`, `vertical-padding`, `border-size`.
 - `icon-size` and `icon-text-gap`.
@@ -138,7 +138,7 @@ Do not implement, override, or tune any of these — the component owns them:
 - The label-to-field gaps and the spacing between fields — `globals.form.properties.label-field-gap-horizontal`, `label-field-gap-vertical`, `vertical-item-gap`.
 - The label-to-field association, the expand indicator, hover and active styling, the focus ring, and the open-and-select keyboard behavior.
 
-Never style an unfocused dropdown so that it reads as disabled. An editable field must look editable at rest.
+Never style an unfocused dropdown so that it looks disabled. An editable field must look editable at rest.
 
 ## Load these too
 
@@ -167,7 +167,7 @@ Never style an unfocused dropdown so that it reads as disabled. An editable fiel
 - [ ] The set of options passes the affordance test — the user knows what is inside before opening it.
 - [ ] There are at least four options; smaller sets are radio buttons.
 - [ ] The set is above the limit for a visible group, or saving space in a long form justified collapsing it.
-- [ ] Any default really is correct for nearly everyone, and nothing the user would have to check is pre-selected.
+- [ ] Any default is correct for nearly everyone, and nothing the user would have to check is pre-selected.
 - [ ] Where there is no default, placeholder text is used, and it carries no required information.
 - [ ] A real label is passed, it makes sense on its own, and the placeholder is not doing its job.
 - [ ] Label placement is side by side, unless the container is too narrow.
@@ -176,10 +176,10 @@ Never style an unfocused dropdown so that it reads as disabled. An editable fiel
 - [ ] Selection rules are in assistive text. On error, it is replaced by a message that restates the rule, with a signal that is not color.
 - [ ] The expanded state, the number of options, the active option, and the selected value are all announced.
 - [ ] The field is one tab stop. Enter, Space, and Down open it; the arrows, Home, and End move; Enter selects; and Escape closes it and returns focus to the field.
-- [ ] You overrode no key handling inside the control, and real focus never moves into the list.
+- [ ] Key handling inside the control comes from the library, and real focus never moves into the list.
 - [ ] Focus is never moved for the user after a selection.
 - [ ] Nothing needed requires hover or a pointer. The focus ring is intact, and looks different from the active and selected option styles.
 - [ ] Disabled is used only for fields that are unavailable for now, with the reason in text. Values that can never be edited use the read-only field.
-- [ ] You passed no variant, size, or state outside the inventory above, overrode no property the component owns, and no field without focus looks disabled.
+- [ ] Every variant, size, and state is from the inventory above, every property the component owns comes from the component, and no field without focus looks disabled.
 - [ ] The field saves with the form, in the same save mode as everything else in the system.
-- [ ] You invented nothing from the uncovered list: multi-select, the menu's details, the autocomplete threshold, clearing, grouped options, and empty sets.
+- [ ] Uncovered items were asked about, not decided: multi-select, the menu's details, the autocomplete threshold, clearing, grouped options, and empty sets.

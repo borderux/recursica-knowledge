@@ -96,9 +96,9 @@ A chip group is a form control that happens to be laid out horizontally, and it 
 - **After a chip is removed, move focus on purpose** — to the next chip, or to the group if none are left. Focus left on a removed element is lost, and the user is quietly sent back to the top of the document.
 - **Never require hover to reveal the close control.** A dismiss that appears on hover cannot be reached by keyboard or by touch.
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them:
+Do not set or override any of these. The component sets them:
 
 - `horizontal-padding`, `vertical-padding`, `border-size`, `border-radius`, `elevation`.
 - `min-width`, `max-width`, `text`, `text-size`.

@@ -32,7 +32,7 @@ A menu is a temporary list of choices or actions. A trigger opens it, and dismis
 | The content is rich detail that cannot be acted on | `recursica-skill-hover-card-popover`                                                                |
 | A short text label for an icon-only control        | `recursica-skill-tooltip`                                                                           |
 
-**Do not hide a primary action in a menu.** Put it in the open. A menu is where the secondary and tertiary actions go, once the primary one has been named.
+**Do not hide a primary action in a menu.** Show it as a button. A menu holds the secondary and tertiary actions.
 
 ## What exists
 
@@ -46,15 +46,15 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Which one owns what:** `menu` is the container — its width limits, padding, `max-height`, the gap between items, and the dividers. `menu-item` is one row: a leading icon, a trailing icon, a label, and supporting text.
 
-**A menu item can have a second line.** `supporting-text` and `text-gap` exist, so an item may be a label plus one line of description. Use it where the label alone is unclear. It is a line, not a paragraph.
+**A menu item can have a second line.** `supporting-text` and `text-gap` exist, so an item may be a label plus one line of description. Use it where the label alone is unclear. Keep it to one line, not a paragraph.
 
-**`selection-states` is an axis for selection, not for state.** `selected` marks a chosen value in a list of options. There is no destructive item and no danger item. Hover, focus, and active come from the component.
+**`selection-states` is for selection, not for other states.** `selected` marks a chosen value in a list of options. There is no destructive item and no danger item. Hover, focus, and active come from the component.
 
 **`menu-item` has a `disabled` state**, for an item the user can unlock — see the permissions rule below. How it is set is in the uncovered list.
 
-**The menu has a `max-height`, which means a long menu scrolls.** There are two consequences. First, a menu that scrolls hides its own length — the user cannot see how many options exist, and keyboard navigation has to scroll the list to follow focus. Second, and more important: **a long menu is a sign that the structure is wrong.** `recursica-skill-system-conventions` requires fixing the structure instead of adding a workaround to cope with it — and the scrolling area is that workaround. Group the items, or cut them down. Above about nine items, a list can no longer be scanned easily — see `recursica-skill-working-memory` for what that limit actually claims.
+**The menu has a `max-height`, so a long menu scrolls.** A scrolling menu hides its own length, so the user cannot see how many options exist. Keyboard navigation then has to scroll the list to follow focus. More important, **a long menu is a sign that the structure is wrong.** `recursica-skill-system-conventions` requires fixing the structure instead of adding a workaround, and a scrolling list is that workaround. Group the items, or cut them down. Above about nine items, a list can no longer be scanned easily — see `recursica-skill-working-memory` for what that limit claims.
 
-**There is no submenu construct.** A trailing chevron for a nested submenu that opens "on hover or click" is shown only on the design-system website. The UI kit defines no nested menu, and a house rule forbids opening on hover. Do not build one — see Uncovered.
+**There is no submenu.** A trailing chevron for a nested submenu that opens "on hover or click" is shown only on the design-system website. The UI kit defines no nested menu, and a house rule forbids opening on hover. Do not build one — see Uncovered.
 
 **There is no placement, size, density, or multi-select axis.** Do not pass a position.
 
@@ -70,11 +70,11 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Dividers group items; they do not decorate.** Use a divider to separate different sets of related items. A divider between every item is noise, and a divider with nothing on one side of it is a mistake.
 
-**A destructive item states the consequence in its words.** There is no destructive item state, so the label is the only channel (color, shape, position or text, each a separate signal), and confirmation is handled by `recursica-skill-modal`.
+**A destructive item states the consequence in its label.** There is no destructive item state, so the label is the only channel (color, shape, position or text, each a separate signal). `recursica-skill-modal` handles the confirmation.
 
 **Hide what the user can never do; disable what the user can unlock.** This is the permissions rule from `recursica-skill-navigation`. No permission means no item — not a disabled item, and not an item that fails when used.
 
-**A menu never holds something the user has to find to finish a task.** A gear that opens a column-visibility menu is a valid unadvertised affordance (a control that works but is not shown in the main interface, such as a keyboard shortcut). A menu that hides the only way to finish the work is not. See `recursica-skill-discoverability`.
+**A menu never holds the only way to finish a task.** A gear that opens a column-visibility menu is a valid unadvertised affordance (a control that works but is not shown in the main interface, such as a keyboard shortcut). A menu that hides the only way to finish the work is not. See `recursica-skill-discoverability`.
 
 **A row that has a menu is not a clickable row.** Two competing click targets in one row mean the user cannot predict what a click will do — `recursica-skill-tables`.
 
@@ -82,7 +82,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
 
-A menu is a component about managing focus. The list itself is easy. The trigger's state, the arrow keys, and returning focus when it closes are where menus fail — and a menu that opens on hover fails all three at once.
+Menu accessibility is mostly focus management. The list itself is easy to build. Menus fail on the trigger's state, the arrow keys, and returning focus when the menu closes. A menu that opens on hover fails all three at once.
 
 ### Screen readers
 
@@ -90,31 +90,31 @@ A menu is a component about managing focus. The list itself is easy. The trigger
 - **The trigger needs a real accessible name.** An icon-only ellipsis with no name is announced as nothing. In a table, the name must identify the row's object — "More actions for invoice 1043" — or the user hears the same announcement on every row.
 - **The menu is announced as a menu, and its items as its items**, so the user learns how long the list is before going through it.
 - **A selected item's state must be available in code.** A checkmark or a filled background is a single visual channel, which `recursica-skill-system-conventions` forbids.
-- **An icon-only item needs a real name.** The icon tells the user nothing.
-- **An unavailable item must still be perceivable, or must not be shown at all.** If it is disabled, it stays in the accessibility tree (the version of the page that assistive technology reads), is announced as disabled, and its reason is available in text. If the user can never use it, do not show it. There is no third option where it is visible on screen but invisible to assistive technology.
-- **Supporting text must be part of the item's announcement**, not a separate element placed beside the label. A second line that is not connected exists only on screen.
+- **An icon-only item needs a real name.** An icon alone gives a screen reader nothing to read out.
+- **An unavailable item must still be perceivable, or must not be shown at all.** If it is disabled, it stays in the accessibility tree (the version of the page that assistive technology reads), is announced as disabled, and its reason is available in text. If the user can never use it, do not show it. Never show an item on screen while hiding it from assistive technology.
+- **Supporting text must be part of the item's announcement**, not a separate element placed beside the label. A screen reader does not read a second line that is not connected to the item.
 - **A divider is decoration, and must not be announced as an item.**
 
 ### Keyboard and non-mouse navigation
 
 - **A menu must never open on hover.** A menu that opens on hover cannot be opened by keyboard, cannot be opened on touch, and closes the moment the pointer strays off the path. This is both the house rule and the hard minimum for accessibility.
-- **The trigger is a tab stop (a place the Tab key lands), and it opens with Enter or Space.** Never a handler that only responds to clicks.
+- **The trigger is a tab stop (a place the Tab key lands), and it opens with Enter or Space.** Never use a handler that responds only to clicks.
 - **Focus moves into the menu when it opens** — onto the first item, or onto the selected item in a list of options.
 - **Focus returns to the trigger when the menu closes** — on Escape, on activating an item, or on clicking away. This is the step most often skipped, and skipping it drops the user at the top of the document.
-- **The arrow keys move between items. Escape closes. Enter and Space activate. Home and End jump to the first and last item.** Connect all of them.
+- **The arrow keys move between items. Escape closes. Enter and Space activate. Home and End jump to the first and last item.** Support all of them.
 - **The menu is a single tab-stop group, not a series of tab stops.** Tab does not step from item to item; the arrow keys do that. Tab leaves the menu.
 - **A menu that scrolls must scroll to follow keyboard focus.** Moving with the arrows to an item below the fold (the part of the page visible only after scrolling) has to bring it into view.
-- **Do not move focus anywhere except back to the trigger.** Not to the top of the page, and not into the content the action affected.
-- **Nothing needed may appear only on hover.** A row-action menu whose trigger only appears when the row is hovered cannot be reached by keyboard or by touch. If the action exists, its trigger is visible.
+- **On close, focus goes back to the trigger and nowhere else.** Not to the top of the page, and not into the content the action affected.
+- **Never show a needed control only on hover.** A row-action menu whose trigger only appears when the row is hovered cannot be reached by keyboard or by touch. If the action exists, its trigger is visible.
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the components own them:
+Do not set or override any of these. The components set them:
 
 - **`menu`**: `border-size`, `border-radius`, `min-width`, `max-width`, `padding`, `item-gap`, `max-height`, `elevation`, `divider-height`, `divider-opacity`, `colors`.
 - **`menu-item`**: `border-radius`, `vertical-padding`, `horizontal-padding`, `icon-text-gap`, `icon-leading-size`, `icon-trailing-size`, `text`, `supporting-text`, `text-gap`.
 
-The selected item's visual treatment comes with `selection-states`. Do not restyle it, and do not add wrappers or spacers to adjust spacing above.
+The selected item's visual treatment comes with `selection-states`. Do not restyle it, and do not add wrappers or spacers to change the spacing listed above.
 
 ## Load these too
 
@@ -126,9 +126,9 @@ The selected item's visual treatment comes with `selection-states`. Do not resty
 
 ## Uncovered — ask, do not invent
 
-- **Submenus.** A trailing chevron that opens a nested submenu "on hover or click" is shown only on the design-system website. The UI kit defines no submenu, and opening on hover contradicts the navigation rule. Both whether it exists and how it is triggered need a decision — do not rely on this without asking.
-- **Menus with multi-select.** A type axis of single select, multi-select, and custom content is shown only on the design-system website. The UI kit defines only `unselected` and `selected` on `menu-item`. Do not rely on this without asking.
-- **Custom content inside a menu item.** Shown only on the design-system website, and nothing in the UI kit supports it. Do not rely on this without asking.
+- **Submenus.** A trailing chevron that opens a nested submenu "on hover or click" is shown only on the design-system website. The UI kit defines no submenu, and opening on hover contradicts the navigation rule. Both whether it exists and how it is triggered need a decision. Ask before relying on it.
+- **Menus with multi-select.** A type axis of single select, multi-select, and custom content is shown only on the design-system website. The UI kit defines only `unselected` and `selected` on `menu-item`. Ask before relying on it.
+- **Custom content inside a menu item.** Shown only on the design-system website, and nothing in the UI kit supports it. Ask before relying on it.
 - **How the disabled state is set.** The UI kit defines `disabled` on `menu-item`. Whether the adapter exposes it as a prop has not been confirmed. Check the component's props, or ask, before relying on it.
 - **The number of items at which a menu is too long.** `max-height` implies scrolling, but no threshold is stated. `recursica-skill-buttons-links` leaves the overflow threshold open too.
 - **Where the menu appears relative to its trigger**, and how it behaves near the edge of the viewport. There is no placement axis.
@@ -138,14 +138,14 @@ The selected item's visual treatment comes with `selection-states`. Do not resty
 ## Pre-flight checklist
 
 - [ ] The menu holds more than one action, and no primary action is hidden inside it.
-- [ ] It is not standing in for navigation, and no navigation overflow was solved with a menu.
-- [ ] The list is short enough to scan, and no scrolling area is covering for a problem with the structure.
+- [ ] The menu is not used as navigation, and no navigation overflow is solved with a menu.
+- [ ] The list is short enough to scan, and a long list is regrouped or cut rather than left to scroll.
 - [ ] The trigger is a button. An icon-only trigger has both a tooltip and an accessible name that identifies its object.
 - [ ] Item labels are a verb plus an object for actions, and the object alone for navigation.
 - [ ] Supporting text is used only where the label is unclear, and is passed through the component.
 - [ ] Dividers separate real groups, and none is decorative.
 - [ ] Destructive items state the consequence in words.
-- [ ] Items the user has no permission for are missing, not disabled.
+- [ ] Items the user has no permission for are hidden, not disabled.
 - [ ] The trigger announces that it opens a menu, and whether it is open.
 - [ ] A selected item's state is available in code, not shown by a mark alone. Icon-only items have names, and dividers are not announced.
 - [ ] Any unavailable item is perceivable and announced as disabled, or is not shown.
@@ -154,6 +154,6 @@ The selected item's visual treatment comes with `selection-states`. Do not resty
 - [ ] The arrow keys, Escape, Enter, Space, Home, and End all work, and the menu is one tab-stop group, not many.
 - [ ] Keyboard focus scrolls into view in a long menu.
 - [ ] No trigger appears only on hover, and the focus ring is intact.
-- [ ] You passed no variant, size, placement, or state outside the two specs above, and invented no submenu.
-- [ ] You overrode no padding, gap, divider, or selected styling that the component owns.
-- [ ] You invented nothing from the uncovered list.
+- [ ] Every variant, size, placement, and state passed comes from the two specs above, and there is no submenu.
+- [ ] Padding, gaps, dividers, and selected styling come from the component.
+- [ ] Uncovered items were asked about, not decided: submenus, menus with multi-select, custom content inside a menu item, how the disabled state is set, the number of items at which a menu is too long, where the menu appears relative to its trigger, right-click context menus, and whether a menu item may be a link.

@@ -9,7 +9,7 @@ metadata:
 
 # Label
 
-The label names the field. It is a real component — not text you place beside an input.
+The label names the field. It is a real component, not plain text beside an input.
 
 ## Use it when
 
@@ -42,17 +42,17 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **`formLayout` defaults to `stacked`, which puts the label above the input.** A field without the prop shows its label above the input at any container width, which breaks the house rule. `layouts` is the UI kit's name for this variant, not a prop: React ignores `layouts="side-by-side"` without an error and leaves the label above the input. Set `formLayout="side-by-side"` to put the label beside the input.
 
-**The UI kit provides a required indicator and an optional text**, each with its own gaps, and a transparency setting for the optional text. Both exist — which one you use is decided by the form, not by the field.
+**The UI kit provides a required indicator and an optional text**, each with its own gaps, and a transparency setting for the optional text. Both exist. The form decides which one to use, not the field.
 
 **There is a gap for an edit icon**, so a label can carry an edit control. What that control is for is not stated; see the uncovered list.
 
-**There are two sizes, `default` and `small`, and no disabled state.** The label's color across states comes from the field's tokens. When a label is small is in the uncovered list.
+**There are two sizes, `default` and `small`, and no disabled state.** The label's color across states comes from the field's tokens. When to use `small` is on the uncovered list.
 
 ## Rules for using it
 
 **Side by side is the default.** The label sits to the left of the field, on the same row, right-aligned so it sits close to its field. Stack it above only when the container is too narrow to fit both — and what decides this is the width of the form's container, not the viewport. Owned by `recursica-skill-forms`.
 
-**Label placement is one decision per form, and the label owns it.** A single form uses labels side by side, or stacked labels — never both at the same breakpoint.
+**Label placement is one decision per form.** A single form uses labels side by side, or stacked labels — never both at the same breakpoint.
 
 - **The container-width test is applied once, to the form**, and its answer governs every field in that form. If the form's container cannot fit label and field side by side, every label in it stacks — including the short ones that would have fitted.
 - **This label's `layouts` value is not a separate choice.** It matches every other label in the same form. There is no judgment call for each field here. A field's own width, height, or content is not a reason to place its label differently — not a tall textarea, not a two-character number input, and not a radio group with eight options.
@@ -73,7 +73,7 @@ Mixing the two placements in one form causes three problems. It destroys the sin
 
 **One label per control.** A compound control that makes up one value — a date plus a time plus AM/PM — gets one label for the whole thing.
 
-**A group's label is not a field's label.** A checkbox group has a group label, and each item has its own item label. Do not use one to do the other's job.
+**A group's label is not a field's label.** A checkbox group has a group label, and each item has its own item label. Do not use a group label as an item label, or an item label as a group label.
 
 ## Accessibility
 
@@ -83,25 +83,25 @@ The label is where a field becomes usable by a screen reader at all. The connect
 
 ### Screen readers
 
-- **The label must be connected in code to its control.** The field components set this up — your job is to pass a real label, so there is something to connect. A field with no label has no accessible name (the name a screen reader reads out for a control).
-- **Never substitute a label that is only visual.** Text that just sits next to an input is not a label. If the field component takes a label, use it.
+- **The label must be connected in code to its control.** The field components make the connection. Pass a real label so there is something to connect. A field with no label has no accessible name (the name a screen reader reads out for a control).
+- **Never substitute a label that is only visual.** Text placed next to an input is not a label. If the field component takes a label, use it.
 - **The label must make sense read on its own**, out of order and out of context. That is the whole reason the wording rule exists.
-- **The required state must be available in code, not just shown by an indicator.** The asterisk or the bold weight is the visual channel (color, shape, position or text, each a separate signal); the field must also make it known that it is required. `recursica-skill-system-conventions` forbids relying on a single channel.
+- **The required state must be available in code, not only shown by an indicator.** The asterisk or the bold weight is the visual channel (color, shape, position or text, each a separate signal); the field must also make it known that it is required. `recursica-skill-system-conventions` forbids relying on a single channel.
 - **The same is true of an optional marker.** If optionality is shown by a word, that word must be part of what is announced for the label, not a floating fragment.
 - **Do not hide the label visually.** Sighted keyboard users and voice users need it too, and a visible label is a house requirement.
-- **A group label must be announced when focus enters the group** — not just placed before it in the reading order — or the user hears options with no question attached.
+- **A group label must be announced when focus enters the group** — not only placed before it in the reading order — or the user hears options with no question attached.
 - **Do not cram instructions into the label.** Rules go in the assistive element. A long label is announced in full every time the field is reached.
 
 ### Keyboard and non-mouse navigation
 
 - **The label is not a tab stop** (a place the Tab key lands). It cannot receive focus by itself.
-- **Clicking or tapping the label must move focus to its control.** This comes free with a real connected label, and it gives the user a bigger target — do not break it by showing the label as unconnected text.
+- **Clicking or tapping the label must move focus to its control.** A real connected label does this automatically and gives the user a bigger target. Do not show the label as unconnected text, which loses this.
 - **If the label carries an edit icon, that icon is a control**, and it must be its own tab stop with its own accessible name.
 - **A stacked label must not change the tab order.** Placement is visual; the order is label, then field, either way.
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them:
+Do not set or override any of these. The component sets them:
 
 - `label-text` and `optional-text` type styling, and `optional-text-opacity`.
 - `required-indicator-gap`, `label-optional-text-gap`, `edit-icon-gap`.
@@ -132,8 +132,8 @@ Do not implement, override, or tune any of these — the component owns them:
 - [ ] There is no clutter of asterisks. Where the signal applies across the form, the convention is stated once.
 - [ ] The required and optional states are available in code, not shown only by the visual marker.
 - [ ] No label is visually hidden, and no rules or instructions are crammed into it.
-- [ ] A compound control has one label, and a group's label is not doing an item's job.
+- [ ] A compound control has one label, and a group's label is not used as an item's label.
 - [ ] Clicking the label moves focus to its control.
 - [ ] Any edit icon on the label is a tab stop with its own name.
-- [ ] You overrode no layout, gap, or type styling.
-- [ ] You invented nothing from the uncovered list.
+- [ ] Layout, gaps, and type styling come from the component.
+- [ ] Uncovered items were asked about, not decided: the edit control on a label, the form-wide signal for required fields, showing the required indicator with the optional text in one application, truncating a label, and when a label is `small`.

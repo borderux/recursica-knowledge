@@ -99,9 +99,9 @@ The rules here are different from every editable field, and that difference is t
 - **Any edit control is a control**, so it is its own tab stop, activated by Enter or Space, with its own accessible name (the name a screen reader reads out for a control) — and it is visible without hovering. An edit icon that appears on hover does not exist for keyboard or touch users.
 - **It must not interrupt the tab order** of the fields around it. Placing it between two inputs changes what a user reads, never the order they tab through.
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them:
+Do not set or override any of these. The component sets them:
 
 - `min-height`.
 - `text` styling.

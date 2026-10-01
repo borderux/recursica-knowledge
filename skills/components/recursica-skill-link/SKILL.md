@@ -16,14 +16,14 @@ A link takes the user somewhere. It never changes data.
 - **Using it changes the location** — another page, a section of this page, an outside website, or a file to download.
 - **The navigation sits inside a sentence** — a source, a definition, or a related object mentioned in text.
 - **The navigation stands on its own** — a menu, a footer, or a "view all" beside a heading.
-- **Leaving a table row for a related object.** A link is quieter than a button, which is what a dense table needs.
+- **Leaving a table row for a related object.** A link has less visual weight than a button, which is what a dense table needs.
 
 ## Do not use it when
 
 | Instead of a link                                | Use                                                          |
 | ------------------------------------------------ | ------------------------------------------------------------ |
 | Using it changes data or state                   | `recursica-skill-button`                                     |
-| The action must simply look lightweight          | A button in the `text` style — not a link                    |
+| The action must look lightweight                 | A button in the `text` style — not a link                    |
 | Opening a modal on the same page                 | A button. A modal is not a location                          |
 | The destination is unavailable right now         | Leave the link out, or explain why in text. Never disable it |
 | Switching between parts of one whole on one page | `recursica-skill-tabs` — which have their own routes         |
@@ -64,7 +64,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
-The component owns the underline, the color, and the focus ring. The meaning in the markup is up to you, and a link built from the wrong element fails every kind of assistive technology at once.
+The component owns the underline, the color, and the focus ring. The application sets the markup, and a link built from the wrong element fails every kind of assistive technology at once.
 
 ### Screen readers
 
@@ -78,15 +78,15 @@ The component owns the underline, the color, and the focus ring. The meaning in 
 ### Keyboard and non-mouse navigation
 
 - **Every link is a tab stop (a place the Tab key lands) because it has an `href`.** Do not remove it from the tab order, and never add a tabindex to force an order.
-- **Enter activates a link. Space does not** — that is how browsers work, and it is correct. If you find yourself adding a Space handler, you have built a button.
+- **Enter activates a link. Space does not** — that is how browsers work, and it is correct. A link that needs a Space handler is a button.
 - **Do not intercept the modifier keys.** Ctrl, Cmd, Shift, and middle-click must reach the browser, so the user stays in control of where the destination opens.
 - **A link that appears only on hover cannot be reached** by keyboard or by touch. Links inside text and in rows must stay visible.
 - **Focus must be visible on the link itself**, not just implied by the underline. Never hide the focus ring.
 - **After navigating, focus belongs at the start of the new content**, not left behind on the old page.
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them:
+Do not set or override any of these. The component sets them:
 
 - Text styling, including the underline and its behavior on hover.
 - `colors` per layer and per state, including `visited`.
@@ -117,5 +117,5 @@ Do not implement, override, or tune any of these — the component owns them:
 - [ ] No link is disabled. Destinations that are unavailable are left out, or explained in text.
 - [ ] No link depends on hover to be visible, and the focus ring is intact.
 - [ ] Focus lands at the start of the new content after navigating.
-- [ ] You passed no variant or state other than `visited`, and overrode no styling that the component owns.
-- [ ] You invented nothing from the uncovered list.
+- [ ] Only `visited` is passed as a variant or state, and the styling the component owns comes from the component.
+- [ ] Uncovered items were asked about, not decided: which icon marks an external link, download links, a size or emphasis style for links, and links inside a paragraph in a table cell.

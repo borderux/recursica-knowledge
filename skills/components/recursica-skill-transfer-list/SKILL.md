@@ -108,9 +108,9 @@ Two lists and a set of arrow buttons is the pattern most often shipped so that i
 - **Do not move focus for the user**, other than placing it on purpose after a move. Typing in the filter must not throw focus into the list.
 - **Nothing the user needs may appear only on hover** — not the move controls, not a remove control on each item, and not the counts.
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them:
+Do not set or override any of these. The component sets them:
 
 - `height`, `width`, `border-size`, `border-radius`.
 - `horizontal-padding`, `vertical-padding`, and every gap: `gap`, `title-filter-gap`, `filter-items-gap`.

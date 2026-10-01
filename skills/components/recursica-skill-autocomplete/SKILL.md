@@ -136,9 +136,9 @@ The component connects the label to the input, provides the focus ring, and owns
 - **Do not move focus for the user after a selection.** No jumping ahead to the next field because a value now exists, and no focus jump when the filter narrows down to exactly one result.
 - **Everything reachable by mouse must be reachable by key.** Nothing about filtering, moving through results, or choosing may depend on a pointer, and nothing needed may appear only on hover.
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them:
+Do not set or override any of these. The component sets them:
 
 - `border-radius`, `height`, `horizontal-padding`, `vertical-padding`, `border-size`.
 - `icon-size` and `icon-text-gap`.

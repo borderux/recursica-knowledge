@@ -111,9 +111,9 @@ The component draws the header and the chevron. Making the header a real button,
 - **Never collapse a panel that contains focus.** If single-open behavior closes a panel the user is working in, focus is lost, and the keyboard user starts again from the top of the document.
 - **The header must never open on hover**, and nothing needed inside a panel may be revealed only by hover.
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the four specs own them for both appearances:
+Do not set or override any of these. The four specs set them for both appearances:
 
 - **`accordion`**: `border-size`, `border-radius`, `item-gap`, `padding`, `min-width`, `max-width`, `elevation`, `divider-size`, `colors`.
 - **`accordion-item`**: `border-radius`, `border-size`, `margin`, `padding`, `elevation`, `colors`.

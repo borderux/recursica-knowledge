@@ -71,7 +71,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.table`, `table-cell`, 
 
 **Currency is right-aligned, has two decimal places on every value, and puts its symbol in the column header** instead of repeating it in every cell. None of this is owned here. `recursica-skill-dates-and-currency` owns the format — right alignment, a fixed precision of two decimals, and the symbol in the header — and `recursica-skill-tables` owns column alignment by data type. Read those skills rather than this summary; where they differ from it, they are correct. All this file adds is which token carries it: the `currency-style` on `table-cell` and `table-footer`.
 
-**MUST NOT wrap a cell's value in a text component.** A cell already has `table-cell`'s `text-style` — font family, size, weight, spacing — and a text component brings its own. Putting one inside a cell replaces the type the table owns with the type that component owns, which is the override the `Decided elsewhere` list below forbids. Put the value in the cell directly.
+**MUST NOT wrap a cell's value in a text component.** A cell already has `table-cell`'s `text-style` — font family, size, weight, spacing — and a text component brings its own. Putting one inside a cell replaces the type the table owns with the type that component owns, which is the override the `Set by the component` list below forbids. Put the value in the cell directly.
 
 **This is by far the most common way a table's type goes wrong**, and it is worth stating apart from the token list, because it does not look like an override while you are writing it. A cell reading `<Text>{value}</Text>` looks like careful markup, and it is the opposite. What it produces is one column in a different typeface from every other column in the same table — the brand's secondary typeface where the UI kit asked for the primary. Anyone looking at the screen can see the difference, while it stays invisible in the code changes.
 
@@ -118,9 +118,9 @@ A data table can only be used without sight if its structure is real. The failur
 - **No sideways scrolling area.** Beyond the house rule, a table that scrolls sideways is close to unusable for a keyboard user, who has no way to bring a column that is off screen into view except by tabbing blindly.
 - **Focus must be visible on every control in the table**, and never hidden on a focused row or cell.
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them:
+Do not set or override any of these. The component sets them:
 
 - `padding`, `row-padding`, `border-size`, `border-radius`, `colors`, `opacities`.
 - `row-divider-size` and `column-divider-size`, plus the header's and footer's own divider sizes.

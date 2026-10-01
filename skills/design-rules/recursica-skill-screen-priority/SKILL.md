@@ -179,7 +179,7 @@ Treating the two as one leaves the user unable to tell whether to change their f
 
 **When a breach turns up, raise it instead of fixing it without telling the user.** Bring it to the user, let them decide which way it should go, and then apply that decision across the whole application.
 
-## Decided elsewhere
+## Set by the theme or the component
 
 - **Type styles, spacing tokens, and the layout grid.** These come from the design system.
 - **The page's structure** — header, rail, footer, title, breadcrumb. `recursica-skill-screen-scaffolding`.

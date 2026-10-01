@@ -108,9 +108,9 @@ The component provides the focus ring and the click and keyboard activation. The
 - **Disabling a button while it works will drop focus.** A disabled control leaves the tab order, and the user who pressed Enter on it is sent back to the top of the document. Keep the button able to receive focus while it is in flight — show the disabled state without removing it from the tab order — or move focus on purpose to whatever comes next.
 - **The animated loading icon must respect a reduced-motion preference** (a setting that asks for less animation).
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them for every combination of style, size, and content:
+Do not set or override any of these. The component sets them for every combination of style, size, and content:
 
 - Height, horizontal and vertical padding, `border-size`, `border-radius`.
 - Icon size and the icon-to-label gap.

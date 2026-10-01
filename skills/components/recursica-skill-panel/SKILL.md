@@ -128,9 +128,9 @@ This component also follows the accessibility baseline in `recursica-skill-syste
 - **The tab order inside the panel follows the visual order** — the content, then the footer buttons, then the close control where it sits visually — and must not jump between the panel and the page unpredictably.
 - **Never make closing it pointer-only.** Escape and the close control both work, whatever a click outside does.
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them:
+Do not set or override any of these. The component sets them:
 
 - `colors`.
 - `header-style` and `content-style` type treatment.

@@ -88,9 +88,9 @@ A badge is text, not a control. That makes the risk the opposite of most compone
 - **A badge inside an interactive element** — a tab, a nav item, a row link — is part of that element's name, not a separate stop inside it.
 - **Never put a badge where it only appears on hover.** Its whole purpose is to be seen at a glance.
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them:
+Do not set or override any of these. The component sets them:
 
 - `text` styling, including size and weight.
 - `padding-horizontal`, `padding-vertical`.

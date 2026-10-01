@@ -93,9 +93,9 @@ In meaning, this is a radio group, and it must be built as one. The usual failur
 - **Focus lands on the selected segment** when the user tabs in — not on the first segment.
 - **Focus and selection must look different** — a user can have focus on the group while a different segment is selected, and both need to be visible.
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them:
+Do not set or override any of these. The component sets them:
 
 - `colors`, `elevation`, `border-size`, `border-radius`.
 - `padding-horizontal`, `padding-vertical`, `item-gap`, `divider-size`.

@@ -49,7 +49,7 @@ The component adapters offer a styling escape hatch. **Its name makes it sound l
 
 **Is there a prop or a token (a named design value, such as a color or a size, set by the design system) for the property being changed?**
 
-- **Yes — then the change overrides something the component controls, and that is forbidden.** Every component skill lists these under `Decided elsewhere`. Stop, and use the prop.
+- **Yes — then the change overrides something the component controls, and that is forbidden.** Every component skill lists these under `Set by the component`. Stop, and use the prop.
 - **No — then the hatch fills in for a prop or token that is missing.** That is the normal reason to use the hatch. What matters is the next step: the missing prop or token is a gap in the design system, and it must be reported. Using the hatch without reporting the gap and moving on is how a gap becomes permanent and invisible.
 
 **Either way, reaching for the hatch means something is wrong** — either the approach or the system. Say which one, and say it next to the code.

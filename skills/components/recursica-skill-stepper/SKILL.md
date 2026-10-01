@@ -107,9 +107,9 @@ The stepper's whole job is to show position and progress, and it does that visua
 - **Back must not lose the user's place.** Going back to a step puts focus at the start of that step's content, with the values they entered still there.
 - **Nothing needed may appear only on hover** — not a step's description, and not the reason a step is disabled.
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them for every size and orientation:
+Do not set or override any of these. The component sets them for every size and orientation:
 
 - `colors`, including the per-status indicator colors.
 - `completed-connector-size` and `upcoming-connector-size`.

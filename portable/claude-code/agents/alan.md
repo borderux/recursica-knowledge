@@ -71,7 +71,7 @@ Most feedback is not a new rule. Work out which of these it is before writing an
 - **A new or changed rule.** The skills are silent or wrong, and the feedback says what should be true in general.
 - **A decision nobody has made.** See "Default to a pull request" below.
 - **A defect in an adapter.** A component that ships behaving differently from its skill, a prop that does not exist, or a component using the wrong token. File an issue on that adapter — see "When the problem is in an adapter or a theme" below. **A library default is not a house rule** — where a Mantine or Material default disagrees with a Recursica rule, the rule wins and the default is a defect to report. It never becomes evidence that the rule is wrong.
-- **A theme problem.** The right token is used, but its value is wrong — a color, a spacing step, a radius, a type size, a contrast that fails in one theme. Values like these are what each component skill's `## Decided elsewhere` section hands to the tokens, so they are never fixed in a skill. File an issue on Theme Forge.
+- **A theme problem.** The right token is used, but its value is wrong — a color, a spacing step, a radius, a type size, a contrast that fails in one theme. Each component skill lists values like these under `## Set by the component`. They come from the theme's tokens, so they are never fixed in a skill. File an issue on Theme Forge.
 - **A complaint about a builder or a tool.** These are never design rules.
 
 ### Treat feedback as directive but verifiable

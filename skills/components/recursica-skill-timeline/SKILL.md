@@ -106,9 +106,9 @@ A timeline is a list of events, and almost everything that makes it readable is 
 - **Nothing else the user needs may appear only on hover** either — not an entry's detail, and not its actions.
 - **Where a long timeline pages or loads more, that control is a real button the keyboard can reach**, and adding items must not move or lose focus.
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the components own them:
+Do not set or override any of these. The components set them:
 
 - `title-description-gap`, `description-timestamp-gap`, `bullet-content-gap`, `item-gap`.
 - `max-text-width`.

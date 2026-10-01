@@ -224,7 +224,7 @@ The number one sign, and then the rest, in order:
 4. **Lines that are long for no reason.**
 5. **Explanatory text standing in for a good heading or label** — most often a line under a page title or section heading that only repeats it.
 
-## Decided elsewhere
+## Set by the theme or the component
 
 - **The spacing and gutter token values, the maximum content width, and the layout grid.** All of these come from the design system.
 - **How the surface of any layer or card looks** — elevation, border, padding.

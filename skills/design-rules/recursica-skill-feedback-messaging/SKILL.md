@@ -100,7 +100,7 @@ This is why the channel table has no row for it: this state should not reach the
 
 **When an operation runs longer than normal, the default is to show no extra message and let it finish.** A "this is taking longer than usual" toast is allowed, but it is not standard practice here. If one is used, it belongs at about 10 seconds — and more often, the right answer is to show nothing more.
 
-## Decided elsewhere
+## Set by the theme or the component
 
 - **How long a toast lasts, and whether it persists.** Set by the underlying component library.
 - **How long an undo stays available.** Same.

@@ -97,9 +97,9 @@ A tooltip is the component most often used to cover up a missing accessible name
 - **The trigger must be able to take focus.** A tooltip attached to something no one can focus can never appear for a keyboard user.
 - **Nothing the user needs may appear only on hover** — which, for this component, means nothing the user needs may be in it at all.
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them:
+Do not set or override any of these. The component sets them:
 
 - `elevation`, `border-size`, `border-radius`, `colors`, `text`.
 - `vertical-padding`, `horizontal-padding`.

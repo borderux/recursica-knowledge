@@ -101,7 +101,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **That mapping does not exist in the Recursica system.** It has to be built into each application, one case at a time — so plan for it, instead of assuming there is a shared tool for it.
 
-## Decided elsewhere
+## Set by the theme or the component
 
 - **Sentence case versus title case.** Sentence case capitalizes only the first word; title case capitalizes every major word. This is set by the typography token (a named design value, such as a color or a size, set by the design system), decided by the brand, and must not be changed. Whether a heading is in title case or sentence case is decided in advance by the type style it uses — see `recursica-skill-typography-semantics`.
 - **Any other type styling** — size, weight, letter spacing. Tokens own all of it.

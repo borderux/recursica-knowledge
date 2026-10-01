@@ -80,7 +80,7 @@ These are the two priority levels. An **assertive** announcement interrupts what
 
 **Treat announcements as a minimum standard that whoever builds the screen is responsible for meeting**, not as a feature that someone will review.
 
-## Decided elsewhere
+## Set by the theme or the component
 
 - **How a component announces things internally.** The component owns it. Give the component what it needs.
 - **How the underlying library builds a live region.**

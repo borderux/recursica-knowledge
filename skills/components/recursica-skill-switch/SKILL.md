@@ -118,9 +118,9 @@ The component pairs the switch with its item label, makes on and off available, 
 - **Do not move focus for the user.** Focus stays on the switch after it is flipped — including when flipping it reveals fields below — so the user can flip it straight back.
 - **Nothing needed may appear only on hover** — not the consequence, and not a tooltip explaining what off means.
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the components own them:
+Do not set or override any of these. The components set them:
 
 - On `switch`: `thumb-height`, `thumb-width`, `track-inner-padding`, `thumb-border-radius`, `track-border-radius`, `thumb-icon-size`, `track-width`, `thumb-elevation`, `track-elevation`.
 - On `switch-group`: `item-gap`, `padding`.

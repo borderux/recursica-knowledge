@@ -88,7 +88,7 @@ A section like this is still named with a noun — `Approvals`, never `Approve r
 
 **Test it before the map is agreed.** Ask the product owner what is likely to be added next, and check that the map says where it would go without moving anything that is already there.
 
-## Decided elsewhere
+## Set by the theme or the component
 
 - **Which sections that are not objects exist.** The product owner's, through the request.
 - **What any object or section is called.** The users' words — `recursica-skill-naming-terminology`.

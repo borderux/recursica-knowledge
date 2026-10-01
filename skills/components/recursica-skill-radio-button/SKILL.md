@@ -109,9 +109,9 @@ The component pairs each control with its item label, manages focus within the g
 - **Clicking or tapping the item label selects its option.** That comes free with a real connected label, and it gives the user a bigger target. Do not break it by showing the label as loose text.
 - **Do not move focus for the user.** When an option reveals fields below, focus stays in the group, and the user reaches the new fields with the next Tab. Never jump ahead because a choice seems made.
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the components own them:
+Do not set or override any of these. The components set them:
 
 - On `radio-button`: `border-radius`, `border-size`, `size`, `icon-size`.
 - On `radio-button-group`: `item-gap`, `padding`.

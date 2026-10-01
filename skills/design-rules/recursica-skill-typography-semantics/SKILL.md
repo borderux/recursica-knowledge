@@ -197,7 +197,7 @@ W_max = 44 × 12.48                 = 555px
 
 **Keep markup correct, even when a screen reader reads more because of it.** Use correct structure, correct elements, and content that matches the screen. Correct markup comes ahead of a shorter readout, and ahead of semantic confusion that exists only in theory. A correct structure that reads long is better than a clever one that reads short.
 
-## Decided elsewhere
+## Set by the theme or the component
 
 - **The values behind every type style** — font size, line height, letter spacing, weight. Delivered as tokens.
 - **Capitalization.** Sentence case or title case belongs to the token, and is decided by the brand.

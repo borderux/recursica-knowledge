@@ -121,9 +121,9 @@ The component pairs each box with its item label, and provides the focus ring. T
 - **Clicking or tapping the item label toggles its checkbox.** A real connected label provides this with no extra code, and it gives the user a bigger target. Do not break it by showing the label as text that is not connected to the box.
 - **Do not move focus for the user.** When a checkbox reveals fields below, focus stays on the checkbox, and the user reaches the new fields with the next Tab. Pulling focus into the revealed content takes both keyboard and screen reader users away from the checkbox they just used.
 
-## Decided elsewhere
+## Set by the component
 
-Do not implement, override, or tune any of these — the components own them:
+Do not set or override any of these. The components set them:
 
 - On `checkbox`: `border-radius`, `border-size`, `size`, `icon-size`.
 - On `checkbox-group`: `item-gap`, `padding`.

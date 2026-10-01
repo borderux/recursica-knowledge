@@ -80,7 +80,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **Do not add a filter for a field that is not in the collection.** Any field the user can filter by also appears in the collection.
 
-## Decided elsewhere
+## Set by the theme or the component
 
 - **How the controls look**, their spacing, and how the bar wraps — owned by the components and the layout.
 - **Which columns exist in the table** — `recursica-skill-tables`.
