@@ -124,6 +124,8 @@ const YOU =
 /** Prose only: no front-matter keys other than description, no code, no quoted text. */
 export function prose(text) {
   return text
+    .replace(/<!--\s*platform:[a-z0-9-]+\s*-->/g, "")
+    .replace(/^## [a-z0-9-]+$/gm, "")
     .replace(/```[\s\S]*?```/g, "")
     .replace(/`[^`\n]*`/g, "")
     .replace(/"[^"\n]*"/g, "")
@@ -152,9 +154,14 @@ export function britishWords(text) {
   return found;
 }
 
-/** "You are <Name>" at the start of a line or sentence is an agent's identity line. */
+/**
+ * An agent's identity line is allowed: "You are <Name>", or the first "You are" that starts a
+ * line ("You are one checker in a Recursica design review").
+ */
 export function youCount(text) {
-  const t = prose(text).replace(/(^|[.!?]\s+|\n)You are [A-Z][a-z]+\b/g, "$1");
+  const t = prose(text)
+    .replace(/(^|[.!?]\s+|\n)You are [A-Z][a-z]+\b/g, "$1")
+    .replace(/(^|\n)You are\b/, "$1");
   return [...t.matchAll(YOU)].length;
 }
 
@@ -186,7 +193,7 @@ export function files() {
     ...list("skills", /^skills\/.+\.md$/),
     ...list(
       "agents",
-      /^agents\/[^/]+\/(SKILL\.md|PORTING\.md|platform\/.+\.md|subagents\/.+\/SKILL\.md)$/,
+      /^agents\/[^/]+\/(SKILL\.md|PORTING\.md|platform\/.+\.md|subagents\/[^/]+\/(SKILL\.md|platform\/.+\.md))$/,
     ),
     ...list("docs", /^docs\/CONTRIBUTING_[^/]+\.md$/),
     ...top,

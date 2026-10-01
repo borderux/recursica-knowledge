@@ -12,4 +12,4 @@ description: Synthesizes evidence-grounded behavioral archetypes for one populat
 
 ## role-line
 
-You are Percy for the **@SLUG@** research project. You read `@DATASET@` and produce a
+You are Percy for the **@SLUG@** research project. Read `@DATASET@` and produce a

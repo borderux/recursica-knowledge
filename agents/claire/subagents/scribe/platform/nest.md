@@ -8,4 +8,4 @@ which is why the composed template comes back byte-identical.
 
 ## role-line
 
-You are Scribe for the **@SLUG@** research channel. You turn one Google Doc transcript into
+You are Scribe for the **@SLUG@** research channel. Turn one Google Doc transcript into

@@ -3,11 +3,11 @@
 Alan turns feedback about the design system — designers' Snippy reports and Barb's review
 findings — into pull requests against the knowledge repository, and into issues on the adapter
 repositories or Theme Forge when the problem is in their code rather than the rules — and into an
-issue on the knowledge repository when feedback needs a decision rather than a fix. He needs less than most agents
-here — no dataset, no Drive folder, no client fence — and the one thing he does need is the thing
-a prompt cannot carry.
+issue on the knowledge repository when feedback names a problem without saying what the fix should be. He needs less than most agents
+here — no dataset, no Drive folder, no client fence — and the one thing he does need cannot be
+carried by a prompt.
 
-## Read this before you port anything else from this repo
+## Read this before porting anything else from this repo
 
 **A prompt does not carry a data fence.** Alan is safe to lift because he touches no client data
 at all. The research agents in this repository are not in that position: their isolation — one
@@ -24,7 +24,7 @@ without rebuilding the fence.
 | A forge credential | Contents, pull requests and issues on the knowledge repository; issues only on the adapter repositories and Theme Forge (`borderux/recursica-forge`). Nothing else — no merge, no admin, no code access to the adapters. |
 | Somewhere to report the link | Whatever surface handed him the feedback. |
 
-## What you get
+## The files
 
 | File | For |
 |---|---|
@@ -32,18 +32,18 @@ without rebuilding the fence.
 | `portable/opencode/agents/alan.md` | opencode — drop into `.opencode/agents/` |
 | `portable/circlechat/agents/alan/SOUL.md` | CircleChat on the Hermes runtime |
 | `agents/alan/runtime/claude-code.json` | model and tool allowlist |
-| `agents/alan/runtime/opencode.json` | merge the `agent` block into your `opencode.json` |
+| `agents/alan/runtime/opencode.json` | merge the `agent` block into the project's `opencode.json` |
 
 Every prompt file is generated from `agents/alan/SKILL.md` by `node scripts/build-agents.mjs`.
-Edit the source, not the artifact — the build overwrites it, and `--check` will tell you if they
-have diverged.
+Edit the source, not the artifact. The build overwrites the artifact, and `--check` reports when
+they have diverged.
 
-## The tokens you must fill in
+## The tokens that must be filled in
 
 | Token | What to put there |
 |---|---|
 | `{{KNOWLEDGE_REPO_NAME}}` | the design-system knowledge repository he proposes changes to |
-| `{{WORKSPACE_ROOT}}` | where you keep checkouts, e.g. `~/src` |
+| `{{WORKSPACE_ROOT}}` | where checkouts are kept, e.g. `~/src` |
 
 Every token in an artifact is declared in `buzz-agents/placeholders.json`; the build fails on one
 that is not, so this table cannot silently fall behind.
@@ -77,4 +77,4 @@ one.
 ## What changes between platforms
 
 Only the surface. Three passages differ — who he is introduced as, where his checkout lives, and
-where the pull request link goes. You can see them in `agents/alan/platform/`.
+where the pull request link goes. They are in `agents/alan/platform/`.

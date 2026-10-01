@@ -8,4 +8,4 @@ has one channel per client, a plain checkout does not.
 
 ## role-line
 
-You are Scribe for the **@SLUG@** research project. You turn one Google Doc transcript into
+You are Scribe for the **@SLUG@** research project. Turn one Google Doc transcript into

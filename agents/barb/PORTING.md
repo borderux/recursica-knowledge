@@ -29,7 +29,7 @@ Her findings about the rules themselves — a rule unclear, missing, conflicting
 same way again and again — go to Alan, who maintains the knowledge and turns them into pull
 requests that a person merges.
 
-Two properties of that arrangement are worth stating because they are easy to erode:
+Two properties of that arrangement are worth stating because they are easy to lose:
 
 - **The builder does not get to narrow the review.** The builder is told to hand her the files and
   nothing else — no summary of what changed, no list of skills it thinks apply. Her prompt
@@ -51,22 +51,22 @@ missing; they are build outputs.
 Her tool list is `Read`, `Grep`, `Glob`, `Bash`, `Task` — no `Write`, no `Edit`. This is not a
 preference and it is not about blast radius. A reviewer that can edit the code it reviews can make
 a finding disappear instead of reporting it, and a reviewer that can edit `skills/` can resolve a
-violation by softening the rule. Both are silent, and both destroy the only thing she produces.
+violation by softening the rule. Both are silent, and both destroy the only output she produces, the report.
 
-**A prompt does not carry this.** The sentence "you never edit the application" in her prompt is a
+**A prompt does not carry this.** The sentence "Never edit the application" in her prompt is a
 statement of intent that a model can fail to honor under pressure — the absence of a write tool is
-what makes it true. If the platform you are porting to has no per-agent tool allowlist, **she is
-weaker there and you should say so out loud** rather than assume the prose holds. That is the same
+what makes it true. If the target platform has no per-agent tool allowlist, **she is weaker
+there. Say so plainly** rather than assume the prose holds. That is the same
 reason Claire is not built for opencode.
 
 **Two leaks to know about even on Claude Code:**
 
 1. **`Bash` is a write path.** `sh -c 'echo x > file'` edits a file with no `Edit` tool anywhere in
    sight. She needs a shell for exactly one command — the manifest script — so narrow the permission
-   to that script if your setup allows it. If it does not, the read-only property rests on the
+   to that script if the setup allows it. If it does not, the read-only property rests on the
    prompt after all, which is worth knowing rather than discovering.
 2. **Subagents inherit nothing automatically.** `checker` and `feisty` carry their own
-   `tools:` lines, and those lines are the boundary. If your platform ignores per-subagent tools and
+   `tools:` lines, and those lines are the boundary. If the platform ignores per-subagent tools and
    grants them the parent's set, or the session's, they can write. Check rather than assume.
 
 ## On Buzz, where there is no tool allowlist at all
@@ -117,7 +117,7 @@ enforced is the worst of the three states.
 
 **The manifest is version-coupled to the adapter.** `ADAPTER_COMPONENTS` in the script is a copy of
 `RECURSICA_COMPONENTS` from `@recursica/adapter-common`. A new component in a newer adapter is not in
-that list, so nothing maps it and nothing complains — it is simply absent from the review. Run
+that list, so nothing maps it and nothing complains — it is absent from the review. Run
 `node scripts/screen-skill-manifest.mjs --self-check` after any adapter upgrade; it verifies every
 component resolves to a skill that exists on disk, every route names a real export, and every skill
 has a checklist.
@@ -141,16 +141,16 @@ detect. A name that matches more than one skill and has no route is an error in 
 an `ambiguousImports` entry in a report.
 
 **A screen is not one file.** She reviews a route *and* the local files it imports, because a route
-rendering a table through a shared wrapper imports no adapter table itself. If you wire her to a
+rendering a table through a shared wrapper imports no adapter table itself. If she is wired to a
 single file, the rules that matter most will be missing and the report will look clean.
 
 ## What she cannot do, wherever she runs
 
-- **Judge rules only a rendered page can answer** — centring beyond the maximum width, a region
+- **Judge rules only a rendered page can answer** — centering beyond the maximum width, a region
   overflowing by a layer's padding, what type style resolved. She needs a running instance and a way
   to drive it; without one, those items are *unchecked*, and she must report them as such rather than
   as passed. One of these defects arrived from a token default with no code change at all.
-- **Tell you the rule is the right rule.** She checks conformance.
+- **Confirm that the rule is the right rule.** She checks conformance.
 - **See what nobody has decided.** Several skills carry an `## Uncovered — ask, do not invent`
   list, and a checklist has no line for an unmade decision. Two of the defects that prompted her
   existence were sitting in one of those lists, and a screen violating them would pass her clean.
