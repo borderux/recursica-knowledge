@@ -66,6 +66,8 @@ Name the actual thing, the actual action, the actual result. A reader should be 
 
 **Say what to do, not what something must earn or deserve.** A rule sentence names the action and the case: "Leave out a column that most rows have no value for", not "A column has to earn its place." Swapping one metaphor for another ("worth its width") does not fix it.
 
+**Name the cost.** "Has a cost" or "is worth what it costs" says nothing until the cost is named. Write what happens: "Summary figures take the top of the page and push the content down."
+
 **No metaphors.** A summary row is not "furniture", a misused badge is not "wearing another component's clothes", and tokens do not "shape" agents. Say what is wrong in plain terms.
 
 ### 4. Short and direct

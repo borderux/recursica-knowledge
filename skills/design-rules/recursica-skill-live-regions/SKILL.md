@@ -40,11 +40,11 @@ Apply this to every change that happens without the page reloading:
 
 **Each component sets what it must be given.** A component that announces on its own can only announce what it was given — an accessible name (the name a screen reader reads out for a control), a message, a count. Where a component needs that information in order to comply, providing it is not optional, and each component skill states what it needs.
 
-**The application covers whatever falls between components.** Where a change happens with no component to speak for it, the application makes the announcement. The clearest case is a flow that succeeds silently — a submission that goes to a new page and shows nothing. Nothing there announces on its own, so the application must.
+**When no component announces a change, add a live region that does.** The clearest case is a form that submits successfully, goes to a new page, and shows nothing. No component announces anything there, so the screen's code must add a live region with the message.
 
 **If there is a toast, the toast announces — always.** There is no case where a toast appears without an announcement. Whatever the toast says is the announcement, so nothing else needs to repeat it.
 
-**The rule of thumb:** if a component announces the change, leave the announcement to the component. If nothing announces it, make the application announce it.
+**The rule of thumb:** if a component already announces the change to screen readers, add nothing. If no component announces it, add a live region with the message.
 
 ## Priority
 
@@ -52,7 +52,7 @@ Apply this to every change that happens without the page reloading:
 
 These are the two priority levels. An **assertive** announcement interrupts whatever the screen reader is currently reading. A polite announcement waits until the screen reader reaches a natural pause.
 
-**Assertive interrupts by design**, which is precisely why it is kept for rare cases. A confirmation, a result count, or a status update announced assertively cuts across whatever the user was reading or typing. That cost is only worth paying for something that cannot wait.
+**Assertive interrupts by design**, which is precisely why it is kept for rare cases. A confirmation, a result count, or a status update announced assertively cuts across whatever the user was reading or typing. Use assertive only for something that cannot wait.
 
 **A polite announcement waits for a natural break.** That is the default for the great majority of changes.
 

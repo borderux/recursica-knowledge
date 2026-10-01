@@ -30,7 +30,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **If work happens there, it is a workbench.** Name it for the job it does — "Scorecard", "Queue", or whatever the job is. High-level charts sitting above a work area are fine, but that layout is not a dashboard.
 
-**A dashboard is only worth what it costs in a large application.** If the product is small enough to take the user straight to the tools, do that instead. In an application with ten sections, the dashboard's job is to point to the one section that needs attention.
+**Build a dashboard only for a large application.** If the product is small enough to take the user straight to the tools, do that instead. In an application with ten sections, the dashboard's job is to point to the one section that needs attention.
 
 **If the team cannot say what matters, do not build a dashboard.** Do not fall back on a table or a configurable canvas because nobody has an opinion. That fallback combines three failures and presents them as a feature. Do not clutter a screen to hide the fact that nobody knows.
 

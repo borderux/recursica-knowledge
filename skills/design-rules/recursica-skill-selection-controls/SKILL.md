@@ -56,7 +56,7 @@ Work down this list; the first match wins.
 
 **Checkbox groups: pre-select freely.** Zero, some, or all checked in advance are all acceptable; there is no house rule either way.
 
-**Radio groups: be very careful about selecting a value in advance.** Most users do not know how to deselect a radio button once one is selected, so a default quietly becomes the answer. A pre-selected radio button is the most costly default in the system.
+**Radio groups: be very careful about selecting a value in advance.** Most users do not know how to deselect a radio button once one is selected, so a default quietly becomes the answer. A pre-selected radio button is the riskiest default in the system.
 
 **The threshold is about 90 percent** — pre-select only where about that share of users would choose that option anyway. And never pre-select an option that has major consequences later in the workflow, however likely it is. Both tests are owned by `recursica-skill-defaults`.
 

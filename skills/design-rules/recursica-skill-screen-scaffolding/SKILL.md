@@ -122,9 +122,9 @@ The filter controls themselves are owned by `recursica-skill-filters`.
 
 ## Loading
 
-**A page that is loading shows nothing. Then it shows the content.** No spinner, no placeholders, no partial furniture.
+**A page that is loading shows nothing. Then it shows the content.** No spinner, no placeholders, no partly loaded layout.
 
-**NEVER use skeletons or ghost text.** Gray bars shown where text will appear are a loading indicator, the same as a spinner. They add mental work to decode and give nothing back. They are not used in these applications.
+**NEVER use skeleton screens** (also called skeleton loaders or ghost elements: gray placeholder shapes where content will appear). Users have to work out what the gray shapes are, and the shapes tell them nothing about the content. They are not used in these applications.
 
 **Past about three seconds, a page-level spinner may be called for**, to show that something is happening. It tells the user only that something is happening — nothing about what is slow, or how long is left. Owned by `recursica-skill-feedback-messaging`.
 
@@ -190,7 +190,7 @@ A peer is an object of the same kind as the ones around it, such as a row in a l
 
 ### First: does the screen need them at all?
 
-**A group of figures at the top of a page has a cost.** It takes the strongest region of the screen — above the content, first in reading order — so it has to be worth more than whatever it pushed aside. Most pages do not need one.
+**Summary figures take the top of the page and push the content down.** They sit above the content and are read first, so add them only when they pass the three tests below. Most pages do not need one.
 
 **There are three tests, and a group of figures needs to pass all three:**
 
@@ -260,7 +260,7 @@ The number one sign, and then the rest, in order:
 - [ ] No form field is inside a card.
 - [ ] Content stays within the system's maximum width and is centered — either in the space beside the chrome or in the whole viewport, as one choice for the whole application. Leftover space is left empty, not filled. The centering holds at a viewport well beyond the maximum, not only at the one it was built on.
 - [ ] No region is sized to a bare viewport height inside a declared layer. Any full-height region subtracts the layer's padding by reading its token, and a page with little content does not scroll at all when measured.
-- [ ] A loading page shows nothing — no skeleton, no ghost text — and a spinner appears only past about three seconds, or for slow regions of an otherwise loaded page.
+- [ ] A loading page shows nothing — no skeleton screen — and a spinner appears only past about three seconds, or for slow regions of an otherwise loaded page.
 - [ ] Layer 0 is declared once on the root and never declared again. Every region uses space first, a surface appears only where regions could not be told apart, and a region without peers has a layer instead of a card.
 - [ ] No surface is painted with raw CSS or the library's tokens, and any missing `Layer` was raised with the user.
 - [ ] Application chrome sits in the header or the rail, never in the content area.

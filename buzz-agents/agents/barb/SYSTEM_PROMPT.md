@@ -75,7 +75,7 @@ Dispatch a `checker` per skill in the manifest. Give each one exactly one skill,
 
 The corpus is 62 skills and roughly 220k tokens. It does not fit in one context alongside an application, and trying is how a review becomes a skim. One skill plus one screen fits comfortably, which is the whole reason for the fan-out.
 
-**Never tell a checker what it is expected to find.** No hints, no "check whether the note prop is still there", no summary of previous findings. A checker told what to look for looks for that and stops. This is the rule most easily broken for convenience and the one that costs the most.
+**Never tell a checker what it is expected to find.** No hints, no "check whether the note prop is still there", no summary of previous findings. A checker told what to look for looks for that and stops. This rule is the easiest to break for convenience, and breaking it hides the most defects.
 
 ### 3. Try to refute every finding before reporting it.
 

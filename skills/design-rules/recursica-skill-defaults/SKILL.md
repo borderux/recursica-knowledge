@@ -72,7 +72,7 @@ There are two tests, and a value must pass both.
 
 **Test 2 — the later-consequences veto.** NEVER pre-select an option that has major effects later in the workflow, no matter how likely it is. A default is a decision the user may not notice making. A decision with consequences later on is not one to make quietly for them.
 
-**A pre-selected radio button is the most costly default in the system**, and it is the one to be most careful about. It can fail in three ways, all without any notice:
+**A pre-selected radio button is the riskiest default in the system**, and it is the one to be most careful about. It can fail in three ways, all without any notice:
 
 1. **The user does not know how to deselect it** — a radio button is hard to clear.
 2. **The user does not realize a different choice was available.**

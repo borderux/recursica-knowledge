@@ -14,7 +14,7 @@ A chip is one of several short values the user can see, select, or remove.
 ## Use it when
 
 - **The values are plural.** Several tags, several categories, several applied filters on one object.
-- **The layout calls for a horizontal multi-select.** Selectable chips are how that is done here — a checkbox group is never turned sideways into a row.
+- **The layout calls for a horizontal multi-select.** Use selectable chips for it. Never lay a checkbox group out sideways in a row.
 - **The user filters or narrows things down** by turning options on and off.
 - **The user added the values**, and may take them off again.
 
@@ -29,7 +29,7 @@ A chip is one of several short values the user can see, select, or remove.
 | There are more options than a row can hold | A dropdown or autocomplete — see `recursica-skill-selection-controls`      |
 | Primary navigation, or labeling a nav item | Links for navigation; a badge for the label                                |
 
-**A status shown as a chip is the misuse to watch for.** A chip looks like something you can operate; a status is not the user's to change.
+**A status shown as a chip is the misuse to watch for.** A chip looks like a control the user can click. A status is not the user's to change.
 
 ## What exists
 
@@ -50,7 +50,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **The error state exists in the UI kit and in both adapters, and the house rule forbids using it.** Both facts are true, and neither cancels the other. The UI kit defines seven error colors for each selection state — background, border, text, icon, leading icon, selected icon, and close icon — and both adapters offer an `error` prop that applies them. "Error-selected" is not a fourth state; it is `error` combined with `selected`, which is why the axis is nested.
 
-**Do not pass it.** `recursica-skill-badges-chips` says it plainly: do not use a chip to show an error, ever. A required chip group with nothing selected is a form validation error that the group reports below itself, and no chip changes how it looks to report it. The axis is listed above so that you recognize it, instead of assuming a stray `error` prop is a typo — not so that you reach for it.
+**Do not pass it.** `recursica-skill-badges-chips` says it plainly: do not use a chip to show an error, ever. A required chip group with nothing selected is a form validation error that the group reports below itself, and no chip changes how it looks to report it. An `error` prop found in code is this axis, not a typo. The axis is listed above for that reason only, not as an option to pass.
 
 ## Rules for using it
 
@@ -60,7 +60,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **A chip may be dismissed only if the user put it there.** Values the system set are not the user's to remove.
 
-**Never show an error as a chip**, and never make a chip the thing that reports one. `recursica-skill-badges-chips` forbids a chip from carrying an error condition as its content — a chip is never how you tell the user that something is wrong.
+**Never show an error as a chip**, and never use a chip to report one. `recursica-skill-badges-chips` forbids a chip from carrying an error condition as its content. A chip never tells the user that something is wrong.
 
 **A required chip group with nothing selected is a form validation error, and the group reports it below itself.** `recursica-skill-forms` owns that, and it works exactly as it does for any other control. The message sits in the group's assistive element beneath the group, restates the rule the user has to meet, and carries a signal that is not color. See `recursica-skill-assistive-element`. The two rules do not conflict — the error belongs to the group, not to any chip in it, and no chip changes how it looks to report it.
 
@@ -70,7 +70,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Never mix selectable and removable chips in one group.** One group, one behavior — the user cannot see which chips do what.
 
-**Applied filters are shown as chips the user can remove**, and removing one runs the filter again. Do not also leave the filter control set — the chip and the control are one state.
+**Applied filters are shown as chips the user can remove**, and removing one runs the filter again. Removing a chip also clears the matching filter control. The chip and the control are one state.
 
 ## Accessibility
 
@@ -84,14 +84,14 @@ A chip group is a form control that happens to be laid out horizontally, and it 
 - **The group needs a label.** "Categories" — otherwise the user hears a run of options with no idea what they are choosing.
 - **Selection must be available in code, not shown by color.** A selected chip that differs only in its fill cannot be told apart by a screen reader user, and `recursica-skill-system-conventions` forbids it.
 - **A removable chip's close control needs a name that includes the value** — "Remove Marketing", not "Remove", and certainly not nothing. Five identical "Remove" controls down a row of chips cannot be used.
-- **Announce the removal.** After a chip is removed, the user needs to know it is gone and what is left. Silence sounds like a click that failed.
+- **Announce the removal.** After a chip is removed, the user needs to know it is gone and what is left. With no announcement, a screen reader user cannot tell the removal from a click that failed.
 - **A leading icon is decorative and must be silent.** The label carries the meaning.
 - **Do not announce the chip's count of matching results as part of the chip**, unless it is visible there too.
 
 ### Keyboard and non-mouse navigation
 
 - **Every chip must be reachable and usable from the keyboard.** Space toggles a selectable chip. Enter or Space activates a removable chip's close control.
-- **Where the library handles the group as a single tab stop (a place the Tab key lands) with the arrow keys moving between chips, do not fight it.** Do not add a tabindex to individual chips, or add your own key handling on top.
+- **Where the library handles the group as a single tab stop (a place the Tab key lands) with the arrow keys moving between chips, do not fight it.** Do not add a tabindex to individual chips, and do not add custom key handling on top.
 - **A removable chip's close control is its own stop** within the chip, reachable without a pointer.
 - **After a chip is removed, move focus on purpose** — to the next chip, or to the group if none are left. Focus left on a removed element is lost, and the user is quietly sent back to the top of the document.
 - **Never require hover to reveal the close control.** A dismiss that appears on hover cannot be reached by keyboard or by touch.
@@ -135,6 +135,6 @@ Do not implement, override, or tune any of these — the component owns them:
 - [ ] Every close control's name includes the value it removes, and removal is announced.
 - [ ] Chips and close controls can be used from the keyboard, and nothing depends on hover.
 - [ ] Focus is moved on purpose after a removal.
-- [ ] You passed no state other than `selected` and `unselected`, and assumed no size or style axis.
-- [ ] You overrode no styling that the component owns.
-- [ ] You invented nothing from the uncovered list.
+- [ ] No chip is passed a state other than `selected` or `unselected`, or any size or style prop.
+- [ ] No styling that the component owns is overridden.
+- [ ] Uncovered items were asked about, not decided: whether a chip may be disabled, overflow, select-all or clear-all, and a chip that opens a menu.

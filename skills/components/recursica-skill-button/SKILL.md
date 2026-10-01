@@ -22,7 +22,7 @@ A button performs an action. It does not take the user anywhere.
 | Instead of a button                               | Use                                                               |
 | ------------------------------------------------- | ----------------------------------------------------------------- |
 | The user ends up somewhere else                   | `recursica-skill-link` — with a real `href`                       |
-| Navigating out of a table row to a related object | A link. Links are quieter, which matters in a dense table         |
+| Navigating out of a table row to a related object | A link. Links are less prominent, which matters in a dense table  |
 | One value is chosen from a small set              | `recursica-skill-segmented-control`                               |
 | An on/off state that is saved as data             | A switch or a checkbox — see `recursica-skill-selection-controls` |
 | The action is one of many in a row that must fit  | Fewer actions, not smaller buttons — see `recursica-skill-tables` |
@@ -33,7 +33,7 @@ A button performs an action. It does not take the user anywhere.
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.button`. **Do not pass a variant, size, or state that is not listed here.**
 
-**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop, and React ignores it without an error if it is passed as one. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis      | Options                            | React prop |
 | --------- | ---------------------------------- | ---------- |
@@ -60,19 +60,19 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Label with a verb plus its object.** "Save page", not "OK". "Delete invoice", not "Yes". The label must make sense read alone, out of context, because that is how it is announced.
 
-**One primary action per surface.** The house states that the primary action is the `solid` style. Treat `outline` as the secondary and `text` as the quietest. Everything else on the surface is not primary.
+**One primary action per surface.** The primary action uses the `solid` style. Use `outline` for the secondary action and `text` for the least prominent. Everything else on the surface is not primary.
 
 **Actions sit at the bottom right** in a form or modal footer, with the primary last in reading order. Owned by `recursica-skill-buttons-links`.
 
 **An icon-only button always needs a tooltip** — and, separately, an accessible name (the name a screen reader reads out for a control). The tooltip serves sighted mouse users. It is not what a screen reader reads, unless it is also the name.
 
-**A count goes in parentheses after the label, and never replaces it.** `Apply status`, then `Apply status (1)`, then `Apply status (102)`. The label stays fixed; the count is added after it. Never work the number into the wording — no `Apply 102 statuses`, and no label that reads differently for one than for many.
+**A count goes in parentheses after the label, and never replaces it.** `Apply status`, then `Apply status (1)`, then `Apply status (102)`. The label stays fixed; the count is added after it. Never work the number into the wording — no `Apply 102 statuses`, and no label whose wording changes between one item and many.
 
 **Below one, show no count at all.** There is no `(0)`. A zero tells the user nothing they cannot already see, and it makes an inactive control look as if it has something in it. The parentheses appear with the first selection, and disappear with the last.
 
 **A toggle button's label names the state it has reached**, not the state it would move to — Follow becomes Following once followed.
 
-**A submit in flight is the disabled look plus an icon.** `recursica-skill-forms` requires that on submit, the button itself becomes a loading, disabled state; this is how that is built. Use `icon-only` or `icon-label`, apply `disabled`, and let the icon animate. Keep the button in the same place and at the same size. A button that resizes or moves as it starts working pulls the target out from under the pointer.
+**A submit in flight is the disabled look plus an icon.** `recursica-skill-forms` requires that on submit, the button itself becomes a loading, disabled state; this is how that is built. Use `icon-only` or `icon-label`, apply `disabled`, and let the icon animate. Keep the button in the same place and at the same size. A button that resizes or moves when it starts working is no longer under the pointer that clicked it.
 
 **Never use `small` to make more buttons fit.** Too many actions in a row is a problem with the structure; see `recursica-skill-system-conventions`.
 
@@ -82,17 +82,17 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
-The component provides the focus ring and the behavior of being activated. Everything below is up to you.
+The component provides the focus ring and the click and keyboard activation. The application must handle everything below.
 
 ### Screen readers
 
-- **Every button needs an accessible name**, and for `icon-only` you must supply one yourself — the icon is not announced. A button with no name is announced as just "button".
+- **Every button needs an accessible name**, and an `icon-only` button must have one set explicitly, because the icon is not announced. A button with no name is announced only as "button".
 - **The accessible name should match the visible label.** Where they differ, the visible label must be included in the name, or a user who speaks the label cannot activate it by voice.
 - **A row or list action must name its object.** "Delete" repeated down a table is thirteen identical announcements. Either the name carries the object — "Delete invoice 1043" — or the row supplies that context in code.
 - **When a toggle button's label changes, its accessible name changes with it.** A name that is out of date after activation is worse than no name.
 - **The accessible name spells the count out as a phrase; the visible label keeps the number in parentheses.** Visible: `Apply status (102)`. Announced: "Apply status to 102 items." A bare number read after a label — "Apply status 102" — is unclear out loud, because it could be a quantity, an identifier, or part of the name.
 - **This is the approved case for the two being different**, and it still follows the rule above, because the visible label is included in the accessible name: someone using voice can still say "Apply status" and be understood.
-- **The name updates as the count does**, and with no selection it is simply `Apply status`, with no count in either place. Do not announce every increase while the user is selecting; what matters is that the name is correct when they reach the button.
+- **The name updates as the count does**, and with no selection it is `Apply status`, with no count in either place. Do not announce every increase while the user is selecting. The name must be correct by the time the user reaches the button.
 - **It must be a real button element**, never a `div` or a `span` with a click handler. Only a real button is announced as a button, and only a real button responds to Enter and Space without extra work.
 - **Never rely on the icon to carry the meaning.** An icon-only button tells a screen reader nothing beyond its name — as `recursica-skill-system-conventions` requires.
 - **A button in flight must announce that it is busy**, and the animating icon must be silent. The animation is only a visual signal. Without the busy state, a screen reader user hears nothing and presses again.
@@ -103,9 +103,9 @@ The component provides the focus ring and the behavior of being activated. Every
 - **Enter and Space both activate a button.** Do not intercept, remap, or swallow either one.
 - **The button is a tab stop (a place the Tab key lands), and the tab order follows the visual order.** The primary action must be reachable by keyboard without going through the whole page.
 - **Nothing needed may appear only on hover.** Row actions revealed on hover cannot be reached by keyboard or by touch. If an action exists, it is visible, or it is in a menu that can itself be reached.
-- **When the button opens a modal or a menu, focus moves into it — and returns to this button when it closes.** Sending focus back to the top of the page strands the user.
+- **When the button opens a modal or a menu, focus moves into it — and returns to this button when it closes.** Focus sent to the top of the page makes a keyboard user tab through the whole page again to get back.
 - **Otherwise, do not move focus when it is activated.** An action that happens in place leaves focus on the button, so the user can act again.
-- **Disabling a button while it works will drop focus.** A disabled control leaves the tab order, and the user who just pressed Enter on it is sent back to the top of the document. Keep the button able to receive focus while it is in flight — show the disabled state without removing it from the tab order — or move focus on purpose to whatever comes next.
+- **Disabling a button while it works will drop focus.** A disabled control leaves the tab order, and the user who pressed Enter on it is sent back to the top of the document. Keep the button able to receive focus while it is in flight — show the disabled state without removing it from the tab order — or move focus on purpose to whatever comes next.
 - **The animated loading icon must respect a reduced-motion preference** (a setting that asks for less animation).
 
 ## Decided elsewhere
@@ -146,7 +146,7 @@ Do not implement, override, or tune any of these — the component owns them for
 - [ ] Focus returns to the trigger when a modal or menu it opened closes.
 - [ ] A button in flight is the disabled look with an animated icon — no spinner beside it, no swapped label, no invented state — and it neither moves nor resizes.
 - [ ] A busy button announces that it is busy, keeps the same name, can still receive focus, and respects reduced motion.
-- [ ] You passed no variant, size, or state outside the inventory above, and invented no destructive style.
-- [ ] You overrode no styling that the component owns, and the focus ring is intact.
+- [ ] Every variant, size, and state passed is in the inventory above, and there is no invented destructive style.
+- [ ] No styling the component owns is overridden, and the focus ring is intact.
 - [ ] Any disabled button has its reason in text, and actions the user has no permission for are missing, not disabled.
-- [ ] You invented nothing from the uncovered list.
+- [ ] Uncovered items were asked about, not decided: when `small` is the correct size, whether a full-width button is allowed, which icon marks a button in flight, split buttons and button groups, and how the disabled state is set.
