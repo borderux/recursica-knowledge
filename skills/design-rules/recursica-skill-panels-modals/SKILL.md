@@ -40,7 +40,7 @@ The viewport is the visible area of the browser window. A breakpoint is the scre
 
 **When that context is not needed, a page is simpler.** If the user can do all the work without anything from the page behind, there is no reason to squeeze it into a narrow surface.
 
-**Use a modal only when the user needs to interact or decide inside it.** A modal blocks the rest of the page until it closes.
+**Use a modal only when the user needs to interact or decide inside it.** While a modal is open, the user cannot see or use anything else on the page.
 
 ### Work that changes what is behind it
 
