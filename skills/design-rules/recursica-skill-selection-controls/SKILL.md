@@ -15,7 +15,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 ## Governing principles
 
-1. **The shape of the data picks the control.** How many values can be selected? Do they rule each other out? Is the opposite of the value obvious? Answer those questions, and the control is decided. How it looks comes last, not first.
+1. **The type and structure of the data dictate which control is best suited.** How many values can be selected? Do they rule each other out? Is the opposite of the value obvious? Answer those questions, and the control is decided. How it looks comes last, not first.
 2. **Options should be visible and easy to scan.** Arrange them vertically, and keep them within working memory (how much a person can hold in mind at once). Hiding options inside a dropdown has to be earned, by the set being predictable enough that the user knows what is in it before opening it.
 3. **One saving point per form.** Submitting everything together is the default, and saving instantly and saving later must never exist side by side in the same system. The user needs one reliable answer to "is my work saved?"
 

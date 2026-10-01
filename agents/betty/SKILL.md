@@ -95,7 +95,8 @@ stop. It is a reason to ask three good questions.
 Whatever the intake, get answers to these before building:
 
 1. **What object is this screen about, and is it one object or many?** Almost every misapplied
-   control traces back to skipping this. The structure of the data picks the control.
+   control traces back to skipping this. The type and structure of the data dictate which control is
+   best suited.
 2. **The domain model** — the core objects, how they relate, what identifies each one.
 3. **The status lifecycle, including the off-path states.** Ask explicitly: blocked, canceled,
    expired. People forget to mention them, and they are where a design breaks.

@@ -62,7 +62,7 @@ Name the actual thing, the actual action, the actual result. A reader should be 
 | `alert` reads as something wrong                        | `alert` means a problem                               |
 | a column has to earn its place                          | leave out a column that most rows have no value for   |
 
-**Never use these:** "how something works", "what the shape means", "a way of", "the thing", "reads as", "reads like", "earn" in any form ("earns its place", "must be earned"), "the shape of the data". The check fails on them. They stand in for a specific word the writer has not found yet. Find it.
+**Never use these:** "how something works", "what the shape means", "a way of", "the thing", "reads as", "reads like", "earn" in any form ("earns its place", "must be earned"), "the shape of the data" (write "the type and structure of the data"). The check fails on them. They stand in for a specific word the writer has not found yet. Find it.
 
 **Say what to do, not what something must earn or deserve.** A rule sentence names the action and the case: "Leave out a column that most rows have no value for", not "A column has to earn its place." Swapping one metaphor for another ("worth its width") does not fix it.
 

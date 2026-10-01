@@ -96,7 +96,7 @@ Work from top to bottom. Each answer limits the ones below it.
 | 9   | Where the task lives — a panel beside the page, a modal over it, or a page of its own                                              | `recursica-skill-panels-modals`                    |
 | 10  | Narrowing a collection — the filter bar, search, date ranges                                                                       | `recursica-skill-filters`                          |
 | 11  | If the user enters or edits data: layout, labels, grouping, validation, save mode                                                  | `recursica-skill-forms`                            |
-| 12  | For each field, which control the structure of the data calls for                                                                  | `recursica-skill-selection-controls`               |
+| 12  | For each field, which control the type and structure of the data call for                                                          | `recursica-skill-selection-controls`               |
 | 13  | What the screen shows before the user touches it — open tab, applied filters, pre-filled and pre-selected values, remembered state | `recursica-skill-defaults`                         |
 | 14  | Status, counts, tags, and metadata on objects                                                                                      | `recursica-skill-badges-chips`                     |
 | 15  | Every clickable thing: is it an action or a navigation, how is it labeled, where does it sit                                       | `recursica-skill-buttons-links`                    |
@@ -115,7 +115,7 @@ A few terms from the table, since they come up in every skill below: a **surface
 
 **Two ordering rules:**
 
-- **Decide the object before the components.** Almost every wrong choice of control goes back to skipping step 1. The structure of the data picks the control, and the structure is unknown until the object is known.
+- **Decide the object before the components.** Almost every wrong choice of control goes back to skipping step 1. The type and structure of the data dictate which control is best suited, and they are unknown until the object is known.
 - **Decide routing before layout.** Whether something is a location decides whether it is a page, a tab, a panel, or a modal — and that decision affects everything after it.
 
 ## Precedence when rules collide

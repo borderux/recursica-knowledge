@@ -78,7 +78,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Never disable a slider as a way to show a value.** Disabled means the user could make it usable by doing something else first. If they can never set it here, this is not a form control.
 
-**Do not use a slider to make a long form feel lighter.** The shape of the data chooses the control, not a wish for variety.
+**Do not use a slider to make a long form feel lighter.** The type and structure of the data dictate which control is best suited, not a wish for variety.
 
 ## Accessibility
 
