@@ -60,7 +60,7 @@ you. Write "the checker passes on every changed file" — the exit code is the e
 it already knows the terms so the reader does not need them.
 
 The pattern generalizes past grep. Any sentence whose job is to prove a check ran is under
-pressure to quote the thing checked — a rejected value, a matched line, a filename, a table
+pressure to quote the value it checked — a rejected value, a matched line, a filename, a table
 row that "looks wrong." Prove it with the tool's output, never with the input.
 
 **Run the checker on the text, not just the diff:**
@@ -175,8 +175,8 @@ git commit -F <file> \
 ```
 
 **All three trailers coexist** — the operator's `Co-authored-by`, the model's, and the
-operator's `Signed-off-by`. The instruction to credit the model reads like a substitution
-and is not one. GitHub reads `Co-authored-by` for contribution credit and `Signed-off-by`
+operator's `Signed-off-by`. The instruction to credit the model looks like it replaces the
+operator's trailer, and it does not. GitHub reads `Co-authored-by` for contribution credit and `Signed-off-by`
 alone does not grant it, which is why both are required rather than either. Pass the model's
 as a `--trailer` flag too rather than leaving it at the end of the message body — that is
 what puts it in the right position and what makes it visible in the same place as the other

@@ -12,11 +12,11 @@ listed here, `npm run skills:glossary:check` requires the words in the brackets 
 **Definition** column exactly. The test suite runs the same check, so a definition that drifts fails
 CI.
 
-## How to use it
+## Using the glossary
 
 - **Defining a listed term in a skill?** Copy the definition from the table, word for word, into
   brackets right after the term. Do this once per skill, the first time the term appears in prose.
-- **The wording does not fit your sentence?** Rewrite the sentence, not the definition. If no
+- **The definition does not fit the sentence?** Rewrite the sentence, not the definition. If no
   sentence can take it, change the definition here — and every skill that uses it — in the same
   pull request.
 - **Adding a term?** Add it here when a second skill needs to define it. A term used by one skill

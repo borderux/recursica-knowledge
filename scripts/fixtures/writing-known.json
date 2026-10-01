@@ -1,5 +1,4 @@
 {
-  "AGENT.md: phrase": "waiting on a rewrite",
   "skills/components/recursica-skill-number-input/SKILL.md: phrase": "waiting on the skill-by-skill rewrite",
   "skills/components/recursica-skill-number-input/SKILL.md: you": "waiting on the skill-by-skill rewrite",
   "skills/components/recursica-skill-pagination/SKILL.md: you": "waiting on the skill-by-skill rewrite",
@@ -25,6 +24,5 @@
   "skills/components/recursica-skill-transfer-list/SKILL.md: phrase": "waiting on the skill-by-skill rewrite",
   "skills/components/recursica-skill-transfer-list/SKILL.md: you": "waiting on the skill-by-skill rewrite",
   "skills/components/recursica-skill-tree/SKILL.md: phrase": "waiting on the skill-by-skill rewrite",
-  "skills/components/recursica-skill-tree/SKILL.md: you": "waiting on the skill-by-skill rewrite",
-  "skills/meta/GLOSSARY.md: you": "waiting on the skill-by-skill rewrite"
+  "skills/components/recursica-skill-tree/SKILL.md: you": "waiting on the skill-by-skill rewrite"
 }
