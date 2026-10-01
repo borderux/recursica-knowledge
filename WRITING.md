@@ -8,21 +8,6 @@ This guide sets the writing rules for this repository. Agents are the main reade
 
 Use American spelling and the AP style guide.
 
-| Write     | Not       |
-| --------- | --------- |
-| color     | colour    |
-| behavior  | behaviour |
-| center    | centre    |
-| labeled   | labelled  |
-| canceled  | cancelled |
-| recognize | recognise |
-| organize  | organise  |
-| summarize | summarise |
-| judgment  | judgement |
-| toward    | towards   |
-| gray      | grey      |
-| catalog   | catalogue |
-
 ### 2. No "you"
 
 Never address the reader. Give an instruction in the imperative, and state a rule about the component or the screen.
@@ -113,7 +98,7 @@ The repository is public. Follow `AGENT.md` on what never goes into a commit, a 
 
 `npm run writing:check` runs with `npm run skills:check` and in CI. It fails on:
 
-- British spellings, in any form
+- British spellings
 - "you" and "your" in skills and agent instructions, except an agent's identity line, code and quoted text
 - the phrases listed under rule 3
 
