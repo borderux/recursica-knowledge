@@ -140,7 +140,7 @@ Apply these in order. The first one that settles the conflict wins.
 
 ## Before asking — check the cross-surface conventions
 
-**`recursica-skill-system-conventions`** holds six conventions drawn from across the topic skills: one behavioral mode per system; the unadvertised affordance (a control that works but is not shown in the main interface, such as a keyboard shortcut); never carrying meaning in a single channel (color, shape, position or text, each a separate signal); fixing the structure instead of the symptom; a visible container must be earned; and one control, one outcome. When no topic skill covers a decision, check there before treating the decision as unowned. It is the house position on surfaces nobody has designed before.
+**`recursica-skill-system-conventions`** holds six conventions drawn from across the topic skills: one behavioral mode per system; the unadvertised affordance (a control that works but is not shown in the main interface, such as a keyboard shortcut); never carrying meaning in a single channel (color, shape, position or text, each a separate signal); fixing the structure instead of the symptom; group with space, not boxes; and one control, one outcome. When no topic skill covers a decision, check there before treating the decision as unowned. It is the house position on surfaces nobody has designed before.
 
 ## What has no owner yet
 

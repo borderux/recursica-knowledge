@@ -56,9 +56,11 @@ Name the actual thing, the actual action, the actual result. A reader should be 
 | a way of carrying meaning, such as color, shape or text | color, shape, position or text                        |
 | a person's picture of how something works               | what the user expects, from tools they already use    |
 | `alert` reads as something wrong                        | `alert` means a problem                               |
-| it has to earn its place                                | it must be worth the space it takes                   |
+| a column has to earn its place                          | leave out a column that most rows have no value for   |
 
-**Never use these:** "how something works", "what the shape means", "a way of", "the thing", "reads as", "reads like", "earns its place", "the shape of the data". The check fails on them. They stand in for a specific word the writer has not found yet. Find it.
+**Never use these:** "how something works", "what the shape means", "a way of", "the thing", "reads as", "reads like", "earn" in any form ("earns its place", "must be earned"), "the shape of the data". The check fails on them. They stand in for a specific word the writer has not found yet. Find it.
+
+**Say what to do, not what something must earn or deserve.** A rule sentence names the action and the case: "Leave out a column that most rows have no value for", not "A column has to earn its place." Swapping one metaphor for another ("worth its width") does not fix it.
 
 **No metaphors.** A summary row is not "furniture", a misused badge is not "wearing another component's clothes", and tokens do not "shape" agents. Say what is wrong in plain terms.
 

@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-tables
-description: House rules for tables and data grids — one table per object type, what earns a column, horizontal scrolling as a last resort, column widths and alignment, truncating versus wrapping, pagination versus infinite scroll, empty cells, sorting, opening a record, add and bulk actions, inline editing, totals, and frozen columns. Use when building or reviewing a table or list view. Not for row selection — see recursica-skill-selection-controls.
+description: House rules for tables and data grids — one table per object type, which fields get a column, horizontal scrolling as a last resort, column widths and alignment, truncating versus wrapping, pagination versus infinite scroll, empty cells, sorting, opening a record, add and bulk actions, inline editing, totals, and frozen columns. Use when building or reviewing a table or list view. Not for row selection — see recursica-skill-selection-controls.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -48,11 +48,11 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **MUST keep that control after approval, and put undo in it.** Approving does not end the reader's interest in what was combined — it is the moment they most need to check it. The control that showed the proposal now shows the result, and the way back lives where the decision was made, as `recursica-skill-buttons-links` says. A screen where approving removes the only view of what happened has made the decision impossible to audit.
 
-## What earns a column
+## Which fields get a column
 
 **Decide from what the user is doing:** acting on these records, or understanding them at a high level. Anything that serves neither does not need a column.
 
-**A column also has to be filled in to be worth its width.** Judge it against the data as it is, not against the database design. A field that only a minority of rows have shows up as a column of `NA` down the screen — and it took its width from the columns the reader came for.
+**Leave out a column that most rows have no value for.** Check the real data, not the database fields. If only a few rows have a value, the column is mostly `NA`, and it takes width away from the columns people need.
 
 **NEVER give a column to an exception.** Warnings, errors, flags, conflicts, unusual cases — these are rare by definition, so the column is empty by its very nature, and no amount of data will change that. A `Warnings` header over thirty italic `NA`s and four badges is the pattern to recognize.
 
@@ -274,7 +274,7 @@ No house rule covers these yet. **Ask the person instead of choosing** — see t
 
 - **Which data types cannot be sorted.** The rule leaves out types with no logical order, but no list of them has been made.
 - **Error states for a table**, including partial failure.
-- **How full a sparse column has to be before it stops being worth its width.** "Filled in for most rows" is the rule; the exact share is a judgment call, and no number has been given.
+- **How many rows must have a value before a sparse column is kept.** "Filled in for most rows" is the rule; no exact share has been given.
 - **How a pending row's status reads when several rows are pending for different reasons.** One pending state per table is covered; telling different kinds of pending apart is not.
 
 ## Out of scope
@@ -319,4 +319,4 @@ Before treating a table as done, check:
 - [ ] Showing and reordering columns sits behind an unadvertised settings control, with a way to do it that is not dragging.
 - [ ] There are no grouped rows; extra detail uses one level of expand and collapse.
 - [ ] No more than three columns are frozen.
-- [ ] Nothing on the uncovered list was decided without asking: types that cannot be sorted, error states, the fill level at which a sparse column stops being worth its width, and kinds of pending.
+- [ ] Nothing on the uncovered list was decided without asking: types that cannot be sorted, error states, how many rows must have a value before a sparse column is kept, and kinds of pending.

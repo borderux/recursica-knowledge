@@ -11,7 +11,7 @@ metadata:
 
 A card separates one repeating object from its peers (objects of the same kind, such as rows in a list). It is not a container for whatever needs grouping.
 
-**Overuse is the usual failure.** Generated screens turn into boxes inside boxes, because a card looks like a safe way to group things. It is not. Grouping is done with space; a drawn boundary has to be earned.
+**Overuse is the usual failure.** Generated screens turn into boxes inside boxes, because a card looks like a safe way to group things. It is not. Group with space. Draw a boundary only around repeated items.
 
 ## The five tests — all must pass
 
@@ -143,7 +143,7 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Load these too
 
-- `recursica-skill-system-conventions` — the general convention that a visible container must be earned.
+- `recursica-skill-system-conventions` — the general convention to group with space, not boxes.
 - `recursica-skill-tables` — the alternative whenever plurality is high or the content is purely data, and the clickable-row rule.
 - `recursica-skill-dashboards` — why a wall of equal-weight cards has no hierarchy, and what to build instead.
 - `recursica-skill-forms` — form layout and the spacing already built into the field components.

@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-system-conventions
-description: Conventions that recur across all the Recursica rules, for decisions no topic skill covers — one behavior per system, the unadvertised affordance, never one channel for meaning, fixing structure not symptoms, earning a container, one control one outcome — plus the accessibility baseline every component follows. Load it with the owning skill, which always wins.
+description: Conventions that recur across all the Recursica rules, for decisions no topic skill covers — one behavior per system, the unadvertised affordance, never one channel for meaning, fixing structure not symptoms, grouping with space not boxes, one control one outcome — plus the accessibility baseline every component follows. Load it with the owning skill, which always wins.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -94,7 +94,7 @@ Examples:
 
 **Applying it to a new surface:** before adding anything whose purpose is to make content fit, stop. Name what would have to change for the content to fit without it, and propose that change instead. If the limit comes from outside and cannot be moved — a client requirement, or an amount of data that cannot be reduced — say so plainly. Do not let the workaround pass as a design choice.
 
-## 5. A visible container must be earned
+## 5. Group with space, not boxes
 
 **By default, show grouping with space. A drawn boundary — a card, a box, a bordered region — is only for separating repeated peer objects from each other.** A peer is one of a set of repeating objects of the same kind, such as rows in a list. Not every container needs to be visible.
 

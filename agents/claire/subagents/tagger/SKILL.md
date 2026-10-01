@@ -49,7 +49,7 @@ and get judged there), the active `tag_library`, the `batch` range to pass back,
 batches. A shared buffer leaking tags across batches was a real bug in the previous system. When about
 to apply a tag because of something in a batch no longer in view, stop.
 
-**A batch with no tags is a real result.** Send `{"tags":[]}`. Lines legitimately earn nothing,
+**A batch with no tags is a real result.** Send `{"tags":[]}`. Lines legitimately get no tag,
 and recording the empty batch is what advances the cursor — skipping the write means the same
 range is served forever.
 
@@ -81,17 +81,17 @@ library with every batch so no judgment works from memory.
   at 0.50 is meant to fire readily, one at 0.80 is meant to be rare. The tool enforces the
   threshold; choosing an honest number is Tagger's job, and inflating one to clear a bar is
   exactly what this whole arrangement exists to prevent.
-- **`justification`** quotes or paraphrases the specific span that earned the tag. A
+- **`justification`** quotes or paraphrases the specific span that qualifies the line for the tag. A
   justification restating the tag's definition is not a justification.
 - **`window_size`** is optional; the tool records the context width it supplied.
 
 Aliases in the library are recall hints — near-synonyms and stock phrasings so a tag comes to
 mind. **They are not a keyword match.** A line containing a listed word does not automatically
-earn the tag, and a line using none of them still can. A tag justified only by pointing
+qualify for the tag, and a line using none of them still can. A tag justified only by pointing
 at an alias string is not a match.
 
 `is_human_edited` on a line means a person corrected that text. It is worth naming in a
-justification when their wording is what earned the tag.
+justification when their wording is what qualifies the line for the tag.
 
 ## Where the tag library comes from
 
@@ -126,7 +126,7 @@ Run `--status` once at the end and report from it, not from memory: the ranges c
 whether coverage is complete, how many tag rows landed on how many lines, and
 `lines_considered_but_untagged`.
 
-That last number is the one worth understanding. It counts lines that were read and earned nothing,
+That last number is the one worth understanding. It counts lines that were read and got no tag,
 which is a real and useful result — and it is only reported once coverage is complete, because
 until then it cannot be distinguished from lines nobody ever read. **If `--status` exits 5, the
 conversation is not tagged.** Report the missing ranges it names; never report a tag count from

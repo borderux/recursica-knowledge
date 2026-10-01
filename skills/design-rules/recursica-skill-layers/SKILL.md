@@ -61,7 +61,7 @@ The structure of the shell — header, rail, footer, titles — is owned by `rec
 | **2** | **Rare.** Needs a stated reason — a container nested inside a layer-1 region that still needs one |
 | **3** | **Almost never.** Treat wanting it as a sign that the structure is wrong                          |
 
-**Space first, always.** Most regions need no layer of their own. Show grouping with white space and type hierarchy — see `recursica-skill-screen-scaffolding`, and convention 5 in `recursica-skill-system-conventions`: a visible container must be earned.
+**Space first, always.** Most regions need no layer of their own. Show grouping with white space and type hierarchy — see `recursica-skill-screen-scaffolding`, and convention 5 in `recursica-skill-system-conventions`: group with space, not boxes.
 
 **Open a new layer when neighboring regions really do blur into each other**, and spacing has already failed to separate them.
 
