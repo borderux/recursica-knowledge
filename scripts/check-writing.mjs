@@ -116,6 +116,7 @@ export const PHRASES = [
   /\bthe thing\b/i,
   /\breads (as|like)\b/i,
   /\bearns? (its|their) place\b/i,
+  /\bshape of (the|its) data\b|\bdata's shape\b/i,
 ];
 
 const YOU =

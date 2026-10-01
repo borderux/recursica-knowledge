@@ -58,7 +58,7 @@ Name the actual thing, the actual action, the actual result. A reader should be 
 | `alert` reads as something wrong                        | `alert` means a problem                               |
 | it has to earn its place                                | it must be worth the space it takes                   |
 
-**Never use these:** "how something works", "what the shape means", "a way of", "the thing", "reads as", "reads like", "earns its place". The check fails on them. They stand in for a specific word the writer has not found yet. Find it.
+**Never use these:** "how something works", "what the shape means", "a way of", "the thing", "reads as", "reads like", "earns its place", "the shape of the data". The check fails on them. They stand in for a specific word the writer has not found yet. Find it.
 
 **No metaphors.** A summary row is not "furniture", a misused badge is not "wearing another component's clothes", and tokens do not "shape" agents. Say what is wrong in plain terms.
 

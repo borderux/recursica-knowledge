@@ -11,20 +11,20 @@ metadata:
 
 These are the house rules for designing forms. They are opinions, not neutral best practices — treat them as constraints, not suggestions.
 
-These rules assume **complex enterprise web applications, designed for desktop first**, built on a design system whose components are already accessible and correctly styled. The visual design of each component is not your decision. Your job is how the form is put together, the order of things, the states, and the wording.
+These rules assume **complex enterprise web applications, designed for desktop first**, built on a design system whose components are already accessible and correctly styled. The design system decides the visual design of each component. These rules cover how the form is put together, the order of things, the states, and the wording.
 
-**Spacing is not your decision either.** The spacing between fields and between sections is built into the form field components themselves. Do not add your own margins, padding, or spacer elements between fields to adjust the vertical rhythm — put the components together and let them handle it.
+**Spacing is decided elsewhere too.** The spacing between fields and between sections is built into the form field components themselves. Do not add custom margins, padding, or spacer elements between fields to adjust the vertical rhythm — put the components together and let them set the spacing.
 
 **NEVER place a form, a form section, or any single form control inside a card.** There is no exception. A card is for a set of repeating peer objects (objects of the same kind, such as rows in a list). A form is the properties of one object, so a card boundary separates nothing. Group fields with headings and with the components' own spacing. See `recursica-skill-card`.
 
 ## The two governing principles
 
 1. **Remove ambiguity.** Every layout decision should have exactly one correct reading order, one correct tab order (the order the Tab key moves through the fields), and one obvious next action. If a design forces the user to guess — what to fill in, where to go next, whether their work was saved — it is wrong.
-2. **Prevent errors before catching them.** Good labels, help text, placeholders, and small sections do more than any validation system can. Validation is the safety net, not the plan.
+2. **Prevent errors before catching them.** Good labels, help text, placeholders, and small sections do more than any validation system can. Validation catches what prevention misses. It does not replace prevention.
 
 ## Layout
 
-**MUST: a single column, from top to bottom.** One field per row, stacked vertically. This is not negotiable, and it does not change with the width of the container. A wide container never earns fields side by side. Extra horizontal space goes unused, or the form's maximum width is limited — it is never spent on a second column.
+**MUST: a single column, from top to bottom.** One field per row, stacked vertically. This is not negotiable, and it does not change with the width of the container. A wide container never justifies fields side by side. Extra horizontal space goes unused, or the form's maximum width is limited — it is never spent on a second column.
 
 **NEVER use a multi-column form layout.** Not for addresses (`Address 1` / `Address 2` / `City` / `State` / `Zip` in two columns), not to "save vertical space," not ever. Multi-column layouts are banned because the tab order becomes unclear: does focus move down the left column and then down the right, or left to right across each row? Both answers are reasonable — which is why the layout is broken. A form's reading order must never move both left to right _and_ top to bottom.
 
@@ -37,7 +37,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 The reasons, most important first:
 
 - The eye travels only a short distance from label to field. A left-justified label in a wide column can leave a gap big enough that the user's eye drifts across to the wrong field and fills that one in.
-- Checking your work is one scan straight down the column of _values_. There is no jumping from label to value to label to value.
+- Checking the entries is one scan straight down the column of _values_. There is no jumping from label to value to label to value.
 - It keeps the form short.
 
 **The container's width affects only how labels and fields relate — never the order of the fields.** Fields stay one per row, top to bottom, always. The one thing that changes is whether a label sits beside its field or above it.
@@ -50,7 +50,7 @@ Stacking is a fallback, never a preference. It makes forms long, and it forces t
 
 This is not a matter of looks. Mixing the two placements in one form:
 
-- **Destroys the single vertical scan.** The side-by-side rule exists so that checking your work is one pass down a column of values. A stacked field in the middle of that column breaks the column.
+- **Destroys the single vertical scan.** The side-by-side rule exists so that checking the entries is one pass down a column of values. A stacked field in the middle of that column breaks the column.
 - **Creates two competing left edges**, so the user cannot tell whether the next thing they read is a label or a value.
 - **Makes the exception look meaningful.** A field laid out differently from the ones around it looks like a different kind of field, and the user searches for a reason that does not exist.
 
@@ -58,7 +58,7 @@ This is not a matter of looks. Mixing the two placements in one form:
 
 **Sections do not get their own placement either.** A form's sections are parts of one form. A section that stacks while the section above it sits side by side is the same defect.
 
-**In code, side by side is the value you have to pass.** The prop is `formLayout` on every field component, and it **defaults to `stacked`**. So a field with no `formLayout` shows the fallback in a container of any width — which is this rule turned upside down. Passing nothing is not "taking the default"; it is the defect. There are two ways this fails silently, and neither one shows an error:
+**In code, side by side is the value that has to be passed.** The prop is `formLayout` on every field component, and it **defaults to `stacked`**. So a field with no `formLayout` shows the fallback in a container of any width — the opposite of this rule. Passing nothing is not "taking the default"; it is the defect. There are two ways this fails silently, and neither one shows an error:
 
 - **The prop is `formLayout`, not `layouts`.** `layouts` is the name of the token axis (a property a component varies on, such as size or style; Figma calls it a variant property). React ignores an unknown prop without complaint, so `layouts="side-by-side"` leaves the field stacked while looking as if the rule was applied.
 - **A form only complies if every field has the prop.** Search the form for the field components and count them. The prop is set per field, so one missed field is the mixed-placement defect described above.
@@ -88,16 +88,16 @@ Group fields in this order of preference:
 
 ## Required vs. optional
 
-**A field is required only in the states where it is actually required.** When a field becomes mandatory at a later stage of a workflow, it is not required before that stage. It must not show a required error while the record is still in a state that does not need it. An error demanding a value the current state does not need is a validation bug the user cannot do anything about — and it teaches them to ignore errors.
+**A field is required only in the states that require it.** When a field becomes mandatory at a later stage of a workflow, it is not required before that stage. It must not show a required error while the record is still in a state that does not need it. An error demanding a value the current state does not need is a validation bug the user cannot do anything about — and it teaches them to ignore errors.
 
-**Say the condition, not just the requirement.** Where a field will be required later, the assistive text states the condition: the message explains at what point the value will be needed, instead of claiming it is missing now.
+**Say the condition, not only the requirement.** Where a field will be required later, the assistive text states the condition: the message explains at what point the value will be needed, instead of claiming it is missing now.
 
 **MUST mark only the exception, never both.**
 
 - Mostly required fields → mark the few **optional** ones.
 - Mostly optional fields → mark the few **required** ones.
 
-**Avoid cluttering the form with asterisks.** When nearly all fields are required, do not scatter asterisks everywhere. Use a signal that applies across the form instead — for example, a bold label means required, and regular weight means optional — and state that convention once. There is less visual noise, and it is just as clear.
+**Avoid cluttering the form with asterisks.** When nearly all fields are required, do not scatter asterisks everywhere. Use a signal that applies across the form instead — for example, a bold label means required, and regular weight means optional — and state that convention once. There is less visual noise, and it is equally clear.
 
 **Mark a whole group as optional** wherever an entire section may not apply to a user. If a user may not have the knowledge for a whole section, the _section_ is optional. Say so at the group heading, rather than on every field.
 
@@ -119,7 +119,7 @@ How that is built: use the button's disabled look, with icon-only content or an 
 2. Validate **inline, on blur** — that is, when the user leaves the field. When a field is focused, then left, and then found to be invalid, mark it right away with a non-blocking indicator on that field. Do not put up a modal, do not show an alert, and do not stop the user from moving on to another field.
 3. **MUST keep the submit button disabled until every required field is complete and valid.**
 
-**NEVER ship an enabled submit button that dumps every validation error at once when clicked.** This is the single worst validation pattern. It tells the user nothing about what the form needs until they have already failed at it, so they are left guessing what to complete. If the button is enabled, the form can be submitted.
+**NEVER ship an enabled submit button that shows every validation error at once when clicked.** This is the single worst validation pattern. It tells the user nothing about what the form needs until they have already failed at it, so they are left guessing what to complete. If the button is enabled, the form can be submitted.
 
 **The only exception to validating inline first:** errors the user could not have known about in advance — conflicts on the server, broken business rules, or a clash with another record's unique value. Those appear after submit, because there is no earlier moment to catch them.
 
@@ -132,7 +132,7 @@ Combine:
 - A visual change to the field — its background color, border color, or line weight.
 - **Plus** a separate indicator: an icon, a flag, or a message.
 
-**Turn the help text into the error message** where that makes sense. The error message should still state the rule the user broke, not just "Invalid input." Keeping the rule in view is how the user fixes the problem.
+**Turn the help text into the error message** where that makes sense. The error message should still state the rule the user broke, not a bare "Invalid input." Keeping the rule in view is how the user fixes the problem.
 
 Errors live at the field level. For dense forms, flags that sit over the page, pinned to the fields with errors, are a good way to make it impossible to miss where the errors are.
 
@@ -167,7 +167,7 @@ Pre-filling is not all or nothing. Decide by the **risk of the user misunderstan
 
 **NEVER pre-fill data the user has to understand to check** — values they would have to think about, look up, or compare against another source to know whether the default is right. A default they cannot check is worse than an empty field, because it gets submitted without being checked.
 
-**A form that edits an existing object is a separate case, and it always arrives filled in** with that object's current values. You are editing the object, not starting over. This never stops applying. Owned by `recursica-skill-defaults`, which also has the 90 percent threshold for pre-selecting an option, and the veto on pre-selecting anything with later consequences.
+**A form that edits an existing object is a separate case, and it always arrives filled in** with that object's current values. The user is editing the object, not starting over. This never stops applying. Owned by `recursica-skill-defaults`, which also has the 90 percent threshold for pre-selecting an option, and the veto on pre-selecting anything with later consequences.
 
 ## Progressive disclosure
 
@@ -175,7 +175,7 @@ Pre-filling is not all or nothing. Decide by the **risk of the user misunderstan
 
 If the result appears on a later step instead, **that is not progressive disclosure** — that is multi-step branching. Do not mix them up.
 
-**Avoid hiding sections based on the type of user.** In enterprise application design, it is rare that fields should be invisible to some users. Prefer marking the whole group optional at its heading. If you find yourself hiding large chunks, question the requirement first.
+**Avoid hiding sections based on the type of user.** In enterprise application design, it is rare that fields should be invisible to some users. Prefer marking the whole group optional at its heading. Before hiding large parts of a form, question the requirement.
 
 ## Confirmation
 
@@ -194,7 +194,7 @@ If the result appears on a later step instead, **that is not progressive disclos
 | **Field-level / instant** | On each field change, immediately, to the server | **Required.** Show a status that stays on the page — saved as a draft, and when |
 | **Batch save**            | On submit, all at once                           | **None.** No status message, and no indicator of unsaved changes                |
 
-**MUST NOT mix the two modes.** Within a system, either everything saves field by field, or everything saves on submit. Mixing them is a serious failure — the user can no longer build a reliable picture of when their work is safe.
+**MUST NOT mix the two modes.** Within a system, either everything saves field by field, or everything saves on submit. Mixing them is a serious failure — the user can no longer tell when their work is saved.
 
 **Batch save is the default.** See `recursica-skill-selection-controls` for the full reasoning: the user must be able to change their mind, and saving once produces one clean log entry instead of a stream of writes, one per field.
 
@@ -206,7 +206,7 @@ If the result appears on a later step instead, **that is not progressive disclos
 
 ## Accessibility
 
-Accessible components are the foundation, and the design system provides them. That leaves the responsibilities that come from how the form is put together, and those are yours:
+Accessible components are the foundation, and the design system provides them. That leaves the responsibilities that come from how the form is put together:
 
 - **Tab order MUST follow the visual order, from top to bottom.** A single-column layout makes this easy, which is part of why it is mandatory.
 - **Correct `aria-label`s**, mostly inherited from the components — check that nobody has overridden them with something vague.
@@ -245,7 +245,7 @@ Before treating a form as done, check:
 
 - [ ] There is one field per row, in a single column, from top to bottom — at every container width. Compound controls are the only rows that hold more than one input.
 - [ ] Labels sit to the left of their fields, right-aligned. They are stacked above only when the container is too narrow for both.
-- [ ] `formLayout="side-by-side"` is passed on every field. You confirmed this by searching the form for its field components and counting them, not by assuming. A missing prop shows `stacked`, and `layouts` is not the prop name.
+- [ ] `formLayout="side-by-side"` is passed on every field. This is confirmed by searching the form for its field components and counting them, not assumed. A missing prop shows `stacked`, and `layouts` is not the prop name.
 - [ ] The whole form uses one label placement at any given breakpoint: every field side by side, or every field stacked. There is no mixing, including between sections.
 - [ ] There is no custom spacing between fields; only the components' own spacing.
 - [ ] No form, form section, or form control is inside a card.
@@ -269,4 +269,4 @@ Before treating a form as done, check:
 - [ ] Tab order matches the visual order.
 - [ ] There is no toggle to show the password, and no challenge CAPTCHA.
 - [ ] There is no confirmation dialog, unless the action cannot be undone and there is no way to recover.
-- [ ] You asked before deciding anything on the uncovered list: validation across steps, filter and search inputs, and error summaries.
+- [ ] Nothing on the uncovered list was decided without asking the person first: validation across steps, filter and search inputs, and error summaries.

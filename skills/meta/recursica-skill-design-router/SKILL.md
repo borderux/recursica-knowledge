@@ -9,9 +9,9 @@ metadata:
 
 # Design router
 
-This is the entry point to the Recursica skill family. It holds no design rules of its own. Instead, it tells you **what to decide, in what order, which skill owns each decision, what to do when rules collide, and when to stop and ask.**
+This is the entry point to the Recursica skill family. It holds no design rules of its own. Instead, it says **what to decide, in what order, which skill owns each decision, what to do when rules collide, and when to stop and ask.**
 
-Load this skill before you start. Then, as you reach each decision, load the skill that owns it.
+Load this skill before starting. Then, at each decision, load the skill that owns it.
 
 ## The three jobs of this skill
 
@@ -39,34 +39,34 @@ This repository holds more than the skills. Website content, build scripts, pack
 - **`template/`, `scripts/`, `spec/`, `scratch/`, `n8n/`, `dist/`.** These are packaging and tooling.
 - **Another design system.** Material, Carbon, Mantine, and the rest have no authority here. When a Recursica skill says nothing about something, the answer is to ask — not to borrow a convention from somewhere else.
 
-**Load the whole family, not one file.** A component skill tells you what a component is and how to make it accessible. It does not tell you whether that component belongs on the screen — a design-rules skill does. Working from a component skill alone is the most common way to build something where each piece is correct but the whole is wrong.
+**Load the whole family, not one file.** A component skill says what a component is and how to make it accessible. It does not say whether that component belongs on the screen — a design-rules skill does. Working from a component skill alone is the most common way to build something where each piece is correct but the whole is wrong.
 
-**Read the family in full when you can.** A skill's prose is where it explains how to apply each rule, and builders who read it apply the rules better — above all the accessibility rules — than builders working from the checklists alone, even when every rule was in the checklist. Use a shorter form only when the whole family will not fit beside your work. Then start from each skill's pre-flight checklist and uncovered list, plus a component skill's "Do not use it when" table, its "What exists" inventory, and its Accessibility section, and read any other section when a checklist item is unclear, when two items seem to conflict, or when you are about to decide something the skill may cover. Either way, in a skill's "Load these too" list, the links under "Only if the screen also uses it" are alternatives and neighbors — load one only when the screen uses that component. If you reach the skills through the Recursica knowledge server, `skill_family` returns the full text by default, `detail: "contract"` returns the shorter form without the Accessibility sections, and `skill_section` returns any section on its own.
+**Read the family in full when it fits.** A skill's prose is where it explains how to apply each rule, and builders who read it apply the rules better — above all the accessibility rules — than builders working from the checklists alone, even when every rule was in the checklist. Use a shorter form only when the whole family will not fit beside the work in progress. Then start from each skill's pre-flight checklist and uncovered list, plus a component skill's "Do not use it when" table, its "What exists" inventory, and its Accessibility section, and read any other section when a checklist item is unclear, when two items seem to conflict, or before deciding something the skill may cover. Either way, in a skill's "Load these too" list, the links under "Only if the screen also uses it" are alternatives and neighbors — load one only when the screen uses that component. When the skills come through the Recursica knowledge server, `skill_family` returns the full text by default, `detail: "contract"` returns the shorter form without the Accessibility sections, and `skill_section` returns any section on its own.
 
 ## The styling escape hatch is a gap report, not a permission
 
-The component adapters offer a styling escape hatch. **Its name makes it sound like a way to override things. Treat it as a warning sign instead**, and ask this question before you use it:
+The component adapters offer a styling escape hatch. **Its name makes it sound like a way to override things. Treat it as a warning sign instead**, and ask this question before using it:
 
-**Is there a prop or a token (a named design value, such as a color or a size, set by the design system) for what you are trying to change?**
+**Is there a prop or a token (a named design value, such as a color or a size, set by the design system) for the property being changed?**
 
-- **Yes — then you are overriding something the component controls, and that is forbidden.** Every component skill lists these under `Decided elsewhere`. Stop, and use the prop.
-- **No — then you are filling in for a prop or token that is missing.** That is the normal reason to use the hatch. What matters is what you do next: the missing prop or token is a gap in the design system, and you must report it. Using the hatch quietly and moving on is how a gap becomes permanent and invisible.
+- **Yes — then the change overrides something the component controls, and that is forbidden.** Every component skill lists these under `Decided elsewhere`. Stop, and use the prop.
+- **No — then the hatch fills in for a prop or token that is missing.** That is the normal reason to use the hatch. What matters is the next step: the missing prop or token is a gap in the design system, and it must be reported. Using the hatch without reporting the gap and moving on is how a gap becomes permanent and invisible.
 
-**Either way, reaching for the hatch means something is wrong** — either your approach or the system. Say which one, and say it right alongside the code.
+**Either way, reaching for the hatch means something is wrong** — either the approach or the system. Say which one, and say it next to the code.
 
-**It is never a way to make a component that does not exist.** A badge forced to a fixed width so it can act as a bar in a chart is not a missing prop being filled in. It is a missing component dressed up as a different one. See `recursica-skill-data-visualization`.
+**It is never a way to make a component that does not exist.** A badge forced to a fixed width so it can act as a bar in a chart is not a missing prop being filled in. It is a missing component made to look like a different one. See `recursica-skill-data-visualization`.
 
 ## Never guess — ask instead
 
-**MUST NOT settle uncertainty by quietly picking an answer.** This is the most important rule in the family. The next person to read your work cannot tell a silent guess apart from a real house rule.
+**MUST NOT settle uncertainty by picking an answer without saying so.** This is the most important rule in the family. The next person to read the work cannot tell a silent guess apart from a real house rule.
 
 Stop and ask the user when **any** of these is true:
 
 - **Requirements compete.** The request asks for two things that cannot both be true.
-- **A requirement contradicts a house rule.** Do not quietly go along with it, and do not quietly refuse it. Point out the conflict and let the user decide.
+- **A requirement contradicts a house rule.** Do not go along with it without saying so, and do not refuse it without saying so. Point out the conflict and let the user decide.
 - **Two house rules disagree**, and the order of precedence below does not settle it.
 - **No house rule covers the decision**, and the choice matters. See the list of unowned topics below.
-- **The request is unclear** about scope, object, or intent in a way that would change what you build.
+- **The request is unclear** about scope, object, or intent in a way that would change what gets built.
 
 **How to ask:**
 
@@ -75,7 +75,7 @@ Stop and ask the user when **any** of these is true:
 - **Ask once, in a batch.** Gather the open questions and ask them together, rather than interrupting again and again.
 - **Name the conflict precisely.** Quote the rules or requirements that compete. "Your spec asks for a status the user can click; the house rule is that status is never interactive" is something the user can act on. "This is ambiguous" is not.
 
-**What is not uncertainty:** a house rule that states a default. If a skill says batch save is the default, or collapsed is the default, use it. Defaults exist so that you do not have to ask.
+**What is not uncertainty:** a house rule that states a default. If a skill says batch save is the default, or collapsed is the default, use it. Defaults exist so that nobody has to ask.
 
 **When the user answers, treat the answer as new house knowledge.** Say so, and offer to add it to the skill that owns the topic. Answers that stay in a chat log get argued over again next time.
 
@@ -96,7 +96,7 @@ Work from top to bottom. Each answer limits the ones below it.
 | 9   | Where the task lives — a panel beside the page, a modal over it, or a page of its own                                              | `recursica-skill-panels-modals`                    |
 | 10  | Narrowing a collection — the filter bar, search, date ranges                                                                       | `recursica-skill-filters`                          |
 | 11  | If the user enters or edits data: layout, labels, grouping, validation, save mode                                                  | `recursica-skill-forms`                            |
-| 12  | For each field, which control the shape of the data calls for                                                                      | `recursica-skill-selection-controls`               |
+| 12  | For each field, which control the structure of the data calls for                                                                  | `recursica-skill-selection-controls`               |
 | 13  | What the screen shows before the user touches it — open tab, applied filters, pre-filled and pre-selected values, remembered state | `recursica-skill-defaults`                         |
 | 14  | Status, counts, tags, and metadata on objects                                                                                      | `recursica-skill-badges-chips`                     |
 | 15  | Every clickable thing: is it an action or a navigation, how is it labeled, where does it sit                                       | `recursica-skill-buttons-links`                    |
@@ -113,32 +113,32 @@ Work from top to bottom. Each answer limits the ones below it.
 
 A few terms from the table, since they come up in every skill below: a **surface** is a region that holds content, such as a page, panel, or modal. A layer is a numbered level that sets which colors the components inside it use; layer 0 is the page itself. A modal is a window that blocks the rest of the page until the user closes it. A toast is a short message that appears briefly and then disappears. Assistive technology means tools such as screen readers that help people with disabilities use a computer.
 
-**Two ordering rules worth saying outright:**
+**Two ordering rules:**
 
-- **Decide the object before the components.** Almost every wrong choice of control goes back to skipping step 1. The shape of the data picks the control, and you cannot know the shape without knowing the object.
+- **Decide the object before the components.** Almost every wrong choice of control goes back to skipping step 1. The structure of the data picks the control, and the structure is unknown until the object is known.
 - **Decide routing before layout.** Whether something is a location decides whether it is a page, a tab, a panel, or a modal — and that decision affects everything after it.
 
 ## Precedence when rules collide
 
 Apply these in order. The first one that settles the conflict wins.
 
-1. **The design system beats every skill.** Anything the components control — spacing, color, type, focus states, keyboard behavior inside a control — is not your decision. If a rule seems to ask you to style a component, you have misread it.
+1. **The design system beats every skill.** Anything the components control — spacing, color, type, focus states, keyboard behavior inside a control — is decided elsewhere. A rule that seems to ask for styling a component has been misread.
 
-   **But a library's default is not a house rule, and you must never treat it as one.** The components are adapters built on top of Mantine, Material, or whatever library sits underneath. What that library does by default has no authority here. When a default disagrees with a house rule, the house rule wins, and the default is a defect to report — not proof that the rule is wrong or that the behavior is on purpose. The panel is a live example: it wraps a drawer that is modal by default, while the house rule is that a panel is non-modal (it leaves the rest of the page usable). Check the behavior in the running application instead of assuming it from what the library usually does.
+   **But a library's default is not a house rule, and it must never be treated as one.** The components are adapters built on top of Mantine, Material, or whatever library sits underneath. What that library does by default has no authority here. When a default disagrees with a house rule, the house rule wins, and the default is a defect to report — not proof that the rule is wrong or that the behavior is on purpose. The panel is a live example: it wraps a drawer that is modal by default, while the house rule is that a panel is non-modal (it leaves the rest of the page usable). Check the behavior in the running application instead of assuming it from what the library usually does.
 
 2. **A prohibition beats a permission.** `NEVER` and `MUST NOT` outrank "may", "is fine", and "acceptable". If one skill forbids something another skill allows, the prohibition holds.
 3. **A design-rules or psychology skill beats a component skill.** This rule settles most real conflicts, so apply it before the ones below. The design-rules skills come from the team. The component skills were put together from the list of tokens around them. When the two disagree about composition — whether a component belongs here, how many are allowed, what may contain what, when one control should replace another — the design-rules skill is correct and the component skill has a defect. Follow the design rule, and say that the component skill needs fixing.
 
-   The component skill still wins on exactly one thing: **which variants and states actually exist.** A design rule that assumes a capability the component does not have is a gap to raise. It is not permission to invent that capability.
+   The component skill still wins on exactly one thing: **which variants and states exist.** A design rule that assumes a capability the component does not have is a gap to raise. It is not permission to invent that capability.
 
 4. **The more specific surface wins, within the same tier.** A rule about one control beats a general rule about all controls. For example, a segmented control is capped at 2–5 options even though the general limit is 7 ± 2, because the segmented control's own rule is narrower. This does not raise a component skill above a design rule — rule 3 already settles that.
 5. **The skill that names the surface owns it.** When two skills both seem to apply, the one whose description names that surface is in charge; the other is background.
 6. **A stated house rule beats an outside convention.** Common practice from elsewhere does not override a Recursica rule, and it is never a reason to loosen one. If the house rule looks wrong, say so and ask — do not work around it.
-7. **A later clarification beats an earlier general statement** — but only on wording and scope. If the substance really conflicts, ask instead of assuming the newer text wins.
+7. **A later clarification beats an earlier general statement** — but only on wording and scope. If the substance conflicts, ask instead of assuming the newer text wins.
 
 **Never average two rules into a compromise.** Splitting the difference between two conflicting rules produces a design that neither rule allows.
 
-## Before you ask — check the cross-surface conventions
+## Before asking — check the cross-surface conventions
 
 **`recursica-skill-system-conventions`** holds six conventions drawn from across the topic skills: one behavioral mode per system; the unadvertised affordance (a control that works but is not shown in the main interface, such as a keyboard shortcut); never carrying meaning in a single channel (color, shape, position or text, each a separate signal); fixing the structure instead of the symptom; a visible container must be earned; and one control, one outcome. When no topic skill covers a decision, check there before treating the decision as unowned. It is the house position on surfaces nobody has designed before.
 
@@ -156,12 +156,12 @@ The list below is the other kind: **whole topics that no skill owns yet.** Both 
 
 ## Reading the rules correctly
 
-**Hedges are not permissions.** The skills use graded language on purpose: `MUST`, `NEVER`, "prefer", "avoid", "typically". "Avoid" means do not do it unless you have a specific reason you can state. It does not mean the choice is open. Read the rest the same way, whichever model you are:
+**Hedges are not permissions.** The skills use graded language on purpose: `MUST`, `NEVER`, "prefer", "avoid", "typically". "Avoid" means do not do it without a specific reason that can be stated. It does not mean the choice is open. Every model reads the rest the same way:
 
 - **`MUST` and `NEVER`** allow no exception unless the skill names one.
-- **"Prefer", "typically", and "usually"**, when they state what to do, mean do it unless you have a specific reason you can state.
-- **"Avoid" and "rarely"**, when they state what to do, mean do not do it unless you have a specific reason you can state.
-- **"Often", "most often", and "rarely"**, when they describe how things tend to go — "the step most often skipped" — are not rules. They tell you where to look hardest.
+- **"Prefer", "typically", and "usually"**, when they state what to do, mean do it unless there is a specific reason that can be stated.
+- **"Avoid" and "rarely"**, when they state what to do, mean do not do it without a specific reason that can be stated.
+- **"Often", "most often", and "rarely"**, when they describe how things tend to go — "the step most often skipped" — are not rules. They say where to look hardest.
 
 **Silence is not permission either.** A topic the skills do not mention has no rule. That does not mean it is allowed. That is what the unowned list and the requirement to ask are for.
 
@@ -171,15 +171,15 @@ The list below is the other kind: **whole topics that no skill owns yet.** Both 
 
 Before starting, and again before declaring the work done:
 
-- [ ] You loaded this skill before any other Recursica skill.
-- [ ] Every source you used is a `SKILL.md`. You did not read, cite, or follow any `DOCS.md`, and you did not bring in a convention from another design system.
-- [ ] For every component on the screen, you loaded both skills: the component skill for what it is, and the design-rules skill for whether it belongs.
-- [ ] You named the object the screen is about before you chose any component.
-- [ ] You decided routing before layout.
+- [ ] This skill was loaded before any other Recursica skill.
+- [ ] Every source used is a `SKILL.md`. No `DOCS.md` was read, cited, or followed, and no convention came in from another design system.
+- [ ] For every component on the screen, both skills were loaded: the component skill for what it is, and the design-rules skill for whether it belongs.
+- [ ] The object the screen is about was named before any component was chosen.
+- [ ] Routing was decided before layout.
 - [ ] Every decision in the table above is either made using its owning skill or raised with the user as a question.
-- [ ] For each decision, you loaded and read the owning skill, rather than working from memory.
-- [ ] When two rules conflicted, you did not settle it by preference, by averaging them, or by saying nothing.
-- [ ] When the rules had a gap, you did not fill it by inventing an answer or borrowing an outside convention. You checked the owning skill's uncovered list and `recursica-skill-system-conventions` first.
-- [ ] You asked the user every open question before building, and gave options with each one.
-- [ ] For each answer the user gave, you offered to add it to the owning skill.
-- [ ] You handled the non-happy states (empty, loading, error, and partial), or told the user that no skill owns them yet.
+- [ ] For each decision, the owning skill was loaded and read, rather than worked from memory.
+- [ ] When two rules conflicted, the conflict was not settled by preference, by averaging them, or by saying nothing.
+- [ ] When the rules had a gap, it was not filled by inventing an answer or borrowing an outside convention. The owning skill's uncovered list and `recursica-skill-system-conventions` were checked first.
+- [ ] Every open question went to the user before building, with options for each one.
+- [ ] For each answer the user gave, an offer was made to add it to the owning skill.
+- [ ] The non-happy states (empty, loading, error, and partial) are handled, or the user was told that no skill owns them yet.
