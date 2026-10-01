@@ -60,7 +60,7 @@ Name the specific component, action or result. A reader should be able to pictur
 - **Give the reason once, in one sentence.** The reason lets a reader apply the rule to a case it does not name.
 - **One idea per sentence.** Split a sentence that needs a semicolon and a dash. Split a run-on joined by "so" into two sentences, and name what each one is about: not "The rest takes judgment, so read this before any change", but "Review catches what the check cannot."
 - **Cut filler:** "really", "genuinely", "actually", "simply", "just", "already", "in practice", "it is worth noting". Use "quietly" only for something that happens without notice, as in "React ignores it without an error".
-- **State each rule in one place.** Either state the rule or link to the file that states it. Do not summarize another file's rule and then point to that file, which leaves two copies to keep in step.
+- **State each rule in one place.** Either state the rule or link to the file that states it. Do not summarize another file's rule and then point to that file. The skills are the one exception. An agent may load one skill without the others, and each skill must stand on its own. Skills copy shared passages and glossary definitions for that reason, and `npm run skills:check` keeps the copies identical.
 - **No setups.** Not "This is the judgment that matters most:" before a rule. State the rule.
 
 ### 5. Define only what a designer would not know
