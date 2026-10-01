@@ -40,6 +40,8 @@ The reader is never the subject. Write about the thing, or give the instruction 
 | A checklist    | a short fact a reviewer can confirm | "- [ ] Where horizontal scrolling must be used, a reason is provided." |
 | A heading      | the topic                           | "## Decided elsewhere", not "## Not your decision"                     |
 
+**Removing "you" means rewriting the sentence, not making it passive.** "Side by side is the value you have to pass" does not improve as "the value that has to be passed". Say what to do: "Set `formLayout=\"side-by-side\"` on every field to put the label beside the input." If a rewrite is no clearer than the original, it is not finished.
+
 **Checklist items name what must be there.** Write the fact a reviewer confirms by looking, in the words a designer uses: "Where horizontal scrolling must be used, a reason is provided." Not "you said so", and not a vague passive like "that is stated" or "this was confirmed by". Items about the uncovered list all take one form: "Uncovered items were asked about, not decided: …"
 
 **One exception: an agent's identity line.** "You are Betty, the designer agent for Recursica." That is how an agent is given its role, and it is the only sentence in an agent's instructions that starts with "You". Everything after it is an instruction.
