@@ -195,7 +195,7 @@ W_max = 44 × 12.48                 = 555px
 
 ## Screen reader verbosity is not a concern
 
-**Do not change correct markup to reduce how much a screen reader says.** Accessibility must be handled — correct structure, correct elements, and content that matches the screen. How much a screen reader says is not something to optimize against, and neither is semantic confusion that exists only in theory. A correct structure that reads long is better than a clever one that reads short.
+**Keep markup correct, even when a screen reader reads more because of it.** Use correct structure, correct elements, and content that matches the screen. Correct markup comes ahead of a shorter readout, and ahead of semantic confusion that exists only in theory. A correct structure that reads long is better than a clever one that reads short.
 
 ## Decided elsewhere
 
@@ -238,7 +238,7 @@ W_max = 44 × 12.48                 = 555px
 - [ ] Every abbreviation is written out in full the first time, with the short form in parentheses — unless it is common knowledge in a context that cannot be misread.
 - [ ] Copy follows AP style, and no capitalization was set or changed by hand.
 - [ ] The document order matches the visual order.
-- [ ] No correct markup is changed to reduce how much a screen reader says.
+- [ ] The markup is correct, even where a screen reader reads more because of it.
 - [ ] Every `h3`–`h6`, body, and caption text block has a `max-width` worked out by the line-length check, and no wide container was filled to its edge.
 - [ ] The check produced only a width. It changed no font size, line height, or letter-spacing value.
 - [ ] Any `h1` or `h2` long enough to wrap is reported as a wording problem, with no measure computed for it.

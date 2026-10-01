@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-screen-scaffolding
-description: House rules for composing a page — header, left rail, and footer, top navigation versus rail, page title and breadcrumb, summary figures, the primary action, filter placement, dividing regions with space, maximum content width, loading, and when a region needs a container. Use when laying out a page or its chrome. Not for whether a card is right — see recursica-skill-card.
+description: House rules for composing a page — header, left rail, and footer, top navigation versus rail, page title and breadcrumb, KPI tiles, the primary action, filter placement, dividing regions with space, maximum content width, loading, and when a region needs a container. Use when laying out a page or its chrome. Not for whether a card is right — see recursica-skill-card.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -150,7 +150,7 @@ The filter controls themselves are owned by `recursica-skill-filters`.
 
 A peer is an object of the same kind as the ones around it, such as a row in a list.
 
-**A layer is the middle option, and it is the one most often missed.** An agent that knows only "card or nothing" will wrap everything in a container, or nothing. A region that needs separation but has no peers — a chart and its labels, a group of summary figures — gets a layer.
+**A layer is the middle option, and it is the one most often missed.** An agent that knows only "card or nothing" will wrap everything in a container, or nothing. A region that needs separation but has no peers — a chart and its labels, a row of KPI tiles — gets a layer.
 
 **A layer does not excuse something from the card tests.** Needing a surface does not make something a peer.
 
@@ -186,33 +186,33 @@ A peer is an object of the same kind as the ones around it, such as a row in a l
 
 **This is easy to miss in review and easy to catch by measuring.** On a page with little content, compare the document's scroll height against the viewport height: any positive difference is this bug. It can also appear without any code change, the moment the design system starts declaring a layer that used to be the caller's job — which is how it appeared here.
 
-## Summary figures
+## KPI tiles
 
 ### First: does the screen need them at all?
 
-**Summary figures take the top of the page and push the content down.** They sit above the content and are read first, so add them only when they pass the three tests below. Most pages do not need one.
+**KPI tiles (the counts and totals shown at the top of a page, such as `Open orders: 12`) take the top of the page and push the content down.** They sit above the content and are read first, so add them only when they pass the three tests below. Most pages do not need one.
 
-**There are three tests, and a group of figures needs to pass all three:**
+**There are three tests, and a row of KPI tiles needs to pass all three:**
 
 1. **The dataset is too large to take in at a glance.** A count belongs on the page only when it tells the reader something the content cannot. With eleven rows in a table below it, the table has already said it — the reader can see eleven. Ask what the realistic maximum is, not the theoretical one: if the answer is dozens, the table is enough.
-2. **The number changes.** A figure exists to be read again on the next visit and found different. One that reports the same value every time is a label, not data.
+2. **The number changes.** A tile exists to be read again on the next visit and found different. One that reports the same value every time is a label, not data.
 3. **It guides the next action.** Because of it, the reader should be able to do something differently.
 
-**NEVER show a figure that is always zero by its nature.** A count of a state that nothing ever reaches is not a reassuring zero. It is a permanent empty figure that the reader learns to skip — and once they have learned to skip it, they skip the box beside it too. A zero that will one day be more than zero belongs in the content, where its arrival can be seen in context.
+**NEVER show a tile that is always zero by its nature.** A count of a state that nothing ever reaches is not a reassuring zero. It is a permanent empty tile that the reader learns to skip — and once they have learned to skip it, they skip the box beside it too. A zero that will one day be more than zero belongs in the content, where its arrival can be seen in context.
 
-**Two or three figures that pass are a better screen than six where three are always zero.** The problem is not the number of boxes. It is that padding out the row teaches the reader that the whole row is decoration.
+**Two or three tiles that pass are a better screen than six where three are always zero.** The problem is not the number of boxes. It is that padding out the row teaches the reader that the whole row is decoration.
 
 **A count that only ever repeats a row count is the most common case.** `Speaker records: 11` above a table of eleven speakers only repeats the table's length in a box. Delete it — the subtraction test under "The line under a heading" applies here without change.
 
 ### Then: how they are built
 
-**A group of summary figures is a set of peers**, and every figure in it gets the same treatment.
+**A row of KPI tiles is a set of peers**, and every tile in it gets the same treatment.
 
 **Each is named by a noun phrase saying what is counted** — `Pending requests`, not `Total pending requests`; `Overdue requests`, not `Overdue`. See `recursica-skill-naming-terminology`.
 
-**Figures shown together must agree with each other.** Two counts side by side invite the reader to compare them, so a subset must clearly look like a subset. A screen that reports something mathematically impossible loses the reader's trust in every number on it.
+**Tiles shown together must agree with each other.** Two counts side by side invite the reader to compare them, so a subset must clearly look like a subset. A screen that reports something mathematically impossible loses the reader's trust in every number on it.
 
-**Do not define a term right next to itself.** A figure with a caption explaining its own label is a label that failed. Fix the label.
+**Do not define a term right next to itself.** A tile with a caption explaining its own label is a label that failed. Fix the label.
 
 ## Signs a page was assembled rather than designed
 
@@ -244,7 +244,7 @@ The number one sign, and then the rest, in order:
 - **Empty states where data exists but is zero.** Named as not covered.
 - **Where global notifications or alerts sit in the page structure.** Named as not covered, and the banner component does not exist yet — see `recursica-skill-feedback-messaging`.
 - **What may go in a footer** beyond a copyright notice, and when it is fixed in place rather than reached by scrolling.
-- **Whether summary figures sit on layers or in cards.**
+- **Whether KPI tiles sit on layers or in cards.**
 
 ## Pre-flight checklist
 
@@ -264,7 +264,7 @@ The number one sign, and then the rest, in order:
 - [ ] Layer 0 is declared once on the root and never declared again. Every region uses space first, a surface appears only where regions could not be told apart, and a region without peers has a layer instead of a card.
 - [ ] No surface is painted with raw CSS or the library's tokens, and any missing `Layer` was raised with the user.
 - [ ] Application chrome sits in the header or the rail, never in the content area.
-- [ ] Every summary figure passed all three tests: the dataset is too large to take in at a glance, the number changes, and it guides an action. None is always zero by its nature, and none only repeats the row count of a table below it. Where none passed, there is no group of figures.
-- [ ] The summary figures share one treatment, are named as noun phrases, and agree with each other.
+- [ ] Every KPI tile passed all three tests: the dataset is too large to take in at a glance, the number changes, and it guides an action. None is always zero by its nature, and none only repeats the row count of a table below it. Where none passed, there is no row of KPI tiles.
+- [ ] The KPI tiles share one treatment, are named as noun phrases, and agree with each other.
 - [ ] White space is even, headings have room above them, and elements line up to a grid.
-- [ ] Uncovered items were asked about, not decided: the layout grid, empty states where data exists but is zero, where global notifications or alerts sit, what may go in a footer, and whether summary figures sit on layers or in cards.
+- [ ] Uncovered items were asked about, not decided: the layout grid, empty states where data exists but is zero, where global notifications or alerts sit, what may go in a footer, and whether KPI tiles sit on layers or in cards.

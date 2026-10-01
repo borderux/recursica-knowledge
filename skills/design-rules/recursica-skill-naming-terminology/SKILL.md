@@ -51,7 +51,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 ## Every label is a noun
 
-**A label names a thing. It is never a verb.** This is true of a field label, a filter label, a column header, a navigation item, and a summary figure alike — everywhere except a button, which names an action.
+**A label names a thing. It is never a verb.** This is true of a field label, a filter label, a column header, a navigation item, and a KPI tile alike — everywhere except a button, which names an action.
 
 **`Name`, not `Search`.** The user is not filling in a thing called _search_; they are entering a name. A verb in a label describes what the user is doing — which they already know — instead of naming the object they are doing it to.
 

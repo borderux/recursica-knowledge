@@ -66,7 +66,11 @@ Name the actual thing, the actual action, the actual result. A reader should be 
 
 **Say what to do, not what something must earn or deserve.** A rule sentence names the action and the case: "Leave out a column that most rows have no value for", not "A column has to earn its place." Swapping one metaphor for another ("worth its width") does not fix it.
 
-**Name the cost.** "Has a cost" or "is worth what it costs" says nothing until the cost is named. Write what happens: "Summary figures take the top of the page and push the content down."
+**Say it in the affirmative, the simplest way.** No double negatives and no complicated negative statements. Write "Keep markup correct, even when a screen reader reads more because of it", not "Do not change correct markup to reduce how much a screen reader says." A plain prohibition is fine when it is already the simplest form: "Never use a badge to show an error."
+
+**Name the cost.** "Has a cost" or "is worth what it costs" says nothing until the cost is named. Write what happens: "KPI tiles take the top of the page and push the content down."
+
+**Use the term designers already use.** "Skeleton screen", not "gray bars where text will be"; "KPI tiles", not "summary figures". Look the term up when unsure, and define it once in brackets if a designer could misread it.
 
 **No metaphors.** A summary row is not "furniture", a misused badge is not "wearing another component's clothes", and tokens do not "shape" agents. Say what is wrong in plain terms.
 

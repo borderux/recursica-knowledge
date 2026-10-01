@@ -181,7 +181,7 @@ Plurality means how many of something there are. A peer is one of a set of repea
 - **How the adapter offers a layer.** The token contract and the `data-recursica-layer` attribute are confirmed from the theme. But whether the React adapter ships a `Layer` component, a prop, or expects the attribute directly is not. `recursica-skill-screen-scaffolding` records the component as mentioned but not exported. Confirm before building, and do not hand-build a substitute.
 - **Which surfaces sit at which level by default.** Nothing states the layer of a panel, a modal, a table, or a dashboard widget — only that each has colors for each layer.
 - **Whether a modal or panel opens a new layer scope**, or takes on the layer beneath it.
-- **Whether summary figures sit on layers or in cards.** Still open in `recursica-skill-screen-scaffolding`.
+- **Whether KPI tiles sit on layers or in cards.** Still open in `recursica-skill-screen-scaffolding`.
 - **What a layer does below the tablet breakpoint** — see `recursica-skill-responsive-behavior`.
 
 ## Pre-flight checklist
@@ -203,4 +203,4 @@ Plurality means how many of something there are. A peer is one of a set of repea
 - [ ] No layer level stands for rank, status, importance, or any other meaning.
 - [ ] No layer divides a page into regions, and no card has been swapped for a layer, or a layer for a card.
 - [ ] The contents of every newly opened layer have been checked, not only the container.
-- [ ] Uncovered items were asked about, not decided: how the adapter offers a layer, which surfaces sit at which level by default, whether a modal or panel opens a new layer scope, whether summary figures sit on layers or in cards, and what a layer does below the tablet breakpoint.
+- [ ] Uncovered items were asked about, not decided: how the adapter offers a layer, which surfaces sit at which level by default, whether a modal or panel opens a new layer scope, whether KPI tiles sit on layers or in cards, and what a layer does below the tablet breakpoint.
