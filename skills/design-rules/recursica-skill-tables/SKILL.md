@@ -30,7 +30,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 ## One table per object type
 
-**All the items of one object type belong in one table. NEVER split them into sections by status.** A screen running `Suggested` over `Consolidated people` over `Every speaker` shows one object type three times. The reader has to add up three row counts to answer "how many people are there?" — a question one table answers by existing.
+**All the items of one object type belong in one table. NEVER split them into sections by status.** A screen running `Suggested` over `Consolidated people` over `Every speaker` shows one object type three times. The reader has to add up three row counts to answer "how many people are there?" One table answers it with one row count.
 
 **Status is a column, not a heading.** That is the whole mechanism. One table with a status column can be sorted and filtered by state, and the share in each state can be seen at a glance, instead of worked out from the lengths of three separate lists.
 
@@ -62,9 +62,9 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **The icon goes beside the identifying value, in that cell — not alone in a cell of its own.** `recursica-skill-icon-semantics` forbids a non-interactive icon sitting by itself with no other information, and a column of bare icons is both that and the empty column this rule just rejected. Beside the name, the name gives the icon its context, which is the reason for putting it there.
 
-**A status that every row has is a different case, and it does get its column.** The difference is how much of it is filled in, not what it is about: `Status`, where every record is `active` or `archived`, is data that is filled in. The same column, and the rule flips on how much of it is filled.
+**A status that every row has is a different case, and it does get its column.** The difference is how much of it is filled in, not what it is about: `Status`, where every record is `active` or `archived`, is filled in for every row, so it gets a column. What decides is how many rows have a value, not what the column is about.
 
-**Filtering is what serves the exception.** A reader who wants the four flagged rows wants those four — not a column to scan for them.
+**Use a filter to find exceptions.** A reader who wants the four flagged rows wants those four, not a column to scan for them.
 
 **Data that does not fit belongs somewhere else** — an expandable area inside the table, a side panel, or a drill-down page (one the user clicks through to for more detail).
 
@@ -94,7 +94,7 @@ It is sometimes unavoidable — for example, when a client insists that every fi
 
 **The design system sets a maximum column width**, and values are truncated when they reach it. The exact character count or pixel limit belongs to the system, varies by implementation, and is not a design decision.
 
-**Set widths on the narrow types, and leave the wide one unset.** This part decides whether the rule works:
+**Set widths on the narrow types, and leave the wide one unset.** This is the part to get right:
 
 - **Give an explicit width to every column whose data type is narrow** — counts, dates, statuses, currency, and short category terms.
 - **Give the sentence column no width at all.** It takes whatever the narrow columns did not use — which is what "sentences need room" means — and it stays right as the viewport changes.

@@ -104,7 +104,7 @@ Location is shown by three things, and a screen needs more than the first one:
 
 **If the user moves back and forth between sections, keep the navigation visible at all times.** How often it is used is what decides this, not the size of the screen.
 
-**NEVER collapse a vertical navigation into a rail of icons only** (a narrow strip showing icons without labels). There is no real benefit to it. When space must be won back, hide the navigation behind a hamburger menu that opens with its text labels still in place. A fully hidden navigation with clear labels when opened is better than one that is permanently visible but has to be decoded.
+**NEVER collapse a vertical navigation into a rail of icons only** (a narrow strip showing icons without labels). There is no real benefit to it. When space is needed, hide the navigation behind a hamburger menu that opens with its text labels still in place. A fully hidden navigation with clear labels when opened is better than one that is permanently visible but has to be decoded.
 
 **NEVER use icon-only primary navigation**, in any form. A narrow viewport is not an exception — the ban holds at every width, and a rail of icons is not an alternative for mobile or tablet. Beyond a handful of icons, nobody remembers what they mean, and without a hover state there is no affordance (a visible cue that a control can be used, such as the underline on a link). A rail of fifteen icons whose collapsed state shrinks down to bare dots that must be hovered over to identify is the real-world extreme — and it is a published design system doing it. See `recursica-skill-responsive-behavior` and `recursica-skill-icon-semantics`.
 
@@ -139,7 +139,7 @@ Location is shown by three things, and a screen needs more than the first one:
 
 ## Tabs
 
-**Tabs show parts of a whole.** The guiding picture is a file cabinet: the tabs are the folders in one drawer, and the user flips between them while looking at the same body of material. Use tabs only when the content fits that picture.
+**Tabs show parts of one whole.** The user switches between them while looking at the same material. Use tabs only when the content fits that.
 
 **The first tab in reading order opens by default** — the leftmost one, in a locale that reads left to right, because that is where the eye starts. Owned by `recursica-skill-defaults`.
 

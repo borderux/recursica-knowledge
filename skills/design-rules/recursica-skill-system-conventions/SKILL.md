@@ -110,7 +110,7 @@ Examples:
 | A form, a form section, or a single form control                                                     | **Never inside a card**, with no exception. Group with headings and the components' own spacing                                                              | `recursica-skill-forms`, `recursica-skill-card`  |
 | A region that needs a surface but has no peers                                                       | A layer (a numbered level that sets which colors the components inside it use), at the shallowest level that works. Never a card, and never hand-written CSS | `recursica-skill-layers`                         |
 
-**Why it applies generally:** a boundary claims that the things inside it belong together _and can be told apart from a peer beside them._ With no peer, the claim is empty. The border is pure decoration, and it costs padding, width, and hierarchy. A generated screen made of boxes inside boxes is the most common sign of this problem.
+**Why it applies generally:** a border tells the user that its contents belong together _and are separate from similar items beside them._ With no similar items beside it, the border tells them nothing. It is decoration, and it costs padding, width and hierarchy. A generated screen made of boxes inside boxes is the most common sign of this problem.
 
 **Applying it to a new surface:** before drawing a container, name the peer it separates its contents from. If there is no peer, remove the container and use spacing instead.
 

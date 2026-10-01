@@ -11,7 +11,7 @@ metadata:
 
 These are the house rules for designing forms. They are opinions, not neutral best practices — treat them as constraints, not suggestions.
 
-These rules assume **complex enterprise web applications, designed for desktop first**, built on a design system whose components are already accessible and correctly styled. The design system decides the visual design of each component. These rules cover how the form is put together, the order of things, the states, and the wording.
+These rules assume **complex enterprise web applications, designed for desktop first**, built on a design system whose components are already accessible and correctly styled. The design system decides the visual design of each component. These rules cover how the form is put together: field order, states and wording.
 
 **Spacing is decided elsewhere too.** The spacing between fields and between sections is built into the form field components themselves. Do not add custom margins, padding, or spacer elements between fields to adjust the vertical rhythm — put the components together and let them set the spacing.
 
@@ -20,11 +20,11 @@ These rules assume **complex enterprise web applications, designed for desktop f
 ## The two governing principles
 
 1. **Remove ambiguity.** Every layout decision should have exactly one correct reading order, one correct tab order (the order the Tab key moves through the fields), and one obvious next action. If a design forces the user to guess — what to fill in, where to go next, whether their work was saved — it is wrong.
-2. **Prevent errors before catching them.** Good labels, help text, placeholders, and small sections do more than any validation system can. Validation catches what prevention misses. It does not replace prevention.
+2. **Prevent errors before catching them.** Good labels, help text, placeholders, and small sections do more than any validation system can. Validation is the backup for errors the form did not prevent.
 
 ## Layout
 
-**MUST: a single column, from top to bottom.** One field per row, stacked vertically. This is not negotiable, and it does not change with the width of the container. A wide container never justifies fields side by side. Extra horizontal space goes unused, or the form's maximum width is limited — it is never spent on a second column.
+**MUST: a single column, from top to bottom.** One field per row, stacked vertically. This is not negotiable, and it does not change with the width of the container. A wide container never justifies two fields in one row. Extra horizontal space goes unused, or the form's maximum width is limited — it is never spent on a second column.
 
 **NEVER use a multi-column form layout.** Not for addresses (`Address 1` / `Address 2` / `City` / `State` / `Zip` in two columns), not to "save vertical space," not ever. Multi-column layouts are banned because the tab order becomes unclear: does focus move down the left column and then down the right, or left to right across each row? Both answers are reasonable — which is why the layout is broken. A form's reading order must never move both left to right _and_ top to bottom.
 
@@ -58,10 +58,10 @@ This is not a matter of looks. Mixing the two placements in one form:
 
 **Sections do not get their own placement either.** A form's sections are parts of one form. A section that stacks while the section above it sits side by side is the same defect.
 
-**In code, side by side is the value that has to be passed.** The prop is `formLayout` on every field component, and it **defaults to `stacked`**. So a field with no `formLayout` shows the fallback in a container of any width — the opposite of this rule. Passing nothing is not "taking the default"; it is the defect. There are two ways this fails silently, and neither one shows an error:
+**In code, the label's position is the `formLayout` prop on each field. Set `formLayout="side-by-side"` on every field** to put the label beside the input. Field components **default to `stacked`**, which puts the label above the input, so a field without the prop has its label above at any width and breaks this rule. Leaving the prop out is a defect, not a choice of default. Two mistakes cause it, and neither shows an error:
 
-- **The prop is `formLayout`, not `layouts`.** `layouts` is the name of the token axis (a property a component varies on, such as size or style; Figma calls it a variant property). React ignores an unknown prop without complaint, so `layouts="side-by-side"` leaves the field stacked while looking as if the rule was applied.
-- **A form only complies if every field has the prop.** Search the form for the field components and count them. The prop is set per field, so one missed field is the mixed-placement defect described above.
+- **The prop is `formLayout`, not `layouts`.** `layouts` is what the UI kit calls this variant. React ignores an unknown prop without an error, so `layouts="side-by-side"` leaves the label above the input while the code looks correct.
+- **Every field needs the prop.** It is set per field, so one missed field mixes label placements in the form. Count the form's field components to check.
 
 **Label wording:** always name the object clearly. A label must never rely on surrounding content for its meaning or context — a screen reader user hears the label on its own. If a verb is involved, make the verb clear and active. No passive verbs, and no linking verbs.
 
@@ -88,7 +88,7 @@ Group fields in this order of preference:
 
 ## Required vs. optional
 
-**A field is required only in the states that require it.** When a field becomes mandatory at a later stage of a workflow, it is not required before that stage. It must not show a required error while the record is still in a state that does not need it. An error demanding a value the current state does not need is a validation bug the user cannot do anything about — and it teaches them to ignore errors.
+**A field is required only at the workflow stage that needs it.** When a field becomes mandatory at a later stage of a workflow, it is not required before that stage. It must not show a required error while the record is still in a state that does not need it. An error demanding a value the current state does not need is a validation bug the user cannot do anything about — and it teaches them to ignore errors.
 
 **Say the condition, not only the requirement.** Where a field will be required later, the assistive text states the condition: the message explains at what point the value will be needed, instead of claiming it is missing now.
 
@@ -119,7 +119,7 @@ How that is built: use the button's disabled look, with icon-only content or an 
 2. Validate **inline, on blur** — that is, when the user leaves the field. When a field is focused, then left, and then found to be invalid, mark it right away with a non-blocking indicator on that field. Do not put up a modal, do not show an alert, and do not stop the user from moving on to another field.
 3. **MUST keep the submit button disabled until every required field is complete and valid.**
 
-**NEVER ship an enabled submit button that shows every validation error at once when clicked.** This is the single worst validation pattern. It tells the user nothing about what the form needs until they have already failed at it, so they are left guessing what to complete. If the button is enabled, the form can be submitted.
+**NEVER ship an enabled submit button that shows every validation error at once when clicked.** This is the single worst validation pattern. It tells the user nothing about what the form needs until they have already failed at it, so they are left guessing what to complete. An enabled submit button means the form is ready to submit.
 
 **The only exception to validating inline first:** errors the user could not have known about in advance — conflicts on the server, broken business rules, or a clash with another record's unique value. Those appear after submit, because there is no earlier moment to catch them.
 
@@ -167,7 +167,7 @@ Pre-filling is not all or nothing. Decide by the **risk of the user misunderstan
 
 **NEVER pre-fill data the user has to understand to check** — values they would have to think about, look up, or compare against another source to know whether the default is right. A default they cannot check is worse than an empty field, because it gets submitted without being checked.
 
-**A form that edits an existing object is a separate case, and it always arrives filled in** with that object's current values. The user is editing the object, not starting over. This never stops applying. Owned by `recursica-skill-defaults`, which also has the 90 percent threshold for pre-selecting an option, and the veto on pre-selecting anything with later consequences.
+**A form that edits an existing object is a separate case, and it always arrives filled in** with that object's current values. The user is editing the object, not starting over. This always applies. Owned by `recursica-skill-defaults`, which also has the 90 percent threshold for pre-selecting an option, and the rule against pre-selecting anything with later consequences.
 
 ## Progressive disclosure
 
