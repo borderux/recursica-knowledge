@@ -11,12 +11,12 @@ metadata:
 
 These are the house rules for deciding which selection control a field gets — checkbox, switch, radio group, dropdown, or multi-select — and how that control behaves. They are opinions, not neutral best practices. Treat them as constraints.
 
-These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. How a control looks, its states, and keyboard interaction inside it all come from the components, and are never your decision. Your decisions are which control to use, how many options it has, what is selected in advance, and when a change is saved.
+These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. How a control looks, its states, and keyboard interaction inside it all come from the components and are not decided here. This skill decides which control to use, how many options it has, what is selected in advance, and when a change is saved.
 
 ## Governing principles
 
 1. **The type and structure of the data dictate which control is best suited.** How many values can be selected? Do they rule each other out? Is the opposite of the value obvious? Answer those questions, and the control is decided. How it looks comes last, not first.
-2. **Options should be visible and easy to scan.** Arrange them vertically, and keep them within working memory (how much a person can hold in mind at once). Hiding options inside a dropdown has to be earned, by the set being predictable enough that the user knows what is in it before opening it.
+2. **Options should be visible and easy to scan.** Arrange them vertically, and keep them within working memory (how much a person can hold in mind at once). Hide options inside a dropdown only when the set is predictable enough that the user knows what is in it before opening it.
 3. **One saving point per form.** Submitting everything together is the default, and saving instantly and saving later must never exist side by side in the same system. The user needs one reliable answer to "is my work saved?"
 
 ## Choosing the control
@@ -35,13 +35,13 @@ Work down this list; the first match wins.
 
 **A switch has a deliberately narrow use.** Inside a form, reach for a checkbox unless the switch test passes.
 
-**The binary-inverse test — MUST pass before you use a switch.** The opposite of the value must be binary, known, and unique: true/false, yes/no, on/off. Pairs based on qualities fail. "Black" is not a valid switch value, because _not black_ is not guaranteed to be white — it could be gray, or pink, or anything. If the opposite of the value is not the single, obvious other state, it is not a switch.
+**The binary-inverse test — every switch MUST pass it.** The opposite of the value must be binary, known, and unique: true/false, yes/no, on/off. Pairs based on qualities fail. "Black" is not a valid switch value, because _not black_ is not guaranteed to be white — it could be gray, or pink, or anything. If the opposite of the value is not the single, obvious other state, it is not a switch.
 
-**The label test — what separates a switch from a radio group.** A radio group is _one label with several values_: the user picks which value goes with the label. A switch is _one label whose value is implied_ — the label alone says what is being controlled, and the state is simply true or false. Use a switch only when both the value and the thing the label controls are binary.
+**The label test — what separates a switch from a radio group.** A radio group is _one label with several values_: the user picks which value goes with the label. A switch is _one label whose value is implied_ — the label alone says what is being controlled, and the state is true or false. Use a switch only when both the value and what the label controls are binary.
 
 **A checkbox turns a true/false flag on or off for a specific value**, and that value can be anything. That is why checkboxes work in groups and switches do not.
 
-**The lone binary field.** A single checkbox sitting alone in a checkbox group looks odd; a switch usually reads better in a form. Here the two work the same way, so this is the one case where appearance may decide.
+**The lone binary field.** A single checkbox sitting alone in a checkbox group looks odd. In a form, a switch usually looks better. Here the two work the same way, so this is the one case where appearance may decide.
 
 ## Checkbox vs. radio
 
@@ -50,7 +50,7 @@ Work down this list; the first match wins.
 - **Radio group** = exactly one of N. Traditionally an answer is required, and the user cannot move on until one option is selected.
 - **Checkbox group** = zero through N.
 
-**A radio group with nothing selected, and no requirement to select anything, is unusual and confusing.** It happens, but treat it as a warning sign — if nothing needs to be chosen, question whether it is really a choice of one.
+**A radio group with nothing selected, and no requirement to select anything, is unusual and confusing.** It happens, but treat it as a warning sign — if nothing needs to be chosen, question whether it is a choice of one at all.
 
 ## Defaults and pre-selection
 
@@ -62,7 +62,7 @@ Work down this list; the first match wins.
 
 ## Option counts and dropdowns
 
-**Aim for 7 ± 2 options, adjusted for cognitive load**. See `recursica-skill-working-memory` for the reasoning and its limits — the limit applies to sets of options the user compares, not to lists they simply recognize an item from:
+**Aim for 7 ± 2 options, adjusted for cognitive load**. See `recursica-skill-working-memory` for the reasoning and its limits — the limit applies to sets of options the user compares, not to lists they recognize an item from:
 
 - **Options that are similar and easy to understand** → the upper end of the range is fine.
 - **Options that are different from each other, hard to grasp, or need specialist knowledge** → use fewer.
@@ -104,7 +104,7 @@ Work down this list; the first match wins.
 
 **MUST arrange checkboxes and radio buttons vertically. NEVER horizontally.** A horizontal arrangement is hard to scan, and it is hard to tell which control belongs to which label — the pairing between each control and its value stops being clear. The system should never produce a horizontal checkbox or radio group.
 
-**When the layout really calls for a horizontal arrangement, change the control instead of turning the group sideways:**
+**When the layout calls for a horizontal arrangement, change the control instead of turning the group sideways:**
 
 | Need                                        | Horizontal control                                                    |
 | ------------------------------------------- | --------------------------------------------------------------------- |
@@ -122,7 +122,7 @@ Both keep the edge of each value visible, which is exactly what a sideways radio
 1. The user must be able to change their mind before anything is saved.
 2. Tracking and logging records is far easier — one timestamp and one update, with much less noise than saving field by field.
 
-**MUST NOT mix instant saving of individual fields with submitting everything together.** Either every field saves when it changes, or every field saves on submit. Mixing them is truly confusing, because the user can no longer tell which of their changes are live.
+**MUST NOT mix instant saving of individual fields with submitting everything together.** Either every field saves when it changes, or every field saves on submit. Mixing them is confusing, because the user can no longer tell which of their changes are live.
 
 **Avoid saving to the server immediately in any form with more than one field.**
 
@@ -130,7 +130,7 @@ Both keep the edge of each value visible, which is exactly what a sideways radio
 
 ## Uncommitted changes
 
-**A form is in exactly one save mode, and the mode decides what you show:**
+**A form is in exactly one save mode, and the mode decides what the form shows:**
 
 - **Batch save → no status, and no indicator of unsaved changes.** Showing that a form has unsaved changes is very rarely worth doing. The signal the user needs is the submit button becoming enabled once every editable control is valid — nothing else.
 - **Field-level / instant save → a status message that stays on the page is required.** If the server saves on every field change, the user must be able to see that state on the page at all times.
@@ -185,7 +185,7 @@ Before treating a set of selection controls as done, check:
 - [ ] Each group holds 7 ± 2 options, and fewer where the options are different from each other or need specialist knowledge.
 - [ ] Sets above the limit use a dropdown, and the set is predictable enough that the user knows what is inside before opening it.
 - [ ] No radio value is selected in advance unless the default is right for nearly everyone.
-- [ ] Select all appears only where the group really is long, and the group shows an indeterminate state.
+- [ ] Select all appears only where the group is long, and the group shows an indeterminate state.
 - [ ] Row selection in a table uses a leftmost checkbox with a header checkbox, on every table that has row checkboxes. Clicking an indeterminate header selects all.
 - [ ] Selecting rows only feeds bulk actions. Selecting one row triggers no action on that single record, and there is no separate clear or deselect-all control beside the header checkbox.
 - [ ] There are no switches in table rows.
@@ -196,4 +196,4 @@ Before treating a set of selection controls as done, check:
 - [ ] Revealed fields submit together with the control that revealed them.
 - [ ] Choices that are unavailable for now are disabled. Values that are permanently not editable use the read-only control, or are not form controls at all.
 - [ ] Selection rules (minimums and maximums) appear as assistive text under the control.
-- [ ] You asked before deciding anything on the uncovered list: when autocomplete replaces a dropdown, radio buttons in rows, and limits on selection.
+- [ ] Uncovered items were asked about, not decided: when autocomplete replaces a dropdown, radio buttons in rows, and limits on selection.

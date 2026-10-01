@@ -11,13 +11,13 @@ metadata:
 
 These are the house rules for Recursica's layer system — the way containers are stacked. A layer is a numbered level that sets which colors the components inside it use; layer 0 is the page itself. These rules are opinions, not neutral best practices — treat them as constraints.
 
-These rules assume **complex enterprise web applications** built on a Recursica theme. The layer contract is defined in the theme, at `https://forge.recursica.com/theme/layers`. What a layer looks like is the theme's business. Which layer a region sits on is yours — and that is the only thing this skill decides.
+These rules assume **complex enterprise web applications** built on a Recursica theme. The layer contract is defined in the theme, at `https://forge.recursica.com/theme/layers`. What a layer looks like is the theme's business. This skill decides only which layer a region sits on.
 
 ## The three governing principles
 
-1. **Everything is already on a layer.** Layer 0 is the page. Being on a layer is not a choice — opening a new one is. An agent that thinks of layers as optional boxes has the idea backwards.
+1. **Everything is already on a layer.** Layer 0 is the page. Being on a layer is not a choice — opening a new one is. Layers are not optional boxes added around content.
 2. **A layer is a token scope, not a decoration.** A token is a named design value, such as a color or a spacing size, set by the design system. A token scope is the area in which one set of those values applies. Declaring a layer is what makes every component inside it pick up the correct colors. Leaving one undeclared is not a harmless omission — it silently gives the components the wrong palette.
-3. **Nest as little as the design needs.** Layers 0 and 1 do nearly all the work. Reaching for a deeper level is a decision that needs a reason, not a reflex whenever the markup nests.
+3. **Nest as little as the design needs.** Layers 0 and 1 do nearly all the work. A deeper level needs a reason, and nested markup is not one.
 
 ## Layer 0 is declared once, on the root
 
@@ -25,7 +25,7 @@ These rules assume **complex enterprise web applications** built on a Recursica 
 
 **MUST NOT declare layer 0 a second time.** Layer 0 appears exactly once in the document. Everything that has not been raised to a deeper level is already on it. So declaring it again on a header, a nav, a main region, or a section adds nothing, and shows that the idea was misunderstood. **A second `layer-0` declaration anywhere is a defect** — including in applications that do it today.
 
-**One consequence worth stating: you cannot go back to layer 0 inside a deeper layer.** Layers go down, never back up.
+**Nothing inside a deeper layer can go back to layer 0.** Layers go down, never back up.
 
 **MUST NOT start an application at layer 1**, and MUST NOT leave the root undeclared. A page whose root has no layer has no base palette, and every component inside it is looking up its colors against nothing.
 
@@ -44,7 +44,7 @@ These rules assume **complex enterprise web applications** built on a Recursica 
 
 **Either direction is correct, and it is one decision for the whole application, not one per screen.** Whichever way it goes, every page does it the same way — see convention 1 in `recursica-skill-system-conventions`, one behavioral mode per system.
 
-**Do not raise both the nav and the main content to layer 1.** If everything is contained, nothing stands out, and you have used up a level for nothing.
+**Do not raise both the nav and the main content to layer 1.** If everything is contained, nothing stands out, and the extra level separates nothing.
 
 The structure of the shell — header, rail, footer, titles — is owned by `recursica-skill-screen-scaffolding`.
 
@@ -57,15 +57,15 @@ The structure of the shell — header, rail, footer, titles — is owned by `rec
 | Level | How often it is right                                                                             |
 | ----- | ------------------------------------------------------------------------------------------------- |
 | **0** | The base. Always present                                                                          |
-| **1** | **Ordinary.** Any region that really needs containing, including the nav-or-content split         |
+| **1** | **Ordinary.** Any region that needs containing, including the nav-or-content split                |
 | **2** | **Rare.** Needs a stated reason — a container nested inside a layer-1 region that still needs one |
 | **3** | **Almost never.** Treat wanting it as a sign that the structure is wrong                          |
 
 **Space first, always.** Most regions need no layer of their own. Show grouping with white space and type hierarchy — see `recursica-skill-screen-scaffolding`, and convention 5 in `recursica-skill-system-conventions`: group with space, not boxes.
 
-**Open a new layer when neighboring regions really do blur into each other**, and spacing has already failed to separate them.
+**Open a new layer when neighboring regions still blur into each other after spacing has failed to separate them.**
 
-**Do not go down a level every time the markup nests visually.** A layer is a surface with a meaning, not a `div`. Nesting three layers just because the components happen to be three levels deep is the mistake this limit exists to prevent.
+**Do not go down a level every time the markup nests visually.** A layer is a surface with a meaning, not a `div`. Nesting three layers only because the components happen to be three levels deep is the mistake this limit exists to prevent.
 
 **Wanting a fifth level means the nesting is too deep.** Restructure — see convention 4 in `recursica-skill-system-conventions`: fix the structure instead of working around the symptom.
 
@@ -81,16 +81,16 @@ The structure of the shell — header, rail, footer, titles — is owned by `rec
 
 **All of them are written in the Forge theme and read from it.** They can be configured — by whoever writes the theme, in Forge — and every one of them has a token. The build agent reads those tokens and never writes them.
 
-**Declaring the layer is how you get them.** A correctly declared layer already carries its surface, border, radius, and padding. Setting any of them by hand means either the layer was not declared, or you are overriding the theme.
+**Declare the layer to get them.** A correctly declared layer already carries its surface, border, radius, and padding. Setting any of them by hand means either the layer was not declared, or the code overrides the theme.
 
-**Never hardcode a value you read from the theme.** A color read in light mode is wrong in dark mode, and a radius read today is wrong after the theme changes. That is the whole point of the token.
+**Never hardcode a value read from the theme.** A color read in light mode is wrong in dark mode, and a radius read today is wrong after the theme changes. That is the whole point of the token.
 
 **A layer's padding has an effect outside the layer: nothing inside it may be sized to a bare viewport height**.
 A region set to `100vh` inside a padded layer comes out taller than the viewport by that padding, at the top and bottom,
 and the page scrolls by exactly that much. Subtract it by reading the padding token — the rule and its reason are in
 `recursica-skill-screen-scaffolding`, under application chrome and the single scrollbar.
 
-**Never hand-paint a layer.** A fake layer — a background color and a border drawn with raw CSS — does not change when the theme changes, does not switch between light and dark, and gives the components inside no layer scope at all. If you cannot declare the layer you need, that is a gap to raise — see `recursica-skill-design-router`.
+**Never hand-paint a layer.** A fake layer — a background color and a border drawn with raw CSS — does not change when the theme changes, does not switch between light and dark, and gives the components inside no layer scope at all. When a needed layer cannot be declared, report it as a gap — see `recursica-skill-design-router`.
 
 ## The token contract
 
@@ -105,9 +105,9 @@ and the page scrolls by exactly that much. Subtract it by reading the padding to
 | **Text**        | `text-color`, `text-high-emphasis`, `text-low-emphasis`, `text-alert`, `text-warning`, `text-success`                                                                                                          |
 | **Interactive** | `interactive-color`, `interactive-high-emphasis`, `interactive-tone`, `interactive-tone-hover`, `interactive-on-tone`, `interactive-on-tone-hover`, `interactive-default-on-tone`, `interactive-hover-on-tone` |
 
-**High and low emphasis are levels of transparency, not colors.** They are numbers multiplied against `text-color`. Do not reach for a second gray to make text less prominent — use the low-emphasis token.
+**High and low emphasis are levels of transparency, not colors.** They are numbers multiplied against `text-color`. Do not use a second gray to make text less prominent — use the low-emphasis token.
 
-**Alert, warning, and success belong to each layer.** The same red does not appear on every layer; take it from the layer you are on. Which channels carry the meaning is still governed by `recursica-skill-system-conventions` — color alone is never enough.
+**Alert, warning, and success belong to each layer.** The same red does not appear on every layer. Take it from the layer the element sits on. Which channels carry the meaning is still governed by `recursica-skill-system-conventions` — color alone is never enough.
 
 **There is no disabled token for each layer.** The theme shows a disabled look for interactive elements on each layer, but the disabled color comes from the global state token. Do not look for a `layer_N` disabled color.
 
@@ -123,7 +123,7 @@ and the page scrolls by exactly that much. Subtract it by reading the padding to
 
 **So the layer is not decoration around the content; it is an input to every component on it.** A component placed inside an undeclared region, or inside a region declared at the wrong level, is not slightly off — it is reading a palette meant for a different surface.
 
-**When you open a new layer, everything inside it changes palette.** Check the contents, not just the container.
+**Opening a new layer changes the palette of everything inside it.** Check the contents, not only the container.
 
 ## A layer is not a card
 
@@ -140,7 +140,7 @@ Plurality means how many of something there are. A peer is one of a set of repea
 
 **A card is placed on a layer, not instead of one.** The two stack; they are not alternatives.
 
-**Needing a surface does not make something a peer.** A region that deserves to be separated but has no peers gets a layer. Reaching for a container does not excuse it from the card tests in `recursica-skill-card`.
+**Needing a surface does not make something a peer.** A region that needs separating but has no peers gets a layer. A region that needs a container still has to pass the card tests in `recursica-skill-card` to become a card.
 
 **NEVER use a layer to divide a page into regions**, any more than a card may be used that way. The ban in `recursica-skill-screen-scaffolding` on dividing regions with containers applies to layers too — space and headings divide a page.
 
@@ -156,7 +156,7 @@ Plurality means how many of something there are. A peer is one of a set of repea
 
 **Light and dark are a separate setting from the layer** — orthogonal here means independent of each other. Each of the four layers has a full set of tokens in each theme, and the layer number does not change when the theme does.
 
-**A design must not depend on how any two layers happen to differ in the current theme.** Two neighboring levels may share a surface color, or differ in their border rather than their fill — and that is the theme author's decision. If a separation matters, it has to survive a change of theme.
+**A design must not depend on how any two layers happen to differ in the current theme.** Two neighboring levels may share a surface color, or differ in their border rather than their fill — and that is the theme author's decision. A separation that matters has to stay visible when the theme changes.
 
 **The theme control is application chrome** (the header, navigation and footer around the content), not page content — `recursica-skill-screen-scaffolding`.
 
@@ -164,15 +164,15 @@ Plurality means how many of something there are. A peer is one of a set of repea
 
 - **Every value in the layer tokens** — surfaces, borders, radii, padding, shadows, emphasis transparencies, and meaning-based colors. All of these belong to the theme and are written in Forge.
 - **The number of levels.** Four.
-- **A component's palette on each layer.** The component works it out; you choose the layer it sits on.
-- **Elevation.** The theme has separate elevation tokens. A layer does not come with a shadow, and you do not add one.
+- **A component's palette on each layer.** The component works it out. Choose only the layer it sits on.
+- **Elevation.** The theme has separate elevation tokens. A layer does not come with a shadow. Do not add one.
 
 ## Out of scope
 
 - **Whether repeating objects belong in cards** — `recursica-skill-card`.
 - **How a page is put together, where the chrome goes, and the maximum content width** — `recursica-skill-screen-scaffolding`.
 - **Whether a task belongs in a panel, a modal, or a page** — `recursica-skill-panels-modals`.
-- **What earns the strongest position on a screen** — `recursica-skill-screen-priority`.
+- **Which content takes the strongest position on a screen** — `recursica-skill-screen-priority`.
 - **Type styles and heading levels** — `recursica-skill-typography-semantics`.
 - **Writing a theme.** That is done in Forge, not in application code.
 
@@ -189,18 +189,18 @@ Plurality means how many of something there are. A peer is one of a set of repea
 - [ ] The root element declares layer 0. No application starts at a deeper level, and the root is not left undeclared.
 - [ ] Layer 0 is declared exactly once. No header, nav, main region, or section declares it again, and nothing goes back to layer 0 inside a deeper layer.
 - [ ] Every region left on layer 0 stays there because it does not need containing — including, where that is the case, the header, nav, and main content together.
-- [ ] Where containment is needed, you raised either the nav or the main content to layer 1, not both.
+- [ ] Where containment is needed, either the nav or the main content is on layer 1, not both.
 - [ ] That direction is the same on every page in the application.
-- [ ] Only levels 0 to 3 are used. Layer 2 has a stated reason, you treated any use of layer 3 as a warning about the structure, and nothing needed a fourth level.
-- [ ] You tried every region with space and type hierarchy first, and opened a layer only where regions really did blur together.
-- [ ] You opened no layer just because the markup nested.
+- [ ] Only levels 0 to 3 are used. Layer 2 has a stated reason, every use of layer 3 was questioned as a sign of a structural problem, and nothing needed a fourth level.
+- [ ] Every region was tried with space and type hierarchy first. A layer appears only where regions still blurred together.
+- [ ] No layer is opened only because the markup nests.
 - [ ] No surface, background, border, radius, padding, shadow, or elevation is set on a layer, or on anything imitating one.
 - [ ] No theme value is hardcoded anywhere; every one comes from a token.
-- [ ] No layer is hand-painted with raw CSS. You raised any layer that could not be declared as a gap.
+- [ ] No layer is hand-painted with raw CSS. Any layer that could not be declared is reported as a gap.
 - [ ] No separation depends on how two levels happen to differ in the current theme.
 - [ ] Less prominent text uses the low-emphasis token, not a second gray.
 - [ ] Alert, warning, and success colors come from the layer the element sits on.
 - [ ] No layer level stands for rank, status, importance, or any other meaning.
 - [ ] No layer divides a page into regions, and no card has been swapped for a layer, or a layer for a card.
-- [ ] You checked the contents of every newly opened layer, not just the container.
-- [ ] You invented nothing from the uncovered list.
+- [ ] The contents of every newly opened layer have been checked, not only the container.
+- [ ] Uncovered items were asked about, not decided: how the adapter offers a layer, which surfaces sit at which level by default, whether a modal or panel opens a new layer scope, whether summary figures sit on layers or in cards, and what a layer does below the tablet breakpoint.

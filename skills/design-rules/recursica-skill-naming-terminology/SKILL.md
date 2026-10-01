@@ -11,11 +11,11 @@ metadata:
 
 These are the house rules for what things are called, and how consistently. They are opinions, not neutral best practices — treat them as constraints.
 
-These rules assume **complex enterprise web applications, designed for desktop first**, built for users who come back every day and already know their own field. The words are your decision. How they are capitalized and styled is not.
+These rules assume **complex enterprise web applications, designed for desktop first**, built for users who come back every day and already know their own field. The designer chooses the words. How they are capitalized and styled is decided elsewhere.
 
 ## The three governing principles
 
-1. **The user's words win.** They win over the business's term, over the data model's field name, and over whatever sounds more precise to a designer. The people using the product are the ones who have to recognize the thing.
+1. **The user's words win.** They win over the business's term, over the data model's field name, and over whatever sounds more precise to a designer. The people using the product are the ones who have to recognize the name.
 2. **Short and accurate beats identical everywhere.** A label may grow as the user goes deeper, but only while the extra words make it more accurate. Consistency is not the highest value here — being recognizable is.
 3. **The object must stay traceable.** A user should be able to follow the same thing from a navigation item, to a page, to a column header, without it disappearing or being renamed into something else.
 
@@ -25,7 +25,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **Use the data model's vocabulary only when the user does not already know the term from everyday use.** If a user comes to a concept without already understanding it, teaching them the system's term can be the right move. Everywhere else, the data model's field names stay out of the interface.
 
-**When a client insists on a term you believe is wrong, use their term — then test it.** Put in the word they insist on, and check it with usability testing. There is not much else you can do, and the test is what turns the disagreement into evidence instead of opinion.
+**When a client insists on a term the designer believes is wrong, use the client's term — then test it.** Put in the word they insist on, and check it with usability testing. There is little else to do. The test turns the disagreement into evidence instead of opinion.
 
 **When two personas use different words for the same thing, first ask whether they share a screen.**
 
@@ -40,7 +40,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **Where the lengthening stops: when extra words no longer add accuracy or keep it concise.** Being concise matters more than anything, with accuracy right beside it. Once another word adds neither, it does not belong.
 
-**NEVER let an object lose its name as the user moves around.** The mistake to watch for is something called by one term in the navigation that is then not mentioned at all on the screen it leads to. That is the first naming defect that shows up in a review, and it almost always means nobody agrees on what the thing is called.
+**NEVER let an object lose its name as the user moves around.** The mistake to watch for is something called by one term in the navigation that is then not mentioned at all on the screen it leads to. That is the first naming defect that shows up in a review, and it almost always means nobody agrees on what the object is called.
 
 ## Singular or plural
 
@@ -53,13 +53,13 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **A label names a thing. It is never a verb.** This is true of a field label, a filter label, a column header, a navigation item, and a summary figure alike — everywhere except a button, which names an action.
 
-**`Name`, not `Search`.** The user is not filling in a thing called _search_; they are entering a name. A verb in a label describes what the user is doing — which they already know — instead of naming the thing they are doing it to.
+**`Name`, not `Search`.** The user is not filling in a thing called _search_; they are entering a name. A verb in a label describes what the user is doing — which they already know — instead of naming the object they are doing it to.
 
-**A label needs its noun.** `Overdue` is an adjective, and it names nothing; `Overdue requests` names a thing. A label that is just an adjective is a label that stopped halfway.
+**A label needs its noun.** `Overdue` is an adjective, and it names nothing; `Overdue requests` names a thing. An adjective on its own is an incomplete label. Add the noun it describes.
 
-**Cut words that add nothing.** `Total pending requests` says exactly what `Pending requests` says, so _total_ is noise on a screen someone reads every day. Being concise comes first; a word earns its place by making the label more accurate.
+**Cut words that add nothing.** `Total pending requests` says exactly what `Pending requests` says, so _total_ is noise on a screen someone reads every day. Being concise comes first. Keep a word only if it makes the label more accurate.
 
-**A label is a noun phrase, not a sentence about the noun.** Use two or three words, with one qualifier at most. The shape to aim for is adjective + noun:
+**A label is a noun phrase, not a sentence about the noun.** Use two or three words, with one qualifier at most. Write it as adjective + noun:
 
 | Instead of                   | Write                   | What was cut                                                            |
 | ---------------------------- | ----------------------- | ----------------------------------------------------------------------- |
@@ -67,13 +67,13 @@ These rules assume **complex enterprise web applications, designed for desktop f
 | `Corrections needing review` | `Corrections to review` | an "-ing" form where a "to" form is shorter                             |
 | `Your corrections`           | `Corrections`           | a possessive that repeats what the screen already makes clear           |
 
-**NEVER speak to the reader in a label.** `Your`, `you`, `my`, and `I` are the most common padding of all. A screen already belongs to whoever is looking at it, and the possessive claims a difference that only exists if the same screen also shows someone else's. Where it really does, the difference is the qualifier, and it names the other party — `Corrections` beside `Team corrections`, not `Your corrections` beside `All corrections`.
+**NEVER speak to the reader in a label.** `Your`, `you`, `my`, and `I` are the most common padding of all. A screen already belongs to whoever is looking at it, and the possessive claims a difference that only exists if the same screen also shows someone else's. Where it does, the difference is the qualifier, and it names the other party — `Corrections` beside `Team corrections`, not `Your corrections` beside `All corrections`.
 
-**A label that will not shrink is usually two labels, or a column that should be one.** `Lines` next to `Untagged lines` reads as two facts and makes the reader subtract. `Tagged lines` showing `11 / 34` is one column and one heading, with the math already done. Reach for that before reaching for a longer heading.
+**A label that cannot be made shorter is usually two labels, or two columns that should be one.** `Lines` next to `Untagged lines` shows two facts and makes the reader subtract. `Tagged lines` showing `11 / 34` is one column and one heading, with the math already done. Combine the columns this way before writing a longer heading.
 
 **This matters most for table headers**, which are read more often than any other label on the screen and have the least room. Owned jointly with `recursica-skill-tables`.
 
-**NEVER define a term right next to itself.** A label followed by an explanation of what it means — `Overdue — past the start date` — admits that the label failed. Fix the label. If the idea really needs explaining beyond a good name, that belongs in a tooltip or in help content — never in a subtitle sitting under the thing it defines.
+**NEVER define a term right next to itself.** A label followed by an explanation of what it means — `Overdue — past the start date` — admits that the label failed. Fix the label. If the idea needs explaining beyond a good name, that belongs in a tooltip or in help content — never in a subtitle sitting under the term it defines.
 
 **This covers every named thing on the screen, not only field labels** — a page title, a section heading, a column header, a navigation item. The most common breach is not a label at all. It is a page or section whose heading is repeated as prose directly beneath it, in the slot that a scaffold prop offers for exactly that purpose. `recursica-skill-screen-scaffolding` owns what may go in that slot; the rule against defining a term next to itself is why that slot is usually empty.
 
@@ -81,9 +81,9 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **Primary navigation uses object labels.** Forms, not View forms — going to a list is not an action the user is taking; it is moving to a place.
 
-**Actions are for acting on an object**, and they take the verb-plus-object shape — Save form. That is a button, not a navigation item. Owned by `recursica-skill-buttons-links`.
+**Actions are for acting on an object**, and they take the verb-plus-object pattern — Save form. That is a button, not a navigation item. Owned by `recursica-skill-buttons-links`.
 
-**Where a noun really is ambiguous, make it clear — and reach for an adjective before a verb.** In an application for authors, a navigation item reading Pages could mean the pages of the book or the pages of the website. The fix is a qualifier that says which. A verb can sometimes do that job, but an adjective usually does it better.
+**Where a noun is ambiguous, add a qualifier — and try an adjective before a verb.** In an application for authors, a navigation item reading Pages could mean the pages of the book or the pages of the website. The fix is a qualifier that says which. A verb can sometimes do that job, but an adjective usually does it better.
 
 **There is no rule for when a qualifier is needed.** It is a judgment call, and its only purpose is to make the noun clear. Do not add qualifiers as a habit.
 
@@ -93,11 +93,11 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **If the shortened form could be misread in this context, do not shorten it.** Whether a short form is known depends on the context, and the test is whether the user recognizes it, not how many characters it saves.
 
-**An acronym is fine when it is well known.** When you are not sure whether it is, ask — see `recursica-skill-design-router`. Where an acronym is not well known, `recursica-skill-typography-semantics` applies: write the term out the first time, with the acronym in parentheses.
+**An acronym is fine when it is well known.** When it is unclear whether an acronym is well known, ask — see `recursica-skill-design-router`. Where an acronym is not well known, `recursica-skill-typography-semantics` applies: write the term out the first time, with the acronym in parentheses.
 
 ## Names from external integrations
 
-**A third-party integration's names must be mapped to yours, so the user sees one name for one thing.** Keep a dictionary that translates the outside name into the internal one. Do not show both sets of words and leave the user to sort them out.
+**A third-party integration's names must be mapped to the application's own names, so the user sees one name for one thing.** Keep a dictionary that translates the outside name into the internal one. Do not show both sets of words and leave the user to sort them out.
 
 **That mapping does not exist in the Recursica system.** It has to be built into each application, one case at a time — so plan for it, instead of assuming there is a shared tool for it.
 
@@ -110,7 +110,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 ## Out of scope
 
 - **Case, capitalization, and type styling** — owned by tokens, `recursica-skill-typography-semantics`.
-- **Button label wording and the verb-plus-object shape** — `recursica-skill-buttons-links`.
+- **Button label wording and the verb-plus-object pattern** — `recursica-skill-buttons-links`.
 - **Where navigation items sit, how many there are, and how they nest** — `recursica-skill-navigation`.
 - **Field label wording inside a form, and labels that stand alone without context** — `recursica-skill-forms`.
 - **The wording of error messages** — `recursica-skill-assistive-element` and `recursica-skill-feedback-messaging`.
@@ -118,9 +118,9 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 ## Uncovered — ask, do not invent
 
-- **Whether the type token really carries the capitalization.** The rule is that capitalization is controlled by the token and is not to be changed. If a given type style does not include it, that is a gap to raise, not permission to choose.
+- **Whether the type token carries the capitalization.** The rule is that capitalization is controlled by the token and is not to be changed. If a given type style does not include it, that is a gap to raise, not permission to choose.
 - **Who owns the naming decision when there is no user to ask** — a greenfield product (a brand-new product with no users yet), where the business term is the only term available.
-- **How a rename spreads.** When a term changes after launch, nothing says whether the old term is kept as an alias, redirected, or simply replaced.
+- **How a rename spreads.** When a term changes after launch, nothing says whether the old term is kept as an alias, redirected, or replaced.
 - **Whether the integration mapping dictionary has a standard house form** — where it lives, and whether it is a shared module or built separately for each feature.
 - **Length limits for a label in a particular position.** Being concise is the stated priority, but no number is given, and what happens to cut-off text outside a table cell has no owner.
 - **Empty and unnamed objects** — what a record with no name is called in a list.
@@ -130,19 +130,19 @@ These rules assume **complex enterprise web applications, designed for desktop f
 - [ ] Every label is a noun, with its noun present — no verbs outside buttons, and no adjectives standing alone.
 - [ ] There are no filler words; every word in a label makes it more accurate.
 - [ ] Every label and table header is a noun phrase of two or three words, with one qualifier at most. There is no relative clause, no sentence, and no `Your`/`you`/`my` — unless the same screen shows another party's and names them.
-- [ ] Where the reader would have to subtract one column from another, you combined them into one column with the math already done, instead of giving them longer headings.
+- [ ] Where the reader would otherwise subtract one column from another, the two are combined into one column with the math already done, not left as two columns with longer headings.
 - [ ] No label, heading, or page title has a definition sitting beside it — including the line beneath a page title or a section heading.
 - [ ] Every object is named in the users' vocabulary, not the business's or the data model's.
 - [ ] The data model's term appears only where the user does not already know the concept from everyday use.
-- [ ] You used any term the client insisted on as they asked, and flagged it for usability testing, instead of quietly correcting it.
+- [ ] Any term the client insisted on is used as the client asked and flagged for usability testing, not corrected without notice.
 - [ ] Where two personas share a screen, one term is chosen. Where they do not, each keeps its own.
 - [ ] The navigation label, the page title, and the column header can be recognized as the same object, getting longer deeper in only while the extra words add accuracy.
 - [ ] No object loses its name on the screen it leads to.
 - [ ] Singular or plural matches what the destination actually holds.
-- [ ] Primary navigation labels are objects, never actions. The verb-plus-object shape is kept for buttons.
+- [ ] Primary navigation labels are objects, never actions. The verb-plus-object pattern is kept for buttons.
 - [ ] Any qualifier on a navigation label is there to make an ambiguous noun clear, not out of habit.
 - [ ] Every shortened term is known to the user and cannot be misread in context. Terms that could be misread are written out.
-- [ ] Acronyms are well known, or you checked them with the user, or they are written out the first time.
-- [ ] Names from an integration are mapped to a single internal name, and you built the mapping instead of assuming it exists.
+- [ ] Acronyms are well known, checked with the user, or written out the first time.
+- [ ] Names from an integration are mapped to a single internal name, and the mapping is built in this application, not assumed to exist.
 - [ ] No capitalization is set or changed by hand.
-- [ ] You invented nothing from the uncovered list.
+- [ ] Uncovered items were asked about, not decided: capitalization in the type token, naming with no users, renames after launch, the integration dictionary's form, label length limits, and unnamed records.

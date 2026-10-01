@@ -11,7 +11,7 @@ metadata:
 
 This skill gives the reasoning behind two house positions: configuration that few people need is present but not advertised, and a good default beats a user preference. The related skills state the rule for their own part of the interface. This skill explains why it works, and where it stops working.
 
-Read this before you add a configuration feature. Cite it when someone argues that hiding a control is unfriendly to users.
+Read this before adding a configuration feature. Cite it when someone argues that hiding a control is unfriendly to users.
 
 ## The house rule this supports
 
@@ -70,6 +70,6 @@ When a decision about configuration or customization comes up, check:
 - [ ] No task requires finding the control in order to finish it.
 - [ ] The way in is easy to recognize when the user comes across it — a settings or gear control in a sensible place, not a gesture the user must remember.
 - [ ] The control can be reached by keyboard and by assistive technology, with another option for any drag or long-press.
-- [ ] Nothing is hidden just because the screen is crowded.
+- [ ] Nothing is hidden because the screen is crowded.
 - [ ] Nothing the user would want to reach — export, opting out, canceling — was hidden using this reasoning.
 - [ ] Any claim about the research is accurate: users will not look for a benefit they have not felt, which is not the same as being unable to find things.
