@@ -158,17 +158,17 @@ Examples:
 
 ## Pre-flight checklist
 
-- [ ] Each behavior works one way across the whole application. Any requirement for a second way was raised with the user instead of being built.
+- [ ] Each behavior works one way across the whole application. A requirement for a second way went to the user and was not built.
 - [ ] Settings that few users need have a real entry point that is not promoted, and all three conditions for hiding them hold: the house default is a deliberate choice, only a minority of users need the setting, and no task requires it.
 - [ ] Every hidden control can be reached by keyboard and by assistive technology. Where the gesture is a drag or a long-press, there is a second way to do it that is not a drag.
-- [ ] No meaning depends on a single channel. Each meaning has a second channel that can be named.
+- [ ] No meaning relies on one channel alone. Each meaning has a second channel.
 - [ ] Every component meets the accessibility baseline: the focus ring is never hidden and looks different from hover and from any selected state, nothing the user needs appears only on hover, and the tab order follows the visual order.
 - [ ] Every disabled control has its reason in visible text. A form control's help, error, and rule text passes through the component, and the required state is set in code, not by an asterisk alone.
 - [ ] Focus is never moved for the user except where a component skill says when. Icons that are controls have an accessible name, and decorative icons are silent.
-- [ ] No workaround, such as an overflow menu or an inner scroll area, was added to make a broken structure fit. Where a limit could not be changed, that was stated plainly.
-- [ ] Every visible container separates its contents from a peer that can be named. Regions with no peer are grouped with space instead.
-- [ ] Repeating objects are shown as a table, unless the set is small, finite, and each one carries a graphic — or the aesthetic exception was used and stated.
+- [ ] No workaround, such as an overflow menu or an inner scroll area, hides a broken structure. Where a limit can't be changed, a reason is provided.
+- [ ] Every visible container separates its contents from a peer. Regions with no peer are grouped with space.
+- [ ] Repeating objects are a table, unless the set is small, finite and each item has a graphic, or the aesthetic exception is used and a reason is provided.
 - [ ] No form, form section, or form control sits inside a card.
-- [ ] Where a topic skill covers the decision, that skill's rule was followed instead of the general version here.
-- [ ] No single control both navigates and does something else. Every control was checked for more than one change of state each time it is used.
-- [ ] No new cross-surface convention was added unless a person decided it is one.
+- [ ] Where a topic skill covers the decision, its rule is followed, not the general version here.
+- [ ] No control both navigates and does something else. Each control causes one change of state when used.
+- [ ] No new cross-surface convention was added without a person deciding it.

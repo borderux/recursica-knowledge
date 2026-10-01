@@ -245,7 +245,7 @@ Before treating a form as done, check:
 
 - [ ] There is one field per row, in a single column, from top to bottom — at every container width. Compound controls are the only rows that hold more than one input.
 - [ ] Labels sit to the left of their fields, right-aligned. They are stacked above only when the container is too narrow for both.
-- [ ] `formLayout="side-by-side"` is passed on every field. This is confirmed by searching the form for its field components and counting them, not assumed. A missing prop shows `stacked`, and `layouts` is not the prop name.
+- [ ] Every field has `formLayout="side-by-side"`, checked by counting the form's field components. A missing prop shows `stacked`. The prop is `formLayout`, not `layouts`.
 - [ ] The whole form uses one label placement at any given breakpoint: every field side by side, or every field stacked. There is no mixing, including between sections.
 - [ ] There is no custom spacing between fields; only the components' own spacing.
 - [ ] No form, form section, or form control is inside a card.
@@ -269,4 +269,4 @@ Before treating a form as done, check:
 - [ ] Tab order matches the visual order.
 - [ ] There is no toggle to show the password, and no challenge CAPTCHA.
 - [ ] There is no confirmation dialog, unless the action cannot be undone and there is no way to recover.
-- [ ] Nothing on the uncovered list was decided without asking the person first: validation across steps, filter and search inputs, and error summaries.
+- [ ] Uncovered items were asked about, not decided: validation across steps, filter and search inputs, and error summaries.

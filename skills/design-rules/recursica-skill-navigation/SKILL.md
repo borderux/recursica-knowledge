@@ -174,8 +174,8 @@ Before treating navigation as done, check:
 - [ ] No modal or panel creates a history entry, except one deliberately built to be linked to, with a URL that can be shared.
 - [ ] No tab state is kept as remembered UI state in place of a route.
 - [ ] Each tab has its own sub-path under its parent route.
-- [ ] Horizontal or vertical was chosen based on the responsive target and whether the top-level items will grow — vertical where they will grow.
-- [ ] Each level holds 7 ± 2 items — closer to 5 for complex subject matter, up to 9 for simple. The count was checked for each role, after items were hidden by permission.
+- [ ] The navigation is horizontal or vertical based on the responsive target and on whether top-level items will grow. Vertical where they will grow.
+- [ ] Each level holds 7 ± 2 items: closer to 5 for complex subjects, up to 9 for simple ones. The count holds for each role, after permissions hide items.
 - [ ] Search, notifications, and the account menu are outside primary navigation.
 - [ ] Sub-navigation opens on click, not on hover.
 - [ ] Clicking a primary item that has a landing page goes there and expands its sub-navigation. Without a landing page, it expands in place.
@@ -193,7 +193,7 @@ Before treating navigation as done, check:
 - [ ] Horizontal navigation does not wrap, does not scroll, and does not sit in its own scrolling area.
 - [ ] There is no overflow control, unless the user can customize the navigation and chose to hide items.
 - [ ] Tabs hold parts of one whole — no form fields, and no forms spread across tabs.
-- [ ] No custom keyboard handling was added inside tab sets.
+- [ ] Tab sets have no custom keyboard handling.
 - [ ] Forms with several parts use a stepper.
 - [ ] Where forms on tabs cannot be avoided, switching tabs asks about unsaved changes.
-- [ ] Nothing on the uncovered list was decided without asking first: the order of items, the maximum depth, and where a dashboard goes.
+- [ ] Uncovered items were asked about, not decided: the order of items, the maximum depth, and where a dashboard goes.

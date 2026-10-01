@@ -33,12 +33,14 @@ The check fails on these and their other forms.
 
 The reader is never the subject. Write about the thing, or give the instruction directly.
 
-| Kind of text   | Write it as                    | Example                                            |
-| -------------- | ------------------------------ | -------------------------------------------------- |
-| An instruction | the imperative                 | "Use a table for many records of one type."        |
-| A rule         | a statement about the thing    | "A badge holds one value."                         |
-| A checklist    | something a reviewer can check | "- [ ] Every variant is from the inventory above." |
-| A heading      | the topic                      | "## Decided elsewhere", not "## Not your decision" |
+| Kind of text   | Write it as                         | Example                                                                |
+| -------------- | ----------------------------------- | ---------------------------------------------------------------------- |
+| An instruction | the imperative                      | "Use a table for many records of one type."                            |
+| A rule         | a statement about the thing         | "A badge holds one value."                                             |
+| A checklist    | a short fact a reviewer can confirm | "- [ ] Where horizontal scrolling must be used, a reason is provided." |
+| A heading      | the topic                           | "## Decided elsewhere", not "## Not your decision"                     |
+
+**Checklist items name what must be there.** Write the fact a reviewer confirms by looking, in the words a designer uses: "Where horizontal scrolling must be used, a reason is provided." Not "you said so", and not a vague passive like "that is stated" or "this was confirmed by". Items about the uncovered list all take one form: "Uncovered items were asked about, not decided: …"
 
 **One exception: an agent's identity line.** "You are Betty, the designer agent for Recursica." That is how an agent is given its role, and it is the only sentence in an agent's instructions that starts with "You". Everything after it is an instruction.
 

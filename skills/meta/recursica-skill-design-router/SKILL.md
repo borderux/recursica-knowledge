@@ -171,15 +171,15 @@ The list below is the other kind: **whole topics that no skill owns yet.** Both 
 
 Before starting, and again before declaring the work done:
 
-- [ ] This skill was loaded before any other Recursica skill.
-- [ ] Every source used is a `SKILL.md`. No `DOCS.md` was read, cited, or followed, and no convention came in from another design system.
-- [ ] For every component on the screen, both skills were loaded: the component skill for what it is, and the design-rules skill for whether it belongs.
-- [ ] The object the screen is about was named before any component was chosen.
+- [ ] This skill was loaded first, before any other Recursica skill.
+- [ ] Every source is a `SKILL.md`. No `DOCS.md` was used, and no convention came from another design system.
+- [ ] Every component on the screen has both its skills loaded: the component skill and the design-rules skill.
+- [ ] The screen's object was named before any component was chosen.
 - [ ] Routing was decided before layout.
 - [ ] Every decision in the table above is either made using its owning skill or raised with the user as a question.
-- [ ] For each decision, the owning skill was loaded and read, rather than worked from memory.
-- [ ] When two rules conflicted, the conflict was not settled by preference, by averaging them, or by saying nothing.
-- [ ] When the rules had a gap, it was not filled by inventing an answer or borrowing an outside convention. The owning skill's uncovered list and `recursica-skill-system-conventions` were checked first.
-- [ ] Every open question went to the user before building, with options for each one.
-- [ ] For each answer the user gave, an offer was made to add it to the owning skill.
-- [ ] The non-happy states (empty, loading, error, and partial) are handled, or the user was told that no skill owns them yet.
+- [ ] Each decision follows its owning skill, read for this screen, not recalled from memory.
+- [ ] Each conflict between rules was settled by the precedence above or by the user, never by preference, by averaging, or by ignoring it.
+- [ ] No gap was filled by an invented answer or another system's convention. The owning skill's uncovered list and `recursica-skill-system-conventions` were checked first.
+- [ ] Every open question went to the user before building, with options.
+- [ ] Each answer from the user was offered as an addition to the owning skill.
+- [ ] Empty, loading, error and partial states are handled, or the user was told no skill covers them yet.

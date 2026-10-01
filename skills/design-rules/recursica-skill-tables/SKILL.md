@@ -295,12 +295,12 @@ Before treating a table as done, check:
 - [ ] A row waiting for a decision shows the proposed result with a pending status, reveals what went into it through one expansion, panel, or modal, and keeps that same control — with undo in it — after approval.
 - [ ] Every column serves either acting on the records or understanding them. The rest moved to an expansion, a panel, or a detail page.
 - [ ] Every column is filled in for most rows. No column exists for an exception — warnings, errors, flags, conflicts. Those attach beside the object's identifying value as an icon, not a badge, and never alone in a cell of their own.
-- [ ] The table fits the main desktop dimensions. Where sideways scrolling could not be avoided, that is stated.
+- [ ] The table fits the main desktop sizes. Where horizontal scrolling must be used, a reason is provided.
 - [ ] No cell holds more than two values, and the column header explains both.
 - [ ] No column combines unrelated values.
 - [ ] Widths are set by data type: an explicit width on every narrow column — counts, dates, statuses, currency, short terms — and none on the sentence column, which takes what is left. Widths are defined once for the whole application, not for each table.
 - [ ] Wrapping is allowed to break inside a word, and is set for every cell, so a value with no spaces in it wraps in its own column instead of running across the next one.
-- [ ] Truncation depends on the system's maximum, not on an invented limit.
+- [ ] Truncation follows the system's maximum, not an invented limit.
 - [ ] Currency is right-aligned, text is left-aligned, and icons, checkboxes, and buttons are centered.
 - [ ] Cells with secondary text truncate. Cells without it prefer wrapping onto a second line. Nothing longer than two lines is in the table at all.
 - [ ] Full-size tables fill their container and use infinite scroll. Interior tables show five to ten rows and paginate.
@@ -309,7 +309,7 @@ Before treating a table as done, check:
 - [ ] Null cells show the literal string `NA`, in italics, in neutral 500 — the same string in every column, as real text rather than styling. No null value is shown as a real value or a zero.
 - [ ] The default sort is on the primary content column, in the direction the data suggests.
 - [ ] Multi-sort, if present, is behind a long-press. A plain click flips the direction, and types that cannot be sorted are left out.
-- [ ] The table has no invented row density variants.
+- [ ] The table has no invented row-density variants.
 - [ ] The row is clickable only if it contains no other interactive element.
 - [ ] The way into a record is its own identifying value, the whole row, or a separate row action — one of the three, chosen once for the whole application. Selecting a record triggers no action on that single record.
 - [ ] The add control is at the table header, on the right — never below the table — and the create form opens in a modal or panel instead of sitting inline on the page.
@@ -319,4 +319,4 @@ Before treating a table as done, check:
 - [ ] Showing and reordering columns sits behind an unadvertised settings control, with a way to do it that is not dragging.
 - [ ] There are no grouped rows; extra detail uses one level of expand and collapse.
 - [ ] No more than three columns are frozen.
-- [ ] Nothing on the uncovered list was decided without asking: types that cannot be sorted, error states, how many rows must have a value before a sparse column is kept, and kinds of pending.
+- [ ] Uncovered items were asked about, not decided: types that can't be sorted, error states, how many rows must have a value before a sparse column is kept, and kinds of pending.
