@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-pagination
-description: How to use the Recursica pagination, a table's footer control — which tables page and which scroll, row counts from the table, page numbers as links, and announcing the page and handling focus. Use for paging a table or result set. Whether a table pages at all is in recursica-skill-tables.
+description: Rules for the Recursica pagination, a table's footer control — which tables page and which scroll, row counts from the table, page numbers as links, and announcing the page and handling focus. Use for paging a table or result set. Whether a table pages at all is in recursica-skill-tables.
 license: MIT
 metadata:
   author: hi@borderux.com

@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-menu
-description: How to use the Recursica menu — a temporary list of actions or choices, never opened on hover, item labels and states, what a scrolling menu signals, and focus returning to the trigger. Use for ellipsis, more, row-action, column, and account menus. Not for a field's value — see recursica-skill-dropdown.
+description: Rules for the Recursica menu — a temporary list of actions or choices, never opened on hover, item labels and states, what a scrolling menu signals, and focus returning to the trigger. Use for ellipsis, more, row-action, column, and account menus. Not for a field's value — see recursica-skill-dropdown.
 license: MIT
 metadata:
   author: hi@borderux.com

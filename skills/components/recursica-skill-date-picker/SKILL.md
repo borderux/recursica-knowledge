@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-date-picker
-description: How to use the Recursica date picker — when a calendar helps and when typing is better, states and label placement, the readable date format, time zones, and calendar popover accessibility. Use for date fields and calendars. Not for a time of day — see recursica-skill-time-picker; formatting rules live in recursica-skill-dates-and-currency.
+description: Rules for the Recursica date picker — when a calendar helps and when typing is better, states and label placement, the readable date format, time zones, and calendar popover accessibility. Use for date fields and calendars. Not for a time of day — see recursica-skill-time-picker; formatting rules live in recursica-skill-dates-and-currency.
 license: MIT
 metadata:
   author: hi@borderux.com

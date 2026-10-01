@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-time-picker
-description: How to use the Recursica time picker — when a point in time needs it, 12- or 24-hour as the user's preference, seconds, time zones, the date-and-time row, and clock popover accessibility. Use for time fields. Not for a date — see recursica-skill-date-picker; formatting rules live in recursica-skill-dates-and-currency.
+description: Rules for the Recursica time picker — when a point in time needs it, 12- or 24-hour as the user's preference, seconds, time zones, the date-and-time row, and clock popover accessibility. Use for time fields. Not for a date — see recursica-skill-date-picker; formatting rules live in recursica-skill-dates-and-currency.
 license: MIT
 metadata:
   author: hi@borderux.com

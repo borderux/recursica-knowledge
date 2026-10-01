@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-radio-button
-description: How to use the Recursica radio button and group — one exclusive choice, option counts, caution with pre-selection, disabled versus read-only, and single-tab-stop arrow-key accessibility. Use for choosing exactly one option. Not for many — see recursica-skill-checkbox; not for a horizontal row — see recursica-skill-segmented-control.
+description: Rules for the Recursica radio button and group — one exclusive choice, option counts, caution with pre-selection, disabled versus read-only, and single-tab-stop arrow-key accessibility. Use for choosing exactly one option. Not for many — see recursica-skill-checkbox; not for a horizontal row — see recursica-skill-segmented-control.
 license: MIT
 metadata:
   author: hi@borderux.com

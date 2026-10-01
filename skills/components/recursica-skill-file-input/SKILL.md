@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-file-input
-description: How to use the Recursica file input, the compact choose-a-file field — when it fits and when the larger upload area does, stating accepted types and size limits up front, and keyboard access. Use for a file or attachment field in a form. Not for a drop area with a file list — see recursica-skill-file-upload.
+description: Rules for the Recursica file input, the compact choose-a-file field — when it fits and when the larger upload area does, stating accepted types and size limits up front, and keyboard access. Use for a file or attachment field in a form. Not for a drop area with a file list — see recursica-skill-file-upload.
 license: MIT
 metadata:
   author: hi@borderux.com

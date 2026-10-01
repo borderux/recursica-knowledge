@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-transfer-list
-description: How to use the Recursica transfer list — two lists with controls to move items between them, when a large set earns it, the filter, and moving items without dragging. Use for assigning items to a group or picking columns. Not for small sets — see recursica-skill-checkbox; not for one value — see recursica-skill-dropdown.
+description: Rules for the Recursica transfer list — two lists with controls to move items between them, when a large set earns it, the filter, and moving items without dragging. Use for assigning items to a group or picking columns. Not for small sets — see recursica-skill-checkbox; not for one value — see recursica-skill-dropdown.
 license: MIT
 metadata:
   author: hi@borderux.com

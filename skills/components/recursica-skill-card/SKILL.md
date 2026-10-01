@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-card
-description: How to use the Recursica card — the five tests a card set must pass, why many items is a table and one object is not a card, never a form in a card, and using space instead of a container. Use before wrapping anything in a card, tile, or box. Not for tabular sets — see recursica-skill-tables.
+description: Rules for the Recursica card — the five tests a card set must pass, why many items is a table and one object is not a card, never a form in a card, and using space instead of a container. Use before wrapping anything in a card, tile, or box. Not for tabular sets — see recursica-skill-tables.
 license: MIT
 metadata:
   author: hi@borderux.com

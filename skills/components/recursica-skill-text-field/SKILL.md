@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-text-field
-description: How to use the Recursica text field — when free text is right, states and label placement, labels, placeholders, and help text, error copy, prefixes and suffixes, and disabled versus read-only. Use for any single-line text input. Not for multi-line text — see recursica-skill-textarea; not for quantities — see recursica-skill-number-input.
+description: Rules for the Recursica text field — when free text is right, states and label placement, labels, placeholders, and help text, error copy, prefixes and suffixes, and disabled versus read-only. Use for any single-line text input. Not for multi-line text — see recursica-skill-textarea; not for quantities — see recursica-skill-number-input.
 license: MIT
 metadata:
   author: hi@borderux.com

@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-slider
-description: How to use the Recursica slider — when a bounded range beats typing, states and label placement, the paired number input, min and max labels, steps, and setting the value without dragging. Use for sliders and range controls. Not for exact numbers — see recursica-skill-number-input; not for progress — see recursica-skill-loader.
+description: Rules for the Recursica slider — when a bounded range beats typing, states and label placement, the paired number input, min and max labels, steps, and setting the value without dragging. Use for sliders and range controls. Not for exact numbers — see recursica-skill-number-input; not for progress — see recursica-skill-loader.
 license: MIT
 metadata:
   author: hi@borderux.com

@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-breadcrumb
-description: How to use the Recursica breadcrumb — when depth warrants a trail, what goes in it, the current page as plain text, and navigation-region accessibility. Use for breadcrumb trails and hierarchy paths. Not for the app shell — see recursica-skill-navigation; not for steps in a process — see recursica-skill-stepper.
+description: Rules for the Recursica breadcrumb — when depth warrants a trail, what goes in it, the current page as plain text, and navigation-region accessibility. Use for breadcrumb trails and hierarchy paths. Not for the app shell — see recursica-skill-navigation; not for steps in a process — see recursica-skill-stepper.
 license: MIT
 metadata:
   author: hi@borderux.com

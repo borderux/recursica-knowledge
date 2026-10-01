@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-badge
-description: How to use the Recursica badge — when a value is a badge rather than a chip, icon, or text, its styles, one badge and never interactive, no error badges, placement, and counts. Use for status, counts, and read-only tags. Not for anything the user selects or removes — see recursica-skill-chip.
+description: Rules for the Recursica badge — when a value is a badge rather than a chip, icon, or text, its styles, one badge and never interactive, no error badges, placement, and counts. Use for status, counts, and read-only tags. Not for anything the user selects or removes — see recursica-skill-chip.
 license: MIT
 metadata:
   author: hi@borderux.com

@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-timeline
-description: How to use the Recursica timeline — when a record of past events is right, the timeline and its decorative bullet, timestamp formatting, and list accessibility. Use for activity feeds, audit trails, and history views. Not for a process in progress — see recursica-skill-stepper; not for sortable records — see recursica-skill-tables.
+description: Rules for the Recursica timeline — when a record of past events is right, the timeline and its decorative bullet, timestamp formatting, and list accessibility. Use for activity feeds, audit trails, and history views. Not for a process in progress — see recursica-skill-stepper; not for sortable records — see recursica-skill-tables.
 license: MIT
 metadata:
   author: hi@borderux.com

@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-link
-description: How to use the Recursica link — link versus button, labels that name the destination, external and download links, new tabs, never disabled, and link accessibility. Use for anything the user clicks to go somewhere. Not for actions that change data — see recursica-skill-button.
+description: Rules for the Recursica link — link versus button, labels that name the destination, external and download links, new tabs, never disabled, and link accessibility. Use for anything the user clicks to go somewhere. Not for actions that change data — see recursica-skill-button.
 license: MIT
 metadata:
   author: hi@borderux.com

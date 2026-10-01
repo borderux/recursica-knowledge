@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-dropdown
-description: How to use the Recursica dropdown — when a hidden option list beats a visible one, the option-count thresholds, placeholder versus value, defaults, an unclipped menu, and listbox accessibility. Use for select fields that pick one value. Not for small sets — see recursica-skill-radio-button; not for type-to-filter — see recursica-skill-autocomplete.
+description: Rules for the Recursica dropdown — when a hidden option list beats a visible one, the option-count thresholds, placeholder versus value, defaults, an unclipped menu, and listbox accessibility. Use for select fields that pick one value. Not for small sets — see recursica-skill-radio-button; not for type-to-filter — see recursica-skill-autocomplete.
 license: MIT
 metadata:
   author: hi@borderux.com

@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-modal
-description: How to use the Recursica modal — when interrupting the user is justified, triggers and history, confirmations, footer buttons, never a modal from a modal, and focus trapping and return. Use for dialogs, confirmations, and blocking overlays. Not for a side surface — see recursica-skill-panel; not for brief feedback — see recursica-skill-toast.
+description: Rules for the Recursica modal — when interrupting the user is justified, triggers and history, confirmations, footer buttons, never a modal from a modal, and focus trapping and return. Use for dialogs, confirmations, and blocking overlays. Not for a side surface — see recursica-skill-panel; not for brief feedback — see recursica-skill-toast.
 license: MIT
 metadata:
   author: hi@borderux.com

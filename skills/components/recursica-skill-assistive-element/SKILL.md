@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-assistive-element
-description: How to use the Recursica assistive element, the help and error text below a form field — help that states the rule up front, errors that restate it, why the error replaces the help, and how both are announced. Use for help text, hints, and validation messages. Not for the field's name — see recursica-skill-label.
+description: Rules for the Recursica assistive element, the help and error text below a form field — help that states the rule up front, errors that restate it, why the error replaces the help, and how both are announced. Use for help text, hints, and validation messages. Not for the field's name — see recursica-skill-label.
 license: MIT
 metadata:
   author: hi@borderux.com

@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-segmented-control
-description: How to use the Recursica segmented control, the horizontal single-select — when it beats radios, a dropdown, tabs, or chips, orientation and fill width, the 2 to 5 option limit, and radio-group accessibility. Use for view switchers, inline filters, and mode toggles. Not for multi-select — see recursica-skill-chip; not for parts of one whole — see recursica-skill-tabs.
+description: Rules for the Recursica segmented control, the horizontal single-select — when it beats radios, a dropdown, tabs, or chips, orientation and fill width, the 2 to 5 option limit, and radio-group accessibility. Use for view switchers, inline filters, and mode toggles. Not for multi-select — see recursica-skill-chip; not for parts of one whole — see recursica-skill-tabs.
 license: MIT
 metadata:
   author: hi@borderux.com

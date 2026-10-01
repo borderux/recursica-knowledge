@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-avatar
-description: How to use the Recursica avatar — when to show an identity marker, its styles and fallback order, sizes, and when it is a control or decoration. Use for profile pictures, initials, user-menu triggers, and author markers. Not for the menu it opens — see recursica-skill-menu; not for status — see recursica-skill-badge.
+description: Rules for the Recursica avatar — when to show an identity marker, its styles and fallback order, sizes, and when it is a control or decoration. Use for profile pictures, initials, user-menu triggers, and author markers. Not for the menu it opens — see recursica-skill-menu; not for status — see recursica-skill-badge.
 license: MIT
 metadata:
   author: hi@borderux.com

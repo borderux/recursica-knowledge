@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-autocomplete
-description: How to use the Recursica autocomplete, the type-to-filter field for a large but familiar set — values from a defined set, placeholder rules, an unclipped list, and combobox accessibility including result counts. Use for typeahead fields and fields that search while the user types. Not for small sets — see recursica-skill-dropdown; not for free text — see recursica-skill-text-field.
+description: Rules for the Recursica autocomplete, the type-to-filter field for a large but familiar set — values from a defined set, placeholder rules, an unclipped list, and combobox accessibility including result counts. Use for typeahead fields and fields that search while the user types. Not for small sets — see recursica-skill-dropdown; not for free text — see recursica-skill-text-field.
 license: MIT
 metadata:
   author: hi@borderux.com

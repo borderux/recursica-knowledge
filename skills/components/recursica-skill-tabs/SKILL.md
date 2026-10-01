@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-tabs
-description: How to use the Recursica tabs — when content is parts of one whole, styles and orientation, a route per tab, counters, never a form across tabs, and tab accessibility. Use for tab sets and switchable sections of one screen. Not for app navigation — see recursica-skill-navigation; not for a sequence — see recursica-skill-stepper.
+description: Rules for the Recursica tabs — when content is parts of one whole, styles and orientation, a route per tab, counters, never a form across tabs, and tab accessibility. Use for tab sets and switchable sections of one screen. Not for app navigation — see recursica-skill-navigation; not for a sequence — see recursica-skill-stepper.
 license: MIT
 metadata:
   author: hi@borderux.com

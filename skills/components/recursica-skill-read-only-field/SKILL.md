@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-read-only-field
-description: How to use the Recursica read-only field — a label and value with no input, why it is not a disabled field, value formatting, and readable, copyable accessibility with no tab stop. Use for view modes, summaries, and system-set values in a form. Not for an editable field — see recursica-skill-text-field.
+description: Rules for the Recursica read-only field — a label and value with no input, why it is not a disabled field, value formatting, and readable, copyable accessibility with no tab stop. Use for view modes, summaries, and system-set values in a form. Not for an editable field — see recursica-skill-text-field.
 license: MIT
 metadata:
   author: hi@borderux.com

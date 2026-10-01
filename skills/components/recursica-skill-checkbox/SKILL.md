@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-checkbox
-description: How to use the Recursica checkbox and checkbox group — zero-to-many selection, option counts, select-all and the indeterminate state, table row selection, and disabled versus read-only. Use for checkboxes, checklists, and row selection. Not for one choice — see recursica-skill-radio-button; not for instant on/off settings — see recursica-skill-switch.
+description: Rules for the Recursica checkbox and checkbox group — zero-to-many selection, option counts, select-all and the indeterminate state, table row selection, and disabled versus read-only. Use for checkboxes, checklists, and row selection. Not for one choice — see recursica-skill-radio-button; not for instant on/off settings — see recursica-skill-switch.
 license: MIT
 metadata:
   author: hi@borderux.com

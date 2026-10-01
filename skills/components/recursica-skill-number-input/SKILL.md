@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-number-input
-description: How to use the Recursica number input — quantity versus digit string, right alignment and fixed precision, units and currency as affixes, stating limits up front, and numeric-field accessibility. Use for quantities and amounts. Not for free text — see recursica-skill-text-field; formatting rules live in recursica-skill-dates-and-currency.
+description: Rules for the Recursica number input — quantity versus digit string, right alignment and fixed precision, units and currency as affixes, stating limits up front, and numeric-field accessibility. Use for quantities and amounts. Not for free text — see recursica-skill-text-field; formatting rules live in recursica-skill-dates-and-currency.
 license: MIT
 metadata:
   author: hi@borderux.com

@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-hover-card-popover
-description: How to use the Recursica hover card and popover — richer content beside a target, choosing a read-only hover card or a click-opened interactive popover, and the accessibility each needs. Use for preview cards, profile previews, and popovers. Not for a short label — see recursica-skill-tooltip; not for a list of actions — see recursica-skill-menu.
+description: Rules for the Recursica hover card and popover — richer content beside a target, choosing a read-only hover card or a click-opened interactive popover, and the accessibility each needs. Use for preview cards, profile previews, and popovers. Not for a short label — see recursica-skill-tooltip; not for a list of actions — see recursica-skill-menu.
 license: MIT
 metadata:
   author: hi@borderux.com

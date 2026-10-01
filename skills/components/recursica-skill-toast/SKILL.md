@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-toast
-description: How to use the Recursica toast — when brief feedback is right, only default, success, and error styles, success confirmations, keeping an undo reachable, and announcing without taking focus. Use for toasts, snackbars, and just-happened notifications. Not for decisions — see recursica-skill-modal; not for field errors — see recursica-skill-forms.
+description: Rules for the Recursica toast — when brief feedback is right, only default, success, and error styles, success confirmations, keeping an undo reachable, and announcing without taking focus. Use for toasts, snackbars, and just-happened notifications. Not for decisions — see recursica-skill-modal; not for field errors — see recursica-skill-forms.
 license: MIT
 metadata:
   author: hi@borderux.com

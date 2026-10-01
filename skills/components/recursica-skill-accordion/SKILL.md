@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-accordion
-description: How to use the Recursica accordion — when collapsing content is justified, collapsed by default, never nested, what each part owns, and expand and collapse accessibility. Use for accordions, expandable sections, and FAQ lists. Not for multi-level hierarchy — see recursica-skill-tree; not for switching views — see recursica-skill-tabs.
+description: Rules for the Recursica accordion — when collapsing content is justified, collapsed by default, never nested, what each part owns, and expand and collapse accessibility. Use for accordions, expandable sections, and FAQ lists. Not for multi-level hierarchy — see recursica-skill-tree; not for switching views — see recursica-skill-tabs.
 license: MIT
 metadata:
   author: hi@borderux.com

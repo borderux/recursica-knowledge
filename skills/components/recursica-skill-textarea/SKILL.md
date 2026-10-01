@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-textarea
-description: How to use the Recursica textarea — when multi-line entry is right, states and label placement, the fixed row count, character limits with a stated rule, and multi-line accessibility. Use for comments, descriptions, and message fields. Not for single-line text — see recursica-skill-text-field.
+description: Rules for the Recursica textarea — when multi-line entry is right, states and label placement, the fixed row count, character limits with a stated rule, and multi-line accessibility. Use for comments, descriptions, and message fields. Not for single-line text — see recursica-skill-text-field.
 license: MIT
 metadata:
   author: hi@borderux.com

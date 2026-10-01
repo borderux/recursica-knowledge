@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-button
-description: How to use the Recursica button — button versus link, its styles, sizes, and content, how many primaries, labels, destructive actions, icon-only buttons, and accessibility. Use for any button, submit and cancel pair, toolbar, or row action. Not for going somewhere — see recursica-skill-link; hierarchy and undo policy live in recursica-skill-buttons-links.
+description: Rules for the Recursica button — button versus link, its styles, sizes, and content, how many primaries, labels, destructive actions, icon-only buttons, and accessibility. Use for any button, submit and cancel pair, toolbar, or row action. Not for going somewhere — see recursica-skill-link; hierarchy and undo policy live in recursica-skill-buttons-links.
 license: MIT
 metadata:
   author: hi@borderux.com

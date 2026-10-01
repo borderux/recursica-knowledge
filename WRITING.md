@@ -1,10 +1,6 @@
 # Writing guide
 
-This guide sets the writing rules for this repository. They apply to skills, agent instructions, the glossary, `AGENT.md`, `README.md`, the contribution guides, commit messages, pull requests and issues.
-
-Agents are the main readers, and people read the same text. Clear writing serves both. A sentence a designer has to read twice is one an agent can misapply.
-
-`npm run writing:check` enforces the rules a script can check. The rest takes judgment, so read this before writing or reviewing any change.
+This guide sets the writing rules for this repository. Agents are the main readers of the knowledge files. People also read them, correct them and maintain them.
 
 ## The rules
 
@@ -27,30 +23,28 @@ Use American spelling and the AP style guide, the copy standard `recursica-skill
 | gray      | grey      |
 | catalog   | catalogue |
 
-The check fails on these and their other forms.
-
 ### 2. No "you"
 
-The reader is never the subject. Write about the component or the screen, or give the instruction directly.
+Never address the reader. Give an instruction in the imperative, and state a rule about the component or the screen.
 
-| Kind of text   | Write it as                         | Example                                                                |
-| -------------- | ----------------------------------- | ---------------------------------------------------------------------- |
-| An instruction | the imperative                      | "Use a table for many records of one type."                            |
-| A rule         | a statement about the component     | "A badge holds one value."                                             |
-| A checklist    | a short fact a reviewer can confirm | "- [ ] Where horizontal scrolling must be used, a reason is provided." |
-| A heading      | the topic                           | "## Set by the component", not "## Not your decision"                  |
+| Kind of text   | Example                                                                |
+| -------------- | ---------------------------------------------------------------------- |
+| An instruction | "Use a table for many records of one type."                            |
+| A rule         | "A badge holds one value."                                             |
+| A checklist    | "- [ ] Where horizontal scrolling must be used, a reason is provided." |
+| A heading      | "## Set by the component", not "## Not your decision"                  |
 
-**Removing "you" means rewriting the sentence, not making it passive.** "Side by side is the value you have to pass" does not improve as "the value that has to be passed". Say what to do: "Set `formLayout=\"side-by-side\"` on every field to put the label beside the input." If a rewrite is no clearer than the original, it is not finished.
+**Removing "you" means rewriting the sentence, not making it passive.** "Side by side is the value you have to pass" does not improve as "the value that has to be passed". Say what to do: "Set `formLayout=\"side-by-side\"` on every field to put the label beside the input."
 
-**Checklist items name what must be there.** Write the fact a reviewer confirms by looking, in the words a designer uses: "Where horizontal scrolling must be used, a reason is provided." Not "you said so", and not a vague passive like "that is stated" or "this was confirmed by". Items about the uncovered list all take one form: "Uncovered items were asked about, not decided: …"
+**A checklist item names what a reviewer can see.** Use the words a designer uses, not a vague passive like "that is stated". Items about the uncovered list take one form: "Uncovered items were asked about, not decided: …"
 
-**One exception: an agent's identity line.** "You are Betty, the designer agent for Recursica." That is how an agent is given its role, and it is the only sentence in an agent's instructions that starts with "You". Everything after it is an instruction.
+**One exception: an agent's identity line**, such as "You are Betty, the designer agent for Recursica." It is the only sentence in an agent's instructions that may start with "You".
 
-Quoted interface copy keeps its own words. A button label `Save your changes` in an example is the example, not this file's voice.
+Quoted interface copy keeps its own words, such as a button label `Save your changes`.
 
 ### 3. Concrete words
 
-Name the actual thing, the actual action, the actual result. A reader should be able to picture what happens on the screen.
+Name the specific component, action or result. A reader should be able to picture what happens on the screen.
 
 | Vague                                                   | Concrete                                              |
 | ------------------------------------------------------- | ----------------------------------------------------- |
@@ -60,39 +54,39 @@ Name the actual thing, the actual action, the actual result. A reader should be 
 | a way of carrying meaning, such as color, shape or text | color, shape, position or text                        |
 | a person's picture of how something works               | what the user expects, from tools they already use    |
 | `alert` reads as something wrong                        | `alert` means a problem                               |
-| a column has to earn its place                          | leave out a column that most rows have no value for   |
 
-**Never use these:** "how something works", "what the shape means", "a way of", "the thing", "reads as", "reads like", "earn" in any form ("earns its place", "must be earned"), "the shape of the data" (write "the type and structure of the data"). The check fails on them. They stand in for a specific word the writer has not found yet. Find it.
+**Never use these:** "how something works", "what the shape means", "a way of", "the thing", "reads as", "reads like", "earn" in any form ("earns its place", "must be earned"), "the shape of the data" (write "the type and structure of the data"). Each one stands in for a specific word. Find that word.
 
-**Say what to do, not what something must earn or deserve.** A rule sentence names the action and the case: "Leave out a column that most rows have no value for", not "A column has to earn its place." Swapping one metaphor for another ("worth its width") does not fix it.
+**Say what to do, not what something must earn or deserve.** Write "Leave out a column that most rows have no value for", not "A column has to earn its place." Swapping one metaphor for another ("worth its width") does not fix it.
 
 **Say it in the affirmative, the simplest way.** No double negatives and no complicated negative statements. Write "Keep markup correct, even when a screen reader reads more because of it", not "Do not change correct markup to reduce how much a screen reader says." A plain prohibition is fine when it is already the simplest form: "Never use a badge to show an error."
 
-**Name the cost.** "Has a cost" or "is worth what it costs" says nothing until the cost is named. Write what happens: "KPI tiles take the top of the page and push the content down."
+**Name the cost.** "Has a cost" says nothing until the cost is named. Write what happens: "KPI tiles take the top of the page and push the content down."
 
-**Use the term designers already use.** "Skeleton screen", not "gray bars where text will be"; "KPI tiles", not "summary figures". Look the term up when unsure, and define it once in brackets if a designer could misread it.
+**Use the term designers already use.** "Skeleton screen", not "gray bars where text will be"; "KPI tiles", not "summary figures". Look the term up when unsure.
 
-**No metaphors.** A summary row is not "furniture", a misused badge is not "wearing another component's clothes", and tokens do not "shape" agents. Say what is wrong in plain terms.
+**No metaphors.** A summary row is not "furniture", and a misused badge is not "wearing another component's clothes". Say what is wrong.
 
 ### 4. Short and direct
 
-- **Write complete sentences, with a subject and a verb.** Never open a document, a paragraph or a list item with a fragment such as "How everything is written:" or "How wide a panel is." Write "This guide sets the writing rules for this repository." A list item that names a topic uses a plain noun phrase: "Panel width."
+- **Cut every sentence that adds nothing.** Delete a sentence that repeats another, restates a rule in different words, or says that clear writing is good. Make a vague sentence specific, or delete it.
+- **Write complete sentences, with a subject and a verb.** Never open a document, a paragraph or a list item with a fragment such as "How everything is written:" or "How wide a panel is." A list item that names a topic uses a noun phrase: "Panel width."
 - **Lead with the rule.** The first sentence of a paragraph says what to do. The reason follows.
-- **Give the reason once, in a sentence.** A reason helps a reader apply a rule to a case the rule does not name. An essay does not.
-- **One idea per sentence.** Split a sentence that needs a semicolon and a dash.
-- **Cut filler:** "really", "genuinely", "actually", "simply", "just", "quietly" (unless something happens without notice, as in "React ignores it without an error"), "in practice", "it is worth noting".
+- **Give the reason once, in one sentence.** The reason lets a reader apply the rule to a case it does not name.
+- **One idea per sentence.** Split a sentence that needs a semicolon and a dash. Split a run-on joined by "so" into two sentences, and name what each one is about: not "The rest takes judgment, so read this before any change", but "Review catches what the check cannot."
+- **Cut filler:** "really", "genuinely", "actually", "simply", "just", "in practice", "it is worth noting". Use "quietly" only for something that happens without notice, as in "React ignores it without an error".
 - **No setups.** Not "This is the judgment that matters most:" before a rule. State the rule.
 
 ### 5. Define only what a designer would not know
 
-A designer knows what a modal, a tooltip and a placeholder are. Do not define them. Define a term the first time it appears when a designer could misread it, or when Recursica uses it in its own sense: a layer, a tone, a token, a tab stop.
+Do not define a modal, a tooltip or a placeholder. Define a term at its first use when a designer could misread it, or when Recursica uses it in its own sense: a layer, a tone, a token, a tab stop.
 
-Write the definition in concrete words, in brackets after the term: "a tab stop (a place the Tab key lands)". `skills/meta/GLOSSARY.md` holds the official wording, and `npm run skills:glossary:check` keeps the copies in step.
+Write the definition in brackets after the term: "a tab stop (a place the Tab key lands)". `skills/meta/GLOSSARY.md` holds the official wording, and `npm run skills:glossary:check` keeps the copies in step.
 
 ### 6. Emphasis
 
-- **Bold the rule sentence** that opens a paragraph, so a skimming reader gets the rule.
-- **NEVER, MUST and MUST NOT in capitals** only for hard rules with no exceptions. Most rules do not need them.
+- **Bold the rule sentence** that opens a paragraph.
+- **Write NEVER, MUST and MUST NOT in capitals** only for hard rules with no exceptions.
 - Do not bold whole paragraphs.
 
 ### 7. Lists, tables and headings
@@ -114,12 +108,12 @@ The repository is public. Follow `AGENT.md` on what never goes into a commit, a 
 | `AGENT.md`, `README.md`, `CONTRIBUTING*.md`, `PORTING.md` files    | Generated files, which follow their sources          |
 | Commit messages, pull requests and issues                          |                                                      |
 
-## What the check catches, and what it does not
+## The check
 
 `npm run writing:check` runs with `npm run skills:check` and in CI. It fails on:
 
-- British spellings
+- British spellings, in any form
 - "you" and "your" in skills and agent instructions, except an agent's identity line, code and quoted text
 - the phrases listed under rule 3
 
-It cannot tell a vague sentence from a clear one, or an essay from a reason. That is review. When a check and this guide disagree, fix the check.
+It cannot tell whether a sentence is vague, redundant or a fragment. Review catches those. When the check and this guide disagree, fix the check.

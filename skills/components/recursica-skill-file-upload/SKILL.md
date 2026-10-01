@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-file-upload
-description: How to use the Recursica file upload, the larger area with a list of added files — when it replaces the file input, stating types and size limits up front, and never making drag and drop the only way in. Use for upload areas, drop zones, and attachment lists. Not for one file in a dense form — see recursica-skill-file-input.
+description: Rules for the Recursica file upload, the larger area with a list of added files — when it replaces the file input, stating types and size limits up front, and never making drag and drop the only way in. Use for upload areas, drop zones, and attachment lists. Not for one file in a dense form — see recursica-skill-file-input.
 license: MIT
 metadata:
   author: hi@borderux.com

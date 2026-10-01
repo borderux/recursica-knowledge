@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-chip
-description: How to use the Recursica chip — when chips are right, selected and unselected states, selectable versus removable chips, never a status, group size, and chip-group accessibility. Use for filter chips, tags, and a horizontal multi-select. Not for a read-only value — see recursica-skill-badge; not for one choice — see recursica-skill-segmented-control.
+description: Rules for the Recursica chip — when chips are right, selected and unselected states, selectable versus removable chips, never a status, group size, and chip-group accessibility. Use for filter chips, tags, and a horizontal multi-select. Not for a read-only value — see recursica-skill-badge; not for one choice — see recursica-skill-segmented-control.
 license: MIT
 metadata:
   author: hi@borderux.com

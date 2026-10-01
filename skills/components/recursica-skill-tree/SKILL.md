@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-tree
-description: How to use the Recursica tree — when data is a real hierarchy, collapsed by default, depth limits, why indentation alone is not enough, and tree keyboard and screen-reader behavior. Use for folder structures, category trees, and nested lists. Not for flat records — see recursica-skill-table; not for single-level sections — see recursica-skill-accordion.
+description: Rules for the Recursica tree — when data is a real hierarchy, collapsed by default, depth limits, why indentation alone is not enough, and tree keyboard and screen-reader behavior. Use for folder structures, category trees, and nested lists. Not for flat records — see recursica-skill-table; not for single-level sections — see recursica-skill-accordion.
 license: MIT
 metadata:
   author: hi@borderux.com

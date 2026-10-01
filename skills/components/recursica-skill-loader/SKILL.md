@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-loader
-description: How to use the Recursica loader, the only loading indicator, a spinner — when a wait needs one, sizes, the text that must go with it, and announcing start and finish. Use for loading states, pending regions, and in-flight actions. There is no progress bar. Not for the outcome — see recursica-skill-toast.
+description: Rules for the Recursica loader, the only loading indicator, a spinner — when a wait needs one, sizes, the text that must go with it, and announcing start and finish. Use for loading states, pending regions, and in-flight actions. There is no progress bar. Not for the outcome — see recursica-skill-toast.
 license: MIT
 metadata:
   author: hi@borderux.com

@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-tooltip
-description: How to use the Recursica tooltip — a short label for a control with no visible one, nothing essential or interactive inside, showing on focus, and closing with Escape. Use for icon-only button labels and cut-off text. Not for rich or interactive content — see recursica-skill-hover-card-popover; not for field help — see recursica-skill-text-field.
+description: Rules for the Recursica tooltip — a short label for a control with no visible one, nothing essential or interactive inside, showing on focus, and closing with Escape. Use for icon-only button labels and cut-off text. Not for rich or interactive content — see recursica-skill-hover-card-popover; not for field help — see recursica-skill-text-field.
 license: MIT
 metadata:
   author: hi@borderux.com

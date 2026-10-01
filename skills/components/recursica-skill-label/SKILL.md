@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-label
-description: How to use the Recursica label that every form field uses — side-by-side or stacked placement by container width, the required indicator and optional text it displays, label copy, and label-to-field association. Use for any field or group label. Not for help or error text — see recursica-skill-assistive-element; which fields a form marks, and how, is decided in recursica-skill-forms.
+description: Rules for the Recursica label that every form field uses — side-by-side or stacked placement by container width, the required indicator and optional text it displays, label copy, and label-to-field association. Use for any field or group label. Not for help or error text — see recursica-skill-assistive-element; which fields a form marks, and how, is decided in recursica-skill-forms.
 license: MIT
 metadata:
   author: hi@borderux.com

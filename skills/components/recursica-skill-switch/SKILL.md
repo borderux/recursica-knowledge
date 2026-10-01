@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-switch
-description: How to use the Recursica switch — the tests a value must pass for a switch, commit timing that follows the app's save mode, no switches in table rows or for high-stakes settings, and disabled versus read-only. Use for on/off settings and toggles. Not for values saved with a form — see recursica-skill-checkbox; control choice lives in recursica-skill-selection-controls.
+description: Rules for the Recursica switch — the tests a value must pass for a switch, commit timing that follows the app's save mode, no switches in table rows or for high-stakes settings, and disabled versus read-only. Use for on/off settings and toggles. Not for values saved with a form — see recursica-skill-checkbox; control choice lives in recursica-skill-selection-controls.
 license: MIT
 metadata:
   author: hi@borderux.com

@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-panel
-description: How to use the Recursica panel — when a side surface that leaves the page usable is right, no side or width options, no history entry, header, content, and footer, and focus return with no focus trap. Use for panels, drawers, side sheets, and filter panels. Not for blocking decisions — see recursica-skill-modal.
+description: Rules for the Recursica panel — when a side surface that leaves the page usable is right, no side or width options, no history entry, header, content, and footer, and focus return with no focus trap. Use for panels, drawers, side sheets, and filter panels. Not for blocking decisions — see recursica-skill-modal.
 license: MIT
 metadata:
   author: hi@borderux.com

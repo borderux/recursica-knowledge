@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-table
-description: How to use the Recursica table component — the table, cell, header, and footer, sorting, cell text and width, currency cells, no density option, empty cells, footer totals, and data-table accessibility including row selection. Use for tables and data grids. Column, width, and pagination policy lives in recursica-skill-tables.
+description: Rules for the Recursica table component — the table, cell, header, and footer, sorting, cell text and width, currency cells, no density option, empty cells, footer totals, and data-table accessibility including row selection. Use for tables and data grids. Column, width, and pagination policy lives in recursica-skill-tables.
 license: MIT
 metadata:
   author: hi@borderux.com
