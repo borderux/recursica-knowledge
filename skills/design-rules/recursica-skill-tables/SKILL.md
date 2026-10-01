@@ -72,7 +72,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 ## Horizontal scrolling
 
-**Avoid scrolling sideways.** It is unusual in an application, awkward with a mouse, and has almost no affordance (a visible cue that tells the user they can act on something) — a user may never find out that there is more table to the right.
+**Avoid scrolling sideways.** It is unusual in an application, awkward with a mouse, and has almost no affordance (a visible cue that a control can be used, such as the underline on a link) — a user may never find out that there is more table to the right.
 
 It is sometimes unavoidable — for example, when a client insists that every field gets its own column and will not accept splitting the view. When it is, say so, and treat it as a last resort, not a pattern: the goal is always to fit.
 
@@ -86,13 +86,13 @@ It is sometimes unavoidable — for example, when a client insists that every fi
 
 **Unrelated data in one column is never allowed.** If the only way to fit everything is to combine unrelated values, the table has already lost, and sideways scrolling is what is left.
 
-**A complex data table is not shown below the tablet breakpoint at all** (the screen width at which the layout changes for tablets). There is too much data for the space, so the problem of a narrow table is solved by the table not being there — never by making it swipeable. Owned by `recursica-skill-responsive-behavior`.
+**A complex data table is not shown below the tablet breakpoint at all**. There is too much data for the space, so the problem of a narrow table is solved by the table not being there — never by making it swipeable. Owned by `recursica-skill-responsive-behavior`.
 
 ## Column widths
 
 **Set widths by data type**, so that cutting text short is rarely needed. Dates, currency, and statuses are narrow; sentences need room. Fixing widths for each type of content is what keeps a table stable as the data changes.
 
-**The design system sets a maximum column width**, and values are truncated (cut short and ended with an ellipsis, …) when they reach it. The exact character count or pixel limit belongs to the system, varies by implementation, and is not a design decision.
+**The design system sets a maximum column width**, and values are truncated when they reach it. The exact character count or pixel limit belongs to the system, varies by implementation, and is not a design decision.
 
 **Set widths on the narrow types, and leave the wide one unset.** This is the part that decides whether the rule actually works:
 
@@ -138,7 +138,7 @@ Decide in this order:
 
 **Two sizes of table behave differently:**
 
-**A full-size table fills the width and height of its container**, and the number of visible rows follows from that. Prefer infinite scroll (more rows load as the user scrolls). Pagination — splitting the rows into separate pages — is a clunky way to move through records.
+**A full-size table fills the width and height of its container**, and the number of visible rows follows from that. Prefer infinite scroll. Pagination — splitting the rows into separate pages — is a clunky way to move through records.
 
 **An interior table** — a smaller grid set inside a container alongside other elements — gets a fixed number of rows, usually five or ten, and then paginates.
 
@@ -156,7 +156,7 @@ Decide in this order:
 
 **Neutral 500, not the component's disabled color.** They are not the same value — a cell's `text-color-disabled` works out one step lighter — and this treatment is a stated rule, not a reuse of the disabled state. Take it from the neutral palette token (a named design value, such as a color or a size, set by the design system), so it changes when the theme does.
 
-**The italics matter.** They are the second channel (a way of carrying meaning, such as color, shape, position, or text). `recursica-skill-system-conventions` forbids carrying meaning through color alone, and a gray `NA` on its own does exactly that.
+**The italics matter.** They are the second channel (color, shape, position or text, each a separate signal). `recursica-skill-system-conventions` forbids carrying meaning through color alone, and a gray `NA` on its own does exactly that.
 
 **`NA` must be real text in the cell**, not a background, an icon, or an empty cell styled to look empty. An empty cell is announced as nothing at all.
 

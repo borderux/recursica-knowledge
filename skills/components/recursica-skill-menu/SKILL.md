@@ -36,7 +36,7 @@ A menu is a temporary list of choices or actions. A trigger opens it, and dismis
 
 ## What exists
 
-Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has). Two specs, with one axis (a variant property, as Figma calls it — one way a component varies, such as its size) between them.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has). Two specs, with one axis (a property a component varies on, such as size or style; Figma calls it a variant property) between them.
 
 | Spec        | Axis               | Options                  |
 | ----------- | ------------------ | ------------------------ |
@@ -70,17 +70,17 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Dividers group items; they do not decorate.** Use a divider to separate different sets of related items. A divider between every item is noise, and a divider with nothing on one side of it is a mistake.
 
-**A destructive item states the consequence in its words.** There is no destructive item state, so the label is the only channel (a way of carrying meaning, such as color, shape, position, or text), and confirmation is handled by `recursica-skill-modal`.
+**A destructive item states the consequence in its words.** There is no destructive item state, so the label is the only channel (color, shape, position or text, each a separate signal), and confirmation is handled by `recursica-skill-modal`.
 
 **Hide what the user can never do; disable what the user can unlock.** This is the permissions rule from `recursica-skill-navigation`. No permission means no item — not a disabled item, and not an item that fails when used.
 
-**A menu never holds something the user has to find to finish a task.** A gear that opens a column-visibility menu is a valid unadvertised affordance (a control that is deliberately not promoted). A menu that hides the only way to finish the work is not. See `recursica-skill-discoverability`.
+**A menu never holds something the user has to find to finish a task.** A gear that opens a column-visibility menu is a valid unadvertised affordance (a control that works but is not shown in the main interface, such as a keyboard shortcut). A menu that hides the only way to finish the work is not. See `recursica-skill-discoverability`.
 
 **A row that has a menu is not a clickable row.** Two competing click targets in one row mean the user cannot predict what a click will do — `recursica-skill-tables`.
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
 
 A menu is a component about managing focus. The list itself is easy. The trigger's state, the arrow keys, and returning focus when it closes are where menus fail — and a menu that opens on hover fails all three at once.
 
@@ -103,7 +103,7 @@ A menu is a component about managing focus. The list itself is easy. The trigger
 - **Focus returns to the trigger when the menu closes** — on Escape, on activating an item, or on clicking away. This is the step most often skipped, and skipping it drops the user at the top of the document.
 - **The arrow keys move between items. Escape closes. Enter and Space activate. Home and End jump to the first and last item.** Connect all of them.
 - **The menu is a single tab-stop group, not a series of tab stops.** Tab does not step from item to item; the arrow keys do that. Tab leaves the menu.
-- **A menu that scrolls must scroll to follow keyboard focus.** Moving with the arrows to an item below the fold (the part of the page you only see after scrolling) has to bring it into view.
+- **A menu that scrolls must scroll to follow keyboard focus.** Moving with the arrows to an item below the fold (the part of the page visible only after scrolling) has to bring it into view.
 - **Do not move focus anywhere except back to the trigger.** Not to the top of the page, and not into the content the action affected.
 - **Nothing needed may appear only on hover.** A row-action menu whose trigger only appears when the row is hovered cannot be reached by keyboard or by touch. If the action exists, its trigger is visible.
 

@@ -44,7 +44,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 ## Dates
 
-**Prefer a single control of relative ranges over a pair of empty date fields.** `This month`, `Last 30 days`, `This quarter` — the ranges people actually work in — plus a Custom option that opens a modal (a window that blocks the rest of the page until the user closes it) for entering an exact range.
+**Prefer a single control of relative ranges over a pair of empty date fields.** `This month`, `Last 30 days`, `This quarter` — the ranges people actually work in — plus a Custom option that opens a modal for entering an exact range.
 
 **Two bare date fields are the pattern to avoid.** `Start date on/after` and `Start date on/before` are two controls for one idea. Both are empty, and the connection between them is only implied, not shown. The user has to work out that it is a range at all.
 
@@ -66,7 +66,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **The control and the chip are one state, not two.** Removing the chip clears the control.
 
-**Announce the result of filtering.** The number of rows changed, and nothing moved the focus, so a screen reader (software that reads the screen aloud) user is told nothing unless you say so. Announce it politely, and debounced — that is, only after the user pauses, not on every keystroke. See `recursica-skill-autocomplete` for the same requirement on a typed filter.
+**Announce the result of filtering.** The number of rows changed, and nothing moved the focus, so a screen reader user is told nothing unless you say so. Announce it politely, and debounced — that is, only after the user pauses, not on every keystroke. See `recursica-skill-autocomplete` for the same requirement on a typed filter.
 
 **Filtering down to zero results is not an empty collection.** "No results for these filters" and "nothing here yet" are different states, with different next steps.
 

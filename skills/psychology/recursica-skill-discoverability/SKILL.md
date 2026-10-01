@@ -39,7 +39,7 @@ Read this before you add a configuration feature. Cite it when someone argues th
 
 1. **When a task cannot be finished without the control.** Then it is not configuration; it is core function, and it must be visible. The paradox predicts that users will fail rather than search for it.
 2. **When hiding stands in for research.** Offering configuration because nobody found out what users need is what `recursica-skill-dashboards` calls three failures that build on each other. This skill justifies _not promoting_ a well-thought-out way out of the default. It never justifies skipping the decision.
-3. **When hidden means impossible to reach.** A long-press or a drag with no other option shuts out keyboard users and users of assistive technology (tools such as screen readers that help people with disabilities use a computer). Moving a feature back is a decision about how prominent it looks, never about whether it is accessible.
+3. **When hidden means impossible to reach.** A long-press or a drag with no other option shuts out keyboard users and users of assistive technology. Moving a feature back is a decision about how prominent it looks, never about whether it is accessible.
 
 ## Common misapplications
 
@@ -49,7 +49,7 @@ Read this before you add a configuration feature. Cite it when someone argues th
 
 **Do not claim that users cannot find hidden things.** The real claim is narrower and more accurate: users will not go looking _on their own, for a benefit they have not felt yet_. Once they feel it, they look.
 
-**Do not use it to defend a dark pattern** (a design that pushes users to act against their own interest). Hiding a control the user would want to use — an unsubscribe, an export, a way to turn something off — is a different act with a different motive, and nothing here supports it.
+**Do not use it to defend a dark pattern**. Hiding a control the user would want to use — an unsubscribe, an export, a way to turn something off — is a different act with a different motive, and nothing here supports it.
 
 ## References
 

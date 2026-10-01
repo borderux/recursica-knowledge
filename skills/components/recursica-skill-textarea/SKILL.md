@@ -40,14 +40,14 @@ Each of these has a different component. Switch to it, instead of adapting a tex
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.textarea`. **Do not pass a variant or state that is not listed here** — other design systems have sizes, resize modes, warning states, and built-in counters that this component does not.
 
-**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis      | Options                   | React prop   |
 | --------- | ------------------------- | ------------ |
 | `layouts` | `stacked`, `side-by-side` | `formLayout` |
 | `states`  | `error`, `disabled`       |              |
 
-**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's (the visible area of the browser window). See `recursica-skill-forms`.
+**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
 **`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Leave it out, and you get the fallback in a container of any width — the rule turned upside down. `layouts` is the name of the token axis, not a prop: `layouts="side-by-side"` is quietly ignored by React and leaves the control stacked, with no error. Pass `formLayout="side-by-side"` explicitly.
 
@@ -81,7 +81,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Do not add spacing around it to make up for its height.** The spacing between fields and sections is built into the components. A textarea is the tallest field in a form, and that uneven rhythm is expected. Owned by `recursica-skill-forms`.
 
-**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints (the screen widths at which the layout changes), but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
+**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
 **A stacked layout is often more comfortable around a textarea** — a tall field beside a single-line label reads badly in a narrow container — but that is never a reason to stack this one field on its own. What decides it is the width of the form's container, not the height of the field. If the form is side by side, then this field is side by side too.
 
@@ -94,13 +94,13 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
-The component connects the label to the input, and provides the focus ring (the outline that shows which element has keyboard focus). Everything below is up to you. The keyboard rules matter more here than on a single-line field, because Enter and Tab mean something different inside a textarea.
+The component connects the label to the input, and provides the focus ring. Everything below is up to you. The keyboard rules matter more here than on a single-line field, because Enter and Tab mean something different inside a textarea.
 
 ### Screen readers
 
 - **Pass a real label.** Never let placeholder text be the accessible name (the name a screen reader reads out for a control) — it is not announced as a label, and it disappears when the user types. A field with no label has no accessible name.
 - **State the limit, and what should go in the field, in the help text.** A visible character counter is not connected to the field, and may never be announced. So the maximum has to be in words the user hears when they arrive.
-- **Announce the field as multi-line.** It must be a real multi-line control, not a single-line input styled to look tall, so that a screen reader (software that reads the screen aloud) tells the user that line breaks are allowed.
+- **Announce the field as multi-line.** It must be a real multi-line control, not a single-line input styled to look tall, so that a screen reader tells the user that line breaks are allowed.
 - **The component defines no icon inside the field, so any icon you place there is yours** — give it an accessible name if it can be used, and keep it silent if it is decorative.
 - **The error message is the text that gets announced.** Because it replaces the help text, it is the only thing that will be read — so it has to state the rule.
 - **Do not announce every keystroke.** A live count that updates on every character floods a screen reader. If progress toward a limit must be spoken, announce it sparingly, and keep the limit itself in the help text.

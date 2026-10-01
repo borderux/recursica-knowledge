@@ -39,7 +39,7 @@ These rules assume **complex enterprise web applications**, where people are doi
 
 **Broadest at the top, most specific at the bottom.**
 
-- **The top carries what applies to every persona** (a profile that represents one type of user) arriving at the page — the broadest, most widely useful content, shown largest.
+- **The top carries what applies to every persona** arriving at the page — the broadest, most widely useful content, shown largest.
 - **Moving down, content becomes more detailed and more specific.**
 - **The bottom may be specific to one persona**, useful only to some of the people who reach the page.
 
@@ -59,7 +59,7 @@ These rules assume **complex enterprise web applications**, where people are doi
 
 **A stakeholder may overrule you anyway**, even where it harms the workflow. That is a real outcome, not a failure of the rule — good user-centered design still means arguing from the user's point of view.
 
-**Business units rarely have competing requirements — they have different ones.** Treat them as fitting together, and resolve them by understanding the workflow and matching the user's mental model (a person's picture of how something works), rather than by judging between departments.
+**Business units rarely have competing requirements — they have different ones.** Treat them as fitting together, and resolve them by understanding the workflow and matching the user's mental model (what a person expects from the tools and work they already know), rather than by judging between departments.
 
 **A legal, compliance, or hard technical limit overrides the user's mental model.** Some things cannot be worked around, and the mental model has to change to fit them. This is the one thing that outranks the user.
 
@@ -139,7 +139,7 @@ Progressive disclosure is showing only what is needed now, with the rest availab
 
 **Branching requires a stepper.** Where an answer changes a later step, break the form up.
 
-**But information that refers back and forth favors one long form.** Where filling in one section depends on remembering or checking another, a stepper (a component that walks the user through numbered steps) becomes actively annoying. Moving forward and back to re-read is worse than scrolling up. Usability testing on a long credit-card application found that the single long form did better than the stepper for exactly this reason: the user wanted to confirm that the whole thing was correct and complete at once.
+**But information that refers back and forth favors one long form.** Where filling in one section depends on remembering or checking another, a stepper becomes actively annoying. Moving forward and back to re-read is worse than scrolling up. Usability testing on a long credit-card application found that the single long form did better than the stepper for exactly this reason: the user wanted to confirm that the whole thing was correct and complete at once.
 
 **So the question is how much has to stay in view**, not how long the form is. Owned jointly with `recursica-skill-forms`.
 
@@ -195,7 +195,7 @@ Treating the two as one leaves the user unable to tell whether to change their f
 
 ## Uncovered — ask, do not invent
 
-- **How to judge "done" versus "overloaded" in terms of cognitive load** (the mental effort a task demands). Named as not covered. The workflow-support test above is what exists.
+- **How to judge "done" versus "overloaded" in terms of cognitive load**. Named as not covered. The workflow-support test above is what exists.
 - **Where the inverted triangle stops applying.** This was asked directly and passed over; no limit was given.
 - **Research on scan patterns.** Marked as belonging in the psychology skills, with citations, and not gathered yet — see `recursica-skill-working-memory` for the form it would take.
 - **Alignment as its own skill.** Named as a design rule the family still needs, possibly run by a dedicated review agent. What is here are the criteria, not the process.

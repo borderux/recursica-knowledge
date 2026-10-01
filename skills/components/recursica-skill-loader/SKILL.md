@@ -45,7 +45,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no slot for a label or text.** Any words that go with the spinner are a separate element you place yourself.
 
-**There is no skeleton, no shimmer, no progress bar, and no type axis (a variant property, as Figma calls it — one way a component varies, such as its size) — and skeletons (gray placeholder shapes shown while content loads) are not just missing; they are forbidden.** Gray bars standing in where text will be are a spinner in another costume: they add mental work to decode and give nothing back. `recursica-skill-screen-scaffolding` settles it — a loading page shows nothing until it shows content.
+**There is no skeleton, no shimmer, no progress bar, and no type axis (a property a component varies on, such as size or style; Figma calls it a variant property) — and skeletons are not just missing; they are forbidden.** Gray bars standing in where text will be are a spinner in another costume: they add mental work to decode and give nothing back. `recursica-skill-screen-scaffolding` settles it — a loading page shows nothing until it shows content.
 
 **Three loader types have no tokens behind them, but both adapters do build them.** Oval, Bars, and Dots are missing from the UI kit — the UI kit defines only `indicator-color` and the three sizes — yet both adapters offer them as a real `variant` prop, and style each one. So they are available. They are just not backed by tokens, which means how they look comes from the adapter, not the UI kit, and it may differ between Mantine and MUI. `oval` is the default in both. Prefer the default unless you have a reason, and do not treat a type as a signal that means something.
 
@@ -61,7 +61,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Do not show a loader for a wait under about 3 seconds.** Delay it, or leave it out. A spinner that appears and disappears is noise, and it makes a fast operation feel slower than it was. The threshold is owned by `recursica-skill-feedback-messaging`. An earlier figure of 300ms in this skill was not a recorded house rule, and it has been corrected.
 
-**Never let the spinning motion be the only signal.** `recursica-skill-system-conventions` forbids meaning in a single channel (a way of carrying meaning, such as color, shape, position, or text), and animation is the most fragile channel there is. A screen reader cannot see it, it disappears under reduced motion, and it is gone in a screenshot. The text beside it is the second channel.
+**Never let the spinning motion be the only signal.** `recursica-skill-system-conventions` forbids meaning in a single channel (color, shape, position or text, each a separate signal), and animation is the most fragile channel there is. A screen reader cannot see it, it disappears under reduced motion, and it is gone in a screenshot. The text beside it is the second channel.
 
 **Respect the operating system's reduced-motion setting** (a setting that asks for less animation). Where motion is reduced or removed, the text and the announcement must still tell the user about the wait on their own.
 
@@ -75,9 +75,9 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
 
-A spinner is pure animation. That means that to a screen reader (software that reads the screen aloud) user, it is nothing at all unless you announce it. The typical failure is not a control that cannot be reached — it is a wait that starts and ends in complete silence, leaving the user with no idea that anything happened.
+A spinner is pure animation. That means that to a screen reader user, it is nothing at all unless you announce it. The typical failure is not a control that cannot be reached — it is a wait that starts and ends in complete silence, leaving the user with no idea that anything happened.
 
 ### Screen readers
 

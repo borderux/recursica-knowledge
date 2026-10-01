@@ -33,7 +33,7 @@ An avatar is a small visual stand-in for a person or entity. It helps people rec
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.avatar`. **Do not pass a style or size that is not listed here.**
 
-**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis     | Options                     | React prop |
 | -------- | --------------------------- | ---------- |
@@ -63,7 +63,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Decide once whether this avatar is a control.** A button that opens the user menu is a real button, with a real accessible name (the name a screen reader reads out for a control) and a tab stop (a place the Tab key lands). Everything else is decoration: no click handler, no tabindex, and no interactive role. There is nothing in between.
 
-**Keep the account menu out of primary navigation.** It is a tool used everywhere, not a destination — `recursica-skill-navigation` places it elsewhere in the application chrome (the frame around the content).
+**Keep the account menu out of primary navigation.** It is a tool used everywhere, not a destination — `recursica-skill-navigation` places it elsewhere in the application chrome (the header, navigation and footer around the content).
 
 **Size follows how dense the surface is, not how important the person is.** Use `small` in a table row or a comment, and `large` on a profile header. Do not use size to rank people.
 
@@ -71,19 +71,19 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
 
 An avatar is either a picture or a control, and the two fail in different ways. As a picture, the risk is being announced as an unlabeled graphic, or as a second, repeated copy of a name that was already read. As a control, the risk is having no name at all.
 
 ### Screen readers
 
-- **An `image` avatar needs alternative text (text read in place of the image) naming the person or thing**, whenever the avatar is the only place that name appears. "Jane Doe" — not "avatar", and not "profile photo".
+- **An `image` avatar needs alternative text naming the person or thing**, whenever the avatar is the only place that name appears. "Jane Doe" — not "avatar", and not "profile photo".
 - **When the name is already next to it in text, the avatar is decorative and must be silent.** Give it empty alternative text. "Jane Doe, image, Jane Doe" is worse than saying nothing, and it happens in every row of the list.
-- **A `text` avatar's initials must never be announced as someone's identity.** "AM" tells a screen reader (software that reads the screen aloud) user nothing. The initials are decorative; the name in text is what gets read.
+- **A `text` avatar's initials must never be announced as someone's identity.** "AM" tells a screen reader user nothing. The initials are decorative; the name in text is what gets read.
 - **An `icon` avatar must be silent.** It carries no identity, so there is nothing to announce — and it must not come across as "image" or "graphic".
 - **An avatar that is a control needs a real accessible name that says what using it does** — "Account menu", or the user's name plus what it opens. The image is not the name, and a control with no name is announced as just "button".
 - **A control avatar is in effect icon-only**, so it needs a tooltip for sighted mouse users and, separately, an accessible name — as `recursica-skill-buttons-links` requires.
-- **Never let the avatar be the only way to tell whose row, comment, or assignment this is.** That puts meaning in a single visual channel (a way of carrying meaning, such as color, shape, position, or text), which `recursica-skill-system-conventions` forbids.
+- **Never let the avatar be the only way to tell whose row, comment, or assignment this is.** That puts meaning in a single visual channel (color, shape, position or text, each a separate signal), which `recursica-skill-system-conventions` forbids.
 - **Do not add a hidden copy of the name for screen readers** while the visible name stays in the reading order. The user hears it twice.
 
 ### Keyboard and non-mouse navigation

@@ -50,7 +50,7 @@ Do not treat horizontal versus vertical as a matter of taste when growth is expe
 
 ## What does not belong in primary navigation
 
-**Keep search, notifications, and the user or account menu out of primary navigation.** They are tools used everywhere, not destinations in the information architecture. Put them elsewhere in the application chrome (the frame around the content). Mixing them into the primary navigation raises the number of items, and blurs what the navigation is a map of.
+**Keep search, notifications, and the user or account menu out of primary navigation.** They are tools used everywhere, not destinations in the information architecture. Put them elsewhere in the application chrome (the header, navigation and footer around the content). Mixing them into the primary navigation raises the number of items, and blurs what the navigation is a map of.
 
 ## Number of navigation items
 
@@ -78,7 +78,7 @@ This limit is what makes the overflow rules possible to enforce. Horizontal navi
 
 **Use the simplest structure the content allows.** A plain list of links is a valid answer, and often the right one. Reach for an accordion or a tree only when there is a real hierarchy.
 
-**MUST use semantic HTML** (using each element for what it means, not how it looks). Navigation is a list — ordered or unordered — and it must be marked up as one.
+**MUST use semantic HTML** (HTML elements chosen for their role, such as a button element for a button). Navigation is a list — ordered or unordered — and it must be marked up as one.
 
 **A top-level item with no children MUST stay directly navigable.** A dashboard with no sub-navigation is a link, not an accordion header that does nothing. Navigation often mixes items you can go to directly with groups that expand, and both must work in the same navigation.
 
@@ -94,19 +94,19 @@ Location is shown by three things, and you need more than the first one:
 
 1. **A selected state** on the active item. Tree and navigation components already provide this — use the component's state; do not invent your own.
 2. **Clear page titles that show the hierarchy** through heading levels (H1, H2, and so on).
-3. **Breadcrumbs** (a trail of links showing where the page sits), using the breadcrumb component, where the depth calls for them.
+3. **Breadcrumbs**, using the breadcrumb component, where the depth calls for them.
 
 **Whether or not the navigation is visible, information on the page itself MUST show the location** — headings, breadcrumbs, or both. Never rely on the navigation being on screen as the only answer to "where am I?"
 
 ## Hiding navigation
 
-**Hiding navigation entirely is acceptable when it is used rarely and the screen space is needed** — behind a hamburger menu (a button with three horizontal lines that opens a menu) or something similar. This is not a compromise. For navigation the user rarely touches, it is correct.
+**Hiding navigation entirely is acceptable when it is used rarely and the screen space is needed** — behind a hamburger menu or something similar. This is not a compromise. For navigation the user rarely touches, it is correct.
 
 **If the user moves back and forth between sections, keep the navigation visible at all times.** How often it is used is what decides this, not the size of the screen.
 
 **NEVER collapse a vertical navigation into a rail of icons only** (a narrow strip showing icons without labels). There is no real benefit to it. When space must be won back, hide the navigation behind a hamburger menu that opens with its text labels still in place. A fully hidden navigation that reads clearly when opened is better than one that is permanently visible but has to be decoded.
 
-**NEVER use icon-only primary navigation**, in any form. A narrow viewport (the visible area of the browser window) is not an exception — the ban holds at every width, and a rail of icons is not the way out for mobile or tablet. Beyond a handful of icons, nobody remembers what they mean, and without a hover state there is no affordance (a visible cue that tells the user they can act on something). A rail of fifteen icons whose collapsed state shrinks down to bare dots you have to hover over is the real-world extreme — and it is a published design system doing it. See `recursica-skill-responsive-behavior` and `recursica-skill-icon-semantics`.
+**NEVER use icon-only primary navigation**, in any form. A narrow viewport is not an exception — the ban holds at every width, and a rail of icons is not the way out for mobile or tablet. Beyond a handful of icons, nobody remembers what they mean, and without a hover state there is no affordance (a visible cue that a control can be used, such as the underline on a link). A rail of fifteen icons whose collapsed state shrinks down to bare dots you have to hover over is the real-world extreme — and it is a published design system doing it. See `recursica-skill-responsive-behavior` and `recursica-skill-icon-semantics`.
 
 **Below desktop size, global navigation collapses into a hamburger menu**, and what slides in shows both the icon and the text.
 

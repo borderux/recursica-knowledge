@@ -74,7 +74,7 @@ When the tests fail and grouping is still needed, reach for these, in this order
 
 ## What exists
 
-Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.card`. **The UI kit defines no variant axes (variant properties, as Figma calls them — the ways a component varies, such as its size) on the card** — everything is a property. Two more choices are shown only on the design-system website.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.card`. **The UI kit defines no variant axes (the properties a component varies on, such as size and style; Figma calls them variant properties) on the card** — everything is a property. Two more choices are shown only on the design-system website.
 
 | Choice | Options            | Source             |
 | ------ | ------------------ | ------------------ |
@@ -109,16 +109,16 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
 
 A card set is a list of objects, and it must be announced as one. Two failures matter: a set that reads as one long run of text with no boundaries, and a "clickable card" that a keyboard user cannot activate, or that swallows the controls inside it.
 
 ### Screen readers
 
-- **Announce the set as a list, with its length.** The whole purpose of a card set is that the items are peers — a screen reader (software that reads the screen aloud) user needs to know there are six of them, and which one they are in.
+- **Announce the set as a list, with its length.** The whole purpose of a card set is that the items are peers — a screen reader user needs to know there are six of them, and which one they are in.
 - **Every card starts with a heading**, at the same level across the whole set. The heading is what lets the user jump between cards instead of reading everything.
 - **Reading order must match visual order.** If the slot is on top visually, it comes first in the reading order too.
-- **An image in the slot needs alternative text (text read in place of the image), or must be clearly marked as decorative.** An unlabeled image announced as "graphic" in every card is noise; a meaningful image that is not marked is lost information.
+- **An image in the slot needs alternative text, or must be clearly marked as decorative.** An unlabeled image announced as "graphic" in every card is noise; a meaningful image that is not marked is lost information.
 - **A chart in the slot is not accessible on its own.** `recursica-skill-data-visualization` requires an accompanying data table — that requirement is what makes a chart card usable here.
 - **Do not rely on the card's border or elevation to show the boundary.** Visually, they separate the objects; in code, the list structure and the headings must do it.
 - **Repeated controls must name their object.** "Edit" in every card is five identical announcements. The name must say which item, or the card must supply that context in code.

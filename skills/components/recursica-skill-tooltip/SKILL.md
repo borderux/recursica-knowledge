@@ -36,7 +36,7 @@ A tooltip is a short text label for a control that has no visible one.
 
 ## What exists
 
-Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.tooltip`. **The tooltip has no variant axes (variant properties, as Figma calls them — the ways a component varies, such as its size) at all** — no placement axis, no size axis, no content-type axis. Every listed item is a fixed property.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.tooltip`. **The tooltip has no variant axes (the properties a component varies on, such as size and style; Figma calls them variant properties) at all** — no placement axis, no size axis, no content-type axis. Every listed item is a fixed property.
 
 **What the component provides:** a text area and a beak — the small pointer that connects the tooltip to its trigger. `beak-size` and `beak-inset` are set by tokens (named design values, such as colors or sizes, set by the design system).
 
@@ -73,7 +73,7 @@ Neither may hold anything the user needs to complete a task, and neither may be 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
 
 A tooltip is the component most often used to cover up a missing accessible name, and it cannot do that job. Everything below is behavior you must make sure of.
 
@@ -82,7 +82,7 @@ A tooltip is the component most often used to cover up a missing accessible name
 - **Connect the tooltip to its control**, so it is announced as that control's description. A separate element placed next to the control is announced as unrelated text, or not at all.
 - **A tooltip never stands in for the accessible name of a control with no label.** The control needs its own name. An icon-only button gets both a name and a tooltip. If only one of the two exists, it must be the name.
 - **The name and the tooltip should say the same thing.** A user who speaks the tooltip text must be able to activate the control by voice.
-- **Never put meaning in a tooltip that exists nowhere else.** A tooltip is a single channel (a way of carrying meaning, such as color, shape, position, or text), and `recursica-skill-system-conventions` forbids that for any meaning the user must receive.
+- **Never put meaning in a tooltip that exists nowhere else.** A tooltip is a single channel (color, shape, position or text, each a separate signal), and `recursica-skill-system-conventions` forbids that for any meaning the user must receive.
 - **Nothing inside a tooltip is announced as something you can use**, because nothing inside it can be used.
 - **Text that is cut off must be available in full in the code**, not only in the tooltip. A screen reader user does not see the text being cut off, and must not hear a cut-off value either.
 - **The tooltip must not be announced as a live region** (an area a screen reader announces automatically when its content changes). It is a description, read when its control is reached — not an alert that interrupts.
@@ -125,7 +125,7 @@ The beak is part of the component. Do not draw your own, and do not reposition t
 - **The delay before showing, the delay before hiding, and any time before it hides on its own.** No token or rule defines them.
 - **Touch behavior.** Hover does not exist on touch screens, and no other pattern is given for reaching a tooltip's content there.
 - **Whether a tooltip may attach to an element the user cannot interact with** — a table cell with cut-off text, a chart label — given that a target that cannot take focus can never show the tooltip from the keyboard.
-- **What happens at the edge of the viewport** (the visible area of the browser window), with no placement axis available to flip it.
+- **What happens at the edge of the viewport**, with no placement axis available to flip it.
 
 ## Pre-flight checklist
 

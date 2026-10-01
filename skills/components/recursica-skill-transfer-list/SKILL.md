@@ -41,18 +41,18 @@ A transfer list is two lists side by side, with controls that move items between
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.transfer-list`. **Do not pass a variant, size, or state that is not listed here.**
 
-**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis      | Options                   | React prop   |
 | --------- | ------------------------- | ------------ |
 | `layouts` | `stacked`, `side-by-side` | `formLayout` |
 | `states`  | `error`, `disabled`       |              |
 
-**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the control — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's (the visible area of the browser window). See `recursica-skill-forms`. **It is not how the two lists are arranged** — the two lists themselves are always two columns.
+**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the control — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`. **It is not how the two lists are arranged** — the two lists themselves are always two columns.
 
 **`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Leave it out, and you get the fallback in a container of any width — the rule turned upside down. `layouts` is the name of the token axis, not a prop: `layouts="side-by-side"` is quietly ignored by React and leaves the control stacked, with no error. Pass `formLayout="side-by-side"` explicitly.
 
-**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints (the screen widths at which the layout changes), but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
+**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
 **The component owns a header, a filter, and two item lists** — `header-style`, `title-filter-gap`, `filter-items-gap`, and the `gap` between the lists. Do not build your own search field or heading above it.
 
@@ -84,14 +84,14 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.transfer-list`. **Do n
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
 
 Two lists and a set of arrow buttons is the pattern most often shipped so that it works only with a mouse. Everything below is up to you.
 
 ### Screen readers
 
 - **Each list has its own accessible name** (the name a screen reader reads out for a control). Without one, a user hears a list of items with no idea which side they are on, and the whole control turns into noise.
-- **The selected state must be set in code, not shown by color.** To assistive technology (tools such as screen readers that help people with disabilities use a computer), an item with only a tinted background is not selected. Required by `recursica-skill-system-conventions`.
+- **The selected state must be set in code, not shown by color.** To assistive technology, an item with only a tinted background is not selected. Required by `recursica-skill-system-conventions`.
 - **Each move control's name says what moves where** — "Move selected to included", "Remove selected from included". A name like "Right arrow" or ">" is useless, and two arrows with no labels cannot be told apart.
 - **After a move, the result must be announced**: what moved, and how many items are now in each list. The user cannot see two columns change at once.
 - **The filter must announce how many results it shows** when it changes the list — "3 of 120 shown". A filter that says nothing sounds like a list that emptied for no reason.

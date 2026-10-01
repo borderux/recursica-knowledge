@@ -11,7 +11,7 @@ metadata:
 
 These are the house rules for what the application says back to the user after they act, and while they wait. They are opinions, not neutral best practices — treat them as constraints.
 
-These rules assume **complex enterprise web applications, designed for desktop first**, built on a design system whose components are already accessible. The channel (the way a message reaches the user — a toast, a banner, a modal, and so on) and the content are your decisions. The timing mostly is not.
+These rules assume **complex enterprise web applications, designed for desktop first**, built on a design system whose components are already accessible. The channel (the form a message takes: a toast, a banner or a modal) and the content are your decisions. The timing mostly is not.
 
 ## The three governing principles
 
@@ -120,7 +120,7 @@ This is why the channel table has no row for it: this state should not reach the
 ## Uncovered — ask, do not invent
 
 - **Banners have no component.** The tense rule above says when a banner is right, but nothing says what one looks like, where it sits on the page, whether it can be dismissed, or whether several may appear at once.
-- **Live regions.** Which updates are announced to assistive technology (tools such as screen readers that help people with disabilities use a computer), and how urgently, was openly put off in the typography session and never taken up here. Individual component skills state their own announcement requirements, but there is no policy across all surfaces.
+- **Live regions.** Which updates are announced to assistive technology, and how urgently, was openly put off in the typography session and never taken up here. Individual component skills state their own announcement requirements, but there is no policy across all surfaces.
 - **The notification channel.** It was mentioned as a place for global or system-wide conditions to go, "if one exists". Whether it exists, and what belongs in it instead of a banner, is not settled.
 - **Whether a toast may have a title as well as a message**, and whether an error toast lasts a different length of time from a success toast.
 - **Banner versus modal.** Named as not covered at the end of the session.

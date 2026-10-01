@@ -45,7 +45,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Three components, one form field.** The group owns the layout and the spacing between items. The item owns one option's label, and pairs it with a control. The radio button owns the circle itself and whether it is selected. Use all three together; never place bare `radio-button` instances in a form and call it a group.
 
-**The axes (variant properties, as Figma calls them — the ways a component varies, such as its size) sit on different parts, and that is on purpose.** `layouts` belongs to the group — one decision for the whole field. `disabled` belongs to the item — so a single option can be unavailable while the rest of the choice can still be used. There is no disabled state for the group; `globals.states.disabled` supplies the look.
+**The axes (the properties a component varies on, such as size and style; Figma calls them variant properties) sit on different parts, and that is on purpose.** `layouts` belongs to the group — one decision for the whole field. `disabled` belongs to the item — so a single option can be unavailable while the rest of the choice can still be used. There is no disabled state for the group; `globals.states.disabled` supplies the look.
 
 **`layouts` is the label-placement axis, the same axis every field has.** `side-by-side` puts the group's label beside the stack of options; `stacked` puts it above. **It is not an axis for which way the items run.** Options are always stacked vertically — `recursica-skill-selection-controls` forbids a horizontal radio group outright — so `side-by-side` must never be read as "put the radio buttons in a row."
 
@@ -69,7 +69,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Stack the options vertically. Never horizontally.** A row of radio buttons makes it hard to tell which control belongs to which label, and the pairing between each control and its value stops being clear. If the layout calls for a row, change the control to a segmented control — which is limited to 2–5 options. Never fall back to tabs.
 
-**Label placement is one decision per form, not per field.** This group's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints (the screen widths at which the layout changes), but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
+**Label placement is one decision per form, not per field.** This group's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
 **Put the selection rule in assistive text**, instead of in a validation message the user only sees after they fail. Pass it through `recursica-skill-assistive-element`.
 
@@ -88,7 +88,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
-The component pairs each control with its item label, manages focus within the group, and provides the focus ring (the outline that shows which element has keyboard focus). The group's name, making the state available, and everything below are up to you.
+The component pairs each control with its item label, manages focus within the group, and provides the focus ring. The group's name, making the state available, and everything below are up to you.
 
 ### Screen readers
 

@@ -35,7 +35,7 @@ A panel puts extra content beside the page, without blocking it.
 
 ## What exists
 
-Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.panel`. **The panel has no variant axes (variant properties, as Figma calls them — the ways a component varies, such as its size) at all** — no sizes, no sides, no widths, no types. Every entry below is a fixed property.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.panel`. **The panel has no variant axes (the properties a component varies on, such as size and style; Figma calls them variant properties) at all** — no sizes, no sides, no widths, no types. Every entry below is a fixed property.
 
 **What the component provides:** a header with a close control (`header-close-gap`), a content area, and a footer with a gap between buttons. `min-width` and `max-width` are properties defined by tokens, and a `divider-size` exists.
 
@@ -55,9 +55,9 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Never wrap the panel's content in a card, and never put a form, a form section, or a single form control in one.** The panel is already the boundary. See `recursica-skill-card`.
 
-**A form in a panel stacks its labels above its fields.** The panel is a narrow container, and `recursica-skill-forms` makes the container's width — not the viewport's (the visible area of the browser window) — what decides stacking. Everything else about the form still holds: a single column, and one field per row.
+**A form in a panel stacks its labels above its fields.** The panel is a narrow container, and `recursica-skill-forms` makes the container's width — not the viewport's — what decides stacking. Everything else about the form still holds: a single column, and one field per row.
 
-**Label placement is one decision for the whole form, never for each field.** `recursica-skill-forms` allows labels side by side or stacked, and forbids both at the same breakpoint (the screen width at which the layout changes). The container-width test is applied once, to the form, and the answer governs every field in it. A panel is exactly the container that triggers stacking — so the whole form inside it stacks, not just the fields that feel cramped, including the short ones that would have fitted beside their labels.
+**Label placement is one decision for the whole form, never for each field.** `recursica-skill-forms` allows labels side by side or stacked, and forbids both at the same breakpoint. The container-width test is applied once, to the form, and the answer governs every field in it. A panel is exactly the container that triggers stacking — so the whole form inside it stacks, not just the fields that feel cramped, including the short ones that would have fitted beside their labels.
 
 **The panel does not get its own save mode.** Whatever the application uses, the panel uses. Saving field by field requires a save status that stays on the page; saving everything together shows no status and no indicator of unsaved changes. See `recursica-skill-forms`.
 
@@ -83,7 +83,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Below the tablet breakpoint, open the panel as a page instead** — not a narrower panel, and not a full-screen overlay pretending to be one. At tablet size and above, it stays a panel.
 
-**NEVER draw a shader, scrim (a dimmed overlay), or tint behind an open panel.** This is now settled and absolute: there is no value in dimming content that the panel exists to sit beside. `recursica-skill-panels-modals` owns the rule. The overlay override below is how it is enforced against the library's default.
+**NEVER draw a shader, scrim, or tint behind an open panel.** This is now settled and absolute: there is no value in dimming content that the panel exists to sit beside. `recursica-skill-panels-modals` owns the rule. The overlay override below is how it is enforced against the library's default.
 
 **The adapter that ships today makes this component modal by default, which is the opposite of the house rule.** The panel wraps Mantine's `Drawer`, which by default draws an overlay, closes on a click outside it, traps focus, and locks page scrolling. A panel built with only the documented API is quietly modal. Until the adapter's defaults are fixed, getting the house behavior means passing the underlying props explicitly:
 
@@ -103,9 +103,9 @@ A build test confirmed that all four are needed, and that they survive the adapt
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
 
-**A panel is never modal, so build every part of it as non-modal.** Almost every panel accessibility failure is a half-modal: a surface that looks like it does not block, but traps focus like a dialog, or hides the page from assistive technology (tools such as screen readers that help people with disabilities use a computer) while leaving it clickable. The page behind stays usable, readable, and reachable.
+**A panel is never modal, so build every part of it as non-modal.** Almost every panel accessibility failure is a half-modal: a surface that looks like it does not block, but traps focus like a dialog, or hides the page from assistive technology while leaving it clickable. The page behind stays usable, readable, and reachable.
 
 ### Screen readers
 
@@ -113,7 +113,7 @@ This component also follows the accessibility baseline in `recursica-skill-syste
 - **The role is a named region the user can browse into and out of**, not a modal dialog. A surface that needs everything behind it inert (impossible to reach or read) is a modal — use `recursica-skill-modal` instead.
 - **Never mark a panel as modal while the page behind stays interactive.** Assistive technology stays inside a modal dialog. If the page is still usable for a mouse user, the two experiences have split apart.
 - **In a non-modal panel, do not hide the page behind it from assistive technology.** It is not inert. A screen reader user must be able to read the page, and get back into the panel.
-- **The panel's content must sit in a sensible reading position in the DOM (the page's structure in code)** — where it appears visually, not added to the end of the document. The reading order follows the visual order.
+- **The panel's content must sit in a sensible reading position in the DOM** — where it appears visually, not added to the end of the document. The reading order follows the visual order.
 - **Opening the panel must be perceivable**, which follows from moving focus into it. Do not rely on the slide-in animation to show that anything happened.
 - **The close control needs a real name** — "Close filters", rather than an unlabeled icon, which is announced as nothing.
 - **Anything the panel changes somewhere else must be announced**, not just redrawn. A filter that cuts a table down to four rows needs that result stated; the visual change is invisible to a screen reader user who is still inside the panel.

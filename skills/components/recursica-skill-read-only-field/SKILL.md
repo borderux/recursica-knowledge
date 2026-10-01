@@ -38,13 +38,13 @@ Each of these is a different thing. Switch to it, instead of adapting a read-onl
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.read-only-field`.
 
-**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis      | Options                   | React prop   |
 | --------- | ------------------------- | ------------ |
 | `layouts` | `stacked`, `side-by-side` | `formLayout` |
 
-**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's (the visible area of the browser window). See `recursica-skill-forms`. It is the same axis every field has. Set it to match the fields around it — a read-only field placed among stacked fields stacks too.
+**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`. It is the same axis every field has. Set it to match the fields around it — a read-only field placed among stacked fields stacks too.
 
 **`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Leave it out, and you get the fallback in a container of any width — the rule turned upside down. `layouts` is the name of the token axis, not a prop: `layouts="side-by-side"` is quietly ignored by React and leaves the control stacked, with no error. Pass `formLayout="side-by-side"` explicitly.
 
@@ -60,7 +60,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Always pass a visible label**, and let the component pair it with the value. Name the object clearly, use sentence capitalization, and leave off any colon at the end. The rules in `recursica-skill-label` apply without change.
 
-**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form, whether they can be edited or not. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints (the screen widths at which the layout changes), but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
+**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form, whether they can be edited or not. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
 **Make it clearly not an input.** The difference between read-only, disabled, and editable must be visible at a glance. The most common failure is the opposite of this one: a light gray background on editable fields that makes a whole form look read-only. Let this component's tokens do the work, and do not restyle either side to look like the other.
 
@@ -76,14 +76,14 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
 
 The rules here are different from every editable field, and that difference is the point: **this must read as a labeled value, not as a control — while still being connected in code, and free to copy.**
 
 ### Screen readers
 
 - **It must not be announced as an input.** Do not build it as an `input` or a `textarea` — not disabled, not with a `readonly` attribute, and not with a textbox role. A user who hears "edit text" will try to type into it.
-- **The connection between label and value must still be made in code.** Pass the label to the component. A label shown as loose text beside a value is only paired visually, and a screen reader (software that reads the screen aloud) user moving through the page gets a stray string with no idea what it names.
+- **The connection between label and value must still be made in code.** Pass the label to the component. A label shown as loose text beside a value is only paired visually, and a screen reader user moving through the page gets a stray string with no idea what it names.
 - **The value must be real text in the document** — never an image, a canvas, a background image, or content generated by CSS. Text that cannot be read cannot be announced.
 - **Do not mark it required or optional.** There is nothing to require. A required marker on a value the user cannot enter is a false instruction.
 - **Do not apply a disabled look or `aria-disabled`.** It is not disabled, and announcing it as disabled tells the user their access depends on something, when it is permanent.

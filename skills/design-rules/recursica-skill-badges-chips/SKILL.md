@@ -115,7 +115,7 @@ The point is connection: the status must read as belonging to that object. Colum
 
 ## How many chips
 
-**A chip group follows the same limit as a checkbox group: 7 ± 2**, adjusted for cognitive load (the mental effort a task demands). Allow up to nine when the items are similar and easy to understand, and as few as five when they are different from each other or hard to grasp. A filter bar is a chip group.
+**A chip group follows the same limit as a checkbox group: 7 ± 2**, adjusted for cognitive load. Allow up to nine when the items are similar and easy to understand, and as few as five when they are different from each other or hard to grasp. A filter bar is a chip group.
 
 See `recursica-skill-working-memory` for the reasoning and where the limit stops applying.
 

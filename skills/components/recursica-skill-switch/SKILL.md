@@ -19,7 +19,7 @@ A switch turns one thing on or off. The label says what is being controlled; the
 - **The state must be readable at a glance**, including on touch, where the switch's larger target and clearer on/off look are an advantage.
 - **It is the one lone binary field in a form.** A single checkbox with no others beside it looks odd; a switch usually reads better. This is the one case where appearance may decide, because the two work the same way here.
 
-**A switch appears only inside a form.** Outside one — in chrome (the frame around the content), a filter bar, a toolbar, or a header — the control is a `recursica-skill-segmented-control`, whatever the value looks like. Owned by `recursica-skill-selection-controls`.
+**A switch appears only inside a form.** Outside one — in chrome (the header, navigation and footer around the content), a filter bar, a toolbar, or a header — the control is a `recursica-skill-segmented-control`, whatever the value looks like. Owned by `recursica-skill-selection-controls`.
 
 ## Do not use it when
 
@@ -48,7 +48,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Three components, one form field.** The group owns the layout and the spacing between items. The item owns one switch's label. The switch owns the track (the bar), the thumb (the handle that slides), and its state. Use all three together, instead of placing a bare `switch` beside some text.
 
-**The axes (variant properties, as Figma calls them — the ways a component varies, such as its size) sit on different parts, and that is on purpose.** `layouts` belongs to the group — one decision for the whole field. `disabled` belongs to the item — so a single switch can be unavailable while the ones beside it can still be used. There is no disabled state for the group; `globals.states.disabled` supplies the look.
+**The axes (the properties a component varies on, such as size and style; Figma calls them variant properties) sit on different parts, and that is on purpose.** `layouts` belongs to the group — one decision for the whole field. `disabled` belongs to the item — so a single switch can be unavailable while the ones beside it can still be used. There is no disabled state for the group; `globals.states.disabled` supplies the look.
 
 **`layouts` is the label-placement axis, the same axis every field has.** `side-by-side` puts the group's label beside the switches; `stacked` puts it above.
 
@@ -80,7 +80,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Stack switches vertically** in a group, one per row, like every other form field.
 
-**Label placement is one decision per form, not per field.** This group's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints (the screen widths at which the layout changes), but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
+**Label placement is one decision per form, not per field.** This group's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
 **Disabled and read-only are different components, not two styles of one.**
 
@@ -93,12 +93,12 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
-The component pairs the switch with its item label, makes on and off available, and provides the focus ring (the outline that shows which element has keyboard focus). Everything below is up to you — and a switch is unusually easy to get wrong, because its whole meaning lives in a position and a color.
+The component pairs the switch with its item label, makes on and off available, and provides the focus ring. Everything below is up to you — and a switch is unusually easy to get wrong, because its whole meaning lives in a position and a color.
 
 ### Screen readers
 
 - **Every switch needs a real label passed to `switch-item`.** That label is the accessible name (the name a screen reader reads out for a control). Text just drawn beside the track is not a label, and a switch with no name is announced as an unlabeled control.
-- **The label must state what is controlled, and make sense on its own**, out of context, because that is how it is announced. "Notifications" beside a track tells a screen reader (software that reads the screen aloud) user nothing about what turning it off does.
+- **The label must state what is controlled, and make sense on its own**, out of context, because that is how it is announced. "Notifications" beside a track tells a screen reader user nothing about what turning it off does.
 - **The on/off state must be available in code**, never shown only by the thumb's position or the track's color. The user must hear "on" or "off" — as `recursica-skill-system-conventions` requires.
 - **The thumb icon is decorative, and must be silent.** It is the second visual signal; the state made available in code carries the meaning.
 - **Never put the state in the visible label.** A label that reads "On" is announced as the name, so the user hears "On, off", and cannot tell which is the name and which is the state.

@@ -46,7 +46,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no collapse, truncation, or overflow behavior.** How a long trail behaves is not defined. Whatever the answer turns out to be, it is not sideways scrolling — `recursica-skill-navigation` forbids that outright.
 
-**There is no current-page state, and no content axis (a variant property, as Figma calls it — one way a component varies, such as its size).** An interactive item and a read-only item for the current page, plus a content axis of Label only, Icon + Label, Icon only, and Mixed, are shown only on the design-system website. The UI kit defines none of it. See the uncovered list.
+**There is no current-page state, and no content axis (a property a component varies on, such as size or style; Figma calls it a variant property).** An interactive item and a read-only item for the current page, plus a content axis of Label only, Icon + Label, Icon only, and Mixed, are shown only on the design-system website. The UI kit defines none of it. See the uncovered list.
 
 ## Rules for using it
 
@@ -72,9 +72,9 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
 
-A breadcrumb is a short row of links, and assistive technology (tools such as screen readers that help people with disabilities use a computer) has no way to recognize it as a trail unless you say so. Three failures account for nearly all the problems: a navigation region with no name, a separator read aloud between every item, and a current page that links to itself.
+A breadcrumb is a short row of links, and assistive technology has no way to recognize it as a trail unless you say so. Three failures account for nearly all the problems: a navigation region with no name, a separator read aloud between every item, and a current page that links to itself.
 
 ### Screen readers
 

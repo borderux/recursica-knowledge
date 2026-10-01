@@ -38,7 +38,7 @@ The critical path is the set of steps needed to finish the task.
 
 ## What exists
 
-Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has). Four specs make up one accordion, and **only one of them has a variant axis (a variant property, as Figma calls it — one way a component varies, such as its size) at all.**
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has). Four specs make up one accordion, and **only one of them has a variant axis (a property a component varies on, such as size or style; Figma calls it a variant property) at all.**
 
 | Spec                | Axis         | Options          |
 | ------------------- | ------------ | ---------------- |
@@ -86,7 +86,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
 
 The component draws the header and the chevron. Whether the collapsed state is real, and whether the header is a real button, are entirely up to you — and they are the two things most often done wrong.
 
@@ -95,7 +95,7 @@ The component draws the header and the chevron. Whether the collapsed state is r
 - **The header must be a real button.** Never a `div`, a `span`, or a bare heading with a click handler. Only a real button is announced as a button, and responds to Enter and Space without extra work.
 - **The header must announce whether it is expanded or collapsed**, and that announcement must change the moment it toggles. A header that always announces "collapsed" is worse than one that announces nothing.
 - **The header must be connected in code to the panel it controls**, so a user who hears "expanded" can get to what was expanded.
-- **The state must never be shown by the chevron alone.** A rotating chevron is a single visual channel (a way of carrying meaning, such as color, shape, position, or text), which `recursica-skill-system-conventions` forbids for any meaning the user must receive.
+- **The state must never be shown by the chevron alone.** A rotating chevron is a single visual channel (color, shape, position or text, each a separate signal), which `recursica-skill-system-conventions` forbids for any meaning the user must receive.
 - **The header's accessible name (the name a screen reader reads out for a control) is the section title**, and it must make sense on its own — that is how it is announced, with no neighboring headers for context.
 - **If the header sits inside a heading, the heading wraps the button**, not the other way round. A button wrapped around a heading loses both the heading level and the name.
 - **Content inside a collapsed panel must truly be unreachable, not just invisible.** Zero height, zero opacity, or positioning it off the screen leaves the text in the accessibility tree (the version of the page that assistive technology reads). A screen reader user then reads a section that a sighted user cannot see. Remove it from the tree.
@@ -105,7 +105,7 @@ The component draws the header and the chevron. Whether the collapsed state is r
 
 - **Enter and Space both toggle the header.** Do not intercept, remap, or swallow either one.
 - **Each header is its own tab stop** (a place the Tab key lands). An accordion is not a single tab-stop group — every header must be reachable with Tab.
-- **The tab order runs header, then that panel's content when it is open, then the next header.** Do not order the DOM (the page's structure in code) so that all the headers come first and all the panels after. The visual order is the required order.
+- **The tab order runs header, then that panel's content when it is open, then the next header.** Do not order the DOM so that all the headers come first and all the panels after. The visual order is the required order.
 - **A collapsed panel's contents are completely out of the tab order.** This is the keyboard side of the rule above, and tabbing into invisible content is the most common accordion failure there is.
 - **Do not move focus for the user when a header toggles.** Focus stays on the header that was activated. Do not throw it into the panel.
 - **Never collapse a panel that contains focus.** If single-open behavior closes a panel the user is working in, their focus is destroyed, and they are sent back to the top of the document.

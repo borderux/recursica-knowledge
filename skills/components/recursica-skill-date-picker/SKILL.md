@@ -44,14 +44,14 @@ Each of these has a different component. Switch to it, instead of adapting a dat
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.date-picker`. **Do not pass a variant or state that is not listed here** — other design systems have sizes, range variants, warning states, and inline calendars that this component does not.
 
-**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis      | Options                   | React prop   |
 | --------- | ------------------------- | ------------ |
 | `layouts` | `stacked`, `side-by-side` | `formLayout` |
 | `states`  | `error`, `disabled`       |              |
 
-**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's (the visible area of the browser window). See `recursica-skill-forms`.
+**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
 **`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Leave it out, and you get the fallback in a container of any width — the rule turned upside down. `layouts` is the name of the token axis, not a prop: `layouts="side-by-side"` is quietly ignored by React and leaves the control stacked, with no error. Pass `formLayout="side-by-side"` explicitly.
 
@@ -69,7 +69,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.date-picker`. **Do not
 
 **A date plus a time is one control with one label.** A date picker, a time entry, and an AM/PM choice on a single row is the only case where inputs share a row, and it is one value. Owned by `recursica-skill-forms`.
 
-**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones like this one that would have fitted side by side. A whole form may switch placement between breakpoints (the screen widths at which the layout changes), but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
+**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones like this one that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
 **At rest, the field shows the readable format: `Jan 7, 2026`.** A three-letter month, a day of one or two digits, and a four-digit year. This is the only display format.
 
@@ -81,7 +81,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.date-picker`. **Do not
 
 **State the expected format in help text** — the mask is visual, and says nothing on its own.
 
-**Use the user's locale (the language and regional settings a person uses) and the user's time zone, never the tenant's** (the organization whose account the application runs under). State the time zone whenever the value is outside the user's time zone, the user's time zone cannot be found, or the user has switched time zones.
+**Use the user's locale and the user's time zone, never the tenant's** (the organization whose account the application runs under). State the time zone whenever the value is outside the user's time zone, the user's time zone cannot be found, or the user has switched time zones.
 
 **Pre-fill only today's date, and only when today's date is what is being recorded.** Any date the user would have to think about or check must start empty — a default nobody checked gets submitted without being checked.
 
@@ -98,13 +98,13 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.date-picker`. **Do not
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
-The component connects the label to the input, and provides the focus ring (the outline that shows which element has keyboard focus). The calendar trigger and the popover (the small panel that opens next to its trigger) are where date pickers fail, and both are up to you to get right.
+The component connects the label to the input, and provides the focus ring. The calendar trigger and the popover are where date pickers fail, and both are up to you to get right.
 
 ### Screen readers
 
 - **Pass a real label.** Never let placeholder text be the accessible name (the name a screen reader reads out for a control) — it is not announced as a label, and it disappears when the user types. A field with no label has no accessible name.
 - **Name the calendar icon if it is a control** — "Choose date" — and keep it silent if it is decorative. An unlabeled graphic that can be used is announced as nothing useful.
-- **State the expected format in the help text.** The mask that appears on focus is a visual aid; a screen reader (software that reads the screen aloud) user gets nothing from it. Say `MM/DD/YYYY` in words the user can act on.
+- **State the expected format in the help text.** The mask that appears on focus is a visual aid; a screen reader user gets nothing from it. Say `MM/DD/YYYY` in words the user can act on.
 - **State the time zone in text** whenever it matters. A time zone that is only implied is not communicated.
 - **The error message is the text that gets announced.** Because it replaces the help text, it is the only thing that will be read — so it has to state the rule, including the format.
 

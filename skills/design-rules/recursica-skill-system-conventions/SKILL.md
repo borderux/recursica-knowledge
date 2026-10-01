@@ -30,7 +30,7 @@ Examples:
 | When a switch commits    | Immediately or on submit, but the same for every switch | `recursica-skill-selection-controls` |
 | Inline editing in tables | Every table supports it, or none does                   | `recursica-skill-tables`             |
 
-**Why it applies generally:** the user builds one mental model (a person's picture of how something works) of the whole application, not a separate one for each view. Mixing modes does not just make them a little less accurate on one screen. It takes away their ability to predict anything, because they can no longer trust the model they have.
+**Why it applies generally:** the user builds one mental model (what a person expects from the tools and work they already know) of the whole application, not a separate one for each view. Mixing modes does not just make them a little less accurate on one screen. It takes away their ability to predict anything, because they can no longer trust the model they have.
 
 **Applying it to a new surface:** ask whether the behavior is visible on screen. If the user can see which mode they are in, letting it vary by screen might be acceptable. If they cannot — and save timing, edit-on-click, and commit-on-change are all invisible — the mode belongs to the whole system.
 
@@ -56,11 +56,11 @@ Examples:
 2. **Only a small minority of users truly need the feature.**
 3. **No task requires it.** If a user cannot finish their work without finding the control, it must be visible.
 
-**Unadvertised does not mean inaccessible.** The control MUST stay reachable by keyboard and by assistive technology (tools such as screen readers that help people with disabilities use a computer). Where the interaction is a drag or a long-press, a second way of doing it MUST exist — a requirement that is already stated for reordering columns.
+**Unadvertised does not mean inaccessible.** The control MUST stay reachable by keyboard and by assistive technology. Where the interaction is a drag or a long-press, a second way of doing it MUST exist — a requirement that is already stated for reordering columns.
 
 ## 3. Never carry meaning in a single channel
 
-**Any meaning the user must receive is shown in at least two ways.** A channel is a way of carrying meaning, such as color, shape, position, or text. If one channel fails — because of color vision, printing, a screen reader, or a small viewport (the visible area of the browser window) — the meaning must not be lost with it.
+**Any meaning the user must receive is shown in at least two ways.** A channel is a way of carrying meaning, such as color, shape, position, or text. If one channel fails — because of color vision, printing, a screen reader, or a small viewport — the meaning must not be lost with it.
 
 Examples:
 
@@ -120,11 +120,11 @@ Examples:
 
 Examples:
 
-| The control                                        | What it must not also do                                                                                                                  | Owner                                                            |
-| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| A row's detail action                              | Change the tab or route as well as opening the detail. Open it where the user already is                                                  | `recursica-skill-buttons-links`, `recursica-skill-panels-modals` |
-| A figure or summary that points to a filtered list | Navigate and apply a filter in one click. Pick one                                                                                        | `recursica-skill-navigation`, `recursica-skill-filters`          |
-| A button that opens a modal                        | Navigate. The button opens the modal (a window that blocks the rest of the page until the user closes it); it does not also move the user | `recursica-skill-buttons-links`                                  |
+| The control                                        | What it must not also do                                                                 | Owner                                                            |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| A row's detail action                              | Change the tab or route as well as opening the detail. Open it where the user already is | `recursica-skill-buttons-links`, `recursica-skill-panels-modals` |
+| A figure or summary that points to a filtered list | Navigate and apply a filter in one click. Pick one                                       | `recursica-skill-navigation`, `recursica-skill-filters`          |
+| A button that opens a modal                        | Navigate. The button opens the modal; it does not also move the user                     | `recursica-skill-buttons-links`                                  |
 
 **Why it applies generally:** there are three separate costs, and they add up. The user cannot predict what the control will do, because its label can only honestly describe one of the two things. They cannot undo it, because going back reverses one effect and leaves the other in place. And they cannot describe what happened to a colleague — which is what makes an application feel impossible to learn, not just awkward.
 
@@ -136,7 +136,7 @@ Examples:
 
 **These apply to every component, and no component skill repeats them.** They are not a seventh convention. They are the accessibility rules the component skills each used to state for themselves — the focus ring was in 34 of 39 — gathered here once, so they cannot drift apart. A component skill's own accessibility section adds what is specific to that component, and where it says something more specific, it wins.
 
-- **Never hide the focus ring** (the outline that shows which element has keyboard focus). Keep it on whatever has focus, and keep it looking different from the hover style, from the caret alone, and from any selected, checked, active, or on state. Focus and selection are different facts, and a user must be able to tell them apart at a glance.
+- **Never hide the focus ring**. Keep it on whatever has focus, and keep it looking different from the hover style, from the caret alone, and from any selected, checked, active, or on state. Focus and selection are different facts, and a user must be able to tell them apart at a glance.
 - **Nothing the user needs appears only on hover** — not a control, an action, a label, a value, a count, or a reason. A keyboard user and a touch user never hover.
 - **The tab order follows the visual order.**
 - **Tab skips a disabled control**, so the reason something is disabled goes in visible text. The disabled look alone tells a keyboard user nothing, because they never reach it.

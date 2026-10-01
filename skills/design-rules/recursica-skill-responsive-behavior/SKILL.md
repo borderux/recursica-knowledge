@@ -9,7 +9,7 @@ metadata:
 
 # Responsive behavior below desktop
 
-These are the house rules for what happens as a viewport (the visible area of the browser window) gets narrower than desktop size. They are opinions, not neutral best practices — treat them as constraints.
+These are the house rules for what happens as a viewport gets narrower than desktop size. They are opinions, not neutral best practices — treat them as constraints.
 
 These rules assume **complex enterprise web applications, designed for desktop first**. Work below desktop size really is rare here. Most of what the house builds is aimed at desktop, and often nothing below desktop is designed at all. That rarity is why the rules below rely so heavily on asking instead of assuming.
 
@@ -42,7 +42,7 @@ A breakpoint is the screen width at which the layout changes. There are three ti
 | **Tablet**       | 1024          | The width below which panels become pages and tables disappear                           |
 | **Small device** | 400           | Phone. Set on purpose, replacing the looser range of 330 to 360 that gets used elsewhere |
 
-**1200 is a maximum for the content area, not for the page.** Headers, footers, and other sticky chrome (the frame around the content) are not limited by it and may stretch across the full viewport. Viewports wider than 1200 are normal; the content does not stretch to fill them — see `recursica-skill-screen-scaffolding`.
+**1200 is a maximum for the content area, not for the page.** Headers, footers, and other sticky chrome (the header, navigation and footer around the content) are not limited by it and may stretch across the full viewport. Viewports wider than 1200 are normal; the content does not stretch to fill them — see `recursica-skill-screen-scaffolding`.
 
 **These are defaults, and changing them is very rare.** They are standard enough that changing one should be a stated decision, made with the user at design time — not a quiet adjustment.
 
@@ -121,13 +121,13 @@ A breakpoint is the screen width at which the layout changes. There are three ti
 
 ## Navigation below desktop
 
-**On a small device, global navigation collapses into a hamburger menu** (a button with three horizontal lines that opens a menu). That is the default, and it is what the pattern is for.
+**On a small device, global navigation collapses into a hamburger menu**. That is the default, and it is what the pattern is for.
 
 **What slides in shows both the icon and the text.** The whole point is a hidden navigation that reads clearly when it opens — see `recursica-skill-navigation`, which forbids collapsing a navigation down to icons alone.
 
 **NEVER use a bottom navigation bar.** It comes up as an alternative to the hamburger menu for a very simple navigation, and it is not a house pattern. The hamburger menu is the answer at every narrow width.
 
-**An icon-only rail is not a way out below desktop.** It is still banned at every width. The reasons, which everyone in the room agreed on: without a hover state, there is no affordance (a visible cue that tells the user they can act on something) saying what the icons mean, and beyond a handful of them, nobody remembers. A rail of fifteen icons whose collapsed state shrinks down to bare dots you have to hover over is the extreme case, and it is real. If a rail pattern were ever used, the icons would have to carry labels.
+**An icon-only rail is not a way out below desktop.** It is still banned at every width. The reasons, which everyone in the room agreed on: without a hover state, there is no affordance (a visible cue that a control can be used, such as the underline on a link) saying what the icons mean, and beyond a handful of them, nobody remembers. A rail of fifteen icons whose collapsed state shrinks down to bare dots you have to hover over is the extreme case, and it is real. If a rail pattern were ever used, the icons would have to carry labels.
 
 **Icons for specialized business concepts do not work**, which is why the rail fails worst in enterprise software. See `recursica-skill-icon-semantics`.
 

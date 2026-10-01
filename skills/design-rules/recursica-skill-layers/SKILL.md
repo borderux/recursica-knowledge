@@ -77,7 +77,7 @@ The structure of the shell — header, rail, footer, titles — is owned by `rec
 - **border size and border color**
 - **corner radius**
 - **padding**
-- **shadow or elevation** (how raised a surface looks)
+- **shadow or elevation** (the shadow that makes a surface look raised)
 
 **All of them are written in the Forge theme and read from it.** They can be configured — by whoever writes the theme, in Forge — and every one of them has a token. The build agent reads those tokens and never writes them.
 
@@ -85,7 +85,7 @@ The structure of the shell — header, rail, footer, titles — is owned by `rec
 
 **Never hardcode a value you read from the theme.** A color read in light mode is wrong in dark mode, and a radius read today is wrong after the theme changes. That is the whole point of the token.
 
-**A layer's padding has an effect outside the layer: nothing inside it may be sized to a bare viewport height** (the height of the visible area of the browser window).
+**A layer's padding has an effect outside the layer: nothing inside it may be sized to a bare viewport height**.
 A region set to `100vh` inside a padded layer comes out taller than the viewport by that padding, at the top and bottom,
 and the page scrolls by exactly that much. Subtract it by reading the padding token — the rule and its reason are in
 `recursica-skill-screen-scaffolding`, under application chrome and the single scrollbar.
@@ -158,7 +158,7 @@ Plurality means how many of something there are. A peer is one of a set of repea
 
 **A design must not depend on how any two layers happen to differ in the current theme.** Two neighboring levels may share a surface color, or differ in their border rather than their fill — and that is the theme author's decision. If a separation matters, it has to survive a change of theme.
 
-**The theme control is application chrome** (the frame around the content), not page content — `recursica-skill-screen-scaffolding`.
+**The theme control is application chrome** (the header, navigation and footer around the content), not page content — `recursica-skill-screen-scaffolding`.
 
 ## Decided elsewhere
 

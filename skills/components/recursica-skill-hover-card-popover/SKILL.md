@@ -34,7 +34,7 @@ A hover card or a popover reveals richer content beside the element that trigger
 
 ## What exists
 
-Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.hover-card-popover`. **The component has no variant axes (variant properties, as Figma calls them — the ways a component varies, such as its size) at all** — no placement axis, no size axis, no content-type axis, and nothing that tells a hover card apart from a popover. One spec, one set of fixed properties.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.hover-card-popover`. **The component has no variant axes (the properties a component varies on, such as size and style; Figma calls them variant properties) at all** — no placement axis, no size axis, no content-type axis, and nothing that tells a hover card apart from a popover. One spec, one set of fixed properties.
 
 **What the component provides:** a content area and a beak — the pointer connecting the card to its target. `beak-size` is set by tokens; unlike the tooltip, there is no `beak-inset`.
 
@@ -73,7 +73,7 @@ A surface that opens on hover and has a control in it is not a third option; it 
 
 **A hover card holds nothing the user needs.** Not the only copy of a value, not an action, and not an explanation needed to move forward. If the content is required, it belongs on the page.
 
-**Never the only place a piece of information exists.** `recursica-skill-system-conventions` forbids meaning that depends on a single channel (a way of carrying meaning, such as color, shape, position, or text), and a surface revealed on hover is the narrowest channel there is.
+**Never the only place a piece of information exists.** `recursica-skill-system-conventions` forbids meaning that depends on a single channel (color, shape, position or text, each a separate signal), and a surface revealed on hover is the narrowest channel there is.
 
 **Do not put a form, a form section, or a single form control inside it.** `recursica-skill-forms` forbids that, with no exception.
 
@@ -91,7 +91,7 @@ A surface that opens on hover and has a control in it is not a third option; it 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
 
 The two kinds have truly different requirements, and there is no safe middle ground. Name which one you are building, then meet that column completely. A build that half-meets both is the pointer trap this section exists to prevent.
 
@@ -104,7 +104,7 @@ The two kinds have truly different requirements, and there is no safe middle gro
 - **Anything interactive inside a popover needs a real accessible name**, exactly as it would on the page.
 - **Never put meaning here that exists nowhere else.** `recursica-skill-system-conventions` requires a second channel for any meaning the user must receive.
 - **Do not announce the card as an alert.** It is content revealed when asked for, not something that interrupts.
-- **An image inside needs alternative text (text read in place of the image)**, or must be marked as decorative. Otherwise, a profile preview made entirely of an avatar tells the user nothing.
+- **An image inside needs alternative text**, or must be marked as decorative. Otherwise, a profile preview made entirely of an avatar tells the user nothing.
 
 ### Keyboard and non-mouse navigation
 

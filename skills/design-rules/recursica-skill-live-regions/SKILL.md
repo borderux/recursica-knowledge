@@ -9,7 +9,7 @@ metadata:
 
 # Live regions
 
-These are the house rules for telling assistive technology (tools such as screen readers that help people with disabilities use a computer) that something on the page has changed. A live region is an area a screen reader announces automatically when its content changes. These rules are opinions, not neutral best practices — treat them as constraints.
+These are the house rules for telling assistive technology that something on the page has changed. A live region is an area a screen reader announces automatically when its content changes. These rules are opinions, not neutral best practices — treat them as constraints.
 
 These rules assume **complex enterprise web applications**, built on a component library that handles its own accessibility. What is left for you is the announcements that fall between components, and giving the components what they need to announce correctly.
 
@@ -91,7 +91,7 @@ These are the two priority levels. An **assertive** announcement interrupts what
 - **A component's accessible name, keyboard behavior, or focus handling.** Each component skill has its own.
 - **Which channel a message uses — toast, banner, or inline** — `recursica-skill-feedback-messaging`.
 - **Semantic markup, headings, and reading order** — `recursica-skill-typography-semantics`.
-- **Showing the same change visually.** Announcing is in addition to showing it, never instead of it — see `recursica-skill-system-conventions` on never carrying meaning in a single channel (a way of carrying meaning, such as color, shape, position, or text).
+- **Showing the same change visually.** Announcing is in addition to showing it, never instead of it — see `recursica-skill-system-conventions` on never carrying meaning in a single channel (color, shape, position or text, each a separate signal).
 
 ## Uncovered — ask, do not invent
 

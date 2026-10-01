@@ -17,7 +17,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **The label must name what actually happens.** A control labeled `View` that opens something you can edit is mislabeled — the user was promised reading and given writing. If the surface it opens can change data, the label must say so: `Edit`, or `Manage`. The check is simple: open the thing, and see whether its label described it.
 
-**A button opens a panel or a modal (a window that blocks the rest of the page until the user closes it); a link does not.** Opening a surface is an action, so it takes a button, even where a link would look lighter. A link is for going somewhere.
+**A button opens a panel or a modal; a link does not.** Opening a surface is an action, so it takes a button, even where a link would look lighter. A link is for going somewhere.
 
 **One control, one outcome.** A trigger that opens a surface does not also change the tab, route, or filter — see convention 6 in `recursica-skill-system-conventions`.
 
@@ -36,7 +36,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **MUST NOT use a button to navigate.**
 
-**MUST NOT use a link to trigger a server-side action.** This breaks what a link means; it is not a judgment call. If a link component triggers a server-side action, it should have been a button. If you do not want it to look like a button, use a text button — that is what the text variant (one version of a component, such as a solid or an outline button) is for.
+**MUST NOT use a link to trigger a server-side action.** This breaks what a link means; it is not a judgment call. If a link component triggers a server-side action, it should have been a button. If you do not want it to look like a button, use a text button — that is what the text variant is for.
 
 **Links MUST render a real `href`.** The point is that the browser's own features keep working: the right-click menu, opening in a new tab, copying the link address. A trigger that navigates without an href takes those away from the user.
 
@@ -106,7 +106,7 @@ The rule underneath: **a label that never changes can become an icon; a label th
 **How bulk actions appear depends on how many there are.**
 
 - **One bulk action** — show it once at least one row is selected. A single disabled control sitting there all the time teaches almost nothing, and it permanently takes up part of the layout.
-- **Several bulk actions** — show them all the time, disabled until at least one row is selected. Here the affordance (a visible cue that tells the user they can act on something) pays for itself: the user learns what can be done in bulk before selecting anything.
+- **Several bulk actions** — show them all the time, disabled until at least one row is selected. Here the affordance (a visible cue that a control can be used, such as the underline on a link) pays for itself: the user learns what can be done in bulk before selecting anything.
 
 **Before either, ask whether bulk actions belong on this screen at all.** Bulk operations are worth building where the work really is done in batches. Where records are handled one at a time, a bulk control is a guess about how the user works — and a guess that costs layout space and attention on every visit. If you cannot name the batch task it serves, do not build it — see `recursica-skill-design-router`.
 
@@ -144,7 +144,7 @@ A destructive action is one that deletes something or cannot easily be undone.
 
 **Destroying a whole object — saving over, deleting, or destroying an entire form's worth of data → use a confirmation modal instead.** At that size there is nothing useful to undo afterward, so the check has to come first.
 
-**A global undo notification is a toast** (a short message that appears briefly and then disappears).
+**A global undo notification is a toast**.
 
 ## Toggle actions
 
@@ -152,7 +152,7 @@ A destructive action is one that deletes something or cannot easily be undone.
 
 **Label the toggle with the positive state it reaches, not the negative action.** "Follow" becomes "Following" or "Followed" after the click — not "Unfollow."
 
-Put plainly: labeling the button "Unfollow" puts a negative action in front of the user and invites them to take it. Naming the state they reached instead reinforces the choice they made. This hides the way to un-toggle behind a second click. That is intentional, and it is admitted to be **slightly a dark pattern** (a design that pushes users to act against their own interest). Apply it as a deliberate house preference, not as a neutral best practice.
+Put plainly: labeling the button "Unfollow" puts a negative action in front of the user and invites them to take it. Naming the state they reached instead reinforces the choice they made. This hides the way to un-toggle behind a second click. That is intentional, and it is admitted to be **slightly a dark pattern**. Apply it as a deliberate house preference, not as a neutral best practice.
 
 ## Toolbars
 
@@ -177,7 +177,7 @@ No house rule covers these yet. **Ask the person instead of choosing** — see t
 
 ## Out of scope
 
-- **All color, visual design, and styling**, including focus states for buttons and links, how the external-link icon looks, and the markup that makes a link styled as a button work for assistive technology (tools such as screen readers that help people with disabilities use a computer). The Recursica components handle these.
+- **All color, visual design, and styling**, including focus states for buttons and links, how the external-link icon looks, and the markup that makes a link styled as a button work for assistive technology. The Recursica components handle these.
 - **The order of steps in submitting a form, and when validation happens.** Covered by `recursica-skill-forms`. This skill decides what a trigger _is_ and how it is labeled; that skill decides when a form may be submitted.
 - **Navigation structure, tabs, and route design.** Covered by `recursica-skill-navigation`.
 

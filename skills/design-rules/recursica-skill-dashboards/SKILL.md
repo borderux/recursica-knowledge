@@ -11,7 +11,7 @@ metadata:
 
 These are the house rules for dashboards. They are opinions, and unusually strong ones: the team's position is that most dashboards in enterprise software are failures. Treat them as constraints.
 
-These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. Grids, gutters, breakpoints (the screen widths at which the layout changes), type styles, elevation (how raised a surface looks), and spacing all come from the system's layouts and tokens (named design values, such as colors or sizes, set by the design system), and you must not change them. Your decisions are whether a dashboard is the right answer at all, what goes on it, and what the user does next.
+These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. Grids, gutters, breakpoints, type styles, elevation (the shadow that makes a surface look raised), and spacing all come from the system's layouts and tokens (named design values, such as colors or sizes, set by the design system), and you must not change them. Your decisions are whether a dashboard is the right answer at all, what goes on it, and what the user does next.
 
 ## Governing principles
 
@@ -74,7 +74,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **Build it like a funnel:** broad at the top, more detailed as the reader moves down.
 
-**Everything below the fold (the part of the page you only see after scrolling) is optional.** The reader must never have to scroll to learn what is going on.
+**Everything below the fold (the part of the page visible only after scrolling) is optional.** The reader must never have to scroll to learn what is going on.
 
 **Data tables probably do not belong on a dashboard** — a table is a drill-down (a click through to more detail). Where one cannot be avoided, show rollups: counts, percentages, and totals that the user can act on themselves, with a way to click through to the detail. Once the screen is showing a full table, it has stopped being a dashboard.
 
@@ -100,7 +100,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **Default: dashboards are not configurable.** Configurability is usually a technical answer to not having researched what the user needs. It also carries a real support cost — a customized dashboard makes data problems much harder to track down than a shared one.
 
-**Prefer a fixed dashboard for each persona** (a profile that represents one type of user) over letting users configure their own. Different personas seeing different fixed dashboards when they log in is correct.
+**Prefer a fixed dashboard for each persona** over letting users configure their own. Different personas seeing different fixed dashboards when they log in is correct.
 
 **Where customization is required anyway:**
 
@@ -148,7 +148,7 @@ No house rule covers these yet. **Ask the person instead of choosing** — see t
 
 ## Out of scope
 
-- **The inside of a chart** — its type, axes (variant properties, as Figma calls them — the ways a component varies, such as its size), labels, and thresholds. Covered by `recursica-skill-data-visualization`.
+- **The inside of a chart** — its type, axes (the properties a component varies on, such as size and style; Figma calls them variant properties), labels, and thresholds. Covered by `recursica-skill-data-visualization`.
 - **The anatomy of an individual card.** Covered by the card component skill.
 - **Grid column counts, gutters, widget shapes, and minimum sizes.** These come from the design system's layouts.
 - **Table structure.**

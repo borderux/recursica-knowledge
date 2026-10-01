@@ -32,7 +32,7 @@ A modal blocks the page to get one decision or one short task done, then gets ou
 
 ## What exists
 
-Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.modal`. **The modal has no variant axes (variant properties, as Figma calls them — the ways a component varies, such as its size) at all** — no sizes, no types, no severity variants. Everything is a fixed property.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.modal`. **The modal has no variant axes (the properties a component varies on, such as size and style; Figma calls them variant properties) at all** — no sizes, no types, no severity variants. Everything is a fixed property.
 
 **What the component provides:** a header, a content area, a footer, a divider that appears when the content scrolls, and a gap between the buttons in the footer. Its `min-width`, `max-width`, `min-height`, and `max-height` are set by tokens.
 
@@ -50,7 +50,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **The title states the decision**, not the name of the component. "Delete this project?" rather than "Confirm".
 
-**Never open a modal from a modal.** Once the user is in a mode, they do not go into modes within it. Stacked modals leave them with no idea where they are, or what dismissing will do. Two scrims (dimmed overlays) darkening the page at once must never happen.
+**Never open a modal from a modal.** Once the user is in a mode, they do not go into modes within it. Stacked modals leave them with no idea where they are, or what dismissing will do. Two scrims darkening the page at once must never happen.
 
 **The one exception is replacing, not stacking.** A shared confirmation modal used across the application may appear after an action finishes inside another modal — but it appears in place of the first one, which goes away as the new one appears. Never on top. This is not ideal; it exists because secondary modals get reused. Owned by `recursica-skill-panels-modals`.
 
@@ -62,17 +62,17 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
 
 A modal is the component where accessibility failures are most serious. Get the focus handling wrong, and a keyboard or screen reader user is either trapped, or reading a page they cannot see. Most of this is behavior you must make sure of, not styling.
 
 ### Screen readers
 
-- **The modal must be announced as a dialog, and marked as modal**, so assistive technology (tools such as screen readers that help people with disabilities use a computer) stays inside it, and does not read the page behind.
+- **The modal must be announced as a dialog, and marked as modal**, so assistive technology stays inside it, and does not read the page behind.
 - **The modal's accessible name (the name a screen reader reads out for a control) is its title.** Connect the two; do not leave the dialog unnamed, and do not name it "Dialog".
 - **Everything behind the modal must be inert** — impossible to reach, read, or tab to. A screen reader user who wanders into the page underneath has no way to know they have left the dialog.
 - **The content must be announced when the modal opens**, which follows from putting focus inside it. Do not rely on how it looks to show that something happened.
-- **A destructive confirmation must read as destructive in words.** With no severity variant, color and icons tell a screen reader nothing — `recursica-skill-system-conventions` requires a second channel (a way of carrying meaning, such as color, shape, position, or text), and here the text is the only one.
+- **A destructive confirmation must read as destructive in words.** With no severity variant, color and icons tell a screen reader nothing — `recursica-skill-system-conventions` requires a second channel (color, shape, position or text, each a separate signal), and here the text is the only one.
 - **The close control needs a real name** — "Close", or better, what it closes. An unlabeled icon-only close button is announced as nothing.
 
 ### Keyboard and non-mouse navigation

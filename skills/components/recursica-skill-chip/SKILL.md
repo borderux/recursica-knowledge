@@ -40,7 +40,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 | `selection-states` | `unselected`, `selected` |
 | `states`           | `error`                  |
 
-**`states` is nested under `selection-states`.** The UI kit defines `error` separately for an unselected chip and for a selected one, so error and selection are independent axes (variant properties, as Figma calls them — the ways a component varies, such as its size) that combine.
+**`states` is nested under `selection-states`.** The UI kit defines `error` separately for an unselected chip and for a selected one, so error and selection are independent axes (the properties a component varies on, such as size and style; Figma calls them variant properties) that combine.
 
 **There is no size axis, no style axis, and no disabled state.**
 
@@ -74,7 +74,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
 
 A chip group is a form control that happens to be laid out horizontally, and it must behave like one. The most common failure is a set of clickable `div`s with a colored selected state — invisible and unusable to anyone not using a mouse.
 
@@ -82,7 +82,7 @@ A chip group is a form control that happens to be laid out horizontally, and it 
 
 - **A selectable chip group is a group of checkboxes**, and it must be announced that way: a group with an accessible name (the name a screen reader reads out for a control), and each chip announcing its label and whether it is selected.
 - **The group needs a label.** "Categories" — otherwise the user hears a run of options with no idea what they are choosing.
-- **Selection must be available in code, not shown by color.** A selected chip that differs only in its fill cannot be told apart by a screen reader (software that reads the screen aloud) user, and `recursica-skill-system-conventions` forbids it.
+- **Selection must be available in code, not shown by color.** A selected chip that differs only in its fill cannot be told apart by a screen reader user, and `recursica-skill-system-conventions` forbids it.
 - **A removable chip's close control needs a name that includes the value** — "Remove Marketing", not "Remove", and certainly not nothing. Five identical "Remove" controls down a row of chips cannot be used.
 - **Announce the removal.** After a chip is removed, the user needs to know it is gone and what is left. Silence sounds like a click that failed.
 - **A leading icon is decorative and must be silent.** The label carries the meaning.

@@ -35,14 +35,14 @@ Each of these has a different component. Switch to it, instead of adapting a tex
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.text-field`. **Do not pass a variant or state that is not listed here** — other design systems have field sizes, fluid styles, and warning, success, and loading states that this component does not.
 
-**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis      | Options                   | React prop   |
 | --------- | ------------------------- | ------------ |
 | `layouts` | `stacked`, `side-by-side` | `formLayout` |
 | `states`  | `error`, `disabled`       |              |
 
-**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's (the visible area of the browser window). See `recursica-skill-forms`.
+**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
 **`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Leave it out, and you get the fallback in a container of any width — the rule turned upside down. `layouts` is the name of the token axis, not a prop: `layouts="side-by-side"` is quietly ignored by React and leaves the control stacked, with no error. Pass `formLayout="side-by-side"` explicitly, on every field.
 
@@ -54,13 +54,13 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Rules for using it
 
-**Always pass a visible label.** Name the object clearly; a screen reader user (someone using software that reads the screen aloud) hears the label on its own, without the context around it. Use sentence capitalization, no colon at the end, and keep it short enough not to wrap.
+**Always pass a visible label.** Name the object clearly; a screen reader user hears the label on its own, without the context around it. Use sentence capitalization, no colon at the end, and keep it short enough not to wrap.
 
 **Never put required information in the placeholder.** It disappears on the first keystroke. Use it only to show the form of the value you expect.
 
 **Put the field's rule in assistive text** — formats, character requirements, minimums — so the user has it before they get it wrong.
 
-**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints (the screen widths at which the layout changes), but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
+**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
 **On error, replace the assistive text; do not add to it.** Swapping keeps the field's height the same, so the form below does not shift. The error message must restate the rule that was broken: "Invalid input" is not an error message.
 
@@ -83,7 +83,7 @@ Never reach for a disabled text field as a way to show a value.
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
-The component connects the label to the input, provides the focus ring (the outline that shows which element has keyboard focus), and handles the keys inside the field. Everything below is up to you to get right — and it is the part most often missed.
+The component connects the label to the input, provides the focus ring, and handles the keys inside the field. Everything below is up to you to get right — and it is the part most often missed.
 
 ### Screen readers
 

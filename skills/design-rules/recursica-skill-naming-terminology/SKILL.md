@@ -27,7 +27,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **When a client insists on a term you believe is wrong, use their term — then test it.** Put in the word they insist on, and check it with usability testing. There is not much else you can do, and the test is what turns the disagreement into evidence instead of opinion.
 
-**When two personas (profiles that each represent one type of user) use different words for the same thing, first ask whether they share a screen.**
+**When two personas use different words for the same thing, first ask whether they share a screen.**
 
 - **Different screens** — each group can keep its own word.
 - **The same screen** — one term has to be chosen, and the other group is taught the more common name. A conflict this sharp is unlikely. Treat it as a real finding when it happens, not as a routine trade-off.
@@ -44,7 +44,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 ## Singular or plural
 
-**Match the plurality (how many of something there are) of what the user arrives at.** The name describes the destination, not the link.
+**Match the plurality (the number of items) of what the user arrives at.** The name describes the destination, not the link.
 
 - **Plural** when the destination holds many — a navigation item reading People, because going there shows a list of persons.
 - **Singular** when the destination is one thing — Profile, because there is one profile being edited.

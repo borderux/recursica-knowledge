@@ -72,7 +72,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 1. Showing it breaks up the layout, **and**
 2. It does not add anything to what the user understands from the screen.
 
-**When both are true, hide it visually and keep it available to screen readers** (software that reads the screen aloud). The structure stays; only the pixels go.
+**When both are true, hide it visually and keep it available to screen readers**. The structure stays; only the pixels go.
 
 **When the heading does add understanding, show it.** Hiding meaningful content from sighted users to keep a layout tidy is the wrong trade.
 
@@ -207,7 +207,7 @@ W_max = 44 × 12.48                 = 555px
 
 ## Out of scope
 
-- **Announcing content that updates on the page to assistive technology** (tools such as screen readers that help people with disabilities use a computer). This was openly moved out of this topic — see `recursica-skill-feedback-messaging`, where it is recorded as still having no owner.
+- **Announcing content that updates on the page to assistive technology**. This was openly moved out of this topic — see `recursica-skill-feedback-messaging`, where it is recorded as still having no owner.
 - **The wording of labels, and labels that stand alone without surrounding context** — `recursica-skill-forms`.
 - **The details of table markup, how sorting is announced, and rules for cell content** — `recursica-skill-table` and `recursica-skill-tables`.
 - **Each component's accessible name, focus order, and keyboard behavior.** Each component skill has its own.

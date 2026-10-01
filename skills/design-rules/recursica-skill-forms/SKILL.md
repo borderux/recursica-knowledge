@@ -60,22 +60,22 @@ This is not a matter of looks. Mixing the two placements in one form:
 
 **In code, side by side is the value you have to pass.** The prop is `formLayout` on every field component, and it **defaults to `stacked`**. So a field with no `formLayout` shows the fallback in a container of any width — which is this rule turned upside down. Passing nothing is not "taking the default"; it is the defect. There are two ways this fails silently, and neither one shows an error:
 
-- **The prop is `formLayout`, not `layouts`.** `layouts` is the name of the token axis (a variant property, as Figma calls it — one way a component varies, such as its size). React ignores an unknown prop without complaint, so `layouts="side-by-side"` leaves the field stacked while looking as if the rule was applied.
+- **The prop is `formLayout`, not `layouts`.** `layouts` is the name of the token axis (a property a component varies on, such as size or style; Figma calls it a variant property). React ignores an unknown prop without complaint, so `layouts="side-by-side"` leaves the field stacked while looking as if the rule was applied.
 - **A form only complies if every field has the prop.** Search the form for the field components and count them. The prop is set per field, so one missed field is the mixed-placement defect described above.
 
 **Label wording:** always name the object clearly. A label must never rely on surrounding content for its meaning or context — a screen reader user hears the label on its own. If a verb is involved, make the verb clear and active. No passive verbs, and no linking verbs.
 
 ## Single page vs. multi-step
 
-Decide based on the user's mental model (a person's picture of how something works), not on the number of fields alone. Use multiple steps when **any** of these is true:
+Decide based on the user's mental model (what a person expects from the tools and work they already know), not on the number of fields alone. Use multiple steps when **any** of these is true:
 
 1. **Separate stages.** The task naturally breaks into steps that the user already thinks of as separate, and splitting it up makes it easier to take in.
 2. **Volume.** There are so many fields that the visual noise needs to be reduced.
 3. **Later branching.** An answer makes a _later_ step significantly different.
 
-**The opposite case: information that refers back and forth favors one long form.** When completing one section depends on checking or remembering another, a stepper (a component that walks the user through numbered steps) becomes actively worse than length. Moving forward and back to re-read costs more than scrolling does. Usability testing on a long credit-card application found that the single form did better than the stepper for exactly this reason: the user wanted to confirm that the whole thing was correct and complete at once. The question is how much has to stay in view, not how many fields there are. See `recursica-skill-screen-priority`.
+**The opposite case: information that refers back and forth favors one long form.** When completing one section depends on checking or remembering another, a stepper becomes actively worse than length. Moving forward and back to re-read costs more than scrolling does. Usability testing on a long credit-card application found that the single form did better than the stepper for exactly this reason: the user wanted to confirm that the whole thing was correct and complete at once. The question is how much has to stay in view, not how many fields there are. See `recursica-skill-screen-priority`.
 
-**Where disclosure ends and steps begin:** if an answer causes a _small, local_ change — a field or a section right below it — use progressive disclosure (showing only what is needed now, with the rest available on request) and stay on one page. If it causes a _clearly different later step_, use multiple steps. Do not reach for multiple steps to handle small conditional fields.
+**Where disclosure ends and steps begin:** if an answer causes a _small, local_ change — a field or a section right below it — use progressive disclosure and stay on one page. If it causes a _clearly different later step_, use multiple steps. Do not reach for multiple steps to handle small conditional fields.
 
 ## Grouping
 
@@ -107,7 +107,7 @@ Group fields in this order of preference:
 
 **MUST: on submit, turn the button itself into a loading, disabled state.** The button is the progress indicator. Disabling it also stops the form from being submitted twice.
 
-How that is built: use the button's disabled look, with icon-only content or an icon with a label, where the icon animates. There is no separate loading variant, and none is needed — see `recursica-skill-button`. Keep the button the same size and in the same place. Keep it able to receive focus, so the person who just pressed Enter does not lose their place. And make the busy state known to assistive technology (tools such as screen readers that help people with disabilities use a computer), instead of relying on the animation.
+How that is built: use the button's disabled look, with icon-only content or an icon with a label, where the icon animates. There is no separate loading variant, and none is needed — see `recursica-skill-button`. Keep the button the same size and in the same place. Keep it able to receive focus, so the person who just pressed Enter does not lose their place. And make the busy state known to assistive technology, instead of relying on the animation.
 
 **NEVER show a blocking spinner or overlay on submit.** Do not gray out the form, do not put up a spinner in a modal, and do not lock the viewport. The state inside the button is enough, and it keeps the user's entries visible.
 

@@ -19,14 +19,14 @@ Pagination moves the user between pages of one set of records. It is a control i
 
 ## Do not use it when
 
-| Instead of pagination                                         | Use                                                                                                                                    |
-| ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| A full-size table fills the width and height of its container | Infinite scroll (more rows load as the user scrolls). `recursica-skill-tables` prefers it — pagination is a clunky way through records |
-| A feed built for continuous browsing                          | Infinite scroll, chosen once for the whole system                                                                                      |
-| The whole set fits on one page                                | Nothing. Do not show controls for a single page                                                                                        |
-| One continuous document runs long                             | A different structure. Never paginate running text                                                                                     |
-| The user needs to know where they are in the app              | `recursica-skill-breadcrumb`                                                                                                           |
-| A process moves through ordered steps                         | `recursica-skill-stepper`                                                                                                              |
+| Instead of pagination                                         | Use                                                                                               |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| A full-size table fills the width and height of its container | Infinite scroll. `recursica-skill-tables` prefers it — pagination is a clunky way through records |
+| A feed built for continuous browsing                          | Infinite scroll, chosen once for the whole system                                                 |
+| The whole set fits on one page                                | Nothing. Do not show controls for a single page                                                   |
+| One continuous document runs long                             | A different structure. Never paginate running text                                                |
+| The user needs to know where they are in the app              | `recursica-skill-breadcrumb`                                                                      |
+| A process moves through ordered steps                         | `recursica-skill-stepper`                                                                         |
 
 **Pagination versus infinite scroll is one decision for the whole system, not a choice for each screen.** `recursica-skill-system-conventions` requires one behavioral mode per application: full-size tables scroll, interior tables paginate, and that holds everywhere. Mixing them leaves the user unable to predict how any table behaves.
 
@@ -70,14 +70,14 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
 
 Pagination is a row of small controls that all look alike and, left alone, all say nothing useful. Every failure here is a failure of naming or of focus.
 
 ### Screen readers
 
 - **The set is a navigation region with a name** — "Pagination", or "Invoice pages" where there is more than one. A page with several navigation regions must name each one, or they cannot be told apart in a landmark list (the list of labeled page regions a screen reader can jump between).
-- **The current page must be announced as current.** `active-pages` is a fill and a color, and color is a single visual channel (a way of carrying meaning, such as color, shape, position, or text) — forbidden as the only carrier of meaning by `recursica-skill-system-conventions`. Mark it in code as well.
+- **The current page must be announced as current.** `active-pages` is a fill and a color, and color is a single visual channel (color, shape, position or text, each a separate signal) — forbidden as the only carrier of meaning by `recursica-skill-system-conventions`. Mark it in code as well.
 - **Every control needs a name that says where it goes.** "Page 3", "Next page", "Previous page". A bare "3" is not a name, and a bare chevron is nothing at all.
 - **The previous and next controls are icon-only**, so each one needs a tooltip for sighted mouse users and, separately, an accessible name (the name a screen reader reads out for a control) — as `recursica-skill-buttons-links` requires.
 - **After a page change, announce that new rows arrived** — "Page 3 of 20, 10 invoices". Without it, nothing tells the user that activating the control worked, because the visual change is out of their sight.

@@ -34,7 +34,7 @@ Tabs switch between parts of one whole — like the folders in a single file dra
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.tabs` and `tabs-item`.
 
-**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis               | Options                       | React prop | On          |
 | ------------------ | ----------------------------- | ---------- | ----------- |
@@ -70,13 +70,13 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
 
 A tab set is one of the few components where getting the meaning in the markup wrong makes the content unreachable, rather than just awkward. The library owns how the keys work — you must let it.
 
 ### Screen readers
 
-- **The tab list, each tab, and each panel need their real roles**, and each panel must be connected to the tab that controls it. Without that connection, a screen reader (software that reads the screen aloud) user cannot tell that the content below changed, or which tab changed it.
+- **The tab list, each tab, and each panel need their real roles**, and each panel must be connected to the tab that controls it. Without that connection, a screen reader user cannot tell that the content below changed, or which tab changed it.
 - **Only the selected tab is announced as selected.** Do not show selection by color or weight alone — as `recursica-skill-system-conventions` requires.
 - **Each tab's accessible name (the name a screen reader reads out for a control) is its visible label.** If the label is cut short on screen, the full name must still be announced.
 - **A counter on a tab must be part of that tab's announcement** — "Members, 12" — not a floating number that a screen reader user comes across separately, or not at all.

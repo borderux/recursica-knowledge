@@ -177,7 +177,7 @@ Do not stretch a rule above to fit one of these. A wrong convention in a fiscal 
 - **Type styles, number fonts, and tabular figures.** Owned by the design system.
 - **Table structure** — columns, widths, sorting. Covered by `recursica-skill-tables`, which this skill provides cell formatting for.
 - **Null and missing values.** Covered by the null-cell rule in `recursica-skill-tables`.
-- **Abbreviating axis (a variant property, as Figma calls it — one way a component varies, such as its size) labels in charts.** Covered by `recursica-skill-data-visualization`.
+- **Abbreviating axis (a property a component varies on, such as size or style; Figma calls it a variant property) labels in charts.** Covered by `recursica-skill-data-visualization`.
 
 ## Pre-flight checklist
 

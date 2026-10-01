@@ -38,14 +38,14 @@ A dropdown is a form field that hides its options until it is opened, and return
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.dropdown`. **Do not pass a variant, size, or state that is not listed here.**
 
-**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis      | Options                   | React prop   |
 | --------- | ------------------------- | ------------ |
 | `states`  | `error`, `disabled`       |              |
 | `layouts` | `stacked`, `side-by-side` | `formLayout` |
 
-**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's (the visible area of the browser window). See `recursica-skill-forms`.
+**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
 **`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Leave it out, and you get the fallback in a container of any width — the rule turned upside down. `layouts` is the name of the token axis, not a prop: `layouts="side-by-side"` is quietly ignored by React and leaves the control stacked, with no error. Pass `formLayout="side-by-side"` explicitly, on every field.
 
@@ -63,7 +63,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Rules for using it
 
-**Run the affordance test before choosing this control: does the user know what is in there before they click it?** A dropdown hides its options, so there is no affordance (a visible cue that tells the user they can act on something) for what is inside. The set has to be predictable.
+**Run the affordance test before choosing this control: does the user know what is in there before they click it?** A dropdown hides its options, so there is no affordance (a visible cue that a control can be used, such as the underline on a link) for what is inside. The set has to be predictable.
 
 - **Good:** US states. A fixed list, in alphabetical order, and everyone has a rough idea of how many there are.
 - **Bad:** fifty unrelated values with nothing in common. Overwhelming, and mentally expensive to pick from.
@@ -76,7 +76,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Where there is no sensible default, the field shows placeholder text.** That placeholder never carries required information, and never stands in for the label.
 
-**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints (the screen widths at which the layout changes), but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
+**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
 **The menu must not be cut off by the viewport, or by any scrolling ancestor** (a container further up the page that scrolls). Check it near the bottom of the page, inside a panel, and inside a modal. A list the user cannot see all of is the failure this control is most likely to have.
 
@@ -101,7 +101,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
-The component connects the label to the field, provides the focus ring (the outline that shows which element has keyboard focus), and owns the open-and-select interaction. What that interaction announces, and everything below, is up to you. A dropdown is the control where "it works with a mouse" hides the most failures.
+The component connects the label to the field, provides the focus ring, and owns the open-and-select interaction. What that interaction announces, and everything below, is up to you. A dropdown is the control where "it works with a mouse" hides the most failures.
 
 ### Screen readers
 

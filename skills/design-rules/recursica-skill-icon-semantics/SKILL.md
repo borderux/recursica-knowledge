@@ -92,7 +92,7 @@ There are two tests. If either one applies, the control gets **an icon plus a la
 
 **This is a stated exception to the general removal test** in `recursica-skill-screen-priority`, which removes whatever the workflow does not need. Icons used for landmarking may be kept even though they fail that test. Nothing else about the test changes.
 
-**A decorative icon is silent to assistive technology** (tools such as screen readers that help people with disabilities use a computer). It carries no meaning, so it must not be announced.
+**A decorative icon is silent to assistive technology**. It carries no meaning, so it must not be announced.
 
 ## Status as an icon
 
@@ -100,7 +100,7 @@ There are two tests. If either one applies, the control gets **an icon plus a la
 
 **The reason is scanning.** On a dense screen where nearly everything is text, reading even more text to find a status is hard work. An icon is faster to spot — most of all when the icon and the text appear together.
 
-**Color never carries the status by itself.** Two visual channels are still only visual. `recursica-skill-system-conventions` requires that any meaning the user must receive survives when one channel (a way of carrying meaning, such as color, shape, position, or text) fails. So a status icon needs an accessible name (the name a screen reader reads out for a control) that says what the status is.
+**Color never carries the status by itself.** Two visual channels are still only visual. `recursica-skill-system-conventions` requires that any meaning the user must receive survives when one channel (color, shape, position or text, each a separate signal) fails. So a status icon needs an accessible name (the name a screen reader reads out for a control) that says what the status is.
 
 **In a table cell, a status icon comes with text** — see below.
 

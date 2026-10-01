@@ -14,7 +14,7 @@ A segmented control is a horizontal radio group: exactly one of a few options, a
 ## Use it when
 
 - **The layout calls for a horizontal single-select.** This is how that is done here — radio buttons are never turned sideways into a row.
-- **A toggle is needed outside a form.** A switch belongs only in a form, so any two-state control in application chrome (the frame around the content), a filter bar, or a toolbar is a segmented control. In chrome, it shows icons rather than text labels — a light/dark theme control is the standard example. See `recursica-skill-screen-scaffolding` for where chrome sits.
+- **A toggle is needed outside a form.** A switch belongs only in a form, so any two-state control in application chrome (the header, navigation and footer around the content), a filter bar, or a toolbar is a segmented control. In chrome, it shows icons rather than text labels — a light/dark theme control is the standard example. See `recursica-skill-screen-scaffolding` for where chrome sits.
 - **The set is small: 2 to 5 options**, with short labels.
 - **The choice switches a view or a mode** — list or grid, daily or weekly — where the options are closely tied to what is on screen.
 - **Filtering in place** that would be too much for a dropdown or a modal.
@@ -48,7 +48,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **An item may have a leading icon** — shown only on the design-system website as part of the item.
 
-**There is no size axis (a variant property, as Figma calls it — one way a component varies, such as its size), no style axis, and no disabled state** on either the control or the item.
+**There is no size axis (a property a component varies on, such as size or style; Figma calls it a variant property), no style axis, and no disabled state** on either the control or the item.
 
 ## Rules for using it
 
@@ -72,9 +72,9 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
 
-In meaning, this is a radio group, and it must be built as one. The usual failure is a row of buttons where the selected one is just a different color. That tells a screen reader (software that reads the screen aloud) user nothing, and leaves keyboard users tabbing through every segment.
+In meaning, this is a radio group, and it must be built as one. The usual failure is a row of buttons where the selected one is just a different color. That tells a screen reader user nothing, and leaves keyboard users tabbing through every segment.
 
 ### Screen readers
 

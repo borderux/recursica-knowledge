@@ -15,7 +15,7 @@ Read this before you override a count limit. Cite it when someone asks where the
 
 ## The house rule
 
-**Aim for 7 ± 2 items, adjusted for the cognitive load** (the mental effort a task demands) of the content.
+**Aim for 7 ± 2 items, adjusted for the cognitive load** of the content.
 
 - **Items that are similar, easy to tell apart, and familiar** → the high end of the range is fine.
 - **Items that are different from each other, hard to think about, or need expert knowledge** → use fewer, closer to 5.

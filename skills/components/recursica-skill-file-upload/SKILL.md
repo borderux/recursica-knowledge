@@ -44,9 +44,9 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.file-upload`. **Do not
 | `layouts` | `stacked`, `side-by-side` |
 | `states`  | `error`, `disabled`       |
 
-**`layouts` is the label-placement axis (a variant property, as Figma calls it — one way a component varies, such as its size).** `side-by-side` — the label beside the control — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's (the visible area of the browser window). See `recursica-skill-forms`.
+**`layouts` is the label-placement axis (a property a component varies on, such as size or style; Figma calls it a variant property).** `side-by-side` — the label beside the control — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
-**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints (the screen widths at which the layout changes), but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
+**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
 **This is the larger area, and the tokens say so.** `border-style`, `border-size`, `border-radius`, and `padding` describe a region rather than a line. `item-gap`, `list-spacing`, and `vertical-element-gap` describe the list of added files beneath it. That is the whole difference from `file-input`, which is shaped like a single-line field.
 
@@ -82,7 +82,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.file-upload`. **Do not
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
 
 A drop zone is the single most common control in an enterprise application that works only with a mouse. Everything below is up to you.
 

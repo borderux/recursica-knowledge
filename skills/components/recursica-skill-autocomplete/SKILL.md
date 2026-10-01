@@ -34,14 +34,14 @@ An autocomplete is a text field whose value comes from a defined set. The user t
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.autocomplete`. **Do not pass a variant, size, or state that is not listed here.**
 
-**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis      | Options                   | React prop   |
 | --------- | ------------------------- | ------------ |
 | `states`  | `error`, `disabled`       |              |
 | `layouts` | `stacked`, `side-by-side` | `formLayout` |
 
-**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's (the visible area of the browser window). See `recursica-skill-forms`.
+**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
 **`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Leave it out, and you get the fallback in a container of any width — the rule turned upside down. `layouts` is the name of the token axis, not a prop: `layouts="side-by-side"` is quietly ignored by React and leaves the control stacked, with no error. Pass `formLayout="side-by-side"` explicitly.
 
@@ -78,7 +78,7 @@ Those states are not kit axes and must not be passed as variants — `Focused` a
 
 **Provide a sensible default only where one really is correct** for nearly everyone. Never pre-fill a value the user would have to think about, look up, or check — a default the user cannot check gets submitted without being checked.
 
-**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints (the screen widths at which the layout changes), but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
+**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
 **On error, the assistive text is replaced, not added to.** The message must restate the rule that was broken, and the error state must have a signal that is not color, as well as the color change.
 
@@ -107,7 +107,7 @@ Those states are not kit axes and must not be passed as variants — `Focused` a
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
-The component connects the label to the input, provides the focus ring (the outline that shows which element has keyboard focus), and owns the filter-and-select interaction. What that interaction announces is up to you — and it is the hardest part of any control in this system to get right. The list changes under the user on every keystroke, and none of that reaches a screen reader (software that reads the screen aloud) unless it is announced.
+The component connects the label to the input, provides the focus ring, and owns the filter-and-select interaction. What that interaction announces is up to you — and it is the hardest part of any control in this system to get right. The list changes under the user on every keystroke, and none of that reaches a screen reader unless it is announced.
 
 ### Screen readers
 
@@ -130,7 +130,7 @@ The component connects the label to the input, provides the focus ring (the outl
 - **The clear control is its own tab stop** (a place the Tab key lands), works with Enter or Space, and is never revealed only on hover.
 - **The field is one tab stop, whether open or closed.** Tab must never step through the results. While the list is open, Tab either closes it or moves past the whole field.
 - **Arrow Down and Up move the active option, Enter selects it, and Escape closes the list without changing the value**, returning focus to the input. Focus must never drop to the top of the page or to the body.
-- **Home and End belong to the caret (the text cursor) in the input.** Do not repurpose them to jump to the first or last result — the user is in a text field, and expects them to move within what they typed.
+- **Home and End belong to the caret in the input.** Do not repurpose them to jump to the first or last result — the user is in a text field, and expects them to move within what they typed.
 - **The library owns how keys work inside the control**, including which key opens the list, wrapping around at the ends, and any inline completion. Do not attach your own key listeners, and do not rebuild the filtering or moving.
 - **Do not move focus into the list.** The input keeps focus and points to the active option. Moving real focus into a popup breaks the way back, and stops the user typing.
 - **Do not move focus for the user after a selection.** No jumping ahead to the next field because a value now exists, and no focus jump when the filter narrows down to exactly one result.

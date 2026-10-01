@@ -38,7 +38,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 | -------- | --------- |
 | `states` | `visited` |
 
-**`visited` is the only state variant.** There is no size axis (a variant property, as Figma calls it — one way a component varies, such as its size), no style axis, and no disabled state — the browser and the component own everything else.
+**`visited` is the only state variant.** There is no size axis (a property a component varies on, such as size or style; Figma calls it a variant property), no style axis, and no disabled state — the browser and the component own everything else.
 
 **Properties defined here:** `text`, `icon-size`, `icon-text-gap`, and `colors`. An icon may sit before or after the label; both positions are shown only on the design-system website.
 
@@ -64,7 +64,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
-The component owns the underline, the color, and the focus ring (the outline that shows which element has keyboard focus). The meaning in the markup is up to you, and a link built from the wrong element fails every kind of assistive technology (tools such as screen readers that help people with disabilities use a computer) at once.
+The component owns the underline, the color, and the focus ring. The meaning in the markup is up to you, and a link built from the wrong element fails every kind of assistive technology at once.
 
 ### Screen readers
 
@@ -73,7 +73,7 @@ The component owns the underline, the color, and the focus ring (the outline tha
 - **Two links with the same name must go to the same place.** Different destinations that share a label — "View" in every row — must be told apart, either in the name itself or through the row's context.
 - **An icon on the link is decorative and must be silent**, unless the icon is the only content — in that case, it must carry the name.
 - **If the link opens in a new tab or downloads a file, say so in the name or in text right next to it.** An unannounced switch of context is confusing for a screen reader user, who has no visual sign that the window changed.
-- **Never show "external" by color or icon alone** — `recursica-skill-system-conventions` requires a second channel (a way of carrying meaning, such as color, shape, position, or text).
+- **Never show "external" by color or icon alone** — `recursica-skill-system-conventions` requires a second channel (color, shape, position or text, each a separate signal).
 
 ### Keyboard and non-mouse navigation
 

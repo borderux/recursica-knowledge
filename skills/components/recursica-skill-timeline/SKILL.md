@@ -50,7 +50,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no connector token on the timeline.** A connecting line with a highlighted state for completed events is shown only on the design-system website, but the UI kit defines no such property here. Do not use the line to show progress.
 
-**There is no alignment axis (a variant property, as Figma calls it — one way a component varies, such as its size), no orientation axis, and no size axis.** Left and right alignment are shown only on the design-system website, but the UI kit defines neither, and nothing supports two opposing tracks or a timeline that compares two streams side by side. `max-text-width` is a fixed property.
+**There is no alignment axis (a property a component varies on, such as size or style; Figma calls it a variant property), no orientation axis, and no size axis.** Left and right alignment are shown only on the design-system website, but the UI kit defines neither, and nothing supports two opposing tracks or a timeline that compares two streams side by side. `max-text-width` is a fixed property.
 
 **`icon-alternative` is also called "theme icon"** in material shown only on the design-system website. It is one thing with two names — and no rule says when each name is used.
 
@@ -70,7 +70,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **The title names the event; the description is the body.** Do not add the timestamp to the title — it has its own slot and its own type token.
 
-**The bullet is decoration.** An avatar or an icon bullet may help show who or what an entry is about, but the title and description must say it. `recursica-skill-system-conventions` forbids carrying meaning in one channel (a way of carrying meaning, such as color, shape, position, or text), and a bullet is the weakest channel in the component. For an avatar bullet's own requirements, see `recursica-skill-avatar`.
+**The bullet is decoration.** An avatar or an icon bullet may help show who or what an entry is about, but the title and description must say it. `recursica-skill-system-conventions` forbids carrying meaning in one channel (color, shape, position or text, each a separate signal), and a bullet is the weakest channel in the component. For an avatar bullet's own requirements, see `recursica-skill-avatar`.
 
 **Use one bullet type throughout a timeline**, or vary it only where the text also states what the difference means. A mix of icons the reader has to decode is a legend with no key.
 
@@ -82,9 +82,9 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
 
-A timeline is a list of events, and almost everything that makes it readable is visual: a vertical line that suggests sequence, a bullet that suggests a type, a color that suggests selection, and a relative timestamp that hides the real date. **All four have to be replaced with something in the code** that assistive technology (tools such as screen readers that help people with disabilities use a computer) can read.
+A timeline is a list of events, and almost everything that makes it readable is visual: a vertical line that suggests sequence, a bullet that suggests a type, a color that suggests selection, and a relative timestamp that hides the real date. **All four have to be replaced with something in the code** that assistive technology can read.
 
 ### Screen readers
 

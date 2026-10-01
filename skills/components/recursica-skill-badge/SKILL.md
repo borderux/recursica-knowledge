@@ -34,7 +34,7 @@ A badge is one piece of read-only metadata attached to something else. The syste
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.badge`. **Do not pass a variant that is not listed here.**
 
-**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis     | Options                                        | React prop |
 | -------- | ---------------------------------------------- | ---------- |
@@ -76,7 +76,7 @@ A badge is text, not a control. That makes the risk the opposite of most compone
 
 - **The badge must be announced as part of the thing it describes**, not as a separate item. "Members, 12" and "Invoice 1043, overdue" are useful; a "12" heard on its own is not.
 - **A count must include its unit when it is announced** — "3 unread messages", not "3". The visual context that makes the number obvious does not exist when the page is read aloud in order.
-- **Never let the style carry the meaning.** `success` and `alert` are colors; a screen reader (software that reads the screen aloud) user gets only the text. The word in the badge must be the whole meaning — as `recursica-skill-system-conventions` requires.
+- **Never let the style carry the meaning.** `success` and `alert` are colors; a screen reader user gets only the text. The word in the badge must be the whole meaning — as `recursica-skill-system-conventions` requires.
 - **Do not use a badge that is only an icon.** With no text, there is nothing to announce.
 - **A badge that changes while the user is on the page needs care.** Either announce the change politely, or not at all. A count that updates often must never interrupt, and must never be announced on every increase.
 - **Do not repeat the badge's text somewhere else for screen readers** while leaving both in the reading order; the user hears it twice.

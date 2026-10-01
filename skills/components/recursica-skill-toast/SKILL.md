@@ -33,7 +33,7 @@ A toast reports what just happened, without interrupting the work.
 
 An "affordance" is a visible cue that tells the user they can act on something — here, the delete button.
 
-**A toast reports something that just happened.** That is the house test. `recursica-skill-feedback-messaging` splits the channels (the ways a message reaches the user — a toast, a banner, a modal, and so on) by tense: an event that is finished is a toast, and a condition that has not happened yet is a banner. Check the tense of the sentence before you choose.
+**A toast reports something that just happened.** That is the house test. `recursica-skill-feedback-messaging` splits the channels (the forms a message takes: a toast, a banner or a modal) by tense: an event that is finished is a toast, and a condition that has not happened yet is a banner. Check the tense of the sentence before you choose.
 
 **A toast is the wrong place for anything that must not be missed.** It appears away from where the user is looking, and leaves on its own, so a critical alert that needs action right away is not a toast. And there is no component in this system for one yet — the banner the tense rule calls for is planned, but not in the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has). Do not force a toast into that job, do not build your own alert that stays on screen, and do not send the reader to a component that does not exist. Raise it — see the uncovered list.
 
@@ -41,7 +41,7 @@ An "affordance" is a visible cue that tells the user they can act on something �
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.toast`. **Do not pass a style that is not listed here.**
 
-**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis     | Options                       | React prop |
 | -------- | ----------------------------- | ---------- |
@@ -75,7 +75,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.toast`. **Do not pass 
 
 **A toast with an action must not be the only way to reach that action** — see the keyboard section. An undo that disappears with the toast is an undo a keyboard user never had.
 
-**Never use a toast as the only record of a destructive action** (one that deletes something or cannot easily be undone). Once it is gone, the user has no way back to it.
+**Never use a toast as the only record of a destructive action** (an action that deletes data or cannot be undone). Once it is gone, the user has no way back to it.
 
 **The duration belongs to the underlying library, and is not changed.** Whatever Mantine, Material, or whichever library backs the component sets is the duration. Do not tune it, do not vary it by message, and do not make it longer so an action can be reached. Owned by `recursica-skill-feedback-messaging`.
 
@@ -91,11 +91,11 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.toast`. **Do not pass 
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
-**This is the riskiest component in the system.** It appears without the user asking, disappears without the user doing anything, and does all its work away from where the user is looking. A toast that is not announced is invisible to a screen reader user (someone using software that reads the screen aloud). A toast that takes focus interrupts typing. And a toast that closes on its own while holding an undo offers an action nobody can reach with a keyboard.
+**This is the riskiest component in the system.** It appears without the user asking, disappears without the user doing anything, and does all its work away from where the user is looking. A toast that is not announced is invisible to a screen reader user. A toast that takes focus interrupts typing. And a toast that closes on its own while holding an undo offers an action nobody can reach with a keyboard.
 
 ### Screen readers
 
-- **The toast must be announced when it appears, without moving focus.** Use a live region (an area a screen reader announces automatically when its content changes) that already exists in the DOM (the page's structure in code) before the message is added. A region created at the same moment as the message is often not announced at all.
+- **The toast must be announced when it appears, without moving focus.** Use a live region (an area a screen reader announces automatically when its content changes) that already exists in the DOM before the message is added. A region created at the same moment as the message is often not announced at all.
 - **An error toast is announced right away; a success or `default` toast waits its turn.** The urgent setting, `assertive`, interrupts, so it is kept for failures. Never let a confirmation cut into what the user is reading or typing, and never leave a failure waiting in a line. Owned by `recursica-skill-live-regions`.
 - **A toast always announces.** No toast appears silently. What the toast says is the announcement, so nothing else should repeat it.
 - **The style is not announced.** `success` and `error` differ only by color and icon, so the text must say which it is: "Saved" versus "Could not save".
@@ -107,12 +107,12 @@ This component also follows the accessibility baseline in `recursica-skill-syste
 
 ### Keyboard and non-mouse navigation
 
-- **Never move focus to the toast when it appears.** It pulls the caret (the text cursor) out of a field in the middle of a word, and drops the user somewhere they did not ask to go.
+- **Never move focus to the toast when it appears.** It pulls the caret out of a field in the middle of a word, and drops the user somewhere they did not ask to go.
 - **A toast with an action cannot close on its own while someone is trying to reach it.** This is the main conflict. Reaching an undo by keyboard means leaving the current field, tabbing to the toast, and pressing it — and a timer running during that trip makes the action impossible to reach in practice. Since the duration belongs to the library and is not changed, keeping the toast on screen longer is not an option. So the undo must also live somewhere on the page that stays, with the toast pointing to it. Never ship a timed toast whose action is the only way to undo.
 - **The toast must be reachable in the tab order while it is visible**, at a predictable point — not after the whole rest of the page.
 - **If the timer pauses on hover, it must also pause on focus.** A pause that only works for a mouse is not a pause.
 - **Closing must not work only with a pointer.** Every toast can be closed, so every toast can be closed from the keyboard.
-- **A toast must never cover a control the user needs**, and must not sit over the focused element or the focus ring (the outline that shows which element has keyboard focus).
+- **A toast must never cover a control the user needs**, and must not sit over the focused element or the focus ring.
 - **Nothing the user needs may appear only on hover** — not the action, not the close control, and not the full text.
 
 ## Decided elsewhere

@@ -15,7 +15,7 @@ These are the house rules for how a page is put together, and what each region s
 
 1. **Space does the grouping.** Things are grouped by gutters (the gaps between columns and regions) and white space, not by drawn boundaries. Reaching for a container is nearly always a sign that the spacing was not done.
 2. **Nothing is mandatory, but the pieces follow convention.** There is no fixed list of elements every page must have — the application's layout decides. What is fixed is what each piece is for, once you use it.
-3. **Never fill space just because it is there.** Extra width is not a problem to solve. Stretching content to fill a wide viewport (the visible area of the browser window) is the clearest sign that a screen was assembled rather than designed.
+3. **Never fill space just because it is there.** Extra width is not a problem to solve. Stretching content to fill a wide viewport is the clearest sign that a screen was assembled rather than designed.
 
 ## The shell
 
@@ -46,7 +46,7 @@ These are the house rules for how a page is put together, and what each region s
 
 **It may repeat the navigation label, and that is fine.** Identical text is not a defect here. How far the two may differ is owned by `recursica-skill-naming-terminology`.
 
-**A breadcrumb (a trail of links showing where the page sits) appears once the user is below the top level of the hierarchy.** Landing pages and dashboards do not need one. The sub-sections reached from them do, and it appears on all of them.
+**A breadcrumb appears once the user is below the top level of the hierarchy.** Landing pages and dashboards do not need one. The sub-sections reached from them do, and it appears on all of them.
 
 **Its job is to give a sense of place** — showing where the user came from and how to get back up. It matters most on a deep link (a link that opens a page deep inside the application), where someone arrives several layers down from a dashboard with no idea where they are.
 
@@ -97,7 +97,7 @@ The filter controls themselves are owned by `recursica-skill-filters`.
 
 ## Maximum width
 
-**Content at the page level has a maximum width, and it comes from the design system's layout rule.** It is not yours to set. The house default is 1200, and it applies to the main content area only. Headers, footers, and other sticky chrome (the frame around the content) are not limited by it, and may stretch across the full viewport. Owned by `recursica-skill-responsive-behavior`, which also has the tablet and small-device breakpoints.
+**Content at the page level has a maximum width, and it comes from the design system's layout rule.** It is not yours to set. The house default is 1200, and it applies to the main content area only. Headers, footers, and other sticky chrome (the header, navigation and footer around the content) are not limited by it, and may stretch across the full viewport. Owned by `recursica-skill-responsive-behavior`, which also has the tablet and small-device breakpoints.
 
 **Space beyond it stays empty.** That is the correct result, not a gap to fill.
 
@@ -124,7 +124,7 @@ The filter controls themselves are owned by `recursica-skill-filters`.
 
 **A page that is loading shows nothing. Then it shows the content.** No spinner, no placeholders, no partial furniture.
 
-**NEVER use skeletons (gray placeholder shapes shown while content loads) or ghost text.** Gray bars standing in where text will be are a spinner in another costume. They add mental work to decode and give nothing back. They are not used in these applications.
+**NEVER use skeletons or ghost text.** Gray bars standing in where text will be are a spinner in another costume. They add mental work to decode and give nothing back. They are not used in these applications.
 
 **Past about three seconds, a page-level spinner may be called for**, to show that something is happening. Understand what it buys you: nothing about what is slow, or how long is left. Owned by `recursica-skill-feedback-messaging`.
 
@@ -166,7 +166,7 @@ A peer is an object of the same kind as the ones around it, such as a row in a l
 
 **A theme control is chrome.** Light and dark mode is a property of the application, not of the page, so it never sits in the content area above a page title.
 
-**It is a segmented control with icons (a row of joined buttons, one of which is selected), not a switch with a label.** A switch belongs in a form — see `recursica-skill-selection-controls`.
+**It is a segmented control with icons, not a switch with a label.** A switch belongs in a form — see `recursica-skill-selection-controls`.
 
 **Chrome does not scroll away with the content**, and it does not change from page to page.
 

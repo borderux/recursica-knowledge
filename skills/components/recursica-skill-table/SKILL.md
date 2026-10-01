@@ -19,7 +19,7 @@ A table shows many copies of one object, so the reader can compare values down a
 
 ## Use it when
 
-- **The plurality (how many of something there are) is high, has no fixed end, or is growing.** This is the default for repeating records, with no exception.
+- **The plurality (the number of items) is high, has no fixed end, or is growing.** This is the default for repeating records, with no exception.
 - **The content is only data** — text, numbers, dates, currency, status.
 - **The reader compares values across records**, which a column makes possible and a set of cards does not.
 - **Sorting, filtering, or selecting rows is part of the work.**
@@ -38,7 +38,7 @@ A table shows many copies of one object, so the reader can compare values down a
 
 ## What exists
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.table`, `table-cell`, `table-header`, `table-footer`. **The table itself has no variant axes (variant properties, as Figma calls them — the ways a component varies, such as its size).** The three sub-specs each have one.
+Taken from `recursica_ui-kit.json` → `ui-kit.components.table`, `table-cell`, `table-header`, `table-footer`. **The table itself has no variant axes (the properties a component varies on, such as size and style; Figma calls them variant properties).** The three sub-specs each have one.
 
 | Spec           | Axis     | Options    |
 | -------------- | -------- | ---------- |
@@ -67,7 +67,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.table`, `table-cell`, 
 
 **Every table has a default sort, and the sorted column always shows its indicator** — including when the sort cannot be changed. The header component provides `sorted-text-style` and the sort icon; your job is making sure one column carries them. A table whose order cannot be seen makes the reader guess. Owned by `recursica-skill-tables`.
 
-**A click on a header flips the sort direction.** Sorting by more than one column is a long-press — an unadvertised affordance (a control that is deliberately not promoted), which means it also needs a way to use it from the keyboard; see the accessibility section.
+**A click on a header flips the sort direction.** Sorting by more than one column is a long-press — an unadvertised affordance (a control that works but is not shown in the main interface, such as a keyboard shortcut), which means it also needs a way to use it from the keyboard; see the accessibility section.
 
 **Currency is right-aligned, has two decimal places on every value, and puts its symbol in the column header** instead of repeating it in every cell. None of this is owned here. `recursica-skill-dates-and-currency` owns the format — right alignment, a fixed precision of two decimals, and the symbol in the header — and `recursica-skill-tables` owns column alignment by data type. Read those skills rather than this summary; where they differ from it, they are correct. All this file adds is which token carries it: the `currency-style` on `table-cell` and `table-footer`.
 
@@ -93,13 +93,13 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.table`, `table-cell`, 
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
-A data table can only be used without sight if its structure is real. The failures here are serious: a grid of `div`s gives a screen reader (software that reads the screen aloud) user no way to know which column a value belongs to — and that is the whole content of a table.
+A data table can only be used without sight if its structure is real. The failures here are serious: a grid of `div`s gives a screen reader user no way to know which column a value belongs to — and that is the whole content of a table.
 
 ### Screen readers
 
 - **It must be a real table, with real header cells**, each connected to its column. A cell's meaning is its column header; without that connection, the value is a number with no name.
 - **The table needs an accessible name** (the name a screen reader reads out for a control) — what these records are. A page with three tables and no names cannot be navigated.
-- **The sort state must be announced on the header**: which column is sorted, in which direction, and that the header is the control that changes it. The `sorted-text-style` is only the visual channel (a way of carrying meaning, such as color, shape, position, or text).
+- **The sort state must be announced on the header**: which column is sorted, in which direction, and that the header is the control that changes it. The `sorted-text-style` is only the visual channel (color, shape, position or text, each a separate signal).
 - **A row's selection checkbox needs a name that identifies its row** — "Select invoice 1043", not five identical "Select" controls. The header's select-all checkbox needs its own name, and its indeterminate state (the partly selected state, shown as a dash, when some but not all items are selected) must be made available.
 - **`NA` must be actual text in the cell.** This is the accessibility reason for the rule, not just a visual one: an empty cell is announced as nothing.
 - **Any repeated row action must name its object**, or the row must supply that context in code.

@@ -30,7 +30,7 @@ One component shows both the help text and the error text below a field. Its typ
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.assistive-element`.
 
-**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis    | Options         | React prop         |
 | ------- | --------------- | ------------------ |
@@ -60,7 +60,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Keep it under the field it belongs to.** An assistive element floating between two fields belongs to neither one.
 
-**Its position follows the field's label placement, so it takes on the form's single placement decision.** `recursica-skill-forms` requires one label placement per form — side by side or stacked, never both at the same breakpoint (the screen width at which the layout changes). The container-width test is applied once, to the form, and it governs every field in it. This element has no placement axis of its own: wherever the field's label sits, this element's position follows from it. So it is never placed on its own, and it never differs from field to field inside one form. A whole form may switch placement across breakpoints; a single section never gets its own.
+**Its position follows the field's label placement, so it takes on the form's single placement decision.** `recursica-skill-forms` requires one label placement per form — side by side or stacked, never both at the same breakpoint. The container-width test is applied once, to the form, and it governs every field in it. This element has no placement axis of its own: wherever the field's label sits, this element's position follows from it. So it is never placed on its own, and it never differs from field to field inside one form. A whole form may switch placement across breakpoints; a single section never gets its own.
 
 **Do not use it for marketing, reassurance, or padding.** Every line here is read on every pass through the form.
 
@@ -68,14 +68,14 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
-This component only works if the field it belongs to knows about it. Text shown near a field but not connected to it is invisible to a screen reader (software that reads the screen aloud) user who tabs straight into the input — which is the normal way of moving through a form.
+This component only works if the field it belongs to knows about it. Text shown near a field but not connected to it is invisible to a screen reader user who tabs straight into the input — which is the normal way of moving through a form.
 
 ### Screen readers
 
 - **Pass the help and error text through the field component**, never as a separate element you place beside or below it. Only the field can connect them to the input.
 - **The help text is announced as part of reaching the field.** Write it to be heard at that moment, not as a caption read afterward.
 - **When an error appears, it must be announced** — an error that is only visual is a silent failure. The field being marked invalid and the message being connected to it are both required.
-- **The error message must make sense on its own**, because it has replaced the help text. Restating the rule is not repetition; it is the only channel (a way of carrying meaning, such as color, shape, position, or text) left.
+- **The error message must make sense on its own**, because it has replaced the help text. Restating the rule is not repetition; it is the only channel (color, shape, position or text, each a separate signal) left.
 - **The component's icon is decorative and must be silent.** It is the second visual signal; the words carry the meaning.
 - **Do not announce the same text twice.** If the message is connected to the field, do not also put it in a live region (an area a screen reader announces automatically when its content changes) that repeats it.
 - **Do not use it to announce anything the user did not do.** Unprompted messages under a field are confusing when they are read in order.

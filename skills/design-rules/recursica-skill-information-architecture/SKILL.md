@@ -16,7 +16,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 ## The three governing principles
 
 1. **Objects first, then screens.** An object is a kind of thing the user works with and would point at and name — an order, a customer, an invoice. Settle which objects the application is about, and how they relate, before deciding any screen. Every screen is a view of one object or of many, and the structure is only as sound as that list.
-2. **The user's objects, not the database's.** Objects and their groupings come from how the users' work is already arranged, which is their mental model (a person's picture of how something works). That comes from three places: how the work is done outside software, the terms of the users' own field, and products they already use. **NEVER from the team's shorthand or the shape of the data.** A table in the database is not an object because it exists, and one object can span several tables.
+2. **The user's objects, not the database's.** Objects and their groupings come from how the users' work is already arranged, which is their mental model (what a person expects from the tools and work they already know). That comes from three places: how the work is done outside software, the terms of the users' own field, and products they already use. **NEVER from the team's shorthand or the shape of the data.** A table in the database is not an object because it exists, and one object can span several tables.
 3. **Decide what can be reached from where — not how it looks.** This skill says that an order's line items are reached from the order. Whether they appear in a tab, a section or a table on that page is decided by the skills that own those components.
 
 ## What counts as an object

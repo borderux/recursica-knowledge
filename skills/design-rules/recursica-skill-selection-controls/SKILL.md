@@ -24,14 +24,14 @@ These rules assume **complex enterprise web applications, designed for desktop f
 Work down this list; the first match wins.
 
 1. **One value, whose opposite is binary, known, and unique → switch.** See the binary-inverse test below.
-2. **Options that rule each other out, where one must be chosen → radio group**, up to the limit on the number of options. Where the layout calls for a horizontal arrangement, use a segmented control (a row of joined buttons, one of which is selected) instead.
+2. **Options that rule each other out, where one must be chosen → radio group**, up to the limit on the number of options. Where the layout calls for a horizontal arrangement, use a segmented control instead.
 3. **Options that rule each other out, above the limit → dropdown** (single select).
 4. **Zero to many can be selected → checkbox group**, up to the limit on the number of options. Where the layout calls for a horizontal arrangement, use selectable chips instead.
 5. **Zero to many, above the limit, or the form is already very long → multi-select dropdown** (a checkbox group inside a dropdown).
 
 ## Switch vs. checkbox
 
-**A switch only ever appears inside a form.** That is the first test, and it comes before the tests below. Anywhere else — application chrome (the frame around the content), a filter bar, a toolbar, a page header — a toggle is a segmented control, not a switch. See `recursica-skill-segmented-control`.
+**A switch only ever appears inside a form.** That is the first test, and it comes before the tests below. Anywhere else — application chrome (the header, navigation and footer around the content), a filter bar, a toolbar, a page header — a toggle is a segmented control, not a switch. See `recursica-skill-segmented-control`.
 
 **A switch has a deliberately narrow use.** Inside a form, reach for a checkbox unless the switch test passes.
 
@@ -62,14 +62,14 @@ Work down this list; the first match wins.
 
 ## Option counts and dropdowns
 
-**Aim for 7 ± 2 options, adjusted for cognitive load** (the mental effort a task demands). See `recursica-skill-working-memory` for the reasoning and its limits — the limit applies to sets of options the user compares, not to lists they simply recognize an item from:
+**Aim for 7 ± 2 options, adjusted for cognitive load**. See `recursica-skill-working-memory` for the reasoning and its limits — the limit applies to sets of options the user compares, not to lists they simply recognize an item from:
 
 - **Options that are similar and easy to understand** → the upper end of the range is fine.
 - **Options that are different from each other, hard to grasp, or need specialist knowledge** → use fewer.
 
 **Above that limit, switch to a dropdown.** Dropdowns handle large sets of options well, and are usually single select. A multi-select dropdown — a checkbox group inside a dropdown — is available when many values can be selected.
 
-**The dropdown affordance test.** A dropdown hides its options, so the user has no affordance (a visible cue that tells the user they can act on something) for what is inside. Before choosing one, ask: does the user know what is in there before they click it?
+**The dropdown affordance test.** A dropdown hides its options, so the user has no affordance (a visible cue that a control can be used, such as the underline on a link) for what is inside. Before choosing one, ask: does the user know what is in there before they click it?
 
 - **Good:** US states. A fixed list, in alphabetical order, and everyone has a rough idea of how many there are — predictable and familiar.
 - **Bad:** 50 unrelated values with nothing in common. Overwhelming, and mentally expensive to pick from.

@@ -38,14 +38,14 @@ Each of these has a different component. Switch to it, instead of adapting a tim
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.time-picker`. **Do not pass a variant or state that is not listed here** — other design systems have sizes, seconds variants, warning states, and inline clocks that this component does not.
 
-**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis      | Options                   | React prop   |
 | --------- | ------------------------- | ------------ |
 | `layouts` | `stacked`, `side-by-side` | `formLayout` |
 | `states`  | `error`, `disabled`       |              |
 
-**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's (the visible area of the browser window). See `recursica-skill-forms`.
+**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
 **`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Leave it out, and you get the fallback in a container of any width — the rule turned upside down. `layouts` is the name of the token axis, not a prop: `layouts="side-by-side"` is quietly ignored by React and leaves the control stacked, with no error. Pass `formLayout="side-by-side"` explicitly.
 
@@ -63,9 +63,9 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Always pass a visible label.** Name the object clearly — "Start time", not "Time". A screen reader user hears the label on its own, without the context around it. Use sentence capitalization, with no colon at the end.
 
-**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones like this one that would have fitted side by side. A whole form may switch placement between breakpoints (the screen widths at which the layout changes), but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
+**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones like this one that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
-**Whether time is 12-hour or 24-hour is the user's preference**, set by their locale (the language and regional settings a person uses) or by an explicit setting. It is not a design decision, and it does not change from screen to screen.
+**Whether time is 12-hour or 24-hour is the user's preference**, set by their locale or by an explicit setting. It is not a design decision, and it does not change from screen to screen.
 
 **Use the user's locale and the user's time zone, never the tenant's** (the organization whose account the application runs under).
 
@@ -92,13 +92,13 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
-The component connects the label to the input, and provides the focus ring (the outline that shows which element has keyboard focus). The clock trigger, the AM/PM control, and the popover (the small panel that opens next to its trigger) are where time pickers fail, and they are up to you.
+The component connects the label to the input, and provides the focus ring. The clock trigger, the AM/PM control, and the popover are where time pickers fail, and they are up to you.
 
 ### Screen readers
 
 - **Pass a real label.** Never let placeholder text be the accessible name (the name a screen reader reads out for a control) — it is not announced as a label, and it disappears when the user types. A field with no label has no accessible name.
 - **Name the clock icon if it is a control** — "Choose time" — and keep it silent if it is decorative. An unlabeled graphic that can be used announces nothing useful.
-- **State the expected format in the help text.** Whether the field wants `9:00 AM` or `09:00`, and whether seconds are accepted, must be put in words. A visual mask tells a screen reader (software that reads the screen aloud) nothing.
+- **State the expected format in the help text.** Whether the field wants `9:00 AM` or `09:00`, and whether seconds are accepted, must be put in words. A visual mask tells a screen reader nothing.
 - **State the time zone in text**, not by position or color. A time zone that is only implied is not communicated — and a converted, or not local, time that is not labeled is a wrong answer delivered with confidence.
 - **Name the unit when it is not obvious.** If the field takes a value like a duration, or a 24-hour clock in a 12-hour locale, say so in the help text.
 - **The error message is the text that gets announced.** Because it replaces the help text, it is the only thing that will be read — so it has to state the rule, including the format.

@@ -39,7 +39,7 @@ Progressive disclosure means showing only what is needed now, with the rest avai
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.stepper`. **Do not pass a variant, size, or state that is not listed here.**
 
-**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis          | Options                  | React prop |
 | ------------- | ------------------------ | ---------- |
@@ -48,7 +48,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **A step may have a second line.** `description-text` exists beside `label-text`, so a step has a name and an optional short description. It is not a place for a paragraph.
 
-**Finished steps and upcoming steps are told apart by the connector** (the line between them). `completed-connector-size` and `upcoming-connector-size` differ — which means progress depends on the thickness of a line and a color. That is a single visual channel (a way of carrying meaning, such as color, shape, position, or text), and you must not rely on it alone; see the accessibility section and `recursica-skill-system-conventions`.
+**Finished steps and upcoming steps are told apart by the connector** (the line between them). `completed-connector-size` and `upcoming-connector-size` differ — which means progress depends on the thickness of a line and a color. That is a single visual channel (color, shape, position or text, each a separate signal), and you must not rely on it alone; see the accessibility section and `recursica-skill-system-conventions`.
 
 **There is no state axis on the component.** "Done, Current, & Upcoming" behavior is shown only on the design-system website, but the UI kit defines no `states`. A step's status is data you supply, and you must express it in what assistive technology reads — it is not a variant you select.
 
@@ -58,9 +58,9 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Rules for using it
 
-**Every step must be a stage the user recognizes.** Cutting a form into random thirds adds clicks without making it any easier. If the steps do not match something in the user's mental model (a person's picture of how something works), the form belongs on one page.
+**Every step must be a stage the user recognizes.** Cutting a form into random thirds adds clicks without making it any easier. If the steps do not match something in the user's mental model (what a person expects from the tools and work they already know), the form belongs on one page.
 
-**Label each step with the name of the stage**, and use `description-text` only for a short fragment that clarifies it. `recursica-skill-forms` bans sentences in microcopy (the short text in an interface) — the shortest string that carries the information wins.
+**Label each step with the name of the stage**, and use `description-text` only for a short fragment that clarifies it. `recursica-skill-forms` bans sentences in microcopy — the shortest string that carries the information wins.
 
 **Next and Back are buttons, not links.** They act on the process, not on a location. `recursica-skill-buttons-links` and `recursica-skill-button` both say this; a Back that changes the URL is navigation, not a step.
 
@@ -72,7 +72,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Each step's content follows the form rules without change** — a single column, one field per row, and no custom spacing.
 
-**Label placement is one decision for the whole form — not one per step, and never one per field.** `recursica-skill-forms` allows labels side by side or stacked, and forbids both at the same breakpoint (the screen width at which the layout changes). The container-width test is applied once, to the form, and the answer governs every field in it. A step's container is exactly what triggers stacking. So if the label and field will not sit side by side there, the whole form stacks in every step — not just the fields that feel cramped, and including the short ones that would have fitted. Never let one step sit side by side while another stacks.
+**Label placement is one decision for the whole form — not one per step, and never one per field.** `recursica-skill-forms` allows labels side by side or stacked, and forbids both at the same breakpoint. The container-width test is applied once, to the form, and the answer governs every field in it. A step's container is exactly what triggers stacking. So if the label and field will not sit side by side there, the whole form stacks in every step — not just the fields that feel cramped, and including the short ones that would have fitted. Never let one step sit side by side while another stacks.
 
 **Never put the step's content, or any part of the form, inside a card.** See `recursica-skill-card`.
 
@@ -82,9 +82,9 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
 
-The stepper's whole job is to show position and progress, and it does that visually — an indicator, a color, and the thickness of a connector. **None of that reaches a screen reader** (software that reads the screen aloud). Everything the sighted user learns at a glance has to be stated in what assistive technology reads, and the riskiest moment is when the step changes.
+The stepper's whole job is to show position and progress, and it does that visually — an indicator, a color, and the thickness of a connector. **None of that reaches a screen reader**. Everything the sighted user learns at a glance has to be stated in what assistive technology reads, and the riskiest moment is when the step changes.
 
 ### Screen readers
 

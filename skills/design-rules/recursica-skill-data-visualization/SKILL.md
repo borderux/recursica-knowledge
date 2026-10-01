@@ -11,7 +11,7 @@ metadata:
 
 These are the house rules for charts in enterprise applications. They are opinions, not neutral best practices. Treat them as constraints.
 
-These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The color palette and component styling are already handled. Your decisions are whether to visualize at all, which chart to use, what the axes (variant properties, as Figma calls them — the ways a component varies, such as its size) do, what gets labeled, and what the user can interact with.
+These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The color palette and component styling are already handled. Your decisions are whether to visualize at all, which chart to use, what the axes (the properties a component varies on, such as size and style; Figma calls them variant properties) do, what gets labeled, and what the user can interact with.
 
 ## Read this first: charts come from a library, not from Recursica
 
@@ -119,7 +119,7 @@ Encoding is how the data is turned into visual marks — position, length, color
 
 **All charts must meet contrast and accessibility requirements**, including their labels — labels are where this fails most often.
 
-**A chart must offer an accessible equivalent.** A bare graph gives a screen reader (software that reads the screen aloud) nothing.
+**A chart must offer an accessible equivalent.** A bare graph gives a screen reader nothing.
 
 ## The accompanying data table
 

@@ -47,7 +47,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no expanded or collapsed state in the UI kit** — only selection. So how an open node looks different from a closed one is not settled here. See the uncovered list, and do not invent a rotation or a second icon token.
 
-**There is no disabled state, no hover state, and no size axis (a variant property, as Figma calls it — one way a component varies, such as its size).**
+**There is no disabled state, no hover state, and no size axis (a property a component varies on, such as size or style; Figma calls it a variant property).**
 
 **There are no checkboxes in the UI kit's tree.** A tree with checkboxes for choosing several items is not a setup this component provides.
 
@@ -65,13 +65,13 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Do not put a form, a table, or a card inside a tree node.** A node is a label, not a container.
 
-**Never rely on indentation alone to show depth.** It is a single visual channel (a way of carrying meaning, such as color, shape, position, or text) — `recursica-skill-system-conventions` requires a second one, which here means the level must be set in the code.
+**Never rely on indentation alone to show depth.** It is a single visual channel (color, shape, position or text, each a separate signal) — `recursica-skill-system-conventions` requires a second one, which here means the level must be set in the code.
 
 **If the tree is navigation, its nodes are links** with real routes, and it follows `recursica-skill-navigation` — including opening sub-levels on click, never on hover.
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
 
 A tree is the component where the keyboard rules are the most specific, and the most often ignored. Built as nested `div`s with click handlers, it cannot be used: there is no level, no expand state, and no way in.
 

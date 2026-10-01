@@ -33,7 +33,7 @@ A button performs an action. It does not take the user anywhere.
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.button`. **Do not pass a variant, size, or state that is not listed here.**
 
-**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis      | Options                            | React prop |
 | --------- | ---------------------------------- | ---------- |
@@ -46,7 +46,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **`icon-label` is one setup, not two.** A leading icon, a trailing icon, or both are all `icon-label`, and the props do not change between them. Do not look for separate leading and trailing variants.
 
-**There is no destructive or danger style.** A destructive action (one that deletes something or cannot easily be undone) cannot be signaled by color here. The label must carry it, and actions that cannot be undone are handled by confirmation. See `recursica-skill-buttons-links`.
+**There is no destructive or danger style.** A destructive action (an action that deletes data or cannot be undone) cannot be signaled by color here. The label must carry it, and actions that cannot be undone are handled by confirmation. See `recursica-skill-buttons-links`.
 
 **`disabled` is a state of every style.** The UI kit defines it under `solid`, `text`, and `outline`, and its opacity comes from `globals.states.disabled`. How it is set is in the uncovered list.
 
@@ -82,7 +82,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
-The component provides the focus ring (the outline that shows which element has keyboard focus) and the behavior of being activated. Everything below is up to you.
+The component provides the focus ring and the behavior of being activated. Everything below is up to you.
 
 ### Screen readers
 
@@ -94,7 +94,7 @@ The component provides the focus ring (the outline that shows which element has 
 - **This is the approved case for the two being different**, and it still follows the rule above, because the visible label is included in the accessible name: someone using voice can still say "Apply status" and be understood.
 - **The name updates as the count does**, and with no selection it is simply `Apply status`, with no count in either place. Do not announce every increase while the user is selecting; what matters is that the name is correct when they reach the button.
 - **It must be a real button element**, never a `div` or a `span` with a click handler. Only a real button is announced as a button, and only a real button responds to Enter and Space without extra work.
-- **Never rely on the icon to carry the meaning.** An icon-only button tells a screen reader (software that reads the screen aloud) nothing beyond its name — as `recursica-skill-system-conventions` requires.
+- **Never rely on the icon to carry the meaning.** An icon-only button tells a screen reader nothing beyond its name — as `recursica-skill-system-conventions` requires.
 - **A button in flight must announce that it is busy**, and the animating icon must be silent. The animation is only a visual signal. Without the busy state, a screen reader user hears nothing and presses again.
 - **Keep the accessible name the same while it is busy**, or make the change meaningful — "Saving" is useful; a name that disappears is not.
 

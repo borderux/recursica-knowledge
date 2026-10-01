@@ -25,7 +25,7 @@ These rules assume **complex enterprise web applications**, where the same peopl
 
 **A value the user cannot change is not a default — it is a fixed value**, and it must be shown as one: a read-only field, or not a control at all. Do not ship an interactive control whose value cannot actually be changed. See `recursica-skill-read-only-field`.
 
-**What the user does not get to change is the system default itself.** The default is the system's setting; what the user changes is their own value, this one time. Do not build an affordance (a visible cue that tells the user they can act on something) for changing the application's defaults, unless someone has asked for one.
+**What the user does not get to change is the system default itself.** The default is the system's setting; what the user changes is their own value, this one time. Do not build an affordance (a visible cue that a control can be used, such as the underline on a link) for changing the application's defaults, unless someone has asked for one.
 
 ## Which tab opens
 
@@ -33,7 +33,7 @@ These rules assume **complex enterprise web applications**, where the same peopl
 
 **The reason is reading direction, and that is the whole reason.** In a culture that reads left to right, people start at the left, so the leftmost tab is where the eye already is.
 
-**The one limit is locale** (the language and regional settings a person uses). In a locale that reads right to left, the first tab in that reading order is the default instead. Nothing else changes this — not importance, not how often a tab is used, and not which tab a stakeholder considers the highlight.
+**The one limit is locale**. In a locale that reads right to left, the first tab in that reading order is the default instead. Nothing else changes this — not importance, not how often a tab is used, and not which tab a stakeholder considers the highlight.
 
 **This is separate from restoring a tab.** Which tab opens _first_ is this rule. Returning a user to the tab they were on is a result of routing, not remembered state — see `recursica-skill-navigation`.
 

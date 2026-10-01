@@ -16,7 +16,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 ## The three governing principles
 
 1. **Mode is the only real difference.** A modal covers the page and stops the user from interacting with the rest of the application — they are in a mode, which is what the word means. A panel is not modal: the user can still move around and do things in the application. Every other rule here follows from that one difference.
-2. **Choose by how much the work depends on its context, not by how hard it is.** The question is whether the work needs the page it sits beside. Size and complexity come second, and cognitive load (the mental effort a task demands) is not the test at all.
+2. **Choose by how much the work depends on its context, not by how hard it is.** The question is whether the work needs the page it sits beside. Size and complexity come second, and cognitive load is not the test at all.
 3. **Never stack a mode on a mode, and never nest a surface inside itself.** Two modals must never be open at once. Once the user is in a mode, a second one leaves them with no idea where they are or what closing will do. A panel is not a mode, so a panel may open over another panel — but a panel must never contain one.
 
 ## Choosing the surface
@@ -56,7 +56,7 @@ The viewport is the visible area of the browser window. A breakpoint is the scre
 
 **A panel is not modal. It is semi-modal.** The user is working in something that has a mode, but the mode is not exclusive — the rest of the page stays readable and reachable.
 
-**NEVER draw a shader, scrim (a dimmed overlay), tint, or overlay behind an open panel.** There is no value in hiding the content. The whole reason a panel exists is that the user can see and work with what is behind it, so dimming it removes the panel's only reason to exist. This is not negotiable — it is the house's statement of how Recursica can work at all.
+**NEVER draw a shader, scrim, tint, or overlay behind an open panel.** There is no value in hiding the content. The whole reason a panel exists is that the user can see and work with what is behind it, so dimming it removes the panel's only reason to exist. This is not negotiable — it is the house's statement of how Recursica can work at all.
 
 **A panel that has to shade the page is the wrong surface.** If the content behind really must be blocked, build a page or a real modal instead. Opening something small, working in it, and going straight back is not worth all that machinery.
 
@@ -64,7 +64,7 @@ The viewport is the visible area of the browser window. A breakpoint is the scre
 
 ### Terminology
 
-- **Drawer and panel mean the same thing.** A drawer is a panel: a surface that slides in. A navigation drawer is a panel holding navigation, and it is no different in kind from a hamburger menu (a button with three horizontal lines that opens a menu).
+- **Drawer and panel mean the same thing.** A drawer is a panel: a surface that slides in. A navigation drawer is a panel holding navigation, and it is no different in kind from a hamburger menu.
 - **A sidebar is not a drawer.** A sidebar is permanently on screen — the desktop alternative to a top navigation, down the left side. See `recursica-skill-navigation`.
 - **Modal and dialog mean the same thing here.** A modal is a mode; a dialog box is one.
 
@@ -175,7 +175,7 @@ A panel gets its shape from sitting beside the page it depends on. Below the wid
 
 ## Decided elsewhere
 
-- **What goes on inside the components** — the panel's and modal's padding, sizes, dividers, elevation (how raised a surface looks), and overlay treatment.
+- **What goes on inside the components** — the panel's and modal's padding, sizes, dividers, elevation (the shadow that makes a surface look raised), and overlay treatment.
 - **How wide a panel is.** `min-width` and `max-width` are fixed properties with no size options. Which side it opens from is yours to set, but its width is not.
 - **How focus works inside a component.** The system provides it; your job is not to break it.
 
