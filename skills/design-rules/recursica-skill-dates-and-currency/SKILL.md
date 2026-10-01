@@ -11,12 +11,12 @@ metadata:
 
 These are the house rules for formatting dates, times, and numbers. They are opinions, not neutral best practices. Treat them as constraints.
 
-These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. Type styles are already handled. Your decisions are the format, the precision, the alignment, and what has to be labeled.
+These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. Type styles are already handled. The decisions this skill covers are the format, the precision, the alignment, and what has to be labeled.
 
 ## Governing principles
 
 1. **Never make the reader decode or calculate.** A date the reader has to figure out, or a timestamp they have to subtract from the current time, pushes work onto them that the format should have done.
-2. **Consistency matters more than the specific choice.** Use the same alignment, the same precision, and the same format across rows, columns, states, and screens. Where a rule below says "right-aligned" and an existing screen is left-aligned throughout, keeping it uniform is the more important thing to protect — except for currency, which is right-aligned unless a person explicitly says otherwise.
+2. **Consistency matters more than the specific choice.** Use the same alignment, the same precision, and the same format across rows, columns, states, and screens. Where a rule below says "right-aligned" and an existing screen is left-aligned throughout, keep the screen uniform, because uniformity takes priority — except for currency, which is right-aligned unless a person explicitly says otherwise.
 3. **Say when the data is not in the reader's own terms.** A different time zone, a converted currency, a rounded value — the reader must never assume they are seeing the original.
 
 ## Whose locale wins
@@ -44,7 +44,7 @@ A serialization is a machine-readable text form of a value, meant for computers 
 **NEVER make a displayed date by cutting characters out of a machine serialization.** `toISOString().slice(0, 10)` and its variations are the pattern to look for. That one line breaks two separate rules at once:
 
 - **It is the numeric form with hyphens** — `2026-08-10` — which is the format this section forbids.
-- **It is in UTC, not the reader's time zone.** (UTC is the reference time zone that all other time zones are measured from.) So it is not just formatted wrong — it is the wrong day. An entry made at 6pm on the 10th, west of Greenwich, displays as the 11th. Nobody reviewing the screen sees a bug, because a believable date is showing.
+- **It is in UTC, not the reader's time zone.** (UTC is the reference time zone that all other time zones are measured from.) So it is not only formatted wrong — it is the wrong day. An entry made at 6 p.m. on the 10th, west of Greenwich, displays as the 11th. Nobody reviewing the screen sees a bug, because a believable date is showing.
 
 **The second problem is the dangerous one**, and it survives a fix to the first. Reformatting the same UTC string into `Aug 10, 2026` still shows the wrong day. Fix where the value comes from and how it is formatted, together.
 
@@ -72,17 +72,17 @@ Here is the example that makes this concrete: a log of a break-in that happened 
 
 **Use relative time for recent events** — `15 minutes ago`, `today`, `yesterday`, `this week` — wherever more detail does not help the reader.
 
-The reason is principle 1. Telling someone an event happened at 2:23 p.m. when it is now 2:45 p.m. makes them do math to learn what they actually wanted to know: "recently."
+The reason is principle 1. Telling someone an event happened at 2:23 p.m. when it is now 2:45 p.m. makes them do math to learn what they wanted to know: "recently."
 
 **Past a certain point, switch to the absolute date.**
 
 **That point is one week.** Within the last week, a value is shown in relative terms — `now`, `5 minutes ago`, `16 hours ago`, `yesterday`, `3 days ago`. At a week and beyond, it is shown as the absolute date, `Jun 24, 2026`. A product may change this with a stated reason. Without one, a week is the house rule, not a decision to reopen on each screen.
 
-**Use the platform's relative formatter, not strings you write by hand.** In a browser, that is `Intl.RelativeTimeFormat`, and its `numeric: "auto"` setting is what produces `yesterday` instead of `1 day ago` — in each locale, which hand-written text cannot do. Writing those strings yourself translates the screen into only one language.
+**Use the platform's relative formatter, not hand-written strings.** In a browser, that is `Intl.RelativeTimeFormat`, and its `numeric: "auto"` setting is what produces `yesterday` instead of `1 day ago` — in each locale, which hand-written text cannot do. Hand-written strings cover only the one language they were written in.
 
 **Do not let the relative form reach the cutoff itself.** Rounding at the top of the range shows `7 days ago` for a value that is 6.9 days old, in the same column as a value an hour older that shows an absolute date. Cap the largest relative value below the cutoff.
 
-**Seconds do not appear here.** Anything under a minute reads `now`. The precision-consistency rule below allows seconds only for a set of values under a minute that are being compared, and a single timestamp is not that.
+**Seconds do not appear here.** Anything under a minute shows `now`. The precision-consistency rule below allows seconds only for a set of values under a minute that are being compared, and a single timestamp is not that.
 
 **A relative value is calculated when it is drawn on screen, and it does not update itself.** On a screen that stays open a long time and never reloads its data, this becomes stale in a way the reader cannot see. Either refresh it, or use the absolute form. Do not leave a page saying `now` an hour later.
 
@@ -112,9 +112,9 @@ The reason is principle 1. Telling someone an event happened at 2:23 p.m. when i
 
 **MUST group digits once a value reaches four figures.** `2,046`, never `2046`. This applies to every quantity a reader might compare or read out loud — counts, totals, row tallies — not only to money. An ungrouped four-figure number is read one digit at a time, and two of them in a column cannot be compared at a glance — which is the whole reason the column is right-aligned.
 
-**The separator belongs to the locale, so let the platform choose it.** Use `Intl.NumberFormat` or `toLocaleString`: a comma in one locale, a period or a thin space in another. Never write your own regex to insert commas. It produces the wrong separator everywhere the locale is not yours, and it is the same kind of mistake as slicing a date serialization.
+**The separator belongs to the locale, so let the platform choose it.** Use `Intl.NumberFormat` or `toLocaleString`: a comma in one locale, a period or a thin space in another. Never insert commas with a hand-written regex. It produces the wrong separator in every locale other than the one it was written for, and it is the same kind of mistake as slicing a date serialization.
 
-**NEVER group an identifier.** A year, a version, a port, an account or record number, a postcode: `2026`, not `2,026`. Grouping says "this is a quantity you may compare." On an identifier that claim is false, and the reader believes it for a moment. If doing math on the value makes no sense, it is not a number for this purpose.
+**NEVER group an identifier.** A year, a version, a port, an account or record number, a postal code: `2026`, not `2,026`. Grouping marks a value as a quantity that can be compared. On an identifier that claim is false, and the reader believes it for a moment. If doing math on the value makes no sense, it is not a number for this purpose.
 
 **Rounding and abbreviating are acceptable when the goal is to shorten** — `952` below a thousand, `1.2K` above it. Do it deliberately, not by default. Grouping is the default; abbreviating is a deliberate choice.
 
@@ -177,7 +177,7 @@ Do not stretch a rule above to fit one of these. A wrong convention in a fiscal 
 - **Type styles, number fonts, and tabular figures.** Owned by the design system.
 - **Table structure** — columns, widths, sorting. Covered by `recursica-skill-tables`, which this skill provides cell formatting for.
 - **Null and missing values.** Covered by the null-cell rule in `recursica-skill-tables`.
-- **Abbreviating axis (a property a component varies on, such as size or style; Figma calls it a variant property) labels in charts.** Covered by `recursica-skill-data-visualization`.
+- **Abbreviating axis labels in charts.** Covered by `recursica-skill-data-visualization`.
 
 ## Pre-flight checklist
 
@@ -185,7 +185,7 @@ Do not stretch a rule above to fit one of these. A wrong convention in a fiscal 
 - [ ] No read-only date appears as numbers separated by slashes or hyphens.
 - [ ] Every displayed date and time is built by a formatting API, in the reader's locale and time zone. No value is cut out of a machine serialization, and no `toISOString()` slice reaches a screen.
 - [ ] Formatters are created once and shared, not separately wherever they are used or for each row.
-- [ ] You identified every field that holds a date with no time, and a time-zone conversion does not shift it.
+- [ ] Every date field is identified as a date with no time or an exact moment, and no time-zone conversion shifts a date with no time.
 - [ ] Times are in the user's own time zone, not the tenant's.
 - [ ] A time zone is stated whenever the value is outside the user's time zone, the user's time zone is unknown, or the user has switched time zones.
 - [ ] Times for events that happened elsewhere are shown in the time zone where they happened, labeled, with a way to convert them.
@@ -203,4 +203,4 @@ Do not stretch a rule above to fit one of these. A wrong convention in a fiscal 
 - [ ] Durations use unit labels (`3h 20m`), never a clock format, and extend to days only when they pass one day.
 - [ ] Seconds appear only for values under a minute across a set of objects — and then on every value in that set.
 - [ ] Alignment is uniform across read-only and editable values on the same screen.
-- [ ] You asked before formatting anything on the uncovered list: week, quarter, or fiscal conventions, or a duration that passes one day.
+- [ ] Uncovered items were asked about, not decided: week, quarter, or fiscal conventions, or a duration that passes one day.

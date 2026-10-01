@@ -11,7 +11,7 @@ metadata:
 
 These are the house rules for charts in enterprise applications. They are opinions, not neutral best practices. Treat them as constraints.
 
-These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The color palette and component styling are already handled. Your decisions are whether to visualize at all, which chart to use, what the axes (the properties a component varies on, such as size and style; Figma calls them variant properties) do, what gets labeled, and what the user can interact with.
+These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The color palette and component styling are already handled. The decisions left to make are whether to visualize at all, which chart to use, what the axes do, what gets labeled, and what the user can interact with.
 
 ## Read this first: charts come from a library, not from Recursica
 
@@ -19,22 +19,22 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 ### The sequence
 
-1. **Check whether the data needs a chart.** The next section often answers this: a number or a table is frequently better than a chart. Settle this first, because it may make the library question go away entirely.
-2. **Check the project for a declared charting library.** Look in the dependency list and in the project's own configuration. If one is there, use it. That decision has already been made, and adding a second charting library is not yours to do.
+1. **Check whether the data needs a chart.** The next section often answers this: a number or a table is frequently better than a chart. Settle this first, because the answer may remove the need for a charting library.
+2. **Check the project for a declared charting library.** Look in the dependency list and in the project's own configuration. If one is there, use it. That decision has already been made, so do not add a second charting library.
 3. **If none is declared, stop and prompt the user to add one.** Do not go ahead, and do not build around the gap. Present open-source options that suit this application's architecture, along with their tradeoffs, and let the user choose. See `recursica-skill-design-router` on asking instead of guessing.
-4. **Never build a chart by hand out of basic layout components.** In a build test, a bar chart was made from `Grid`, `Flex`, `Stack`, and `Text`, using badges as the bars. It worked, and it is not allowed. A badge is not a bar, and the styling escape hatch is for a missing prop or token (a named design value, such as a color or a size, set by the design system) — never for a missing component.
+4. **Never build a chart by hand out of basic layout components.** In a build test, a bar chart was made from `Grid`, `Flex`, `Stack`, and `Text`, using badges as the bars. It worked, and it is not allowed. A badge is not a bar, and custom styling is for a missing prop or token (a named design value, such as a color or a size, set by the design system) — never for a missing component.
 
 ### What makes a charting library fit
 
-When you present options, judge them against this application, not by how popular they are:
+Judge the options against this application, not by how popular they are:
 
 - **Truly open source**, under a permissive license — MIT, Apache 2.0, or BSD.
-- **Built for React first**, rather than an older library with a thin React wrapper that fights how React draws the page.
+- **Built for React first**, rather than an older library with a thin React wrapper that conflicts with how React draws the page.
 - **Themeable from the outside**, so series colors, axes, and gridlines can be driven by Recursica tokens. A library that insists on its own palette cannot meet the color rules below.
 - **No competing theme provider.** A library that brings its own theme settings and expects to control the color scheme is how a page ends up only half themed — the same problem already seen between the Recursica and Mantine layers.
-- **Gives you control over what these rules require**: a zero baseline, linear scales, axis labels, and pattern or texture in addition to color. A library whose defaults are decorative — 3D effects, gradient fills, animated pie charts — will fight every rule below.
+- **Exposes settings for what these rules require**: a zero baseline, linear scales, axis labels, and pattern or texture in addition to color. A library whose defaults are decorative — 3D effects, gradient fills, animated pie charts — will conflict with every rule below.
 - **Reasonable in size.** These are dense data screens that people use all day. Downloading a large library for one chart is a poor trade.
-- **Accessible output, or output you can pair with a data table.** The rule requiring an accompanying data table is not optional, so the chart does not have to solve accessibility on its own — but it must not actively block it.
+- **Accessible output, or output that works alongside a data table.** The rule requiring an accompanying data table is not optional, so the chart does not have to solve accessibility on its own — but it must not actively block it.
 
 **No library has been endorsed by the house yet.** Nothing has been chosen, so present candidates and their tradeoffs instead of stating a standard. Once a project picks one, that choice belongs to the project — and every rule below still applies to whatever it draws.
 
@@ -42,19 +42,19 @@ The rest of this skill describes what a correct chart looks like, whichever libr
 
 ## Governing principles
 
-1. **Decide the story first, then use the simplest form that tells it.** Decide what the chart is saying — a change, a lack of change, a comparison — and then use the simplest chart that carries it. There is a constant pull to add one more dimension or one more series. Resist it: the more data you add, the less likely the reader is to see the simple story.
+1. **Decide the story first, then use the simplest form that tells it.** Decide what the chart is saying — a change, a lack of change, a comparison — and then use the simplest chart that carries it. There is a constant pull to add one more dimension or one more series. Resist it: each added dimension or series makes the simple story harder for the reader to see.
 2. **Keep the data honest.** Charts are extremely easy to make misleading, usually by accident. Use zero baselines, linear scales, and complete sequences; add no unexplained emphasis; and mark projections as projections.
-3. **Never carry meaning in a single channel.** A channel is a way of carrying meaning, such as color, shape, position, or text. Color alone fails for a large share of readers, and on every printed page. Pattern, labels, values, and an available data table are what keep a chart readable.
+3. **Never carry meaning in a single channel (color, shape, position or text, each a separate signal).** Color alone fails for a large share of readers, and on every printed page. Pattern, labels, values, and an available data table are what keep a chart readable.
 
 ## Whether to visualize at all
 
 **A chart must be a simpler way to tell the story than words, numbers, or a table.** That is the only reason to have one. If the reader cannot understand it quickly, plain text or a table would have worked better.
 
-**Do not chart a difference too small to see.** 51% versus 49% is not a chart. Just state it.
+**Do not chart a difference too small to see.** 51% versus 49% is not a chart. State it in text.
 
 **Only put a chart on a dashboard when it tells the story more simply, at a glance.** Ten charts on one dashboard is overwhelming and confusing, and the urge to add charts nobody needs is real. See `recursica-skill-dashboards` for the limits — at most four charts, and a number in large type rather than a chart that repeats it.
 
-**NEVER use an infographic in an enterprise application.** Infographics are a marketing storytelling tool. Do not dress up application data; let the data speak for itself.
+**NEVER use an infographic in an enterprise application.** Infographics are a marketing storytelling tool. Do not decorate application data. Show the data plainly.
 
 ## Chart type
 
@@ -63,15 +63,15 @@ The rest of this skill describes what a correct chart looks like, whichever libr
 - **Segments MUST add up to 100%.** A pie that does not add up to the whole is invalid.
 - **Do not put the chart's own value in the donut hole.** A two-segment donut labeled "75%" tells the story twice and adds nothing. A _different_ kind of value there is fine — a written summary, such as an overall status.
 
-**Choosing between bars and columns, or lines and areas, is not all-or-nothing.** They tell the same story in different ways. What sets them apart is slope. A line or an area shows the rate of change: how steep it is carries meaning. Bars and columns show values at single moments and make the reader work out the slope. Pick based on which story you are telling.
+**Choosing between bars and columns, or lines and areas, is not all-or-nothing.** They tell the same story in different ways. What sets them apart is slope. A line or an area shows the rate of change: how steep it is carries meaning. Bars and columns show values at single moments and make the reader work out the slope. Pick based on the story the chart tells.
 
-**Nominal categories never get a line chart.** Nominal categories are ones with no natural order. If you could rearrange the categories without changing the meaning — apples, oranges, bananas — there is no slope between them to draw. A line suggests a connection between neighboring points that does not exist. Time, or any sequence with a natural order, does have that connection, and that is what makes it suitable for a line.
+**Nominal categories never get a line chart.** Nominal categories are ones with no natural order. If reordering the categories does not change the meaning — apples, oranges, bananas — there is no slope between them to draw. A line suggests a connection between neighboring points that does not exist. Time, or any sequence with a natural order, does have that connection, and that is what makes it suitable for a line.
 
 **Combine different techniques instead of repeating one.** A trend line over a column chart, or an area behind bars — using two different visual techniques together is how overlapping data stays easy to tell apart.
 
 **NEVER use 3D.** Every chart is two-dimensional. A third dimension may be shown as the size of a dot or bubble — never as depth or volume.
 
-**A third dimension must earn its place.** Bubble size and clustering are valid, but size draws attention and creates its own effects on reading order. Be sure the third dimension adds value before you use it.
+**Use a third dimension only when it adds value.** Bubble size and clustering are valid, but size draws attention and changes what the reader looks at first. Confirm the third dimension adds value before using it.
 
 ## Axes and scale
 
@@ -81,9 +81,9 @@ The rest of this skill describes what a correct chart looks like, whichever libr
 
 **Put time on the horizontal axis whenever the data has a time dimension.** Time is the most powerful dimension available, because it shows a trend. A value without time is a single moment with no answer to "is this getting better or worse?" If a third dimension is needed, keep time on X and show the third one as size.
 
-**NEVER skip values in a sequence.** Showing five of seven days to suggest a weekly trend is invalid. If the data for those points does not exist, this is the wrong way to show it.
+**NEVER skip values in a sequence.** Showing five of seven days to suggest a weekly trend is invalid. If the data for those points does not exist, do not skip them. Mark the gap instead, as described under missing data.
 
-**NEVER rearrange a natural sequence.** Sorting days of the week by amount — Monday, Wednesday, Thursday, Tuesday — cannot be read, because the reader's sense of time fights the chart. The same goes for numbered groups and any set that has a built-in order.
+**NEVER rearrange a natural sequence.** Sorting days of the week by amount — Monday, Wednesday, Thursday, Tuesday — cannot be read, because the reader expects the days in calendar order. The same goes for numbered groups and any set that has a built-in order.
 
 **Axes that are purely categories may be ordered on purpose** — largest to smallest, or alphabetically — when no natural sequence exists. Order them in the most natural way the data allows.
 
@@ -97,13 +97,13 @@ The rest of this skill describes what a correct chart looks like, whichever libr
 
 **Keep labels as short as they can be while still being understood.** Shortening to "1M" or "2M" is fine when the reader knows the unit. Do not use abbreviations or acronyms that the reader's knowledge of the field may not cover.
 
-**Make numbers easy for people to read.** Very large numbers with many decimal places are effectively unreadable. Round to what the reader can actually use.
+**Make numbers easy for people to read.** Very large numbers with many decimal places are effectively unreadable. Round to what the reader can use.
 
 ## Thresholds and benchmarks
 
-**Include thresholds, ideal ranges, or reference lines wherever a value can be "good" or "bad."** The reader usually does not know what a healthy number looks like. A threshold turns a chart they must interpret into one they can read at a glance. This is one of the most valuable things you can add.
+**Include thresholds, ideal ranges, or reference lines wherever a value can be "good" or "bad."** The reader usually does not know what a healthy number looks like. A threshold turns a chart they must interpret into one they can read at a glance. It is one of the most valuable additions to a chart.
 
-**Label benchmarks clearly and say where they came from.** Make it clear that a benchmark is a benchmark, that it is not your data, and what its source is. Label trend lines. Naming the source is what keeps a comparison from misleading.
+**Label benchmarks clearly and say where they came from.** Make it clear that a benchmark is a benchmark, that it is not the application's own data, and what its source is. Label trend lines. Naming the source is what keeps a comparison from misleading.
 
 ## Encoding, color, and accessibility
 
@@ -123,7 +123,7 @@ Encoding is how the data is turned into visual marks — position, length, color
 
 ## The accompanying data table
 
-**Provide a data table next to the chart whenever there is room.** A summary table is almost never wasted: some readers simply prefer tables, the two can sit side by side, and the table is the accessible version of the same data.
+**Provide a data table next to the chart whenever there is room.** A summary table is almost never wasted: some readers prefer tables, the two can sit side by side, and the table is the accessible version of the same data.
 
 **At a minimum, the data table must be available**, so a reader using a screen reader can reach the values.
 
@@ -131,13 +131,13 @@ Encoding is how the data is turned into visual marks — position, length, color
 
 **Tooltip content MUST be extra detail only.** If information is needed to understand the story, it belongs in the chart itself.
 
-**Anti-pattern — the chart you have to hover to read.** A chart whose meaning can only be pieced together by hovering over each element in turn is inaccessible. It also forces the reader to hold each value in their head to compare it with the next. The axes and the legend carry the story; the tooltip adds detail.
+**Anti-pattern — a chart that can only be read by hovering.** A chart whose meaning can only be pieced together by hovering over each element in turn is inaccessible. It also forces the reader to hold each value in their head to compare it with the next. The axes and the legend carry the story; the tooltip adds detail.
 
 **Hover aids are welcome** — highlighting the element being hovered, or a guide line that helps the reader find a value.
 
-**Highlight or isolate on interaction, not permanently.** Emphasis belongs to hovering, clicking, or an isolate control, because it is part of exploring. A permanent visual difference just adds noise.
+**Highlight or isolate on interaction, not permanently.** Emphasis belongs to hovering, clicking, or an isolate control, because it is part of exploring. A permanent visual difference adds clutter.
 
-**Be careful about permanently emphasizing particular elements.** Random differences in lightness or color strength read as a ranking that the data does not support. There must be a stated reason.
+**Be careful about permanently emphasizing particular elements.** Random differences in lightness or color strength suggest a ranking that the data does not support. There must be a stated reason.
 
 **Drill-down does not conflict with simplicity.** A drill-down lets the reader click through to more detail. A good chart invites exploring, so let the reader click through to the underlying data. The chart itself does not need to change.
 
@@ -178,7 +178,7 @@ Encoding is how the data is turned into visual marks — position, length, color
 
 **Use different techniques when series overlap.** Several lines told apart only by the shape of their points — triangles, squares, stars — sitting on top of each other cannot be read. Columns with a single line over them separate cleanly.
 
-**When there are too many points to label, make the chart bigger.** Physical size is the main way to fit more labels. Reach for it before you drop detail.
+**When there are too many points to label, make the chart bigger.** Physical size is the main way to fit more labels. Increase the size before dropping detail.
 
 ## Smaller viewports
 
@@ -207,8 +207,8 @@ No house rule covers these yet. **Ask the person instead of choosing** — see t
 
 ## Pre-flight checklist
 
-- [ ] The data really needs a chart. You ruled out a number or a table first.
-- [ ] You used the project's declared charting library. If none was declared, you prompted the user to add one, gave real open-source options and their tradeoffs, and stopped there.
+- [ ] The data needs a chart. A number or a table was ruled out first.
+- [ ] The chart uses the project's declared charting library. If none was declared, the user was asked to add one, with real open-source options and their tradeoffs, and work stopped there.
 - [ ] No chart is built by hand out of basic layout components, and no component is being used as part of a chart.
 
 Before treating a chart as done, check:
@@ -217,7 +217,7 @@ Before treating a chart as done, check:
 - [ ] There is no pie or donut chart, except one with two — rarely three — clearly different segments that add up to 100%.
 - [ ] No donut hole repeats a value the chart already shows.
 - [ ] No line chart runs across nominal categories that could be rearranged freely.
-- [ ] There is no 3D. Any third dimension is shown as size, and earns its place.
+- [ ] There is no 3D. Any third dimension is shown as size, and adds value.
 - [ ] Nothing is styled as an infographic.
 - [ ] The value axis starts at zero, and the scale is linear.
 - [ ] Time is on the horizontal axis wherever the data has a time dimension.
@@ -237,6 +237,6 @@ Before treating a chart as done, check:
 - [ ] Live data either refreshes while the reader is told it is live, or waits behind a refresh control.
 - [ ] Default filters are disclosed.
 - [ ] Notes sit beside the chart, not on top of it.
-- [ ] Overlapping series use different techniques, not just different point shapes.
+- [ ] Overlapping series use different techniques, not only different point shapes.
 - [ ] At smaller sizes, the chart adapts instead of shrinking, and anything left out is pointed out.
-- [ ] You asked before deciding anything on the uncovered list: sparklines, legends, chart titles, empty states, and export.
+- [ ] Uncovered items were asked about, not decided: sparklines, legends, chart titles, empty states, and export.

@@ -56,7 +56,11 @@ export function significant(text) {
 
 /** Topics a checklist line names as uncovered, or `[]` if it names none. */
 export function namedTopics(line) {
-  const m = line.match(/uncovered list\s*(?::|—)\s*(.+?)\.?$/);
+  // "…the uncovered list: a, b." and the writing guide's form, "Uncovered items were asked
+  // about, not decided: a, b." Missing the second let every rewritten checklist slip past.
+  const m =
+    line.match(/uncovered list\s*(?::|—)\s*(.+?)\.?$/) ??
+    line.match(/Uncovered items were asked about, not decided\s*:\s*(.+?)\.?$/);
   if (!m) return [];
   return m[1]
     .replace(/^above all,\s*/, "")

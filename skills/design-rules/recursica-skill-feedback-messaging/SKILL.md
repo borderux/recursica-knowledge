@@ -11,13 +11,13 @@ metadata:
 
 These are the house rules for what the application says back to the user after they act, and while they wait. They are opinions, not neutral best practices — treat them as constraints.
 
-These rules assume **complex enterprise web applications, designed for desktop first**, built on a design system whose components are already accessible. The channel (the form a message takes: a toast, a banner or a modal) and the content are your decisions. The timing mostly is not.
+These rules assume **complex enterprise web applications, designed for desktop first**, built on a design system whose components are already accessible. The channel (the form a message takes: a toast, a banner or a modal) and the content are design decisions. The timing mostly is not.
 
 ## The three governing principles
 
-1. **Success is silent.** A normal successful action needs no confirmation at all. Feedback is kept for the exceptional case — a failure, a change of context, a wait. Every message you add costs attention on a screen the user visits every day.
-2. **Never change the height of the page to say something.** This is the stated reason inline messaging is avoided, and it applies more widely: a message that shifts the layout moves the thing the user was about to click.
-3. **Timing belongs to the library, not to the design.** How long a message stays, whether it persists, and how long an undo lasts all come from the underlying component library. Your job is to choose the channel and combine the content — not to fine-tune milliseconds.
+1. **Success is silent.** A normal successful action needs no confirmation at all. Feedback is kept for the exceptional case — a failure, a change of context, a wait. Each message takes the user's attention on a screen they visit every day.
+2. **Never change the height of the page to say something.** This is the stated reason inline messaging is avoided, and it applies more widely. A message that shifts the layout moves the control the user was about to click.
+3. **Timing belongs to the library, not to the design.** How long a message stays, whether it persists, and how long an undo lasts all come from the underlying component library. Choose the channel and combine the content. Do not set durations in milliseconds.
 
 ## Choosing the channel
 
@@ -43,11 +43,11 @@ A toast is a short message that appears briefly and then disappears. A modal is 
 
 **Applying it to a new case:** put the message in a sentence and check the tense. If it uses "will", "is about to", or "is still", it is a banner. If it uses "has", "was", or "did not", it is a toast.
 
-**The banner component is planned, but it is not in the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) yet.** The channel rule above is settled; the component to build it with is still coming. Until it ships, **do not improvise one** — no bordered `div` put to work as a banner, and no toast standing in for one. Raise it, and if the message cannot wait for the component, ask which surface to use in the meantime. See `recursica-skill-design-router`.
+**The banner component is planned, but it is not in the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) yet.** The channel rule above is settled; the component to build it with is still coming. Until it ships, **do not improvise one** — no bordered `div` used as a banner, and no toast used in its place. Raise the need for one, and if the message cannot wait for the component, ask which surface to use in the meantime. See `recursica-skill-design-router`.
 
 ## Do not use inline messaging
 
-**Avoid inline messaging. The house does not use it at all.** An inline success or status message inserted into the page changes the height of things. That moves everything below it, just as the user is reading or reaching for something.
+**Avoid inline messaging. The house does not use it at all.** An inline success or status message inserted into the page changes the height of the page. That moves everything below it while the user is reading it or about to click it.
 
 This applies to brief status and success messages placed in the flow of the page. There are two things it does **not** override:
 
@@ -58,9 +58,9 @@ This applies to brief status and success messages placed in the flow of the page
 
 ## Toasts
 
-**A toast can appear at any time, over any page.** Not depending on the current view is what a toast is for. It is also why a toast is the right channel when the action takes the user to another page.
+**A toast can appear at any time, over any page.** A toast is for messages that do not depend on the current view. That is also why a toast is the right channel when the action takes the user to another page.
 
-**Reach for a toast when:**
+**Use a toast when:**
 
 - **The action took the user somewhere else**, so there is no longer a place on the previous page to say anything.
 - **Saving happens bit by bit** as the user works, and interrupting the form would cost more than the reassurance is worth.
@@ -72,7 +72,7 @@ This applies to brief status and success messages placed in the flow of the page
 
 **How long an undo lasts also belongs to the library.** The underlying library decides how long an immediate undo stays available; the design does not set it.
 
-**Because you cannot make the toast last longer, keeping a toast on screen longer is not a way to make its action reliably reachable.** Where an undo matters, it must also exist somewhere that stays put. The toast points to it, instead of being the only way to reach it. See `recursica-skill-toast`.
+**A toast's duration cannot be lengthened to keep its action within reach.** Where an undo matters, it must also exist somewhere that stays on the screen. The toast points to it, instead of being the only way to reach it. See `recursica-skill-toast`.
 
 ## There is no partial success
 
@@ -92,13 +92,13 @@ This is why the channel table has no row for it: this state should not reach the
 
 ## Waiting
 
-**Show a loading indicator when the operation will take more than about 3 seconds.** Below that, showing and hiding an indicator is just noise.
+**Show a loading indicator when the operation will take more than about 3 seconds.** Below that, an indicator that appears and disappears is a distraction.
 
 **The button is the indicator for its own action.** On submit, the button switches to its disabled look with an animated icon. Owned by `recursica-skill-forms`, and built as described in `recursica-skill-button`.
 
 **Never put a blocking spinner or overlay over the page on submit.** Owned by `recursica-skill-forms`.
 
-**When an operation runs longer than normal, the default is to let it sit and wait.** A "this is taking longer than usual" toast is allowed, but it is not standard practice here. If one is used, it belongs at about 10 seconds — and more often, the right answer is to show nothing more.
+**When an operation runs longer than normal, the default is to show no extra message and let it finish.** A "this is taking longer than usual" toast is allowed, but it is not standard practice here. If one is used, it belongs at about 10 seconds — and more often, the right answer is to show nothing more.
 
 ## Decided elsewhere
 
@@ -111,7 +111,7 @@ This is why the channel table has no row for it: this state should not reach the
 
 - **When a field is validated, what its error says, and the save-status requirement** — `recursica-skill-forms`.
 - **Blocking confirmations, and dialogs for destructive actions** — `recursica-skill-modal`.
-- **Undo policy — when an action earns an undo instead of a confirmation** — `recursica-skill-buttons-links`.
+- **Undo policy — when an action gets an undo instead of a confirmation** — `recursica-skill-buttons-links`.
 - **The toast component's own variants, states, and accessibility details** — `recursica-skill-toast`.
 - **Loader variants, and what a spinner can and cannot tell the user** — `recursica-skill-loader`.
 - **Error logging, retry policy, and how the backend classifies a failure.** These are not UI concerns.
@@ -127,18 +127,18 @@ This is why the channel table has no row for it: this state should not reach the
 
 ## Pre-flight checklist
 
-- [ ] You added no confirmation for a normal successful action.
-- [ ] You chose each message's channel by its tense: something that has not happened yet is a banner, and something that just happened is a toast.
-- [ ] You did not improvise a banner while the component is still pending. You raised the need instead.
+- [ ] No confirmation appears for a normal successful action.
+- [ ] Each message's channel matches its tense: something that has not happened yet is a banner, and something that just happened is a toast.
+- [ ] No hand-built banner is used while the banner component is pending. The need for one is raised as a gap.
 - [ ] No brief success or status message is inserted into the page layout.
 - [ ] Any field-level save shows the persistent status that the forms rules require, or a toast — not an inline message that appears and disappears.
-- [ ] You built no partial-success message and no list of results for each item. You raised any partial result as a backend problem with how changes are grouped.
+- [ ] There is no partial-success message and no list of results for each item. Any partial result is raised as a backend problem with how changes are grouped.
 - [ ] Repeats of the same message are combined into one, and nothing stacks.
-- [ ] No screen shows several messages at the same time, and you treated a repeating error as a cause to fix.
-- [ ] You left the toast duration, persistence, and undo time to the library, and did not adjust them.
+- [ ] No screen shows several messages at the same time, and a repeating error is treated as a cause to fix.
+- [ ] The toast duration, persistence, and undo time are the library's defaults, unchanged.
 - [ ] The user can dismiss every toast.
 - [ ] No undo exists only inside a toast that times out.
 - [ ] A loading indicator appears only for operations that take more than about 3 seconds, and the submit button is the indicator for its own action.
 - [ ] There is no blocking spinner or overlay on submit.
-- [ ] You let any long-running operation wait. Any "taking longer than usual" message is deliberate, stated as non-standard, and appears no earlier than about 10 seconds.
-- [ ] You invented nothing from the uncovered list.
+- [ ] A long-running operation waits with no extra message by default. Any "taking longer than usual" message is deliberate, stated as non-standard, and appears no earlier than about 10 seconds.
+- [ ] Uncovered items were asked about, not decided: what a banner looks like and where it sits, live regions, the notification channel, toast titles, how long an error toast lasts, and banner versus modal.

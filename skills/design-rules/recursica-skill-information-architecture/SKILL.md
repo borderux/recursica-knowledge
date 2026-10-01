@@ -29,7 +29,7 @@ These are not objects, and must not be given a place of their own in the structu
 - **A filtered view of an object.** Overdue orders are orders. One object type is one table, filtered — never a second section. See `recursica-skill-tables`.
 - **An action.** Approving, exporting and importing are things done to an object. They are buttons, not places. See `recursica-skill-buttons-links`.
 
-**Find the objects in what you were given** — the nouns the request keeps returning to, and the domain model from the interview. Where the users call an object something different from the request, the users' word wins; see `recursica-skill-naming-terminology`. Where it is unclear whether something is an object or a property of one, ask.
+**Find the objects in the request and the interview** — the nouns the request keeps returning to, and the domain model from the interview. Where the users call an object something different from the request, the users' word wins; see `recursica-skill-naming-terminology`. Where it is unclear whether something is an object or a property of one, ask.
 
 **Whether a screen shows one object or many decides what the screen is.** Many of one object type is a list, and a list is a table by default — see `recursica-skill-tables`. One object is its detail view. Where that detail opens — a page of its own or a panel beside the list — is decided by the context test in `recursica-skill-panels-modals`.
 
@@ -60,7 +60,7 @@ A short table is enough:
 
 **Only an object people look for on its own, across every parent it belongs to.** The test: would anyone ask for a list of all of them, whatever they belong to? "Show me all customers" — yes, so Customer is top level.
 
-**An object that only makes sense inside another lives under that parent, and never gets a top-level item.** Nobody asks for every line item across every order; they ask for this order's line items. A top-level Line items section would be a list nobody uses, taking a place in the navigation from something they do.
+**An object that only makes sense inside another lives under that parent, and never gets a top-level item.** Nobody asks for every line item across every order; they ask for this order's line items. A top-level Line items section would be a list nobody uses, and it would take a navigation item away from a section people do use.
 
 **When a child object starts being looked for on its own, it becomes top level.** That is a change to the map, and it is agreed the same way the map was.
 
@@ -84,7 +84,7 @@ A section like this is still named with a noun — `Approvals`, never `Approve r
 
 ## Room to grow
 
-**Every group must have an obvious home for what will be added later.** A structure that only fits today's content is a defect, not something that will be revisited — the revisit does not happen, and new things get filed wherever there is room.
+**Every group must have an obvious home for what will be added later.** A structure that only fits today's content is a defect, not something to revisit later. The revisit does not happen, and new additions get filed wherever there is room.
 
 **Test it before the map is agreed.** Ask the product owner what is likely to be added next, and check that the map says where it would go without moving anything that is already there.
 
@@ -123,4 +123,4 @@ A section like this is still named with a noun — `Approvals`, never `Approve r
 - [ ] Every section that is not an object came from the request, and the map says so. None was invented.
 - [ ] The map says where the next likely addition would go, without moving anything already there.
 - [ ] Nothing in this skill decided how anything looks — tabs, sections, page or panel were left to their own skills.
-- [ ] You invented nothing from the uncovered list.
+- [ ] Uncovered items were asked about, not decided: how a parent's related objects appear on its detail page, the order of items within a level, an object that exists only once per account, how deep objects may nest, whether the structure may differ by persona, and what happens to routes when the map changes.

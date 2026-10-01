@@ -42,7 +42,7 @@ Apply this to every change that happens without the page reloading:
 
 **The application covers whatever falls between components.** Where a change happens with no component to speak for it, the application makes the announcement. The clearest case is a flow that succeeds silently — a submission that goes to a new page and shows nothing. Nothing there announces on its own, so the application must.
 
-**If there is a toast, the toast announces — always.** (A toast is a short message that appears briefly and then disappears.) There is no case where a toast appears without an announcement. Whatever the toast says is the announcement, so nothing else needs to repeat it.
+**If there is a toast, the toast announces — always.** There is no case where a toast appears without an announcement. Whatever the toast says is the announcement, so nothing else needs to repeat it.
 
 **The rule of thumb:** if a component is saying it, let the component say it. If nothing is saying it, say it yourself.
 

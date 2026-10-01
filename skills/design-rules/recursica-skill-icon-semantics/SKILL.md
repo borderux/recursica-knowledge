@@ -11,7 +11,7 @@ metadata:
 
 These are the house rules for which icon carries which meaning, and when an icon may stand on its own. They are opinions, not neutral best practices — treat them as constraints.
 
-These rules assume **complex enterprise web applications** built on a configured icon set. Which set that is, and how its icons are drawn, are not your decisions. What each icon means, and whether it appears alone, are.
+These rules assume **complex enterprise web applications** built on a configured icon set. Which set that is, and how its icons are drawn, are decided elsewhere. This skill decides what each icon means and whether it appears alone.
 
 ## The three governing principles
 
@@ -49,7 +49,7 @@ There are two tests. If either one applies, the control gets **an icon plus a la
 
 **A tooltip does not replace a label in either case.** The tooltip requirement above is the minimum for icon-only controls. It is not a way to make an unclear icon acceptable.
 
-**Specialized business concepts cannot be drawn.** Common, general actions — edit, home, close — are easy to remember because the same glyph means the same thing everywhere. An icon invented for a function that exists in only one application is very hard to make memorable. In enterprise software, the concepts are often too abstract for any symbol to carry: there is no shared understanding of what such symbols mean. Where a concept is specialized, the label does the icon's job, not the other way round. This is why an icon-only rail fails worst in business systems — see `recursica-skill-navigation` and `recursica-skill-working-memory`.
+**Specialized business concepts cannot be drawn.** Common, general actions — edit, home, close — are easy to remember because the same glyph means the same thing everywhere. An icon invented for a function that exists in only one application is very hard to make memorable. In enterprise software, the concepts are often too abstract for any symbol to carry: there is no shared understanding of what such symbols mean. Where a concept is specialized, the text label carries the meaning, not the icon. This is why an icon-only rail fails worst in business systems — see `recursica-skill-navigation` and `recursica-skill-working-memory`.
 
 ## Icons inside established components
 
@@ -57,7 +57,7 @@ There are two tests. If either one applies, the control gets **an icon plus a la
 
 **A close icon on a modal or panel still gets a tooltip anyway.** The pattern is well known, but adding one does no harm.
 
-**This does not allow a bare icon anywhere else.** The exemption belongs to icons that come built into a component, not to icons you place yourself.
+**This does not allow a bare icon anywhere else.** The exemption belongs to icons that come built into a component, not to icons placed separately on a screen.
 
 **Where a component's own indicator shows a state** — open or closed — that state must still be made available in code, not carried by the icon alone. Owned by `recursica-skill-system-conventions` and the individual component skills.
 
@@ -78,7 +78,7 @@ There are two tests. If either one applies, the control gets **an icon plus a la
 
 **The same icon does not mean different things in different places.** It must always mean the same thing — or at least share the same basic action.
 
-**Tie icons to the action wherever you can.** An edit-form control and an edit-page control may both use a pencil. The action is edit in both cases, so reusing the icon is correct, not a clash.
+**Tie each icon to its action wherever possible.** An edit-form control and an edit-page control may both use a pencil. The action is edit in both cases, so reusing the icon is correct, not a clash.
 
 **The opposite mistake is the more common one:** the same function drawn with a different icon in two places. That is one of the two main giveaways in the governing principles, and the alignment review pass in `recursica-skill-screen-priority` catches it.
 
@@ -116,7 +116,7 @@ How icons line up in a cell, and which columns exist at all, are owned by `recur
 
 - **Which icon set the system uses.** There is always a default set, and the designer's chosen set is configured in the development tools. Use what is configured.
 - **How icons are drawn** — line thickness, corner roundness, fill, size, and color. All of this is inherited.
-- **The icon that comes with a component**, such as a dropdown's or an accordion's indicator. Do not add your own on top of it.
+- **The icon that comes with a component**, such as a dropdown's or an accordion's indicator. Do not add another icon on top of it.
 
 ## Out of scope
 
@@ -139,8 +139,8 @@ How icons line up in a cell, and which columns exist at all, are owned by `recur
 ## Pre-flight checklist
 
 - [ ] Every icon on the screen comes from one set and one style — no mixing of filled, outline, thin, or different corner roundness and line thickness.
-- [ ] You brought in no icon from outside the configured set. You raised any missing icon instead.
-- [ ] Every icon-only button has a tooltip, and you claimed no exceptions.
+- [ ] No icon comes from outside the configured set, and a missing icon is raised as a gap instead of filled from another set.
+- [ ] Every icon-only button has a tooltip, with no exceptions.
 - [ ] The screen's clear primary action has a text label, and icon-only is used only for secondary functions.
 - [ ] No generic icon stands alone for a specific function, and no tooltip is standing in for a missing label.
 - [ ] An X means close, a trash can means delete, dismissing a chip is an X, more is a horizontal ellipsis and never a vertical kebab, and edit is a pencil.
@@ -149,4 +149,4 @@ How icons line up in a cell, and which columns exist at all, are owned by `recur
 - [ ] Decorative icons are silent to assistive technology, and any icon kept after failing the removal test is a landmarking icon beside a heading.
 - [ ] A status shown as an icon has an accessible name, and it never depends on color alone.
 - [ ] No non-interactive icon sits alone in a table cell.
-- [ ] You invented nothing from the uncovered list.
+- [ ] Uncovered items were asked about, not decided: glyphs outside the fixed-meanings table, more than one icon set, the external-link icon, status icons outside a table, how many decorative icons, and icon size.
