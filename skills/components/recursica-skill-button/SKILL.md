@@ -39,10 +39,10 @@ The rules below describe each option by role, such as "the primary style". The n
 - **Two sizes.** A button comes in a default size and a smaller size. The standard UI kit calls the smaller size `small`.
 - **Three kinds of content.** A button shows a label alone, an icon with a label, or an icon alone. One variant covers an icon before the label, after the label, or both. There are no separate variants for each icon position.
 - **A disabled state for every style.** The opacity of a disabled button comes from `globals.states.disabled`. How to turn on the disabled state is an open question.
-- **No destructive style.** Never invent a destructive style. Color alone cannot mark a destructive action (an action that deletes data or cannot be undone). Name the destructive action in the label, as in "Delete invoice". Confirm any action that cannot be undone. See `recursica-skill-buttons-links`.
-- **No loading state.** Show a loading button (a button whose action is still running) in the disabled look with an animated icon, with or without a label. Never add a spinner beside the button, change the label, or invent any new state.
-- **No success state.** Show any confirmation of a finished action outside the button, such as in a toast. See `recursica-skill-toast`.
-- **No full-width option.** Never stretch a button to fill the container the button sits in.
+- **No destructive style in the standard UI kit.** If the project adds a destructive style in Theme Forge, use the project's style. Never invent one. Color alone cannot mark a destructive action (an action that deletes data or cannot be undone). Name the destructive action in the label, as in "Delete invoice". Confirm any action that cannot be undone. See `recursica-skill-buttons-links`.
+- **No loading state in the standard UI kit.** If the project adds a loading state in Theme Forge, use the project's state. Otherwise, show a loading button (a button whose action is still running) in the disabled look with an animated icon, with or without a label. Never add a spinner beside the button, change the label, or invent any new state.
+- **No success state in the standard UI kit.** If the project adds a success state in Theme Forge, use the project's state. Otherwise, show any confirmation of a finished action outside the button, such as in a toast. See `recursica-skill-toast`.
+- **No full-width option in the standard UI kit.** If the project adds a full-width option in Theme Forge, use the project's option. Otherwise, never stretch a button to fill the container the button sits in.
 
 ## Rules
 
@@ -134,7 +134,7 @@ The button component provides the focus ring. The button component also handles 
 - [ ] Focus returns to the button when a modal or menu that the button opened closes.
 - [ ] A loading button shows the disabled look with an animated icon, with no spinner beside the button, no new label, and no new state. The loading button does not move or resize.
 - [ ] A loading button is marked busy, keeps the accessible name, stays in the tab order, and follows the user's reduced-motion preference.
-- [ ] Every variant, size, and state is one the project's UI kit lists, and no destructive style is invented.
+- [ ] Every variant, size, and state is one the project's UI kit lists, and no variant or option is invented.
 - [ ] Styling, including the focus ring, comes from the button component.
 - [ ] Actions the user has no permission for are hidden, not disabled.
 - [ ] Open questions were asked about, not decided: when to use the smaller size, full-width buttons, the icon for a loading button, split buttons and button groups, and setting the disabled state.

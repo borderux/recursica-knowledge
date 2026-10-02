@@ -77,6 +77,8 @@ Quoted interface copy keeps the exact interface wording, such as a button label 
 
 **Skills never state a project's variants or options as fixed facts.** A designer can add, rename or remove variants and options in Theme Forge, so each project can differ. Describe an option by role, such as "the primary style" or "the smaller size", and give the standard UI kit name only as an example. Tell the agent to get the project's list from the Recursica MCP server.
 
+**The project's variants win over the standard UI kit.** Write what the standard UI kit lacks as a fact about the standard UI kit, not as a ban: "The standard UI kit has no size variant. If the project adds one in Theme Forge, use the project's size variant." Keep a ban only where a design reason forbids the option outright, such as an error state on a badge, and give the reason.
+
 ### 5. Concrete words instead of metaphors
 
 Name the specific component, action or result. A reader should be able to picture what happens on the screen.
