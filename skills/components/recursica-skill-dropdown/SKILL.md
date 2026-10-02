@@ -11,14 +11,14 @@ metadata:
 
 A dropdown is a form field that hides its options until it is opened, and returns one value from that set.
 
-## Use it when
+## When to use a dropdown
 
 - **The set of answers is specific and finite**, and the user picks from it instead of typing.
 - **There are more options than the limit for a visible group** — more than 7 ± 2.
 - **Space is the constraint.** A dropdown is compact, so it can replace a checklist or a radio group in a long form where the visible options would add too much scrolling.
 - **The user already knows what is inside before they open it.** See the affordance test below.
 
-## Do not use it when
+## When not to use a dropdown
 
 | Instead of a dropdown                                               | Use                                                                            |
 | ------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
@@ -34,20 +34,20 @@ A dropdown is a form field that hides its options until it is opened, and return
 
 **Never use a disabled dropdown to show a value.** If nobody can ever change it here, it is not a form control.
 
-## What exists
+## Dropdown label placements and states
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.dropdown`. **Do not pass a variant, size, or state that is not listed here.**
 
-**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop. React ignores the name, with no error, if it is passed as a prop. A blank cell means no single prop sets that axis. CSS state or separate props set it instead, and the rules below say which.
+**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
 
-| Axis      | Options                   | React prop   |
-| --------- | ------------------------- | ------------ |
-| `states`  | `error`, `disabled`       |              |
-| `layouts` | `stacked`, `side-by-side` | `formLayout` |
+| Axis      | Options                   |
+| --------- | ------------------------- |
+| `states`  | `error`, `disabled`       |
+| `layouts` | `stacked`, `side-by-side` |
 
-**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**`layouts` is the label-placement axis.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
-**`formLayout` defaults to `stacked`, which puts the label above the input.** A field without the prop shows its label above the input at any container width, which breaks the house rule. `layouts` is the UI kit's name for this variant, not a prop: React ignores `layouts="side-by-side"` without an error and leaves the label above the input. Set `formLayout="side-by-side"` on every field to put the label beside the input.
+**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, using the adapter's name for that axis and option.
 
 **Placeholder and valued are not variants.** Both are shown only on the design-system website as content. In the UI kit, they are the same `text` property with different content, which is why there is no placeholder axis. The field's `colors` cover both.
 
@@ -55,13 +55,13 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no size axis.** `min-height` is a fixed property, and `globals.form.field.size.single-line-input-height` sets the height for every single-line field.
 
-**There is no multi-select axis**, no axis for grouping options into sections, and no searchable variant — see the uncovered list.
+**There is no multi-select axis**, no axis for grouping options into sections, and no searchable variant — see the open questions.
 
 **The UI kit defines the closed field only.** `icon-size` and `icon-text-gap` cover a leading icon and the expand indicator. The open menu, its options, and their rows are not part of this component's inventory.
 
 **Read-only is a separate component** — `read-only-field`, which shows text instead of an input.
 
-## Rules for using it
+## Rules for dropdowns
 
 **Run the affordance test before choosing this control: does the user know what is in there before they click it?** A dropdown hides its options, so there is no affordance (a visible cue that a control can be used, such as the underline on a link) for what is inside. The set has to be predictable.
 
@@ -126,7 +126,7 @@ The component connects the label to the field, provides the focus ring, and owns
 - **Do not move focus for the user after a selection.** No jumping ahead to the next field because a value now exists.
 - **Everything reachable by mouse must be reachable by key.** Nothing about opening, moving through, or choosing may depend on a pointer, and nothing needed may appear only on hover.
 
-## Set by the component
+## Styling the dropdown sets itself
 
 Do not set or override any of these. The component sets them:
 
@@ -140,7 +140,7 @@ Do not set or override any of these. The component sets them:
 
 Never style an unfocused dropdown so that it looks disabled. An editable field must look editable at rest.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-selection-controls` — when a dropdown replaces a visible group, the affordance test, option counts, pre-selection, disabled vs. read-only, and commit timing.
 - `recursica-skill-forms` — single-column layout, label placement, its container-width trigger, and one placement per form, required vs. optional marking, validation timing, pre-fill limits, save mode, and the rule that no form control goes inside a card.
@@ -149,11 +149,11 @@ Never style an unfocused dropdown so that it looks disabled. An editable field m
 - `recursica-skill-working-memory` — the 7 ± 2 basis and the recognition-versus-comparison boundary that decides when a long list is acceptable.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel; fix the structure rather than adding a mechanism to cope with it.
 
-### Only if the screen also uses it
+### Only if the screen also uses those components
 
 - `recursica-skill-autocomplete` — the typeahead control for sets too large to scan.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **The multi-select dropdown does not exist, and this is now confirmed in the shipped adapter as well as in the UI kit** — the dropdown maps to a single-value select, with no multi-select variant. `recursica-skill-selection-controls` requires one in two places. It is a gap in the component inventory, not an invitation to build one out of other parts: do not put a checkbox group inside a dropdown, and do not substitute a transfer list without asking. Where several values must be filtered, a build test used separate single-value filters that AND together (a row appears only if it matches all of them) successfully as the workaround. Ask.
 - **The open menu itself.** Option rows, their height, hover and active styling, group headers, dividers, icons or descriptions inside an option, and the maximum height of the menu before it scrolls are all outside the component's UI kit.
@@ -171,7 +171,7 @@ Never style an unfocused dropdown so that it looks disabled. An editable field m
 - [ ] Where there is no default, placeholder text is used, and it carries no required information.
 - [ ] A real label is passed, it makes sense on its own, and the placeholder is not doing its job.
 - [ ] Label placement is side by side, unless the container is too narrow.
-- [ ] `formLayout` is passed explicitly — `side-by-side`, unless the form's container is too narrow — and matches every other field in the same form. There is one placement per form at any given breakpoint, with no mixing between fields or sections. A missing prop means `stacked`, not the house rule, and `layouts` is not the prop name.
+- [ ] Label placement is set explicitly — `side-by-side`, unless the form's container is too narrow — and matches every other field in the same form. There is one placement per form at any given breakpoint, with no mixing between fields or sections. A missing setting means `stacked`, not the house rule, and `layouts` is not the setting name.
 - [ ] The menu is not cut off by the viewport, a panel, a modal, or any scrolling ancestor.
 - [ ] Selection rules are in assistive text. On error, it is replaced by a message that restates the rule, with a signal that is not color.
 - [ ] The expanded state, the number of options, the active option, and the selected value are all announced.
@@ -182,4 +182,4 @@ Never style an unfocused dropdown so that it looks disabled. An editable field m
 - [ ] Disabled is used only for fields that are unavailable for now, with the reason in text. Values that can never be edited use the read-only field.
 - [ ] Every variant, size, and state is from the inventory above, every property the component owns comes from the component, and no field without focus looks disabled.
 - [ ] The field saves with the form, in the same save mode as everything else in the system.
-- [ ] Uncovered items were asked about, not decided: multi-select, the menu's details, the autocomplete threshold, clearing, grouped options, and empty sets.
+- [ ] Open questions were asked about, not decided: multi-select, the menu's details, the autocomplete threshold, clearing, grouped options, and empty sets.

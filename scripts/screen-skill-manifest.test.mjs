@@ -113,14 +113,14 @@ test("an unknown import is reported as unmapped, never silently skipped", () => 
 
 test("cross-links parse to a non-empty list for a component skill", () => {
   // The regression test for the silent-empty parser. `recursica-skill-badge` names
-  // `recursica-skill-badges-chips` first in its `## Load these too`, so a screen importing Badge
+  // `recursica-skill-badges-chips` first in its `## Skills to read with this one`, so a screen importing Badge
   // must reach the badges design rules. The broken version returned [] here and threw nothing.
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "barb-"));
   const file = path.join(dir, "Screen.jsx");
   fs.writeFileSync(file, `import { Badge } from '@recursica/mantine-adapter'\n`);
   const slugs = manifest([file]).skills.map((s) => s.slug);
   assert.ok(slugs.includes("recursica-skill-badge"), "the component skill");
-  assert.ok(slugs.includes("recursica-skill-badges-chips"), "reached only through ## Load these too");
+  assert.ok(slugs.includes("recursica-skill-badges-chips"), "reached only through ## Skills to read with this one");
   fs.rmSync(dir, { recursive: true, force: true });
 });
 

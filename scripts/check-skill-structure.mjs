@@ -16,23 +16,24 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import YAML from "yaml";
-import { IF_USED_HEADING } from "./screen-skill-manifest.mjs";
+import {
+  COMPONENT_ROLES,
+  IF_USED_HEADING,
+  LOAD_HEADING,
+  h2s,
+  headingFor,
+} from "./lib/skill-sections.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SKILLS = path.join(ROOT, "skills");
 
-/** AGENT.md, "The shape of a component skill". Other `##` sections may sit between them. */
-export const COMPONENT_SECTIONS = [
-  "Use it when",
-  "Do not use it when",
-  "What exists",
-  "Rules for using it",
-  "Accessibility",
-  "Set by the component",
-  "Load these too",
-  "Uncovered — ask, do not invent",
-  "Pre-flight checklist",
-];
+/**
+ * AGENT.md, "The shape of a component skill": the nine sections, by role. Each heading names its
+ * component ("When to use a button"), so a role is matched by shape, not by string; the inventory
+ * has no fixed shape and is the section right before "Rules for …". Other `##` sections may sit
+ * between them, except between the inventory and "Rules for …".
+ */
+export { COMPONENT_ROLES };
 export const ACCESSIBILITY_SUBSECTIONS = [
   "Screen readers",
   "Keyboard and non-mouse navigation",
@@ -106,32 +107,56 @@ export function checkFrontmatter(text, slug) {
   return problems;
 }
 
+/**
+ * Where each role's heading sits in a component skill's `##` headings: `{ role, label, at }`, with
+ * `at` the index into `h2s(text)`, or -1 when the skill has no such section.
+ */
+export function locateRoles(text) {
+  const heads = h2s(text);
+  const at = {};
+  for (const r of COMPONENT_ROLES) {
+    if (r.match) at[r.role] = heads.findIndex((h) => r.match(h.title));
+  }
+  // The inventory is found by position — right before "Rules for …", after "When not to use …" —
+  // so a missing one shows as another role's heading in that place.
+  const inv = headingFor(text, "inventory");
+  const taken =
+    inv && COMPONENT_ROLES.some((r) => r.match && r.match(inv.title));
+  at.inventory =
+    inv && !taken ? heads.findIndex((h) => h.index === inv.index) : -1;
+  return COMPONENT_ROLES.map((r) => ({ ...r, at: at[r.role] }));
+}
+
 /** A component skill has the nine sections in order, and Accessibility has its two subsections. */
 export function checkComponentShape(text) {
   const lines = withoutCode(text.split("\n"));
   const problems = [];
-  const h2 = [];
-  lines.forEach((l, i) => {
-    const m = l.match(/^## (.+?)\s*$/);
-    if (m) h2.push({ title: m[1], line: i + 1 });
-  });
-  const found = h2.filter((h) => COMPONENT_SECTIONS.includes(h.title));
-  for (const title of COMPONENT_SECTIONS) {
-    if (!found.some((h) => h.title === title))
-      problems.push({ line: 1, message: `missing section \`## ${title}\`` });
-  }
-  const order = found.map((h) => h.title);
-  const expected = COMPONENT_SECTIONS.filter((t) => order.includes(t));
-  if (order.join("\n") !== expected.join("\n")) {
-    const first = found.find((h, i) => h.title !== expected[i]);
+  const heads = h2s(text);
+  const roles = locateRoles(text);
+  for (const r of roles) {
+    if (r.at >= 0) continue;
+    const where =
+      r.role === "inventory"
+        ? " — the section right before `## Rules for …`"
+        : "";
     problems.push({
-      line: first.line,
-      message: `sections are out of order — expected \`## ${expected[found.indexOf(first)]}\` here`,
+      line: 1,
+      message: `missing section \`## ${r.label}\`${where}`,
     });
   }
-  const a11y = h2.find((h) => h.title === "Accessibility");
+  const found = roles.filter((r) => r.at >= 0);
+  const inOrder = [...found].sort((x, y) => x.at - y.at);
+  const first = inOrder.find((r, i) => r !== found[i]);
+  if (first) {
+    const expected = found[inOrder.indexOf(first)];
+    problems.push({
+      line: heads[first.at].line,
+      message: `sections are out of order — expected \`## ${expected.label}\` here`,
+    });
+  }
+  const a11y = heads.find((h) => h.title === "Accessibility");
   if (a11y) {
-    const next = h2.find((h) => h.line > a11y.line);
+    const next = heads.find((h) => h.line > a11y.line);
     const sub = lines
       .slice(a11y.line, next ? next.line - 1 : lines.length)
       .map((l) => l.match(/^### (.+?)\s*$/)?.[1])
@@ -171,15 +196,17 @@ export function checkReferences(text, file, slugs) {
 }
 
 /**
- * A component's `## Load these too`: skill names only, and its "only if used" list names other
+ * A component's `## Skills to read with this one`: skill names only, and its "only if used" list names other
  * components. A design-rules skill there would be skipped by every loader, and a component's
  * rules would arrive without the design rules that govern them.
  */
 export function checkLoadLinks(text, components) {
-  const start = text.search(/^## Load these too\s*$/m);
-  if (start < 0) return [];
-  const line0 = text.slice(0, start).split("\n").length;
-  const body = text.slice(start).split(/^## (?!Load these too)/m)[0];
+  const head = h2s(text).find((h) => h.title === LOAD_HEADING);
+  if (!head) return [];
+  const line0 = head.line;
+  const rest = text.slice(head.index);
+  const end = rest.slice(1).search(/^## /m);
+  const body = end < 0 ? rest : rest.slice(0, end + 1);
   const problems = [];
   let conditional = false;
   body.split("\n").forEach((l, i) => {
@@ -188,21 +215,20 @@ export function checkLoadLinks(text, components) {
       if (!conditional)
         problems.push({
           line: line0 + i,
-          message: `unexpected heading in \`## Load these too\` — the only one allowed is \`${IF_USED_HEADING}\``,
+          message: `unexpected heading in \`## ${LOAD_HEADING}\` — the only one allowed is \`${IF_USED_HEADING}\``,
         });
     }
     if (/\]\(/.test(l))
       problems.push({
         line: line0 + i,
-        message:
-          "a link in `## Load these too` — write the skill name alone; a relative path means nothing outside this repository",
+        message: `a link in \`## ${LOAD_HEADING}\` — write the skill name alone; a relative path means nothing outside this repository`,
       });
     if (conditional) {
       for (const m of l.matchAll(/recursica-skill-[a-z0-9-]*[a-z0-9]/g)) {
         if (!components.has(m[0]))
           problems.push({
             line: line0 + i,
-            message: `\`${m[0]}\` is not a component, so it cannot be "only if the screen also uses it" — move it above the heading`,
+            message: `\`${m[0]}\` is not a component, so it cannot be "only if the screen also uses those components" — move it above the heading`,
           });
       }
     }

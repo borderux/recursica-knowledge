@@ -22,14 +22,14 @@ These rules assume **complex enterprise web applications, designed for desktop f
 1. **Check whether the data needs a chart.** The next section often answers this: a number or a table is frequently better than a chart. Settle this first, because the answer may remove the need for a charting library.
 2. **Check the project for a declared charting library.** Look in the dependency list and in the project's own configuration. If one is there, use it. That decision has already been made, so do not add a second charting library.
 3. **If none is declared, stop and prompt the user to add one.** Do not go ahead, and do not build around the gap. Present open-source options that suit this application's architecture, along with their tradeoffs, and let the user choose. See `recursica-skill-design-router` on asking instead of guessing.
-4. **Never build a chart by hand out of basic layout components.** In a build test, a bar chart was made from `Grid`, `Flex`, `Stack`, and `Text`, using badges as the bars. It worked, and it is not allowed. A badge is not a bar, and custom styling is for a missing prop or token (a named design value, such as a color or a size, set by the design system) — never for a missing component.
+4. **Never build a chart by hand out of basic layout components.** In a build test, a bar chart was made from `Grid`, `Flex`, `Stack`, and `Text`, using badges as the bars. It worked, and it is not allowed. A badge is not a bar, and custom styling is for a missing setting or token (a named design value, such as a color or a size, set by the design system) — never for a missing component.
 
 ### What makes a charting library fit
 
 Judge the options against this application, not by how popular they are:
 
 - **Truly open source**, under a permissive license — MIT, Apache 2.0, or BSD.
-- **Built for React first**, rather than an older library with a thin React wrapper that conflicts with how React draws the page.
+- **Built for the adapter's framework first**, rather than an older library with a thin wrapper that conflicts with how that framework draws the page.
 - **Themeable from the outside**, so series colors, axes, and gridlines can be driven by Recursica tokens. A library that insists on its own palette cannot meet the color rules below.
 - **No competing theme provider.** A library that brings its own theme settings and expects to control the color scheme is how a page ends up only half themed — the same problem seen between the Recursica and Mantine layers.
 - **Exposes settings for what these rules require**: a zero baseline, linear scales, axis labels, and pattern or texture in addition to color. A library whose defaults are decorative — 3D effects, gradient fills, animated pie charts — will conflict with every rule below.
@@ -186,7 +186,7 @@ Encoding is how the data is turned into visual marks — position, length, color
 
 **The story must be the same at every size.** A larger display may carry a richer set of data, and where information is left out at a smaller size, say so clearly.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **Which charting library, if any, becomes the house standard.** The selection criteria above are settled, and so is the process — check for a declared library, and prompt for one if there is none. But no library has been chosen, so every project currently answers this on its own.
 - **How a chosen library's theming is connected to Recursica tokens.** The requirement is clear; the method is not, and no adapter exists for it.
@@ -239,4 +239,4 @@ Before treating a chart as done, check:
 - [ ] Notes sit beside the chart, not on top of it.
 - [ ] Overlapping series use different techniques, not only different point shapes.
 - [ ] At smaller sizes, the chart adapts instead of shrinking, and anything left out is pointed out.
-- [ ] Uncovered items were asked about, not decided: sparklines, legends, chart titles, empty states, and export.
+- [ ] Open questions were asked about, not decided: sparklines, legends, chart titles, empty states, and export.

@@ -58,10 +58,10 @@ This is not a matter of looks. Mixing the two placements in one form:
 
 **Sections do not get their own placement either.** A form's sections are parts of one form. A section that stacks while the section above it sits side by side is the same defect.
 
-**In code, the label's position is the `formLayout` prop on each field. Set `formLayout="side-by-side"` on every field** to put the label beside the input. Field components **default to `stacked`**, which puts the label above the input, so a field without the prop has its label above at any width and breaks this rule. Leaving the prop out is a defect, not a choice of default. Two mistakes cause it, and neither shows an error:
+**Set `layouts` to `side-by-side` on every field** to put the label beside the input. An adapter's fields may **default to `stacked`**, which puts the label above the input at any width and breaks this rule. Leaving the setting out is a defect, not a choice of default. Two mistakes cause it, and neither shows an error:
 
-- **The prop is `formLayout`, not `layouts`.** `layouts` is what the UI kit calls this variant. React ignores an unknown prop without an error, so `layouts="side-by-side"` leaves the label above the input while the code looks correct.
-- **Every field needs the prop.** It is set per field, so one missed field mixes label placements in the form. Count the form's field components to check.
+- **The adapter's name is not always `layouts`.** `layouts` is the design-system name. Each adapter names the setting its own way, and an adapter may ignore a name it does not know. Look up the adapter's name with the Recursica MCP server's `recursica_get_component_doc` tool before setting it.
+- **Every field needs the setting.** It is set per field, so one missed field mixes label placements in the form. Count the form's field components to check.
 
 **Label wording:** always name the object clearly. A label must never rely on surrounding content for its meaning or context — a screen reader user hears the label on its own. If a verb is involved, make the verb clear and active. No passive verbs, and no linking verbs.
 
@@ -226,7 +226,7 @@ A CAPTCHA is a test that checks the user is a person and not a program.
 - Acceptable: checks that are fully invisible and automatic; a single checkbox that runs a test in the background.
 - **NEVER use challenge CAPTCHAs** that make the user pick images, solve puzzles, or make other human judgments. People fail them regularly, which is infuriating, and the small gain in security does not justify it.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 No house rule covers these yet. **Ask the person instead of choosing** — see the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule above to fit them.
 
@@ -245,7 +245,7 @@ Before treating a form as done, check:
 
 - [ ] There is one field per row, in a single column, from top to bottom — at every container width. Compound controls are the only rows that hold more than one input.
 - [ ] Labels sit to the left of their fields, right-aligned. They are stacked above only when the container is too narrow for both.
-- [ ] Every field has `formLayout="side-by-side"`, checked by counting the form's field components. A missing prop shows `stacked`. The prop is `formLayout`, not `layouts`.
+- [ ] Every field sets `layouts` to `side-by-side`, under the adapter's name for it, checked by counting the form's field components.
 - [ ] The whole form uses one label placement at any given breakpoint: every field side by side, or every field stacked. There is no mixing, including between sections.
 - [ ] There is no custom spacing between fields; only the components' own spacing.
 - [ ] No form, form section, or form control is inside a card.
@@ -269,4 +269,4 @@ Before treating a form as done, check:
 - [ ] Tab order matches the visual order.
 - [ ] There is no toggle to show the password, and no challenge CAPTCHA.
 - [ ] There is no confirmation dialog, unless the action cannot be undone and there is no way to recover.
-- [ ] Uncovered items were asked about, not decided: validation across steps, filter and search inputs, and error summaries.
+- [ ] Open questions were asked about, not decided: validation across steps, filter and search inputs, and error summaries.

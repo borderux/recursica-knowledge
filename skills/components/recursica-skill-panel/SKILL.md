@@ -11,13 +11,13 @@ metadata:
 
 A panel puts extra content beside the page, without blocking it.
 
-## Use it when
+## When to use a panel
 
 - **The user needs the page underneath while working** — filters, settings, a details view, or editing one thing that is on screen. This is the case a modal cannot serve.
 - **Secondary settings or details would clutter the main view**, but must not cover it.
 - **The content belongs to the current view**, not to a different place in the application.
 
-## Do not use it when
+## When not to use a panel
 
 | Instead of a panel                                                  | Use                                                                                  |
 | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
@@ -33,13 +33,13 @@ A panel puts extra content beside the page, without blocking it.
 
 **Do not hide critical content in a panel.** A panel saves space on the page, but its content stays out of sight until someone opens it. That suits a set of filters, and does not suit anything a user must act on to finish their work.
 
-## What exists
+## Panel parts
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.panel`. **The panel has no variant axes (the properties a component varies on, such as size and style; Figma calls them variant properties) at all** — no sizes, no sides, no widths, no types. Every entry below is a fixed property.
 
 **Parts of the component:** the panel has a header with a close control (`header-close-gap`), a content area, and a footer with a gap between buttons. Tokens define `min-width` and `max-width`, and the UI kit also defines a `divider-size`.
 
-**Do not pass a side or an edge.** There is no left, right, top, or bottom panel in the UI kit. Do not set which edge a panel comes from — see the uncovered list.
+**Do not pass a side or an edge.** There is no left, right, top, or bottom panel in the UI kit. Do not set which edge a panel comes from — see the open questions.
 
 **Do not pass a width or a size.** `min-width` and `max-width` are fixed. There is no narrow, wide, or full-height panel.
 
@@ -47,7 +47,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **In structure, the panel is the modal without the blocking.** It has the same header, content, footer, and close control as the modal. The only difference is that the page behind a panel stays usable. That difference changes the accessibility work described below.
 
-## Rules for using it
+## Rules for panels
 
 **A button opens a panel; the user does not navigate to it, and it creates no browser history entry.** `recursica-skill-navigation` says this for modals and panels together: a surface opened by a trigger is not a location. The one exception is a panel deliberately built to be linked to: it gets a route and a link trigger together, exactly as a modal may.
 
@@ -83,13 +83,16 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Below the tablet breakpoint, open the panel as a page instead** — not a narrower panel, and not a full-screen overlay styled as a panel. At tablet size and above, it stays a panel.
 
-**NEVER draw a shader, scrim, or tint behind an open panel.** This rule has no exceptions. A panel exists to sit beside the page while the user reads and uses it, and a scrim dims that page. `recursica-skill-panels-modals` owns the rule. The `withOverlay={false}` override below enforces it against the library's default.
+**NEVER draw a shader, scrim, or tint behind an open panel.** This rule has no exceptions. A panel exists to sit beside the page while the user reads and uses it, and a scrim dims that page. `recursica-skill-panels-modals` owns the rule. The overrides below enforce it against the library's default.
 
-**The adapter that ships today makes this component modal by default, which is the opposite of the house rule.** The panel wraps Mantine's `Drawer`, which by default draws an overlay, closes on a click outside it, traps focus, and locks page scrolling. A panel built with only the documented API is quietly modal. Until the adapter's defaults are fixed, pass the underlying props explicitly to get the house behavior:
+**An adapter may make this component modal by default, which is the opposite of the house rule.** An adapter can build the panel on its library's drawer, and a drawer usually draws an overlay, closes on a click outside it, traps focus, and locks page scrolling by default. A panel built with only the documented options is then modal without anyone noticing. Until the adapter's defaults are fixed, turn off all four explicitly:
 
-`withOverlay={false}` · `closeOnClickOutside={false}` · `trapFocus={false}` · `lockScroll={false}`
+- the overlay
+- closing on a click outside the panel
+- the focus trap
+- the scroll lock
 
-A build test confirmed that all four are needed, and that they survive the adapter's filtering of props. **A library default is not a house rule.** Mantine's drawer is modal by default, and that default says nothing about what a Recursica panel should do. It must never be treated as a house rule — see `recursica-skill-design-router`. This is a tracked defect in the adapter. When the default is fixed, delete the overrides instead of keeping them. Check before assuming they are still needed.
+Look up each setting's name in the adapter with the Recursica MCP server's `recursica_get_component_doc` tool. A build test on the Mantine adapter confirmed that all four are needed. **A library default is not a house rule.** A drawer's modal default says nothing about what a Recursica panel should do. It must never be treated as a house rule — see `recursica-skill-design-router`. This is a tracked defect in the adapter. When the default is fixed, delete the overrides instead of keeping them. Check before assuming they are still needed.
 
 **A panel is non-modal (it leaves the rest of the page usable), and that is the point of it.** The user can still move around the application, and act on the page behind it — see `recursica-skill-panels-modals`, which settles this directly. A panel built to block the page is a modal using the wrong component.
 
@@ -128,7 +131,7 @@ This component also follows the accessibility baseline in `recursica-skill-syste
 - **The tab order inside the panel follows the visual order** — the content, then the footer buttons, then the close control where it sits visually — and must not jump between the panel and the page unpredictably.
 - **Never make closing it pointer-only.** Escape and the close control both work, whatever a click outside does.
 
-## Set by the component
+## Styling the panel sets itself
 
 Do not set or override any of these. The component sets them:
 
@@ -140,7 +143,7 @@ Do not set or override any of these. The component sets them:
 - `border-size`, `border-radius`, `divider-size`.
 - `min-width`, `max-width`, `elevation`.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-panels-modals` — the owning design-rules skill: panel vs. modal vs. page, the context test, the scrolling threshold, the prohibition on stacking modes, forms in a panel, unsaved-change protection, and the focus-trapping difference.
 - `recursica-skill-navigation` — a location is a route; a trigger-invoked panel is not one and gets no history entry.
@@ -148,13 +151,13 @@ Do not set or override any of these. The component sets them:
 - `recursica-skill-buttons-links` — the trigger is a button, one primary action per surface, footer placement.
 - `recursica-skill-system-conventions` — the accessibility baseline every component follows.
 
-### Only if the screen also uses it
+### Only if the screen also uses those components
 
 - `recursica-skill-modal` — the blocking alternative, and the focus-trap and inert-background rules a modal panel inherits.
 - `recursica-skill-card` — why the panel's content is not wrapped in a card, and why no form goes in one.
 - `recursica-skill-toast` — transient confirmation and undo, which never belong in a panel.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **Opening transition.** The side is set, and how the panel is anchored is settled. Whether it slides in or expands when it opens is not settled.
 - **Panel width.** `min-width` and `max-width` are fixed, and there is no size axis, so a "wide panel" cannot be built. Stacked panels may still differ in width from each other, and nothing says whether a left panel and a right panel share a width.
@@ -182,7 +185,7 @@ Do not set or override any of these. The component sets them:
 - [ ] The close control has a real accessible name, the focus ring is intact, and nothing needed appears only on hover.
 - [ ] Changes the panel makes to the page are announced, not only redrawn.
 - [ ] Padding, gaps, borders, width, and elevation come from the component.
-- [ ] The panel is non-modal: focus is not trapped, and the page behind stays reachable by keyboard — checked in the running application, not assumed from the props passed.
+- [ ] The panel is non-modal: focus is not trapped, and the page behind stays reachable by keyboard — checked in the running application, not assumed from the settings passed.
 - [ ] No panel is nested inside another. Any stacked panel covers the first completely, and shares its side.
 - [ ] The panel sits flush against the left or right edge and is full height, and only one side is in use.
 - [ ] Nothing scrolls horizontally. Any content that made the panel scroll up and down is on a page instead, with the context it needed reproduced there.
@@ -190,4 +193,4 @@ Do not set or override any of these. The component sets them:
 - [ ] Below tablet size, it opens as a page. More than two stacked panels, and any top or bottom panel, were approved before they were built.
 - [ ] Any form inside uses stacked label placement throughout. There is no table inside the panel, and secondary material is in its own tab.
 - [ ] Closing with unsaved form data asks first; closing an untouched panel does not.
-- [ ] Uncovered items were asked about, not decided: the opening transition, panel width, top or bottom panel design, divider visibility, and a loading state.
+- [ ] Open questions were asked about, not decided: the opening transition, panel width, top or bottom panel design, divider visibility, and a loading state.

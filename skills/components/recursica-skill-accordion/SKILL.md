@@ -11,14 +11,14 @@ metadata:
 
 An accordion collapses peer sections of content (sections at the same level, of the same kind), so the user opens only the one they need.
 
-## Use it when
+## When to use an accordion
 
 - **The page has more sections than the user needs at once**, and the user reads them one at a time.
 - **The sections are peers at a single level.** One level, with no nesting.
 - **A navigation group with no landing page must reveal its sub-items in place** — the accordion behavior that `recursica-skill-navigation` specifies.
 - **A table row has extra detail** — a single level of expand and collapse on that row, as `recursica-skill-tables` requires.
 
-## Do not use it when
+## When not to use an accordion
 
 | Instead of an accordion                                     | Use                                                                                                    |
 | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
@@ -36,7 +36,7 @@ The critical path is the set of steps needed to finish the task.
 
 **Progressive disclosure has a stated limit.** (Progressive disclosure means showing only what is needed now, with the rest available on request.) `recursica-skill-discoverability` justifies hiding rarely needed content until the user asks for it. That skill states that it does not justify hiding something the user would want to reach. It also does not justify hiding content because the screen is crowded. Putting required information inside an accordion is that misuse.
 
-## What exists
+## Accordion parts
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has). Four specs make up one accordion, and **only one of them has a variant axis (a property a component varies on, such as size or style; Figma calls it a variant property) at all.**
 
@@ -58,11 +58,11 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no nesting construct.** This matches the house rule: accordions have one level only.
 
-**There is no single-open or multi-open axis.** Nothing in the UI kit makes opening one item close another — see Uncovered.
+**There is no single-open or multi-open axis.** Nothing in the UI kit makes opening one item close another — see the open questions.
 
 **There is no size, density, or emphasis axis** on any of the four, and no state axis for hover, focus, or error.
 
-## Rules for using it
+## Rules for accordions
 
 **Every item loads collapsed.** The only exception is the group that contains the user's current page, in a navigation accordion. Owned by `recursica-skill-navigation`.
 
@@ -111,7 +111,7 @@ The component draws the header and the chevron. Making the header a real button,
 - **Never collapse a panel that contains focus.** If single-open behavior closes a panel the user is working in, focus is lost, and the keyboard user starts again from the top of the document.
 - **The header must never open on hover**, and nothing needed inside a panel may be revealed only by hover.
 
-## Set by the component
+## Styling the accordion sets itself
 
 Do not set or override any of these. The four specs set them for both appearances:
 
@@ -122,19 +122,19 @@ Do not set or override any of these. The four specs set them for both appearance
 
 The chevron, its rotation, and the per-appearance colors come with the component. Do not add wrappers or spacer elements to adjust any of the above.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-navigation` — the never-nest rule, collapsed-by-default, sub-navigation on click rather than hover, permissions, and why a top-level item with no children stays a link.
 - `recursica-skill-discoverability` — progressive disclosure, and the three cases where hiding is not safe.
 - `recursica-skill-working-memory` — 7 ± 2 as a scannability ceiling, and what it does not claim.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel; fix the structure instead of collapsing to cope with it.
 
-### Only if the screen also uses it
+### Only if the screen also uses those components
 
 - `recursica-skill-tree` — the component for real hierarchy, used for any content that is not a single level of peer sections.
 - `recursica-skill-tabs` — parts of one whole, and why no form is split across sections.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **Whether opening one item closes the others.** No axis defines it, and no rule states it.
 - **Whether the divider between items can be hidden.** A divider that "can be hidden if accordion is the last child in a list or accordion group" is shown only on the design-system website. The UI kit only offers `divider-size` on `accordion`, with no option to turn it off. Do not rely on this without asking.
@@ -161,4 +161,4 @@ The chevron, its rotation, and the per-appearance colors come with the component
 - [ ] Focus never moves on toggle, nothing opens on hover, and the focus ring is intact.
 - [ ] Every variant, size, and state comes from the four specs above, and no header has an invented disabled appearance.
 - [ ] Padding, gaps, dividers, and colors come from the component.
-- [ ] Uncovered items were asked about, not decided: whether opening one item closes the others, whether the divider can be hidden, an item the user cannot open, animation when a panel opens or closes, linking directly to a panel, and an accordion inside a table row.
+- [ ] Open questions were asked about, not decided: whether opening one item closes the others, whether the divider can be hidden, an item the user cannot open, animation when a panel opens or closes, linking directly to a panel, and an accordion inside a table row.

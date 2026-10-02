@@ -11,14 +11,14 @@ metadata:
 
 A stepper walks the user through one process that has several parts, and shows where they are in it.
 
-## Use it when
+## When to use a stepper
 
 - **A form has several parts** — `recursica-skill-forms` sets the test: stages the user thinks of as separate, a very large number of fields, or an answer that makes a _later_ step clearly different.
 - **A form would otherwise be split across tabs.** Splitting a form across tabs is forbidden, and the stepper replaces it.
 - **A first-time setup or onboarding flow** has to be worked through in order.
 - **The status of a step-by-step workflow is being shown** — Processing, Shipped, Delivered — where the stages are fixed and in order.
 
-## Do not use it when
+## When not to use a stepper
 
 | Instead of a stepper                                          | Use                                                                                                    |
 | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
@@ -33,16 +33,16 @@ A stepper walks the user through one process that has several parts, and shows w
 
 **The stepper exists because a form must never be spread across tabs.** `recursica-skill-navigation` states that ban, and names the stepper as the replacement. When form fields would go in tabs, use a stepper instead.
 
-## What exists
+## Stepper orientations and sizes
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.stepper`. **Do not pass a variant, size, or state that is not listed here.**
 
-**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop. React ignores the name, with no error, if it is passed as a prop. A blank cell means no single prop sets that axis. CSS state or separate props set it instead, and the rules below say which.
+**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
 
-| Axis          | Options                  | React prop |
-| ------------- | ------------------------ | ---------- |
-| `sizes`       | `large`, `small`         | `size`     |
-| `orientation` | `horizontal`, `vertical` |            |
+| Axis          | Options                  |
+| ------------- | ------------------------ |
+| `sizes`       | `large`, `small`         |
+| `orientation` | `horizontal`, `vertical` |
 
 **A step may have a second line.** `description-text` exists beside `label-text`, so a step has a name and an optional short description. Never put a paragraph in it.
 
@@ -52,9 +52,9 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no error, warning, skipped, or optional step state.** The component cannot show that a step failed validation. The step's text must state it.
 
-**There is no token for what goes inside the indicator.** A step number and a checkmark are shown only on the design-system website, but the UI kit defines neither. See the uncovered list.
+**There is no token for what goes inside the indicator.** A step number and a checkmark are shown only on the design-system website, but the UI kit defines neither. See the open questions.
 
-## Rules for using it
+## Rules for steppers
 
 **Every step must be a stage the user recognizes.** Cutting a form into random thirds adds clicks without making it any easier. If the steps do not match something in the user's mental model (what a person expects from the tools and work they already know), put the form on one page.
 
@@ -105,7 +105,7 @@ The stepper shows position and progress visually, with an indicator, a color, an
 - **Back must not lose the user's place.** Going back to a step puts focus at the start of that step's content, with the values they entered still there.
 - **Nothing needed may appear only on hover** — not a step's description, and not the reason a step is disabled.
 
-## Set by the component
+## Styling the stepper sets itself
 
 Do not set or override any of these. The component sets them for every size and orientation:
 
@@ -114,26 +114,26 @@ Do not set or override any of these. The component sets them for every size and 
 - `label-text` and `description-text` type treatment.
 - Indicator size, spacing between steps, and the connector's placement.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-forms` — the single-page vs. multi-step test, layout and labels within each step, validation timing, submit behavior, and the one-save-mode rule.
 - `recursica-skill-navigation` — the prohibition on spreading a form across tabs, and what counts as a location with a route.
 - `recursica-skill-buttons-links` — Next and Back as actions, label copy, and footer placement.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel; fix the structure instead of shrinking to fit.
 
-### Only if the screen also uses it
+### Only if the screen also uses those components
 
 - `recursica-skill-tabs` — the structure a stepper replaces, and what tabs are legitimately for.
 - `recursica-skill-card` — why no step's content is wrapped in a card.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **When `small` is the correct size**, and which surfaces use it. No rule assigns it.
 - **When to use horizontal, and when vertical.** Both orientations exist, but nothing says which to use where, or whether the choice may change with the container's width.
 - **The maximum number of steps.** No number is stated.
 - **Whether users can move between steps at all** — whether a user may click back to a finished step, and whether upcoming steps can ever be reached.
 - **Whether each step gets a route and a browser history entry.** `recursica-skill-navigation` rules on views and tabs, not on steps, and what the browser's Back button should do here is not stated.
-- **Validation across steps.** Whether a step validates when the user leaves it, and what going back does to the data entered — named as uncovered in `recursica-skill-forms`.
+- **Validation across steps.** Whether a step validates when the user leaves it, and what going back does to the data entered — named as an open question in `recursica-skill-forms`.
 - **Whether a step may be optional or skipped**, and how that shows in the count.
 - **What a step with an error looks like.** The component has no error state.
 - **Whether the indicator shows a number or a checkmark.** Both are shown only on the design-system website, with no token behind either. Do not rely on this without asking.
@@ -159,4 +159,4 @@ Do not set or override any of these. The component sets them for every size and 
 - [ ] Steps that can be used to move around are real controls with names and states. Steps that cannot are not able to receive focus.
 - [ ] Nothing moves ahead automatically. Back restores the step with its values, and puts focus at its start.
 - [ ] Colors, connector sizes, and type styling come from the component.
-- [ ] Uncovered items were asked about, not decided: the `small` size, horizontal or vertical orientation, the maximum number of steps, moving between steps, a route per step, validation across steps, optional or skipped steps, what an error step looks like, number or checkmark indicators, where the stepper sits.
+- [ ] Open questions were asked about, not decided: the `small` size, horizontal or vertical orientation, the maximum number of steps, moving between steps, a route per step, validation across steps, optional or skipped steps, what an error step looks like, number or checkmark indicators, where the stepper sits.

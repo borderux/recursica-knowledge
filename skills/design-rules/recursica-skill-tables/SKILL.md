@@ -268,7 +268,7 @@ A frozen column stays in place while the rest of the table scrolls horizontally.
 
 **Never freeze more than three columns.**
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 No house rule covers these yet. **Ask the person instead of choosing** — see the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule above to fit them.
 
@@ -319,4 +319,4 @@ Before treating a table as done, check:
 - [ ] Showing and reordering columns sits behind an unadvertised settings control, with a way to do it that is not dragging.
 - [ ] There are no grouped rows; extra detail uses one level of expand and collapse.
 - [ ] No more than three columns are frozen.
-- [ ] Uncovered items were asked about, not decided: types that can't be sorted, error states, how many rows must have a value before a sparse column is kept, and kinds of pending.
+- [ ] Open questions were asked about, not decided: types that can't be sorted, error states, how many rows must have a value before a sparse column is kept, and kinds of pending.

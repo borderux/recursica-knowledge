@@ -11,14 +11,14 @@ metadata:
 
 A menu is a temporary list of choices or actions. A trigger opens it, and dismissing it closes it.
 
-## Use it when
+## When to use a menu
 
 - **One object has several actions on it** — the ellipsis or "more" menu that `recursica-skill-buttons-links` requires once a row has more than one consistent action.
 - **A control needs a list of options.** The menu is what a dropdown or an autocomplete opens. The field owns the value, and the menu owns the list.
 - **A configuration entry point that is deliberately not promoted needs somewhere to open** — the column-visibility gear on a table, as `recursica-skill-tables` describes.
 - **A tool used everywhere needs its actions** — the account menu, which `recursica-skill-navigation` keeps out of primary navigation.
 
-## Do not use it when
+## When not to use a menu
 
 | Instead of a menu                                  | Use                                                                                                 |
 | -------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
@@ -34,7 +34,7 @@ A menu is a temporary list of choices or actions. A trigger opens it, and dismis
 
 **Do not hide a primary action in a menu.** Show it as a button. A menu holds the secondary and tertiary actions.
 
-## What exists
+## Menu parts
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has). Two specs, with one axis (a property a component varies on, such as size or style; Figma calls it a variant property) between them.
 
@@ -50,15 +50,15 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **`selection-states` is for selection, not for other states.** `selected` marks a chosen value in a list of options. There is no destructive item and no danger item. Hover, focus, and active come from the component.
 
-**`menu-item` has a `disabled` state**, for an item the user can unlock — see the permissions rule below. How it is set is in the uncovered list.
+**`menu-item` has a `disabled` state**, for an item the user can unlock — see the permissions rule below. How it is set is among the open questions.
 
 **The menu has a `max-height`, so a long menu scrolls.** A scrolling menu hides its own length, so the user cannot see how many options exist. Keyboard navigation then has to scroll the list to follow focus. More important, **a long menu is a sign that the structure is wrong.** `recursica-skill-system-conventions` requires fixing the structure instead of adding a workaround, and a scrolling list is that workaround. Group the items, or cut them down. Above about nine items, a list can no longer be scanned easily — see `recursica-skill-working-memory` for what that limit claims.
 
-**There is no submenu.** A trailing chevron for a nested submenu that opens "on hover or click" is shown only on the design-system website. The UI kit defines no nested menu, and a house rule forbids opening on hover. Do not build one — see Uncovered.
+**There is no submenu.** A trailing chevron for a nested submenu that opens "on hover or click" is shown only on the design-system website. The UI kit defines no nested menu, and a house rule forbids opening on hover. Do not build one — see the open questions.
 
 **There is no placement, size, density, or multi-select axis.** Do not pass a position.
 
-## Rules for using it
+## Rules for menus
 
 **A menu never opens on hover.** It opens on a click, on activation, or on a key press. This is a house rule in `recursica-skill-navigation`: users clearly struggle to steer a pointer across menus that appear on hover, and an accessible hover menu is much harder to build correctly. It is also the accessibility requirement below.
 
@@ -107,7 +107,7 @@ Menu accessibility is mostly focus management. The list itself is easy to build.
 - **On close, focus goes back to the trigger and nowhere else.** Not to the top of the page, and not into the content the action affected.
 - **Never show a needed control only on hover.** A row-action menu whose trigger only appears when the row is hovered cannot be reached by keyboard or by touch. If the action exists, its trigger is visible.
 
-## Set by the component
+## Styling the menu sets itself
 
 Do not set or override any of these. The components set them:
 
@@ -116,7 +116,7 @@ Do not set or override any of these. The components set them:
 
 The selected item's visual treatment comes with `selection-states`. Do not restyle it, and do not add wrappers or spacers to change the spacing listed above.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-buttons-links` — when row actions collapse into an ellipsis menu, icon-only versus text triggers, label copy, tooltips on icon-only triggers, and toolbar overflow by frequency.
 - `recursica-skill-navigation` — sub-navigation opens on click and never on hover, no overflow menu to make a nav fit, item counts, and permissions.
@@ -124,12 +124,12 @@ The selected item's visual treatment comes with `selection-states`. Do not resty
 - `recursica-skill-system-conventions` — fix the structure rather than scrolling a long list; never carry meaning in a single channel; the unadvertised affordance and its keyboard requirement.
 - `recursica-skill-working-memory` — 7 ± 2 as a scannability ceiling, and why a menu is a recognition surface rather than a recall test.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **Submenus.** A trailing chevron that opens a nested submenu "on hover or click" is shown only on the design-system website. The UI kit defines no submenu, and opening on hover contradicts the navigation rule. Both whether it exists and how it is triggered need a decision. Ask before relying on it.
 - **Menus with multi-select.** A type axis of single select, multi-select, and custom content is shown only on the design-system website. The UI kit defines only `unselected` and `selected` on `menu-item`. Ask before relying on it.
 - **Custom content inside a menu item.** Shown only on the design-system website, and nothing in the UI kit supports it. Ask before relying on it.
-- **How the disabled state is set.** The UI kit defines `disabled` on `menu-item`. Whether the adapter exposes it as a prop has not been confirmed. Check the component's props, or ask, before relying on it.
+- **How the disabled state is set.** The UI kit defines `disabled` on `menu-item`. Whether the adapter exposes it as a setting has not been confirmed. Check the component's settings, or ask, before relying on it.
 - **The number of items at which a menu is too long.** `max-height` implies scrolling, but no threshold is stated. `recursica-skill-buttons-links` leaves the overflow threshold open too.
 - **Where the menu appears relative to its trigger**, and how it behaves near the edge of the viewport. There is no placement axis.
 - **Right-click context menus.** Whether they are supported at all, and what happens to the browser's own menu.
@@ -156,4 +156,4 @@ The selected item's visual treatment comes with `selection-states`. Do not resty
 - [ ] No trigger appears only on hover, and the focus ring is intact.
 - [ ] Every variant, size, placement, and state passed comes from the two specs above, and there is no submenu.
 - [ ] Padding, gaps, dividers, and selected styling come from the component.
-- [ ] Uncovered items were asked about, not decided: submenus, menus with multi-select, custom content inside a menu item, how the disabled state is set, the number of items at which a menu is too long, where the menu appears relative to its trigger, right-click context menus, and whether a menu item may be a link.
+- [ ] Open questions were asked about, not decided: submenus, menus with multi-select, custom content inside a menu item, how the disabled state is set, the number of items at which a menu is too long, where the menu appears relative to its trigger, right-click context menus, and whether a menu item may be a link.

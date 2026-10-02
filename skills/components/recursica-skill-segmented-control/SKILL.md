@@ -11,7 +11,7 @@ metadata:
 
 A segmented control is a horizontal radio group: exactly one of a few options, all visible at once.
 
-## Use it when
+## When to use a segmented control
 
 - **The layout calls for a horizontal single-select.** A segmented control is the house component for it. Never lay radio buttons out in a horizontal row.
 - **A toggle is needed outside a form.** A switch belongs only in a form, so any two-state control in application chrome (the header, navigation and footer around the content), a filter bar, or a toolbar is a segmented control. In chrome, it shows icons rather than text labels — a light/dark theme control is the standard example. See `recursica-skill-screen-scaffolding` for where chrome sits.
@@ -19,7 +19,7 @@ A segmented control is a horizontal radio group: exactly one of a few options, a
 - **The choice switches a view or a mode** — list or grid, daily or weekly — where the options are closely tied to what is on screen.
 - **The user filters content in place**, and a dropdown or a modal would be more than the filter needs.
 
-## Do not use it when
+## When not to use a segmented control
 
 | Instead of a segmented control                                | Use                                                                |
 | ------------------------------------------------------------- | ------------------------------------------------------------------ |
@@ -32,7 +32,7 @@ A segmented control is a horizontal radio group: exactly one of a few options, a
 
 **Never fall back to tabs when the set grows past five.** Tabs hold parts of one whole; a segmented control holds the values of a single-select field. Neither replaces the other. When the set grows past five, use a vertical radio group or a dropdown.
 
-## What exists
+## Segmented control orientations and states
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.segmented-control` and `segmented-control-item`. **Pass only the variants listed here.**
 
@@ -50,7 +50,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no size axis (a property a component varies on, such as size or style; Figma calls it a variant property), no style axis, and no disabled state** on either the control or the item.
 
-## Rules for using it
+## Rules for segmented controls
 
 **This control's limit is 2–5, and it overrides the general one.** The house limit on options is 7 ± 2, but a segmented control is horizontal and compact, so the tighter limit wins. Owned by `recursica-skill-selection-controls`.
 
@@ -93,7 +93,7 @@ A segmented control is a radio group, and it must be built as one. The most comm
 - **Focus lands on the selected segment** when the user tabs in — not on the first segment.
 - **Focus and selection must look different** — a user can have focus on the group while a different segment is selected, and both need to be visible.
 
-## Set by the component
+## Styling the segmented control sets itself
 
 Do not set or override any of these. The component sets them:
 
@@ -102,14 +102,14 @@ Do not set or override any of these. The component sets them:
 - Item styling per selection state, including hover and focus.
 - Equal-width distribution when `fill-width` is `true`.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-selection-controls` — when a segmented control is the right control, the rules it inherits from radio groups, pre-selection, and commit timing.
 - `recursica-skill-working-memory` — the basis for option-count limits.
 - `recursica-skill-system-conventions` — one behavioral mode per system; never carry meaning in a single channel.
 - `recursica-skill-forms` — label placement and validation when the control is a form field.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **When `fill-width: true` applies** — no rule says which surfaces get a stretched control.
 - **Whether a single segment may be disabled**, and how that is shown.
@@ -130,4 +130,4 @@ Do not set or override any of these. The component sets them:
 - [ ] Content changes caused by switching are perceivable to a screen reader user.
 - [ ] The control uses no size or style axis. The orientation is `horizontal`, and any vertical single-select is a radio group.
 - [ ] Styling comes from the component.
-- [ ] Uncovered items were asked about, not decided: when `fill-width: true` applies, whether a single segment may be disabled, use as a labeled form field, and behavior below desktop size.
+- [ ] Open questions were asked about, not decided: when `fill-width: true` applies, whether a single segment may be disabled, use as a labeled form field, and behavior below desktop size.

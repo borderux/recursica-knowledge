@@ -11,13 +11,13 @@ metadata:
 
 A hover card or a popover reveals richer content beside the element that triggers it.
 
-## Use it when
+## When to use a hover card or popover
 
 - **A preview saves the user a trip** — a mini profile from an avatar or a username, a product summary from a product name, a page preview from a link.
 - **The content is richer than a phrase** — more than one line, an image, or a small set of structured details.
 - **Everything inside is optional.** If the user never opens it, they lose nothing.
 
-## Do not use it when
+## When not to use a hover card or popover
 
 | Instead of a hover card or popover                   | Use                                                       |
 | ---------------------------------------------------- | --------------------------------------------------------- |
@@ -32,17 +32,17 @@ A hover card or a popover reveals richer content beside the element that trigger
 
 **A path that only a pointer can follow is the failure most often built into this component.** A surface revealed on hover that contains a button, a link, or a value found nowhere else cannot be reached by keyboard, and cannot be used on touch. `recursica-skill-discoverability` forbids hiding anything the user would want to reach, and hiding it behind hover is the worst case.
 
-## What exists
+## Hover card and popover parts
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.hover-card-popover`. **The component has no variant axes (the properties a component varies on, such as size and style; Figma calls them variant properties) at all** — no placement axis, no size axis, no content-type axis, and nothing that tells a hover card apart from a popover. One spec, one set of fixed properties.
 
 **What the component provides:** a content area and a beak — the pointer connecting the card to its target. `beak-size` is set by tokens; unlike the tooltip, there is no `beak-inset`.
 
-**There is no placement option.** There is no top, left, right, or bottom option. Do not pass a position prop, and do not position the beak by hand.
+**There is no placement option.** There is no top, left, right, or bottom option. Do not pass a position setting, and do not position the beak by hand.
 
 **There is no size axis.** `min-width` and `max-width` are fixed. Content that does not fit inside them is page content.
 
-**There is no content-type axis.** `content-text` is the only content property in the UI kit. A custom content type is shown only on the design-system website — see Uncovered.
+**There is no content-type axis.** `content-text` is the only content property in the UI kit. A custom content type is shown only on the design-system website — see the open questions.
 
 **Nothing in the UI kit tells hover behavior apart from click behavior — but the house does, and the two are different components.** One token spec is behind both. Its behavior decides which of the two it is, and that decides every accessibility requirement below. Before building, state whether it is a hover card or a popover.
 
@@ -56,11 +56,11 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **A popover is a non-modal dialog** (a window that leaves the rest of the page usable). It does not block the page, and it does not trap focus. It is the click-triggered partner of the hover card, and the only one of the two that may hold anything the user can operate.
 
-**Neither has a placement axis**, even though four positions and three beak alignments are shown only on the design-system website. See the uncovered list.
+**Neither has a placement axis**, even though four positions and three beak alignments are shown only on the design-system website. See the open questions.
 
 **`tooltip` and `hover-card-popover` are two different components with almost identical tokens.** Do not choose between them on styling, because the styling is effectively the same. Choose on content: a tooltip is a short text label for a control with no visible label, and this component holds richer content. Neither may hold anything the user needs in order to finish a task, and neither may be the only place a piece of information exists.
 
-## Rules for using it
+## Rules for hover cards and popovers
 
 **Before building, decide and state which of the two it is.** There are exactly two valid choices, and their requirements differ:
 
@@ -79,7 +79,7 @@ A surface that opens on hover and has a control in it is not a third option; it 
 
 **Do not wrap the content in a card.** The popover is the boundary — see `recursica-skill-card`.
 
-**A short delay before it shows prevents it opening by accident** when the pointer crosses the target on its way somewhere else. The length of the delay is not set by a token — see Uncovered.
+**A short delay before it shows prevents it opening by accident** when the pointer crosses the target on its way somewhere else. The length of the delay is not set by a token — see the open questions.
 
 **It must be possible, and obvious, to close it.** A popover closes on Escape, on a click outside it, and on a second click of its trigger. A hover card closes when the pointer leaves both the target and the card.
 
@@ -119,7 +119,7 @@ The two kinds have different requirements, and no build between them is safe. Na
 - **A hover card never takes focus.** Focus is never moved for the user by something they only hovered over.
 - **Nothing needed may appear only on hover.** This is the single rule the whole component depends on.
 
-## Set by the component
+## Styling the hover card or popover sets itself
 
 Do not set or override any of these. The component sets them:
 
@@ -131,18 +131,18 @@ Do not set or override any of these. The component sets them:
 
 The beak is part of the component. Do not draw a separate beak, and do not reposition the one provided.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-discoverability` — progressive disclosure, the three cases where hiding is not safe, and the rule that it never defends a dark pattern.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel; a hidden affordance must stay keyboard and assistive-technology reachable.
 
-### Only if the screen also uses it
+### Only if the screen also uses those components
 
 - `recursica-skill-tooltip` — the sibling component for a short text label on an unlabeled control, and why the two are not interchangeable despite matching tokens.
 - `recursica-skill-menu` — where a list of actions or options goes, and its focus-return requirements.
 - `recursica-skill-panel` — the surface for content the user needs while working in the page.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **Whether the single token spec should become two.** The behaviors are settled and documented separately, but one spec is behind both, so the inventory does not say which properties a popover uses and which a hover card uses. Ask before assuming they can look different.
 - **Placement.** Four positions — top, left, right, bottom — and three beak alignments — start, middle, end — are shown only on the design-system website, with no tokens behind them. Do not rely on them without asking, and no rule covers what happens at the edge of the viewport.
@@ -168,4 +168,4 @@ The beak is part of the component. Do not draw a separate beak, and do not repos
 - [ ] Nothing needed appears only on hover, and the focus ring is intact everywhere.
 - [ ] No placement, size, or content variant is set on it — none exists.
 - [ ] Padding, width, color, elevation, and beak styling come from the component.
-- [ ] Uncovered items were asked about, not decided: whether the single token spec should become two, placement, the show and hide delays and the grace period, custom content, behavior on touch, a popover opened from a menu, a modal, or another popover, and closing a popover by clicking the page behind it.
+- [ ] Open questions were asked about, not decided: whether the single token spec should become two, placement, the show and hide delays and the grace period, custom content, behavior on touch, a popover opened from a menu, a modal, or another popover, and closing a popover by clicking the page behind it.

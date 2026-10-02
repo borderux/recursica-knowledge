@@ -41,20 +41,20 @@ This repository holds more than the skills. Website content, build scripts, pack
 
 **Load the whole family, not one file.** A component skill says what a component is and how to make it accessible. It does not say whether that component belongs on the screen — a design-rules skill does. Working from a component skill alone is the most common way to build something where each piece is correct but the whole is wrong.
 
-**Read the family in full when it fits.** A skill's prose is where it explains how to apply each rule, and builders who read it apply the rules better — above all the accessibility rules — than builders working from the checklists alone, even when every rule was in the checklist. Use a shorter form only when the whole family will not fit beside the work in progress. Then start from each skill's pre-flight checklist and uncovered list, plus a component skill's "Do not use it when" table, its "What exists" inventory, and its Accessibility section, and read any other section when a checklist item is unclear, when two items seem to conflict, or before deciding something the skill may cover. Either way, in a skill's "Load these too" list, the links under "Only if the screen also uses it" are alternatives and neighbors — load one only when the screen uses that component. When the skills come through the Recursica knowledge server, `skill_family` returns the full text by default, `detail: "contract"` returns the shorter form without the Accessibility sections, and `skill_section` returns any section on its own.
+**Read the family in full when it fits.** A skill's prose is where it explains how to apply each rule, and builders who read it apply the rules better — above all the accessibility rules — than builders working from the checklists alone, even when every rule was in the checklist. Use a shorter form only when the whole family will not fit beside the work in progress. Then start from each skill's pre-flight checklist and open questions, plus a component skill's "When not to use" table, its inventory of parts, styles, sizes and states, and its Accessibility section, and read any other section when a checklist item is unclear, when two items seem to conflict, or before deciding something the skill may cover. Either way, in a skill's "Skills to read with this one" list, the links under "Only if the screen also uses those components" are alternatives and neighbors — load one only when the screen uses that component. When the skills come through the Recursica knowledge server, `skill_family` returns the full text by default, `detail: "contract"` returns the shorter form without the Accessibility sections, and `skill_section` returns any section on its own.
 
 ## The styling escape hatch is a gap report, not a permission
 
 The component adapters offer a styling escape hatch. **Its name makes it sound like a way to override things. Treat it as a warning sign instead**, and ask this question before using it:
 
-**Is there a prop or a token (a named design value, such as a color or a size, set by the design system) for the property being changed?**
+**Is there a setting or a token (a named design value, such as a color or a size, set by the design system) for the property being changed?**
 
-- **Yes — then the change overrides something the component controls, and that is forbidden.** Every component skill lists these under `Set by the component`. Stop, and use the prop.
-- **No — then the hatch fills in for a prop or token that is missing.** That is the normal reason to use the hatch. What matters is the next step: the missing prop or token is a gap in the design system, and it must be reported. Using the hatch without reporting the gap and moving on is how a gap becomes permanent and invisible.
+- **Yes — then the change overrides something the component controls, and that is forbidden.** Every component skill lists these under `Styling the <component> sets itself`. Stop, and use the setting.
+- **No — then the hatch fills in for a setting or token that is missing.** That is the normal reason to use the hatch. What matters is the next step: the missing setting or token is a gap in the design system, and it must be reported. Using the hatch without reporting the gap and moving on is how a gap becomes permanent and invisible.
 
 **Either way, reaching for the hatch means something is wrong** — either the approach or the system. Say which one, and say it next to the code.
 
-**It is never a way to make a component that does not exist.** A badge forced to a fixed width so it can act as a bar in a chart is not a missing prop being filled in. It is a missing component made to look like a different one. See `recursica-skill-data-visualization`.
+**It is never a way to make a component that does not exist.** A badge forced to a fixed width so it can act as a bar in a chart is not a missing setting being filled in. It is a missing component made to look like a different one. See `recursica-skill-data-visualization`.
 
 ## Never guess — ask instead
 
@@ -144,7 +144,7 @@ Apply these in order. The first one that settles the conflict wins.
 
 ## What has no owner yet
 
-**There are two kinds of gap, kept in two places.** Each topic skill has its own `Uncovered — ask, do not invent` section for holes inside a topic it otherwise owns — column types that cannot be sorted, limits on badge counts, empty states for charts, and so on. Check the owning skill's list first.
+**There are two kinds of gap, kept in two places.** Each topic skill has its own `Open questions: ask, do not decide` section for holes inside a topic it otherwise owns — column types that cannot be sorted, limits on badge counts, empty states for charts, and so on. Check the owning skill's list first.
 
 The list below is the other kind: **whole topics that no skill owns yet.** Both kinds get the same treatment — ask instead of inventing an answer — and both lists get shorter as topics are recorded.
 
@@ -179,7 +179,7 @@ Before starting, and again before declaring the work done:
 - [ ] Every decision in the table above is either made using its owning skill or raised with the user as a question.
 - [ ] Each decision follows its owning skill, read for this screen, not recalled from memory.
 - [ ] Each conflict between rules was settled by the precedence above or by the user, never by preference, by averaging, or by ignoring it.
-- [ ] No gap was filled by an invented answer or another system's convention. The owning skill's uncovered list and `recursica-skill-system-conventions` were checked first.
+- [ ] No gap was filled by an invented answer or another system's convention. The owning skill's open questions and `recursica-skill-system-conventions` were checked first.
 - [ ] Every open question went to the user before building, with options.
 - [ ] Each answer from the user was offered as an addition to the owning skill.
 - [ ] Empty, loading, error and partial states are handled, or the user was told no skill covers them yet.

@@ -90,7 +90,7 @@ There are two tests, and a value must pass both.
 
 **Tab and layout state is not remembered state.** A tab that is a route is restored by its URL and the back button. Do not store it as a UI preference — see `recursica-skill-navigation`.
 
-**Nobody has decided which remembered state should last across sessions.** Ask; see the uncovered list below.
+**Nobody has decided which remembered state should last across sessions.** Ask; see the open questions below.
 
 ## When there is no obviously safe default
 
@@ -120,7 +120,7 @@ There are two tests, and a value must pass both.
 - **The default sort, the default set of columns, and rows per page** — `recursica-skill-tables`.
 - **What an empty screen shows when there is no data.** No skill in the family owns this yet.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **Which remembered states should last across sessions, and which should not.** This was asked directly, and the answer was "I don't know." Do not decide it by guessing.
 - **How to weigh a minority's inconvenience against a majority's benefit.** Stated as having no rule. Escalate every case.
@@ -143,4 +143,4 @@ There are two tests, and a value must pass both.
 - [ ] No tab or layout state is stored as a remembered preference in place of a route.
 - [ ] Where no safe default exists, a stakeholder made the choice.
 - [ ] Where a default has a cost for a minority of users, the trade-off went to a person to decide.
-- [ ] Uncovered items were asked about, not decided: which remembered states last across sessions, weighing a minority's inconvenience against a majority's benefit, anti-patterns specific to initial state, defaults on surfaces not named here, defaults that vary by user or role or are learned, and the house set of relative date ranges.
+- [ ] Open questions were asked about, not decided: which remembered states last across sessions, weighing a minority's inconvenience against a majority's benefit, anti-patterns specific to initial state, defaults on surfaces not named here, defaults that vary by user or role or are learned, and the house set of relative date ranges.

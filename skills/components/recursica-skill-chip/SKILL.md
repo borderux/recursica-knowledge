@@ -11,14 +11,14 @@ metadata:
 
 A chip is one of several short values the user can see, select, or remove.
 
-## Use it when
+## When to use a chip
 
 - **The values are plural.** Several tags, several categories, several applied filters on one object.
 - **The layout calls for a horizontal multi-select.** Use selectable chips for it. Never lay a checkbox group out in a horizontal row.
 - **The user filters or narrows things down** by turning options on and off.
 - **The user added the values**, and may take them off again.
 
-## Do not use it when
+## When not to use a chip
 
 | Instead of a chip                          | Use                                                                        |
 | ------------------------------------------ | -------------------------------------------------------------------------- |
@@ -31,7 +31,7 @@ A chip is one of several short values the user can see, select, or remove.
 
 **A status shown as a chip is the misuse to watch for.** A chip looks like a control the user can click. A status is not the user's to change.
 
-## What exists
+## Chip states
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.chip`. **Do not pass a variant or state that is not listed here.**
 
@@ -48,11 +48,11 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **A chip has a `min-width` and a `max-width`.** The component limits long values, which is another reason a chip is not for phrases.
 
-**The error state exists in the UI kit and in both adapters, and the house rule forbids using it.** Both facts are true, and neither cancels the other. The UI kit defines seven error colors for each selection state — background, border, text, icon, leading icon, selected icon, and close icon — and both adapters offer an `error` prop that applies them. "Error-selected" is not a fourth state; it is `error` combined with `selected`, which is why the axis is nested.
+**The error state exists in the UI kit and in both adapters, and the house rule forbids using it.** Both facts are true, and neither cancels the other. The UI kit defines seven error colors for each selection state — background, border, text, icon, leading icon, selected icon, and close icon — and both adapters offer an `error` setting that applies them. "Error-selected" is not a fourth state; it is `error` combined with `selected`, which is why the axis is nested.
 
-**Do not pass it.** `recursica-skill-badges-chips` says it plainly: do not use a chip to show an error, ever. A required chip group with nothing selected is a form validation error that the group reports below itself, and no chip changes how it looks to report it. An `error` prop found in code is this axis, not a typo. The axis is listed above for that reason only, not as an option to pass.
+**Do not pass it.** `recursica-skill-badges-chips` says it plainly: do not use a chip to show an error, ever. A required chip group with nothing selected is a form validation error that the group reports below itself, and no chip changes how it looks to report it. An `error` setting found in code is this axis, not a typo. The axis is listed above for that reason only, not as an option to pass.
 
-## Rules for using it
+## Rules for chips
 
 **Chips come in groups.** A single chip on its own is either a badge or a mistake.
 
@@ -96,7 +96,7 @@ A chip group is a form control that happens to be laid out horizontally, and it 
 - **After a chip is removed, move focus on purpose** — to the next chip, or to the group if none are left. Focus left on a removed element is lost, and the user is quietly sent back to the top of the document.
 - **Never require hover to reveal the close control.** A dismiss that appears on hover cannot be reached by keyboard or by touch.
 
-## Set by the component
+## Styling the chip sets itself
 
 Do not set or override any of these. The component sets them:
 
@@ -106,7 +106,7 @@ Do not set or override any of these. The component sets them:
 - `close-icon-size`, `close-icon-color`.
 - All colors per selection state, including hover and focus.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-badges-chips` — chip vs. badge, tags, dismissible and toggled chips, group counts, and placement.
 - `recursica-skill-selection-controls` — when selectable chips are the right control, and the rules they inherit from checkbox groups.
@@ -115,7 +115,7 @@ Do not set or override any of these. The component sets them:
 - `recursica-skill-working-memory` — the basis for option-count limits.
 - `recursica-skill-system-conventions` — the accessibility baseline every component follows.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **Whether a chip may be disabled**, and what that would mean for a filter.
 - **Overflow.** What a group does when it has more chips than the row can hold; wrapping is not stated as allowed.
@@ -135,6 +135,6 @@ Do not set or override any of these. The component sets them:
 - [ ] Every close control's name includes the value it removes, and removal is announced.
 - [ ] Chips and close controls can be used from the keyboard, and nothing depends on hover.
 - [ ] Focus is moved on purpose after a removal.
-- [ ] No chip is passed a state other than `selected` or `unselected`, or any size or style prop.
+- [ ] No chip is passed a state other than `selected` or `unselected`, or any size or style setting.
 - [ ] Styling comes from the component.
-- [ ] Uncovered items were asked about, not decided: whether a chip may be disabled, overflow, select-all or clear-all, and a chip that opens a menu.
+- [ ] Open questions were asked about, not decided: whether a chip may be disabled, overflow, select-all or clear-all, and a chip that opens a menu.

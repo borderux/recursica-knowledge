@@ -11,14 +11,14 @@ metadata:
 
 A slider picks a value from a range with fixed ends, by moving a thumb (the handle the user drags) along a track (the bar it moves along).
 
-## Use it when
+## When to use a slider
 
 - **The range has fixed, known ends** — there is a real minimum and a real maximum, and both can be shown.
 - **Precision does not matter.** The user wants "about here", not a specific number.
 - **The result is instant and visible** — volume, brightness, opacity, zoom. The user judges the value by its effect, not by reading it.
 - **The surface is touch or pen.** A long track with a large thumb is a comfortable target, where a small number field is not.
 
-## Do not use it when
+## When not to use a slider
 
 | Instead of a slider                            | Use                                                                                             |
 | ---------------------------------------------- | ----------------------------------------------------------------------------------------------- |
@@ -31,20 +31,20 @@ A slider picks a value from a range with fixed ends, by moving a thumb (the hand
 
 **A slider never replaces a typed value when the exact figure matters.** In that case, add the slider alongside the typed value or leave it out.
 
-## What exists
+## Slider label placements and states
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.slider`. **Do not pass a variant, size, or state that is not listed here.**
 
-**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop. React ignores the name, with no error, if it is passed as a prop. A blank cell means no single prop sets that axis. CSS state or separate props set it instead, and the rules below say which.
+**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
 
-| Axis      | Options                       | React prop   |
-| --------- | ----------------------------- | ------------ |
-| `layouts` | `stacked`, `side-by-side`     | `formLayout` |
-| `states`  | `error`, `disabled`, `active` |              |
+| Axis      | Options                       |
+| --------- | ----------------------------- |
+| `layouts` | `stacked`, `side-by-side`     |
+| `states`  | `error`, `disabled`, `active` |
 
-**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the control — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**`layouts` is the label-placement axis.** `side-by-side` — the label beside the control — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
-**`formLayout` defaults to `stacked`, which puts the label above the input.** A field without the prop shows its label above the input at any container width, which breaks the house rule. `layouts` is the UI kit's name for this variant, not a prop: React ignores `layouts="side-by-side"` without an error and leaves the label above the input. Set `formLayout="side-by-side"` to put the label beside the input.
+**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, using the adapter's name for that axis and option.
 
 **Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
@@ -56,11 +56,11 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Step indicators exist** — `step-indicator-width` and `step-indicator-border-radius` — for a slider that moves in fixed steps.
 
-**There is a `read-only-value` treatment** for the number readout. Its exact meaning is not stated; see the uncovered list.
+**There is a `read-only-value` treatment** for the number readout. Its exact meaning is not stated; see the open questions.
 
 **There is no hover state, no size axis, no vertical orientation, no axis for smooth versus stepped, and no axis for a range with two thumbs.** Other design systems have all of these. This one does not.
 
-## Rules for using it
+## Rules for sliders
 
 **Always pair the slider with the number readout.** A slider on its own gives the user no way to know the exact value, and no way to tell it to anyone else. The component provides the input for exactly this reason. Leave it out only when the value is approximate and its effect is visible the instant it changes.
 
@@ -104,7 +104,7 @@ The component provides the focus ring, the thumb, and the keyboard handling insi
 - **Do not move focus for the user** — not when the value reaches an end, and not when the number input is saved.
 - **Nothing needed to use the slider may appear only on hover.** The current value, the ends of the range, and the step size stay on screen at all times. Anything shown only on hover is missing for keyboard and touch users.
 
-## Set by the component
+## Styling the slider sets itself
 
 Do not set or override any of these. The component sets them:
 
@@ -115,7 +115,7 @@ Do not set or override any of these. The component sets them:
 - `icon-size`, and all `colors` including the `active` treatment.
 - Field colors and sizes from `globals.form.field`, label-field gaps and `vertical-item-gap` from `globals.form.properties`, and the disabled treatment from `globals.states.disabled`.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-label` — the field's name, placement, and the required or optional marker.
 - `recursica-skill-assistive-element` — the help text carrying unit, range, and step, and the error message.
@@ -123,11 +123,11 @@ Do not set or override any of these. The component sets them:
 - `recursica-skill-selection-controls` — when a discrete-option control replaces a range, and disabled versus read-only.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel.
 
-### Only if the screen also uses it
+### Only if the screen also uses those components
 
 - `recursica-skill-number-input` — the control that owns exact numeric entry.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **Choosing a range with two thumbs.** Single and range selection are shown only on the design-system website, but the UI kit defines no second thumb and no range axis. Do not build one, and do not rely on this without asking.
 - **Smooth versus stepped, as documented types.** Both are shown only on the design-system website. The UI kit has step-indicator properties but no types axis, so what switches a slider between them is not stated. Do not rely on this without asking.
@@ -156,4 +156,4 @@ Do not set or override any of these. The component sets them:
 - [ ] Every variant, size, and state comes from the inventory above — no hover, no second thumb, and no vertical orientation.
 - [ ] Styling comes from the component, and `active` marks only the thumb being moved.
 - [ ] No slider is disabled to show a value.
-- [ ] Uncovered items were asked about, not decided: a range with two thumbs, smooth versus stepped types, a hover state, what `read-only-value` means, whether the number input is required, value labels other than the minimum and maximum, and vertical orientation.
+- [ ] Open questions were asked about, not decided: a range with two thumbs, smooth versus stepped types, a hover state, what `read-only-value` means, whether the number input is required, value labels other than the minimum and maximum, and vertical orientation.

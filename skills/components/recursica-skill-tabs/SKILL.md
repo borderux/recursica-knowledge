@@ -11,13 +11,13 @@ metadata:
 
 Tabs switch between the parts of one whole and show one part at a time.
 
-## Use it when
+## When to use tabs
 
 - **The panels are equal parts of one subject.** Every tab is about the same object, and the user could reasonably look at any of them first.
 - **The order does not matter.** Nothing in tab three depends on tab one having been visited.
 - **The user needs to move between them in one click**, with no step in between.
 
-## Do not use it when
+## When not to use tabs
 
 | Instead of tabs                                     | Use                                                                 |
 | --------------------------------------------------- | ------------------------------------------------------------------- |
@@ -30,27 +30,27 @@ Tabs switch between the parts of one whole and show one part at a time.
 
 **Never spread a form across tabs.** The house rules name this misuse explicitly. A half-filled form behind an unselected tab hides both the work left to do and the validation errors. Use a stepper.
 
-## What exists
+## Tab styles, orientations and states
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.tabs` and `tabs-item`.
 
-**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop. React ignores the name, with no error, if it is passed as a prop. A blank cell means no single prop sets that axis. CSS state or separate props set it instead, and the rules below say which.
+**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
 
-| Axis               | Options                       | React prop | On          |
-| ------------------ | ----------------------------- | ---------- | ----------- |
-| `styles`           | `default`, `pills`, `outline` | `variant`  | `tabs`      |
-| `orientation`      | `horizontal`, `vertical`      |            | `tabs`      |
-| `selection-states` | `active`, `inactive`          |            | `tabs-item` |
+| Axis               | Options                       | On          |
+| ------------------ | ----------------------------- | ----------- |
+| `styles`           | `default`, `pills`, `outline` | `tabs`      |
+| `orientation`      | `horizontal`, `vertical`      | `tabs`      |
+| `selection-states` | `active`, `inactive`          | `tabs-item` |
 
 **The same three styles exist on `tabs` and on `tabs-item`.** Apply one style to the whole set, and do not mix styles within it.
 
-**Orientation is horizontal or vertical**, on the tab set and on each tab. Both are approved, as the vertical rule below states. The uncovered list asks how orientation is set.
+**Orientation is horizontal or vertical**, on the tab set and on each tab. Both are approved, as the vertical rule below states. The open questions asks how orientation is set.
 
 **`active` and `inactive` are states of each tab, not variants to set.** The component sets them from which tab is active.
 
 **A tab item may have a leading icon and a counter.** Both appear as parts of the item only on the design-system website. A counter is a badge; see `recursica-skill-badges-chips`.
 
-## Rules for using it
+## Rules for tabs
 
 **Every tab gets its own route.** The route is a sub-path under the parent route. With its own route, a tab can be linked to, survives a refresh, and works with the back and forward buttons. The house rules state this preference directly.
 
@@ -91,7 +91,7 @@ A tab set is one of the few components where wrong roles or connections in the m
 - **Never activate a tab only because it receives focus** where activating it causes a noticeable delay or navigates. The user must be able to move across the set and then choose a tab.
 - **A tab is activated with Enter or Space**, never by click only.
 
-## Set by the component
+## Styling the tabs component sets itself
 
 Do not set or override any of these. The component sets them:
 
@@ -101,7 +101,7 @@ Do not set or override any of these. The component sets them:
 - Borders and radii for `pills` and `outline`.
 - Keyboard interaction inside the tab set.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-navigation` — what tabs may contain, tab routes and history, the prohibition on overflow, active states, breadcrumbs.
 - `recursica-skill-forms` — the stepper, which is the correct alternative to a tabbed form.
@@ -109,12 +109,12 @@ Do not set or override any of these. The component sets them:
 - `recursica-skill-badges-chips` — the counter on a tab.
 - `recursica-skill-system-conventions` — the accessibility baseline every component follows.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **Whether the three styles mean different things**, or are purely a visual choice for the whole house.
 - **What a tab shows when its panel has no content**, and whether an empty tab is hidden or disabled.
 - **Whether a tab may ever be disabled**, and what would justify it.
-- **How orientation is set.** The UI kit defines `horizontal` and `vertical`. Whether the adapter exposes it as a prop has not been confirmed. Check the component's props, or ask, before relying on it.
+- **How orientation is set.** The UI kit defines `horizontal` and `vertical`. Whether the adapter exposes it as a setting has not been confirmed. Check the component's settings, or ask, before relying on it.
 
 ## Pre-flight checklist
 
@@ -129,4 +129,4 @@ Do not set or override any of these. The component sets them:
 - [ ] The tab list is one tab stop, the arrow keys move between tabs, and the tab set has no custom key handling.
 - [ ] Counters are announced with their tab, cannot be used as controls, and do not animate.
 - [ ] Styling comes from the component.
-- [ ] Uncovered items were asked about, not decided: whether the styles mean different things, what an empty tab shows, whether a tab may be disabled, and how orientation is set.
+- [ ] Open questions were asked about, not decided: whether the styles mean different things, what an empty tab shows, whether a tab may be disabled, and how orientation is set.

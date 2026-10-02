@@ -11,7 +11,7 @@ metadata:
 
 A switch turns one thing on or off. The label names what the switch controls. The state is true or false.
 
-## Use it when
+## When to use a switch
 
 - **The binary-inverse test passes.** The opposite of the value must be binary, known, and unique — true/false, yes/no, on/off. "Black" fails, because _not black_ could be gray, or pink, or anything.
 - **The label test passes.** The label alone names what is being controlled, with no competing values. A radio group is one label with several values; a switch is one label whose value is implied.
@@ -21,7 +21,7 @@ A switch turns one thing on or off. The label names what the switch controls. Th
 
 **A switch appears only inside a form.** Outside one — in chrome (the header, navigation and footer around the content), a filter bar, a toolbar, or a header — use a segmented control (`recursica-skill-segmented-control`), whatever the value is. `recursica-skill-selection-controls` owns this rule.
 
-## Do not use it when
+## When not to use a switch
 
 | Instead of a switch                                                                | Use                                                                                |
 | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
@@ -36,7 +36,7 @@ A switch turns one thing on or off. The label names what the switch controls. Th
 
 **A switch has a deliberately narrow use.** Use a checkbox unless both tests above pass. A switch must be understood instantly. If the user has to work out what "off" means, a switch is the wrong control.
 
-## What exists
+## Switch parts and states
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.switch`, `switch-group`, and `switch-item`. **Do not pass a variant, size, or state that is not listed here.**
 
@@ -56,11 +56,11 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no size axis**, none of the three has an error state, and there is no required axis. `Enabled Selected`, `Disabled Selected`, `Enabled Unselected`, and `Disabled Unselected` are shown only on the design-system website. Those are the item's `disabled` combined with the switch's selection state — not four selection states.
 
-**There is no axis for which side of the label the switch sits on** — see the uncovered list, because one is shown only on the design-system website.
+**There is no axis for which side of the label the switch sits on** — see the open questions, because one is shown only on the design-system website.
 
 **Read-only is a separate component** — `read-only-field`, which shows text instead of a control.
 
-## Rules for using it
+## Rules for switches
 
 **A switch is allowed only when both tests pass.** Run the binary-inverse test and the label test before choosing this control. If either one fails, use a checkbox.
 
@@ -118,7 +118,7 @@ The component pairs the switch with its item label, makes on and off available, 
 - **Do not move focus for the user.** Focus stays on the switch after it is flipped — including when flipping it reveals fields below — so the user can flip it straight back.
 - **Never show needed information only on hover** — not the consequence, and not a tooltip explaining what off means.
 
-## Set by the component
+## Styling the switch sets itself
 
 Do not set or override any of these. The components set them:
 
@@ -131,7 +131,7 @@ Do not set or override any of these. The components set them:
 
 Do not add margins or spacer elements between switches or around the group. The components set the spacing.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-selection-controls` — the binary-inverse and label tests, switch vs. checkbox, the lone binary field, no switches in table rows, and system-wide commit timing.
 - `recursica-skill-forms` — the save-mode table and its status-message requirement, single-column layout, label placement and one placement per form, and progressive disclosure.
@@ -140,11 +140,11 @@ Do not add margins or spacer elements between switches or around the group. The 
 - `recursica-skill-buttons-links` — confirmation for high-consequence changes, and undo.
 - `recursica-skill-system-conventions` — one behavioral mode per system, and never carry meaning in a single channel.
 
-### Only if the screen also uses it
+### Only if the screen also uses those components
 
 - `recursica-skill-checkbox` — the control a switch becomes whenever either test fails.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **An axis for which side of the label the switch sits on is shown only on the design-system website, with no token behind it.** `On Left` and `On Right` appear there, but the UI kit defines no such axis on `switch`, `switch-item`, or `switch-group`. Do not build one, and do not rely on this without asking.
 - **How a switch shows an error.** The UI kit gives `dropdown` and `autocomplete` an `error` state, and gives the switch none.
@@ -172,4 +172,4 @@ Do not add margins or spacer elements between switches or around the group. The 
 - [ ] Focus is never moved for the user, including when flipping it reveals fields below.
 - [ ] Disabled is used only for switches that are unavailable for now, with the reason in text. Values that can never be edited use the read-only field.
 - [ ] Every variant, size, and state is from the inventory above, and every property the component owns comes from the component.
-- [ ] Uncovered items were asked about, not decided: which side of the label the switch sits on, the error state, the in-flight state, and group size.
+- [ ] Open questions were asked about, not decided: which side of the label the switch sits on, the error state, the in-flight state, and group size.

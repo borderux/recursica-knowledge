@@ -162,7 +162,7 @@ An input mask is a pattern in the field that guides what the user types.
 
 **Alignment must not vary between read-only and editable values on the same screen.** A common mistake is left-aligning read-only values so they sit near their labels, while editable values are right-aligned. On one screen, that looks like two different systems. Right-aligned is the goal for numbers, and being uniform matters more than which alignment wins.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 These come up rarely enough that no house rule exists — and rarely enough that asking costs almost nothing. **Ask the person instead of choosing a format.** See the never-guess rule in `recursica-skill-design-router`.
 
@@ -203,4 +203,4 @@ Do not stretch a rule above to fit one of these. A wrong convention in a fiscal 
 - [ ] Durations use unit labels (`3h 20m`), never a clock format, and extend to days only when they pass one day.
 - [ ] Seconds appear only for values under a minute across a set of objects — and then on every value in that set.
 - [ ] Alignment is uniform across read-only and editable values on the same screen.
-- [ ] Uncovered items were asked about, not decided: week, quarter, or fiscal conventions, or a duration that passes one day.
+- [ ] Open questions were asked about, not decided: week, quarter, or fiscal conventions, or a duration that passes one day.

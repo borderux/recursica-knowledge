@@ -11,13 +11,13 @@ metadata:
 
 A text field records free-form text on a single line.
 
-## Use it when
+## When to use a text field
 
 - **The value is unpredictable** — names, addresses, descriptions, references. No set list of options could cover them.
 - **Typing is faster than choosing** — the user knows the value well, and can type it faster than pick it from a control.
 - **The content is short, and fits on one line.**
 
-## Do not use it when
+## When not to use a text field
 
 Each case below has its own component. Use that component instead of adapting a text field:
 
@@ -31,20 +31,20 @@ Each case below has its own component. Use that component instead of adapting a 
 
 **Never use a disabled text field to show a value.** A value nobody can ever edit here does not belong in a form control.
 
-## What exists
+## Text field label placements and states
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.text-field`. **Pass only the variants and states listed here.** Other design systems have field sizes, fluid styles, and warning, success, and loading states. This component has none of them.
 
-**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop. React ignores the name, with no error, if it is passed as a prop. A blank cell means no single prop sets that axis. CSS state or separate props set it instead, and the rules below say which.
+**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
 
-| Axis      | Options                   | React prop   |
-| --------- | ------------------------- | ------------ |
-| `layouts` | `stacked`, `side-by-side` | `formLayout` |
-| `states`  | `error`, `disabled`       |              |
+| Axis      | Options                   |
+| --------- | ------------------------- |
+| `layouts` | `stacked`, `side-by-side` |
+| `states`  | `error`, `disabled`       |
 
-**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**`layouts` is the label-placement axis.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
-**`formLayout` defaults to `stacked`, which puts the label above the input.** A field without the prop shows its label above the input at any container width, which breaks the house rule. `layouts` is the UI kit's name for this variant, not a prop: React ignores `layouts="side-by-side"` without an error and leaves the label above the input. Set `formLayout="side-by-side"` on every field to put the label beside the input.
+**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, using the adapter's name for that axis and option.
 
 **Focus and placeholder are not variants.** The component handles them: `placeholder-opacity` here, and the focused border through `globals.form.field.colors.border-selected`. Do not build them as states.
 
@@ -52,7 +52,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Read-only is a separate component** — `read-only-field`, which has the same `layouts` axis and shows text instead of an input.
 
-## Rules for using it
+## Rules for text fields
 
 **Always pass a visible label.** Name the object clearly in the label. A screen reader user hears the label on its own, without the context around it. Write it in sentence case with no colon at the end, and keep it short enough to fit on one line.
 
@@ -100,7 +100,7 @@ The component connects the label to the input, provides the focus ring, and hand
 - **Every control inside the field is its own tab stop** (a place the Tab key lands), and responds to Enter or Space as well as to clicks.
 - **Do not move focus for the user.** Do not jump to the next field when a value looks complete, and do not move focus on a keystroke. Either jump sends a keyboard or screen reader user's next keystrokes into a different field partway through typing.
 
-## Set by the component
+## Styling the text field sets itself
 
 Do not set or override any of these. The component sets them:
 
@@ -113,7 +113,7 @@ Do not set or override any of these. The component sets them:
 
 Never style an unfocused field to look disabled. An editable field must look editable when it does not have focus.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-forms` — label placement and alignment, one placement per form, single-column layout, required vs. optional marking, validation timing, error presentation, save mode, and the rule that no form control goes inside a card.
 - `recursica-skill-selection-controls` — when a predefined-option control replaces free-form entry, and disabled vs. read-only.
@@ -122,7 +122,7 @@ Never style an unfocused field to look disabled. An editable field must look edi
 - `recursica-skill-label` — label copy that names the object and stands alone, and the required and optional markers.
 - `recursica-skill-assistive-element` — the help and error text below the field, and why the error replaces rather than joins it.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **Character or word counters.** Whether the field supports one, and what happens at the limit.
 - **A clear or reset control inside the field.**
@@ -133,12 +133,12 @@ Never style an unfocused field to look disabled. An editable field must look edi
 - [ ] The value cannot come from a set list of options.
 - [ ] A visible label is passed, and it makes sense on its own.
 - [ ] Label placement is side by side, unless the container is too narrow.
-- [ ] `formLayout` is passed explicitly — `side-by-side`, unless the form's container is too narrow — and matches every other field in the same form. There is one placement per form at any given breakpoint, with no mixing between fields or sections. A missing prop means `stacked`, not the house rule, and `layouts` is not the prop name.
+- [ ] Label placement is set explicitly — `side-by-side`, unless the form's container is too narrow — and matches every other field in the same form. There is one placement per form at any given breakpoint, with no mixing between fields or sections. A missing setting means `stacked`, not the house rule, and `layouts` is not the setting name.
 - [ ] Placeholder text holds no required information.
 - [ ] Assistive text states the rule. On error, it is replaced by a message that restates that rule.
 - [ ] The error state shows an icon or the message text, as well as color.
 - [ ] Every clickable icon inside the field has an accessible name, and decorative icons are hidden from screen readers.
-- [ ] Only variants and states listed under What exists are passed, and no size is passed.
+- [ ] Only the label placements and states listed above are passed, and no size is passed.
 - [ ] Styling comes from the component, and every unfocused field looks editable.
 - [ ] Values nobody can edit use the read-only component, multi-line text uses a textarea, and quantities use a number input.
-- [ ] Uncovered items were asked about, not decided: character or word counters, a clear or reset control inside the field, and password fields.
+- [ ] Open questions were asked about, not decided: character or word counters, a clear or reset control inside the field, and password fields.

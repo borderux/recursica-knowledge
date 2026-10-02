@@ -188,7 +188,7 @@ A panel exists to sit beside the page it depends on. Below the width where both 
 - **Small attached surfaces — tooltips, hover cards, popovers.** Those are not modes, and they are not covered here.
 - **Whether the backend saves everything at once.** Not a UI concern — see `recursica-skill-feedback-messaging`.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **What "more than the panel holds on a normal-resolution screen" is in numbers.** It was deliberately stated as a judgment about the scrolling it causes, rather than as a pixel limit.
 - **What a top or bottom panel looks like.** It is allowed but not designed, which is why it needs approval rather than a rule.
@@ -224,4 +224,4 @@ A panel exists to sit beside the page it depends on. Below the width where both 
 - [ ] No shader, scrim, or tint is drawn behind any open panel, and the library's default overlay is overridden.
 - [ ] Nothing called a drawer is treated as a different thing from a panel, and no permanent sidebar is called a drawer.
 - [ ] The modal traps focus. The panel does not, and the page behind it stays reachable by keyboard.
-- [ ] Uncovered items were asked about, not decided: the scrolling limit in numbers, what a top or bottom panel looks like, and whether a panel's width depends on its side.
+- [ ] Open questions were asked about, not decided: the scrolling limit in numbers, what a top or bottom panel looks like, and whether a panel's width depends on its side.

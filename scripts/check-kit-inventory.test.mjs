@@ -35,7 +35,7 @@ const KIT = {
 const names = new Set(Object.keys(KIT));
 
 const skill = (whatExists) =>
-  `# X\n\n## What exists\n\n${whatExists}\n\n## Rules for using it\n\nText.\n`;
+  `# X\n\n## When not to use a widget\n\nText.\n\n## Widget styles, sizes and states\n\n${whatExists}\n\n## Rules for widgets\n\nText.\n`;
 
 test("kitAxes collects axes at every depth", () => {
   assert.deepEqual(Object.keys(kitAxes(KIT.chip)).sort(), [

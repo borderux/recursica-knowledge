@@ -75,7 +75,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **NEVER define a term right next to itself.** A label followed by an explanation of what it means — `Overdue — past the start date` — admits that the label failed. Fix the label. If the idea needs explaining beyond a good name, that belongs in a tooltip or in help content — never in a subtitle sitting under the term it defines.
 
-**This covers every named thing on the screen, not only field labels** — a page title, a section heading, a column header, a navigation item. The most common breach is not a label at all. It is a page or section whose heading is repeated as prose directly beneath it, in the slot that a scaffold prop offers for exactly that purpose. `recursica-skill-screen-scaffolding` owns what may go in that slot; the rule against defining a term next to itself is why that slot is usually empty.
+**This covers every named thing on the screen, not only field labels** — a page title, a section heading, a column header, a navigation item. The most common breach is not a label at all. It is a page or section whose heading is repeated as prose directly beneath it, in the slot that a scaffold setting offers for exactly that purpose. `recursica-skill-screen-scaffolding` owns what may go in that slot; the rule against defining a term next to itself is why that slot is usually empty.
 
 ## Navigation labels name objects, not actions
 
@@ -116,7 +116,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 - **The wording of error messages** — `recursica-skill-assistive-element` and `recursica-skill-feedback-messaging`.
 - **Designing the data model and naming fields in the backend.** Not a UI concern.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **Whether the type token carries the capitalization.** The rule is that capitalization is controlled by the token and is not to be changed. If a given type style does not include it, that is a gap to raise, not permission to choose.
 - **Who owns the naming decision when there is no user to ask** — a greenfield product (a brand-new product with no users yet), where the business term is the only term available.
@@ -145,4 +145,4 @@ These rules assume **complex enterprise web applications, designed for desktop f
 - [ ] Acronyms are well known, checked with the user, or written out the first time.
 - [ ] Names from an integration are mapped to a single internal name, and the mapping is built in this application, not assumed to exist.
 - [ ] No capitalization is set or changed by hand.
-- [ ] Uncovered items were asked about, not decided: capitalization in the type token, naming with no users, renames after launch, the integration dictionary's form, label length limits, and unnamed records.
+- [ ] Open questions were asked about, not decided: capitalization in the type token, naming with no users, renames after launch, the integration dictionary's form, label length limits, and unnamed records.

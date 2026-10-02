@@ -162,7 +162,7 @@ There are two good signs. A narrow layout with neither was not designed:
 - **Designing native applications.** Recursica is aimed at web applications.
 - **The layout grid**, and how columns behave across tiers. Still has no owner.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **An icon rail on tablet specifically.** It was suggested as a middle option and pushed back on. The ban on icon-only navigation stands, so there is no approved tablet rail.
 - **How the layout grid behaves across tiers**, and how many columns there are at tablet and small-device sizes.
@@ -188,4 +188,4 @@ There are two good signs. A narrow layout with neither was not designed:
 - [ ] One main input method applies across the whole application, and nothing is reachable by hover alone.
 - [ ] Global navigation collapses into a hamburger menu that shows the icon and the text. There is no icon-only rail and no bottom navigation bar at any width.
 - [ ] Cards stack or turn into a carousel, and there is no fixed-width content that fails to reflow.
-- [ ] Uncovered items were asked about, not decided: an icon rail on tablet, the layout grid across tiers, which components have a defined look below desktop, whether a carousel exists, tablet behavior between the thresholds, separate tablet or small-device designs.
+- [ ] Open questions were asked about, not decided: an icon rail on tablet, the layout grid across tiers, which components have a defined look below desktop, whether a carousel exists, tablet behavior between the thresholds, separate tablet or small-device designs.

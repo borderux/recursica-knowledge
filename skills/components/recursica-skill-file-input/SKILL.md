@@ -18,13 +18,13 @@ A file input is a single-line field that lets the user pick a file from their ow
 > produces a placeholder, with no error. Use `recursica-skill-text-field` and a real `<input
 type="file">` until this lands, and raise it instead of working around it.
 
-## Use it when
+## When to use a file input
 
 - **A file is one field among many.** An attachment on a support ticket, a document on a submission, an avatar on a profile — the file is a property of the object, not the point of the screen.
 - **The form is dense**, and a large drop area would take it over.
 - **The number of files is small** — one file, or a few — and the user does not need a working list to manage them.
 
-## Do not use it when
+## When not to use a file input
 
 | Instead of a file input                                  | Use                                                                 |
 | -------------------------------------------------------- | ------------------------------------------------------------------- |
@@ -37,7 +37,7 @@ type="file">` until this lands, and raise it instead of working around it.
 
 **Do not use a file input for managing many files.** A field that picks a file is not a file manager. The moment the user needs to see progress, retry, or reorganize, this is the wrong control.
 
-## What exists
+## File input label placements and states
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.file-input`. **Do not pass a variant, size, or state that is not listed here.**
 
@@ -56,9 +56,9 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.file-input`. **Do not 
 
 **Placeholder is not a state**, and neither is focus. `placeholder-opacity`, and the focused border from `globals.form.field`, are handled by the component.
 
-**There is no progress state, no success state, and no error state for each file.** There is no drop-zone axis, no size axis, and no axis for more than one file. See the uncovered list.
+**There is no progress state, no success state, and no error state for each file.** There is no drop-zone axis, no size axis, and no axis for more than one file. See the open questions.
 
-## Rules for using it
+## Rules for file inputs
 
 **State the accepted file types and the size limit in help text, before the user picks.** Both of them. "PDF or PNG, up to 10 MB" under the field. With the limits stated first, the user picks a file that will be accepted. Owned by `recursica-skill-assistive-element`.
 
@@ -103,7 +103,7 @@ A file input is a form field, and it follows the same rules as any other field. 
 - **Otherwise, do not move focus for the user.** Coming back from the operating system's file dialog leaves focus on the field.
 - **Nothing needed may appear only on hover** — not the size limit, not the accepted types, and not the remove control.
 
-## Set by the component
+## Styling the file input sets itself
 
 Do not set or override any of these. The component sets them:
 
@@ -115,18 +115,18 @@ Do not set or override any of these. The component sets them:
 
 Never style an unfocused field so that it looks disabled. An editable field must look editable at rest.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-label` — the field's name, placement, and the required or optional marker.
 - `recursica-skill-assistive-element` — the help text carrying accepted types and the size limit, and the error message.
 - `recursica-skill-forms` — single-column layout, one label placement per form and the container-width trigger for it, validation timing, save mode, and the no-form-control-in-a-card rule.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel; a drag or long-press always needs a second mechanism.
 
-### Only if the screen also uses it
+### Only if the screen also uses those components
 
 - `recursica-skill-file-upload` — the larger drop area with a list of uploaded files, and when it replaces this field.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **Upload feedback.** The UI kit defines no progress, no success, and no error state for each file on this component. Upload feedback is a real need, and there is nothing here to show it — do not invent a spinner, a bar, or a checkmark.
 - **More than one file in one field.** A "multiple files" content option is shown only on the design-system website, but the UI kit has no axis for more than one file, and no tokens for each file. Whether this field may hold more than one, and what that looks like, is not settled — do not rely on this without asking.
@@ -151,4 +151,4 @@ Never style an unfocused field so that it looks disabled. An editable field must
 - [ ] No upload starts as a side effect of choosing a file. It starts when the user clearly asks, and when the form saves everything together, it finishes before submit.
 - [ ] Every variant, size, and state is one listed in the inventory above.
 - [ ] Padding, borders, and colors come from the component, and every field without focus looks editable, not disabled.
-- [ ] Uncovered items were asked about, not decided: progress, success, more than one file, chips, and retrying.
+- [ ] Open questions were asked about, not decided: progress, success, more than one file, chips, and retrying.

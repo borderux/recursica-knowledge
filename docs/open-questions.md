@@ -1,6 +1,6 @@
 # Open questions from the component skill rewrite
 
-Everything below came out of writing the 39 component skills against three sources: the token inventory in `recursica_ui-kit.json`, the published `DOCS.md` frontmatter, and the recorded design-rules skills. Where those disagreed, nothing was resolved by guessing — each item sits in an `## Uncovered — ask, do not invent` section in the relevant skill, and an agent hitting it will stop and ask.
+Everything below came out of writing the 39 component skills against three sources: the token inventory in `recursica_ui-kit.json`, the published `DOCS.md` frontmatter, and the recorded design-rules skills. Where those disagreed, nothing was resolved by guessing — each item sits in an `## Open questions: ask, do not decide` section in the relevant skill, and an agent hitting it will stop and ask.
 
 Ordered by what costs the most to leave unanswered. **Items that have since been decided have moved to [the bottom of this file](#now-resolved)** rather than being deleted, so the reasoning stays on the record.
 
@@ -109,7 +109,7 @@ Two site-side copy notes: **File input** reuses Date picker's label-placement wo
 
 ## 6. Assets only you can supply
 
-- **Tree has no page at all.** `recursica-skill-tree` is the only component skill whose sole source is the token inventory, which is why its uncovered list is the longest.
+- **Tree has no page at all.** `recursica-skill-tree` is the only component skill whose sole source is the token inventory, which is why its list of open questions is the longest.
 - **Label and assistive element have no pages** either. Both are real components in the token inventory and both are load-bearing — between them they own the field label, the required and optional markers, and the help-and-error text every field uses.
 - **Table is fixed.** It had no `specs` and no `anatomy` at all, and a title reading "Tabs". All four spec sections, thirteen items, and six anatomy items are now in from the site, along with a `skill:` block and the site's verbatim intro sentence.
 - **Autocomplete now has a page** — recovered from the site's `search` page, since Search was renamed Autocomplete.
@@ -154,7 +154,7 @@ A round of feedback on generated screens, treated as rules rather than fixes for
 
 ## Now resolved
 
-These were open when this file was first written. Each was settled by reading the design rules rather than by adding new opinion, and the corresponding `## Uncovered` entries have been removed from the component skills.
+These were open when this file was first written. Each was settled by reading the design rules rather than by adding new opinion, and the corresponding `## Open questions: ask, do not decide` entries have been removed from the component skills.
 
 | Was open                                                     | Resolution                                                                                                                                                                                                                                                                 | Authority                                                              |
 | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
@@ -196,12 +196,12 @@ These came out of the readability rewrite and the checks added with it — seven
 
 | Was open                                                                                           | Resolution                                                                                                                                                                        |
 | -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Button: "no disabled variant" against the UI kit's `disabled` under each style                     | Match the UI kit. The skill lists `disabled`; whether the adapter exposes it as a prop is in its Uncovered list                                                                   |
-| Label: "no size axis" against the UI kit's `default` and `small`                                   | Match the UI kit. When a label is `small`, and the prop that sets it, are in its Uncovered list                                                                                   |
+| Button: "no disabled variant" against the UI kit's `disabled` under each style                     | Match the UI kit. The skill lists `disabled`; whether the adapter exposes it as a prop is among its open questions                                                                |
+| Label: "no size axis" against the UI kit's `default` and `small`                                   | Match the UI kit. When a label is `small`, and the prop that sets it, are among its open questions                                                                                |
 | Menu: "no disabled item" against the UI kit's `disabled` on `menu-item`                            | Match the UI kit. This also closes the gap between the permissions rule and the missing disabled state                                                                            |
 | Tabs: "no orientation axis" against the UI kit's `horizontal` and `vertical`                       | Match the UI kit, on the tab set and on each tab. Vertical tabs stay approved                                                                                                     |
 | Tabs: selected and unselected "only on the website" against the UI kit's `active` and `inactive`   | Match the UI kit. They are states of each tab, worked out by the component, not passed                                                                                            |
-| Avatar: the UI kit's `solid`, `outline`, and `ghost` types were not mentioned                      | Match the UI kit. The types apply to `text` and `icon` avatars; when to use each is in its Uncovered list                                                                         |
+| Avatar: the UI kit's `solid`, `outline`, and `ghost` types were not mentioned                      | Match the UI kit. The types apply to `text` and `icon` avatars; when to use each is among its open questions                                                                      |
 | Autocomplete: clearing named as uncovered, though the rules decide it                              | The rules stand. Clearing is off the checklist's uncovered list                                                                                                                   |
 | Toast: a dismiss control always present, against "if the toast can be closed"                      | Always closable, so always closable from the keyboard                                                                                                                             |
 | Toast: one action allowed, against "do not rely on an action button"                               | One action is allowed. Only its styling is uncovered, because the UI kit has no token for it                                                                                      |

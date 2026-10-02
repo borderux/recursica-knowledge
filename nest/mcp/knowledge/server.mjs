@@ -14,7 +14,7 @@
 // The one design rule this server exists to enforce
 //
 // `skill_family` NEVER returns a single skill. It returns the skill plus everything its
-// `## Load these too` section names, transitively.
+// `## Skills to read with this one` section names, transitively.
 //
 // This is not a convenience. The router's loudest rule is "load the family, not one file": a
 // component skill says what a component is, a design-rules skill says whether it belongs on the
@@ -128,21 +128,43 @@ function headings(body) {
 
 /**
  * The sections that carry a skill's rules in their shortest form. The pre-flight checklist holds
- * every rule as a statement that can be checked; a component's "Do not use it when" table and
- * "What exists" inventory hold what the checklist points at. The uncovered list is in too,
- * because the checklist ends by telling the agent not to invent anything on it, and an agent
- * that cannot see the list cannot follow that. Together they are about a fifth of the full text.
+ * every rule as a statement that can be checked; a component's "When not to use …" table and its
+ * inventory hold what the checklist points at. The open questions are in too, because the
+ * checklist ends by telling the agent to ask about them rather than decide, and an agent that
+ * cannot see the list cannot follow that. Together they are about a fifth of the full text.
  * The reasoning behind any item is one skill_section call away.
+ *
+ * A component skill's headings name the component — "When not to use a table", "Table parts" —
+ * so they are found by shape, not by string. The inventory has no fixed words at all, so it is
+ * found by position: the section right before "Rules for …", which comes after "When not to use
+ * …". scripts/lib/skill-sections.mjs states the same shapes; this server is deployed on its own
+ * and keeps its own copy.
  */
-const UNCOVERED = 'Uncovered — ask, do not invent'
+const UNCOVERED = 'Open questions: ask, do not decide'
+const CHECKLIST = 'Pre-flight checklist'
+const INVENTORY = Symbol('inventory')
 const CONTRACT_SECTIONS = {
-  components: ['Do not use it when', 'What exists', UNCOVERED, 'Pre-flight checklist'],
-  default: [UNCOVERED, 'Pre-flight checklist'],
+  components: [/^When not to use .+/, INVENTORY, UNCOVERED, CHECKLIST],
+  default: [UNCOVERED, CHECKLIST],
+}
+
+/** The heading `want` names in a skill body — an exact title, a RegExp, or INVENTORY — or null. */
+function findHeading(body, want) {
+  const all = headings(body)
+  if (want === INVENTORY) {
+    const avoid = all.findIndex((t) => /^When not to use .+/.test(t))
+    const rules = all.findIndex((t) => /^Rules for .+/.test(t))
+    return avoid >= 0 && rules - 1 > avoid ? all[rules - 1] : null
+  }
+  if (want instanceof RegExp) return all.find((t) => want.test(t)) ?? null
+  return all.includes(want) ? want : null
 }
 
 function contract(skill) {
   const wanted = CONTRACT_SECTIONS[skill.category] ?? CONTRACT_SECTIONS.default
   const parts = wanted
+    .map((w) => findHeading(skill.body, w))
+    .filter((h) => h !== null)
     .map((h) => [h, section(`\n${skill.body}`, h)])
     .filter(([, text]) => text && text.trim())
     .map(([h, text]) => `## ${h}\n${text.trimEnd()}`)
@@ -348,14 +370,14 @@ const TOOLS = [
   {
     name: 'skill_family',
     description:
-      'One or more skills PLUS every skill their "Load these too" sections say they need, ' +
+      'One or more skills PLUS every skill their "Skills to read with this one" sections say they need, ' +
       'transitively. It never returns a skill alone, because a component skill tells you what a ' +
       'component is and a design-rules skill tells you whether it belongs on the screen — reading ' +
       'the first without the second is the most common way to produce something individually ' +
       'correct and collectively wrong. Ask for what you need; the family comes with it. ' +
       'detail "full" (the default) returns every skill whole — use it whenever it fits. detail ' +
-      '"contract" returns each skill\'s checklist and uncovered list, and for a component its ' +
-      'inventory and "Do not use it when" table: about a quarter of the text. Builders working ' +
+      '"contract" returns each skill\'s checklist and open questions, and for a component its ' +
+      'inventory and "When not to use …" table: about a quarter of the text. Builders working ' +
       'from contracts broke more rules than builders reading full text, above all accessibility ' +
       'rules, so use it only when the full family will not fit, and call skill_section for each ' +
       'component\'s Accessibility section and for the reasoning behind any item you are unsure ' +
@@ -372,7 +394,7 @@ const TOOLS = [
         detail: {
           type: 'string',
           enum: ['full', 'contract'],
-          description: 'full: every skill whole (default). contract: checklists, inventories and "Do not use it when" tables only.',
+          description: 'full: every skill whole (default). contract: checklists, open questions, inventories and "When not to use …" tables only.',
         },
       },
       required: ['slugs'],
@@ -400,14 +422,14 @@ const TOOLS = [
     name: 'skill_section',
     description:
       'One `## ` section of one skill, by heading — the reasoning behind a checklist item, the ' +
-      'full rules a contract summarizes, or the uncovered list before you decide something. Use ' +
+      'full rules a contract summarizes, or the open questions before you decide something. Use ' +
       'it after skill_family with detail "contract", instead of loading whole skills. An unknown ' +
       'heading returns the headings that exist.',
     inputSchema: {
       type: 'object',
       properties: {
         slug: { type: 'string', description: 'Skill slug, e.g. recursica-skill-table.' },
-        heading: { type: 'string', description: 'The section heading without the ##, e.g. "Rules for using it".' },
+        heading: { type: 'string', description: 'The section heading without the ##, exactly as the skill writes it, e.g. "Rules for buttons". A contract lists them under `sections`.' },
       },
       required: ['slug', 'heading'],
       additionalProperties: false,
@@ -500,7 +522,7 @@ async function handleRequest(msg) {
           'rule that matters most: never resolve uncertainty by choosing silently. Then ' +
           '`skills_for_screen` on the real files to compute what applies, and `skill_family` ' +
           'for the rules. `skill_family` always returns a skill together with everything its ' +
-          '"Load these too" names — a component skill without its design rules reliably ' +
+          '"Skills to read with this one" names — a component skill without its design rules reliably ' +
           'produces something individually correct and collectively wrong, so this server will ' +
           'not hand you one alone. Use `component_api` for real prop types from the version a ' +
           'project installs. These skills are the only knowledge here: never answer a build ' +

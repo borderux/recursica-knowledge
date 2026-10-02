@@ -11,14 +11,14 @@ metadata:
 
 A tree shows data arranged as parents and children, and lets the user open only the parts they need.
 
-## Use it when
+## When to use a tree
 
 - **The data is a true hierarchy.** What a node (one item in the tree) means depends on its parent — a folder inside a folder, a category inside a category.
 - **The depth varies**, and the user needs to see where an item sits in the hierarchy, not only that it exists.
 - **The user is exploring, not comparing.** A tree is for finding one thing; a table is for comparing many.
 - **Nested disclosure cannot be avoided.** Disclosure is showing and hiding content on demand. `recursica-skill-navigation` states that an accordion is never nested. When the structure has real depth, use a tree.
 
-## Do not use it when
+## When not to use a tree
 
 | Instead of a tree                             | Use                                                              |
 | --------------------------------------------- | ---------------------------------------------------------------- |
@@ -33,7 +33,7 @@ A tree shows data arranged as parents and children, and lets the user open only 
 
 **A tree used for flat data is a list with wasted indentation.** If no item has children, the data is not a tree.
 
-## What exists
+## Tree states
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.tree`.
 
@@ -45,13 +45,13 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **`button-node-gap` shows that the expand control is separate from the node.** The control that opens and closes the node and the node's label are two separate elements. Selecting a node and expanding it are therefore different actions, both with a mouse and with the keyboard.
 
-**The UI kit has no expanded or collapsed state, only selection.** It does not define how an open node looks different from a closed one. That difference is on the uncovered list. Do not invent a rotation or a second icon token for it.
+**The UI kit has no expanded or collapsed state, only selection.** It does not define how an open node looks different from a closed one. That difference is among the open questions. Do not invent a rotation or a second icon token for it.
 
 **There is no disabled state, no hover state, and no size axis (a property a component varies on, such as size or style; Figma calls it a variant property).**
 
 **There are no checkboxes in the UI kit's tree.** This component does not provide a tree with checkboxes for choosing several items.
 
-## Rules for using it
+## Rules for trees
 
 **Collapsed is the default.** Open only the nodes the user needs for the current task. The accordion follows the same rule, for the same reason. `recursica-skill-navigation` owns this rule.
 
@@ -96,7 +96,7 @@ A tree has the most specific keyboard rules of any component, and they are the o
 - **Never move focus automatically** when a node expands. Focus stays on the node the user acted on.
 - **Never require hover to show a node's actions or its expand control.**
 
-## Set by the component
+## Styling the tree sets itself
 
 Do not set or override any of these. The component sets them:
 
@@ -106,18 +106,18 @@ Do not set or override any of these. The component sets them:
 - `border-size`, `border-radius`, `max-width`.
 - Selected and unselected styling, including hover and focus.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-navigation` — collapsed by default, click not hover for sub-levels, the accordion-never-nested rule that sends structures with several levels to a tree, routing if the tree is navigation, and permissions.
 - `recursica-skill-working-memory` — the basis for the breadth ceiling.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel.
 
-### Only if the screen also uses it
+### Only if the screen also uses those components
 
 - `recursica-skill-accordion` — the single-level alternative, and the boundary between them.
 - `recursica-skill-table` — the alternative when the data turns out to be flat.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **The look of an expanded node compared with a collapsed one.** The UI kit defines no state for it, and no icon token for showing it. This is the biggest gap in the component.
 - **Choosing several items in a tree**, with or without checkboxes. Neither exists in the UI kit, and the design rules do not cover choosing several items in a hierarchy.
@@ -142,4 +142,4 @@ Do not set or override any of these. The component sets them:
 - [ ] Focus stays on the node when it expands. The focus ring is visible, and looks different from the selected state.
 - [ ] Nothing appears only on hover. Sub-levels open on click.
 - [ ] Indentation comes from the `indent` token, and no expanded state or icon was invented.
-- [ ] Uncovered items were asked about, not decided: the look of an expanded node, choosing several items, a maximum depth, selecting a parent node, loading children when a node opens, dragging to reorder or move a node, and the empty state.
+- [ ] Open questions were asked about, not decided: the look of an expanded node, choosing several items, a maximum depth, selecting a parent node, loading children when a node opens, dragging to reorder or move a node, and the empty state.

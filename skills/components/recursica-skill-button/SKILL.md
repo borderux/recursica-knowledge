@@ -11,13 +11,13 @@ metadata:
 
 A button performs an action. It does not take the user anywhere.
 
-## Use it when
+## When to use a button
 
 - The action changes something. It saves, submits, deletes, applies a change, or opens a modal.
 - The user stays on the same page after the action.
 - The action moves a process forward or back, such as Next and Back in a stepper. They act on the process, not on a location.
 
-## Do not use it when
+## When not to use a button
 
 | Situation                                 | Use instead                                                                                            |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------------ |
@@ -29,28 +29,28 @@ A button performs an action. It does not take the user anywhere.
 
 **Never use a button to navigate.** It is the most common misuse of a button. If using it changes the URL, build it as a link, whatever it should look like. If the link must look light, use the link's text style, not a button.
 
-## What exists
+## Button styles, sizes and states
 
-The variants come from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has), in `ui-kit.components.button`. **Use only the variants, sizes, and states listed here.**
+The UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) defines these for buttons, under `ui-kit.components.button`. **Use only the styles, sizes, and states listed here.**
 
-**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop. React ignores the name, with no error, if it is passed as a prop. A blank cell means no single prop sets that axis. CSS state or separate props set it instead, and the rules below say which.
+**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
 
-| Axis      | Options                            | React prop |
-| --------- | ---------------------------------- | ---------- |
-| `styles`  | `solid`, `text`, `outline`         | `variant`  |
-| `sizes`   | `default`, `small`                 | `size`     |
-| `content` | `icon-label`, `label`, `icon-only` |            |
-| `states`  | `disabled`                         |            |
+| Axis      | Options                            |
+| --------- | ---------------------------------- |
+| `styles`  | `solid`, `text`, `outline`         |
+| `sizes`   | `default`, `small`                 |
+| `content` | `icon-label`, `label`, `icon-only` |
+| `states`  | `disabled`                         |
 
 - The `text` style is called "Ghost" outside the UI kit.
-- `icon-label` covers a leading icon, a trailing icon, or both. The props are the same in each case. There are no separate leading and trailing variants.
+- `icon-label` covers a leading icon, a trailing icon, or both. The settings are the same in each case. There are no separate leading and trailing variants.
 - There is no destructive or danger style. Color cannot mark a destructive action (an action that deletes data or cannot be undone). Say it in the label, and confirm any action that cannot be undone. See `recursica-skill-buttons-links`.
-- Every style has a `disabled` state. Its opacity comes from `globals.states.disabled`. How to set it is still open. See the uncovered list.
+- Every style has a `disabled` state. Its opacity comes from `globals.states.disabled`. How to set it is still open. See the open questions.
 - There is no loading state. While an action runs, show the `disabled` look with `icon-only` or `icon-label` content, with an icon that may animate. Do not add a spinner beside the button, change the label, or invent a new state.
 - There is no success state. Show any confirmation of a finished action somewhere other than the button. See `recursica-skill-toast`.
 - There is no full-width or fluid option. Never stretch a button to fill its container.
 
-## Rules for using it
+## Rules for buttons
 
 **Write the label as a verb and its object.** Write "Save page", not "OK", and "Delete invoice", not "Yes". A screen reader reads the label on its own, so it must make sense without the rest of the screen.
 
@@ -102,7 +102,7 @@ The component provides the focus ring and activation by click and keyboard. The 
 - **Keep a running button in the tab order.** A disabled control leaves the tab order, and focus falls back to the top of the page. Show the disabled look without removing the button from the tab order, or move focus to the next thing the user needs.
 - **The animated icon respects a reduced-motion preference** (a setting that asks for less animation).
 
-## Set by the component
+## Styling the button sets itself
 
 The component sets these for every style, size, and content type. Do not set or override them:
 
@@ -112,19 +112,19 @@ The component sets these for every style, size, and content type. Do not set or 
 - All colors, for every style and layer, including hover, active, focus, and disabled.
 - Elevation.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-buttons-links` — button versus link, label copy, hierarchy and placement, confirming destructive actions, undo, toggles, row and bulk actions, and buttons that open a modal.
 - `recursica-skill-forms` — submit and cancel behavior, save mode, and where the footer sits.
 - `recursica-skill-system-conventions` — meaning in more than one signal, and fixing the structure instead of shrinking things to fit.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **When to use `small`.** No rule says which surfaces use it.
 - **Full-width buttons.** No axis supports them, and no rule says whether they are ever allowed, or where.
 - **The icon for a running button.** The parts of the running state are settled. The icon, and whether its animation is defined anywhere, are not.
 - **Split buttons and button groups.** The UI kit has neither. Do not build one.
-- **Setting the disabled state.** The UI kit defines `disabled` under each style. Nobody has confirmed that the adapter exposes it as a prop. Check the component's props, or ask, before relying on it.
+- **Setting the disabled state.** The UI kit defines `disabled` under each style. Nobody has confirmed that the adapter exposes it as a setting. Check the component's settings, or ask, before relying on it.
 
 ## Pre-flight checklist
 
@@ -143,4 +143,4 @@ The component sets these for every style, size, and content type. Do not set or 
 - [ ] Every variant, size, and state is in the inventory above, and there is no destructive style.
 - [ ] Styling, including the focus ring, comes from the component.
 - [ ] Every disabled button has its reason in text nearby. Actions the user has no permission for are hidden, not disabled.
-- [ ] Uncovered items were asked about, not decided: when to use `small`, full-width buttons, the icon for a running button, split buttons and button groups, and setting the disabled state.
+- [ ] Open questions were asked about, not decided: when to use `small`, full-width buttons, the icon for a running button, split buttons and button groups, and setting the disabled state.

@@ -11,13 +11,13 @@ metadata:
 
 Pagination moves the user between pages of one set of records. It is a control in a table's footer, not a way to move around the application.
 
-## Use it when
+## When to use pagination
 
 - **An interior table** — a smaller grid set inside a container beside other elements — holds more records than its fixed number of rows. `recursica-skill-tables` gives it a fixed five or ten rows, and then paginates.
 - **That interior table must not scroll**, in either direction. All of its rows are visible without scrolling, and pagination reaches the records beyond them.
 - **The user needs to come back to a specific position** in an ordered set later, which continuous scrolling does not keep.
 
-## Do not use it when
+## When not to use pagination
 
 | Instead of pagination                                         | Use                                                                                                                 |
 | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
@@ -30,7 +30,7 @@ Pagination moves the user between pages of one set of records. It is a control i
 
 **Pagination versus infinite scroll is one decision for the whole system, not a choice for each screen.** `recursica-skill-system-conventions` requires one behavioral mode per application: full-size tables scroll, interior tables paginate, and that holds everywhere. Mixing them leaves the user unable to predict how any table behaves.
 
-## What exists
+## Pagination variants
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.pagination`. **Do not pass a variant or state — there are none.**
 
@@ -44,9 +44,9 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no rows-per-page select and no results readout** — no "Showing 1–10 of 200" element. If either one is required, it is not this component.
 
-**There is no first or last control, no ellipsis, and no truncating behavior in the UI kit**, though all three are shown only on the design-system website as behaviors. See the uncovered list.
+**There is no first or last control, no ellipsis, and no truncating behavior in the UI kit**, though all three are shown only on the design-system website as behaviors. See the open questions.
 
-## Rules for using it
+## Rules for pagination
 
 **Pagination lives in the table's footer**, which the design system provides as a fixed element — `recursica-skill-tables`. It is not a separate control floating below the table.
 
@@ -60,7 +60,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Keep the set to the page numbers plus previous and next.** First, last, jump-to-page, and shortening the list with an ellipsis are not defined in the UI kit — do not assemble them from other components.
 
-**Never show previous or next as a disabled link.** `recursica-skill-buttons-links` and `recursica-skill-link` both forbid disabling a link, and pagination is navigation. So on the first page, previous is missing or cannot be used, and on the last page, so is next. Never show a control that looks available but is not. Which of the two the house prefers is the one part still open; see the uncovered list. Disabled is not one of the options.
+**Never show previous or next as a disabled link.** `recursica-skill-buttons-links` and `recursica-skill-link` both forbid disabling a link, and pagination is navigation. So on the first page, previous is missing or cannot be used, and on the last page, so is next. Never show a control that looks available but is not. Which of the two the house prefers is the one part still open; see the open questions. Disabled is not one of the options.
 
 **The default sort belongs to the table, and must not change when the page changes.** `recursica-skill-tables` sets it on the primary content column; changing pages is not re-sorting.
 
@@ -95,7 +95,7 @@ Pagination is a row of small controls that all look alike. Without names added i
 - **A control that cannot be used is not a tab stop**, so a reason shown only visually cannot be reached by keyboard. Put the reason in text.
 - **Add no custom key handling inside the component.** Keyboard behavior inside a component is owned by the underlying coded library — `recursica-skill-navigation`.
 
-## Set by the component
+## Styling the pagination sets itself
 
 Do not set or override any of these. The component sets them:
 
@@ -105,7 +105,7 @@ Do not set or override any of these. The component sets them:
 - Control size, hit area, padding, and border radius.
 - The focus ring, and keyboard behavior inside the component.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-tables` — whether this table paginates at all, the five-to-ten row count for an interior table, the prohibition on inner scrolling, the fixed header and footer, default sort, and totals scope on a paginated table.
 - `recursica-skill-buttons-links` — link vs. button semantics, the tooltip requirement for icon-only controls, and disabled controls.
@@ -113,11 +113,11 @@ Do not set or override any of these. The component sets them:
 - `recursica-skill-system-conventions` — one behavioral mode per system, and never carry meaning in a single channel.
 - `recursica-skill-live-regions` — announcing the new page and row range after a page change.
 
-### Only if the screen also uses it
+### Only if the screen also uses those components
 
 - `recursica-skill-link` — real `href`s, names that identify the destination, and why a link is never disabled.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **Whether previous and next are missing, or present but unusable, at the ends.** That they are never shown as disabled links is settled, above. Which of the two remaining options the house wants is not — ask, and apply the answer everywhere.
 - **First and last page controls are shown only on the design-system website, with no token behind them.** Do not assume they are available. The same goes for an ellipsis, and for shortening a long list of pages: the UI kit defines only `navigation-controls`. Do not build any of them without asking.
@@ -147,4 +147,4 @@ Do not set or override any of these. The component sets them:
 - [ ] Changing pages did not change the default sort, and any totals say what they cover.
 - [ ] The screen uses no variant, state, first or last control, or ellipsis outside the inventory above.
 - [ ] Styling comes from the component.
-- [ ] Uncovered items were asked about, not decided: missing or unusable controls at the ends, first and last page controls, ellipsis, whether a page is a real route, rows per page, a results readout, where pagination sits in the footer, and loading and error states between pages.
+- [ ] Open questions were asked about, not decided: missing or unusable controls at the ends, first and last page controls, ellipsis, whether a page is a real route, rows per page, a results readout, where pagination sits in the footer, and loading and error states between pages.

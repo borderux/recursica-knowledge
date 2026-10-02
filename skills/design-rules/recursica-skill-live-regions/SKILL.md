@@ -93,7 +93,7 @@ These are the two priority levels. An **assertive** announcement interrupts what
 - **Semantic markup, headings, and reading order** — `recursica-skill-typography-semantics`.
 - **Showing the same change visually.** Announcing is in addition to showing it, never instead of it — see `recursica-skill-system-conventions` on never carrying meaning in a single channel (color, shape, position or text, each a separate signal).
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **How many announcements in a short time become noise.** This was deliberately left to established practice. No house number exists, and none is wanted.
 - **Which components already announce for themselves, and which need the application to do it.** The principle is settled — every component is responsible for itself — but there is no audit saying which ones comply today.
@@ -113,4 +113,4 @@ These are the two priority levels. An **assertive** announcement interrupts what
 - [ ] A filtered result count is announced when the filter applies, not on each keystroke.
 - [ ] Rapid updates are debounced and combined into fewer announcements, following established practice, and no truly new piece of content goes unannounced.
 - [ ] Each announcement is correct as built, not left for testing to catch.
-- [ ] Uncovered items were asked about, not decided: how many announcements become noise, which components announce for themselves, what each component must be given, background progress, translated announcements, and exceptions to announcing new content.
+- [ ] Open questions were asked about, not decided: how many announcements become noise, which components announce for themselves, what each component must be given, background progress, translated announcements, and exceptions to announcing new content.

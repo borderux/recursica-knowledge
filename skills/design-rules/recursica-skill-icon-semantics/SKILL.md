@@ -124,10 +124,10 @@ How icons line up in a cell, and which columns exist at all, are owned by `recur
 - **Tooltip content, placement, and behavior** — `recursica-skill-tooltip`.
 - **Navigation made only of icons**, which is forbidden outright — `recursica-skill-navigation`.
 - **What a status is called** — `recursica-skill-naming-terminology`.
-- **Whether a badge may carry an icon** — `recursica-skill-badges-chips`, where it is listed as uncovered.
+- **Whether a badge may carry an icon** — `recursica-skill-badges-chips`, where it is listed as an open question.
 - **Motion.** Whether an icon may animate has no owner anywhere in the family.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **The specific glyph for anything not in the fixed-meanings table.** Only close, delete, chip dismiss, menu, more, and edit were named. Everything else is a choice to raise, not to make.
 - **Whether a system may ever have more than one icon set.** It was stated as "typically" one, with no example given of when two would be right.
@@ -149,4 +149,4 @@ How icons line up in a cell, and which columns exist at all, are owned by `recur
 - [ ] Decorative icons are silent to assistive technology, and any icon kept after failing the removal test is a landmarking icon beside a heading.
 - [ ] A status shown as an icon has an accessible name, and it never depends on color alone.
 - [ ] No non-interactive icon sits alone in a table cell.
-- [ ] Uncovered items were asked about, not decided: glyphs outside the fixed-meanings table, more than one icon set, the external-link icon, status icons outside a table, how many decorative icons, and icon size.
+- [ ] Open questions were asked about, not decided: glyphs outside the fixed-meanings table, more than one icon set, the external-link icon, status icons outside a table, how many decorative icons, and icon size.

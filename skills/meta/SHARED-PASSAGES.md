@@ -18,11 +18,11 @@ Each passage below has three parts:
   opening listed here must then match one of the passages sharing that opening, from its first
   word. A skill may add its own sentences **after** the passage in the same paragraph, never inside
   it.
-- **Required when** — optional. A pattern tested against the skill's `## What exists` section; a
+- **Required when** — optional. A pattern tested against the skill's inventory section, the one right before `## Rules for …`; a
   component skill that matches must contain the passage.
 - **Passage** — the wording. `{a|b}` means either `a` or `b`, and `{a|}` means `a` or nothing.
   Those are the only permitted differences, and each one is here because the skills differ for a
-  real reason — "this field's" and "this group's", or a component that has no `formLayout` prop.
+  real reason — "this field's" and "this group's".
 
 **When a skill needs different wording**, do not add another `{…|…}` to fit it. If its situation
 is different, write its own paragraph with an opening that is not listed here — as the
@@ -31,24 +31,24 @@ label, panel, and stepper skills do for label placement. If it is not, use the p
 **When the wording should change**, change it here and in every copy in the same pull request.
 The check lists every copy.
 
-## react-prop-column
+## adapter-names
 
 Starts with:
 
 ```text
-**The third column is the React prop
+**These are design-system names, not code names.**
 ```
 
 Required when:
 
 ```text
-React prop
+Axis |
 ```
 
 Passage:
 
 ```text
-**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop. React ignores the name, with no error, if it is passed as a prop. A blank cell means no single prop sets that axis. CSS state or separate props set it instead, and the rules below say which.
+**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
 ```
 
 ## layouts-axis
@@ -62,7 +62,7 @@ Starts with:
 Passage:
 
 ```text
-**`layouts` is the label-placement axis{ (a property a component varies on, such as size or style; Figma calls it a variant property)|}{, set by the `formLayout` prop|}.** `side-by-side` — the label beside the {field|control} — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**`layouts` is the label-placement axis{ (a property a component varies on, such as size or style; Figma calls it a variant property)|}.** `side-by-side` — the label beside the {field|control} — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 ```
 
 ## layouts-axis-group
@@ -79,24 +79,18 @@ Passage:
 **`layouts` is the label-placement axis, the same axis every field has.** `side-by-side` puts the group's label beside the {stack of items|stack of options|switches}; `stacked` puts it above.
 ```
 
-## formlayout-default
+## label-placement-default
 
 Starts with:
 
 ```text
-**`formLayout` defaults to
-```
-
-Required when:
-
-```text
-`formLayout`
+**Set label placement explicitly on every field.**
 ```
 
 Passage:
 
 ```text
-**`formLayout` defaults to `stacked`, which puts the label above the input.** A field without the prop shows its label above the input at any container width, which breaks the house rule. `layouts` is the UI kit's name for this variant, not a prop: React ignores `layouts="side-by-side"` without an error and leaves the label above the input. Set `formLayout="side-by-side"`{ on every field|} to put the label beside the input.
+**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, using the adapter's name for that axis and option.
 ```
 
 ## one-placement-per-form

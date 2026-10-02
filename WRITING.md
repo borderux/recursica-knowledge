@@ -17,11 +17,11 @@ Never address the reader. Give an instruction in the imperative, and state a rul
 | An instruction | "Use a table for many records of one type."                            |
 | A rule         | "A badge holds one value."                                             |
 | A checklist    | "- [ ] Where horizontal scrolling must be used, a reason is provided." |
-| A heading      | "## Set by the component", not "## Not your decision"                  |
+| A heading      | "## Styling the button sets itself", not "## Not your decision"        |
 
 **Removing "you" means rewriting the sentence, not making it passive.** "Side by side is the value you have to pass" does not improve as "the value that has to be passed". Say what to do: "Set `formLayout=\"side-by-side\"` on every field to put the label beside the input."
 
-**A checklist item names what a reviewer can see.** Use the words a designer uses, not a vague passive like "that is stated". Items about the uncovered list take one form: "Uncovered items were asked about, not decided: …"
+**A checklist item names what a reviewer can see.** Use the words a designer uses, not a vague passive like "that is stated". Items about the open questions take one form: "Open questions were asked about, not decided: …"
 
 **One exception: an agent's identity line**, such as "You are Betty, the designer agent for Recursica." It is the only sentence in an agent's instructions that may start with "You".
 

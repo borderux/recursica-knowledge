@@ -16,14 +16,14 @@ A transfer list is two lists side by side, with controls that move items between
 > describes the intended component and matches the UI kit, but building with it today renders
 > a placeholder, with no error. Raise the missing implementation with a person instead of working around it.
 
-## Use it when
+## When to use a transfer list
 
 - **The set is large** — well past the 7 ± 2 limit where a checkbox group stops working. See `recursica-skill-working-memory`.
 - **The items not chosen matter as much as the items chosen.** Assigning people to a group, picking the columns of a report, choosing which options a setup includes: the user needs to see what was left out, not only what was taken.
 - **Included and excluded are the real states.** Two lists show at a glance which items belong. Checkmarks spread through one long group do not.
 - **The user works in bulk** — selecting several items, then moving them in one action.
 
-## Do not use it when
+## When not to use a transfer list
 
 | Instead of a transfer list                            | Use                                                                                        |
 | ----------------------------------------------------- | ------------------------------------------------------------------------------------------ |
@@ -37,20 +37,20 @@ A transfer list is two lists side by side, with controls that move items between
 
 **A transfer list fixes a structural problem: a set too large for a checkbox group. It is not for a small set.** `recursica-skill-selection-controls` says that needing select-all across twenty checkboxes means the control is wrong — this is the control that replaces it. The reverse is also true: using a transfer list where nine checkboxes would do is the same mistake in the other direction.
 
-## What exists
+## Transfer list label placements and states
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.transfer-list`. **Pass only a variant, size, or state listed here.**
 
-**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop. React ignores the name, with no error, if it is passed as a prop. A blank cell means no single prop sets that axis. CSS state or separate props set it instead, and the rules below say which.
+**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
 
-| Axis      | Options                   | React prop   |
-| --------- | ------------------------- | ------------ |
-| `layouts` | `stacked`, `side-by-side` | `formLayout` |
-| `states`  | `error`, `disabled`       |              |
+| Axis      | Options                   |
+| --------- | ------------------------- |
+| `layouts` | `stacked`, `side-by-side` |
+| `states`  | `error`, `disabled`       |
 
-**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the control — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`. **It does not arrange the two lists** — they are always two columns.
+**`layouts` is the label-placement axis.** `side-by-side` — the label beside the control — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`. **It does not arrange the two lists** — they are always two columns.
 
-**`formLayout` defaults to `stacked`, which puts the label above the input.** A field without the prop shows its label above the input at any container width, which breaks the house rule. `layouts` is the UI kit's name for this variant, not a prop: React ignores `layouts="side-by-side"` without an error and leaves the label above the input. Set `formLayout="side-by-side"` to put the label beside the input.
+**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, using the adapter's name for that axis and option.
 
 **Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
@@ -58,9 +58,9 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.transfer-list`. **Pass
 
 **Height and width are fixed** — `height` and `width` are properties of the component, not choices. Both lists are the same size, no matter how many items are in them.
 
-**There is no size axis, no focus state, and no loading or empty state.** There is no move-all axis — and none is wanted; see the rule below. There are no tokens for single items; see the uncovered list.
+**There is no size axis, no focus state, and no loading or empty state.** There is no move-all axis — and none is wanted; see the rule below. There are no tokens for single items; see the open questions.
 
-## Rules for using it
+## Rules for transfer lists
 
 **Both lists need a name that says which side is which.** "Available" and "Selected", "Excluded" and "Included" — whatever the product calls them. Without names, the user cannot tell which column holds the chosen items.
 
@@ -78,7 +78,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.transfer-list`. **Pass
 
 **Pair the error state with a signal that is not color.** Required by `recursica-skill-system-conventions`.
 
-**If a list needs long scrolling inside its fixed height, the structure is the problem.** A scrolling area inside the control works around the problem and does not fix it. See `recursica-skill-system-conventions` and the uncovered list.
+**If a list needs long scrolling inside its fixed height, the structure is the problem.** A scrolling area inside the control works around the problem and does not fix it. See `recursica-skill-system-conventions` and the open questions.
 
 **Never disable a transfer list to show what belongs.** If the user cannot change it here, show the included set as read-only content.
 
@@ -108,7 +108,7 @@ Two lists with arrow buttons are often shipped so that they work only with a mou
 - **Do not move focus for the user**, other than placing it on purpose after a move. Typing in the filter must not move focus into the list.
 - **Nothing the user needs may appear only on hover** — not the move controls, not a remove control on each item, and not the counts.
 
-## Set by the component
+## Styling the transfer list sets itself
 
 Do not set or override any of these. The component sets them:
 
@@ -117,7 +117,7 @@ Do not set or override any of these. The component sets them:
 - `header-style` and all `colors`.
 - Field colors and sizes from `globals.form.field`, label-field gaps and `vertical-item-gap` from `globals.form.properties`, and the disabled treatment from `globals.states.disabled`.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-selection-controls` — the control-choice ladder, the option ceiling, select-all as a signal that the structure is wrong, disabled versus read-only, and the commit model.
 - `recursica-skill-working-memory` — the 7 ± 2 basis, and why a recognition list may be long while a comparison set may not.
@@ -126,7 +126,7 @@ Do not set or override any of these. The component sets them:
 - `recursica-skill-assistive-element` — the selection rules and the error message.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel; fix the structure rather than adding a mechanism to cope with it.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **Where this control fits among the selection controls.** `recursica-skill-selection-controls` sends zero-to-many sets above the limit to a multi-select dropdown, and never mentions a transfer list. The set size at which a transfer list replaces the multi-select dropdown is not stated.
 - **Checkboxes on each item.** A checkbox on every item is shown only on the design-system website, but the UI kit defines no item or checkbox properties on this component. Whether items are checkbox rows or a selectable listbox is not settled — ask before relying on it.
@@ -154,4 +154,4 @@ Do not set or override any of these. The component sets them:
 - [ ] The control is in the form's single column, and not inside a card.
 - [ ] Every variant, size, and state comes from the inventory above. No header, filter, or wrapper is built by hand.
 - [ ] Sizes, padding, and gaps come from the component.
-- [ ] Uncovered items were asked about, not decided: item checkboxes, overflow, ordering.
+- [ ] Open questions were asked about, not decided: item checkboxes, overflow, ordering.

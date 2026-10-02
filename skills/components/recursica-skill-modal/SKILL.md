@@ -11,13 +11,13 @@ metadata:
 
 A modal blocks the page to get one decision or one short task done, then closes.
 
-## Use it when
+## When to use a modal
 
 - **The task is short, self-contained, and must be finished or given up** before the user carries on.
 - **The action cannot be undone, is massively destructive, and is hard to recreate** — the only case that justifies a confirmation.
 - **The user must acknowledge a system event** before work can continue.
 
-## Do not use it when
+## When not to use a modal
 
 | Instead of a modal                                    | Use                                                                         |
 | ----------------------------------------------------- | --------------------------------------------------------------------------- |
@@ -30,7 +30,7 @@ A modal blocks the page to get one decision or one short task done, then closes.
 
 **Routine confirmation is the misuse to watch for.** Asking "Are you sure?" about an action that can be undone trains the user to dismiss confirmations without reading. The user then dismisses the one confirmation that guards a dangerous action.
 
-## What exists
+## Modal parts
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.modal`. **The modal has no variant axes (the properties a component varies on, such as size and style; Figma calls them variant properties) at all** — no sizes, no types, no severity variants. Everything is a fixed property.
 
@@ -42,7 +42,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Structure shown only on the design-system website:** a title, a content slot, a divider, and a footer.
 
-## Rules for using it
+## Rules for modals
 
 **A button opens a modal; the user does not navigate to it, and it creates no browser history entry.** The one exception is a modal deliberately built to be linked to, with a URL that can be shared. That one gets a route and a link trigger together, on purpose, because it is a location. Owned by `recursica-skill-navigation`.
 
@@ -85,7 +85,7 @@ A modal is the component where accessibility failures are most serious. Get the 
 - **The page behind must not scroll**, and no element behind it may take focus.
 - **Never make closing it pointer-only.** A click on the overlay may close it, but Escape and the cancel action must both work.
 
-## Set by the component
+## Styling the modal sets itself
 
 Do not set or override any of these. The component sets them:
 
@@ -96,7 +96,7 @@ Do not set or override any of these. The component sets them:
 - `button-gap` in the footer.
 - `header-style` and `content-style` type treatment.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-panels-modals` — the owning design-rules skill: modal vs. panel vs. page, why mode is the only real difference, the prohibition on stacking, and unsaved-change protection.
 - `recursica-skill-buttons-links` — modal triggers, destructive-action confirmation, undo, footer button hierarchy.
@@ -104,11 +104,11 @@ Do not set or override any of these. The component sets them:
 - `recursica-skill-forms` — save mode and validation for any form the modal contains.
 - `recursica-skill-system-conventions` — the accessibility baseline every component follows.
 
-### Only if the screen also uses it
+### Only if the screen also uses those components
 
 - `recursica-skill-card` — why the modal's content is not wrapped in a card.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **Whether clicking the overlay closes the modal.** Not stated either way.
 - **A loading state inside a modal**, while an action is in flight. There is no such state on the component.
@@ -130,4 +130,4 @@ Do not set or override any of these. The component sets them:
 - [ ] The close control has a real accessible name, and the focus ring is intact.
 - [ ] The destructive consequence is stated in words, not carried by color.
 - [ ] Padding, size, and overlay styling come from the component.
-- [ ] Uncovered items were asked about, not decided: whether clicking the overlay closes the modal, a loading state inside a modal, whether a modal that cannot be closed is allowed, and confirming inside a modal.
+- [ ] Open questions were asked about, not decided: whether clicking the overlay closes the modal, a loading state inside a modal, whether a modal that cannot be closed is allowed, and confirming inside a modal.

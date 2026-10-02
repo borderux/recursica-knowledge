@@ -94,7 +94,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 - **What things are called** — `recursica-skill-naming-terminology`.
 - **Building queries, indexing, and performance.** These are not UI concerns.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **The house set of relative date ranges.** The pattern is settled; the specific options, and which one is the default, are not.
 - **Whether filters are kept** across navigation, sessions, or users, and whether a filtered view can be saved or shared.
@@ -117,4 +117,4 @@ These rules assume **complex enterprise web applications, designed for desktop f
 - [ ] The applied state is visible without opening each control, and the control and its chip stay in sync.
 - [ ] Filtering announces how many results it returned, and zero results is shown as "filtered down to nothing" rather than as an empty collection.
 - [ ] No bulk action, export, or create control sits in the filter group.
-- [ ] Uncovered items were asked about, not decided: the house set of relative date ranges, whether filters are kept, where the applied-filter chips sit, how many filters a bar may hold, a text search across several fields, and the neutral-state convention.
+- [ ] Open questions were asked about, not decided: the house set of relative date ranges, whether filters are kept, where the applied-filter chips sit, how many filters a bar may hold, a text search across several fields, and the neutral-state convention.

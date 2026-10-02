@@ -11,7 +11,7 @@ metadata:
 
 A textarea records plain text across several lines.
 
-## Use it when
+## When to use a textarea
 
 - **The expected answer runs past one sentence** — a description, a justification, a note.
 - **The user is writing, not identifying something** — comments, feedback, messages, the details of a support ticket.
@@ -19,7 +19,7 @@ A textarea records plain text across several lines.
 
 **The field's label is the fastest check for whether a textarea is right.** `Description`, `Notes`, `Comments`, `Justification`, `Reason`, `Summary`, and `Details` all promise the user room to write. A label that calls for prose on a single-line field is a mismatch. The user discovers it by running out of space, after typing into a box that scrolls horizontally and hides what they wrote. If the label suggests prose, use a textarea. If it does not, rethink the label.
 
-## Do not use it when
+## When not to use a textarea
 
 Each case below has its own component. Use that component instead of adapting a textarea:
 
@@ -27,7 +27,7 @@ Each case below has its own component. Use that component instead of adapting a 
 | ------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | The content is short, and fits on one line  | `recursica-skill-text-field` — the size of the field tells the user how much to write        |
 | The value comes from a known set of options | A dropdown, a radio group, or an autocomplete — see `recursica-skill-selection-controls`     |
-| The user must apply bold, italics, or lists | A rich text editor. No such component exists in this kit — see Uncovered                     |
+| The user must apply bold, italics, or lists | A rich text editor. No such component exists in this kit — see the open questions            |
 | The value is a number, a date, or a time    | `recursica-skill-number-input`, `recursica-skill-date-picker`, `recursica-skill-time-picker` |
 | The value can never be edited here          | `recursica-skill-read-only-field` — shows the label and text, with no input                  |
 | Long text is only being read, not written   | Body text on the page, not a field                                                           |
@@ -36,24 +36,24 @@ Each case below has its own component. Use that component instead of adapting a 
 
 **Do not use a disabled textarea to show text.** Text that nobody can ever edit here is not a form control.
 
-## What exists
+## Textarea label placements and states
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.textarea`. **Pass only the variants and states listed here.** Other design systems have sizes, resize modes, warning states, and built-in counters that this component does not.
 
-**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop. React ignores the name, with no error, if it is passed as a prop. A blank cell means no single prop sets that axis. CSS state or separate props set it instead, and the rules below say which.
+**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
 
-| Axis      | Options                   | React prop   |
-| --------- | ------------------------- | ------------ |
-| `layouts` | `stacked`, `side-by-side` | `formLayout` |
-| `states`  | `error`, `disabled`       |              |
+| Axis      | Options                   |
+| --------- | ------------------------- |
+| `layouts` | `stacked`, `side-by-side` |
+| `states`  | `error`, `disabled`       |
 
-**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**`layouts` is the label-placement axis.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
-**`formLayout` defaults to `stacked`, which puts the label above the input.** A field without the prop shows its label above the input at any container width, which breaks the house rule. `layouts` is the UI kit's name for this variant, not a prop: React ignores `layouts="side-by-side"` without an error and leaves the label above the input. Set `formLayout="side-by-side"` to put the label beside the input.
+**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, using the adapter's name for that axis and option.
 
 **Focus and placeholder are not variants.** The component handles them: `placeholder-opacity` here, and the focused border through `globals.form.field.colors.border-selected`. Do not build them as states.
 
-**`rows` is a token-owned property, not a prop to set on each instance.** The component fixes the number of rows. Do not pass a height, do not set a row count to fit a particular answer, and do not add a wrapper to stretch it. If the fixed height is wrong for a case, ask a person — see the uncovered list.
+**The tokens set `rows`. Do not set it on each instance.** The component fixes the number of rows. Do not pass a height, do not set a row count to fit a particular answer, and do not add a wrapper to stretch it. If the fixed height is wrong for a case, ask a person — see the open questions.
 
 **There is no size axis, and no width property.** The field's width comes from `globals.form.field.size`.
 
@@ -63,7 +63,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no read-only state.** Read-only is a separate component — `read-only-field`, with the same `layouts` axis and no input.
 
-## Rules for using it
+## Rules for textareas
 
 **Always pass a visible label.** Name the object clearly; a screen reader user hears the label on its own, without the context around it. Use sentence capitalization, with no colon at the end.
 
@@ -117,7 +117,7 @@ The component connects the label to the input and provides the focus ring. The a
 - **Never make resizing necessary to read or finish the value.** A drag handle cannot be used from the keyboard, so the field must be usable at the size it is given.
 - **Nothing needed to complete the field may appear only on hover** — not the limit, and not the rule.
 
-## Set by the component
+## Styling the textarea sets itself
 
 Do not set or override any of these. The component sets them:
 
@@ -131,19 +131,19 @@ Do not set or override any of these. The component sets them:
 
 Never style an unfocused textarea to look disabled. An editable field must look editable at rest.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-forms` — label placement and one placement per form, single-column layout, the no-custom-spacing rule, validation timing, microcopy, save mode, and the rule that no form control goes inside a card.
 - `recursica-skill-label` — the label component, its placement axis, and required vs. optional marking.
 - `recursica-skill-assistive-element` — the help and error text below the field, and why the error replaces the help.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel.
 
-### Only if the screen also uses it
+### Only if the screen also uses those components
 
 - `recursica-skill-text-field` — the control for single-line entry, and the overflow rule that sends a long value here.
 - `recursica-skill-read-only-field` — the component for text the user never edits here.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **Growing to fit the content.** The UI kit fixes `rows`, and **a vertical-resize axis with `auto` and `custom` is shown only on the design-system website, with no token behind it. These disagree.** Whether the field grows with its content, and whether there is a handle the user can drag, must be settled by a person. Do not rely on a resize axis without asking.
 - **What a fixed `rows` does with a longer value.** A "default fixed height before content truncation" is described outside the UI kit. Whether the extra text scrolls or is cut off is not stated — and cutting off a user's own entry would be a serious problem. Do not rely on either behavior without asking.
@@ -169,4 +169,4 @@ Never style an unfocused textarea to look disabled. An editable field must look 
 - [ ] `rows`, height, and spacing come from the component, with no wrapper and no custom margins.
 - [ ] Every variant, size, and state passed appears in the inventory above.
 - [ ] Text that cannot be edited uses the read-only component, not a disabled textarea.
-- [ ] Uncovered items were asked about, not decided: growing to fit the content, what a fixed `rows` does with a longer value, the character counter, a rich text editor, and a minimum length.
+- [ ] Open questions were asked about, not decided: growing to fit the content, what a fixed `rows` does with a longer value, the character counter, a rich text editor, and a minimum length.

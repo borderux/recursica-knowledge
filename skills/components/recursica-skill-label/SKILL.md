@@ -11,12 +11,12 @@ metadata:
 
 The label names the field. It is a real component, not plain text beside an input.
 
-## Use it when
+## When to use a label
 
 - **Any form control needs a name** — every one does, with no exception.
 - **A group of controls needs a name** — a checkbox group, a radio group, a switch group.
 
-## Do not use it when
+## When not to use a label
 
 | Instead of a label                    | Use                                                        |
 | ------------------------------------- | ---------------------------------------------------------- |
@@ -27,28 +27,28 @@ The label names the field. It is a real component, not plain text beside an inpu
 
 **A placeholder is never a label.** It is not announced as one, and it disappears on the first keystroke.
 
-## What exists
+## Label placements and sizes
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.label`.
 
-**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop. React ignores the name, with no error, if it is passed as a prop. A blank cell means no single prop sets that axis. CSS state or separate props set it instead, and the rules below say which.
+**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
 
-| Axis      | Options                   | React prop   |
-| --------- | ------------------------- | ------------ |
-| `layouts` | `stacked`, `side-by-side` | `formLayout` |
-| `sizes`   | `default`, `small`        |              |
+| Axis      | Options                   |
+| --------- | ------------------------- |
+| `layouts` | `stacked`, `side-by-side` |
+| `sizes`   | `default`, `small`        |
 
-**`layouts` is the placement axis, set by the `formLayout` prop, and it is the same axis every field has.** Set it consistently: the label's layout and its field's layout are one decision, not two — and that decision belongs to the form, not to this label. See the placement rule below.
+**`layouts` is the placement axis, and it is the same axis every field has.** Set it consistently: the label's layout and its field's layout are one decision, not two — and that decision belongs to the form, not to this label. See the placement rule below.
 
-**`formLayout` defaults to `stacked`, which puts the label above the input.** A field without the prop shows its label above the input at any container width, which breaks the house rule. `layouts` is the UI kit's name for this variant, not a prop: React ignores `layouts="side-by-side"` without an error and leaves the label above the input. Set `formLayout="side-by-side"` to put the label beside the input.
+**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, using the adapter's name for that axis and option.
 
 **The UI kit provides a required indicator and an optional text**, each with its own gaps, and a transparency setting for the optional text. Both exist. The form decides which one to use, not the field.
 
-**There is a gap for an edit icon**, so a label can carry an edit control. What that control is for is not stated; see the uncovered list.
+**There is a gap for an edit icon**, so a label can carry an edit control. What that control is for is not stated; see the open questions.
 
-**There are two sizes, `default` and `small`, and no disabled state.** The label's color across states comes from the field's tokens. When to use `small` is on the uncovered list.
+**There are two sizes, `default` and `small`, and no disabled state.** The label's color across states comes from the field's tokens. When to use `small` is among the open questions.
 
-## Rules for using it
+## Rules for labels
 
 **Side by side is the default.** The label sits to the left of the field, on the same row, right-aligned so it sits close to its field. Stack it above only when the container is too narrow to fit both — and what decides this is the width of the form's container, not the viewport. Owned by `recursica-skill-forms`.
 
@@ -99,7 +99,7 @@ The label is where a field becomes usable by a screen reader at all. The connect
 - **If the label carries an edit icon, that icon is a control**, and it must be its own tab stop with its own accessible name.
 - **A stacked label must not change the tab order.** Placement is visual; the order is label, then field, either way.
 
-## Set by the component
+## Styling the label sets itself
 
 Do not set or override any of these. The component sets them:
 
@@ -108,19 +108,19 @@ Do not set or override any of these. The component sets them:
 - `colors`, including the error and disabled treatments.
 - The gap between label and field — `globals.form.properties.label-field-gap-horizontal` and `label-field-gap-vertical`.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-forms` — label placement and alignment, the container-width trigger, one placement per form at any given breakpoint, required vs. optional policy, label copy, and group-level optionality.
 - `recursica-skill-assistive-element` — the help and error text below the field.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **The edit control on a label.** The UI kit sets aside a gap for an edit icon, but what it does, and on which fields, is not stated.
 - **Which form-wide signal marks required fields** when asterisks are avoided. Bold is given as an example, not a rule.
 - **Whether the required indicator and the optional text may both appear in one application**, on different forms.
 - **Truncating a label** when it is longer than the space available in side-by-side placement.
-- **When a label is `small`.** The UI kit defines `default` and `small`, and no rule says when to use `small`. Whether the adapter exposes it as a prop has not been confirmed. Check the component's props, or ask, before relying on it.
+- **When a label is `small`.** The UI kit defines `default` and `small`, and no rule says when to use `small`. Whether the adapter exposes it as a setting has not been confirmed. Check the component's settings, or ask, before relying on it.
 
 ## Pre-flight checklist
 
@@ -136,4 +136,4 @@ Do not set or override any of these. The component sets them:
 - [ ] Clicking the label moves focus to its control.
 - [ ] Any edit icon on the label is a tab stop with its own name.
 - [ ] Layout, gaps, and type styling come from the component.
-- [ ] Uncovered items were asked about, not decided: the edit control on a label, the form-wide signal for required fields, showing the required indicator with the optional text in one application, truncating a label, and when a label is `small`.
+- [ ] Open questions were asked about, not decided: the edit control on a label, the form-wide signal for required fields, showing the required indicator with the optional text in one application, truncating a label, and when a label is `small`.

@@ -159,7 +159,7 @@ Example: a set of ways to travel, where checking "Car" reveals a group of car de
 
 **Resetting belongs to the whole form, not to one control.** Where a reset is called for, use a button labeled with a verb and its object — "Reset form", "Clear form" — that calls the native HTML reset. No control has its own restore behavior.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 No house rule covers these yet. **Ask the person instead of choosing** — see the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule above to fit them.
 
@@ -196,4 +196,4 @@ Before treating a set of selection controls as done, check:
 - [ ] Revealed fields submit together with the control that revealed them.
 - [ ] Choices that are unavailable for now are disabled. Values that are permanently not editable use the read-only control, or are not form controls at all.
 - [ ] Selection rules (minimums and maximums) appear as assistive text under the control.
-- [ ] Uncovered items were asked about, not decided: when autocomplete replaces a dropdown, radio buttons in rows, and limits on selection.
+- [ ] Open questions were asked about, not decided: when autocomplete replaces a dropdown, radio buttons in rows, and limits on selection.

@@ -146,7 +146,7 @@ The components handle both cases — hover and focus states are built in — but
 
 **Swap the badge to its new value.** No transition, no animation. Animating a small status badge is excessive: nobody is watching it that closely, and a user who caused the change already expects it.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 No house rule covers these yet. **Ask the person instead of choosing** — see the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule above to fit them.
 
@@ -182,4 +182,4 @@ Before treating status and metadata as done, check:
 - [ ] Dense data views use badges, not chips.
 - [ ] Badges cannot receive focus; interactive chips can.
 - [ ] When a status updates, the badge is swapped with no animation.
-- [ ] Uncovered items were asked about, not decided: count limits, icons in badges, and a filter bar with more than 7 ± 2 items.
+- [ ] Open questions were asked about, not decided: count limits, icons in badges, and a filter bar with more than 7 ± 2 items.

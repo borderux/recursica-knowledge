@@ -13,8 +13,8 @@ in `nest/nest-manifest.json`.
 ## The rule it enforces
 
 **`skill_family` never returns a single skill.** It returns the skill plus everything its
-`## Load these too` section says it needs, transitively. Links listed under "Only if the screen
-also uses it" are alternatives — a table points at cards — and are returned as `seeAlso`, not
+`## Skills to read with this one` section says it needs, transitively. Links listed under "Only if
+the screen also uses those components" are alternatives — a table points at cards — and are returned as `seeAlso`, not
 loaded. Following them used to pull six unused skills, about 25,000 tokens, into an ordinary
 form-and-table screen. The parser is `crossLinks` in `scripts/screen-skill-manifest.mjs`, shared
 with `skills_for_screen` so the two cannot disagree.
@@ -31,7 +31,7 @@ looking like it helped. **There is deliberately no search tool here.**
 | --- | --- |
 | `router` | The decision order, the precedence when rules collide, and when to stop and ask. Call it first. |
 | `skills_for_screen` | Which skills apply to real files, computed from their adapter imports rather than judged. |
-| `skill_family` | The rules themselves — always as a family. `detail: "contract"` returns only each skill's checklist, uncovered list and, for a component, its inventory and "Do not use it when" table, at about a quarter of the size — for when the full family will not fit (see below). |
+| `skill_family` | The rules themselves — always as a family. `detail: "contract"` returns only each skill's checklist, open questions and, for a component, its inventory and "When not to use …" table, at about a quarter of the size — for when the full family will not fit (see below). |
 | `skill_section` | One section of one skill, for the reasoning behind a contract item. |
 | `list_skills` | Slugs, categories and one-line descriptions, for when there are no files to compute from. |
 | `component_api` | Real prop types from the adapter version a given project installs. |

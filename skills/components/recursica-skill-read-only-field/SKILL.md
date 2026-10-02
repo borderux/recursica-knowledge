@@ -11,14 +11,14 @@ metadata:
 
 A read-only field shows a label and its value inside a form. It shows no input.
 
-## Use it when
+## When to use a read-only field
 
 - **A form shows a value this user cannot edit here** — a view mode on a profile or a settings page.
 - **A confirmation step sums up what was entered**, for review before submitting.
 - **The system created the value** — an account ID, a created date, a calculated total.
 - **The value belongs to the form's object**, and needs the same label-and-value layout as the fields around it.
 
-## Do not use it when
+## When not to use a read-only field
 
 Each case below needs a different component. Use that component instead of adapting a read-only field:
 
@@ -34,29 +34,29 @@ Each case below needs a different component. Use that component instead of adapt
 
 **Never fake read-only by disabling an input or removing its borders.** Owned by `recursica-skill-forms`.
 
-## What exists
+## Read-only field label placements
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.read-only-field`.
 
-**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop. React ignores the name, with no error, if it is passed as a prop. A blank cell means no single prop sets that axis. CSS state or separate props set it instead, and the rules below say which.
+**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
 
-| Axis      | Options                   | React prop   |
-| --------- | ------------------------- | ------------ |
-| `layouts` | `stacked`, `side-by-side` | `formLayout` |
+| Axis      | Options                   |
+| --------- | ------------------------- |
+| `layouts` | `stacked`, `side-by-side` |
 
-**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`. It is the same axis every field has. Set it to match the fields around it — a read-only field placed among stacked fields stacks too.
+**`layouts` is the label-placement axis.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`. It is the same axis every field has. Set it to match the fields around it — a read-only field placed among stacked fields stacks too.
 
-**`formLayout` defaults to `stacked`, which puts the label above the input.** A field without the prop shows its label above the input at any container width, which breaks the house rule. `layouts` is the UI kit's name for this variant, not a prop: React ignores `layouts="side-by-side"` without an error and leaves the label above the input. Set `formLayout="side-by-side"` to put the label beside the input.
+**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, using the adapter's name for that axis and option.
 
 **There are no states.** The component has no `error`, no `disabled`, no focus, and no hover state. It is not a control. Nothing about it can be invalid or unusable. Do not pass a state, and do not fake one.
 
 **There is no placeholder, and no input.** The component's only properties are `text`, `colors`, and `min-height`.
 
-**There is no size axis**, and no `rows`. No rule says how a long value is shown. See the uncovered list.
+**There is no size axis**, and no `rows`. No rule says how a long value is shown. See the open questions.
 
 **The read-only background comes from `globals.form.field.colors.background-color-read-only`.** Do not choose another style for it.
 
-## Rules for using it
+## Rules for read-only fields
 
 **Always pass a visible label**, and let the component pair it with the value. Name the object clearly, use sentence capitalization, and leave off any colon at the end. The rules in `recursica-skill-label` apply without change.
 
@@ -70,7 +70,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Put the time zone and the unit in the value's text.** No other part of the component can show them: there is no help text slot and no placeholder here.
 
-**If the value can be edited through another flow, open that flow from a named control that stays visible** — never a control that appears on hover. See the uncovered list before adding one.
+**If the value can be edited through another flow, open that flow from a named control that stays visible** — never a control that appears on hover. See the open questions before adding one.
 
 **A read-only field holds one label and one value.** If the value is a set of items, use a list or a table — not a read-only field with commas in it.
 
@@ -99,7 +99,7 @@ These rules differ from the rules for every editable field. **A read-only field 
 - **Any edit control is a control**, so it is its own tab stop, activated by Enter or Space, with its own accessible name (the name a screen reader reads out for a control) — and it is visible without hovering. Keyboard and touch users cannot reach an edit icon that appears on hover.
 - **It must not interrupt the tab order** of the fields around it. Placing it between two inputs changes what a user reads, never the order they tab through.
 
-## Set by the component
+## Styling the read-only field sets itself
 
 Do not set or override any of these. The component sets them:
 
@@ -110,7 +110,7 @@ Do not set or override any of these. The component sets them:
 - The label-field gaps and `vertical-item-gap` from `globals.form.properties`.
 - The label-to-value association.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-forms` — label placement, the container-width trigger, one placement per form, the rule that read-only is a distinct component rather than a styled-down input, and the rule that no form control goes inside a card.
 - `recursica-skill-dates-and-currency` — the read-only date format, right alignment, precision, durations, and the format-follows-focus rule, which gives this component the display format.
@@ -119,11 +119,11 @@ Do not set or override any of these. The component sets them:
 - `recursica-skill-tables` — where repeating read-only values belong instead.
 - `recursica-skill-system-conventions` — the accessibility baseline every component follows.
 
-### Only if the screen also uses it
+### Only if the screen also uses those components
 
 - `recursica-skill-text-field` — the editable counterpart, and why a disabled field is never used to display a value.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **The editable read-only field.** An "Is editable" behavior, with an edit icon that appears on hover and sends the user to another flow, is shown only on the design-system website, with no token behind it. The UI kit defines no edit control on this component, and `recursica-skill-label` sets aside an `edit-icon-gap` without saying what it triggers. A control that appears only on hover also conflicts with the accessibility rules above. Ask before settling this or relying on it.
 - **Required and optional markers.** Turning on an optional label or a required asterisk on this component is described outside the UI kit — which contradicts the fact that there is no input to require. Do not rely on it without asking.
@@ -151,4 +151,4 @@ Do not set or override any of these. The component sets them:
 - [ ] Nothing about it depends on hover or focus.
 - [ ] Any edit control stays visible, is its own tab stop, is named with its object, and has its focus ring intact.
 - [ ] Styling comes from the component, and read-only and editable fields keep distinct looks.
-- [ ] Uncovered items were asked about, not decided: the edit control that appears on hover, required and optional markers, empty and null values, long values, help text, and use in a compound control.
+- [ ] Open questions were asked about, not decided: the edit control that appears on hover, required and optional markers, empty and null values, long values, help text, and use in a compound control.

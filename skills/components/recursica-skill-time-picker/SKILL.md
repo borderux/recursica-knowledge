@@ -11,13 +11,13 @@ metadata:
 
 A time picker records a point in the day, either by typing it or by picking it.
 
-## Use it when
+## When to use a time picker
 
 - **A specific time of day must be set** — a start time, an end time, a reminder, an appointment.
 - **Hours and minutes have to be stated exactly**, rather than chosen from a short list.
 - **The precision matters to the task.** If any nearby time would do, the user is not setting a specific time.
 
-## Do not use it when
+## When not to use a time picker
 
 Each of these has a different component. Switch to it, instead of adapting a time picker:
 
@@ -34,20 +34,20 @@ Each of these has a different component. Switch to it, instead of adapting a tim
 
 **Never use a disabled time picker to show a time.** If nobody can ever edit it here, it is not a form control.
 
-## What exists
+## Time picker label placements and states
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.time-picker`. **Do not pass a variant or state that is not listed here** — other design systems have sizes, seconds variants, warning states, and inline clocks that this component does not.
 
-**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop. React ignores the name, with no error, if it is passed as a prop. A blank cell means no single prop sets that axis. CSS state or separate props set it instead, and the rules below say which.
+**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
 
-| Axis      | Options                   | React prop   |
-| --------- | ------------------------- | ------------ |
-| `layouts` | `stacked`, `side-by-side` | `formLayout` |
-| `states`  | `error`, `disabled`       |              |
+| Axis      | Options                   |
+| --------- | ------------------------- |
+| `layouts` | `stacked`, `side-by-side` |
+| `states`  | `error`, `disabled`       |
 
-**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**`layouts` is the label-placement axis.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
-**`formLayout` defaults to `stacked`, which puts the label above the input.** A field without the prop shows its label above the input at any container width, which breaks the house rule. `layouts` is the UI kit's name for this variant, not a prop: React ignores `layouts="side-by-side"` without an error and leaves the label above the input. Set `formLayout="side-by-side"` to put the label beside the input.
+**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, using the adapter's name for that axis and option.
 
 **Focus and placeholder are not variants.** The component handles them: `placeholder-opacity` here, and the focused border through `globals.form.field.colors.border-selected`. Do not build them as states.
 
@@ -59,7 +59,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no read-only state.** Read-only is a separate component — `read-only-field`, with the same `layouts` axis and no input.
 
-## Rules for using it
+## Rules for time pickers
 
 **Always pass a visible label.** Name the object clearly — "Start time", not "Time". A screen reader user hears the label on its own, without the context around it. Use sentence capitalization, with no colon at the end.
 
@@ -113,7 +113,7 @@ The component connects the label to the input, and provides the focus ring. Time
 - **Do not move focus for the user** when a value looks complete, and do not close the popover into a different field.
 - **Everything needed to complete the field must be visible without hovering** — the format, the time zone, and the trigger.
 
-## Set by the component
+## Styling the time picker sets itself
 
 Do not set or override any of these. The component sets them:
 
@@ -127,7 +127,7 @@ Do not set or override any of these. The component sets them:
 
 Never style an unfocused time picker so it looks disabled. An editable field must look editable at rest.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-dates-and-currency` — 12- vs 24-hour, time zones, when not to localize, seconds, duration formatting, and format follows focus.
 - `recursica-skill-forms` — label placement and one placement per form, the compound-control exception that puts date and time on one row, validation timing, and save mode.
@@ -136,11 +136,11 @@ Never style an unfocused time picker so it looks disabled. An editable field mus
 - `recursica-skill-selection-controls` — when a preset list replaces free entry, and disabled vs. read-only.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel.
 
-### Only if the screen also uses it
+### Only if the screen also uses those components
 
 - `recursica-skill-date-picker` — the date half of a date-and-time row.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **The AM/PM control.** A selector for AM or PM inside the field, hidden in 24-hour mode, is shown only on the design-system website. The UI kit defines no tokens for it. Whether it is part of this component, or a separate select on the row, is not stated. Do not rely on it without asking.
 - **What the popover contains.** A "dial or input picker" opened by a dropdown indicator is shown only on the design-system website, but the UI kit defines no popover tokens. Its step size — every minute, every five, every fifteen — is not stated. Do not rely on any of it without asking.
@@ -168,4 +168,4 @@ Never style an unfocused time picker so it looks disabled. An editable field mus
 - [ ] Every variant, size, and state passed is in the inventory above. No seconds, range, or inline clock is added.
 - [ ] Styling comes from the component, and every field without focus looks editable, not disabled.
 - [ ] Times that cannot be edited use the read-only component, not a disabled picker.
-- [ ] Uncovered items were asked about, not decided: the AM/PM control, what the popover contains, a masked format while the field has focus, seconds, time ranges, and the disabled state missing from the design-system website.
+- [ ] Open questions were asked about, not decided: the AM/PM control, what the popover contains, a masked format while the field has focus, seconds, time ranges, and the disabled state missing from the design-system website.

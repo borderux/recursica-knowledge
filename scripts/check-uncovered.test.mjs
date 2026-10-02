@@ -1,5 +1,5 @@
 /**
- * Tests for the checklist-versus-Uncovered check.
+ * Tests for the checklist-versus-open-questions check.
  *
  * The matching is a heuristic, so these pin down both edges of it: the paraphrases that real
  * checklists use have to pass, and a topic the section never mentions has to fail. The first draft
@@ -18,7 +18,7 @@ import {
 } from "./check-uncovered.mjs";
 
 const skill = (checklist, uncovered) =>
-  `## Uncovered — ask, do not invent\n\n${uncovered.map((u) => `- **${u}** More.`).join("\n")}\n\n## Pre-flight checklist\n\n${checklist}\n`;
+  `## Open questions: ask, do not decide\n\n${uncovered.map((u) => `- **${u}** More.`).join("\n")}\n\n## Pre-flight checklist\n\n${checklist}\n`;
 
 test("stem trims plural and -ing endings so related words meet", () => {
   assert.equal(stem("nesting"), stem("nest"));
@@ -45,9 +45,16 @@ test("namedTopics reads both list styles and ignores items that name none", () =
   assert.deepEqual(
     namedTopics("- [ ] You invented nothing from the uncovered list."),
     [],
-  );  assert.deepEqual(
+  );
+  assert.deepEqual(
     namedTopics(
       "- [ ] Uncovered items were asked about, not decided: progress, success, and retrying.",
+    ),
+    ["progress", "success", "retrying"],
+  );
+  assert.deepEqual(
+    namedTopics(
+      "- [ ] Open questions were asked about, not decided: progress, success, and retrying.",
     ),
     ["progress", "success", "retrying"],
   );
@@ -64,7 +71,7 @@ test("paraphrased topics that real checklists use are matched", () => {
   assert.deepEqual(checkText(text), []);
 });
 
-test("a topic the Uncovered section never mentions is reported with its line", () => {
+test("a topic the open-questions section never mentions is reported with its line", () => {
   const text = skill(
     "- [ ] You invented nothing from the uncovered list: loading, and clearing.",
     ["Loading states."],

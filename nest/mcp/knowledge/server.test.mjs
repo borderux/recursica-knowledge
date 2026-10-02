@@ -214,16 +214,18 @@ test('a contract is much shorter than the skill and keeps every checklist item',
     assert.ok(contract.length < skill.body.length / 2, `${slug}: the contract is not much shorter`)
   }
   const table = served(readSkill('recursica-skill-table'), 'contract')
-  assert.match(table.contract, /^## Do not use it when/m)
-  assert.match(table.contract, /^## What exists/m)
-  assert.ok(table.sections.includes('Rules for using it'), 'the contract does not say what else can be fetched')
-  assert.match(table.contract, /^## Uncovered — ask, do not invent/m, 'the contract hides the list the checklist says not to invent from')
+  assert.match(table.contract, /^## When not to use a table/m)
+  // The inventory has no fixed heading; it is the section right before "Rules for …".
+  assert.match(table.contract, /^## Table parts/m, 'the contract has no inventory')
+  assert.ok(table.sections.some((h) => /^Rules for /.test(h)), 'the contract does not say what else can be fetched')
+  assert.match(table.contract, /^## Open questions: ask, do not decide/m, 'the contract hides the list the checklist says to ask about')
+  assert.ok(!/^## Rules for /m.test(table.contract), 'the contract carries the full rules')
 })
 
 test('skill_section returns one section, and names the real ones when asked for a wrong one', () => {
   const tool = TOOLS.find((t) => t.name === 'skill_section')
-  const { text } = tool.handler({ slug: 'recursica-skill-table', heading: 'What exists' })
-  assert.match(text, /\| Spec/)
+  const { text } = tool.handler({ slug: 'recursica-skill-table', heading: 'Rules for tables' })
+  assert.ok(text.length > 0)
   assert.ok(!/^## /m.test(text), 'the section ran on into the next one')
-  assert.throws(() => tool.handler({ slug: 'recursica-skill-table', heading: 'Nope' }), /It has: .*Rules for using it/)
+  assert.throws(() => tool.handler({ slug: 'recursica-skill-table', heading: 'Nope' }), /It has: .*Rules for tables/)
 })

@@ -11,14 +11,14 @@ metadata:
 
 A link takes the user somewhere. It never changes data.
 
-## Use it when
+## When to use a link
 
 - **Using it changes the location** — another page, a section of this page, an outside website, or a file to download.
 - **The navigation sits inside a sentence** — a source, a definition, or a related object mentioned in text.
 - **The navigation stands on its own** — a menu, a footer, or a "view all" beside a heading.
 - **Leaving a table row for a related object.** A link has less visual weight than a button, which is what a dense table needs.
 
-## Do not use it when
+## When not to use a link
 
 | Instead of a link                                | Use                                                          |
 | ------------------------------------------------ | ------------------------------------------------------------ |
@@ -30,7 +30,7 @@ A link takes the user somewhere. It never changes data.
 
 **A link that changes state is the misuse to watch for.** Save, Delete, Close, and Apply are buttons, even when a link would look better.
 
-## What exists
+## Link states
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.link`.
 
@@ -44,7 +44,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Behavior shown only on the design-system website:** a link that navigates within the product, and an external link, which is marked as leaving the product.
 
-## Rules for using it
+## Rules for links
 
 **Always render a real `href`.** Not a click handler on text. A real `href` is what gives the user right-click, middle-click, opening in a new tab, copying the link address, and the browser's own preview of where the link goes — and it is what makes the link announce itself as a link.
 
@@ -54,7 +54,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Never open a new tab automatically**, unless that is clearly the only possible behavior. The user chooses, with their own context menu or a modifier key.
 
-**Mark an external link as external** — a behavior shown only on the design-system website — so the user knows they are leaving before they click. Which icon or wording shows this is not settled; see the uncovered list.
+**Mark an external link as external** — a behavior shown only on the design-system website — so the user knows they are leaving before they click. Which icon or wording shows this is not settled; see the open questions.
 
 **Never disable a link.** Going to a related object is always possible. If the destination should not exist for this user, do not show the link at all; see `recursica-skill-navigation`.
 
@@ -84,7 +84,7 @@ The component owns the underline, the color, and the focus ring. The application
 - **Focus must be visible on the link itself**, not only implied by the underline. Never hide the focus ring.
 - **After navigating, focus belongs at the start of the new content**, not left behind on the old page.
 
-## Set by the component
+## Styling the link sets itself
 
 Do not set or override any of these. The component sets them:
 
@@ -93,13 +93,13 @@ Do not set or override any of these. The component sets them:
 - `icon-size` and `icon-text-gap`.
 - The focus ring.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-buttons-links` — link vs. button semantics, label copy, table row usage, new-tab behavior, modal triggers.
 - `recursica-skill-navigation` — routing, browser history, permissions, and where links belong in the app shell.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **Which icon marks an external link**, and whether it is required or optional. `recursica-skill-icon-semantics` owns what icons mean, but names no symbol for this one.
 - **Download links** — whether the file type and size are shown, and where.
@@ -118,4 +118,4 @@ Do not set or override any of these. The component sets them:
 - [ ] No link depends on hover to be visible, and the focus ring is intact.
 - [ ] Focus lands at the start of the new content after navigating.
 - [ ] Only `visited` is passed as a variant or state, and the styling the component owns comes from the component.
-- [ ] Uncovered items were asked about, not decided: which icon marks an external link, download links, a size or emphasis style for links, and links inside a paragraph in a table cell.
+- [ ] Open questions were asked about, not decided: which icon marks an external link, download links, a size or emphasis style for links, and links inside a paragraph in a table cell.

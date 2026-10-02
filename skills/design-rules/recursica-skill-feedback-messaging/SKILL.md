@@ -117,7 +117,7 @@ This is why the channel table has no row for it: this state should not reach the
 - **Error logging, retry policy, and how the backend classifies a failure.** These are not UI concerns.
 - **Transaction boundaries.** Whether an operation saves all at once is a backend requirement, not a design decision — but see the all-or-none rule above, because it is the reason a whole class of messages does not exist.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **Banners have no component.** The tense rule above says when a banner is right, but nothing says what one looks like, where it sits on the page, whether it can be dismissed, or whether several may appear at once.
 - **Live regions.** Which updates are announced to assistive technology, and how urgently, was openly put off in the typography session and never taken up here. Individual component skills state their own announcement requirements, but there is no policy across all surfaces.
@@ -141,4 +141,4 @@ This is why the channel table has no row for it: this state should not reach the
 - [ ] A loading indicator appears only for operations that take more than about 3 seconds, and the submit button is the indicator for its own action.
 - [ ] There is no blocking spinner or overlay on submit.
 - [ ] A long-running operation waits with no extra message by default. Any "taking longer than usual" message is deliberate, stated as non-standard, and appears no earlier than about 10 seconds.
-- [ ] Uncovered items were asked about, not decided: what a banner looks like and where it sits, live regions, the notification channel, toast titles, how long an error toast lasts, and banner versus modal.
+- [ ] Open questions were asked about, not decided: what a banner looks like and where it sits, live regions, the notification channel, toast titles, how long an error toast lasts, and banner versus modal.

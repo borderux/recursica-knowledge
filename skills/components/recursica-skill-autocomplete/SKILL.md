@@ -11,13 +11,13 @@ metadata:
 
 An autocomplete is a text field whose value comes from a defined set. The user types to narrow the set down, then picks from it.
 
-## Use it when
+## When to use an autocomplete
 
 - **The set is too large to scan comfortably in a dropdown**, so opening it and reading down the list is worse than typing.
 - **The user knows the options well** and can start typing a value they already have in mind. Typing relies on recall (remembering the answer); if the user needs to recognize the answer from what is shown, they need a visible set instead.
 - **The value must still come from the set.** The typing is a filter, not free entry.
 
-## Do not use it when
+## When not to use an autocomplete
 
 | Instead of an autocomplete                                   | Use                                                                            |
 | ------------------------------------------------------------ | ------------------------------------------------------------------------------ |
@@ -30,20 +30,20 @@ An autocomplete is a text field whose value comes from a defined set. The user t
 
 **Do not use a disabled autocomplete to show a value.** If nobody can ever change it here, it is not a form control.
 
-## What exists
+## Autocomplete label placements and states
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.autocomplete`. **Do not pass a variant, size, or state that is not listed here.**
 
-**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop. React ignores the name, with no error, if it is passed as a prop. A blank cell means no single prop sets that axis. CSS state or separate props set it instead, and the rules below say which.
+**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
 
-| Axis      | Options                   | React prop   |
-| --------- | ------------------------- | ------------ |
-| `states`  | `error`, `disabled`       |              |
-| `layouts` | `stacked`, `side-by-side` | `formLayout` |
+| Axis      | Options                   |
+| --------- | ------------------------- |
+| `states`  | `error`, `disabled`       |
+| `layouts` | `stacked`, `side-by-side` |
 
-**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**`layouts` is the label-placement axis.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
-**`formLayout` defaults to `stacked`, which puts the label above the input.** A field without the prop shows its label above the input at any container width, which breaks the house rule. `layouts` is the UI kit's name for this variant, not a prop: React ignores `layouts="side-by-side"` without an error and leaves the label above the input. Set `formLayout="side-by-side"` to put the label beside the input.
+**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, using the adapter's name for that axis and option.
 
 **Placeholder is not a variant.** It is `placeholder-opacity` on this component, the same as on a text field.
 
@@ -51,7 +51,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no size axis.** `height` is a fixed property, and `globals.form.field.size.single-line-input-height` sets the height for every single-line field.
 
-**There is no multi-select axis, no chip or token display for chosen values, and no loading state** — see the uncovered list.
+**There is no multi-select axis, no chip or token display for chosen values, and no loading state** — see the open questions.
 
 **The UI kit defines the closed field only.** `icon-size` and `icon-text-gap` cover a leading icon and the trailing indicator. The filtered list, its option rows, and anything shown when there are no results are not in this component's inventory.
 
@@ -66,7 +66,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 Those states are not kit axes and must not be passed as variants — `Focused` and `Valued` are conditions the component works out for itself. They do show the component's parts: a **leading icon**, and a clear control that appears once there is text in the field. Suggestions are described as an optional extra, not the default.
 
-## Rules for using it
+## Rules for autocompletes
 
 **The set, not the field, decides whether this is the right control.** A large set the user recognizes items from belongs in a dropdown; a large set the user recalls items from belongs here. Length alone does not decide it — see `recursica-skill-working-memory` on recognition versus recall.
 
@@ -136,7 +136,7 @@ The component connects the label to the input, provides the focus ring, and owns
 - **Do not move focus for the user after a selection.** No jumping ahead to the next field because a value now exists, and no focus jump when the filter narrows down to exactly one result.
 - **Everything reachable by mouse must be reachable by key.** Nothing about filtering, moving through results, or choosing may depend on a pointer, and nothing needed may appear only on hover.
 
-## Set by the component
+## Styling the autocomplete sets itself
 
 Do not set or override any of these. The component sets them:
 
@@ -150,7 +150,7 @@ Do not set or override any of these. The component sets them:
 
 Never style an unfocused field so that it looks disabled. An editable field must look editable at rest.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-selection-controls` — which control a field gets, option counts, the dropdown affordance test, pre-selection, disabled vs. read-only, and commit timing.
 - `recursica-skill-forms` — single-column layout, label placement, its container-width trigger, and one placement per form, required vs. optional marking, validation timing, pre-fill limits, and save mode.
@@ -160,12 +160,12 @@ Never style an unfocused field so that it looks disabled. An editable field must
 - `recursica-skill-system-conventions` — never carry meaning in a single channel.
 - `recursica-skill-live-regions` — announcing the result count as the list filters, and when the application must cover it.
 
-### Only if the screen also uses it
+### Only if the screen also uses those components
 
 - `recursica-skill-dropdown` — the control this one replaces, its four-option floor, and the affordance test.
 - `recursica-skill-text-field` — the control for free-form values, and the placeholder rules this field shares.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **When an autocomplete replaces a dropdown.** `recursica-skill-selection-controls` records this as an open question; the dropdown's own guidance only says to consider a typeahead where the list is long and the user knows the values. No count or threshold exists. Ask.
 - **Whether free text that is not in the set may be submitted**, and whether the user may create a new option from what they typed.
@@ -197,4 +197,4 @@ Never style an unfocused field so that it looks disabled. An editable field must
 - [ ] Disabled is used only for fields that are unavailable for now, with the reason in text. Values that can never be edited use the read-only field.
 - [ ] Every variant, size, and state passed is in the inventory above, every property the component owns comes from the component, and every field without focus looks editable, not disabled.
 - [ ] The field saves with the form, in the same save mode as everything else in the system.
-- [ ] Uncovered items were asked about, not decided: the replacement threshold, free text, how many characters to type, match order, no results, loading, multi-select, and list details.
+- [ ] Open questions were asked about, not decided: the replacement threshold, free text, how many characters to type, match order, no results, loading, multi-select, and list details.

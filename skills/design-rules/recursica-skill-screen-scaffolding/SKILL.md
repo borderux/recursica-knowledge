@@ -58,9 +58,9 @@ These are the house rules for how a page is put together, and what each region s
 
 **The test is subtraction, and it takes one reading.** Delete the line. If the only thing lost is a restatement of the heading, it was noise, and it stays deleted. If a reader would now get something wrong, keep it — and cut it back to only that.
 
-**A slot in the component is not an instruction to fill it.** A `lede` or `note` prop exists because some headings need one. A prop that accepts a string is the single most common reason an explanation gets written that nobody asked for. So passing nothing is the normal case, not the unfinished one.
+**A slot in the component is not an instruction to fill it.** A `lede` or `note` setting exists because some headings need one. A setting that accepts a string is the single most common reason an explanation gets written that nobody asked for. So passing nothing is the normal case, not the unfinished one.
 
-**This rule fails unless the prop is removed.** It has been stated, read, and then broken across a dozen call sites in one application. That happened because writing a sentence into an available string prop is the easiest path every single time, and remembering a rule is not. So where this defect is found, delete the prop, not only the strings. A page or section heading component that takes no optional prose cannot have it added back next week; one that takes it will. Where a real exception appears later, add the slot back for that case, and let it be the deliberate act the rule always intended.
+**This rule fails unless the setting is removed.** It has been stated, read, and then broken across a dozen call sites in one application. That happened because writing a sentence into an available string setting is the easiest path every single time, and remembering a rule is not. So where this defect is found, delete the setting, not only the strings. A page or section heading component that takes no optional prose cannot have it added back next week; one that takes it will. Where a real exception appears later, add the slot back for that case, and let it be the deliberate act the rule always intended.
 
 **The same reasoning applies to any slot for optional prose** — a field description, a card subtitle, a paragraph in an empty state. If the component offers somewhere to explain, something will get explained there.
 
@@ -238,7 +238,7 @@ The number one sign, and then the rest, in order:
 - **Navigation structure and routes** — `recursica-skill-navigation`.
 - **The filter controls** — `recursica-skill-filters`.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **The layout grid.** An eight- or twelve-column grid is mentioned as the grid pages should line up to, and it is openly left to its own skill. Until then, lining things up is a stated requirement with no stated system.
 - **Empty states where data exists but is zero.** Named as not covered.
@@ -252,7 +252,7 @@ The number one sign, and then the rest, in order:
 - [ ] A left rail puts navigation at the top, and the profile and settings at the bottom.
 - [ ] Every page has a footer, or a reason for leaving it out is provided.
 - [ ] The page title sits in the page. A title that repeats the navigation label is left as it is.
-- [ ] Every line under a page title or section heading passes the subtraction test — it carries an order, limit, consequence, or state that the heading cannot. No `lede` or `note` is filled in only because the prop exists. Where the defect appeared across several call sites, the prop itself is removed, not only its strings.
+- [ ] Every line under a page title or section heading passes the subtraction test — it carries an order, limit, consequence, or state that the heading cannot. No `lede` or `note` is filled in only because the setting exists. Where the defect appeared across several call sites, the setting itself is removed, not only its strings.
 - [ ] A breadcrumb appears on every page below the top level, and nowhere above it.
 - [ ] The primary action sits at the bottom right, unless the user moved it.
 - [ ] Filters are placed by the width of the content they act on, not by a breakpoint, and no filter rail is merged with the navigation rail.
@@ -267,4 +267,4 @@ The number one sign, and then the rest, in order:
 - [ ] Every KPI tile passed all three tests: the dataset is too large to take in at a glance, the number changes, and it guides an action. None is always zero by its nature, and none only repeats the row count of a table below it. Where none passed, there is no row of KPI tiles.
 - [ ] The KPI tiles share one treatment, are named as noun phrases, and agree with each other.
 - [ ] White space is even, headings have room above them, and elements line up to a grid.
-- [ ] Uncovered items were asked about, not decided: the layout grid, empty states where data exists but is zero, where global notifications or alerts sit, what may go in a footer, and whether KPI tiles sit on layers or in cards.
+- [ ] Open questions were asked about, not decided: the layout grid, empty states where data exists but is zero, where global notifications or alerts sit, what may go in a footer, and whether KPI tiles sit on layers or in cards.

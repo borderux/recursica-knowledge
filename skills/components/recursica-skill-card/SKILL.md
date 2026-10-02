@@ -37,13 +37,13 @@ It is narrow:
 - **It is occasional.** If most of the card sets in an application are relying on this exception, the exception has become the rule, and the reasoning has gone wrong.
 - **State when the exception is in use.** Say that the card set is a choice made for looks, instead of presenting it as the default, so the choice stays visible and stays rare.
 
-## Use it when
+## When to use a card
 
 - **A set of repeating objects of the same type** — several products, several records, several search results — each built from the same kinds of information.
 - **Peer objects that would otherwise blur together**, where the boundary between one and the next is at risk of being misread.
 - **Each item carries a chart or an image** that a table row could not show clearly.
 
-## Do not use it when
+## When not to use a card
 
 | Instead of a card                                   | Use                                                                   |
 | --------------------------------------------------- | --------------------------------------------------------------------- |
@@ -72,7 +72,7 @@ When the tests fail and grouping is still needed, use these, in this order:
 2. **Type hierarchy.** A heading sets up a group, and its rank, without drawing anything.
 3. **Layout structure.** The design system's layouts, grids, and gutters (the gaps between columns and regions) place regions relative to each other.
 
-## What exists
+## Card parts
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.card`. **The UI kit defines no variant axes (the properties a component varies on, such as size and style; Figma calls them variant properties) on the card** — everything is a property. Two more choices are shown only on the design-system website.
 
@@ -89,11 +89,11 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **The card defines no interactive, selected, or hover state.** A card is not a control; see the accessibility section for what that means when the card links somewhere.
 
-**Do not choose between Elevation and Outline at random** — which one a surface uses is not stated. See the uncovered list.
+**Do not choose between Elevation and Outline at random** — which one a surface uses is not stated. See the open questions.
 
 **A card sits on a layer; it is not an alternative to one.** A layer is a numbered level that sets which colors the components inside it use. The card has its own set of colors for each of the four layer levels, so the layer it is placed on changes how it looks. A layer is a surface and a token scope (the area in which one set of design values applies); a card is the boundary of an object among repeating peers. See `recursica-skill-layers`.
 
-## Rules for using it
+## Rules for cards
 
 **Every card in a set has the same layout.** The same fields, in the same order, in the same slots. A set whose cards differ is a sign that the objects are not peers.
 
@@ -131,7 +131,7 @@ A card set is a list of objects, and it must be announced as one. Two failures m
 - **Nothing may appear on hover.** Actions revealed by hovering over a card cannot be reached by keyboard or by touch. A card's actions stay visible, or they are in a menu that can itself be reached.
 - **The tab order runs card by card**, following the visual order — not column by column against the layout.
 
-## Set by the component
+## Styling the card sets itself
 
 Do not set or override any of these. The component sets them:
 
@@ -141,7 +141,7 @@ Do not set or override any of these. The component sets them:
 - `header-style` and `content-style` type treatment.
 - Corner radius, and any hover or focus treatment.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-system-conventions` — the general convention to group with space, not boxes.
 - `recursica-skill-tables` — the alternative whenever plurality is high or the content is purely data, and the clickable-row rule.
@@ -150,7 +150,7 @@ Do not set or override any of these. The component sets them:
 - `recursica-skill-badges-chips` — badge and chip placement within a card.
 - `recursica-skill-data-visualization` — the chart in the slot, and its required data table.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **When Elevation applies, and when Outline does.** Both are shown only on the design-system website, which has no variant axis for either, and no rule assigns them to surfaces. Do not rely on this without asking.
 - **How many cards count as a "small and finite" set.** The limit is stated as a judgment, not a number.
@@ -173,4 +173,4 @@ Do not set or override any of these. The component sets them:
 - [ ] Repeated controls name their object.
 - [ ] Static cards are not tab stops, and a clickable card contains no other interactive element.
 - [ ] The card has no added size variant, and its padding, border, and elevation are the component's own.
-- [ ] Uncovered items were asked about, not decided: Elevation versus Outline, how many cards make a small finite set, card layout across breakpoints, selectable cards, the empty state of a card set, the header button with the footer in one card.
+- [ ] Open questions were asked about, not decided: Elevation versus Outline, how many cards make a small finite set, card layout across breakpoints, selectable cards, the empty state of a card set, the header button with the footer in one card.

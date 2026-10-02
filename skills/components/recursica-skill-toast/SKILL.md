@@ -11,14 +11,14 @@ metadata:
 
 A toast reports what just happened, without interrupting the work.
 
-## Use it when
+## When to use a toast
 
 - **Confirming that an action worked** — saved, deleted, sent. This is the only component in the system with a success style, which is why a success confirmation belongs here and not on a field.
 - **Offering an undo for the whole page.** `recursica-skill-buttons-links` says so directly: a global undo notification is a toast.
 - **Reporting an error that has no field to attach to** — a conflict on the server, a broken business rule, a background job that failed.
 - **A low-priority update about a task the user started**, or one being done for them, that does not need their attention now.
 
-## Do not use it when
+## When not to use a toast
 
 | Instead of a toast                                          | Use                                                                             |
 | ----------------------------------------------------------- | ------------------------------------------------------------------------------- |
@@ -33,29 +33,29 @@ A toast reports what just happened, without interrupting the work.
 
 **A toast reports something that just happened.** That is the house test. `recursica-skill-feedback-messaging` splits the channels (the forms a message takes: a toast, a banner or a modal) by tense: an event that is finished is a toast, and a condition that has not happened yet is a banner. Check the tense of the message before choosing a channel.
 
-**A toast is the wrong place for anything that must not be missed.** It appears away from where the user is looking, and closes on its own. A critical alert that needs action right away is not a toast. No component in this system holds a critical alert yet. The banner the tense rule calls for is planned, but not in the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has). Do not use a toast for a critical alert, do not build a custom alert that stays on screen, and do not point the reader to a component that does not exist. Raise it with the user — see the uncovered list.
+**A toast is the wrong place for anything that must not be missed.** It appears away from where the user is looking, and closes on its own. A critical alert that needs action right away is not a toast. No component in this system holds a critical alert yet. The banner the tense rule calls for is planned, but not in the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has). Do not use a toast for a critical alert, do not build a custom alert that stays on screen, and do not point the reader to a component that does not exist. Raise it with the user — see the open questions.
 
-## What exists
+## Toast styles
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.toast`. **Do not pass a style that is not listed here.**
 
-**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop. React ignores the name, with no error, if it is passed as a prop. A blank cell means no single prop sets that axis. CSS state or separate props set it instead, and the rules below say which.
+**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
 
-| Axis     | Options                       | React prop |
-| -------- | ----------------------------- | ---------- |
-| `styles` | `default`, `success`, `error` | `variant`  |
+| Axis     | Options                       |
+| -------- | ----------------------------- |
+| `styles` | `default`, `success`, `error` |
 
 **There are exactly three styles, and there is no warning.** Do not build one, and do not use `error` as a warning — an error style says something failed.
 
 **`default` is also called "Information"** in material shown only on the design-system website. It is one thing with two names.
 
-**The UI kit defines an `icon` and a `text`, and nothing else inside the toast.** There is no token for an action button and none for a close control, though both are shown only on the design-system website. There is no duration or timer token either. Check the uncovered list before building any of the three.
+**The UI kit defines an `icon` and a `text`, and nothing else inside the toast.** There is no token for an action button and none for a close control, though both are shown only on the design-system website. There is no duration or timer token either. Check the open questions before building any of the three.
 
 **There is no size axis and no position axis.** `min-width`, `max-width`, and `min-height` are fixed properties, and nothing in the UI kit says where a toast appears or how several of them stack.
 
 **The three styles differ only by color and icon.** The style only backs up what the text says. It never carries the message on its own.
 
-## Rules for using it
+## Rules for toasts
 
 **The text carries the meaning; the style only backs it up.** An error toast that reads "Something went wrong" in red tells a screen reader user nothing, and tells anyone nothing in black and white. Name what happened: "Could not save — the invoice was changed by someone else." Required by `recursica-skill-system-conventions`.
 
@@ -113,7 +113,7 @@ This component also follows the accessibility baseline in `recursica-skill-syste
 - **A toast must never cover a control the user needs**, and must not sit over the focused element or the focus ring.
 - **Nothing the user needs may appear only on hover** — not the action, not the close control, and not the full text.
 
-## Set by the component
+## Styling the toast sets itself
 
 Do not set or override any of these. The component sets them for every style:
 
@@ -123,7 +123,7 @@ Do not set or override any of these. The component sets them for every style:
 - `icon` — which icon each style carries, and its size.
 - `text` type treatment, and all colors per style.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-feedback-messaging` — the owning design-rules skill: whether success needs confirming at all, banner versus toast by tense, why inline messaging is avoided, consolidation, the waiting thresholds, and what the library owns.
 - `recursica-skill-buttons-links` — undo policy, when a reversible action is performed rather than confirmed, in-place undo versus global undo, and action label copy.
@@ -131,11 +131,11 @@ Do not set or override any of these. The component sets them for every style:
 - `recursica-skill-system-conventions` — never carry meaning in a single channel, which is why the style is never the message.
 - `recursica-skill-live-regions` — what the application must announce around a toast, and changes the user did not cause.
 
-### Only if the screen also uses it
+### Only if the screen also uses those components
 
 - `recursica-skill-modal` — the blocking alternative for a decision that cannot wait, and the narrow case for confirming up front.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **Duration values.** The house position is settled — see the rule above — but no token records what any given library's default is. A duration cannot be checked from this repository.
 - **How a toast's action button is styled.** One action is allowed — see the rules above — but the UI kit defines no token for it, only `icon` and `text`. Ask before styling it.
@@ -166,4 +166,4 @@ Do not set or override any of these. The component sets them for every style:
 - [ ] If hover pauses the timer, focus pauses it too. Closing does not depend on a pointer.
 - [ ] The toast covers no control the user needs and does not hide the focus ring. Nothing needed appears only on hover.
 - [ ] Padding, spacing, width, elevation, icon, and color come from the component.
-- [ ] Uncovered items were asked about, not decided: duration values, how the action button is styled, where toasts appear on screen, stacking, warnings and critical alerts, and toasts for a background job.
+- [ ] Open questions were asked about, not decided: duration values, how the action button is styled, where toasts appear on screen, stacking, warnings and critical alerts, and toasts for a background job.

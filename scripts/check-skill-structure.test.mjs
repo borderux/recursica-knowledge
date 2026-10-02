@@ -19,7 +19,7 @@ import {
   cells,
   checkAll,
   checkLoadLinks,
-  COMPONENT_SECTIONS,
+  COMPONENT_ROLES,
 } from "./check-skill-structure.mjs";
 
 const fm = (body) => `---\n${body}\n---\n\n# X\n`;
@@ -27,8 +27,20 @@ const component = (sections) =>
   sections.map((s) => `## ${s}\n\nText.\n`).join("\n");
 const a11y =
   "## Accessibility\n\n### Screen readers\n\n- a\n\n### Keyboard and non-mouse navigation\n\n- b\n";
+/** A heading of each role, the way a skill about a widget writes them. */
+const SECTIONS = [
+  "When to use a widget",
+  "When not to use a widget",
+  "Widget styles, sizes and states",
+  "Rules for widgets",
+  "Accessibility",
+  "Styling the widget sets itself",
+  "Skills to read with this one",
+  "Open questions: ask, do not decide",
+  "Pre-flight checklist",
+];
 const full = () =>
-  COMPONENT_SECTIONS.map((s) =>
+  SECTIONS.map((s) =>
     s === "Accessibility" ? a11y : `## ${s}\n\nText.\n`,
   ).join("\n");
 
@@ -61,27 +73,51 @@ test("frontmatter: a name that differs from the folder, and an over-long descrip
   assert.match(messages[1], /1025 characters; the house limit is 450/);
 });
 
+test("component shape: the test fixture names one heading per role, in order", () => {
+  assert.equal(SECTIONS.length, COMPONENT_ROLES.length);
+  COMPONENT_ROLES.forEach((r, i) => {
+    if (r.match) assert.ok(r.match(SECTIONS[i]), `${r.role}: ${SECTIONS[i]}`);
+  });
+});
+
 test("component shape: all nine sections in order, extra sections between them allowed", () => {
+  // Between "When not to use" and the inventory, as the card skill has.
   const text = full().replace(
-    "## What exists",
-    "## An extra section\n\nText.\n\n## What exists",
+    "## Widget styles, sizes and states",
+    "## An extra section\n\nText.\n\n## Widget styles, sizes and states",
   );
   assert.deepEqual(checkComponentShape(text), []);
 });
 
+test("component shape: the inventory is whatever precedes 'Rules for', and missing when a known role does", () => {
+  const renamed = full().replace(
+    "## Widget styles, sizes and states",
+    "## Widget parts",
+  );
+  assert.deepEqual(checkComponentShape(renamed), []);
+  const missing = checkComponentShape(
+    full().replace("## Widget styles, sizes and states\n\nText.\n", ""),
+  ).map((p) => p.message);
+  assert.equal(missing.length, 1, missing.join("\n"));
+  assert.match(
+    missing[0],
+    /missing section `## <Component> parts, styles, sizes or states`/,
+  );
+});
+
 test("component shape: a missing section and a swapped pair are both reported", () => {
-  const order = [...COMPONENT_SECTIONS];
-  [order[0], order[1]] = [order[1], order[0]];
+  const order = [...SECTIONS];
+  [order[3], order[5]] = [order[5], order[3]];
   const swapped = checkComponentShape(
     component(order.filter((s) => s !== "Accessibility")) + a11y,
   );
   assert.ok(swapped.some((p) => /out of order/.test(p.message)));
   const missing = checkComponentShape(
-    full().replace("## Load these too\n\nText.\n", ""),
+    full().replace("## Skills to read with this one\n\nText.\n", ""),
   );
   assert.deepEqual(
     missing.map((p) => p.message),
-    ["missing section `## Load these too`"],
+    ["missing section `## Skills to read with this one`"],
   );
 });
 
@@ -161,13 +197,13 @@ test("every skill in the repository passes", () => {
   );
 });
 
-test("Load these too: a link, a stray heading, and a design-rules skill under 'only if used' are caught", () => {
+test("Skills to read with this one: a link, a stray heading, and a design-rules skill under 'only if used' are caught", () => {
   const comps = new Set(["recursica-skill-card"]);
   const ok =
-    "## Load these too\n\n- `recursica-skill-forms` — why.\n\n### Only if the screen also uses it\n\n- `recursica-skill-card` — alt.\n\n## Uncovered — ask, do not invent\n";
+    "## Skills to read with this one\n\n- `recursica-skill-forms` — why.\n\n### Only if the screen also uses those components\n\n- `recursica-skill-card` — alt.\n\n## Open questions: ask, do not decide\n\n### Not checked\n";
   assert.deepEqual(checkLoadLinks(ok, comps), []);
   const bad =
-    "## Load these too\n\n- [`recursica-skill-forms`](../forms/SKILL.md) — why.\n\n### Maybe\n\n### Only if the screen also uses it\n\n- `recursica-skill-tables` — rules.\n";
+    "## Skills to read with this one\n\n- [`recursica-skill-forms`](../forms/SKILL.md) — why.\n\n### Maybe\n\n### Only if the screen also uses those components\n\n- `recursica-skill-tables` — rules.\n";
   const messages = checkLoadLinks(bad, comps).map((p) => p.message);
   assert.equal(messages.length, 3, messages.join("\n"));
 });

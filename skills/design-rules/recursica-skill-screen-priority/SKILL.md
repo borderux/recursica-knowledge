@@ -193,7 +193,7 @@ Treating the two as one leaves the user unable to tell whether to change their f
 - **Table columns, sorting, and pinning** — `recursica-skill-tables`.
 - **Working-memory limits on how many options to show** — `recursica-skill-working-memory`. Those govern controls, not how much information a screen may show.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **How to judge "done" versus "overloaded" in terms of cognitive load**. Named as not covered. The workflow-support test above is what exists.
 - **Where the inverted triangle stops applying.** This was asked directly and passed over; no limit was given.
@@ -222,4 +222,4 @@ Treating the two as one leaves the user unable to tell whether to change their f
 - [ ] There is one scrollbar, and no inner scrolling region.
 - [ ] Empty and error states have different messages.
 - [ ] An alignment pass against the other sections is complete, and every breach went to the user to decide instead of being resolved without telling them.
-- [ ] Uncovered items were asked about, not decided: judging done versus overloaded by cognitive load, where the inverted triangle stops applying, research on scan patterns, alignment as its own skill, how empty and error states are laid out, and what makes an image appropriate.
+- [ ] Open questions were asked about, not decided: judging done versus overloaded by cognitive load, where the inverted triangle stops applying, research on scan patterns, alignment as its own skill, how empty and error states are laid out, and what makes an image appropriate.

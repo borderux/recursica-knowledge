@@ -11,13 +11,13 @@ metadata:
 
 A breadcrumb shows where the current page sits in the hierarchy, and gives a way back up it.
 
-## Use it when
+## When to use a breadcrumb
 
 - **The structure is nested**, and the page sits more than one level down. `recursica-skill-navigation` calls for breadcrumbs where the depth calls for them.
 - **The page must answer "where am I?" by itself**, without the navigation being on screen. That is a requirement, and headings and breadcrumbs are what meet it.
 - **The user moves through several levels or categories**, and needs to keep their bearings across a deep path.
 
-## Do not use it when
+## When not to use a breadcrumb
 
 | Instead of a breadcrumb                                | Use                                                                                          |
 | ------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
@@ -32,7 +32,7 @@ Wayfinding is the user's sense of where they are and how to get where they want 
 
 **A breadcrumb is never the primary navigation.** If removing it would leave a user unable to get out of a section, the navigation is the real problem — see `recursica-skill-navigation`.
 
-## What exists
+## Breadcrumb variants
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.breadcrumb`. **Do not pass a variant, state, or content option — there are none.**
 
@@ -42,13 +42,13 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Two properties, and that is the whole component: `padding` and `item-gap`.**
 
-**There is no separator token.** What sits between items — a slash, a chevron, a dot — is not defined in the UI kit. Do not invent one; see the uncovered list.
+**There is no separator token.** What sits between items — a slash, a chevron, a dot — is not defined in the UI kit. Do not invent one; see the open questions.
 
 **There is no collapse, truncation, or overflow behavior.** How a long trail behaves is not defined. Whatever the answer turns out to be, it is not horizontal scrolling — `recursica-skill-navigation` forbids that outright.
 
-**There is no current-page state, and no content axis (a property a component varies on, such as size or style; Figma calls it a variant property).** An interactive item and a read-only item for the current page, plus a content axis of Label only, Icon + Label, Icon only, and Mixed, are shown only on the design-system website. The UI kit defines none of it. See the uncovered list.
+**There is no current-page state, and no content axis (a property a component varies on, such as size or style; Figma calls it a variant property).** An interactive item and a read-only item for the current page, plus a content axis of Label only, Icon + Label, Icon only, and Mixed, are shown only on the design-system website. The UI kit defines none of it. See the open questions.
 
-## Rules for using it
+## Rules for breadcrumbs
 
 **The trail follows the hierarchy, not the user's history.** Two users who reach the same page from different directions see the same trail. A breadcrumb shows how the platform is structured; it is not a back-stack (the list of pages the user has visited).
 
@@ -96,7 +96,7 @@ A breadcrumb is a short row of links, and assistive technology has no way to rec
 - **Enter activates a crumb; Space does not.** That is correct browser behavior for a link. A crumb with a Space handler is a button, not a link.
 - **Do not intercept the modifier keys.** Ctrl, Cmd, Shift, and middle-click must reach the browser, so the user stays in control of where the parent page opens.
 
-## Set by the component
+## Styling the breadcrumb sets itself
 
 Do not set or override any of these. The component sets them:
 
@@ -106,18 +106,18 @@ Do not set or override any of these. The component sets them:
 - The separator's visual treatment, wherever it comes from.
 - The focus ring.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-navigation` — what counts as a location, routing and browser history, indicating location with selected state plus headings plus breadcrumbs, semantic list markup, and the prohibition on horizontal scrolling.
 - `recursica-skill-buttons-links` — link vs. button semantics, link label copy, and the tooltip requirement for an icon-only control.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel, and fix the structure rather than adding a mechanism to cope with it.
 
-### Only if the screen also uses it
+### Only if the screen also uses those components
 
 - `recursica-skill-link` — real `href`s, labels that name the destination, never disabling a link, and modifier-key behavior.
 - `recursica-skill-tabs` — switching between parts of one whole on a single page, which is not a trail.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **The separator.** No token defines it. The character, whether it is an icon, and its spacing are all unset — `item-gap` is the only spacing property.
 - **Long trails.** No collapse, truncation, or overflow behavior exists. Whether a deep trail drops its middle levels, shortens its labels, or wraps has not been answered — and horizontal scrolling is not an option.
@@ -144,4 +144,4 @@ Do not set or override any of these. The component sets them:
 - [ ] The trail does not scroll horizontally, wrap into a strip, or shrink to fit.
 - [ ] The breadcrumb has no variant, state, content option, or separator token beyond the inventory above.
 - [ ] Styling comes from the component.
-- [ ] Uncovered items were asked about, not decided: the separator, long trails, the content axis, the depth at which a breadcrumb becomes required, the start of the trail, and a level with no landing page.
+- [ ] Open questions were asked about, not decided: the separator, long trails, the content axis, the depth at which a breadcrumb becomes required, the start of the trail, and a level with no landing page.

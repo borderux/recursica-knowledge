@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 /**
- * Every topic a checklist names as uncovered is actually in the skill's `## Uncovered` section.
+ * Every topic a checklist names as an open question is actually in the skill's
+ * `## Open questions: ask, do not decide` section.
  *
- * Twenty checklists end with an item like "You invented nothing from the uncovered list: progress,
- * success, and retrying." That list is a summary of the `## Uncovered` section, written separately
+ * Most checklists end with an item like "Open questions were asked about, not decided: progress,
+ * success, and retrying." That list is a summary of the open-questions section, written separately
  * from it, and the two drift: the autocomplete checklist still names clearing as uncovered after
  * the rules decided it. An agent reading that item stops and asks about something the skill has
  * already answered — or, reading the rules, concludes the checklist is stale and trusts neither.
  *
  * This is a heuristic, and it says so. A topic counts as present when at least half its
- * significant words (after trimming plural and -ing endings) appear in one Uncovered bullet. It
+ * significant words (after trimming plural and -ing endings) appear in one open-question bullet. It
  * catches a topic missing from the section; it cannot tell whether a topic that is present has
  * since been decided somewhere else in the skill. Those are for docs/open-questions.md.
  *
@@ -20,6 +21,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { listSkills } from "./check-skill-structure.mjs";
+import { UNCOVERED_HEADING, sectionBody } from "./lib/skill-sections.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -56,11 +58,14 @@ export function significant(text) {
 
 /** Topics a checklist line names as uncovered, or `[]` if it names none. */
 export function namedTopics(line) {
-  // "…the uncovered list: a, b." and the writing guide's form, "Uncovered items were asked
-  // about, not decided: a, b." Missing the second let every rewritten checklist slip past.
+  // The writing guide's form, "Open questions were asked about, not decided: a, b.", and the two
+  // older ones, "…the uncovered list: a, b." and "Uncovered items were asked about, not decided:
+  // a, b." Missing a form lets every checklist written in it slip past.
   const m =
     line.match(/uncovered list\s*(?::|—)\s*(.+?)\.?$/) ??
-    line.match(/Uncovered items were asked about, not decided\s*:\s*(.+?)\.?$/);
+    line.match(
+      /(?:Open questions|Uncovered items) were asked about, not decided\s*:\s*(.+?)\.?$/,
+    );
   if (!m) return [];
   return m[1]
     .replace(/^above all,\s*/, "")
@@ -69,17 +74,16 @@ export function namedTopics(line) {
     .filter(Boolean);
 }
 
-/** The bullets of a skill's `## Uncovered` section, each as a set of stems. */
+/** The bullets of a skill's `## Open questions: ask, do not decide` section, each as a set of stems. */
 export function uncoveredBullets(text) {
-  const section =
-    text.split(/^## Uncovered[^\n]*$/m)[1]?.split(/^## /m)[0] ?? "";
+  const section = sectionBody(text, "uncovered");
   return section
     .split(/\n(?=- )/)
     .filter((b) => b.trim().startsWith("- "))
     .map(significant);
 }
 
-/** Topics named in checklists that match no Uncovered bullet: `[{ line, topic }]`. */
+/** Topics named in checklists that match no open-question bullet: `[{ line, topic }]`. */
 export function checkText(text) {
   const bullets = uncoveredBullets(text);
   const problems = [];
@@ -141,18 +145,18 @@ if (
     console.log(
       p.stale
         ? `${p.file}  KNOWN lists "${p.key}", which now matches — remove the entry and resolve its item in docs/open-questions.md`
-        : `${p.file}:${p.line}  the checklist names "${p.topic}" as uncovered, but \`## Uncovered\` has no bullet about it`,
+        : `${p.file}:${p.line}  the checklist names "${p.topic}" as an open question, but \`## ${UNCOVERED_HEADING}\` has no bullet about it`,
     );
   }
   for (const p of acknowledged)
     console.log(`  · known, logged in docs/open-questions.md: ${p.key}`);
   if (problems.length) {
     console.log(
-      `\n✗ ${problems.length} problem(s) among ${topics} topics named as uncovered.`,
+      `\n✗ ${problems.length} problem(s) among ${topics} topics named as open questions.`,
     );
     process.exit(1);
   }
   console.log(
-    `✓ ${topics} topics named as uncovered in checklists; each matches an Uncovered bullet.`,
+    `✓ ${topics} topics named as open questions in checklists; each matches a bullet in \`## ${UNCOVERED_HEADING}\`.`,
   );
 }

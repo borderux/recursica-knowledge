@@ -11,12 +11,12 @@ metadata:
 
 One component shows both the help text and the error text below a field. Its type decides which one.
 
-## Use it when
+## When to use an assistive element
 
 - **A field has a rule the user needs to know before they type** — a format, a minimum, a character requirement.
 - **A field has failed validation**, and the user needs to know what to fix.
 
-## Do not use it when
+## When not to use an assistive element
 
 | Instead of an assistive element                     | Use                                                         |
 | --------------------------------------------------- | ----------------------------------------------------------- |
@@ -26,15 +26,15 @@ One component shows both the help text and the error text below a field. Its typ
 | Confirming that something succeeded                 | `recursica-skill-toast`                                     |
 | Explaining a whole section                          | Section-level copy — see `recursica-skill-forms`            |
 
-## What exists
+## Assistive element types
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.assistive-element`.
 
-**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop. React ignores the name, with no error, if it is passed as a prop. A blank cell means no single prop sets that axis. CSS state or separate props set it instead, and the rules below say which.
+**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
 
-| Axis    | Options         | React prop         |
-| ------- | --------------- | ------------------ |
-| `types` | `help`, `error` | `assistiveVariant` |
+| Axis    | Options         |
+| ------- | --------------- |
+| `types` | `help`, `error` |
 
 **Two types, one slot.** The error does not appear alongside the help text. It replaces it in the same slot. Swapping types keeps the field's height the same, so the form below does not shift.
 
@@ -44,7 +44,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no size axis.** `top-margin` and `max-width` are fixed properties.
 
-## Rules for using it
+## Rules for assistive elements
 
 **Help text states the rule before the user breaks it.** Put formats, minimums, and character requirements in the help text, because knowing them up front stops the error from happening. Preventing an error is better than catching it.
 
@@ -87,7 +87,7 @@ This component helps only when it is connected to its field in code. Text shown 
 - **Do not move focus when an error appears.** The user is in the middle of typing, and pulling focus to the message loses their place. Managing focus on submit belongs to `recursica-skill-forms`.
 - **A field with an error must stay reachable in its place** — never reorder fields to group the errors together.
 
-## Set by the component
+## Styling the assistive element sets itself
 
 Do not set or override any of these. The component sets them:
 
@@ -96,13 +96,13 @@ Do not set or override any of these. The component sets them:
 - `top-margin` and `max-width`.
 - Error and help colors, which come from the field's tokens.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-forms` — validation timing, error presentation across a form, microcopy, the prevention-first order, and the one-label-placement-per-form rule this element's position inherits.
 - `recursica-skill-label` — the field's name, and what belongs there rather than here.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **Character and word counters.** Whether they belong in this component or somewhere else.
 - **Confirming success on a field** — there is no success type, so a field that validated correctly has no stated treatment.
@@ -123,4 +123,4 @@ Do not set or override any of these. The component sets them:
 - [ ] Nothing here is a control or a tab stop, and nothing is revealed only on hover.
 - [ ] Focus does not move when an error appears.
 - [ ] Only the `help` and `error` types are used, and styling, margins, and width come from the component.
-- [ ] Uncovered items were asked about, not decided: character and word counters, success on a field, links in help text, and several errors on one field.
+- [ ] Open questions were asked about, not decided: character and word counters, success on a field, links in help text, and several errors on one field.

@@ -17,14 +17,14 @@ A table shows many copies of one object, so the reader can compare values down a
 > type, or color comes from the design system, and no error appears. Everything below describes
 > the UI kit accurately.
 
-## Use it when
+## When to use a table
 
 - **The plurality (the number of items) is high, has no fixed end, or is growing.** This is the default for repeating records, with no exception.
 - **The content is only data** — text, numbers, dates, currency, status.
 - **The reader compares values across records**, which a column makes possible and a set of cards does not.
 - **Sorting, filtering, or selecting rows is part of the work.**
 
-## Do not use it when
+## When not to use a table
 
 | Instead of a table                                          | Use                                                |
 | ----------------------------------------------------------- | -------------------------------------------------- |
@@ -36,7 +36,7 @@ A table shows many copies of one object, so the reader can compare values down a
 
 **A table too wide for the screen is a problem with the structure, not a scrolling problem.** Use fewer columns, drill-down, or stacked text in the cells. Use horizontal scrolling only as a last resort. `recursica-skill-tables` owns that rule.
 
-## What exists
+## Table parts
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.table`, `table-cell`, `table-header`, `table-footer`. **The table itself has no variant axes (the properties a component varies on, such as size and style; Figma calls them variant properties).** The three sub-specs each have one.
 
@@ -57,11 +57,11 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.table`, `table-cell`, 
 
 **`table-cell` defines a `max-width`, and on its own it does not limit anything.** A maximum width on a table cell is only a suggestion to the browser's automatic table layout, which sizes columns from their content and often goes past it — a 200px maximum measured 257px in a real table. **Do not use the token to fix a column that is too wide.** Set a column's width by its data type, as `recursica-skill-tables` describes. The browser applies a width set that way, and largely ignores `max-width`.
 
-**There is no selected-row state, no hover-row state, and no expanded-row state** in the UI kit. Do not invent one. See the uncovered list.
+**There is no selected-row state, no hover-row state, and no expanded-row state** in the UI kit. Do not invent one. See the open questions.
 
 **Only `disabled` exists on cells, headers, and footers.** There is no error state on a cell.
 
-## Rules for using it
+## Rules for tables
 
 **Null is `NA` — never an empty cell, and never `0`.** An empty cell looks like something was forgotten, and a zero looks like a real value. **This rule is owned by `recursica-skill-tables`**, which sets the text, the italics, and the neutral-500 color, and it is extended to every surface by `recursica-skill-system-conventions`. It is repeated here only because it has an effect on accessibility. Read the owning skill for the rule itself. Where that skill differs from this line, follow that skill.
 
@@ -118,7 +118,7 @@ This component also follows the accessibility baseline in `recursica-skill-syste
 - **No horizontal scrolling area.** Beyond the house rule, a table that scrolls horizontally is close to unusable for a keyboard user, who has no way to bring a column that is off screen into view except by tabbing blindly.
 - **Focus must be visible on every control in the table**, and never hidden on a focused row or cell.
 
-## Set by the component
+## Styling the table sets itself
 
 Do not set or override any of these. The component sets them:
 
@@ -132,7 +132,7 @@ Do not set or override any of these. The component sets them:
 - Footer `text-style`, `currency-style`, `vertical-margin`.
 - `globals.table.cell` horizontal and vertical padding.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-tables` — the owning design-rules skill: table vs. cards, column widths and alignment, truncation vs. wrapping, two-value cells, pagination vs. infinite scroll, fixed header and footer, default sort, multi-sort, column visibility, frozen columns, clickable rows, inline editing, totals.
 - `recursica-skill-dates-and-currency` — currency alignment and precision, date format, and the symbol in the column header.
@@ -140,13 +140,13 @@ Do not set or override any of these. The component sets them:
 - `recursica-skill-live-regions` — announcing a row count or result count that changes when the table is filtered, sorted or refreshed.
 - `recursica-skill-filters` — narrowing the table: the filter bar, search, date ranges, noun labels, and showing which filters are applied.
 
-### Only if the screen also uses it
+### Only if the screen also uses those components
 
 - `recursica-skill-card` — the boundary: when a repeating set is cards instead.
 - `recursica-skill-pagination` — the footer control for paging.
 - `recursica-skill-checkbox` — row selection and the header's select-all, including the indeterminate state.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **How a selected row looks.** The design rules require row selection, but no selected state exists in the UI kit.
 - **Row hover.** No hover state is defined, yet a clickable row needs an affordance.
@@ -176,4 +176,4 @@ Do not set or override any of these. The component sets them:
 - [ ] Padding, dividers, and type styling come from the component.
 - [ ] No cell's value is wrapped in a text component, and every column of the table shows in the same typeface, size, and weight — checked by comparing the columns on screen, not by reading the markup.
 - [ ] A column that was too wide is fixed with a width set by data type, not with the cell's `max-width` token.
-- [ ] Uncovered items were asked about, not decided: how a selected row looks, row hover, rows that expand and nested detail, the meaning of `disabled` on a cell, a supported way to mark a missing value, the empty state, loading, and behavior below desktop size.
+- [ ] Open questions were asked about, not decided: how a selected row looks, row hover, rows that expand and nested detail, the meaning of `disabled` on a cell, a supported way to mark a missing value, the empty state, loading, and behavior below desktop size.

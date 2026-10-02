@@ -17,13 +17,13 @@ A date picker records a single calendar date, either by typing it or by picking 
 > with no error. Everything below is correct about the UI kit — but confirm which adapter the application
 > uses before relying on how it looks.
 
-## Use it when
+## When to use a date picker
 
 - **The value is one calendar date** — a due date, a start date, an effective date.
 - **Picking from a calendar helps** — the user is thinking about weekdays, how close dates are, or where a date falls in its month, rather than recalling a date they already know.
 - **The date is close to today**, so the calendar reaches it in a step or two.
 
-## Do not use it when
+## When not to use a date picker
 
 Each of these has a different component. Switch to it, instead of adapting a date picker:
 
@@ -40,20 +40,20 @@ Each of these has a different component. Switch to it, instead of adapting a dat
 
 **Never use a disabled date picker to show a date.** If nobody can ever edit it here, it is not a form control.
 
-## What exists
+## Date picker label placements and states
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.date-picker`. **Do not pass a variant or state that is not listed here** — other design systems have sizes, range variants, warning states, and inline calendars that this component does not.
 
-**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop. React ignores the name, with no error, if it is passed as a prop. A blank cell means no single prop sets that axis. CSS state or separate props set it instead, and the rules below say which.
+**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
 
-| Axis      | Options                   | React prop   |
-| --------- | ------------------------- | ------------ |
-| `layouts` | `stacked`, `side-by-side` | `formLayout` |
-| `states`  | `error`, `disabled`       |              |
+| Axis      | Options                   |
+| --------- | ------------------------- |
+| `layouts` | `stacked`, `side-by-side` |
+| `states`  | `error`, `disabled`       |
 
-**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**`layouts` is the label-placement axis.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
-**`formLayout` defaults to `stacked`, which puts the label above the input.** A field without the prop shows its label above the input at any container width, which breaks the house rule. `layouts` is the UI kit's name for this variant, not a prop: React ignores `layouts="side-by-side"` without an error and leaves the label above the input. Set `formLayout="side-by-side"` to put the label beside the input.
+**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, using the adapter's name for that axis and option.
 
 **Focus and placeholder are not variants.** The component handles them: `placeholder-opacity` here, and the focused border through `globals.form.field.colors.border-selected`. Do not build them as states.
 
@@ -63,7 +63,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.date-picker`. **Do not
 
 **There is no read-only state.** Read-only is a separate component — `read-only-field`, with the same `layouts` axis and no input.
 
-## Rules for using it
+## Rules for date pickers
 
 **Always pass a visible label.** Name the object clearly — "Start date", not "Date". A screen reader user hears the label on its own, without the context around it. Use sentence capitalization, with no colon at the end.
 
@@ -117,7 +117,7 @@ The component connects the label to the input, and provides the focus ring. Date
 - **Never move focus ahead automatically between the parts of a date.** Jumping from month to day to year as the user types leaves keyboard and screen reader users in a part of the date they did not choose, and it moves focus away from anyone fixing a typo.
 - **Do not move focus for the user** when a value looks complete, and do not close the popover into a different field.
 
-## Set by the component
+## Styling the date picker sets itself
 
 Do not set or override any of these. The component sets them:
 
@@ -131,7 +131,7 @@ Do not set or override any of these. The component sets them:
 
 Never style an unfocused date picker so it looks disabled. An editable field must look editable at rest.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-dates-and-currency` — the date format, time zones, relative vs. absolute time, ranges, and the format-follows-focus rule.
 - `recursica-skill-forms` — label placement and one placement per form, the compound-control exception, validation timing, pre-fill, save mode, and the rule that no form control goes inside a card.
@@ -139,11 +139,11 @@ Never style an unfocused date picker so it looks disabled. An editable field mus
 - `recursica-skill-assistive-element` — the help and error text below the field, and why the error replaces the help.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel.
 
-### Only if the screen also uses it
+### Only if the screen also uses those components
 
 - `recursica-skill-text-field` — the control to use when a calendar is the wrong affordance.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **Date ranges.** No range axis exists. Whether a range is two date pickers or one control, and how the two ends are checked against each other, is not stated.
 - **A `read-only` state on this component is shown only on the design-system website, with no token behind it.** The UI kit defines none, and treats read-only as a separate component. Ask before deciding this, and before relying on it.
@@ -171,4 +171,4 @@ Never style an unfocused date picker so it looks disabled. An editable field mus
 - [ ] Every variant and state passed is in the inventory above. No size, range, or inline calendar is added.
 - [ ] Styling comes from the component, and every field without focus looks editable, not disabled.
 - [ ] Dates that are not editable here use the read-only component, not a disabled picker.
-- [ ] Uncovered items were asked about, not decided: date ranges, a read-only state, what the popover contains, whether the calendar opens on focus, the earliest and latest dates and unavailable dates, and conventions for weeks, quarters, and fiscal periods.
+- [ ] Open questions were asked about, not decided: date ranges, a read-only state, what the popover contains, whether the calendar opens on focus, the earliest and latest dates and unavailable dates, and conventions for weeks, quarters, and fiscal periods.

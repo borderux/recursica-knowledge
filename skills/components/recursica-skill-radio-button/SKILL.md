@@ -11,14 +11,14 @@ metadata:
 
 A radio group is one label with several values, of which exactly one may be selected.
 
-## Use it when
+## When to use a radio button
 
 - **The options rule each other out, and exactly one must be chosen.** Radio buttons are the only correct control for this.
 - **The user should see every option at once**, stacked and easy to scan, instead of opening something to find out what is available.
 - **The set is small enough to compare in place** — within the limit below.
 - **The change is saved with the form**, on submit.
 
-## Do not use it when
+## When not to use a radio button
 
 | Instead of a radio group                                      | Use                                                                                           |
 | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
@@ -33,7 +33,7 @@ A radio group is one label with several values, of which exactly one may be sele
 
 **Never use checkboxes for options that rule each other out.** A checkbox means "select as many as apply", by definition. Checkboxes let the user submit two answers to a question that has one. There is no exception.
 
-## What exists
+## Radio button parts and states
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.radio-button`, `radio-button-group`, and `radio-button-item`. **Do not pass a variant, size, or state that is not listed here.**
 
@@ -55,7 +55,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Read-only is a separate component** — `read-only-field`, which shows text instead of inputs.
 
-## Rules for using it
+## Rules for radio buttons
 
 **A radio group holds at least two items.** A single radio button is not a choice, and it cannot be deselected once it is selected.
 
@@ -109,7 +109,7 @@ The component pairs each control with its item label, manages focus within the g
 - **Clicking or tapping the item label selects its option.** A label connected to the control provides this, and it gives the user a bigger target. Text placed beside the control without that connection does not select the option.
 - **Do not move focus for the user.** When an option reveals fields below, focus stays in the group, and the user reaches the new fields with the next Tab. Never move focus to the next field when an option is selected.
 
-## Set by the component
+## Styling the radio button sets itself
 
 Do not set or override any of these. The components set them:
 
@@ -122,7 +122,7 @@ Do not set or override any of these. The components set them:
 
 Do not add margins or spacer elements between options or around the group; the components carry the spacing.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-selection-controls` — radio vs. checkbox vs. switch vs. dropdown, option counts, the pre-selection caution, vertical-only layout, the horizontal alternatives, and commit timing.
 - `recursica-skill-forms` — single-column layout, label placement, its container-width trigger, and one placement per form, required vs. optional marking, validation timing, progressive disclosure, and save mode.
@@ -131,11 +131,11 @@ Do not add margins or spacer elements between options or around the group; the c
 - `recursica-skill-working-memory` — the 7 ± 2 basis and the recognition-versus-comparison boundary.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel.
 
-### Only if the screen also uses it
+### Only if the screen also uses those components
 
 - `recursica-skill-segmented-control` — the horizontal single-select control that replaces a rotated radio group.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **The error state of a radio group.** The UI kit gives `dropdown` and `autocomplete` an `error` state, and gives the radio button none — yet a required group can fail validation. The error treatment is not stated.
 - **Clearing a radio group.** The design rules treat a set radio button as one that cannot be deselected, which is why the caution about pre-selection exists. Whether a group may offer an explicit clear, or a "None" option, is not stated.
@@ -160,4 +160,4 @@ Do not add margins or spacer elements between options or around the group; the c
 - [ ] Disabled is used only for options that are unavailable for now, with the reason in text. Values that can never be edited use the read-only field.
 - [ ] Every variant, size, and state is one listed in the inventory above, and every property the component owns comes from the component.
 - [ ] The group saves with the form, in the same save mode as everything else in the system.
-- [ ] Uncovered items were asked about, not decided: the group error state, clearing a group, and radio buttons in table rows.
+- [ ] Open questions were asked about, not decided: the group error state, clearing a group, and radio buttons in table rows.

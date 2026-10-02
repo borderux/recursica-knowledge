@@ -11,18 +11,18 @@ metadata:
 
 A loader says that something is in flight — still in progress. It cannot say how much is done, or how long is left.
 
-## Use it when
+## When to use a loader
 
 - **The wait is real, and its length is unknown** — a data fetch, a submit, a recalculation.
 - **One region of an otherwise loaded page is lagging.** A spinner is most useful here. Show the content that has arrived, and put a spinner in each slow region, instead of holding up the whole page. Dashboard widgets loading at different speeds are the common case.
 - **The wait is long enough to notice.** `recursica-skill-feedback-messaging` sets the threshold: show a loading indicator when the operation will take more than about 3 seconds. Below that, a spinner flashes and looks like a glitch.
 - **One region is loading**, and the loader can be limited to that region — a card, a panel, a modal — instead of covering the whole screen.
 
-## Do not use it when
+## When not to use a loader
 
 | Instead of a loader                            | Use                                                                                                                  |
 | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| The work has a known amount or percentage      | Nothing. There is no determinate variant and no progress component in this system — raise it, see the uncovered list |
+| The work has a known amount or percentage      | Nothing. There is no determinate variant and no progress component in this system — raise it, see the open questions |
 | The operation finishes in well under a second  | No indicator at all. A flash is more distracting than the wait                                                       |
 | The wait is over, and the result needs stating | Text where the result belongs, or `recursica-skill-toast` for a global one                                           |
 | There is no data, and there never was          | A filled-in empty state — and never on a dashboard, see `recursica-skill-dashboards`                                 |
@@ -31,7 +31,7 @@ A loader says that something is in flight — still in progress. It cannot say h
 
 **A loader is not an empty state, and not an error state.** A spinner that keeps turning after a request failed tells the user the system is still trying. It is not.
 
-## What exists
+## Loader sizes
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.loader`. **Do not pass a variant, type, or state that is not listed here.**
 
@@ -41,19 +41,19 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **The UI kit has an indeterminate spinner and nothing else. This is the most important fact about this component.** An indeterminate spinner shows that work is happening, but not how much of it is done. The only property is `indicator-color`.
 
-**There is no determinate variant (one that shows how much is done), no percentage, and no track that fills up.** So a loader cannot show how far along the work is. Do not show progress in any other form: no "45%", and no estimated time left. A wait of known length has no alternative component in this system either, so do not send the reader to one. A spinner cannot show how long something will take, and nothing here can. Raise it as a gap; see the uncovered list.
+**There is no determinate variant (one that shows how much is done), no percentage, and no track that fills up.** So a loader cannot show how far along the work is. Do not show progress in any other form: no "45%", and no estimated time left. A wait of known length has no alternative component in this system either, so do not send the reader to one. A spinner cannot show how long something will take, and nothing here can. Raise it as a gap; see the open questions.
 
 **There is no slot for a label or text.** Place any words that go with the spinner as a separate element.
 
 **There is no skeleton, no shimmer, no progress bar, and no type axis (a property a component varies on, such as size or style; Figma calls it a variant property) — and skeletons are forbidden, not only missing.** Skeleton screens (also called skeleton loaders or ghost elements: gray placeholder shapes where content will appear) are a loading indicator, like a spinner. Users have to work out what the gray shapes are, and the shapes tell them nothing about the content. `recursica-skill-screen-scaffolding` sets the rule: a loading page shows nothing until it shows content.
 
-**Three loader types have no tokens behind them, but both adapters do build them.** Oval, Bars, and Dots are missing from the UI kit — the UI kit defines only `indicator-color` and the three sizes — yet both adapters offer them as a real `variant` prop, and style each one. So they are available. They have no tokens, so their appearance comes from the adapter, not the UI kit, and it may differ between Mantine and MUI. `oval` is the default in both. Use the default unless there is a reason to change it. Do not use the choice of type to signal anything.
+**Three loader types have no tokens behind them, but both adapters do build them.** Oval, Bars, and Dots are missing from the UI kit — the UI kit defines only `indicator-color` and the three sizes — yet both adapters offer them as a real `variant` setting, and style each one. So they are available. They have no tokens, so their appearance comes from the adapter, not the UI kit, and it may differ between Mantine and MUI. `oval` is the default in both. Use the default unless there is a reason to change it. Do not use the choice of type to signal anything.
 
 **The sizes are `small`, `default`, and `large`.** Sizes named xs, sm, and md are shown only on the design-system website, and both adapters also accept `sm`, `md`, and `lg` as other names for the three kit sizes. Write the UI kit names. The other names work today, but this system is specified in the UI kit's names.
 
-**A track showing total progress, and an indicator showing the percentage done**, are shown only on the design-system website too, but no determinate variant exists to support either one. See the uncovered list.
+**A track showing total progress, and an indicator showing the percentage done**, are shown only on the design-system website too, but no determinate variant exists to support either one. See the open questions.
 
-## Rules for using it
+## Rules for loaders
 
 **Always pair the loader with text that says what is happening.** The component has no label slot, so place the text beside it or beneath it: "Loading invoices", not "Loading". The text is what carries the meaning; the spinner only shows that a wait is underway.
 
@@ -98,7 +98,7 @@ A spinner is pure animation. To a screen reader user, it does not exist unless t
 - **Do not trap the keyboard behind a loader.** Content that is covered, or not there yet, must not stay behind the spinner as a set of silent, invisible tab stops.
 - **Nothing needed may appear only on hover** — least of all the text explaining what is loading, which must stay visible.
 
-## Set by the component
+## Styling the loader sets itself
 
 Do not set or override any of these. The component sets them for every size:
 
@@ -106,7 +106,7 @@ Do not set or override any of these. The component sets them for every size:
 - Diameter, stroke weight, and every dimension per size.
 - The animation itself — its speed, easing, and direction.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-system-conventions` — never carry meaning in a single channel, and one behavioral mode per system.
 - `recursica-skill-dashboards` — disclosing how current the data is, per component where intervals differ, and the prohibition on shipping an empty dashboard.
@@ -114,15 +114,15 @@ Do not set or override any of these. The component sets them for every size:
 - `recursica-skill-buttons-links` — which lists pending state on non-submit actions as unowned; the button component has no loading state.
 - `recursica-skill-live-regions` — announcing that loading started and finished, and what the application must cover beyond the loader's own announcement.
 
-### Only if the screen also uses it
+### Only if the screen also uses those components
 
 - `recursica-skill-toast` — stating an outcome once the wait is over.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **Showing progress.** There is no determinate variant, no percentage, and no track that fills — and no separate progress component exists anywhere in this system. So a wait of known length has nothing to show it. A person must close this gap. Do not assemble a progress indicator from other parts, and do not name a progress component as if it were available. If progress must be shown, ask — do not build one.
 - **Whether the loader may have a label.** There is no text slot, so the application places the text beside it, and where it goes relative to the spinner is not set.
-- **Whether the three adapter loader types are approved.** Oval, Bars, and Dots exist as a `variant` prop in both adapters, with no tokens behind them, so nothing in the UI kit decides how they look or when each is used. A progress track is shown only on the design-system website as well, with no determinate variant to support it. Ask before relying on a type other than the default.
+- **Whether the three adapter loader types are approved.** Oval, Bars, and Dots exist as a `variant` setting in both adapters, with no tokens behind them, so nothing in the UI kit decides how they look or when each is used. A progress track is shown only on the design-system website as well, with no determinate variant to support it. Ask before relying on a type other than the default.
 - **When a spinner for the whole page is called for, instead of an empty page.** About three seconds is the threshold, and a lagging region of an otherwise loaded page is the clearest case — but where "a region" ends and "the page" begins is a judgment call.
 - **Loading and error states for a table**, including partial failure — listed as having no owner in `recursica-skill-tables`.
 - **A pending state on an action other than submit** — listed as having no owner in `recursica-skill-buttons-links`.
@@ -146,4 +146,4 @@ Do not set or override any of these. The component sets them for every size:
 - [ ] The explanatory text does not appear only on hover, and the focus ring is intact on the controls around it.
 - [ ] Every loader size is `small`, `default`, or `large`, and no type, label, track, skeleton, or determinate variant is invented.
 - [ ] Styling and animation come from the component.
-- [ ] Uncovered items were asked about, not decided: showing progress, a label on the loader, the three adapter loader types, a spinner for the whole page, loading and error states for a table, a pending state on an action other than submit, delaying the loader, and which size belongs on which surface.
+- [ ] Open questions were asked about, not decided: showing progress, a label on the loader, the three adapter loader types, a spinner for the whole page, loading and error states for a table, a pending state on an action other than submit, delaying the loader, and which size belongs on which surface.

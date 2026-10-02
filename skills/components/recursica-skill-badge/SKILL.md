@@ -11,13 +11,13 @@ metadata:
 
 A badge is one piece of read-only metadata attached to something else. The system sets it; the user never touches it.
 
-## Use it when
+## When to use a badge
 
 - **One value describes the object** — a status the system owns, a count, or a single short attribute.
 - **It sits on something else** — a row, a heading, a tab, a nav item, a card. A badge never stands alone.
 - **Space is tight.** A badge is small, with small type, which is what dense views need.
 
-## Do not use it when
+## When not to use a badge
 
 | Instead of a badge                          | Use                                                                                   |
 | ------------------------------------------- | ------------------------------------------------------------------------------------- |
@@ -30,27 +30,27 @@ A badge is one piece of read-only metadata attached to something else. The syste
 
 **A badge is never interactive.** There is no selectable badge and no dismissible badge in this system. If the user must operate it, use a chip.
 
-## What exists
+## Badge styles
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.badge`. **Do not pass a variant that is not listed here.**
 
-**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop. React ignores the name, with no error, if it is passed as a prop. A blank cell means no single prop sets that axis. CSS state or separate props set it instead, and the rules below say which.
+**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
 
-| Axis     | Options                                        | React prop |
-| -------- | ---------------------------------------------- | ---------- |
-| `styles` | `primary-color`, `warning`, `success`, `alert` | `variant`  |
+| Axis     | Options                                        |
+| -------- | ---------------------------------------------- |
+| `styles` | `primary-color`, `warning`, `success`, `alert` |
 
-**There is no size axis and no content axis in the UI kit**, though both are shown only on the design-system website. See the uncovered list before relying on either — that mismatch has not been settled.
+**There is no size axis and no content axis in the UI kit**, though both are shown only on the design-system website. See the open questions before relying on either — that mismatch has not been settled.
 
 **No disabled state, no interactive state, and no hover effect.** A badge has no states, because it is not a control.
 
 **Four intents is a closed set, and most fields of work have more statuses than that.** An intent is the kind of meaning a style carries — positive, a warning, a problem, or neutral. A provisioning workflow with Pending, Approved, Ordered, Shipped, Delivered, Blocked, and Canceled has seven statuses and only four styles to show them. So styles have to repeat — two different statuses will look identical.
 
-**The style must agree with the sentiment of the value** — whether the value is good, bad, or neutral. A positive state never gets the negative treatment. `alert` means a problem, so an approved, complete, or successful value must never carry it. A badge styled that way contradicts its own text, and users notice the color before they read the word. Where the exact mapping of statuses to intents has not been decided, see the uncovered list. What is settled is that the intent must never contradict the text.
+**The style must agree with the sentiment of the value** — whether the value is good, bad, or neutral. A positive state never gets the negative treatment. `alert` means a problem, so an approved, complete, or successful value must never carry it. A badge styled that way contradicts its own text, and users notice the color before they read the word. Where the exact mapping of statuses to intents has not been decided, see the open questions. What is settled is that the intent must never contradict the text.
 
-**Repeating a style is safe only because the badge's text always carries the difference.** Map several statuses to one intent on purpose, let the label identify the status, and never let the color be what tells Ordered apart from Shipped. Required by `recursica-skill-system-conventions`. Do not invent a fifth intent. There is no prop for one, so making one means working around the component. A fifth color is not a missing token to report — it is a color the system deliberately leaves out. See `recursica-skill-design-router` on the escape hatch.
+**Repeating a style is safe only because the badge's text always carries the difference.** Map several statuses to one intent on purpose, let the label identify the status, and never let the color be what tells Ordered apart from Shipped. Required by `recursica-skill-system-conventions`. Do not invent a fifth intent. There is no setting for one, so making one means working around the component. A fifth color is not a missing token to report — it is a color the system deliberately leaves out. See `recursica-skill-design-router` on the escape hatch.
 
-## Rules for using it
+## Rules for badges
 
 **One badge per object.** Two values side by side means the information is plural, and plural means chips.
 
@@ -88,7 +88,7 @@ A badge is text, not a control. That makes the risk the opposite of most compone
 - **A badge inside an interactive element** — a tab, a nav item, a row link — is part of that element's name, not a separate stop inside it.
 - **Never put a badge where it only appears on hover.** Its whole purpose is to be seen at a glance.
 
-## Set by the component
+## Styling the badge sets itself
 
 Do not set or override any of these. The component sets them:
 
@@ -97,12 +97,12 @@ Do not set or override any of these. The component sets them:
 - `border-size`, `border-radius`, `elevation`.
 - All colors per style.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-badges-chips` — when a badge is the right component, how many are allowed, and placement in tables, cards, tabs, headings, and navigation.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **The mapping of statuses to intents.** The principle is settled — the intent agrees with the sentiment, and `alert` never carries a positive value. But which intent each status takes has not been decided. With four intents and more statuses than that, the mapping needs to be stated, not invented while building.
 - **What `warning` and `alert` are for**, given that a badge must not show an error. Until this is answered, do not use either one.
@@ -127,4 +127,4 @@ Do not set or override any of these. The component sets them:
 - [ ] Status changes swap with no animation, and any live update is polite or silent.
 - [ ] Every badge uses one of the four styles in the inventory, and none relies on a size or content axis.
 - [ ] The component's text, padding, border, elevation, and colors have no overrides.
-- [ ] Uncovered items were asked about, not decided: the mapping of statuses to intents, what `warning` and `alert` are for, a size axis and a content axis, a limit on counts, an icon beside the text, and a count of zero.
+- [ ] Open questions were asked about, not decided: the mapping of statuses to intents, what `warning` and `alert` are for, a size axis and a content axis, a limit on counts, an icon beside the text, and a count of zero.

@@ -102,10 +102,10 @@ A section like this is still named with a noun — `Approvals`, never `Approve r
 - **Search, filters and sorting within a list** — `recursica-skill-filters` and `recursica-skill-tables`.
 - **Designing the database.** The object map describes what the user works with. How it is stored is not a UI concern.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **How a parent's related objects appear on its detail page.** No skill decides between tabs, sections and links for this yet.
-- **The order of items within a level** — by how often they are used, alphabetically, or in workflow order. Also uncovered in `recursica-skill-navigation`.
+- **The order of items within a level** — by how often they are used, alphabetically, or in workflow order. Also an open question in `recursica-skill-navigation`.
 - **An object that exists only once per account** — the organization's own profile, for example. Whether it is top level, a setting, or somewhere else.
 - **How deep objects may nest** — an order's line items' adjustments — before the deepest one needs a place of its own.
 - **Whether the structure may differ by persona.** `recursica-skill-naming-terminology` covers different words for different personas; nothing covers different structures.
@@ -123,4 +123,4 @@ A section like this is still named with a noun — `Approvals`, never `Approve r
 - [ ] Every section that is not an object came from the request, and the map says so. None was invented.
 - [ ] The map says where the next likely addition would go, without moving anything already there.
 - [ ] Nothing in this skill decided how anything looks — tabs, sections, page or panel were left to their own skills.
-- [ ] Uncovered items were asked about, not decided: how a parent's related objects appear on its detail page, the order of items within a level, an object that exists only once per account, how deep objects may nest, whether the structure may differ by persona, and what happens to routes when the map changes.
+- [ ] Open questions were asked about, not decided: how a parent's related objects appear on its detail page, the order of items within a level, an object that exists only once per account, how deep objects may nest, whether the structure may differ by persona, and what happens to routes when the map changes.

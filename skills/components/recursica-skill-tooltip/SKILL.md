@@ -11,13 +11,13 @@ metadata:
 
 A tooltip is a short text label for a control that has no visible one.
 
-## Use it when
+## When to use a tooltip
 
 - **A control shows only an icon.** `recursica-skill-buttons-links` requires a tooltip on every icon-only button, with no exceptions.
 - **Visible text has been cut off with an ellipsis (…)**, and the tooltip shows it in full.
 - **An unusual function needs one short phrase to explain it**, because a new user may not understand it from the label alone. Add one only when the label is clear without it. Never use a tooltip to make up for a weak label.
 
-## Do not use it when
+## When not to use a tooltip
 
 | Instead of a tooltip                                  | Use                                                                                                                 |
 | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
@@ -32,13 +32,13 @@ A tooltip is a short text label for a control that has no visible one.
 
 **A tooltip only adds to what the page shows.** Nothing inside it may be the only copy of a piece of information, because a touch device has no hover and the user may never see the tooltip.
 
-## What exists
+## Tooltip parts
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.tooltip`. **The tooltip has no variant axes (the properties a component varies on, such as size and style; Figma calls them variant properties) at all** — no placement axis, no size axis, no content-type axis. Every listed item is a fixed property.
 
 **Parts of the component:** a text area and a beak — the small pointer that connects the tooltip to its trigger. `beak-size` and `beak-inset` are set by tokens (named design values, such as colors or sizes, set by the design system).
 
-**The tooltip has no placement setting.** It has no top, left, right, or bottom option, and no option for aligning the beak. The design-system website shows both, but the UI kit defines neither — see Uncovered. Do not pass a position prop, and do not position the beak by hand.
+**The tooltip has no placement setting.** It has no top, left, right, or bottom option, and no option for aligning the beak. The design-system website shows both, but the UI kit defines neither — see the open questions. Do not pass a position setting, and do not position the beak by hand.
 
 **There is no size axis.** `min-width`, `max-width`, and `min-height` are fixed. If the content does not fit inside them, it is not tooltip content.
 
@@ -51,7 +51,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 Neither may hold anything the user needs to complete a task, and neither may be the only place a piece of information exists.
 
-## Rules for using it
+## Rules for tooltips
 
 **Write one short phrase that names the control.** Use "Delete invoice", not a sentence. A tooltip is a label, not instructions.
 
@@ -95,7 +95,7 @@ A tooltip is the component most often used in place of a missing accessible name
 - **The trigger must be able to take focus.** A tooltip attached to something no one can focus can never appear for a keyboard user.
 - **Nothing the user needs may appear only on hover** — which, for this component, means nothing the user needs may be in it at all.
 
-## Set by the component
+## Styling the tooltip sets itself
 
 Do not set or override any of these. The component sets them:
 
@@ -106,19 +106,19 @@ Do not set or override any of these. The component sets them:
 
 The beak is part of the component. Do not draw a separate beak, and do not reposition the component's beak.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-buttons-links` — which controls must have a tooltip, which may, and the rule that a tooltip never rescues a weak label.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel; fix the structure rather than cutting text off and adding a tooltip.
 
-### Only if the screen also uses it
+### Only if the screen also uses those components
 
 - `recursica-skill-hover-card-popover` — the sibling component for richer or interactive content, and the hover-only failure mode it must avoid.
 - `recursica-skill-text-field` — visible labels, assistive text, and error text, all of which are persistent and none of which is a tooltip.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
-- **Placement.** A position axis of top, left, right, and bottom, a beak-alignment axis of start, middle, and end, and a `position` prop are all shown only on the design-system website. The UI kit defines no placement axis at all — only `beak-size` and `beak-inset` as fixed properties. Do not rely on this without asking.
+- **Placement.** A position axis of top, left, right, and bottom, a beak-alignment axis of start, middle, and end, and a `position` setting are all shown only on the design-system website. The UI kit defines no placement axis at all — only `beak-size` and `beak-inset` as fixed properties. Do not rely on this without asking.
 - **Custom content.** Content types of "text" and "custom" are shown only on the design-system website. The UI kit has only `text`. Do not rely on this without asking.
 - **The delay before showing, the delay before hiding, and any time before it hides on its own.** No token or rule defines them.
 - **Touch behavior.** Hover does not exist on touch screens, and no other pattern is given for reaching a tooltip's content there.
@@ -143,4 +143,4 @@ The beak is part of the component. Do not draw a separate beak, and do not repos
 - [ ] The trigger can take focus, and its focus ring is not hidden.
 - [ ] No placement, size, or content variant was passed — none exists.
 - [ ] Padding, width, color, and beak styling come from the component.
-- [ ] Uncovered items were asked about, not decided: placement, custom content, show and hide delays, touch behavior, targets that cannot take focus, and the viewport edge.
+- [ ] Open questions were asked about, not decided: placement, custom content, show and hide delays, touch behavior, targets that cannot take focus, and the viewport edge.

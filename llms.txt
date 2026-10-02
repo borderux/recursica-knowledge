@@ -135,4 +135,4 @@ One skill per component, each self-contained. There is no companion file to read
 | `recursica-skill-transfer-list` |
 | `recursica-skill-tree` |
 
-Every component skill ends with an `## Uncovered — ask, do not invent` section. When a decision falls in there, ask the user; do not fill the gap from another design system or from a `DOCS.md`.
+Every component skill ends with an `## Open questions: ask, do not decide` section. When a decision falls in there, ask the user; do not fill the gap from another design system or from a `DOCS.md`.

@@ -137,7 +137,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **Adapt; do not force one dashboard to stretch from phone to desktop.** Someone checking in on a phone is doing something different from someone working at a desk all day. Understand how the dashboard is used in each setting, decide what to remove, and treat the compact view as its own design.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 No house rule covers these yet. **Ask the person instead of choosing** — see the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule above to fit them.
 
@@ -177,4 +177,4 @@ Before treating a dashboard as done, check:
 - [ ] No unrelated data, and no data on different scales, is placed side by side.
 - [ ] A maximum width is set, and there are no inner scrolling areas anywhere.
 - [ ] Smaller viewports get an adapted design, not a squeezed one.
-- [ ] Uncovered items were asked about, not decided: what fills the main position when everything is fine, CTAs for several personas, where it sits in the navigation, and loading behavior.
+- [ ] Open questions were asked about, not decided: what fills the main position when everything is fine, CTAs for several personas, where it sits in the navigation, and loading behavior.

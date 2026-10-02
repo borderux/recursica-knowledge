@@ -11,14 +11,14 @@ metadata:
 
 A checkbox turns a true/false flag on or off for one specific value. A group of them lets the user select zero through N.
 
-## Use it when
+## When to use a checkbox
 
 - **Zero to many options may be selected** — the options are independent, and they do not rule each other out.
 - **The user should see every option at once**, stacked and easy to scan, instead of opening something to find out what is available.
 - **The options have a parent-child relationship** — a parent checkbox summarizing a sub-list, which is what the indeterminate state is for.
 - **The change is saved with the form**, on submit, not the moment the box is ticked.
 
-## Do not use it when
+## When not to use a checkbox
 
 | Instead of a checkbox                                      | Use                                                                                 |
 | ---------------------------------------------------------- | ----------------------------------------------------------------------------------- |
@@ -32,7 +32,7 @@ A checkbox turns a true/false flag on or off for one specific value. A group of 
 
 **Do not use a disabled checkbox to show a value.** A value nobody can ever change here does not belong in a form control.
 
-## What exists
+## Checkbox parts and states
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.checkbox`, `checkbox-group`, and `checkbox-item`. **Do not pass a variant, size, or state that is not listed here.**
 
@@ -58,7 +58,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Read-only is a separate component** — `read-only-field`, which shows text instead of inputs.
 
-## Rules for using it
+## Rules for checkboxes
 
 **A checkbox group holds at least two items.** One checkbox alone is not a group. For a single binary field, consider a switch instead.
 
@@ -121,7 +121,7 @@ The component pairs each box with its item label, and provides the focus ring. T
 - **Clicking or tapping the item label toggles its checkbox.** A real connected label provides this with no extra code, and it gives the user a bigger target. Do not break it by showing the label as text that is not connected to the box.
 - **Do not move focus for the user.** When a checkbox reveals fields below, focus stays on the checkbox, and the user reaches the new fields with the next Tab. Pulling focus into the revealed content takes both keyboard and screen reader users away from the checkbox they just used.
 
-## Set by the component
+## Styling the checkbox sets itself
 
 Do not set or override any of these. The components set them:
 
@@ -134,7 +134,7 @@ Do not set or override any of these. The components set them:
 
 Do not add margins or spacer elements between items or between the group and its neighbors; the components carry the spacing.
 
-## Load these too
+## Skills to read with this one
 
 - `recursica-skill-selection-controls` — which control a field gets, checkbox vs. switch vs. radio, option counts, pre-selection, select-all, table selection mechanics, vertical-only layout, and commit timing.
 - `recursica-skill-forms` — single-column layout, label placement, its container-width trigger, and one placement per form, required vs. optional marking, validation timing, save mode, and the rule that no form control goes inside a card.
@@ -144,7 +144,7 @@ Do not add margins or spacer elements between items or between the group and its
 - `recursica-skill-tables` — table structure around row and header selection.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel; fix the structure rather than adding a mechanism to cope with it.
 
-## Uncovered — ask, do not invent
+## Open questions: ask, do not decide
 
 - **How a checkbox group shows an error.** The UI kit gives `dropdown` and `autocomplete` an `error` state, and gives the checkbox none — yet a group can carry a selection rule that fails validation. The error treatment for a group is not stated.
 - **The multi-select dropdown does not exist, and this is now confirmed in the shipped adapter as well as in the UI kit** — the dropdown maps to a single-value select, with no multi-select variant. `recursica-skill-selection-controls` requires one in two places. It is a gap in the component inventory, not an invitation to build one out of other parts: do not put a checkbox group inside a dropdown, and do not substitute a transfer list without asking. Where several values must be filtered, a build test used separate single-value filters that AND together (a row appears only if it matches all of them) successfully as the workaround. Ask.
@@ -171,4 +171,4 @@ Do not add margins or spacer elements between items or between the group and its
 - [ ] Disabled is used only for options that are unavailable for now, with the reason in text. Values that can never be edited use the read-only field.
 - [ ] Only variants, sizes, and states from the inventory above are used, and every property the component owns comes from the component.
 - [ ] The group saves with the form, in the same save mode as everything else in the system.
-- [ ] Uncovered items were asked about, not decided: the group error state, the multi-select dropdown, where a select-all control sits, limits on selection, and nesting depth.
+- [ ] Open questions were asked about, not decided: the group error state, the multi-select dropdown, where a select-all control sits, limits on selection, and nesting depth.

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Every component skill's `## What exists` inventory matches the token file it says it was taken
+ * Every component skill's inventory section matches the token file it says it was taken
  * from.
  *
  * Each component skill lists the axes and options a component has — "`states`: `error`,
@@ -20,6 +20,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
+import { sectionBody } from "./lib/skill-sections.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const COMPONENTS = path.join(ROOT, "skills", "components");
@@ -56,7 +57,7 @@ const ticks = (s) => [...s.matchAll(/`([a-z0-9-]+)`/g)].map((m) => m[1]);
 const bare = (s) => (/^`[a-z0-9-]+`$/.test(s) ? s.slice(1, -1) : null);
 
 /**
- * Read a skill's `## What exists` section into
+ * Read a skill's inventory section — the one right after "When not to use …" — into
  * `{ components: Set<name>, axes: Map<component, Map<axis, option[]>> }`.
  *
  * Handles the three shapes the skills use:
@@ -66,7 +67,7 @@ const bare = (s) => (/^`[a-z0-9-]+`$/.test(s) ? s.slice(1, -1) : null);
  * A table whose header has no "Axis" column is not an inventory and is skipped.
  */
 export function readInventory(text, known) {
-  const section = text.split(/^## What exists\s*$/m)[1]?.split(/^## /m)[0];
+  const section = sectionBody(text, "inventory");
   if (!section) return null;
   const components = new Set();
   for (const m of section.matchAll(/ui-kit\.components\.([a-z0-9-]+)/g))
@@ -226,7 +227,7 @@ export function checkAll({ kit = loadKit(), known = KNOWN } = {}) {
       problems.push({
         file: rel,
         key: slug,
-        message: "no `## What exists` inventory naming a kit component",
+        message: "no inventory section naming a kit component",
       });
       continue;
     }

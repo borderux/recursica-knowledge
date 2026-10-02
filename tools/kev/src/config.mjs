@@ -1,4 +1,5 @@
 // Every knob in one place. All are env vars so the CircleChat agent and the CLI share them.
+import { INVENTORY } from "./skill.mjs";
 const num = (name, fallback) => {
   const v = process.env[name];
   return v === undefined || v === "" ? fallback : Number(v);
@@ -47,7 +48,9 @@ export const config = {
   // rules each component's own Accessibility section used to repeat, now stated once. Without
   // it here, that skill's brief falls back to its first skillChars characters and the baseline,
   // near its end, is cut off.
-  skillSections: ["What exists", "Rules for using it", "Rules", "Accessibility", "Accessibility baseline for every component"],
+  // A component skill's inventory and rules headings name the component, so they are found by
+  // shape: INVENTORY is the section right before "Rules for …" (see skill.mjs).
+  skillSections: [INVENTORY, /^Rules for .+/, "Rules", "Accessibility", "Accessibility baseline for every component"],
   skillChars: num("KEV_SKILL_CHARS", 6000),
   // Skip chunks with no markup in the per-chunk pass. The whole-screen pass still sees them.
   jsxOnly: process.env.KEV_JSX_ONLY !== "0",
