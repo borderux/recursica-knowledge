@@ -31,30 +31,24 @@ A button performs an action. It does not take the user anywhere.
 
 ## Variants
 
-The UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) defines these for buttons, under `ui-kit.components.button`. **Use only the styles, sizes, and states listed here.**
+Each project can add, rename or remove button variants in its own UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has). Get the project's list from the Recursica MCP server, with its `recursica_get_component_doc` tool. **Use only the variants it lists, under the names the adapter uses. Never invent one.**
 
-**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
+The rules below describe variants by role. The names in the standard UI kit are given as examples.
 
-| Axis      | Options                            |
-| --------- | ---------------------------------- |
-| `styles`  | `solid`, `text`, `outline`         |
-| `sizes`   | `default`, `small`                 |
-| `content` | `icon-label`, `label`, `icon-only` |
-| `states`  | `disabled`                         |
-
-- The `text` style is called "Ghost" outside the UI kit.
-- `icon-label` covers a leading icon, a trailing icon, or both. The settings are the same in each case. There are no separate leading and trailing variants.
-- There is no destructive or danger style. Color cannot mark a destructive action (an action that deletes data or cannot be undone). Say it in the label, and confirm any action that cannot be undone. See `recursica-skill-buttons-links`.
-- Every style has a `disabled` state. Its opacity comes from `globals.states.disabled`. How to set it is still open. See the open questions.
-- There is no loading state. While an action runs, show the `disabled` look with `icon-only` or `icon-label` content, with an icon that may animate. Do not add a spinner beside the button, change the label, or invent a new state.
-- There is no success state. Show any confirmation of a finished action somewhere other than the button. See `recursica-skill-toast`.
-- There is no full-width or fluid option. Never stretch a button to fill its container.
+- **Three styles, by prominence.** The primary style is for the main action, the secondary style for the next action, and the least prominent style for the rest. In the standard UI kit they are `solid`, `outline`, and `text`. The `text` style is also called "Ghost".
+- **Two sizes.** A default size and a smaller size, `small` in the standard UI kit.
+- **Three kinds of content.** A label, an icon with a label, or an icon only. An icon with a label can have the icon before the label, after it, or both, with the same settings in each case.
+- **A disabled state for every style.** Its opacity comes from `globals.states.disabled`. How to set it is still open. See the open questions.
+- **No destructive style.** Do not invent one. Color alone cannot mark a destructive action (an action that deletes data or cannot be undone). Say it in the label, and confirm any action that cannot be undone. See `recursica-skill-buttons-links`.
+- **No loading state.** While an action runs, show the disabled look with an icon, with or without a label, and let the icon animate. Do not add a spinner beside the button, change the label, or invent a new state.
+- **No success state.** Show any confirmation of a finished action somewhere other than the button. See `recursica-skill-toast`.
+- **No full-width or fluid option.** Never stretch a button to fill its container.
 
 ## Rules
 
 **Write the label as a verb and its object.** Write "Save page", not "OK", and "Delete invoice", not "Yes". A screen reader reads the label on its own, so it must make sense without the rest of the screen.
 
-**Use one primary button per surface.** The primary button uses the `solid` style. Use `outline` for the secondary action and `text` for the least important ones. No other button on the surface uses `solid`.
+**Use one primary button per surface.** The primary button uses the primary style. Use the secondary style for the secondary action and the least prominent style for the rest. No other button on the surface uses the primary style.
 
 **Put actions at the bottom right** of a form or modal footer, with the primary button last in reading order. `recursica-skill-buttons-links` sets this rule.
 
@@ -66,9 +60,9 @@ The UI kit (the token file, `recursica_ui-kit.json`, that says which variants an
 
 **Label a toggle button with its current state.** "Follow" becomes "Following" after the user follows.
 
-**While a submit runs, show the disabled look with an animated icon.** `recursica-skill-forms` requires the submit button to show a disabled, loading state. Build it from the parts above: `icon-only` or `icon-label` content, the `disabled` state, and an animated icon. Keep the button the same size and in the same place. If it moves or resizes, it is no longer under the user's pointer.
+**While a submit runs, show the disabled look with an animated icon.** `recursica-skill-forms` requires the submit button to show a disabled, loading state. Build it from the parts above: an icon, with or without a label, the disabled state, and an animated icon. Keep the button the same size and in the same place. If it moves or resizes, it is no longer under the user's pointer.
 
-**Never use `small` to fit more buttons.** Too many actions in a row is a structural problem. See `recursica-skill-system-conventions`.
+**Never use the smaller size to fit more buttons.** Too many actions in a row is a structural problem. See `recursica-skill-system-conventions`.
 
 **Explain every disabled button in text nearby.** A disabled button alone does not tell the user why it is disabled. If the user has no permission for the action, hide the button instead. See `recursica-skill-navigation`.
 
@@ -80,7 +74,7 @@ The component provides the focus ring and activation by click and keyboard. The 
 
 ### Screen readers
 
-- **Give every button an accessible name.** Set one explicitly on an `icon-only` button, because a screen reader does not read the icon. A button with no name is read only as "button".
+- **Give every button an accessible name.** Set one explicitly on an icon-only button, because a screen reader does not read the icon. A button with no name is read only as "button".
 - **The accessible name should match the visible label.** Where the two differ, the name must still contain the label. A voice-control user presses a button by saying its label.
 - **Name the object in a row or list action.** A table with "Delete" in every row gives thirteen identical announcements. Put the object in the name, as in "Delete invoice 1043", or give the row that context in code.
 - **Update the accessible name when a toggle button's label changes.** A name that is out of date after activation is worse than no name.
@@ -120,11 +114,11 @@ The component sets these for every style, size, and content type. Do not set or 
 
 ## Open questions
 
-- **When to use `small`.** No rule says which surfaces use it.
+- **When to use the smaller size.** No rule says which surfaces use it.
 - **Full-width buttons.** No axis supports them, and no rule says whether they are ever allowed, or where.
 - **The icon for a running button.** The parts of the running state are settled. The icon, and whether its animation is defined anywhere, are not.
 - **Split buttons and button groups.** The UI kit has neither. Do not build one.
-- **Setting the disabled state.** The UI kit defines `disabled` under each style. Nobody has confirmed that the adapter exposes it as a setting. Check the component's settings, or ask, before relying on it.
+- **Setting the disabled state.** The standard UI kit defines a disabled state under each style. Nobody has confirmed that the adapter exposes it as a setting. Check the component's settings, or ask, before relying on it.
 
 ## Pre-flight checklist
 
@@ -132,15 +126,15 @@ The component sets these for every style, size, and content type. Do not set or 
 - [ ] Every label is a verb and its object, and makes sense on its own.
 - [ ] Any count is in parentheses after a label that does not change, and there is no count at zero.
 - [ ] The accessible name spells out the count, as in "Apply status to 102 items", while the label shows it in parentheses.
-- [ ] The surface has exactly one `solid` button.
-- [ ] Every `icon-only` button has a tooltip and an accessible name.
+- [ ] The surface has exactly one button in the primary style.
+- [ ] Every icon-only button has a tooltip and an accessible name.
 - [ ] Every button is a real `button` element, is in the tab order, and works with Enter and Space.
 - [ ] No action appears only on hover.
 - [ ] Every row action names its object, or gets it from the row.
 - [ ] Focus returns to the button when a modal or menu it opened closes.
 - [ ] A running button shows the disabled look with an animated icon, with no spinner beside it, no new label, and no new state. It does not move or resize.
 - [ ] A running button is marked busy, keeps its name, stays in the tab order, and respects reduced motion.
-- [ ] Every variant, size, and state is in the inventory above, and there is no destructive style.
+- [ ] Every variant, size, and state is one the project's UI kit lists, and no destructive style is invented.
 - [ ] Styling, including the focus ring, comes from the component.
 - [ ] Every disabled button has its reason in text nearby. Actions the user has no permission for are hidden, not disabled.
-- [ ] Open questions were asked about, not decided: when to use `small`, full-width buttons, the icon for a running button, split buttons and button groups, and setting the disabled state.
+- [ ] Open questions were asked about, not decided: when to use the smaller size, full-width buttons, the icon for a running button, split buttons and button groups, and setting the disabled state.

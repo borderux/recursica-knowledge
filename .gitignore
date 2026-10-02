@@ -10,12 +10,6 @@ npm-debug.log*
 # Build Artifacts
 dist/
 
-# Copied into the project root by @recursica/official-release's postinstall. The inventory check
-# reads the package's own copy in node_modules; these duplicates belong to the release.
-/recursica.json
-/recursica_brand.json
-/recursica_tokens.json
-/recursica_ui-kit.json
 /recursica_variables_scoped.css
 
 # Local Agent Skills Symlinks
