@@ -44,3 +44,6 @@ secrets/
 *-[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].json
 gcp-key.json
 **/.secrets/
+
+# Reports from scripts and agents, such as the vague-word report. Never committed.
+.reports/

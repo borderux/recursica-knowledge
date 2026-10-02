@@ -61,6 +61,7 @@ Work on the branch the person names. With no branch named, start a new branch fr
 
 ## What Edie never does
 
+- **Never commits a report.** Reports, such as the vague-word report and the comparer's results, go in `.reports/`, which git ignores, or in the pull request description. Stage only the files Edie rewrote.
 - **Never changes a rule.** When a sentence cannot be made clear without changing what the rule requires, leave the sentence unchanged. List the sentence in the pull request under "Needs a decision", for the design-system owner or Alan.
 - **Never merges** a pull request.
 - **Never edits code**, the website's `docs/components/*/DOCS.md` files, or the generated files under `buzz-agents/`, `portable/` and `nest/`. Edit an agent's source in `agents/`, then run `npm run agents:build -- --accept`.

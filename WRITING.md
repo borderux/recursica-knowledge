@@ -120,7 +120,7 @@ The repository is public. Follow `AGENT.md` on what never goes into a commit, a 
 
 **After every rewrite, compare the old and new versions line by line.** List every rule, number, example, reason and open question in the old version, and confirm the new version keeps each one with the same strength and scope. Use a reviewer who did not write the new version. Fix every lost, narrowed, widened or added rule before review.
 
-**After every rewrite, run `npm run writing:flags`.** The report lists every sentence the change adds that holds a pronoun or a vague word, such as "it", "these", "something" or "everything". Rewrite each flagged sentence to name the noun, then compare the old and new versions again. The report cannot fix a sentence, because only a reader of the sentence knows which noun was meant.
+**After every rewrite, run `npm run writing:flags`.** The report lists every sentence the change adds that holds a pronoun or a vague word, such as "it", "these", "something" or "everything". Rewrite each flagged sentence to name the noun, then compare the old and new versions again. The report cannot fix a sentence, because only a reader of the sentence knows which noun was meant. The report also saves a copy in `.reports/vague-words.txt`, which git ignores, so a report is never committed.
 
 **A rule changes only when the design-system owner says so.** Record the change in the commit message.
 

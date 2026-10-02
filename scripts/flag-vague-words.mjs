@@ -10,6 +10,9 @@
  * Only added and changed lines are read, so a review sees what the change wrote, not the whole
  * file. `--all` reads whole files instead.
  *
+ * Each run also writes the report to `.reports/vague-words.txt`, which git ignores. A report is
+ * a working note for the person or agent fixing the text, never part of the repository.
+ *
  *   node scripts/flag-vague-words.mjs                 # lines added since main
  *   node scripts/flag-vague-words.mjs --base origin/main
  *   node scripts/flag-vague-words.mjs --all skills/components/recursica-skill-button/SKILL.md
@@ -132,10 +135,12 @@ if (invokedDirectly) {
     : addedLines(base);
   const flags = flagLines(lines);
   const annotate = !!process.env.GITHUB_ACTIONS;
+  const report = [];
   for (const f of flags) {
     const short =
       f.sentence.length > 160 ? `${f.sentence.slice(0, 157)}…` : f.sentence;
     console.log(`${f.file}:${f.line}  ${f.words.join(", ")}  — ${short}`);
+    report.push(`${f.file}:${f.line}  ${f.words.join(", ")}  — ${f.sentence}`);
     if (annotate)
       console.log(
         `::warning file=${f.file},line=${f.line},title=Which one?::"${f.words.join('", "')}" — could a reader ask which one? Name the noun if so (WRITING.md rule 3).`,
@@ -144,6 +149,9 @@ if (invokedDirectly) {
   const where = args.includes("--all")
     ? "the given files"
     : `lines added since ${base}`;
+  const out = path.join(ROOT, ".reports", "vague-words.txt");
+  fs.mkdirSync(path.dirname(out), { recursive: true });
+  fs.writeFileSync(out, report.join("\n") + (report.length ? "\n" : ""));
   if (!flags.length) {
     console.log(`✓ No pronouns or vague words in ${where}.`);
   } else {
