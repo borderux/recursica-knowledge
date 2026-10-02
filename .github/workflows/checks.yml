@@ -111,3 +111,11 @@ jobs:
         run: |
           git fetch --no-tags --depth=1 origin "$BASE_REF"
           node scripts/review-skill-diff.mjs --base "origin/$BASE_REF"
+
+      # Warnings, never a failure: every pronoun and vague word a pull request adds to a skill or
+      # an agent, for a person to read for "which one?" (WRITING.md rule 3).
+      - name: Pronouns and vague words to review
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: node scripts/flag-vague-words.mjs --base "origin/$BASE_REF"

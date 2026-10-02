@@ -57,6 +57,7 @@
     "writing:check": "node scripts/check-writing.mjs",
     "skills:check": "npm run -s skills:manifest:check && npm run -s skills:structure:check && npm run -s skills:glossary:check && npm run -s skills:passages:check && npm run -s skills:uncovered:check && npm run -s skills:wiring:check && npm run -s writing:check",
     "skills:review": "node scripts/review-skill-diff.mjs",
+    "writing:flags": "node scripts/flag-vague-words.mjs",
     "skills:routing": "node scripts/routing-eval.mjs",
     "test": "node --test 'nest/bin/*.test.mjs' 'nest/mcp/*/*.test.mjs' 'scripts/*.test.mjs' 'buzz-agents/lib/*.test.mjs'"
   },

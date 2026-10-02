@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-button
-description: Rules for the Recursica button — button versus link, its styles, sizes, and content, how many primaries, labels, destructive actions, icon-only buttons, and accessibility. Use for any button, submit and cancel pair, toolbar, or row action. Not for going somewhere — see recursica-skill-link; hierarchy and undo policy live in recursica-skill-buttons-links.
+description: Rules for the Recursica button — button versus link, button styles, sizes, and content, how many primaries, labels, destructive actions, icon-only buttons, and accessibility. Use for any button, submit and cancel pair, toolbar, or row action. Not for going to another page — see recursica-skill-link; hierarchy and undo policy live in recursica-skill-buttons-links.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -13,7 +13,7 @@ A button performs an action. A button never takes the user to a different page o
 
 ## When to use a button
 
-- The action does something, such as saving, submitting, deleting, applying a change, or opening a modal.
+- The action saves, submits, deletes, applies a change, or opens a modal.
 - The user stays on the same page after the action.
 - The action moves a process forward or back, such as Next and Back in a stepper. Next and Back change the step, not the page.
 
@@ -27,7 +27,7 @@ A button performs an action. A button never takes the user to a different page o
 | The user turns a setting on or off, such as email alerts      | A switch or a checkbox. See `recursica-skill-selection-controls`.                                 |
 | A table row has more action buttons than the row has room for | Fewer actions in the row, not smaller buttons. See `recursica-skill-tables`.                      |
 
-**Never use a button to go to a different page or URL.** Going somewhere with a button is the most common misuse of buttons. If clicking the control changes the URL, build the control as a link, even when the design shows a button. When the link needs less visual weight, use the link's text style, never a button.
+**Never use a button to go to a different page or URL.** Using a button to go to a different page is the most common misuse of buttons. If clicking the control changes the URL, build the control as a link, even when the design shows a button. When the link needs less visual weight, use the link's text style, never a button.
 
 ## Variants
 
@@ -41,7 +41,7 @@ The rules below describe each variant by role. The names in the standard UI kit 
 - **A disabled state for every style.** The disabled opacity comes from `globals.states.disabled`. How to set the disabled state is an open question.
 - **No destructive style.** Never invent a destructive style. Color alone cannot mark a destructive action (an action that deletes data or cannot be undone). Name the destructive action in the label, as in "Delete invoice", and confirm any action that cannot be undone. See `recursica-skill-buttons-links`.
 - **No loading state.** While an action runs, show the disabled look with an animated icon, with or without a label. Never add a spinner beside the button, change the label, or invent any new state.
-- **No success state.** Show any confirmation of a finished action somewhere other than the button. See `recursica-skill-toast`.
+- **No success state.** Show any confirmation of a finished action outside the button, such as in a toast. See `recursica-skill-toast`.
 - **No full-width option.** Never stretch a button to fill a container.
 
 ## Rules
@@ -56,7 +56,7 @@ The rules below describe each variant by role. The names in the standard UI kit 
 
 **Show a count in parentheses after the label, never in place of the label.** Write `Apply status`, then `Apply status (1)`, then `Apply status (102)`. The words stay the same, and only the number changes. Never build the number into the words, as in `Apply 102 statuses`. Never change the words between one item and many.
 
-**Show no count when nothing is selected.** Never show `(0)`. A zero tells the user nothing the user cannot already see, and a zero makes the button look as if something is selected. Add the count at the first selection, and remove the count when the last selection is cleared.
+**Show no count when nothing is selected.** Never show `(0)`. A zero tells the user nothing the user cannot already see, and a zero makes the button look as if an item is selected. Add the count at the first selection, and remove the count when the last selection is cleared.
 
 **Label a toggle button with the current state.** "Follow" becomes "Following" after the user follows.
 
@@ -70,7 +70,7 @@ The rules below describe each variant by role. The names in the standard UI kit 
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
 
-The button component provides the focus ring, and pressing by click and by keyboard. The application must provide everything below.
+The button component provides the focus ring, and pressing by click and by keyboard. The application must provide the behavior in the two lists below.
 
 ### Screen readers
 
@@ -90,7 +90,7 @@ The button component provides the focus ring, and pressing by click and by keybo
 
 - **Enter and Space both press a button.** Do not intercept, remap, or block either key.
 - **Each button is a tab stop (a place the Tab key lands), in the same order as on screen.** A keyboard user must reach the primary button without tabbing through the whole page.
-- **Never show anything the user needs only on hover.** Keyboard users and touch users cannot reach a row action that appears on hover. Show every action, or put the action in a menu the user can reach.
+- **Never show a needed action, label, or value only on hover.** Keyboard users and touch users cannot reach a row action that appears on hover. Show every action, or put the action in a menu the user can reach.
 - **When a button opens a modal or a menu, move focus into the modal or menu.** When the modal or menu closes, return focus to the button. If focus goes to the top of the page, a keyboard user has to tab through the whole page to get back.
 - **For any other action, leave focus on the button after a press.** The user can then press the button again.
 - **Keep a running button in the tab order.** A disabled control leaves the tab order, and focus falls back to the top of the page. Show the disabled look without removing the button from the tab order, or move focus to the next element the user needs.
@@ -116,7 +116,7 @@ The button component sets these properties for every style, size, and kind of co
 
 - **When to use the smaller size.** No rule says which screens use the smaller size.
 - **Full-width buttons.** No variant property supports a full-width button, and no rule says whether full-width buttons are ever allowed, or where.
-- **The icon for a running button.** The parts of the running look are settled. The icon, and whether the animation is defined anywhere, are not.
+- **The icon for a running button.** The parts of the running look are settled. The icon is not settled. Whether the UI kit or the adapter defines the animation is also unknown.
 - **Split buttons and button groups.** The UI kit has neither. Do not build either one.
 - **Setting the disabled state.** The standard UI kit defines a disabled state under each style. Nobody has confirmed that the adapter exposes the disabled state as a setting. Check the component's settings, or ask, before relying on the disabled state.
 
