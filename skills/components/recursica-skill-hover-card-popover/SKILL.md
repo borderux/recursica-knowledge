@@ -32,7 +32,7 @@ A hover card or a popover reveals richer content beside the element that trigger
 
 **A path that only a pointer can follow is the failure most often built into this component.** A surface revealed on hover that contains a button, a link, or a value found nowhere else cannot be reached by keyboard, and cannot be used on touch. `recursica-skill-discoverability` forbids hiding anything the user would want to reach, and hiding it behind hover is the worst case.
 
-## Hover card and popover parts
+## Variants
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.hover-card-popover`. **The component has no variant axes (the properties a component varies on, such as size and style; Figma calls them variant properties) at all** — no placement axis, no size axis, no content-type axis, and nothing that tells a hover card apart from a popover. One spec, one set of fixed properties.
 
@@ -60,7 +60,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **`tooltip` and `hover-card-popover` are two different components with almost identical tokens.** Do not choose between them on styling, because the styling is effectively the same. Choose on content: a tooltip is a short text label for a control with no visible label, and this component holds richer content. Neither may hold anything the user needs in order to finish a task, and neither may be the only place a piece of information exists.
 
-## Rules for hover cards and popovers
+## Rules
 
 **Before building, decide and state which of the two it is.** There are exactly two valid choices, and their requirements differ:
 
@@ -119,7 +119,7 @@ The two kinds have different requirements, and no build between them is safe. Na
 - **A hover card never takes focus.** Focus is never moved for the user by something they only hovered over.
 - **Nothing needed may appear only on hover.** This is the single rule the whole component depends on.
 
-## Styling the hover card or popover sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The component sets them:
 
@@ -131,18 +131,18 @@ Do not set or override any of these. The component sets them:
 
 The beak is part of the component. Do not draw a separate beak, and do not reposition the one provided.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-discoverability` — progressive disclosure, the three cases where hiding is not safe, and the rule that it never defends a dark pattern.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel; a hidden affordance must stay keyboard and assistive-technology reachable.
 
-### Only if the screen also uses those components
+### Only if used on the same screen
 
 - `recursica-skill-tooltip` — the sibling component for a short text label on an unlabeled control, and why the two are not interchangeable despite matching tokens.
 - `recursica-skill-menu` — where a list of actions or options goes, and its focus-return requirements.
 - `recursica-skill-panel` — the surface for content the user needs while working in the page.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **Whether the single token spec should become two.** The behaviors are settled and documented separately, but one spec is behind both, so the inventory does not say which properties a popover uses and which a hover card uses. Ask before assuming they can look different.
 - **Placement.** Four positions — top, left, right, bottom — and three beak alignments — start, middle, end — are shown only on the design-system website, with no tokens behind them. Do not rely on them without asking, and no rule covers what happens at the edge of the viewport.

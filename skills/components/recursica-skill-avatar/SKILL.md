@@ -29,7 +29,7 @@ An avatar is a small visual stand-in for a person or entity. It helps people rec
 
 **An avatar identifies nothing by itself.** A picture and a pair of initials are both ambiguous, and neither identifies anyone when a screen reader reads it aloud. The name in text is what identifies someone; the avatar is a shortcut to it.
 
-## Avatar styles, sizes and types
+## Variants
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.avatar`. **Do not pass a style or size that is not listed here.**
 
@@ -51,7 +51,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **A different set of styles is shown only on the design-system website** — styles named Image, Primary, Background, and Ghost, plus a Border true/false axis — along with spacing out overlapping avatars in a group. Of those, only Ghost has a match in the UI kit: the `ghost` type. The rest do not exist in the UI kit, whose only other property is `elevation`. See the open questions before relying on any of it.
 
-## Rules for avatars
+## Rules
 
 **Always pair the avatar with the name in text.** In a row, a comment, an assignment, or a list, the name is what identifies the person, and the avatar sits next to it. This is a hard requirement, not a preference.
 
@@ -94,7 +94,7 @@ An avatar is either a picture or a control, and the two fail in different ways. 
 - **An avatar inside an interactive element** — a row link, a list item — is part of that element's name, not a separate stop inside it.
 - **Nothing about the avatar may depend on hover.** A name that appears only in a hover tooltip cannot be reached by keyboard and touch users — and it was never what identified the person anyway.
 
-## Styling the avatar sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The component sets them for every combination of style and size:
 
@@ -105,19 +105,19 @@ Do not set or override any of these. The component sets them for every combinati
 - All colors per style and per layer, including hover, active, and focus.
 - The focus ring on an interactive avatar.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-navigation` — that the user and account menu stay out of primary navigation, what counts as a location, and how the page states where the user is.
 - `recursica-skill-buttons-links` — the tooltip and naming requirements for an icon-only control, and button vs. link semantics.
 - `recursica-skill-tables` — whether a person column gets a picture at table density, and which fields get a column at all.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel.
 
-### Only if the screen also uses those components
+### Only if used on the same screen
 
 - `recursica-skill-menu` — the menu an avatar trigger opens, and focus handling on open and close.
 - `recursica-skill-badge` — status and counts as read-only metadata beside the name, since this component has no status dot.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **Two sets of styles that do not agree.** Styles named Image, Primary, Background, and Ghost, plus a Border true/false axis, are shown only on the design-system website. The UI kit defines `text`, `icon`, and `image`, with `solid`, `outline`, and `ghost` types under the first two, and `elevation` as its only other property. Which one is the authority has not been settled — do not rely on this without asking.
 - **Avatar groups.** Overlapping avatars in a group are shown only on the design-system website, but no group or stack exists in the UI kit. Do not build one, and do not rely on this without asking.

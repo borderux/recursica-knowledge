@@ -149,7 +149,7 @@ Location is shown by three things, and a screen needs more than the first one:
 
 **If forms on several tabs cannot be avoided**, the screen MUST ask the user about unsaved changes — most likely with a modal when a tab is clicked. This has a cost: it combines choosing a tab with handling unsaved changes into one interaction, which is the clearest sign that tabs were the wrong container. Treat the prompt as a last resort, not as a supported pattern.
 
-## Open questions: ask, do not decide
+## Open questions
 
 No house rule covers these yet. **Ask the person instead of choosing** — see the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule above to fit them.
 

@@ -33,7 +33,7 @@ A stepper walks the user through one process that has several parts, and shows w
 
 **The stepper exists because a form must never be spread across tabs.** `recursica-skill-navigation` states that ban, and names the stepper as the replacement. When form fields would go in tabs, use a stepper instead.
 
-## Stepper orientations and sizes
+## Variants
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.stepper`. **Do not pass a variant, size, or state that is not listed here.**
 
@@ -54,7 +54,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no token for what goes inside the indicator.** A step number and a checkmark are shown only on the design-system website, but the UI kit defines neither. See the open questions.
 
-## Rules for steppers
+## Rules
 
 **Every step must be a stage the user recognizes.** Cutting a form into random thirds adds clicks without making it any easier. If the steps do not match something in the user's mental model (what a person expects from the tools and work they already know), put the form on one page.
 
@@ -105,7 +105,7 @@ The stepper shows position and progress visually, with an indicator, a color, an
 - **Back must not lose the user's place.** Going back to a step puts focus at the start of that step's content, with the values they entered still there.
 - **Nothing needed may appear only on hover** — not a step's description, and not the reason a step is disabled.
 
-## Styling the stepper sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The component sets them for every size and orientation:
 
@@ -114,19 +114,19 @@ Do not set or override any of these. The component sets them for every size and 
 - `label-text` and `description-text` type treatment.
 - Indicator size, spacing between steps, and the connector's placement.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-forms` — the single-page vs. multi-step test, layout and labels within each step, validation timing, submit behavior, and the one-save-mode rule.
 - `recursica-skill-navigation` — the prohibition on spreading a form across tabs, and what counts as a location with a route.
 - `recursica-skill-buttons-links` — Next and Back as actions, label copy, and footer placement.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel; fix the structure instead of shrinking to fit.
 
-### Only if the screen also uses those components
+### Only if used on the same screen
 
 - `recursica-skill-tabs` — the structure a stepper replaces, and what tabs are legitimately for.
 - `recursica-skill-card` — why no step's content is wrapped in a card.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **When `small` is the correct size**, and which surfaces use it. No rule assigns it.
 - **When to use horizontal, and when vertical.** Both orientations exist, but nothing says which to use where, or whether the choice may change with the container's width.

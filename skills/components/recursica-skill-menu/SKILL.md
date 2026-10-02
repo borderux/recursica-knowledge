@@ -34,7 +34,7 @@ A menu is a temporary list of choices or actions. A trigger opens it, and dismis
 
 **Do not hide a primary action in a menu.** Show it as a button. A menu holds the secondary and tertiary actions.
 
-## Menu parts
+## Variants
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has). Two specs, with one axis (a property a component varies on, such as size or style; Figma calls it a variant property) between them.
 
@@ -58,7 +58,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no placement, size, density, or multi-select axis.** Do not pass a position.
 
-## Rules for menus
+## Rules
 
 **A menu never opens on hover.** It opens on a click, on activation, or on a key press. This is a house rule in `recursica-skill-navigation`: users clearly struggle to steer a pointer across menus that appear on hover, and an accessible hover menu is much harder to build correctly. It is also the accessibility requirement below.
 
@@ -107,7 +107,7 @@ Menu accessibility is mostly focus management. The list itself is easy to build.
 - **On close, focus goes back to the trigger and nowhere else.** Not to the top of the page, and not into the content the action affected.
 - **Never show a needed control only on hover.** A row-action menu whose trigger only appears when the row is hovered cannot be reached by keyboard or by touch. If the action exists, its trigger is visible.
 
-## Styling the menu sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The components set them:
 
@@ -116,7 +116,7 @@ Do not set or override any of these. The components set them:
 
 The selected item's visual treatment comes with `selection-states`. Do not restyle it, and do not add wrappers or spacers to change the spacing listed above.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-buttons-links` — when row actions collapse into an ellipsis menu, icon-only versus text triggers, label copy, tooltips on icon-only triggers, and toolbar overflow by frequency.
 - `recursica-skill-navigation` — sub-navigation opens on click and never on hover, no overflow menu to make a nav fit, item counts, and permissions.
@@ -124,7 +124,7 @@ The selected item's visual treatment comes with `selection-states`. Do not resty
 - `recursica-skill-system-conventions` — fix the structure rather than scrolling a long list; never carry meaning in a single channel; the unadvertised affordance and its keyboard requirement.
 - `recursica-skill-working-memory` — 7 ± 2 as a scannability ceiling, and why a menu is a recognition surface rather than a recall test.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **Submenus.** A trailing chevron that opens a nested submenu "on hover or click" is shown only on the design-system website. The UI kit defines no submenu, and opening on hover contradicts the navigation rule. Both whether it exists and how it is triggered need a decision. Ask before relying on it.
 - **Menus with multi-select.** A type axis of single select, multi-select, and custom content is shown only on the design-system website. The UI kit defines only `unselected` and `selected` on `menu-item`. Ask before relying on it.

@@ -36,7 +36,7 @@ A table shows many copies of one object, so the reader can compare values down a
 
 **A table too wide for the screen is a problem with the structure, not a scrolling problem.** Use fewer columns, drill-down, or stacked text in the cells. Use horizontal scrolling only as a last resort. `recursica-skill-tables` owns that rule.
 
-## Table parts
+## Variants
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.table`, `table-cell`, `table-header`, `table-footer`. **The table itself has no variant axes (the properties a component varies on, such as size and style; Figma calls them variant properties).** The three sub-specs each have one.
 
@@ -61,7 +61,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.table`, `table-cell`, 
 
 **Only `disabled` exists on cells, headers, and footers.** There is no error state on a cell.
 
-## Rules for tables
+## Rules
 
 **Null is `NA` — never an empty cell, and never `0`.** An empty cell looks like something was forgotten, and a zero looks like a real value. **This rule is owned by `recursica-skill-tables`**, which sets the text, the italics, and the neutral-500 color, and it is extended to every surface by `recursica-skill-system-conventions`. It is repeated here only because it has an effect on accessibility. Read the owning skill for the rule itself. Where that skill differs from this line, follow that skill.
 
@@ -118,7 +118,7 @@ This component also follows the accessibility baseline in `recursica-skill-syste
 - **No horizontal scrolling area.** Beyond the house rule, a table that scrolls horizontally is close to unusable for a keyboard user, who has no way to bring a column that is off screen into view except by tabbing blindly.
 - **Focus must be visible on every control in the table**, and never hidden on a focused row or cell.
 
-## Styling the table sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The component sets them:
 
@@ -132,7 +132,7 @@ Do not set or override any of these. The component sets them:
 - Footer `text-style`, `currency-style`, `vertical-margin`.
 - `globals.table.cell` horizontal and vertical padding.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-tables` — the owning design-rules skill: table vs. cards, column widths and alignment, truncation vs. wrapping, two-value cells, pagination vs. infinite scroll, fixed header and footer, default sort, multi-sort, column visibility, frozen columns, clickable rows, inline editing, totals.
 - `recursica-skill-dates-and-currency` — currency alignment and precision, date format, and the symbol in the column header.
@@ -140,13 +140,13 @@ Do not set or override any of these. The component sets them:
 - `recursica-skill-live-regions` — announcing a row count or result count that changes when the table is filtered, sorted or refreshed.
 - `recursica-skill-filters` — narrowing the table: the filter bar, search, date ranges, noun labels, and showing which filters are applied.
 
-### Only if the screen also uses those components
+### Only if used on the same screen
 
 - `recursica-skill-card` — the boundary: when a repeating set is cards instead.
 - `recursica-skill-pagination` — the footer control for paging.
 - `recursica-skill-checkbox` — row selection and the header's select-all, including the indeterminate state.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **How a selected row looks.** The design rules require row selection, but no selected state exists in the UI kit.
 - **Row hover.** No hover state is defined, yet a clickable row needs an affordance.

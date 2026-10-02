@@ -166,7 +166,7 @@ Labeling the button "Unfollow" puts a negative action in front of the user and i
 
 **The only exception — a modal that is deliberately designed to be linked to.** If the modal has its own URL that the user could copy from the browser, send to someone else, and have it open for them, a link may trigger it. This is a rare case that is designed on purpose: the modal gets a route _and_ a link trigger together, both deliberately. Without a real URL that can be shared, the modal has no route and the trigger is a button.
 
-## Open questions: ask, do not decide
+## Open questions
 
 No house rule covers these yet. **Ask the person instead of choosing** — see the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule above to fit them.
 

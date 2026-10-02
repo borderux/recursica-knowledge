@@ -176,7 +176,7 @@ Plurality means how many of something there are. A peer is one of a set of repea
 - **Type styles and heading levels** — `recursica-skill-typography-semantics`.
 - **Writing a theme.** That is done in Forge, not in application code.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **How the adapter offers a layer.** The token contract and the `data-recursica-layer` attribute are confirmed from the theme. But whether each adapter ships a layer component, a setting, or expects the attribute directly is not. `recursica-skill-screen-scaffolding` records the component as mentioned but not exported. Confirm before building, and do not hand-build a substitute.
 - **Which surfaces sit at which level by default.** Nothing states the layer of a panel, a modal, a table, or a dashboard widget — only that each has colors for each layer.

@@ -26,7 +26,7 @@ One component shows both the help text and the error text below a field. Its typ
 | Confirming that something succeeded                 | `recursica-skill-toast`                                     |
 | Explaining a whole section                          | Section-level copy — see `recursica-skill-forms`            |
 
-## Assistive element types
+## Variants
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.assistive-element`.
 
@@ -44,7 +44,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no size axis.** `top-margin` and `max-width` are fixed properties.
 
-## Rules for assistive elements
+## Rules
 
 **Help text states the rule before the user breaks it.** Put formats, minimums, and character requirements in the help text, because knowing them up front stops the error from happening. Preventing an error is better than catching it.
 
@@ -87,7 +87,7 @@ This component helps only when it is connected to its field in code. Text shown 
 - **Do not move focus when an error appears.** The user is in the middle of typing, and pulling focus to the message loses their place. Managing focus on submit belongs to `recursica-skill-forms`.
 - **A field with an error must stay reachable in its place** — never reorder fields to group the errors together.
 
-## Styling the assistive element sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The component sets them:
 
@@ -96,13 +96,13 @@ Do not set or override any of these. The component sets them:
 - `top-margin` and `max-width`.
 - Error and help colors, which come from the field's tokens.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-forms` — validation timing, error presentation across a form, microcopy, the prevention-first order, and the one-label-placement-per-form rule this element's position inherits.
 - `recursica-skill-label` — the field's name, and what belongs there rather than here.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **Character and word counters.** Whether they belong in this component or somewhere else.
 - **Confirming success on a field** — there is no success type, so a field that validated correctly has no stated treatment.

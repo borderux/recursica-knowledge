@@ -28,10 +28,9 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SKILLS = path.join(ROOT, "skills");
 
 /**
- * AGENT.md, "The shape of a component skill": the nine sections, by role. Each heading names its
- * component ("When to use a button"), so a role is matched by shape, not by string; the inventory
- * has no fixed shape and is the section right before "Rules for …". Other `##` sections may sit
- * between them, except between the inventory and "Rules for …".
+ * AGENT.md, "The shape of a component skill": the nine sections, by role. Two headings name the
+ * component ("When to use a button"), so they are matched by shape; the rest are fixed words.
+ * Other `##` sections may sit between them.
  */
 export { COMPONENT_ROLES };
 export const ACCESSIBILITY_SUBSECTIONS = [
@@ -113,18 +112,10 @@ export function checkFrontmatter(text, slug) {
  */
 export function locateRoles(text) {
   const heads = h2s(text);
-  const at = {};
-  for (const r of COMPONENT_ROLES) {
-    if (r.match) at[r.role] = heads.findIndex((h) => r.match(h.title));
-  }
-  // The inventory is found by position — right before "Rules for …", after "When not to use …" —
-  // so a missing one shows as another role's heading in that place.
-  const inv = headingFor(text, "inventory");
-  const taken =
-    inv && COMPONENT_ROLES.some((r) => r.match && r.match(inv.title));
-  at.inventory =
-    inv && !taken ? heads.findIndex((h) => h.index === inv.index) : -1;
-  return COMPONENT_ROLES.map((r) => ({ ...r, at: at[r.role] }));
+  return COMPONENT_ROLES.map((r) => ({
+    ...r,
+    at: heads.findIndex((h) => r.match(h.title)),
+  }));
 }
 
 /** A component skill has the nine sections in order, and Accessibility has its two subsections. */
@@ -135,13 +126,9 @@ export function checkComponentShape(text) {
   const roles = locateRoles(text);
   for (const r of roles) {
     if (r.at >= 0) continue;
-    const where =
-      r.role === "inventory"
-        ? " — the section right before `## Rules for …`"
-        : "";
     problems.push({
       line: 1,
-      message: `missing section \`## ${r.label}\`${where}`,
+      message: `missing section \`## ${r.label}\``,
     });
   }
   const found = roles.filter((r) => r.at >= 0);
@@ -196,7 +183,7 @@ export function checkReferences(text, file, slugs) {
 }
 
 /**
- * A component's `## Skills to read with this one`: skill names only, and its "only if used" list names other
+ * A component's `## Related skills`: skill names only, and its "only if used" list names other
  * components. A design-rules skill there would be skipped by every loader, and a component's
  * rules would arrive without the design rules that govern them.
  */

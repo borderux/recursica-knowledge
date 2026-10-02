@@ -31,7 +31,7 @@ Each case below has its own component. Use that component instead of adapting a 
 
 **Never use a disabled text field to show a value.** A value nobody can ever edit here does not belong in a form control.
 
-## Text field label placements and states
+## Variants
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.text-field`. **Pass only the variants and states listed here.** Other design systems have field sizes, fluid styles, and warning, success, and loading states. This component has none of them.
 
@@ -52,7 +52,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Read-only is a separate component** — `read-only-field`, which has the same `layouts` axis and shows text instead of an input.
 
-## Rules for text fields
+## Rules
 
 **Always pass a visible label.** Name the object clearly in the label. A screen reader user hears the label on its own, without the context around it. Write it in sentence case with no colon at the end, and keep it short enough to fit on one line.
 
@@ -100,7 +100,7 @@ The component connects the label to the input, provides the focus ring, and hand
 - **Every control inside the field is its own tab stop** (a place the Tab key lands), and responds to Enter or Space as well as to clicks.
 - **Do not move focus for the user.** Do not jump to the next field when a value looks complete, and do not move focus on a keystroke. Either jump sends a keyboard or screen reader user's next keystrokes into a different field partway through typing.
 
-## Styling the text field sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The component sets them:
 
@@ -113,7 +113,7 @@ Do not set or override any of these. The component sets them:
 
 Never style an unfocused field to look disabled. An editable field must look editable when it does not have focus.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-forms` — label placement and alignment, one placement per form, single-column layout, required vs. optional marking, validation timing, error presentation, save mode, and the rule that no form control goes inside a card.
 - `recursica-skill-selection-controls` — when a predefined-option control replaces free-form entry, and disabled vs. read-only.
@@ -122,7 +122,7 @@ Never style an unfocused field to look disabled. An editable field must look edi
 - `recursica-skill-label` — label copy that names the object and stands alone, and the required and optional markers.
 - `recursica-skill-assistive-element` — the help and error text below the field, and why the error replaces rather than joins it.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **Character or word counters.** Whether the field supports one, and what happens at the limit.
 - **A clear or reset control inside the field.**

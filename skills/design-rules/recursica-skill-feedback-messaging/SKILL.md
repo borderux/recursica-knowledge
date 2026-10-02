@@ -117,7 +117,7 @@ This is why the channel table has no row for it: this state should not reach the
 - **Error logging, retry policy, and how the backend classifies a failure.** These are not UI concerns.
 - **Transaction boundaries.** Whether an operation saves all at once is a backend requirement, not a design decision — but see the all-or-none rule above, because it is the reason a whole class of messages does not exist.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **Banners have no component.** The tense rule above says when a banner is right, but nothing says what one looks like, where it sits on the page, whether it can be dismissed, or whether several may appear at once.
 - **Live regions.** Which updates are announced to assistive technology, and how urgently, was openly put off in the typography session and never taken up here. Individual component skills state their own announcement requirements, but there is no policy across all surfaces.

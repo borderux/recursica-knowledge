@@ -120,7 +120,7 @@ There are two tests, and a value must pass both.
 - **The default sort, the default set of columns, and rows per page** — `recursica-skill-tables`.
 - **What an empty screen shows when there is no data.** No skill in the family owns this yet.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **Which remembered states should last across sessions, and which should not.** This was asked directly, and the answer was "I don't know." Do not decide it by guessing.
 - **How to weigh a minority's inconvenience against a majority's benefit.** Stated as having no rule. Escalate every case.

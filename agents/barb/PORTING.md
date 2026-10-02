@@ -152,7 +152,7 @@ single file, the rules that matter most will be missing and the report will look
   to drive it; without one, those items are *unchecked*, and she must report them as such rather than
   as passed. One of these defects arrived from a token default with no code change at all.
 - **Confirm that the rule is the right rule.** She checks conformance.
-- **See what nobody has decided.** Several skills carry an `## Open questions: ask, do not decide`
+- **See what nobody has decided.** Several skills carry an `## Open questions`
   list, and a checklist has no line for an unmade decision. Two of the defects that prompted her
   existence were sitting in one of those lists, and a screen violating them would pass her clean.
 

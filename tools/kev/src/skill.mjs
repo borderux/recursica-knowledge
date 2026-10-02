@@ -1,11 +1,10 @@
 import fs from "node:fs";
 
-// A component skill's headings name the component — "When to use a button", "Rules for buttons" —
-// so they are matched by shape, the way scripts/lib/skill-sections.mjs does. Kev runs on its own
-// and does not import from scripts/, so the shapes are repeated here.
-export const UNCOVERED_HEADING = "Open questions: ask, do not decide";
-// The inventory ("Button styles, sizes and states", "Modal parts") has no fixed words. It is the
-// section right before "Rules for …", which comes after "When not to use …".
+// Two component headings name the component — "When to use a button" — and are matched by shape;
+// the rest are fixed words, as in scripts/lib/skill-sections.mjs. Kev runs on its own and does not
+// import from scripts/, so the headings are repeated here.
+export const UNCOVERED_HEADING = "Open questions";
+// The inventory is the section headed "Variants".
 export const INVENTORY = Symbol("inventory");
 
 const titles = (text) => [...text.matchAll(/^## (.+?)[ \t]*$/gm)].map((m) => m[1]);
@@ -13,11 +12,7 @@ const titles = (text) => [...text.matchAll(/^## (.+?)[ \t]*$/gm)].map((m) => m[1
 // The heading `want` names in this skill: an exact title, a RegExp, or INVENTORY.
 export function findHeading(text, want) {
   const all = titles(text);
-  if (want === INVENTORY) {
-    const avoid = all.findIndex((t) => /^When not to use .+/.test(t));
-    const rules = all.findIndex((t) => /^Rules for .+/.test(t));
-    return avoid >= 0 && rules - 1 > avoid ? all[rules - 1] : null;
-  }
+  if (want === INVENTORY) return all.includes("Variants") ? "Variants" : null;
   if (want instanceof RegExp) return all.find((t) => want.test(t)) ?? null;
   return all.includes(want) ? want : null;
 }

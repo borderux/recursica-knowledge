@@ -30,7 +30,7 @@ Tabs switch between the parts of one whole and show one part at a time.
 
 **Never spread a form across tabs.** The house rules name this misuse explicitly. A half-filled form behind an unselected tab hides both the work left to do and the validation errors. Use a stepper.
 
-## Tab styles, orientations and states
+## Variants
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.tabs` and `tabs-item`.
 
@@ -50,7 +50,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **A tab item may have a leading icon and a counter.** Both appear as parts of the item only on the design-system website. A counter is a badge; see `recursica-skill-badges-chips`.
 
-## Rules for tabs
+## Rules
 
 **Every tab gets its own route.** The route is a sub-path under the parent route. With its own route, a tab can be linked to, survives a refresh, and works with the back and forward buttons. The house rules state this preference directly.
 
@@ -91,7 +91,7 @@ A tab set is one of the few components where wrong roles or connections in the m
 - **Never activate a tab only because it receives focus** where activating it causes a noticeable delay or navigates. The user must be able to move across the set and then choose a tab.
 - **A tab is activated with Enter or Space**, never by click only.
 
-## Styling the tabs component sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The component sets them:
 
@@ -101,7 +101,7 @@ Do not set or override any of these. The component sets them:
 - Borders and radii for `pills` and `outline`.
 - Keyboard interaction inside the tab set.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-navigation` — what tabs may contain, tab routes and history, the prohibition on overflow, active states, breadcrumbs.
 - `recursica-skill-forms` — the stepper, which is the correct alternative to a tabbed form.
@@ -109,7 +109,7 @@ Do not set or override any of these. The component sets them:
 - `recursica-skill-badges-chips` — the counter on a tab.
 - `recursica-skill-system-conventions` — the accessibility baseline every component follows.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **Whether the three styles mean different things**, or are purely a visual choice for the whole house.
 - **What a tab shows when its panel has no content**, and whether an empty tab is hidden or disabled.

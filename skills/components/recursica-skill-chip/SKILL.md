@@ -31,7 +31,7 @@ A chip is one of several short values the user can see, select, or remove.
 
 **A status shown as a chip is the misuse to watch for.** A chip looks like a control the user can click. A status is not the user's to change.
 
-## Chip states
+## Variants
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.chip`. **Do not pass a variant or state that is not listed here.**
 
@@ -52,7 +52,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Do not pass it.** `recursica-skill-badges-chips` says it plainly: do not use a chip to show an error, ever. A required chip group with nothing selected is a form validation error that the group reports below itself, and no chip changes how it looks to report it. An `error` setting found in code is this axis, not a typo. The axis is listed above for that reason only, not as an option to pass.
 
-## Rules for chips
+## Rules
 
 **Chips come in groups.** A single chip on its own is either a badge or a mistake.
 
@@ -96,7 +96,7 @@ A chip group is a form control that happens to be laid out horizontally, and it 
 - **After a chip is removed, move focus on purpose** — to the next chip, or to the group if none are left. Focus left on a removed element is lost, and the user is quietly sent back to the top of the document.
 - **Never require hover to reveal the close control.** A dismiss that appears on hover cannot be reached by keyboard or by touch.
 
-## Styling the chip sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The component sets them:
 
@@ -106,7 +106,7 @@ Do not set or override any of these. The component sets them:
 - `close-icon-size`, `close-icon-color`.
 - All colors per selection state, including hover and focus.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-badges-chips` — chip vs. badge, tags, dismissible and toggled chips, group counts, and placement.
 - `recursica-skill-selection-controls` — when selectable chips are the right control, and the rules they inherit from checkbox groups.
@@ -115,7 +115,7 @@ Do not set or override any of these. The component sets them:
 - `recursica-skill-working-memory` — the basis for option-count limits.
 - `recursica-skill-system-conventions` — the accessibility baseline every component follows.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **Whether a chip may be disabled**, and what that would mean for a filter.
 - **Overflow.** What a group does when it has more chips than the row can hold; wrapping is not stated as allowed.

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Every topic a checklist names as an open question is actually in the skill's
- * `## Open questions: ask, do not decide` section.
+ * `## Open questions` section.
  *
  * Most checklists end with an item like "Open questions were asked about, not decided: progress,
  * success, and retrying." That list is a summary of the open-questions section, written separately
@@ -74,7 +74,7 @@ export function namedTopics(line) {
     .filter(Boolean);
 }
 
-/** The bullets of a skill's `## Open questions: ask, do not decide` section, each as a set of stems. */
+/** The bullets of a skill's `## Open questions` section, each as a set of stems. */
 export function uncoveredBullets(text) {
   const section = sectionBody(text, "uncovered");
   return section

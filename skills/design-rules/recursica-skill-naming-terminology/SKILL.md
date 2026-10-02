@@ -116,7 +116,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 - **The wording of error messages** — `recursica-skill-assistive-element` and `recursica-skill-feedback-messaging`.
 - **Designing the data model and naming fields in the backend.** Not a UI concern.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **Whether the type token carries the capitalization.** The rule is that capitalization is controlled by the token and is not to be changed. If a given type style does not include it, that is a gap to raise, not permission to choose.
 - **Who owns the naming decision when there is no user to ask** — a greenfield product (a brand-new product with no users yet), where the business term is the only term available.

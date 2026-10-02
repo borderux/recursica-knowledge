@@ -14,7 +14,7 @@
 // The one design rule this server exists to enforce
 //
 // `skill_family` NEVER returns a single skill. It returns the skill plus everything its
-// `## Skills to read with this one` section names, transitively.
+// `## Related skills` section names, transitively.
 //
 // This is not a convenience. The router's loudest rule is "load the family, not one file": a
 // component skill says what a component is, a design-rules skill says whether it belongs on the
@@ -134,13 +134,12 @@ function headings(body) {
  * cannot see the list cannot follow that. Together they are about a fifth of the full text.
  * The reasoning behind any item is one skill_section call away.
  *
- * A component skill's headings name the component — "When not to use a table", "Table parts" —
- * so they are found by shape, not by string. The inventory has no fixed words at all, so it is
- * found by position: the section right before "Rules for …", which comes after "When not to use
- * …". scripts/lib/skill-sections.mjs states the same shapes; this server is deployed on its own
- * and keeps its own copy.
+ * Two component headings name the component — "When not to use a table" — so they are found by
+ * shape. The rest are fixed words: "Variants", "Rules", "Open questions". scripts/lib/
+ * skill-sections.mjs states the same headings; this server is deployed on its own and keeps its
+ * own copy.
  */
-const UNCOVERED = 'Open questions: ask, do not decide'
+const UNCOVERED = 'Open questions'
 const CHECKLIST = 'Pre-flight checklist'
 const INVENTORY = Symbol('inventory')
 const CONTRACT_SECTIONS = {
@@ -151,11 +150,7 @@ const CONTRACT_SECTIONS = {
 /** The heading `want` names in a skill body — an exact title, a RegExp, or INVENTORY — or null. */
 function findHeading(body, want) {
   const all = headings(body)
-  if (want === INVENTORY) {
-    const avoid = all.findIndex((t) => /^When not to use .+/.test(t))
-    const rules = all.findIndex((t) => /^Rules for .+/.test(t))
-    return avoid >= 0 && rules - 1 > avoid ? all[rules - 1] : null
-  }
+  if (want === INVENTORY) return all.includes('Variants') ? 'Variants' : null
   if (want instanceof RegExp) return all.find((t) => want.test(t)) ?? null
   return all.includes(want) ? want : null
 }
@@ -370,7 +365,7 @@ const TOOLS = [
   {
     name: 'skill_family',
     description:
-      'One or more skills PLUS every skill their "Skills to read with this one" sections say they need, ' +
+      'One or more skills PLUS every skill their "Related skills" sections say they need, ' +
       'transitively. It never returns a skill alone, because a component skill tells you what a ' +
       'component is and a design-rules skill tells you whether it belongs on the screen — reading ' +
       'the first without the second is the most common way to produce something individually ' +
@@ -429,7 +424,7 @@ const TOOLS = [
       type: 'object',
       properties: {
         slug: { type: 'string', description: 'Skill slug, e.g. recursica-skill-table.' },
-        heading: { type: 'string', description: 'The section heading without the ##, exactly as the skill writes it, e.g. "Rules for buttons". A contract lists them under `sections`.' },
+        heading: { type: 'string', description: 'The section heading without the ##, exactly as the skill writes it, e.g. "Rules". A contract lists them under `sections`.' },
       },
       required: ['slug', 'heading'],
       additionalProperties: false,
@@ -522,7 +517,7 @@ async function handleRequest(msg) {
           'rule that matters most: never resolve uncertainty by choosing silently. Then ' +
           '`skills_for_screen` on the real files to compute what applies, and `skill_family` ' +
           'for the rules. `skill_family` always returns a skill together with everything its ' +
-          '"Skills to read with this one" names — a component skill without its design rules reliably ' +
+          '"Related skills" names — a component skill without its design rules reliably ' +
           'produces something individually correct and collectively wrong, so this server will ' +
           'not hand you one alone. Use `component_api` for real prop types from the version a ' +
           'project installs. These skills are the only knowledge here: never answer a build ' +

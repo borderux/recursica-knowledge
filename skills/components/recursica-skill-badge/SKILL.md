@@ -30,7 +30,7 @@ A badge is one piece of read-only metadata attached to something else. The syste
 
 **A badge is never interactive.** There is no selectable badge and no dismissible badge in this system. If the user must operate it, use a chip.
 
-## Badge styles
+## Variants
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.badge`. **Do not pass a variant that is not listed here.**
 
@@ -50,7 +50,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Repeating a style is safe only because the badge's text always carries the difference.** Map several statuses to one intent on purpose, let the label identify the status, and never let the color be what tells Ordered apart from Shipped. Required by `recursica-skill-system-conventions`. Do not invent a fifth intent. There is no setting for one, so making one means working around the component. A fifth color is not a missing token to report — it is a color the system deliberately leaves out. See `recursica-skill-design-router` on the escape hatch.
 
-## Rules for badges
+## Rules
 
 **One badge per object.** Two values side by side means the information is plural, and plural means chips.
 
@@ -88,7 +88,7 @@ A badge is text, not a control. That makes the risk the opposite of most compone
 - **A badge inside an interactive element** — a tab, a nav item, a row link — is part of that element's name, not a separate stop inside it.
 - **Never put a badge where it only appears on hover.** Its whole purpose is to be seen at a glance.
 
-## Styling the badge sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The component sets them:
 
@@ -97,12 +97,12 @@ Do not set or override any of these. The component sets them:
 - `border-size`, `border-radius`, `elevation`.
 - All colors per style.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-badges-chips` — when a badge is the right component, how many are allowed, and placement in tables, cards, tabs, headings, and navigation.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **The mapping of statuses to intents.** The principle is settled — the intent agrees with the sentiment, and `alert` never carries a positive value. But which intent each status takes has not been decided. With four intents and more statuses than that, the mapping needs to be stated, not invented while building.
 - **What `warning` and `alert` are for**, given that a badge must not show an error. Until this is answered, do not use either one.

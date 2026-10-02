@@ -119,7 +119,7 @@ test("a drifted copy is reported with the wording it should have", () => {
 
 test("a required passage missing from a component skill is reported, and only for components", () => {
   const skill =
-    "## When not to use a widget\n\nText.\n\n## Widget styles, sizes and states\n\n| Axis | Options | React prop |\n\n## Rules for widgets\n\nNo passage here.\n";
+    "## When not to use a widget\n\nText.\n\n## Variants\n\n| Axis | Options | React prop |\n\n## Rules\n\nNo passage here.\n";
   assert.match(
     checkText(skill, passages, { component: true }).problems[0].message,
     /required and missing/,

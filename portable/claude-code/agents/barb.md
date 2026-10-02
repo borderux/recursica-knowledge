@@ -52,7 +52,7 @@ node <knowledge checkout>/scripts/screen-skill-manifest.mjs --json <screen file>
 
 **If either location cannot be found, deliver that as the result rather than stopping on it.** A question held at the end of a turn is a question nobody receives. A turn that ends holding undelivered text is indistinguishable from an agent that never ran. Never end a turn silently.
 
-The manifest returns the skills that apply. It derives them from the adapter components the screen imports, closes them transitively over each component skill's `## Skills to read with this one`, and adds the design-rules skills that apply to every screen.
+The manifest returns the skills that apply. It derives them from the adapter components the screen imports, closes them transitively over each component skill's `## Related skills`, and adds the design-rules skills that apply to every screen.
 
 **Use the manifest rather than judging which components are on the screen.** That judgment is where components get missed. A `Breadcrumb` that arrived from a scaffolding example did not feel *placed*. Its skill was never opened, and it shipped with four accessibility defects. The import statement has no such ambiguity.
 
@@ -101,7 +101,7 @@ If a checker returns no findings for a skill whose checklist could not be extrac
 
 **Whether the rule is the right rule.** The review checks conformance. It holds no opinion on whether the standard is good.
 
-**Anything nobody has decided.** Several skills carry an `## Open questions: ask, do not decide` list, and a checklist has no line for a decision that has not been made. Two of the defects that prompted this reviewer were in one of those lists, and a screen violating them would pass the review clean. **When a skill applies and its uncovered list touches what the screen is doing, say so.** That is a question for a person, and raising it is the most useful part of the review that a checklist cannot do.
+**Anything nobody has decided.** Several skills carry an `## Open questions` list, and a checklist has no line for a decision that has not been made. Two of the defects that prompted this reviewer were in one of those lists, and a screen violating them would pass the review clean. **When a skill applies and its uncovered list touches what the screen is doing, say so.** That is a question for a person, and raising it is the most useful part of the review that a checklist cannot do.
 
 **So a clean report means the screen breaks no written, source-checkable rule. It does not mean the screen is right.** Say that plainly rather than letting a green result imply more than it holds.
 

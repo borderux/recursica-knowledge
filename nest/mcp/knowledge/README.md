@@ -13,7 +13,7 @@ in `nest/nest-manifest.json`.
 ## The rule it enforces
 
 **`skill_family` never returns a single skill.** It returns the skill plus everything its
-`## Skills to read with this one` section says it needs, transitively. Links listed under "Only if
+`## Related skills` section says it needs, transitively. Links listed under "Only if
 the screen also uses those components" are alternatives — a table points at cards — and are returned as `seeAlso`, not
 loaded. Following them used to pull six unused skills, about 25,000 tokens, into an ordinary
 form-and-table screen. The parser is `crossLinks` in `scripts/screen-skill-manifest.mjs`, shared

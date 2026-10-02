@@ -1,6 +1,6 @@
 # Open questions from the component skill rewrite
 
-Everything below came out of writing the 39 component skills against three sources: the token inventory in `recursica_ui-kit.json`, the published `DOCS.md` frontmatter, and the recorded design-rules skills. Where those disagreed, nothing was resolved by guessing — each item sits in an `## Open questions: ask, do not decide` section in the relevant skill, and an agent hitting it will stop and ask.
+Everything below came out of writing the 39 component skills against three sources: the token inventory in `recursica_ui-kit.json`, the published `DOCS.md` frontmatter, and the recorded design-rules skills. Where those disagreed, nothing was resolved by guessing — each item sits in an `## Open questions` section in the relevant skill, and an agent hitting it will stop and ask.
 
 Ordered by what costs the most to leave unanswered. **Items that have since been decided have moved to [the bottom of this file](#now-resolved)** rather than being deleted, so the reasoning stays on the record.
 
@@ -154,7 +154,7 @@ A round of feedback on generated screens, treated as rules rather than fixes for
 
 ## Now resolved
 
-These were open when this file was first written. Each was settled by reading the design rules rather than by adding new opinion, and the corresponding `## Open questions: ask, do not decide` entries have been removed from the component skills.
+These were open when this file was first written. Each was settled by reading the design rules rather than by adding new opinion, and the corresponding `## Open questions` entries have been removed from the component skills.
 
 | Was open                                                     | Resolution                                                                                                                                                                                                                                                                 | Authority                                                              |
 | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |

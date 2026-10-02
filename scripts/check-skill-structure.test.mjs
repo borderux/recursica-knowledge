@@ -31,12 +31,12 @@ const a11y =
 const SECTIONS = [
   "When to use a widget",
   "When not to use a widget",
-  "Widget styles, sizes and states",
-  "Rules for widgets",
+  "Variants",
+  "Rules",
   "Accessibility",
-  "Styling the widget sets itself",
-  "Skills to read with this one",
-  "Open questions: ask, do not decide",
+  "Styling set by tokens",
+  "Related skills",
+  "Open questions",
   "Pre-flight checklist",
 ];
 const full = () =>
@@ -76,32 +76,27 @@ test("frontmatter: a name that differs from the folder, and an over-long descrip
 test("component shape: the test fixture names one heading per role, in order", () => {
   assert.equal(SECTIONS.length, COMPONENT_ROLES.length);
   COMPONENT_ROLES.forEach((r, i) => {
-    if (r.match) assert.ok(r.match(SECTIONS[i]), `${r.role}: ${SECTIONS[i]}`);
+    assert.ok(r.match(SECTIONS[i]), `${r.role}: ${SECTIONS[i]}`);
   });
 });
 
 test("component shape: all nine sections in order, extra sections between them allowed", () => {
   // Between "When not to use" and the inventory, as the card skill has.
   const text = full().replace(
-    "## Widget styles, sizes and states",
-    "## An extra section\n\nText.\n\n## Widget styles, sizes and states",
+    "## Variants",
+    "## An extra section\n\nText.\n\n## Variants",
   );
   assert.deepEqual(checkComponentShape(text), []);
 });
 
-test("component shape: the inventory is whatever precedes 'Rules for', and missing when a known role does", () => {
-  const renamed = full().replace(
-    "## Widget styles, sizes and states",
-    "## Widget parts",
-  );
-  assert.deepEqual(checkComponentShape(renamed), []);
+test("component shape: a missing Variants section is reported", () => {
   const missing = checkComponentShape(
-    full().replace("## Widget styles, sizes and states\n\nText.\n", ""),
+    full().replace("## Variants\n\nText.\n", ""),
   ).map((p) => p.message);
   assert.equal(missing.length, 1, missing.join("\n"));
   assert.match(
     missing[0],
-    /missing section `## <Component> parts, styles, sizes or states`/,
+    /missing section `## Variants`/,
   );
 });
 
@@ -113,11 +108,11 @@ test("component shape: a missing section and a swapped pair are both reported", 
   );
   assert.ok(swapped.some((p) => /out of order/.test(p.message)));
   const missing = checkComponentShape(
-    full().replace("## Skills to read with this one\n\nText.\n", ""),
+    full().replace("## Related skills\n\nText.\n", ""),
   );
   assert.deepEqual(
     missing.map((p) => p.message),
-    ["missing section `## Skills to read with this one`"],
+    ["missing section `## Related skills`"],
   );
 });
 
@@ -197,13 +192,13 @@ test("every skill in the repository passes", () => {
   );
 });
 
-test("Skills to read with this one: a link, a stray heading, and a design-rules skill under 'only if used' are caught", () => {
+test("Related skills: a link, a stray heading, and a design-rules skill under 'only if used' are caught", () => {
   const comps = new Set(["recursica-skill-card"]);
   const ok =
-    "## Skills to read with this one\n\n- `recursica-skill-forms` — why.\n\n### Only if the screen also uses those components\n\n- `recursica-skill-card` — alt.\n\n## Open questions: ask, do not decide\n\n### Not checked\n";
+    "## Related skills\n\n- `recursica-skill-forms` — why.\n\n### Only if used on the same screen\n\n- `recursica-skill-card` — alt.\n\n## Open questions\n\n### Not checked\n";
   assert.deepEqual(checkLoadLinks(ok, comps), []);
   const bad =
-    "## Skills to read with this one\n\n- [`recursica-skill-forms`](../forms/SKILL.md) — why.\n\n### Maybe\n\n### Only if the screen also uses those components\n\n- `recursica-skill-tables` — rules.\n";
+    "## Related skills\n\n- [`recursica-skill-forms`](../forms/SKILL.md) — why.\n\n### Maybe\n\n### Only if used on the same screen\n\n- `recursica-skill-tables` — rules.\n";
   const messages = checkLoadLinks(bad, comps).map((p) => p.message);
   assert.equal(messages.length, 3, messages.join("\n"));
 });

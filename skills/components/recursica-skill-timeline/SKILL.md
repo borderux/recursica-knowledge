@@ -35,7 +35,7 @@ A timeline lists events that already happened, in order, each with a timestamp.
 
 **Group a very long history instead of making the timeline longer.** Group it by month or by quarter, or split it into pages with `recursica-skill-pagination`. Showing a thousand events at once is a structural problem, and `recursica-skill-system-conventions` says to fix the structure instead of working around it.
 
-## Timeline parts
+## Variants
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.timeline` and `ui-kit.components.timeline-bullet`. **This skill covers both; there is no separate bullet skill.** Do not pass a variant or state that is not listed here.
 
@@ -54,7 +54,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **`icon-alternative` is also called "theme icon"** in material shown only on the design-system website. It is one bullet type with two names, and no rule says when each name is used.
 
-## Rules for timelines
+## Rules
 
 **Put the items in time order, and keep one direction the whole way through.** If the order is mixed or not stated, the timeline misstates the sequence of events, which is what it exists to show.
 
@@ -106,7 +106,7 @@ This component also follows the accessibility baseline in `recursica-skill-syste
 - **Nothing else the user needs may appear only on hover** either — not an entry's detail, and not its actions.
 - **Where a long timeline pages or loads more, that control is a real button the keyboard can reach**, and adding items must not move or lose focus.
 
-## Styling the timeline sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The components set them:
 
@@ -116,19 +116,19 @@ Do not set or override any of these. The components set them:
 - The bullet's size, shape, and treatment for each of `default`, `icon`, `icon-alternative`, and `avatar`.
 - All color, including the `active` and `inactive` treatment.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-dates-and-currency` — the disambiguated date format, relative versus absolute time and the switchover, time zones, and duration formatting for every timestamp in the component.
 - `recursica-skill-tables` — the alternative whenever volume is high or the records need sorting, filtering, or comparison.
 - `recursica-skill-avatar` — what an avatar bullet needs in its own right.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel, and fix the structure rather than rendering an unbounded history.
 
-### Only if the screen also uses those components
+### Only if used on the same screen
 
 - `recursica-skill-stepper` — the forward-looking process the user is walking through, as opposed to a record of what happened.
 - `recursica-skill-card` — why the timeline is not wrapped in a card and holds no form.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **Alignment.** Left and right alignment are shown only on the design-system website, but the UI kit defines no alignment axis. Do not rely on this without asking.
 - **The connecting line.** A connector with a highlighted state for completed events is shown only on the design-system website, but the UI kit defines no connector property on the timeline, so whether progress may be shown at all is not settled. Do not rely on this without asking.

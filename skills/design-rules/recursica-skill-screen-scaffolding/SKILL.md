@@ -238,7 +238,7 @@ The number one sign, and then the rest, in order:
 - **Navigation structure and routes** — `recursica-skill-navigation`.
 - **The filter controls** — `recursica-skill-filters`.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **The layout grid.** An eight- or twelve-column grid is mentioned as the grid pages should line up to, and it is openly left to its own skill. Until then, lining things up is a stated requirement with no stated system.
 - **Empty states where data exists but is zero.** Named as not covered.

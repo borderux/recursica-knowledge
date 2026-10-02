@@ -72,7 +72,7 @@ When the tests fail and grouping is still needed, use these, in this order:
 2. **Type hierarchy.** A heading sets up a group, and its rank, without drawing anything.
 3. **Layout structure.** The design system's layouts, grids, and gutters (the gaps between columns and regions) place regions relative to each other.
 
-## Card parts
+## Variants
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.card`. **The UI kit defines no variant axes (the properties a component varies on, such as size and style; Figma calls them variant properties) on the card** — everything is a property. Two more choices are shown only on the design-system website.
 
@@ -93,7 +93,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **A card sits on a layer; it is not an alternative to one.** A layer is a numbered level that sets which colors the components inside it use. The card has its own set of colors for each of the four layer levels, so the layer it is placed on changes how it looks. A layer is a surface and a token scope (the area in which one set of design values applies); a card is the boundary of an object among repeating peers. See `recursica-skill-layers`.
 
-## Rules for cards
+## Rules
 
 **Every card in a set has the same layout.** The same fields, in the same order, in the same slots. A set whose cards differ is a sign that the objects are not peers.
 
@@ -131,7 +131,7 @@ A card set is a list of objects, and it must be announced as one. Two failures m
 - **Nothing may appear on hover.** Actions revealed by hovering over a card cannot be reached by keyboard or by touch. A card's actions stay visible, or they are in a menu that can itself be reached.
 - **The tab order runs card by card**, following the visual order — not column by column against the layout.
 
-## Styling the card sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The component sets them:
 
@@ -141,7 +141,7 @@ Do not set or override any of these. The component sets them:
 - `header-style` and `content-style` type treatment.
 - Corner radius, and any hover or focus treatment.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-system-conventions` — the general convention to group with space, not boxes.
 - `recursica-skill-tables` — the alternative whenever plurality is high or the content is purely data, and the clickable-row rule.
@@ -150,7 +150,7 @@ Do not set or override any of these. The component sets them:
 - `recursica-skill-badges-chips` — badge and chip placement within a card.
 - `recursica-skill-data-visualization` — the chart in the slot, and its required data table.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **When Elevation applies, and when Outline does.** Both are shown only on the design-system website, which has no variant axis for either, and no rule assigns them to surfaces. Do not rely on this without asking.
 - **How many cards count as a "small and finite" set.** The limit is stated as a judgment, not a number.

@@ -94,7 +94,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 - **What things are called** — `recursica-skill-naming-terminology`.
 - **Building queries, indexing, and performance.** These are not UI concerns.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **The house set of relative date ranges.** The pattern is settled; the specific options, and which one is the default, are not.
 - **Whether filters are kept** across navigation, sessions, or users, and whether a filtered view can be saved or shared.

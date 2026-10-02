@@ -40,7 +40,7 @@ Each of these has a different component. Switch to it, instead of adapting a dat
 
 **Never use a disabled date picker to show a date.** If nobody can ever edit it here, it is not a form control.
 
-## Date picker label placements and states
+## Variants
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.date-picker`. **Do not pass a variant or state that is not listed here** — other design systems have sizes, range variants, warning states, and inline calendars that this component does not.
 
@@ -63,7 +63,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.date-picker`. **Do not
 
 **There is no read-only state.** Read-only is a separate component — `read-only-field`, with the same `layouts` axis and no input.
 
-## Rules for date pickers
+## Rules
 
 **Always pass a visible label.** Name the object clearly — "Start date", not "Date". A screen reader user hears the label on its own, without the context around it. Use sentence capitalization, with no colon at the end.
 
@@ -117,7 +117,7 @@ The component connects the label to the input, and provides the focus ring. Date
 - **Never move focus ahead automatically between the parts of a date.** Jumping from month to day to year as the user types leaves keyboard and screen reader users in a part of the date they did not choose, and it moves focus away from anyone fixing a typo.
 - **Do not move focus for the user** when a value looks complete, and do not close the popover into a different field.
 
-## Styling the date picker sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The component sets them:
 
@@ -131,7 +131,7 @@ Do not set or override any of these. The component sets them:
 
 Never style an unfocused date picker so it looks disabled. An editable field must look editable at rest.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-dates-and-currency` — the date format, time zones, relative vs. absolute time, ranges, and the format-follows-focus rule.
 - `recursica-skill-forms` — label placement and one placement per form, the compound-control exception, validation timing, pre-fill, save mode, and the rule that no form control goes inside a card.
@@ -139,11 +139,11 @@ Never style an unfocused date picker so it looks disabled. An editable field mus
 - `recursica-skill-assistive-element` — the help and error text below the field, and why the error replaces the help.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel.
 
-### Only if the screen also uses those components
+### Only if used on the same screen
 
 - `recursica-skill-text-field` — the control to use when a calendar is the wrong affordance.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **Date ranges.** No range axis exists. Whether a range is two date pickers or one control, and how the two ends are checked against each other, is not stated.
 - **A `read-only` state on this component is shown only on the design-system website, with no token behind it.** The UI kit defines none, and treats read-only as a separate component. Ask before deciding this, and before relying on it.

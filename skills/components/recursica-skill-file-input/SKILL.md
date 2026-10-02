@@ -37,7 +37,7 @@ type="file">` until this lands, and raise it instead of working around it.
 
 **Do not use a file input for managing many files.** A field that picks a file is not a file manager. The moment the user needs to see progress, retry, or reorganize, this is the wrong control.
 
-## File input label placements and states
+## Variants
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.file-input`. **Do not pass a variant, size, or state that is not listed here.**
 
@@ -58,7 +58,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.file-input`. **Do not 
 
 **There is no progress state, no success state, and no error state for each file.** There is no drop-zone axis, no size axis, and no axis for more than one file. See the open questions.
 
-## Rules for file inputs
+## Rules
 
 **State the accepted file types and the size limit in help text, before the user picks.** Both of them. "PDF or PNG, up to 10 MB" under the field. With the limits stated first, the user picks a file that will be accepted. Owned by `recursica-skill-assistive-element`.
 
@@ -103,7 +103,7 @@ A file input is a form field, and it follows the same rules as any other field. 
 - **Otherwise, do not move focus for the user.** Coming back from the operating system's file dialog leaves focus on the field.
 - **Nothing needed may appear only on hover** — not the size limit, not the accepted types, and not the remove control.
 
-## Styling the file input sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The component sets them:
 
@@ -115,18 +115,18 @@ Do not set or override any of these. The component sets them:
 
 Never style an unfocused field so that it looks disabled. An editable field must look editable at rest.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-label` — the field's name, placement, and the required or optional marker.
 - `recursica-skill-assistive-element` — the help text carrying accepted types and the size limit, and the error message.
 - `recursica-skill-forms` — single-column layout, one label placement per form and the container-width trigger for it, validation timing, save mode, and the no-form-control-in-a-card rule.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel; a drag or long-press always needs a second mechanism.
 
-### Only if the screen also uses those components
+### Only if used on the same screen
 
 - `recursica-skill-file-upload` — the larger drop area with a list of uploaded files, and when it replaces this field.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **Upload feedback.** The UI kit defines no progress, no success, and no error state for each file on this component. Upload feedback is a real need, and there is nothing here to show it — do not invent a spinner, a bar, or a checkmark.
 - **More than one file in one field.** A "multiple files" content option is shown only on the design-system website, but the UI kit has no axis for more than one file, and no tokens for each file. Whether this field may hold more than one, and what that looks like, is not settled — do not rely on this without asking.

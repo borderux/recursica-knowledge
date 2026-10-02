@@ -27,7 +27,7 @@ The label names the field. It is a real component, not plain text beside an inpu
 
 **A placeholder is never a label.** It is not announced as one, and it disappears on the first keystroke.
 
-## Label placements and sizes
+## Variants
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.label`.
 
@@ -48,7 +48,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There are two sizes, `default` and `small`, and no disabled state.** The label's color across states comes from the field's tokens. When to use `small` is among the open questions.
 
-## Rules for labels
+## Rules
 
 **Side by side is the default.** The label sits to the left of the field, on the same row, right-aligned so it sits close to its field. Stack it above only when the container is too narrow to fit both — and what decides this is the width of the form's container, not the viewport. Owned by `recursica-skill-forms`.
 
@@ -99,7 +99,7 @@ The label is where a field becomes usable by a screen reader at all. The connect
 - **If the label carries an edit icon, that icon is a control**, and it must be its own tab stop with its own accessible name.
 - **A stacked label must not change the tab order.** Placement is visual; the order is label, then field, either way.
 
-## Styling the label sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The component sets them:
 
@@ -108,13 +108,13 @@ Do not set or override any of these. The component sets them:
 - `colors`, including the error and disabled treatments.
 - The gap between label and field — `globals.form.properties.label-field-gap-horizontal` and `label-field-gap-vertical`.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-forms` — label placement and alignment, the container-width trigger, one placement per form at any given breakpoint, required vs. optional policy, label copy, and group-level optionality.
 - `recursica-skill-assistive-element` — the help and error text below the field.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **The edit control on a label.** The UI kit sets aside a gap for an edit icon, but what it does, and on which fields, is not stated.
 - **Which form-wide signal marks required fields** when asterisks are avoided. Bold is given as an example, not a rule.

@@ -34,7 +34,7 @@ Each of these has a different component. Switch to it, instead of adapting a tim
 
 **Never use a disabled time picker to show a time.** If nobody can ever edit it here, it is not a form control.
 
-## Time picker label placements and states
+## Variants
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.time-picker`. **Do not pass a variant or state that is not listed here** — other design systems have sizes, seconds variants, warning states, and inline clocks that this component does not.
 
@@ -59,7 +59,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no read-only state.** Read-only is a separate component — `read-only-field`, with the same `layouts` axis and no input.
 
-## Rules for time pickers
+## Rules
 
 **Always pass a visible label.** Name the object clearly — "Start time", not "Time". A screen reader user hears the label on its own, without the context around it. Use sentence capitalization, with no colon at the end.
 
@@ -113,7 +113,7 @@ The component connects the label to the input, and provides the focus ring. Time
 - **Do not move focus for the user** when a value looks complete, and do not close the popover into a different field.
 - **Everything needed to complete the field must be visible without hovering** — the format, the time zone, and the trigger.
 
-## Styling the time picker sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The component sets them:
 
@@ -127,7 +127,7 @@ Do not set or override any of these. The component sets them:
 
 Never style an unfocused time picker so it looks disabled. An editable field must look editable at rest.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-dates-and-currency` — 12- vs 24-hour, time zones, when not to localize, seconds, duration formatting, and format follows focus.
 - `recursica-skill-forms` — label placement and one placement per form, the compound-control exception that puts date and time on one row, validation timing, and save mode.
@@ -136,11 +136,11 @@ Never style an unfocused time picker so it looks disabled. An editable field mus
 - `recursica-skill-selection-controls` — when a preset list replaces free entry, and disabled vs. read-only.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel.
 
-### Only if the screen also uses those components
+### Only if used on the same screen
 
 - `recursica-skill-date-picker` — the date half of a date-and-time row.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **The AM/PM control.** A selector for AM or PM inside the field, hidden in 24-hour mode, is shown only on the design-system website. The UI kit defines no tokens for it. Whether it is part of this component, or a separate select on the row, is not stated. Do not rely on it without asking.
 - **What the popover contains.** A "dial or input picker" opened by a dropdown indicator is shown only on the design-system website, but the UI kit defines no popover tokens. Its step size — every minute, every five, every fifteen — is not stated. Do not rely on any of it without asking.

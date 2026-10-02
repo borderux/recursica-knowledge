@@ -18,7 +18,7 @@ import {
 } from "./check-uncovered.mjs";
 
 const skill = (checklist, uncovered) =>
-  `## Open questions: ask, do not decide\n\n${uncovered.map((u) => `- **${u}** More.`).join("\n")}\n\n## Pre-flight checklist\n\n${checklist}\n`;
+  `## Open questions\n\n${uncovered.map((u) => `- **${u}** More.`).join("\n")}\n\n## Pre-flight checklist\n\n${checklist}\n`;
 
 test("stem trims plural and -ing endings so related words meet", () => {
   assert.equal(stem("nesting"), stem("nest"));

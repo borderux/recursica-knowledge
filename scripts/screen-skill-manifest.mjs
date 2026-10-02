@@ -3,7 +3,7 @@
  * Which skills apply to a screen — computed, not judged.
  *
  * This is the piece that makes a design review mechanical, and it exists because of a specific
- * gap in the skills family. Every component skill has a `## Skills to read with this one` section pointing
+ * gap in the skills family. Every component skill has a `## Related skills` section pointing
  * upward at the design-rules skills it depends on. No design-rules skill points back down, and
  * the router's decision table names 20 of 20 design-rules skills and **0 of 39 component
  * skills**. So descending the router never yields a component skill name — an agent has to
@@ -234,7 +234,7 @@ function section(text, heading) {
   return next === -1 ? text.slice(from) : text.slice(from, next);
 }
 
-/** The heading that splits `## Skills to read with this one` into what a skill needs and what it only points at. */
+/** The heading that splits `## Related skills` into what a skill needs and what it only points at. */
 export { IF_USED_HEADING };
 
 /**
@@ -288,7 +288,7 @@ export function localGraph(entry, seen = new Set()) {
 /**
  * The skill set for one or more source files.
  *
- * Transitively closes over `## Skills to read with this one`, because a component skill is explicit that it is
+ * Transitively closes over `## Related skills`, because a component skill is explicit that it is
  * incomplete on its own — loading `Table` without the tables design rules reliably produces
  * something individually correct and collectively wrong.
  */
@@ -307,7 +307,7 @@ export function manifest(entries) {
   const ambiguous = resolved.filter((r) => r.kind === "ambiguous")
     .map((r) => `${r.name} (could be ${r.candidates.join(" or ")})`);
 
-  // Breadth-first over `## Skills to read with this one`, so a skill reached only through another still lands.
+  // Breadth-first over `## Related skills`, so a skill reached only through another still lands.
   // An "only if used" link is followed only when the screen imports that component, which in
   // practice means it is already in the set.
   const used = new Set(resolved.flatMap((r) => r.skills));

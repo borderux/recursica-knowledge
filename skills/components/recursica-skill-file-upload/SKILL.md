@@ -35,7 +35,7 @@ A file upload is a bordered area for adding files, with a list below it of the f
 
 **A large upload area inside an otherwise compact form is out of proportion.** If the file is a minor property of the object, use the file input.
 
-## File upload label placements and states
+## Variants
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.file-upload`. **Do not pass a variant, size, or state that is not listed here.**
 
@@ -54,7 +54,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.file-upload`. **Do not
 
 **There is no progress state, no success state, and no error state for each file.** There is no styles axis, no size axis, and no axis for one file versus several. See the open questions.
 
-## Rules for file uploads
+## Rules
 
 **State the accepted file types and the size limit in text, before the user picks.** Both, up front. "PDF or DOCX, up to 25 MB each" in help text under the control. With the limits stated first, the user picks a file that will be accepted. Owned by `recursica-skill-assistive-element`.
 
@@ -107,7 +107,7 @@ The application must provide everything listed below. A drop zone is the single 
 - **The tab order follows the visual order**: the label, the add control, then the list from top to bottom.
 - **Nothing needed may appear only on hover** — not the remove control, not the file name, and not the size limit. A remove button that appears when hovering over a row cannot be reached by keyboard or by touch.
 
-## Styling the file upload sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The component sets them:
 
@@ -116,18 +116,18 @@ Do not set or override any of these. The component sets them:
 - `text` styling and all `colors`.
 - Field colors and sizes from `globals.form.field`, label-field gaps and `vertical-item-gap` from `globals.form.properties`, and the disabled treatment from `globals.states.disabled`.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-label` — the control's name, placement, and the required or optional marker.
 - `recursica-skill-assistive-element` — the help text carrying accepted types and the size limit, and the error message.
 - `recursica-skill-forms` — single-column layout, one label placement per form and the container-width trigger for it, validation timing, save mode, the ban on blocking overlays, and the confirmation test.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel; a drag interaction always needs a second mechanism.
 
-### Only if the screen also uses those components
+### Only if used on the same screen
 
 - `recursica-skill-file-input` — the compact single-line file field, and when it is the right control instead of this one.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **Upload feedback.** The UI kit defines no progress, no success, and no error state for each file. Upload feedback is a real need, and this component cannot show it — do not invent a bar, a spinner, or a checkmark on each row.
 - **A button versus a drop zone, as documented styles.** Both are shown only on the design-system website. The UI kit has a single `border-style` property and no styles axis, so which arrangement it produces, and whether both are available, is not settled — do not rely on this without asking.

@@ -162,7 +162,7 @@ An input mask is a pattern in the field that guides what the user types.
 
 **Alignment must not vary between read-only and editable values on the same screen.** A common mistake is left-aligning read-only values so they sit near their labels, while editable values are right-aligned. On one screen, that looks like two different systems. Right-aligned is the goal for numbers, and being uniform matters more than which alignment wins.
 
-## Open questions: ask, do not decide
+## Open questions
 
 These come up rarely enough that no house rule exists — and rarely enough that asking costs almost nothing. **Ask the person instead of choosing a format.** See the never-guess rule in `recursica-skill-design-router`.
 

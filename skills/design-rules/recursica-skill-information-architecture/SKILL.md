@@ -102,7 +102,7 @@ A section like this is still named with a noun — `Approvals`, never `Approve r
 - **Search, filters and sorting within a list** — `recursica-skill-filters` and `recursica-skill-tables`.
 - **Designing the database.** The object map describes what the user works with. How it is stored is not a UI concern.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **How a parent's related objects appear on its detail page.** No skill decides between tabs, sections and links for this yet.
 - **The order of items within a level** — by how often they are used, alphabetically, or in workflow order. Also an open question in `recursica-skill-navigation`.

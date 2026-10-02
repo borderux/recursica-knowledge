@@ -268,7 +268,7 @@ A frozen column stays in place while the rest of the table scrolls horizontally.
 
 **Never freeze more than three columns.**
 
-## Open questions: ask, do not decide
+## Open questions
 
 No house rule covers these yet. **Ask the person instead of choosing** — see the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule above to fit them.
 

@@ -34,7 +34,7 @@ Each case below needs a different component. Use that component instead of adapt
 
 **Never fake read-only by disabling an input or removing its borders.** Owned by `recursica-skill-forms`.
 
-## Read-only field label placements
+## Variants
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.read-only-field`.
 
@@ -56,7 +56,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **The read-only background comes from `globals.form.field.colors.background-color-read-only`.** Do not choose another style for it.
 
-## Rules for read-only fields
+## Rules
 
 **Always pass a visible label**, and let the component pair it with the value. Name the object clearly, use sentence capitalization, and leave off any colon at the end. The rules in `recursica-skill-label` apply without change.
 
@@ -99,7 +99,7 @@ These rules differ from the rules for every editable field. **A read-only field 
 - **Any edit control is a control**, so it is its own tab stop, activated by Enter or Space, with its own accessible name (the name a screen reader reads out for a control) — and it is visible without hovering. Keyboard and touch users cannot reach an edit icon that appears on hover.
 - **It must not interrupt the tab order** of the fields around it. Placing it between two inputs changes what a user reads, never the order they tab through.
 
-## Styling the read-only field sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The component sets them:
 
@@ -110,7 +110,7 @@ Do not set or override any of these. The component sets them:
 - The label-field gaps and `vertical-item-gap` from `globals.form.properties`.
 - The label-to-value association.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-forms` — label placement, the container-width trigger, one placement per form, the rule that read-only is a distinct component rather than a styled-down input, and the rule that no form control goes inside a card.
 - `recursica-skill-dates-and-currency` — the read-only date format, right alignment, precision, durations, and the format-follows-focus rule, which gives this component the display format.
@@ -119,11 +119,11 @@ Do not set or override any of these. The component sets them:
 - `recursica-skill-tables` — where repeating read-only values belong instead.
 - `recursica-skill-system-conventions` — the accessibility baseline every component follows.
 
-### Only if the screen also uses those components
+### Only if used on the same screen
 
 - `recursica-skill-text-field` — the editable counterpart, and why a disabled field is never used to display a value.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **The editable read-only field.** An "Is editable" behavior, with an edit icon that appears on hover and sends the user to another flow, is shown only on the design-system website, with no token behind it. The UI kit defines no edit control on this component, and `recursica-skill-label` sets aside an `edit-icon-gap` without saying what it triggers. A control that appears only on hover also conflicts with the accessibility rules above. Ask before settling this or relying on it.
 - **Required and optional markers.** Turning on an optional label or a required asterisk on this component is described outside the UI kit — which contradicts the fact that there is no input to require. Do not rely on it without asking.

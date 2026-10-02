@@ -29,7 +29,7 @@ A button performs an action. It does not take the user anywhere.
 
 **Never use a button to navigate.** It is the most common misuse of a button. If using it changes the URL, build it as a link, whatever it should look like. If the link must look light, use the link's text style, not a button.
 
-## Button styles, sizes and states
+## Variants
 
 The UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) defines these for buttons, under `ui-kit.components.button`. **Use only the styles, sizes, and states listed here.**
 
@@ -50,7 +50,7 @@ The UI kit (the token file, `recursica_ui-kit.json`, that says which variants an
 - There is no success state. Show any confirmation of a finished action somewhere other than the button. See `recursica-skill-toast`.
 - There is no full-width or fluid option. Never stretch a button to fill its container.
 
-## Rules for buttons
+## Rules
 
 **Write the label as a verb and its object.** Write "Save page", not "OK", and "Delete invoice", not "Yes". A screen reader reads the label on its own, so it must make sense without the rest of the screen.
 
@@ -102,7 +102,7 @@ The component provides the focus ring and activation by click and keyboard. The 
 - **Keep a running button in the tab order.** A disabled control leaves the tab order, and focus falls back to the top of the page. Show the disabled look without removing the button from the tab order, or move focus to the next thing the user needs.
 - **The animated icon respects a reduced-motion preference** (a setting that asks for less animation).
 
-## Styling the button sets itself
+## Styling set by tokens
 
 The component sets these for every style, size, and content type. Do not set or override them:
 
@@ -112,13 +112,13 @@ The component sets these for every style, size, and content type. Do not set or 
 - All colors, for every style and layer, including hover, active, focus, and disabled.
 - Elevation.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-buttons-links` — button versus link, label copy, hierarchy and placement, confirming destructive actions, undo, toggles, row and bulk actions, and buttons that open a modal.
 - `recursica-skill-forms` — submit and cancel behavior, save mode, and where the footer sits.
 - `recursica-skill-system-conventions` — meaning in more than one signal, and fixing the structure instead of shrinking things to fit.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **When to use `small`.** No rule says which surfaces use it.
 - **Full-width buttons.** No axis supports them, and no rule says whether they are ever allowed, or where.

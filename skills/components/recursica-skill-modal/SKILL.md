@@ -30,7 +30,7 @@ A modal blocks the page to get one decision or one short task done, then closes.
 
 **Routine confirmation is the misuse to watch for.** Asking "Are you sure?" about an action that can be undone trains the user to dismiss confirmations without reading. The user then dismisses the one confirmation that guards a dangerous action.
 
-## Modal parts
+## Variants
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.modal`. **The modal has no variant axes (the properties a component varies on, such as size and style; Figma calls them variant properties) at all** — no sizes, no types, no severity variants. Everything is a fixed property.
 
@@ -42,7 +42,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Structure shown only on the design-system website:** a title, a content slot, a divider, and a footer.
 
-## Rules for modals
+## Rules
 
 **A button opens a modal; the user does not navigate to it, and it creates no browser history entry.** The one exception is a modal deliberately built to be linked to, with a URL that can be shared. That one gets a route and a link trigger together, on purpose, because it is a location. Owned by `recursica-skill-navigation`.
 
@@ -85,7 +85,7 @@ A modal is the component where accessibility failures are most serious. Get the 
 - **The page behind must not scroll**, and no element behind it may take focus.
 - **Never make closing it pointer-only.** A click on the overlay may close it, but Escape and the cancel action must both work.
 
-## Styling the modal sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The component sets them:
 
@@ -96,7 +96,7 @@ Do not set or override any of these. The component sets them:
 - `button-gap` in the footer.
 - `header-style` and `content-style` type treatment.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-panels-modals` — the owning design-rules skill: modal vs. panel vs. page, why mode is the only real difference, the prohibition on stacking, and unsaved-change protection.
 - `recursica-skill-buttons-links` — modal triggers, destructive-action confirmation, undo, footer button hierarchy.
@@ -104,11 +104,11 @@ Do not set or override any of these. The component sets them:
 - `recursica-skill-forms` — save mode and validation for any form the modal contains.
 - `recursica-skill-system-conventions` — the accessibility baseline every component follows.
 
-### Only if the screen also uses those components
+### Only if used on the same screen
 
 - `recursica-skill-card` — why the modal's content is not wrapped in a card.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **Whether clicking the overlay closes the modal.** Not stated either way.
 - **A loading state inside a modal**, while an action is in flight. There is no such state on the component.

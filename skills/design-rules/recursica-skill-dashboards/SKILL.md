@@ -137,7 +137,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **Adapt; do not force one dashboard to stretch from phone to desktop.** Someone checking in on a phone is doing something different from someone working at a desk all day. Understand how the dashboard is used in each setting, decide what to remove, and treat the compact view as its own design.
 
-## Open questions: ask, do not decide
+## Open questions
 
 No house rule covers these yet. **Ask the person instead of choosing** — see the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule above to fit them.
 

@@ -162,7 +162,7 @@ There are two good signs. A narrow layout with neither was not designed:
 - **Designing native applications.** Recursica is aimed at web applications.
 - **The layout grid**, and how columns behave across tiers. Still has no owner.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **An icon rail on tablet specifically.** It was suggested as a middle option and pushed back on. The ban on icon-only navigation stands, so there is no approved tablet rail.
 - **How the layout grid behaves across tiers**, and how many columns there are at tablet and small-device sizes.

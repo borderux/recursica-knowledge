@@ -30,7 +30,7 @@ An autocomplete is a text field whose value comes from a defined set. The user t
 
 **Do not use a disabled autocomplete to show a value.** If nobody can ever change it here, it is not a form control.
 
-## Autocomplete label placements and states
+## Variants
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.autocomplete`. **Do not pass a variant, size, or state that is not listed here.**
 
@@ -66,7 +66,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 Those states are not kit axes and must not be passed as variants — `Focused` and `Valued` are conditions the component works out for itself. They do show the component's parts: a **leading icon**, and a clear control that appears once there is text in the field. Suggestions are described as an optional extra, not the default.
 
-## Rules for autocompletes
+## Rules
 
 **The set, not the field, decides whether this is the right control.** A large set the user recognizes items from belongs in a dropdown; a large set the user recalls items from belongs here. Length alone does not decide it — see `recursica-skill-working-memory` on recognition versus recall.
 
@@ -136,7 +136,7 @@ The component connects the label to the input, provides the focus ring, and owns
 - **Do not move focus for the user after a selection.** No jumping ahead to the next field because a value now exists, and no focus jump when the filter narrows down to exactly one result.
 - **Everything reachable by mouse must be reachable by key.** Nothing about filtering, moving through results, or choosing may depend on a pointer, and nothing needed may appear only on hover.
 
-## Styling the autocomplete sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The component sets them:
 
@@ -150,7 +150,7 @@ Do not set or override any of these. The component sets them:
 
 Never style an unfocused field so that it looks disabled. An editable field must look editable at rest.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-selection-controls` — which control a field gets, option counts, the dropdown affordance test, pre-selection, disabled vs. read-only, and commit timing.
 - `recursica-skill-forms` — single-column layout, label placement, its container-width trigger, and one placement per form, required vs. optional marking, validation timing, pre-fill limits, and save mode.
@@ -160,12 +160,12 @@ Never style an unfocused field so that it looks disabled. An editable field must
 - `recursica-skill-system-conventions` — never carry meaning in a single channel.
 - `recursica-skill-live-regions` — announcing the result count as the list filters, and when the application must cover it.
 
-### Only if the screen also uses those components
+### Only if used on the same screen
 
 - `recursica-skill-dropdown` — the control this one replaces, its four-option floor, and the affordance test.
 - `recursica-skill-text-field` — the control for free-form values, and the placeholder rules this field shares.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **When an autocomplete replaces a dropdown.** `recursica-skill-selection-controls` records this as an open question; the dropdown's own guidance only says to consider a typeahead where the list is long and the user knows the values. No count or threshold exists. Ask.
 - **Whether free text that is not in the set may be submitted**, and whether the user may create a new option from what they typed.

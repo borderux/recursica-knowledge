@@ -36,7 +36,7 @@ Each case below has its own component. Use that component instead of adapting a 
 
 **Do not use a disabled textarea to show text.** Text that nobody can ever edit here is not a form control.
 
-## Textarea label placements and states
+## Variants
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.textarea`. **Pass only the variants and states listed here.** Other design systems have sizes, resize modes, warning states, and built-in counters that this component does not.
 
@@ -63,7 +63,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no read-only state.** Read-only is a separate component — `read-only-field`, with the same `layouts` axis and no input.
 
-## Rules for textareas
+## Rules
 
 **Always pass a visible label.** Name the object clearly; a screen reader user hears the label on its own, without the context around it. Use sentence capitalization, with no colon at the end.
 
@@ -117,7 +117,7 @@ The component connects the label to the input and provides the focus ring. The a
 - **Never make resizing necessary to read or finish the value.** A drag handle cannot be used from the keyboard, so the field must be usable at the size it is given.
 - **Nothing needed to complete the field may appear only on hover** — not the limit, and not the rule.
 
-## Styling the textarea sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The component sets them:
 
@@ -131,19 +131,19 @@ Do not set or override any of these. The component sets them:
 
 Never style an unfocused textarea to look disabled. An editable field must look editable at rest.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-forms` — label placement and one placement per form, single-column layout, the no-custom-spacing rule, validation timing, microcopy, save mode, and the rule that no form control goes inside a card.
 - `recursica-skill-label` — the label component, its placement axis, and required vs. optional marking.
 - `recursica-skill-assistive-element` — the help and error text below the field, and why the error replaces the help.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel.
 
-### Only if the screen also uses those components
+### Only if used on the same screen
 
 - `recursica-skill-text-field` — the control for single-line entry, and the overflow rule that sends a long value here.
 - `recursica-skill-read-only-field` — the component for text the user never edits here.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **Growing to fit the content.** The UI kit fixes `rows`, and **a vertical-resize axis with `auto` and `custom` is shown only on the design-system website, with no token behind it. These disagree.** Whether the field grows with its content, and whether there is a handle the user can drag, must be settled by a person. Do not rely on a resize axis without asking.
 - **What a fixed `rows` does with a longer value.** A "default fixed height before content truncation" is described outside the UI kit. Whether the extra text scrolls or is cut off is not stated — and cutting off a user's own entry would be a serious problem. Do not rely on either behavior without asking.

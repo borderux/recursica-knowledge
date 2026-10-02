@@ -30,7 +30,7 @@ A link takes the user somewhere. It never changes data.
 
 **A link that changes state is the misuse to watch for.** Save, Delete, Close, and Apply are buttons, even when a link would look better.
 
-## Link states
+## Variants
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.link`.
 
@@ -44,7 +44,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Behavior shown only on the design-system website:** a link that navigates within the product, and an external link, which is marked as leaving the product.
 
-## Rules for links
+## Rules
 
 **Always render a real `href`.** Not a click handler on text. A real `href` is what gives the user right-click, middle-click, opening in a new tab, copying the link address, and the browser's own preview of where the link goes — and it is what makes the link announce itself as a link.
 
@@ -84,7 +84,7 @@ The component owns the underline, the color, and the focus ring. The application
 - **Focus must be visible on the link itself**, not only implied by the underline. Never hide the focus ring.
 - **After navigating, focus belongs at the start of the new content**, not left behind on the old page.
 
-## Styling the link sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The component sets them:
 
@@ -93,13 +93,13 @@ Do not set or override any of these. The component sets them:
 - `icon-size` and `icon-text-gap`.
 - The focus ring.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-buttons-links` — link vs. button semantics, label copy, table row usage, new-tab behavior, modal triggers.
 - `recursica-skill-navigation` — routing, browser history, permissions, and where links belong in the app shell.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **Which icon marks an external link**, and whether it is required or optional. `recursica-skill-icon-semantics` owns what icons mean, but names no symbol for this one.
 - **Download links** — whether the file type and size are shown, and where.

@@ -33,7 +33,7 @@ A panel puts extra content beside the page, without blocking it.
 
 **Do not hide critical content in a panel.** A panel saves space on the page, but its content stays out of sight until someone opens it. That suits a set of filters, and does not suit anything a user must act on to finish their work.
 
-## Panel parts
+## Variants
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.panel`. **The panel has no variant axes (the properties a component varies on, such as size and style; Figma calls them variant properties) at all** — no sizes, no sides, no widths, no types. Every entry below is a fixed property.
 
@@ -47,7 +47,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **In structure, the panel is the modal without the blocking.** It has the same header, content, footer, and close control as the modal. The only difference is that the page behind a panel stays usable. That difference changes the accessibility work described below.
 
-## Rules for panels
+## Rules
 
 **A button opens a panel; the user does not navigate to it, and it creates no browser history entry.** `recursica-skill-navigation` says this for modals and panels together: a surface opened by a trigger is not a location. The one exception is a panel deliberately built to be linked to: it gets a route and a link trigger together, exactly as a modal may.
 
@@ -131,7 +131,7 @@ This component also follows the accessibility baseline in `recursica-skill-syste
 - **The tab order inside the panel follows the visual order** — the content, then the footer buttons, then the close control where it sits visually — and must not jump between the panel and the page unpredictably.
 - **Never make closing it pointer-only.** Escape and the close control both work, whatever a click outside does.
 
-## Styling the panel sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The component sets them:
 
@@ -143,7 +143,7 @@ Do not set or override any of these. The component sets them:
 - `border-size`, `border-radius`, `divider-size`.
 - `min-width`, `max-width`, `elevation`.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-panels-modals` — the owning design-rules skill: panel vs. modal vs. page, the context test, the scrolling threshold, the prohibition on stacking modes, forms in a panel, unsaved-change protection, and the focus-trapping difference.
 - `recursica-skill-navigation` — a location is a route; a trigger-invoked panel is not one and gets no history entry.
@@ -151,13 +151,13 @@ Do not set or override any of these. The component sets them:
 - `recursica-skill-buttons-links` — the trigger is a button, one primary action per surface, footer placement.
 - `recursica-skill-system-conventions` — the accessibility baseline every component follows.
 
-### Only if the screen also uses those components
+### Only if used on the same screen
 
 - `recursica-skill-modal` — the blocking alternative, and the focus-trap and inert-background rules a modal panel inherits.
 - `recursica-skill-card` — why the panel's content is not wrapped in a card, and why no form goes in one.
 - `recursica-skill-toast` — transient confirmation and undo, which never belong in a panel.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **Opening transition.** The side is set, and how the panel is anchored is settled. Whether it slides in or expands when it opens is not settled.
 - **Panel width.** `min-width` and `max-width` are fixed, and there is no size axis, so a "wide panel" cannot be built. Stacked panels may still differ in width from each other, and nothing says whether a left panel and a right panel share a width.

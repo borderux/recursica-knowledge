@@ -15,7 +15,7 @@
  *   every skill but meta  at least one request in scripts/fixtures/routing-requests.json
  *   design-rules          named in the design router, which is how a builder finds it
  *   design-rules          reachable by the reviewers: in the manifest's ALWAYS, in a ROUTES entry,
- *                         or in some component skill's `## Skills to read with this one` (not
+ *                         or in some component skill's `## Related skills` (not
  *                         under "only if the screen also uses those components", which the
  *                         manifest follows for components the screen imports and never for a
  *                         design-rules skill)
@@ -99,7 +99,7 @@ const WHAT = {
     "has no request in scripts/fixtures/routing-requests.json, so nothing tests that agents find it by its description",
   router: "is not named in the design router, so a builder is never sent to it",
   reviewers:
-    'is reachable from no screen — add it to ALWAYS or ROUTES in scripts/screen-skill-manifest.mjs, or to a component skill\'s `## Skills to read with this one` above the "only if" heading — so Barb and Kev never apply it',
+    'is reachable from no screen — add it to ALWAYS or ROUTES in scripts/screen-skill-manifest.mjs, or to a component skill\'s `## Related skills` above the "only if" heading — so Barb and Kev never apply it',
   cited:
     "is cited by no design-rules skill and not by the router, so no agent is ever sent to it",
 };

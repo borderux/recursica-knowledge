@@ -188,7 +188,7 @@ A panel exists to sit beside the page it depends on. Below the width where both 
 - **Small attached surfaces — tooltips, hover cards, popovers.** Those are not modes, and they are not covered here.
 - **Whether the backend saves everything at once.** Not a UI concern — see `recursica-skill-feedback-messaging`.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **What "more than the panel holds on a normal-resolution screen" is in numbers.** It was deliberately stated as a judgment about the scrolling it causes, rather than as a pixel limit.
 - **What a top or bottom panel looks like.** It is allowed but not designed, which is why it needs approval rather than a rule.

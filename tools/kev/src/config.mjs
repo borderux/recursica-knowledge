@@ -49,7 +49,7 @@ export const config = {
   // it here, that skill's brief falls back to its first skillChars characters and the baseline,
   // near its end, is cut off.
   // A component skill's inventory and rules headings name the component, so they are found by
-  // shape: INVENTORY is the section right before "Rules for …" (see skill.mjs).
+  // INVENTORY is the section headed "Variants" (see skill.mjs).
   skillSections: [INVENTORY, /^Rules for .+/, "Rules", "Accessibility", "Accessibility baseline for every component"],
   skillChars: num("KEV_SKILL_CHARS", 6000),
   // Skip chunks with no markup in the per-chunk pass. The whole-screen pass still sees them.

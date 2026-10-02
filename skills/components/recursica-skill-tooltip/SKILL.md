@@ -32,7 +32,7 @@ A tooltip is a short text label for a control that has no visible one.
 
 **A tooltip only adds to what the page shows.** Nothing inside it may be the only copy of a piece of information, because a touch device has no hover and the user may never see the tooltip.
 
-## Tooltip parts
+## Variants
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.tooltip`. **The tooltip has no variant axes (the properties a component varies on, such as size and style; Figma calls them variant properties) at all** — no placement axis, no size axis, no content-type axis. Every listed item is a fixed property.
 
@@ -51,7 +51,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 Neither may hold anything the user needs to complete a task, and neither may be the only place a piece of information exists.
 
-## Rules for tooltips
+## Rules
 
 **Write one short phrase that names the control.** Use "Delete invoice", not a sentence. A tooltip is a label, not instructions.
 
@@ -95,7 +95,7 @@ A tooltip is the component most often used in place of a missing accessible name
 - **The trigger must be able to take focus.** A tooltip attached to something no one can focus can never appear for a keyboard user.
 - **Nothing the user needs may appear only on hover** — which, for this component, means nothing the user needs may be in it at all.
 
-## Styling the tooltip sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The component sets them:
 
@@ -106,17 +106,17 @@ Do not set or override any of these. The component sets them:
 
 The beak is part of the component. Do not draw a separate beak, and do not reposition the component's beak.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-buttons-links` — which controls must have a tooltip, which may, and the rule that a tooltip never rescues a weak label.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel; fix the structure rather than cutting text off and adding a tooltip.
 
-### Only if the screen also uses those components
+### Only if used on the same screen
 
 - `recursica-skill-hover-card-popover` — the sibling component for richer or interactive content, and the hover-only failure mode it must avoid.
 - `recursica-skill-text-field` — visible labels, assistive text, and error text, all of which are persistent and none of which is a tooltip.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **Placement.** A position axis of top, left, right, and bottom, a beak-alignment axis of start, middle, and end, and a `position` setting are all shown only on the design-system website. The UI kit defines no placement axis at all — only `beak-size` and `beak-inset` as fixed properties. Do not rely on this without asking.
 - **Custom content.** Content types of "text" and "custom" are shown only on the design-system website. The UI kit has only `text`. Do not rely on this without asking.

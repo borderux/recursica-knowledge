@@ -159,7 +159,7 @@ Example: a set of ways to travel, where checking "Car" reveals a group of car de
 
 **Resetting belongs to the whole form, not to one control.** Where a reset is called for, use a button labeled with a verb and its object — "Reset form", "Clear form" — that calls the native HTML reset. No control has its own restore behavior.
 
-## Open questions: ask, do not decide
+## Open questions
 
 No house rule covers these yet. **Ask the person instead of choosing** — see the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule above to fit them.
 

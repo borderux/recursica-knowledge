@@ -226,7 +226,7 @@ A CAPTCHA is a test that checks the user is a person and not a program.
 - Acceptable: checks that are fully invisible and automatic; a single checkbox that runs a test in the background.
 - **NEVER use challenge CAPTCHAs** that make the user pick images, solve puzzles, or make other human judgments. People fail them regularly, which is infuriating, and the small gain in security does not justify it.
 
-## Open questions: ask, do not decide
+## Open questions
 
 No house rule covers these yet. **Ask the person instead of choosing** — see the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule above to fit them.
 

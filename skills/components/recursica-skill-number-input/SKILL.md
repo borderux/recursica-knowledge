@@ -34,7 +34,7 @@ Each case below has its own component. Use that component instead of adapting a 
 
 **Do not use a disabled number input to show a value.** If nobody can ever edit the value here, it does not belong in a form control.
 
-## Number input label placements and states
+## Variants
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.number-input`. **Pass only the variants and states listed here** — other design systems have sizes, warning and success states, and content variants that this component does not.
 
@@ -57,7 +57,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no read-only state.** Read-only is a separate component — `read-only-field`, with the same `layouts` axis and no input.
 
-## Rules for number inputs
+## Rules
 
 **Always pass a visible label.** Name the object — and, where the unit is not obvious from the object, name the unit too: "Weight (kg)", not "Weight". A screen reader user hears the label on its own.
 
@@ -112,7 +112,7 @@ The component connects the label to the input, and provides the focus ring. The 
 - **Never let a scroll wheel or a stray arrow key change a saved value** while the field has focus but the user is only reading, and never trap arrow keys that the user needs to move the caret.
 - **Nothing needed to complete the field may appear only on hover** — not the limits, not the unit, and not an adjustment control.
 
-## Styling the number input sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The component sets them:
 
@@ -126,7 +126,7 @@ Do not set or override any of these. The component sets them:
 
 Never style an unfocused number input to look disabled. An editable field must look editable at rest.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-dates-and-currency` — right alignment, two-decimal currency, precision consistency, the symbol in the column header, accounting parentheses, ranges, rounding, and abbreviation.
 - `recursica-skill-forms` — label placement and one placement per form, validation timing, pre-fill and defaults, save mode, and the rule that no form control goes inside a card.
@@ -134,12 +134,12 @@ Never style an unfocused number input to look disabled. An editable field must l
 - `recursica-skill-assistive-element` — the help and error text below the field, and why the error replaces the help.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel.
 
-### Only if the screen also uses those components
+### Only if used on the same screen
 
 - `recursica-skill-slider` — the control for an approximate value across a range.
 - `recursica-skill-text-field` — the control for digit strings that are not quantities.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **Increase and decrease controls are shown only on the design-system website, with no token behind them.** The UI kit defines no stepper tokens at all — no increase button, no decrease button, no step. Increment controls must not be built out of buttons placed beside the field, and nothing in this system promises a stepper. Whether this component ever gets one, and what its step would be, must be settled by a person. Do not rely on this without asking.
 - **A `collapsed` and an `expanded` state are shown only on the design-system website.** Neither is an axis in the UI kit. They seem to describe whether a stepper is visible. Do not build either one, and do not rely on them without asking.

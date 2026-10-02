@@ -146,7 +146,7 @@ The components handle both cases — hover and focus states are built in — but
 
 **Swap the badge to its new value.** No transition, no animation. Animating a small status badge is excessive: nobody is watching it that closely, and a user who caused the change already expects it.
 
-## Open questions: ask, do not decide
+## Open questions
 
 No house rule covers these yet. **Ask the person instead of choosing** — see the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule above to fit them.
 

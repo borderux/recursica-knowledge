@@ -213,7 +213,7 @@ W_max = 44 × 12.48                 = 555px
 - **Each component's accessible name, focus order, and keyboard behavior.** Each component skill has its own.
 - **Formatting numbers, dates, and currency** — `recursica-skill-dates-and-currency`.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **The `c_font` value for a specific typeface.** The classes above cover the common cases. A typeface with unusual proportions needs its own ratio measured, not estimated.
 - **Text wrapping and truncation.** Openly set aside in the session. Truncation inside a table cell is covered by `recursica-skill-tables`; everywhere else is open.

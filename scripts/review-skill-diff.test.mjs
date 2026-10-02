@@ -78,7 +78,7 @@ test("renaming a component skill's headings keeps each section's rule words in t
   const before =
     "## Do not use it when\n\nNever.\n\n## What exists\n\nOnly these.\n\n## Rules for using it\n\nIt must be set.\n\n## Uncovered — ask, do not invent\n\n- Never decided.";
   const after =
-    "## When not to use a widget\n\nNever.\n\n## Widget parts\n\nOnly these.\n\n## Rules for widgets\n\nIt must be set.\n\n## Open questions: ask, do not decide\n\n- Never decided.";
+    "## When not to use a widget\n\nNever.\n\n## Variants\n\nOnly these.\n\n## Rules\n\nIt must be set.\n\n## Open questions\n\n- Never decided.";
   const found = messages(before, after);
   assert.equal(found.length, 1, found.join("\n"));
   assert.match(found[0], /^warn: headings changed/);

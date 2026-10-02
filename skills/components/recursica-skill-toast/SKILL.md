@@ -35,7 +35,7 @@ A toast reports what just happened, without interrupting the work.
 
 **A toast is the wrong place for anything that must not be missed.** It appears away from where the user is looking, and closes on its own. A critical alert that needs action right away is not a toast. No component in this system holds a critical alert yet. The banner the tense rule calls for is planned, but not in the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has). Do not use a toast for a critical alert, do not build a custom alert that stays on screen, and do not point the reader to a component that does not exist. Raise it with the user — see the open questions.
 
-## Toast styles
+## Variants
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.toast`. **Do not pass a style that is not listed here.**
 
@@ -55,7 +55,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.toast`. **Do not pass 
 
 **The three styles differ only by color and icon.** The style only backs up what the text says. It never carries the message on its own.
 
-## Rules for toasts
+## Rules
 
 **The text carries the meaning; the style only backs it up.** An error toast that reads "Something went wrong" in red tells a screen reader user nothing, and tells anyone nothing in black and white. Name what happened: "Could not save — the invoice was changed by someone else." Required by `recursica-skill-system-conventions`.
 
@@ -113,7 +113,7 @@ This component also follows the accessibility baseline in `recursica-skill-syste
 - **A toast must never cover a control the user needs**, and must not sit over the focused element or the focus ring.
 - **Nothing the user needs may appear only on hover** — not the action, not the close control, and not the full text.
 
-## Styling the toast sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The component sets them for every style:
 
@@ -123,7 +123,7 @@ Do not set or override any of these. The component sets them for every style:
 - `icon` — which icon each style carries, and its size.
 - `text` type treatment, and all colors per style.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-feedback-messaging` — the owning design-rules skill: whether success needs confirming at all, banner versus toast by tense, why inline messaging is avoided, consolidation, the waiting thresholds, and what the library owns.
 - `recursica-skill-buttons-links` — undo policy, when a reversible action is performed rather than confirmed, in-place undo versus global undo, and action label copy.
@@ -131,11 +131,11 @@ Do not set or override any of these. The component sets them for every style:
 - `recursica-skill-system-conventions` — never carry meaning in a single channel, which is why the style is never the message.
 - `recursica-skill-live-regions` — what the application must announce around a toast, and changes the user did not cause.
 
-### Only if the screen also uses those components
+### Only if used on the same screen
 
 - `recursica-skill-modal` — the blocking alternative for a decision that cannot wait, and the narrow case for confirming up front.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **Duration values.** The house position is settled — see the rule above — but no token records what any given library's default is. A duration cannot be checked from this repository.
 - **How a toast's action button is styled.** One action is allowed — see the rules above — but the UI kit defines no token for it, only `icon` and `text`. Ask before styling it.

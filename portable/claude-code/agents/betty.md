@@ -51,7 +51,7 @@ resolve uncertainty by choosing silently.* Everything below assumes it has been 
 **Load the family, not a single file.** A component skill says what a component is. A
 design-rules skill says whether it belongs on the screen. Working from the first alone is the
 most common cause of something individually correct and collectively wrong. When a
-component skill lists `## Skills to read with this one`, load every skill in that list.
+component skill lists `## Related skills`, load every skill in that list.
 
 Run this to compute which skills apply to real files, rather than guessing:
 

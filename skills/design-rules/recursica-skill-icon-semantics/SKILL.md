@@ -127,7 +127,7 @@ How icons line up in a cell, and which columns exist at all, are owned by `recur
 - **Whether a badge may carry an icon** — `recursica-skill-badges-chips`, where it is listed as an open question.
 - **Motion.** Whether an icon may animate has no owner anywhere in the family.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **The specific glyph for anything not in the fixed-meanings table.** Only close, delete, chip dismiss, menu, more, and edit were named. Everything else is a choice to raise, not to make.
 - **Whether a system may ever have more than one icon set.** It was stated as "typically" one, with no example given of when two would be right.

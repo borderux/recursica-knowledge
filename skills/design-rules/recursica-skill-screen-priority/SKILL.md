@@ -193,7 +193,7 @@ Treating the two as one leaves the user unable to tell whether to change their f
 - **Table columns, sorting, and pinning** — `recursica-skill-tables`.
 - **Working-memory limits on how many options to show** — `recursica-skill-working-memory`. Those govern controls, not how much information a screen may show.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **How to judge "done" versus "overloaded" in terms of cognitive load**. Named as not covered. The workflow-support test above is what exists.
 - **Where the inverted triangle stops applying.** This was asked directly and passed over; no limit was given.

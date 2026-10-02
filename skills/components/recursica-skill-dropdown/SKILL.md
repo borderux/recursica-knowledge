@@ -34,7 +34,7 @@ A dropdown is a form field that hides its options until it is opened, and return
 
 **Never use a disabled dropdown to show a value.** If nobody can ever change it here, it is not a form control.
 
-## Dropdown label placements and states
+## Variants
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.dropdown`. **Do not pass a variant, size, or state that is not listed here.**
 
@@ -61,7 +61,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Read-only is a separate component** — `read-only-field`, which shows text instead of an input.
 
-## Rules for dropdowns
+## Rules
 
 **Run the affordance test before choosing this control: does the user know what is in there before they click it?** A dropdown hides its options, so there is no affordance (a visible cue that a control can be used, such as the underline on a link) for what is inside. The set has to be predictable.
 
@@ -126,7 +126,7 @@ The component connects the label to the field, provides the focus ring, and owns
 - **Do not move focus for the user after a selection.** No jumping ahead to the next field because a value now exists.
 - **Everything reachable by mouse must be reachable by key.** Nothing about opening, moving through, or choosing may depend on a pointer, and nothing needed may appear only on hover.
 
-## Styling the dropdown sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The component sets them:
 
@@ -140,7 +140,7 @@ Do not set or override any of these. The component sets them:
 
 Never style an unfocused dropdown so that it looks disabled. An editable field must look editable at rest.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-selection-controls` — when a dropdown replaces a visible group, the affordance test, option counts, pre-selection, disabled vs. read-only, and commit timing.
 - `recursica-skill-forms` — single-column layout, label placement, its container-width trigger, and one placement per form, required vs. optional marking, validation timing, pre-fill limits, save mode, and the rule that no form control goes inside a card.
@@ -149,11 +149,11 @@ Never style an unfocused dropdown so that it looks disabled. An editable field m
 - `recursica-skill-working-memory` — the 7 ± 2 basis and the recognition-versus-comparison boundary that decides when a long list is acceptable.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel; fix the structure rather than adding a mechanism to cope with it.
 
-### Only if the screen also uses those components
+### Only if used on the same screen
 
 - `recursica-skill-autocomplete` — the typeahead control for sets too large to scan.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **The multi-select dropdown does not exist, and this is now confirmed in the shipped adapter as well as in the UI kit** — the dropdown maps to a single-value select, with no multi-select variant. `recursica-skill-selection-controls` requires one in two places. It is a gap in the component inventory, not an invitation to build one out of other parts: do not put a checkbox group inside a dropdown, and do not substitute a transfer list without asking. Where several values must be filtered, a build test used separate single-value filters that AND together (a row appears only if it matches all of them) successfully as the workaround. Ask.
 - **The open menu itself.** Option rows, their height, hover and active styling, group headers, dividers, icons or descriptions inside an option, and the maximum height of the menu before it scrolls are all outside the component's UI kit.

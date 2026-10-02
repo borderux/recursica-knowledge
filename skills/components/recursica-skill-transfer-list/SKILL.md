@@ -37,7 +37,7 @@ A transfer list is two lists side by side, with controls that move items between
 
 **A transfer list fixes a structural problem: a set too large for a checkbox group. It is not for a small set.** `recursica-skill-selection-controls` says that needing select-all across twenty checkboxes means the control is wrong — this is the control that replaces it. The reverse is also true: using a transfer list where nine checkboxes would do is the same mistake in the other direction.
 
-## Transfer list label placements and states
+## Variants
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.transfer-list`. **Pass only a variant, size, or state listed here.**
 
@@ -60,7 +60,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.transfer-list`. **Pass
 
 **There is no size axis, no focus state, and no loading or empty state.** There is no move-all axis — and none is wanted; see the rule below. There are no tokens for single items; see the open questions.
 
-## Rules for transfer lists
+## Rules
 
 **Both lists need a name that says which side is which.** "Available" and "Selected", "Excluded" and "Included" — whatever the product calls them. Without names, the user cannot tell which column holds the chosen items.
 
@@ -108,7 +108,7 @@ Two lists with arrow buttons are often shipped so that they work only with a mou
 - **Do not move focus for the user**, other than placing it on purpose after a move. Typing in the filter must not move focus into the list.
 - **Nothing the user needs may appear only on hover** — not the move controls, not a remove control on each item, and not the counts.
 
-## Styling the transfer list sets itself
+## Styling set by tokens
 
 Do not set or override any of these. The component sets them:
 
@@ -117,7 +117,7 @@ Do not set or override any of these. The component sets them:
 - `header-style` and all `colors`.
 - Field colors and sizes from `globals.form.field`, label-field gaps and `vertical-item-gap` from `globals.form.properties`, and the disabled treatment from `globals.states.disabled`.
 
-## Skills to read with this one
+## Related skills
 
 - `recursica-skill-selection-controls` — the control-choice ladder, the option ceiling, select-all as a signal that the structure is wrong, disabled versus read-only, and the commit model.
 - `recursica-skill-working-memory` — the 7 ± 2 basis, and why a recognition list may be long while a comparison set may not.
@@ -126,7 +126,7 @@ Do not set or override any of these. The component sets them:
 - `recursica-skill-assistive-element` — the selection rules and the error message.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel; fix the structure rather than adding a mechanism to cope with it.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **Where this control fits among the selection controls.** `recursica-skill-selection-controls` sends zero-to-many sets above the limit to a multi-select dropdown, and never mentions a transfer list. The set size at which a transfer list replaces the multi-select dropdown is not stated.
 - **Checkboxes on each item.** A checkbox on every item is shown only on the design-system website, but the UI kit defines no item or checkbox properties on this component. Whether items are checkbox rows or a selectable listbox is not settled — ask before relying on it.

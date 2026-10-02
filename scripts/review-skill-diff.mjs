@@ -111,9 +111,8 @@ const labelOf = (role) =>
  * `## ` sections of a skill's prose, keyed by heading. The text before the first is "(intro)".
  *
  * A component skill's section is keyed by its role, not its words, so "## Rules for using it"
- * and "## Rules for buttons" are the same section. Keyed by words, renaming the headings made
- * every rule word in every component skill look as if it had left its section. The inventory has
- * no fixed heading, so it is the section right before "Rules for …".
+ * and "## Rules" are the same section. Keyed by words, renaming the headings made every rule word
+ * in every component skill look as if it had left its section.
  */
 function sections(text) {
   const parts = prose(text)

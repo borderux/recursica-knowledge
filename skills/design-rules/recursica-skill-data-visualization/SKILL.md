@@ -186,7 +186,7 @@ Encoding is how the data is turned into visual marks — position, length, color
 
 **The story must be the same at every size.** A larger display may carry a richer set of data, and where information is left out at a smaller size, say so clearly.
 
-## Open questions: ask, do not decide
+## Open questions
 
 - **Which charting library, if any, becomes the house standard.** The selection criteria above are settled, and so is the process — check for a declared library, and prompt for one if there is none. But no library has been chosen, so every project currently answers this on its own.
 - **How a chosen library's theming is connected to Recursica tokens.** The requirement is clear; the method is not, and no adapter exists for it.
