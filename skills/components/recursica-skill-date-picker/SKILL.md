@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-date-picker
-description: How to use the Recursica date picker — when a calendar helps and when typing is better, states and label placement, the readable date format, time zones, and calendar popover accessibility. Use for date fields and calendars. Not for a time of day — see recursica-skill-time-picker; formatting rules live in recursica-skill-dates-and-currency.
+description: Rules for the Recursica date picker — when a calendar helps and when typing is better, states and label placement, the readable date format, time zones, and calendar popover accessibility. Use for date fields and calendars. Not for a time of day — see recursica-skill-time-picker; formatting rules live in recursica-skill-dates-and-currency.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -14,13 +14,13 @@ A date picker records a single calendar date, either by typing it or by picking 
 > **Built in the Mantine adapter only.** The MUI adapter's `DatePicker.module.css` is a
 > declared placeholder file with no CSS in it. It applies none of the 34 `date-picker` variables
 > the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) exports, while the Mantine adapter applies 31. On MUI, this component shows up unstyled,
-> with no error. Everything below is correct about the UI kit — but check which adapter you are on
-> before relying on how it looks.
+> with no error. Everything below is correct about the UI kit — but confirm which adapter the application
+> uses before relying on how it looks.
 
 ## Use it when
 
 - **The value is one calendar date** — a due date, a start date, an effective date.
-- **Picking from a calendar helps** — the user is thinking about weekdays, how close dates are, or the shape of a month, rather than recalling a date they already know.
+- **Picking from a calendar helps** — the user is thinking about weekdays, how close dates are, or where a date falls in its month, rather than recalling a date they already know.
 - **The date is close to today**, so the calendar reaches it in a step or two.
 
 ## Do not use it when
@@ -38,22 +38,22 @@ Each of these has a different component. Switch to it, instead of adapting a dat
 
 **A complex or partial date is not this control.** A month and year, a quarter, a fiscal period, or a date the user builds from parts needs separate inputs with the format stated — not a calendar.
 
-**A disabled date picker is not a way to show a date.** If nobody can ever edit it here, it is not a form control.
+**Never use a disabled date picker to show a date.** If nobody can ever edit it here, it is not a form control.
 
 ## What exists
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.date-picker`. **Do not pass a variant or state that is not listed here** — other design systems have sizes, range variants, warning states, and inline calendars that this component does not.
 
-**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop, and React ignores it without an error if it is passed as one. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis      | Options                   | React prop   |
 | --------- | ------------------------- | ------------ |
 | `layouts` | `stacked`, `side-by-side` | `formLayout` |
 | `states`  | `error`, `disabled`       |              |
 
-**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's (the visible area of the browser window). See `recursica-skill-forms`.
+**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
-**`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Leave it out, and you get the fallback in a container of any width — the rule turned upside down. `layouts` is the name of the token axis, not a prop: `layouts="side-by-side"` is quietly ignored by React and leaves the control stacked, with no error. Pass `formLayout="side-by-side"` explicitly.
+**`formLayout` defaults to `stacked`, which puts the label above the input.** A field without the prop shows its label above the input at any container width, which breaks the house rule. `layouts` is the UI kit's name for this variant, not a prop: React ignores `layouts="side-by-side"` without an error and leaves the label above the input. Set `formLayout="side-by-side"` to put the label beside the input.
 
 **Focus and placeholder are not variants.** The component handles them: `placeholder-opacity` here, and the focused border through `globals.form.field.colors.border-selected`. Do not build them as states.
 
@@ -69,19 +69,19 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.date-picker`. **Do not
 
 **A date plus a time is one control with one label.** A date picker, a time entry, and an AM/PM choice on a single row is the only case where inputs share a row, and it is one value. Owned by `recursica-skill-forms`.
 
-**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones like this one that would have fitted side by side. A whole form may switch placement between breakpoints (the screen widths at which the layout changes), but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
+**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones like this one that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
 **At rest, the field shows the readable format: `Jan 7, 2026`.** A three-letter month, a day of one or two digits, and a four-digit year. This is the only display format.
 
 **The numeric form with slashes or hyphens exists only inside an input that has focus.** `01/07/2026` is a typing aid, so the user can type against the mask (the pattern in the field that guides what they type). It goes back to the readable form on blur — that is, when the field loses focus. The format follows focus, never whether the field can be edited. See `recursica-skill-dates-and-currency`.
 
-**Never show a numeric date outside an input that has focus** — not at rest, not read-only, and not in a table. A spelled-out month costs nothing, and removes the confusion completely.
+**Never show a numeric date outside an input that has focus** — not at rest, not read-only, and not in a table. A spelled-out month adds only a few characters, and removes any doubt about whether the day or the month comes first.
 
 **Typing is never optional.** Typing is faster for anyone who knows the date, and it is the only way in for some users. The calendar speeds up entry; it never replaces typing.
 
-**State the expected format in help text** — the mask is visual, and says nothing on its own.
+**State the expected format in help text** — the mask is visual only, and does not name the format.
 
-**Use the user's locale (the language and regional settings a person uses) and the user's time zone, never the tenant's** (the organization whose account the application runs under). State the time zone whenever the value is outside the user's time zone, the user's time zone cannot be found, or the user has switched time zones.
+**Use the user's locale and the user's time zone, never the tenant's** (the organization whose account the application runs under). State the time zone whenever the value is outside the user's time zone, the user's time zone cannot be found, or the user has switched time zones.
 
 **Pre-fill only today's date, and only when today's date is what is being recorded.** Any date the user would have to think about or check must start empty — a default nobody checked gets submitted without being checked.
 
@@ -98,13 +98,13 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.date-picker`. **Do not
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
-The component connects the label to the input, and provides the focus ring (the outline that shows which element has keyboard focus). The calendar trigger and the popover (the small panel that opens next to its trigger) are where date pickers fail, and both are up to you to get right.
+The component connects the label to the input, and provides the focus ring. Date pickers most often fail at the calendar trigger and the popover. The application builds both, so follow the rules below for each.
 
 ### Screen readers
 
 - **Pass a real label.** Never let placeholder text be the accessible name (the name a screen reader reads out for a control) — it is not announced as a label, and it disappears when the user types. A field with no label has no accessible name.
-- **Name the calendar icon if it is a control** — "Choose date" — and keep it silent if it is decorative. An unlabeled graphic that can be used is announced as nothing useful.
-- **State the expected format in the help text.** The mask that appears on focus is a visual aid; a screen reader (software that reads the screen aloud) user gets nothing from it. Say `MM/DD/YYYY` in words the user can act on.
+- **Name the calendar icon if it is a control** — "Choose date" — and keep it silent if it is decorative. A screen reader announces an unlabeled clickable icon without saying what it does.
+- **State the expected format in the help text.** The mask that appears on focus is a visual aid; a screen reader user gets nothing from it. Say `MM/DD/YYYY` in words the user can act on.
 - **State the time zone in text** whenever it matters. A time zone that is only implied is not communicated.
 - **The error message is the text that gets announced.** Because it replaces the help text, it is the only thing that will be read — so it has to state the rule, including the format.
 
@@ -114,12 +114,12 @@ The component connects the label to the input, and provides the focus ring (the 
 - **The calendar trigger is its own tab stop** (a place the Tab key lands), and works with Enter or Space — not with a handler that only responds to clicks.
 - **Typing must always work.** The popover is never the only way to enter a value. A keyboard user must be able to type the date and move on, without ever opening the calendar.
 - **The popover must be fully usable by keyboard.** It opens from the keyboard, the arrow keys move between dates, Enter selects, and Escape closes it and returns focus to the field it opened from. Focus must not be left in a closed popover, or dropped to the top of the page.
-- **Never move focus ahead automatically between the parts of a date.** Jumping from month to day to year as the user types strands keyboard and screen reader users partway through, and it fights anyone fixing a typo.
+- **Never move focus ahead automatically between the parts of a date.** Jumping from month to day to year as the user types leaves keyboard and screen reader users in a part of the date they did not choose, and it moves focus away from anyone fixing a typo.
 - **Do not move focus for the user** when a value looks complete, and do not close the popover into a different field.
 
-## Not your decision
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them:
+Do not set or override any of these. The component sets them:
 
 - `border-radius`, `min-height`, `horizontal-padding`, `vertical-padding`, `border-size`.
 - `width`, plus the field sizing from `globals.form.field.size`.
@@ -129,7 +129,7 @@ Do not implement, override, or tune any of these — the component owns them:
 - The label-field gaps and `vertical-item-gap` from `globals.form.properties`.
 - The label-to-input association and key handling inside the field.
 
-Never style an unfocused date picker so it reads as disabled. An editable field must look editable at rest.
+Never style an unfocused date picker so it looks disabled. An editable field must look editable at rest.
 
 ## Load these too
 
@@ -146,7 +146,7 @@ Never style an unfocused date picker so it reads as disabled. An editable field 
 ## Uncovered — ask, do not invent
 
 - **Date ranges.** No range axis exists. Whether a range is two date pickers or one control, and how the two ends are checked against each other, is not stated.
-- **A `read-only` state on this component is shown only on the design-system website, with no token behind it.** The UI kit defines none, and treats read-only as a separate component. Do not settle this yourself, and do not rely on it without asking.
+- **A `read-only` state on this component is shown only on the design-system website, with no token behind it.** The UI kit defines none, and treats read-only as a separate component. Ask before deciding this, and before relying on it.
 - **What the popover contains.** A month-and-year dropdown, navigation arrows, and Cancel/Confirm actions are shown only on the design-system website; the UI kit defines no popover tokens at all. Whether a selection is saved on click, or needs a Confirm, is not stated. Do not rely on any of it without asking.
 - **Whether the calendar opens on focus**, or only when its trigger is activated.
 - **The earliest and latest dates that can be picked, and dates that are unavailable inside the calendar.** No state covers an unavailable date.
@@ -168,7 +168,7 @@ Never style an unfocused date picker so it reads as disabled. An editable field 
 - [ ] The calendar trigger has an accessible name, is its own tab stop, and works with Enter or Space. Decorative icons are silent.
 - [ ] The popover opens from the keyboard, the arrow keys move, and Escape closes it and returns focus to the field.
 - [ ] Focus never jumps ahead automatically between the parts of a date, and is never moved for the user.
-- [ ] You passed no variant, size, or state outside the inventory above, and invented no range or inline calendar.
-- [ ] You overrode no styling that the component owns, and no field without focus looks disabled.
+- [ ] Every variant and state passed is in the inventory above. No size, range, or inline calendar is added.
+- [ ] Styling comes from the component, and every field without focus looks editable, not disabled.
 - [ ] Dates that are not editable here use the read-only component, not a disabled picker.
-- [ ] You invented nothing from the uncovered list.
+- [ ] Uncovered items were asked about, not decided: date ranges, a read-only state, what the popover contains, whether the calendar opens on focus, the earliest and latest dates and unavailable dates, and conventions for weeks, quarters, and fiscal periods.

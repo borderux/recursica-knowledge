@@ -11,20 +11,20 @@ metadata:
 
 These are the house rules for deciding whether a trigger is a button or a link, how to label it, and how several triggers on one surface (a region that holds content, such as a page, panel, or modal) rank against each other. They are opinions, not neutral best practices. Treat them as constraints.
 
-These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The components already handle how buttons and links look, their focus states, how the external-link icon is styled, and the markup that makes a link styled as a button accessible. Your decisions are which component to use, what the label says, and which action ranks first.
+These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The components handle how buttons and links look, their focus states, how the external-link icon is styled, and the markup that makes a link styled as a button accessible. This skill decides which component to use, what the label says, and which action ranks first.
 
 **A button label is a verb plus an object — `Save form`. A navigation label is the object alone — `Forms`.** In terms of wording, that split is the whole difference. The naming side of it is owned by `recursica-skill-naming-terminology`.
 
-**The label must name what actually happens.** A control labelled `View` that opens something you can edit is mislabelled — the user was promised reading and given writing. If the surface it opens can change data, the label must say so: `Edit`, or `Manage`. The check is simple: open the thing, and see whether its label described it.
+**The label must name what happens.** A control labeled `View` that opens something editable is mislabeled — the user was promised reading and given writing. If the surface it opens can change data, the label must say so: `Edit`, or `Manage`. To check a label, open what it opens and confirm the label describes it.
 
-**A button opens a panel or a modal (a window that blocks the rest of the page until the user closes it); a link does not.** Opening a surface is an action, so it takes a button, even where a link would look lighter. A link is for going somewhere.
+**A button opens a panel or a modal; a link does not.** Opening a surface is an action, so it takes a button, even where a link would look lighter. A link is for going somewhere.
 
 **One control, one outcome.** A trigger that opens a surface does not also change the tab, route, or filter — see convention 6 in `recursica-skill-system-conventions`.
 
 ## Governing principles
 
-1. **Choose the component by what it does, not how it looks.** A link goes somewhere. A button does something to an object. If you want an action that does not look heavy, use a text button — never a link. How it looks can be adjusted; what it means cannot.
-2. **One primary action per surface.** The primary action is the main thing the surface wants the user to do. On a row, panel, page, or dialog, narrow it down to a single primary action and move the rest into a secondary menu. If you cannot narrow it down, the surface is trying to do too much.
+1. **Choose the component by what it does, not how it looks.** A link goes somewhere. A button does something to an object. For an action that must not look heavy, use a text button — never a link. How it looks can be adjusted; what it means cannot.
+2. **One primary action per surface.** The primary action is the main thing the surface wants the user to do. On a row, panel, page, or dialog, narrow it down to a single primary action and move the rest into a secondary menu. A surface with no single primary action is trying to do too much.
 3. **Protect the user's control over their browser.** Use real hrefs, open no new tabs automatically, and never disable a link. How the user moves around is their decision, and the link component is what protects that.
 
 ## The core distinction
@@ -32,11 +32,11 @@ These rules assume **complex enterprise web applications, designed for desktop f
 **A link is navigation. A button is a function performed on an object.**
 
 - **Moving to another page or object → link.** Always. Use links wherever the user is navigating.
-- **Acting on the object → button.** Buttons work on the page you are on. They do not move the user.
+- **Acting on the object → button.** Buttons act on the current page. They do not move the user.
 
 **MUST NOT use a button to navigate.**
 
-**MUST NOT use a link to trigger a server-side action.** This breaks what a link means; it is not a judgment call. If a link component triggers a server-side action, it should have been a button. If you do not want it to look like a button, use a text button — that is what the text variant (one version of a component, such as a solid or an outline button) is for.
+**MUST NOT use a link to trigger a server-side action.** This breaks what a link means. It is not a judgment call. If a link component triggers a server-side action, it should have been a button. For an action that must not look like a button, use a text button — that is what the text variant is for.
 
 **Links MUST render a real `href`.** The point is that the browser's own features keep working: the right-click menu, opening in a new tab, copying the link address. A trigger that navigates without an href takes those away from the user.
 
@@ -46,7 +46,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 Let the user choose — by right-clicking, using the context menu, or using the keyboard. Deciding for them is the mistake to avoid here.
 
-A link may carry an icon showing that the destination is external or will open in a new window. How that icon looks is the design system's business, not yours.
+A link may carry an icon showing that the destination is external or will open in a new window. The design system sets how that icon looks.
 
 ## Labels
 
@@ -69,7 +69,7 @@ A link may carry an icon showing that the destination is external or will open i
 
 **Aim for exactly one primary action per surface.**
 
-**When several actions really are close in importance**, and all of them would otherwise be solid buttons, create a ranking through their labels instead: give the slightly more important action a text label, and make the others icon-only.
+**When several actions are close in importance**, and all of them would otherwise be solid buttons, create a ranking through their labels instead: give the slightly more important action a text label, and make the others icon-only.
 
 ## Placement
 
@@ -79,7 +79,7 @@ A link may carry an icon showing that the destination is external or will open i
 
 **A rarely used extra function goes at the bottom left**, deliberately far from the primary action, so nobody mistakes it for an alternative. Make it an outline or text button.
 
-The test is whether the second trigger is a real alternative to the first, or just happens to be near it. Alternatives stay together; extra functions stay apart.
+The test is whether the second trigger is a real alternative to the first, or merely sits near it. Alternatives stay together; extra functions stay apart.
 
 ## Table rows
 
@@ -87,7 +87,7 @@ The test is whether the second trigger is a real alternative to the first, or ju
 
 **MUST NOT disable a link in a row.** Going to a related object is always possible. Only actions get disabled.
 
-**A disabled action is simply a disabled button.** When an action is unavailable because of the object's current state, disable the button. Nothing more elaborate is needed.
+**A disabled action is a plain disabled button.** When an action is unavailable because of the object's current state, disable the button. Nothing more elaborate is needed.
 
 **One primary action per row.** Everything else belongs in a menu of secondary actions. Note that if a row contains any interactive element, the row itself cannot be clickable — see `recursica-skill-tables`. Do not pile many actions onto a row, especially actions that change from one object to the next.
 
@@ -106,9 +106,9 @@ The rule underneath: **a label that never changes can become an icon; a label th
 **How bulk actions appear depends on how many there are.**
 
 - **One bulk action** — show it once at least one row is selected. A single disabled control sitting there all the time teaches almost nothing, and it permanently takes up part of the layout.
-- **Several bulk actions** — show them all the time, disabled until at least one row is selected. Here the affordance (a visible cue that tells the user they can act on something) pays for itself: the user learns what can be done in bulk before selecting anything.
+- **Several bulk actions** — show them all the time, disabled until at least one row is selected. Here the affordance (a visible cue that a control can be used, such as the underline on a link) is useful: the user learns what can be done in bulk before selecting anything.
 
-**Before either, ask whether bulk actions belong on this screen at all.** Bulk operations are worth building where the work really is done in batches. Where records are handled one at a time, a bulk control is a guess about how the user works — and a guess that costs layout space and attention on every visit. If you cannot name the batch task it serves, do not build it — see `recursica-skill-design-router`.
+**Before either, ask whether bulk actions belong on this screen at all.** Build bulk operations where the work is done in batches. Where records are handled one at a time, a bulk control is a guess about how the user works — and a guess that costs layout space and attention on every visit. Do not build a bulk control without naming the batch task it serves — see `recursica-skill-design-router`.
 
 **A bulk action's label shows the number selected in parentheses** — `Apply status`, `Apply status (1)`, `Apply status (102)` — with no number shown until at least one row is selected. The label itself never changes; only the number in parentheses appears and disappears. This is also why `Apply to 0 selected` is unnecessary: the count belongs in the button, not in a phrase built around it. The spelled-out phrase goes in the accessible name instead (the name a screen reader reads out for a control). A screen reader announces "Apply status to 102 items" while the button visibly reads `Apply status (102)`. See `recursica-skill-button`.
 
@@ -116,7 +116,7 @@ The rule underneath: **a label that never changes can become an icon; a label th
 
 **The bulk region holds controls and nothing else.**
 
-**NEVER repeat the selection inside it.** The ticked checkboxes already show which rows are selected, and the number in parentheses already shows how many. A list of the selected records' names says the same thing a third time, in the weakest of the three forms. It also makes the region's height depend on the selection, so the table slides down the page while the reader works — and the thing they are selecting from moves as they select.
+**NEVER repeat the selection inside it.** The ticked checkboxes already show which rows are selected, and the number in parentheses already shows how many. A list of the selected records' names says the same thing a third time, in the weakest of the three forms. It also makes the region's height depend on the selection, so the table slides down the page while the reader works — and the rows they are selecting from move as they select.
 
 **Do not add a clear or deselect-all control.** The header checkbox already does that job, as `recursica-skill-selection-controls` says. A second control doing the same job in a different place is one more thing to read, and a second answer to the same question.
 
@@ -140,11 +140,11 @@ A destructive action is one that deletes something or cannot easily be undone.
 
 ## Undo
 
-**Deleting one row item, or one of many objects → replace the delete control with an undo button in the same place.** The way back lives where the action happened.
+**Deleting one row item, or one of many objects → replace the delete control with an undo button in the same place.** The undo control appears in the same place as the action.
 
 **Destroying a whole object — saving over, deleting, or destroying an entire form's worth of data → use a confirmation modal instead.** At that size there is nothing useful to undo afterward, so the check has to come first.
 
-**A global undo notification is a toast** (a short message that appears briefly and then disappears).
+**A global undo notification is a toast**.
 
 ## Toggle actions
 
@@ -152,7 +152,7 @@ A destructive action is one that deletes something or cannot easily be undone.
 
 **Label the toggle with the positive state it reaches, not the negative action.** "Follow" becomes "Following" or "Followed" after the click — not "Unfollow."
 
-Put plainly: labeling the button "Unfollow" puts a negative action in front of the user and invites them to take it. Naming the state they reached instead reinforces the choice they made. This hides the way to un-toggle behind a second click. That is intentional, and it is admitted to be **slightly a dark pattern** (a design that pushes users to act against their own interest). Apply it as a deliberate house preference, not as a neutral best practice.
+Labeling the button "Unfollow" puts a negative action in front of the user and invites them to take it. Naming the state they reached instead reinforces the choice they made. This hides the way to un-toggle behind a second click. That is intentional, and it is admitted to be **slightly a dark pattern**. Apply it as a deliberate house preference, not as a neutral best practice.
 
 ## Toolbars
 
@@ -177,7 +177,7 @@ No house rule covers these yet. **Ask the person instead of choosing** — see t
 
 ## Out of scope
 
-- **All color, visual design, and styling**, including focus states for buttons and links, how the external-link icon looks, and the markup that makes a link styled as a button work for assistive technology (tools such as screen readers that help people with disabilities use a computer). The Recursica components handle these.
+- **All color, visual design, and styling**, including focus states for buttons and links, how the external-link icon looks, and the markup that makes a link styled as a button work for assistive technology. The Recursica components handle these.
 - **The order of steps in submitting a form, and when validation happens.** Covered by `recursica-skill-forms`. This skill decides what a trigger _is_ and how it is labeled; that skill decides when a form may be submitted.
 - **Navigation structure, tabs, and route design.** Covered by `recursica-skill-navigation`.
 
@@ -208,5 +208,5 @@ Before treating a set of triggers as done, check:
 - [ ] A global undo appears as a toast.
 - [ ] Toggles are buttons, labeled with the positive state reached — never with a negative like "Unfollow".
 - [ ] Rarely used toolbar functions sit in an overflow menu, and standard sets of functions follow convention.
-- [ ] Modal triggers are buttons, unless the modal has a URL that can really be shared.
-- [ ] You asked before deciding anything on the uncovered list: split buttons, loading states on actions other than submit, when to move actions into an overflow menu, and keyboard shortcuts.
+- [ ] Modal triggers are buttons, unless the modal has a real URL that can be shared.
+- [ ] Uncovered items were asked about, not decided: split buttons, loading states on actions other than submit, when to move actions into an overflow menu, and keyboard shortcuts.

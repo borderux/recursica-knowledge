@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-assistive-element
-description: How to use the Recursica assistive element, the help and error text below a form field — help that states the rule up front, errors that restate it, why the error replaces the help, and how both are announced. Use for help text, hints, and validation messages. Not for the field's name — see recursica-skill-label.
+description: Rules for the Recursica assistive element, the help and error text below a form field — help that states the rule up front, errors that restate it, why the error replaces the help, and how both are announced. Use for help text, hints, and validation messages. Not for the field's name — see recursica-skill-label.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -30,52 +30,52 @@ One component shows both the help text and the error text below a field. Its typ
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.assistive-element`.
 
-**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop, and React ignores it without an error if it is passed as one. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis    | Options         | React prop         |
 | ------- | --------------- | ------------------ |
 | `types` | `help`, `error` | `assistiveVariant` |
 
-**Two types, one slot.** This is how the house rule works: the error does not appear alongside the help text — it replaces it. Swapping types keeps the field's height the same, so the form below does not shift.
+**Two types, one slot.** The error does not appear alongside the help text. It replaces it in the same slot. Swapping types keeps the field's height the same, so the form below does not shift.
 
 **There is no warning type, no success type, and no info type.** Do not invent a third state for a field.
 
-**An icon is part of the component** — it defines an `icon-size` and an `icon-text-gap`. That icon is what meets the requirement for an error to have a signal that is not color.
+**An icon is part of the component** — it defines an `icon-size` and an `icon-text-gap`. That icon meets the requirement that an error have a signal that is not color.
 
 **There is no size axis.** `top-margin` and `max-width` are fixed properties.
 
 ## Rules for using it
 
-**Help text states the rule before the user breaks it.** Formats, minimums, character requirements — the things that stop an error from happening. Preventing an error beats catching it.
+**Help text states the rule before the user breaks it.** Put formats, minimums, and character requirements in the help text, because knowing them up front stops the error from happening. Preventing an error is better than catching it.
 
-**Break apart a constraint that has several rules.** A password rule with a minimum length and a special-character requirement becomes short fragments separated by commas, or bullets — easy to scan as separate rules, never a paragraph to work through.
+**Break apart a constraint that has several rules.** Write a password rule with a minimum length and a special-character requirement as short fragments separated by commas, or as bullets, so each rule can be found at a glance. Never write it as a paragraph.
 
 **The error text restates the rule that was broken.** "Invalid input" is not an error message. "Enter a date in the past" is.
 
-**Never show help and error at the same time.** One slot, one type. If the rule still needs saying, it belongs in the error message.
+**Never show help and error at the same time.** The slot shows one type at a time. If the user still needs the rule, put it in the error message.
 
 **The error text is the message, so it carries the whole meaning.** Because the help text is gone while the error shows, anything the user still needs must be in the error.
 
 **Pair the error with a signal that is not color** — the component's icon, or the message itself. Required by `recursica-skill-system-conventions`.
 
-**Keep it under the field it belongs to.** An assistive element floating between two fields belongs to neither one.
+**Keep it under the field it belongs to.** An assistive element placed midway between two fields is not clearly tied to either one.
 
-**Its position follows the field's label placement, so it takes on the form's single placement decision.** `recursica-skill-forms` requires one label placement per form — side by side or stacked, never both at the same breakpoint (the screen width at which the layout changes). The container-width test is applied once, to the form, and it governs every field in it. This element has no placement axis of its own: wherever the field's label sits, this element's position follows from it. So it is never placed on its own, and it never differs from field to field inside one form. A whole form may switch placement across breakpoints; a single section never gets its own.
+**Its position follows the field's label placement, so it uses the one placement set for the whole form.** `recursica-skill-forms` requires one label placement per form — side by side or stacked, never both at the same breakpoint. The container-width test is applied once, to the form, and it governs every field in it. This element has no placement axis of its own. Its position follows from where the field's label sits. So it is never positioned separately from the label, and its position never differs from field to field inside one form. A whole form may switch placement across breakpoints; a single section never gets its own.
 
-**Do not use it for marketing, reassurance, or padding.** Every line here is read on every pass through the form.
+**Do not use it for marketing, reassurance, or filler text.** Users read every line here each time they go through the form.
 
 ## Accessibility
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
-This component only works if the field it belongs to knows about it. Text shown near a field but not connected to it is invisible to a screen reader (software that reads the screen aloud) user who tabs straight into the input — which is the normal way of moving through a form.
+This component helps only when it is connected to its field in code. Text shown near a field but not connected to it is never read out to a screen reader user who tabs straight into the input. Tabbing into the input is the usual way to move through a form.
 
 ### Screen readers
 
-- **Pass the help and error text through the field component**, never as a separate element you place beside or below it. Only the field can connect them to the input.
+- **Pass the help and error text through the field component**, never as a separate element beside or below it. Only the field can connect them to the input.
 - **The help text is announced as part of reaching the field.** Write it to be heard at that moment, not as a caption read afterward.
 - **When an error appears, it must be announced** — an error that is only visual is a silent failure. The field being marked invalid and the message being connected to it are both required.
-- **The error message must make sense on its own**, because it has replaced the help text. Restating the rule is not repetition; it is the only channel (a way of carrying meaning, such as color, shape, position, or text) left.
+- **The error message must make sense on its own**, because it has replaced the help text. Restating the rule is not repetition; it is the only channel (color, shape, position or text, each a separate signal) left.
 - **The component's icon is decorative and must be silent.** It is the second visual signal; the words carry the meaning.
 - **Do not announce the same text twice.** If the message is connected to the field, do not also put it in a live region (an area a screen reader announces automatically when its content changes) that repeats it.
 - **Do not use it to announce anything the user did not do.** Unprompted messages under a field are confusing when they are read in order.
@@ -87,9 +87,9 @@ This component only works if the field it belongs to knows about it. Text shown 
 - **Do not move focus when an error appears.** The user is in the middle of typing, and pulling focus to the message loses their place. Managing focus on submit belongs to `recursica-skill-forms`.
 - **A field with an error must stay reachable in its place** — never reorder fields to group the errors together.
 
-## Not your decision
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them:
+Do not set or override any of these. The component sets them:
 
 - `text` styling per type.
 - `icon-size`, `icon-text-gap`, and the icon itself.
@@ -104,7 +104,7 @@ Do not implement, override, or tune any of these — the component owns them:
 
 ## Uncovered — ask, do not invent
 
-- **Character and word counters.** Whether they live in this component or somewhere else.
+- **Character and word counters.** Whether they belong in this component or somewhere else.
 - **Confirming success on a field** — there is no success type, so a field that validated correctly has no stated treatment.
 - **Whether help text may contain a link**, given that it must not contain a control.
 - **Several errors on one field at once** — whether they combine into one message, or the first one wins.
@@ -122,5 +122,5 @@ Do not implement, override, or tune any of these — the component owns them:
 - [ ] The icon is silent, and the words carry the meaning.
 - [ ] Nothing here is a control or a tab stop, and nothing is revealed only on hover.
 - [ ] Focus does not move when an error appears.
-- [ ] You invented no third type, and overrode no styling, margin, or width.
-- [ ] You invented nothing from the uncovered list.
+- [ ] Only the `help` and `error` types are used, and styling, margins, and width come from the component.
+- [ ] Uncovered items were asked about, not decided: character and word counters, success on a field, links in help text, and several errors on one field.

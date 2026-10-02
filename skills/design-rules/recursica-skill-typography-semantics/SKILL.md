@@ -11,13 +11,13 @@ metadata:
 
 These are the house rules for type, and for the markup underneath it. They are opinions, not neutral best practices — treat them as constraints.
 
-These rules assume **complex enterprise web applications, designed for desktop first**, built on a design system that delivers typography as tokens (named design values, such as colors or sizes, set by the design system). Which element carries which meaning is your decision. What that element looks like is not.
+These rules assume **complex enterprise web applications, designed for desktop first**, built on a design system that delivers typography as tokens (named design values, such as colors or sizes, set by the design system). The builder chooses which element carries which meaning. The design system's tokens set what that element looks like.
 
 ## The three governing principles
 
 1. **The semantic structure is the design, not a layer under it.** Semantic HTML means using each element for what it means, not for how it looks. The markup mirrors what is on the screen. A visual effect is never produced by reaching for the wrong element.
 2. **Type styles always come from tokens.** The system defines them, and the codebase applies them. A custom typographic value is a defect, unless no style exists for the case.
-3. **Being understood beats being brief.** When you can choose between being short and being understood without extra effort, choose being understood — the user should not have to hover to find out what something means.
+3. **Being understood beats being brief.** Where text can be either short or understood without extra effort, choose understood. The user should not have to hover to find out what something means.
 
 ## Use the real element
 
@@ -25,15 +25,15 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **Emphasis is `em` or `strong`, never a visual style standing in for one.** Add the semantic tag in the markup, and let the CSS decide what it looks like. Reaching for a font weight or an italic style to suggest emphasis produces text that is emphasized on screen and flat everywhere else.
 
-**A data table is a semantic table**, structured to match what is actually on the screen. See `recursica-skill-table`.
+**A data table is a semantic table**, structured to match what is on the screen. See `recursica-skill-table`.
 
-**The general rule:** if the platform has an element for the thing, that element is the answer, and the styling is a separate question.
+**The general rule:** if the platform has an element for the purpose, use that element. Styling is a separate decision.
 
 ## Headings
 
 **MUST: exactly one H1 per page.** No case in the applications this system serves needs a second one.
 
-**The H1 is required to exist even when it is not visible.** It may be hidden with CSS where the design has no place for it, but it must be in the markup — the page's identity is not optional just because the layout does not show it.
+**The H1 is required to exist even when it is not visible.** It may be hidden with CSS where the design has no place for it, but it must be in the markup. The page's identity is required even when the layout does not show it.
 
 **The heading outline follows meaning, not size.** A heading level is chosen for where the content sits in the structure of the document. If a heading needs to look smaller, that is a type style, not a demotion to H4.
 
@@ -43,7 +43,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **Never define a custom font size, line height, or letter spacing** to fit a particular case.
 
-**The one exception: no type style exists for what is needed.** This should be very rare. When it happens, say so, instead of quietly inventing a value — the gap belongs in the design system, not in the component.
+**The one exception: no type style exists for what is needed.** This should be very rare. When it happens, report the gap instead of quietly inventing a value. The gap belongs in the design system, not in the component.
 
 ### Load every typeface the brand names, and set the base family from a token
 
@@ -53,9 +53,9 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **MUST set the document's base font family from the brand's primary token.** Anything the design system does not style itself inherits it: a plain string in a table cell, a navigation link written to inherit its type, a bare list item. With no base family, those fall back to the browser default, which on most machines is the operating system's interface font or a serif. So the navigation ends up in a different typeface from the page title beside it.
 
-**Reading the token to set the base is not writing a value**, and it is not an override: the elements it reaches belong to the application, not to the system. Hardcoding the font name instead is the thing to avoid.
+**Reading the token to set the base is not writing a value**, and it is not an override: the elements it reaches belong to the application, not to the system. Do not hardcode the font name instead.
 
-**Check it by computing, not by looking.** Compare the font family that is actually used on the document body, on a navigation link, and inside a component. All three should name the same brand typeface, and any mismatch is the defect above.
+**Check it by computing, not by looking.** Compare the computed font family on the document body, on a navigation link, and inside a component. All three should name the same brand typeface, and any mismatch is the defect above.
 
 ## Vertical spacing between headings is contextual
 
@@ -72,7 +72,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 1. Showing it breaks up the layout, **and**
 2. It does not add anything to what the user understands from the screen.
 
-**When both are true, hide it visually and keep it available to screen readers** (software that reads the screen aloud). The structure stays; only the pixels go.
+**When both are true, hide it visually and keep it available to screen readers**. The structure stays; only the pixels go.
 
 **When the heading does add understanding, show it.** Hiding meaningful content from sighted users to keep a layout tidy is the wrong trade.
 
@@ -80,7 +80,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 Eyebrow text is a small label that sits above a heading.
 
-**Eyebrow text that is semantically out of place is an anti-pattern.** A small label sitting above a heading must be whatever it actually is. If it is a category, it is not a heading; if it is part of the title, it belongs in the heading. Reaching for a heading level to get the eyebrow's size is exactly the swap these rules exist to prevent.
+**Eyebrow text that is semantically out of place is an anti-pattern.** A small label sitting above a heading must be marked up as what it is. If it is a category, it is not a heading; if it is part of the title, it belongs in the heading. Reaching for a heading level to get the eyebrow's size is exactly the swap these rules exist to prevent.
 
 ## Abbreviations
 
@@ -94,7 +94,7 @@ Eyebrow text is a small label that sits above a heading.
 
 ## Line length: compute it, do not guess
 
-**Run this check whenever you place text in an `h3` through `h6`, a body style, or a caption style.** Those are the roles that carry running text, and they can wrap. The check produces a `max-width` for the text block.
+**Run this check on every text block set in an `h3` through `h6`, a body style, or a caption style.** Those are the roles that carry running text, and they can wrap. The check produces a `max-width` for the text block.
 
 `h1` and `h2` are left out of the check — they are short titles, set on purpose, and not expected to wrap. **If an `h1` or `h2` is long enough to wrap, that is a wording problem to raise, not a measure to compute.** (In typography, the measure is the length of a line of text.)
 
@@ -155,7 +155,7 @@ Headings get a shorter measure than body text because they are scanned rather th
 W_max = N_opt × w_avg
 ```
 
-**Set the text block's `max-width` to `W_max`.** Where the container is wider than `W_max`, the text does not fill it — the leftover space stays empty. A wide container never earns a longer measure, for the same reason a wide form never earns a second column.
+**Set the text block's `max-width` to `W_max`.** Where the container is wider than `W_max`, the text does not fill it — the leftover space stays empty. A wide container never justifies a longer measure, for the same reason a wide form never justifies a second column.
 
 ### Worked example
 
@@ -195,19 +195,19 @@ W_max = 44 × 12.48                 = 555px
 
 ## Screen reader verbosity is not a concern
 
-**Do not twist markup to reduce how much a screen reader says.** Accessibility must be handled — correct structure, correct elements, and content that matches the screen. But how wordy a screen reader is, is not something to optimize against, and neither is semantic confusion that exists only in theory. A correct structure that reads long is better than a clever one that reads short.
+**Keep markup correct, even when a screen reader reads more because of it.** Use correct structure, correct elements, and content that matches the screen. Correct markup comes ahead of a shorter readout, and ahead of semantic confusion that exists only in theory. A correct structure that reads long is better than a clever one that reads short.
 
-## Not your decision
+## Set by the theme or the component
 
 - **The values behind every type style** — font size, line height, letter spacing, weight. Delivered as tokens.
 - **Capitalization.** Sentence case or title case belongs to the token, and is decided by the brand.
 - **What `em` and `strong` look like.** Defined in CSS against the semantic tag.
 - **Typography inside a component.** Owned by the component.
-- **Spacing token values.** You choose which token a pairing of elements calls for; you do not write new ones.
+- **Spacing token values.** Choose which existing token a pairing of elements calls for. Do not write new ones.
 
 ## Out of scope
 
-- **Announcing content that updates on the page to assistive technology** (tools such as screen readers that help people with disabilities use a computer). This was openly moved out of this topic — see `recursica-skill-feedback-messaging`, where it is recorded as still having no owner.
+- **Announcing content that updates on the page to assistive technology**. This was openly moved out of this topic — see `recursica-skill-feedback-messaging`, where it is recorded as still having no owner.
 - **The wording of labels, and labels that stand alone without surrounding context** — `recursica-skill-forms`.
 - **The details of table markup, how sorting is announced, and rules for cell content** — `recursica-skill-table` and `recursica-skill-tables`.
 - **Each component's accessible name, focus order, and keyboard behavior.** Each component skill has its own.
@@ -220,26 +220,26 @@ W_max = 44 × 12.48                 = 555px
 - **Live regions and `aria-live`.** Put off here, and not taken up anywhere else. Component skills state their own announcement requirements, but there is no policy across all surfaces.
 - **Which heading level a page's sections start at**, given that the single H1 may be hidden.
 - **Whether `abbr` markup is used** for the later, abbreviated uses, or whether plain text is enough once the term has been written out.
-- **Whether every type style really includes its capitalization.** The rule is that capitalization is controlled by the token. Where a style seems not to carry it, raise it.
+- **Whether every type style includes its capitalization.** The rule is that capitalization is controlled by the token. Where a style seems not to carry it, raise it.
 
 ## Pre-flight checklist
 
-- [ ] Every typeface the brand names is actually loaded, not only the primary.
-- [ ] The document's base font family is set from the brand's primary token, and the font family actually used on the body, on a navigation link, and inside a component all name the same typeface.
+- [ ] Every typeface the brand names is loaded, not only the primary.
+- [ ] The document's base font family is set from the brand's primary token, and the computed font family on the body, on a navigation link, and inside a component all name the same typeface.
 - [ ] Every interactive element is the real platform element. No `div` carries an `onclick` or a `role="button"`.
 - [ ] Emphasis uses `em` or `strong`, never a visual style standing in for one.
 - [ ] Exactly one H1 exists on the page, and it is in the markup even if hidden with CSS.
-- [ ] Heading levels follow the structure of the document, not the size you want.
+- [ ] Heading levels follow the structure of the document, not the visual size.
 - [ ] Every type style comes from a typography token. There is no custom font size, line height, or letter spacing.
-- [ ] Where no type style existed, you stated that gap instead of filling it with a custom value.
-- [ ] Vertical spacing between headings matches the actual pairing of elements, and you did not apply one gap token everywhere.
+- [ ] Where no type style existed, the missing style is reported, and no custom value fills the gap.
+- [ ] Vertical spacing around each heading matches the elements before and after it, and no single gap token is applied to every heading.
 - [ ] Any visually hidden heading passes both tests — showing it broke the layout, and it added no understanding — and it stays available to screen readers.
 - [ ] No eyebrow text uses a heading level to get its size.
 - [ ] Every abbreviation is written out in full the first time, with the short form in parentheses — unless it is common knowledge in a context that cannot be misread.
 - [ ] Copy follows AP style, and no capitalization was set or changed by hand.
 - [ ] The document order matches the visual order.
-- [ ] You did not twist any markup to reduce how much a screen reader says.
+- [ ] The markup is correct, even where a screen reader reads more because of it.
 - [ ] Every `h3`–`h6`, body, and caption text block has a `max-width` worked out by the line-length check, and no wide container was filled to its edge.
 - [ ] The check produced only a width. It changed no font size, line height, or letter-spacing value.
-- [ ] You raised any `h1` or `h2` long enough to wrap as a wording problem, instead of measuring it.
-- [ ] You invented no wrapping or truncation rule beyond the measure the check works out.
+- [ ] Any `h1` or `h2` long enough to wrap is reported as a wording problem, with no measure computed for it.
+- [ ] Uncovered items were asked about, not decided: text wrapping and truncation.

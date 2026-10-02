@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-number-input
-description: How to use the Recursica number input — quantity versus digit string, right alignment and fixed precision, units and currency as affixes, stating limits up front, and numeric-field accessibility. Use for quantities and amounts. Not for free text — see recursica-skill-text-field; formatting rules live in recursica-skill-dates-and-currency.
+description: Rules for the Recursica number input — quantity versus digit string, right alignment and fixed precision, units and currency as affixes, stating limits up front, and numeric-field accessibility. Use for quantities and amounts. Not for free text — see recursica-skill-text-field; formatting rules live in recursica-skill-dates-and-currency.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -13,13 +13,13 @@ A number input records a quantity that the user types.
 
 ## Use it when
 
-- **The value is a quantity** — a count, an amount, a rate, a measurement. Something you could do math on.
-- **The range is open, or wide enough that a list would be wrong**, and the user knows the number they want.
+- **The value is a quantity** — a count, an amount, a rate, a measurement. Adding, subtracting or averaging it makes sense.
+- **The range is open, or too wide to list as options**, and the user knows the number they want.
 - **Precision matters.** The user needs the exact value, not a rough one.
 
 ## Do not use it when
 
-Each of these has a different component. Switch to it, instead of adapting a number input:
+Each case below has its own component. Use that component instead of adapting a number input:
 
 | Instead of a number input                            | Use                                                                                     |
 | ---------------------------------------------------- | --------------------------------------------------------------------------------------- |
@@ -32,22 +32,22 @@ Each of these has a different component. Switch to it, instead of adapting a num
 
 **A leading zero, a fixed number of digits, or a check digit means it is not a number.** Anything where `007` and `7` are different is a text field.
 
-**A disabled number input is not a way to show a value.** If nobody can ever edit it here, it is not a form control.
+**Do not use a disabled number input to show a value.** If nobody can ever edit the value here, it does not belong in a form control.
 
 ## What exists
 
-Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.number-input`. **Do not pass a variant or state that is not listed here** — other design systems have sizes, warning and success states, and content variants that this component does not.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.number-input`. **Pass only the variants and states listed here** — other design systems have sizes, warning and success states, and content variants that this component does not.
 
-**The third column is the React prop that sets each axis.** An axis (a variant property, as Figma calls it — one way a component varies, such as its size) is named in the UI kit. Its name is not a prop, and if you pass it as one, React quietly ignores it. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop, and React ignores it without an error if it is passed as one. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
 | Axis      | Options                   | React prop   |
 | --------- | ------------------------- | ------------ |
 | `layouts` | `stacked`, `side-by-side` | `formLayout` |
 | `states`  | `error`, `disabled`       |              |
 
-**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's (the visible area of the browser window). See `recursica-skill-forms`.
+**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
-**`formLayout` defaults to `stacked`, so the house rule is the one thing you must pass.** Leave it out, and you get the fallback in a container of any width — the rule turned upside down. `layouts` is the name of the token axis, not a prop: `layouts="side-by-side"` is quietly ignored by React and leaves the control stacked, with no error. Pass `formLayout="side-by-side"` explicitly, on every field.
+**`formLayout` defaults to `stacked`, which puts the label above the input.** A field without the prop shows its label above the input at any container width, which breaks the house rule. `layouts` is the UI kit's name for this variant, not a prop: React ignores `layouts="side-by-side"` without an error and leaves the label above the input. Set `formLayout="side-by-side"` on every field to put the label beside the input.
 
 **Focus and placeholder are not variants.** The component handles them: `placeholder-opacity` here, and the focused border through `globals.form.field.colors.border-selected`. Do not build them as states.
 
@@ -61,19 +61,19 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Always pass a visible label.** Name the object — and, where the unit is not obvious from the object, name the unit too: "Weight (kg)", not "Weight". A screen reader user hears the label on its own.
 
-**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones like this one that would have fitted side by side. A whole form may switch placement between breakpoints (the screen widths at which the layout changes), but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
+**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones like this one that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
 **Right-align the value.** Every number is right-aligned, currency or not, so the alignment is uniform. The only exception is an explicit instruction from a person.
 
-**Keep one precision.** Currency always shows two decimal places — `0.00`, `0.01`, `0.99`. Any set of numbers shown together keeps the same precision: `4.5` and `7.0`, never `4.5` and `7`. Fixed precision is what makes right alignment work.
+**Keep one precision.** Currency always shows two decimal places — `0.00`, `0.01`, `0.99`. Any set of numbers shown together keeps the same precision: `4.5` and `7.0`, never `4.5` and `7`. With fixed precision, the decimal points of right-aligned numbers line up.
 
-**Alignment must not vary between read-only and editable values on the same screen.** Left-aligning a read-only value next to a right-aligned editable one looks like two different systems.
+**Read-only and editable values on the same screen must use the same alignment.** Left-aligning a read-only value next to a right-aligned editable one looks like two different systems.
 
 **A currency symbol or a unit is an affix (text attached to the start or end of the field) — not part of the label wording, and not joined onto the value.** The symbol goes first, and the unit goes last. Where several amounts sit in a column, the symbol belongs in the column header instead — see `recursica-skill-dates-and-currency`.
 
 **State the minimum, the maximum, and the step in help text**, before the user can break the rule. Preventing an error beats catching it.
 
-**Zero is a value; empty is not zero.** Do not pre-fill `0` to avoid an empty field — a submitted zero is a claim.
+**Zero is a value; empty is not zero.** Do not pre-fill `0` to avoid an empty field. A submitted zero states that the value is zero.
 
 **Do not pre-fill a number the user would have to think about, look up, or check.** A default the user cannot check gets submitted without being checked, which is worse than an empty field.
 
@@ -92,29 +92,29 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
-The component connects the label to the input, and provides the focus ring (the outline that shows which element has keyboard focus). The unit, the limits, and any control inside the field are up to you.
+The component connects the label to the input, and provides the focus ring. The application provides the unit, the limits, and any control inside the field.
 
 ### Screen readers
 
 - **Pass a real label.** Never let placeholder text be the accessible name (the name a screen reader reads out for a control) — it is not announced as a label, and it disappears when the user types. A field with no label has no accessible name.
-- **State the unit in text** — in the label, or in the help text. A visual prefix or suffix may not be announced with the value, and a currency symbol sitting in a column header is not connected to the field at all. "1000" announced with no unit is not an answer.
+- **State the unit in text** — in the label, or in the help text. A visual prefix or suffix may not be announced with the value, and a currency symbol sitting in a column header is not connected to the field at all. A screen reader that announces "1000" with no unit leaves the user without the meaning of the number.
 - **State the expected format, the minimum, and the maximum in the help text.** Thousands separators, decimal places, and whether negative numbers are allowed have to be put in words. A mask, or a right-aligned display with two decimals, tells a screen reader nothing.
 - **Name every icon inside the field that can be used** — a clear control, or a stepper button if one is ever added. Decorative icons must be silent, and never announced as unlabeled graphics.
-- **Make the current value and its limits available in code** where the field limits the range, so a screen reader user is not guessing at the maximum.
-- **The error message is the text that gets announced.** Because it replaces the help text, it is the only thing that will be read — so it has to state the rule and the limits.
+- **Expose the current value and its limits to assistive technology** where the field limits the range, so a screen reader user knows the maximum.
+- **The error message is the text that gets announced.** The error replaces the help text, and a screen reader reads only the error. The error must state the rule and the limits.
 
 ### Keyboard and non-mouse navigation
 
 - **Never remove the field from the tab order**, and never make reaching it depend on a pointer.
 - **Typing is always enough to reach the value.** If any adjustment control exists, it is only a shortcut. A user must be able to reach the value by typing alone, and never have to press a button forty times.
 - **Every control inside the field is its own tab stop** (a place the Tab key lands), and works with Enter or Space — not with a handler that only responds to clicks.
-- **Do not move focus for the user.** No jumping ahead when the value reaches its number of digits, and no focus jump on a keystroke — both strand a user partway through typing.
-- **Never let a scroll wheel or a stray arrow key change a saved value** while the field has focus but the user is only reading, and never trap arrow keys that the user needs to move the caret (the text cursor).
+- **Do not move focus for the user.** No jumping ahead when the value reaches its number of digits, and no focus jump on a keystroke — both send the user's next keystrokes to a different field.
+- **Never let a scroll wheel or a stray arrow key change a saved value** while the field has focus but the user is only reading, and never trap arrow keys that the user needs to move the caret.
 - **Nothing needed to complete the field may appear only on hover** — not the limits, not the unit, and not an adjustment control.
 
-## Not your decision
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them:
+Do not set or override any of these. The component sets them:
 
 - `border-radius`, `min-height`, `horizontal-padding`, `vertical-padding`, `border-size`.
 - Field width and sizing from `globals.form.field.size`.
@@ -124,7 +124,7 @@ Do not implement, override, or tune any of these — the component owns them:
 - The label-field gaps and `vertical-item-gap` from `globals.form.properties`.
 - The label-to-input association and key handling inside the field.
 
-Never style an unfocused number input so it reads as disabled. An editable field must look editable at rest.
+Never style an unfocused number input to look disabled. An editable field must look editable at rest.
 
 ## Load these too
 
@@ -158,13 +158,13 @@ Never style an unfocused number input so it reads as disabled. An editable field
 - [ ] Precision is fixed, and the same across every value shown together. Currency has two decimal places.
 - [ ] Any currency symbol or unit is an affix, and its meaning is also in the label or the help text.
 - [ ] The minimum, maximum, step, and expected format are stated in help text.
-- [ ] You did not pre-fill `0` to avoid an empty field, and pre-filled no default the user would have to understand to check.
+- [ ] The field is not pre-filled with `0` to avoid an empty field, and holds no default the user would have to understand to check.
 - [ ] Help and error text are passed through the component. The error replaces the help text, and restates the rule and its limits.
 - [ ] The error state has a signal that is not color, and no value is quietly forced into range or rewritten.
 - [ ] Every icon inside the field that can be used has an accessible name, and decorative icons are silent.
 - [ ] Typing alone reaches any valid value. Any adjustment control is only a shortcut, with its own tab stop.
 - [ ] The arrow keys and the scroll wheel do not change the value unexpectedly.
-- [ ] You passed no variant, size, or state outside the inventory above, and invented no stepper.
-- [ ] You overrode no styling that the component owns, and no field without focus looks disabled.
+- [ ] Every variant and state comes from the inventory above, no size is set, and no stepper is built.
+- [ ] Styling comes from the component, and an unfocused field looks editable.
 - [ ] Numbers that are not editable here use the read-only component, not a disabled input.
-- [ ] You invented nothing from the uncovered list.
+- [ ] Uncovered items were asked about, not decided: increase and decrease controls, the `collapsed` and `expanded` states, a content axis, formatting as the user types, negative values, and choosing the unit.

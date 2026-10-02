@@ -9,13 +9,13 @@ metadata:
 
 # Working memory and item counts
 
-This skill gives the shared reasoning behind every limit on item counts in the Recursica design rules. Working memory is how much a person can hold in mind at once. The related skills state the rule for their own part of the interface. This skill explains why the number is what it is — and, just as important, when it does not apply.
+This skill gives the shared reasoning behind every limit on item counts in the Recursica design rules. Working memory is how much a person can hold in mind at once. The related skills state the rule for their own part of the interface. This skill explains why the number is what it is — and, equally important, when it does not apply.
 
-Read this before you override a count limit. Cite it when someone asks where the number came from.
+Read this before overriding a count limit. Cite it when someone asks where the number came from.
 
 ## The house rule
 
-**Aim for 7 ± 2 items, adjusted for the cognitive load** (the mental effort a task demands) of the content.
+**Aim for 7 ± 2 items, adjusted for the cognitive load** of the content.
 
 - **Items that are similar, easy to tell apart, and familiar** → the high end of the range is fine.
 - **Items that are different from each other, hard to think about, or need expert knowledge** → use fewer, closer to 5.
@@ -30,13 +30,13 @@ Where it applies today, as stated by the skill that owns each rule:
 
 No house limit has been set for table columns, toolbar actions, or steps in a flow. Do not invent one by comparison with these — treat those as open questions, instead of applying this number where it has not been agreed.
 
-## What the research actually says
+## What the research says
 
 **Miller (1956)** is the source of "7 ± 2." He found that people's short-term memory for simple items that vary in only one way — digits, tones, items with a single feature — tends to hold about seven. He came up with the term _chunking_ for how people group information into larger units to get around that limit.
 
 **Miller's number is not a design law, and he did not present it as one.** He was describing how many items people can recall from memory, not how many options a person can choose from on a screen.
 
-**Cowan (2001)** looked at the evidence again, and put the true capacity of working memory closer to four chunks, plus or minus one, once repeating things to yourself and help from long-term memory are ruled out. The honest summary of the research is that the real capacity is _lower_ than seven, not higher.
+**Cowan (2001)** looked at the evidence again, and put the true capacity of working memory closer to four chunks, plus or minus one, once repeating the items to oneself and help from long-term memory are ruled out. The honest summary of the research is that the real capacity is _lower_ than seven, not higher.
 
 **So why does the house rule say 7 ± 2?** Because it is a limit on scanning and comparing, not a claim about memory capacity. Past about nine items, a list can no longer be taken in at a glance, and starts to need a careful search — and that is the failure we are designing against. The number is a useful, widely understood convention that falls in the right place for scanning. It is not evidence that users can hold nine things in mind.
 
@@ -76,7 +76,7 @@ Menus and navigation are also places where users recognize — which is why the 
 - **Choosing a control type.** Covered by `recursica-skill-selection-controls`.
 - **Whether a feature should be easy to find or promoted.** Covered by `recursica-skill-discoverability`, the other psychology skill.
 - **Navigation structure, grouping, and what happens when there are too many items.** Covered by `recursica-skill-navigation`.
-- **Any count limit not listed in the table above.** No rule exists yet. Say so, instead of working one out yourself.
+- **Any count limit not listed in the table above.** No rule exists yet. Say so, instead of inventing one.
 
 ## Pre-flight checklist
 

@@ -16,7 +16,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 ## The three governing principles
 
 1. **Objects first, then screens.** An object is a kind of thing the user works with and would point at and name — an order, a customer, an invoice. Settle which objects the application is about, and how they relate, before deciding any screen. Every screen is a view of one object or of many, and the structure is only as sound as that list.
-2. **The user's objects, not the database's.** Objects and their groupings come from how the users' work is already arranged, which is their mental model (a person's picture of how something works). That comes from three places: how the work is done outside software, the terms of the users' own field, and products they already use. **NEVER from the team's shorthand or the shape of the data.** A table in the database is not an object because it exists, and one object can span several tables.
+2. **The user's objects, not the database's.** Objects and their groupings come from how the users' work is already arranged, which is their mental model (what a person expects from the tools and work they already know). That comes from three places: how the work is done outside software, the terms of the users' own field, and products they already use. **NEVER from the team's shorthand or how the database stores the data.** A table in the database is not an object because it exists, and one object can span several tables.
 3. **Decide what can be reached from where — not how it looks.** This skill says that an order's line items are reached from the order. Whether they appear in a tab, a section or a table on that page is decided by the skills that own those components.
 
 ## What counts as an object
@@ -29,7 +29,7 @@ These are not objects, and must not be given a place of their own in the structu
 - **A filtered view of an object.** Overdue orders are orders. One object type is one table, filtered — never a second section. See `recursica-skill-tables`.
 - **An action.** Approving, exporting and importing are things done to an object. They are buttons, not places. See `recursica-skill-buttons-links`.
 
-**Find the objects in what you were given** — the nouns the request keeps returning to, and the domain model from the interview. Where the users call an object something different from the request, the users' word wins; see `recursica-skill-naming-terminology`. Where it is unclear whether something is an object or a property of one, ask.
+**Find the objects in the request and the interview** — the nouns the request keeps returning to, and the domain model from the interview. Where the users call an object something different from the request, the users' word wins; see `recursica-skill-naming-terminology`. Where it is unclear whether something is an object or a property of one, ask.
 
 **Whether a screen shows one object or many decides what the screen is.** Many of one object type is a list, and a list is a table by default — see `recursica-skill-tables`. One object is its detail view. Where that detail opens — a page of its own or a panel beside the list — is decided by the context test in `recursica-skill-panels-modals`.
 
@@ -60,7 +60,7 @@ A short table is enough:
 
 **Only an object people look for on its own, across every parent it belongs to.** The test: would anyone ask for a list of all of them, whatever they belong to? "Show me all customers" — yes, so Customer is top level.
 
-**An object that only makes sense inside another lives under that parent, and never gets a top-level item.** Nobody asks for every line item across every order; they ask for this order's line items. A top-level Line items section would be a list nobody uses, taking a place in the navigation from something they do.
+**An object that only makes sense inside another lives under that parent, and never gets a top-level item.** Nobody asks for every line item across every order; they ask for this order's line items. A top-level Line items section would be a list nobody uses, and it would take a navigation item away from a section people do use.
 
 **When a child object starts being looked for on its own, it becomes top level.** That is a change to the map, and it is agreed the same way the map was.
 
@@ -78,17 +78,17 @@ It still gets no top-level item unless people look for it on its own. Belonging 
 
 **These follow the request.** An approvals queue, reports, settings — where the product owner describes the work that way, it is a section. Record each one in the object map with where it came from.
 
-**Where the request says nothing, ask.** Do not invent a task section to organise the work, and do not force work the request describes as a task into an object's list.
+**Where the request says nothing, ask.** Do not invent a task section to organize the work, and do not force work the request describes as a task into an object's list.
 
 A section like this is still named with a noun — `Approvals`, never `Approve requests`. See `recursica-skill-naming-terminology`.
 
 ## Room to grow
 
-**Every group must have an obvious home for what will be added later.** A structure that only fits today's content is a defect, not something that will be revisited — the revisit does not happen, and new things get filed wherever there is room.
+**Every group must have an obvious home for what will be added later.** A structure that only fits today's content is a defect, not something to revisit later. The revisit does not happen, and new additions get filed wherever there is room.
 
 **Test it before the map is agreed.** Ask the product owner what is likely to be added next, and check that the map says where it would go without moving anything that is already there.
 
-## Not your decision
+## Set by the theme or the component
 
 - **Which sections that are not objects exist.** The product owner's, through the request.
 - **What any object or section is called.** The users' words — `recursica-skill-naming-terminology`.
@@ -106,7 +106,7 @@ A section like this is still named with a noun — `Approvals`, never `Approve r
 
 - **How a parent's related objects appear on its detail page.** No skill decides between tabs, sections and links for this yet.
 - **The order of items within a level** — by how often they are used, alphabetically, or in workflow order. Also uncovered in `recursica-skill-navigation`.
-- **An object that exists only once per account** — the organisation's own profile, for example. Whether it is top level, a setting, or somewhere else.
+- **An object that exists only once per account** — the organization's own profile, for example. Whether it is top level, a setting, or somewhere else.
 - **How deep objects may nest** — an order's line items' adjustments — before the deepest one needs a place of its own.
 - **Whether the structure may differ by persona.** `recursica-skill-naming-terminology` covers different words for different personas; nothing covers different structures.
 - **What happens to routes when the map changes after launch** — whether old routes redirect, and what happens to a section that is removed.
@@ -123,4 +123,4 @@ A section like this is still named with a noun — `Approvals`, never `Approve r
 - [ ] Every section that is not an object came from the request, and the map says so. None was invented.
 - [ ] The map says where the next likely addition would go, without moving anything already there.
 - [ ] Nothing in this skill decided how anything looks — tabs, sections, page or panel were left to their own skills.
-- [ ] You invented nothing from the uncovered list.
+- [ ] Uncovered items were asked about, not decided: how a parent's related objects appear on its detail page, the order of items within a level, an object that exists only once per account, how deep objects may nest, whether the structure may differ by persona, and what happens to routes when the map changes.

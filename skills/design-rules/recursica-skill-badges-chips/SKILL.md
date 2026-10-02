@@ -11,14 +11,14 @@ metadata:
 
 These are the house rules for deciding whether something is a badge or a chip, how many of them an object may carry, and where they sit. They are opinions, not neutral best practices. Treat them as constraints.
 
-These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The components already handle badge and chip styling, sizing, and hover and focus states. Your decisions are which component to use, how many, and where.
+These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The components handle badge and chip styling, sizing, and hover and focus states. The decisions left are which component to use, how many, and where.
 
 ## Governing principles
 
-1. **Whether the user can interact with it decides the component.** A badge is displayed; a chip is operated. A status is something the system reports, and a selection is something the user does. A status the user can click is a mistake about what kind of thing it is — not a design variation.
-2. **A badge is singular; chips are plural.** One object carries at most one badge. As soon as you need more than one value, use chips.
-3. **Position shows what belongs to what.** The object comes first and its status comes right after it, on the same line, close enough to read as a sentence.
-4. **A badge is heavy, so it is not the default.** Prefer an icon, and use a badge only where something really needs that much weight. Ask this question first, before the badge-or-chip question below.
+1. **Whether the user can interact with it decides the component.** A badge is displayed; a chip is operated. A status is something the system reports, and a selection is something the user does. A status the user can click is the wrong component for a status, not a design variation.
+2. **A badge is singular; chips are plural.** One object carries at most one badge. When an object has more than one value, use chips.
+3. **Position shows what belongs to what.** The object comes first and its status comes right after it, on the same line, close enough that the two are read together like a sentence.
+4. **A badge draws a lot of attention, so it is not the default.** Prefer an icon, and use a badge only where something needs that much attention. Ask this question first, before the badge-or-chip question below.
 
 ## The core distinction
 
@@ -42,23 +42,23 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **MUST NOT place more than one badge on one object.** An account status is the single badge on its row. Several metadata values on a card are a set of chips.
 
-**When both would be static and unselectable, choosing between them is a matter of style** — they simply look different. The rules above apply whenever interaction or the number of values is involved.
+**When both would be static and unselectable, choosing between them is a matter of style.** The only difference is how they look. The rules above apply whenever interaction or the number of values is involved.
 
 ## Before either: does this need a badge at all?
 
-**Prefer an icon. A badge is the exception, and it has to earn its weight.**
+**Prefer an icon. A badge is the exception, used only in the cases listed below.**
 
-**A badge demands a lot of attention.** It is a filled, bordered, colored box with a word in it, sized to be noticed. That is the right tool for one important thing. It is the wrong tool for eight. A screen scattered with badges costs the reader attention at every single one, while the data they came for fades into the background. Weight only works when it is rare.
+**A badge demands a lot of attention.** It is a filled, bordered, colored box with a word in it, sized to be noticed. That is the right tool for one important thing. It is the wrong tool for eight. Each badge on a screen takes some of the reader's attention, and the data they came for gets less. A badge stands out only when few others are on the screen.
 
-**So the default is an icon.** It carries the same fact at a small fraction of the cost, and it leaves the badge free for when something really must be noticed. `recursica-skill-icon-semantics` owns the icon and its meaning.
+**So the default is an icon.** It shows the same fact while drawing far less attention, and it keeps the badge for what must be noticed. `recursica-skill-icon-semantics` owns the icon and its meaning.
 
-**What still earns a badge:** the object's one main status, when the reader's next decision depends on it, and when a word rather than a symbol is what makes it clear. One per object, as principle 2 already requires.
+**Use a badge for:** the object's one main status, when the reader's next decision depends on it, and when a word rather than a symbol is what makes it clear. One per object, as principle 2 requires.
 
-**What does not earn a badge:** a rare exception or warning, a role or type that is really just a field value, a count, or anything that appears on most rows. Those should be an icon, a column, or plain text.
+**Do not use a badge for:** a rare exception or warning, a role or type that is an ordinary field value, a count, or anything that appears on most rows. Those should be an icon, a column, or plain text.
 
 **An icon that replaces a badge goes beside the value that identifies the object, not alone in a cell.** `recursica-skill-icon-semantics` forbids a non-interactive icon sitting by itself with no other information, and `recursica-skill-tables` forbids a column that is empty for most rows. An icon beside the name breaks neither rule.
 
-**Do not solve this by making the badge smaller.** The weight comes from what the component is, not its size. A small badge is still a badge — and now it is also hard to read.
+**Do not solve this by making the badge smaller.** A badge draws attention because of what it is — a filled, bordered, colored box — not because of its size. A small badge is still a badge — and now it is also hard to read.
 
 ## Pills
 
@@ -83,12 +83,12 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **A status gets its own column only when most rows have one.** Check that first. `recursica-skill-tables` rejects a column that is empty for most rows, so a rare exception never gets a column. A rare exception is an icon beside the object's identifying value, inside that cell. Everything below applies to a status that the whole table carries.
 
-**Put status near the left edge.** People read left to right, so the left edge is where the eye lands first when scanning. In practice, that means the second or third column.
+**Put status near the left edge.** People read left to right, so the left edge is where the eye lands first when scanning. That means the second or third column.
 
 - **The first column is kept for the bulk-selection checkbox**, where there is one.
 - Place the status **right before or right after the information that identifies the object.** If that information is in the first column, the status goes in the second. If the identity is in the second column, the status can come first.
 
-The point is connection: the status must read as belonging to that object. Column order and widths are owned by `recursica-skill-tables`.
+The status must sit where a reader sees at once which object it belongs to. Column order and widths are owned by `recursica-skill-tables`.
 
 ## Placement elsewhere — the sentence rule
 
@@ -97,15 +97,15 @@ The point is connection: the status must read as belonging to that object. Colum
 - On a tab → after the tab label.
 - On a heading → right after the H1 or H2 text.
 
-**The object first, then its status.** You are naming the thing, then reporting on it. The two must sit close together side by side, so the pair reads as a sentence: _the heading has the status of `<badge>`_.
+**The object first, then its status.** Name the object, then report its status. The two must sit close together side by side, so the pair forms a sentence: _the heading has the status of `<badge>`_.
 
 **NEVER stack a badge above or below its object.** Stacking makes the eye scan in a different pattern, and it becomes unclear what the badge belongs to. The only acceptable reason is a real lack of space — on mobile, or in a similarly compact layout.
 
-**Anti-pattern — competing status.** A badge above a heading and a chip below it. Now two elements compete to be the object's main status, and neither one reads as the real one.
+**Anti-pattern — competing status.** A badge above a heading and a chip below it. Now two elements compete to be the object's main status, and the reader cannot tell which one is the main status.
 
 ## Placement in cards
 
-**The card component already places the badge in the upper right corner**, on the opposite side of the card from the heading. Do not invent a different position.
+**The card component places the badge in the upper right corner**, on the opposite side of the card from the heading. Do not invent a different position.
 
 **Chips belong in the card's content area.**
 
@@ -115,7 +115,7 @@ The point is connection: the status must read as belonging to that object. Colum
 
 ## How many chips
 
-**A chip group follows the same limit as a checkbox group: 7 ± 2**, adjusted for cognitive load (the mental effort a task demands). Allow up to nine when the items are similar and easy to understand, and as few as five when they are different from each other or hard to grasp. A filter bar is a chip group.
+**A chip group follows the same limit as a checkbox group: 7 ± 2**, adjusted for cognitive load. Allow up to nine when the items are similar and easy to understand, and as few as five when they are different from each other or hard to grasp. A filter bar is a chip group.
 
 See `recursica-skill-working-memory` for the reasoning and where the limit stops applying.
 
@@ -125,13 +125,13 @@ See `recursica-skill-working-memory` for the reasoning and where the limit stops
 
 **A badge for an error is an exception at best.** Badges carry extra metadata, not negative conditions, and a badge reading "Error" is easily mistaken for a positive marker.
 
-**Prefer a stronger treatment designed for the purpose** — an icon or another way of drawing attention. If a design needs an error state on an object, design that, instead of reaching for a badge.
+**Prefer a stronger treatment designed for the purpose** — an icon or another visual treatment that draws attention. If a design needs an error state on an object, design that, instead of reaching for a badge.
 
 ## Data density
 
 Density is how tightly content is packed together.
 
-**In tight views, prefer the badge.** It is deliberately small, with very small type, and reads as a compact status marker.
+**In tight views, prefer the badge.** It is deliberately small, with very small type, and is designed as a compact status marker.
 
 **Chips work poorly in dense data views.** A chip is a larger object that needs real padding and spacing, and it may carry an icon or a dismiss button. All of that does not shrink well.
 
@@ -144,7 +144,7 @@ The components handle both cases — hover and focus states are built in — but
 
 ## Status changes at runtime
 
-**Just swap the badge to its new value.** No transition, no animation. Animating a small status badge is excessive: nobody is watching it that closely, and a user who caused the change already expects it.
+**Swap the badge to its new value.** No transition, no animation. Animating a small status badge is excessive: nobody is watching it that closely, and a user who caused the change already expects it.
 
 ## Uncovered — ask, do not invent
 
@@ -164,16 +164,16 @@ No house rule covers these yet. **Ask the person instead of choosing** — see t
 
 Before treating status and metadata as done, check:
 
-- [ ] You weighed every badge on the screen against using an icon, and each one earns its weight: it is a main status that the reader's next decision depends on. No rare exception, no role or type that is really a field value, and no count is shown as a badge.
+- [ ] Every badge on the screen shows a main status that the reader's next decision depends on, where an icon would not do. No rare exception, no role or type that is a field value, and no count is shown as a badge.
 - [ ] Any icon that replaces a badge sits beside the value that identifies the object. It is never alone in a cell, and never in a column that is empty for most rows.
 - [ ] No badge is interactive, selectable, or dismissible.
 - [ ] Each object carries at most one badge. When an object has more than one value, the values are chips.
 - [ ] No status is shown as a chip the user can act on.
 - [ ] Tags are chips, not badges.
-- [ ] You translated any "pill" in the spec into a chip or a badge.
+- [ ] Every "pill" in the spec is built as a chip or a badge.
 - [ ] Only chips the user added can be dismissed, and toggled chips behave like checkboxes.
 - [ ] A status column exists only where most rows have a status. In tables, it sits in the second or third column, beside the information that identifies the object, with the first column left for bulk selection.
-- [ ] Each badge sits right after its object on the same line. It is never stacked, except where space really is too tight.
+- [ ] Each badge sits right after its object on the same line. It is never stacked, except where space is too tight to fit it beside the object.
 - [ ] No object has competing status elements above and below it.
 - [ ] Card badges use the component's upper-right position, and card chips sit in the content area.
 - [ ] Sidebar nav labels are badges, not chips.
@@ -182,4 +182,4 @@ Before treating status and metadata as done, check:
 - [ ] Dense data views use badges, not chips.
 - [ ] Badges cannot receive focus; interactive chips can.
 - [ ] When a status updates, the badge is swapped with no animation.
-- [ ] You asked before deciding anything on the uncovered list: count limits, icons in badges, and a filter bar with more than 7 ± 2 items.
+- [ ] Uncovered items were asked about, not decided: count limits, icons in badges, and a filter bar with more than 7 ± 2 items.

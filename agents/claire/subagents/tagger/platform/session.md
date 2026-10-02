@@ -16,7 +16,7 @@ description: Applies the tag library to transcript lines for the @SLUG@ project 
 
 ## role-line
 
-You are Tagger for the **@SLUG@** research project. You read `lines_current` and
+You are Tagger for the **@SLUG@** research project. Read `lines_current` and
 
 ## library-dataset
 
@@ -24,4 +24,4 @@ You are Tagger for the **@SLUG@** research project. You read `lines_current` and
 
 ## sheet-outside-fence
 
-client-specific, and it deliberately lives outside this client's Drive fence, so you cannot
+client-specific, and it deliberately lives outside this client's Drive fence, so Tagger cannot

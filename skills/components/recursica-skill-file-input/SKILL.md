@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-file-input
-description: How to use the Recursica file input, the compact choose-a-file field — when it fits and when the larger upload area does, stating accepted types and size limits up front, and keyboard access. Use for a file or attachment field in a form. Not for a drop area with a file list — see recursica-skill-file-upload.
+description: Rules for the Recursica file input, the compact choose-a-file field — when it fits and when the larger upload area does, stating accepted types and size limits up front, and keyboard access. Use for a file or attachment field in a form. Not for a drop area with a file list — see recursica-skill-file-upload.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -46,9 +46,9 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.file-input`. **Do not 
 | `layouts` | `stacked`, `side-by-side` |
 | `states`  | `error`, `disabled`       |
 
-**`layouts` is the label-placement axis (a variant property, as Figma calls it — one way a component varies, such as its size).** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's (the visible area of the browser window). See `recursica-skill-forms`.
+**`layouts` is the label-placement axis (a property a component varies on, such as size or style; Figma calls it a variant property).** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
-**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints (the screen widths at which the layout changes), but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
+**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
 **It is shaped like a single-line field.** `min-height`, `horizontal-padding`, `vertical-padding`, `border-size`, `border-radius`, `text`, and `placeholder-opacity` are the same set of properties as the text field — the clearest sign of what this component is for.
 
@@ -60,13 +60,13 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.file-input`. **Do not 
 
 ## Rules for using it
 
-**State the accepted file types and the size limit in help text, before the user picks.** Both of them. "PDF or PNG, up to 10 MB" under the field. An error afterward is a failure you were left to deliver; the help text is what prevents it. Owned by `recursica-skill-assistive-element`.
+**State the accepted file types and the size limit in help text, before the user picks.** Both of them. "PDF or PNG, up to 10 MB" under the field. With the limits stated first, the user picks a file that will be accepted. Owned by `recursica-skill-assistive-element`.
 
 **Limit the picker to the accepted types too.** The text is for the user; limiting the picker is for the computer. Do both, not one.
 
 **Choosing a file does not start an upload.** Choosing a file saves nothing, so it does not use the form's save mode at all. The upload starts when the user clearly asks for it — never as a side effect of choosing a file. Where the form saves everything together, the upload finishes before submit. This is settled, and it does not conflict with the one-save-mode rule in `recursica-skill-forms`.
 
-**Show the file the user picked.** A field that looks empty after a successful pick reads as a pick that failed. The selected file's name is the field's value.
+**Show the file the user picked.** A field that looks empty after a successful pick looks like a pick that failed. The selected file's name is the field's value.
 
 **Never put the rule in the placeholder.** It disappears the moment there is a value. Use the placeholder only to show the form of what is expected.
 
@@ -74,15 +74,15 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.file-input`. **Do not 
 
 **Pair the error state with a signal that is not color.** Required by `recursica-skill-system-conventions`.
 
-**Truncate a long file name; do not let the field grow.** The field is one line, and a name that pushes the layout around is worse than one that ends in an ellipsis (…). But the full name must still be available to assistive technology (tools such as screen readers that help people with disabilities use a computer).
+**Truncate a long file name; do not let the field grow.** The field is one line, and a name that pushes the layout around is worse than one that ends in an ellipsis (…). But the full name must still be available to assistive technology.
 
 **Never disable a file input as a way to show an attachment.** If the user can never replace it here, this is not a form control.
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring (the outline that shows which element has keyboard focus). Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
 
-The whole point of this component is that a file field is a field. Everything below is up to you, and the failures are almost always about the pointer.
+A file input is a form field, and it follows the same rules as any other field. Every item below is the application's job. Most failures come from a control that works only with a pointer.
 
 ### Screen readers
 
@@ -92,7 +92,7 @@ The whole point of this component is that a file field is a field. Everything be
 - **Any clear or remove control needs an accessible name that includes the file name** — "Remove quarterly-report.pdf", not "Clear".
 - **A removal must be announced**, and so must a rejected file and the reason it was rejected.
 - **The field's icon is decorative and must be silent.** It is only a visual signal; the label and help text carry the meaning.
-- **Never rely on the field's appearance to say that a file is attached.** The value must be readable, not just visible.
+- **Never rely on the field's appearance to say that a file is attached.** The value must be readable by a screen reader as well as visible on screen.
 
 ### Keyboard and non-mouse navigation
 
@@ -103,9 +103,9 @@ The whole point of this component is that a file field is a field. Everything be
 - **Otherwise, do not move focus for the user.** Coming back from the operating system's file dialog leaves focus on the field.
 - **Nothing needed may appear only on hover** — not the size limit, not the accepted types, and not the remove control.
 
-## Not your decision
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them:
+Do not set or override any of these. The component sets them:
 
 - `min-height`, `horizontal-padding`, `vertical-padding`, `border-size`, `border-radius`.
 - `icon-size` and `icon-text-gap`.
@@ -113,7 +113,7 @@ Do not implement, override, or tune any of these — the component owns them:
 - All `colors`, per layer and per state, including the focused border.
 - Field colors and sizes from `globals.form.field`, label-field gaps and `vertical-item-gap` from `globals.form.properties`, and the disabled treatment from `globals.states.disabled`.
 
-Never style an unfocused field so that it reads as disabled. An editable field must look editable at rest.
+Never style an unfocused field so that it looks disabled. An editable field must look editable at rest.
 
 ## Load these too
 
@@ -137,7 +137,7 @@ Never style an unfocused field so that it reads as disabled. An editable field m
 
 ## Pre-flight checklist
 
-- [ ] The file is one field among many, and you ruled out a dedicated upload area on that basis.
+- [ ] The file is one field among many, so a dedicated upload area does not fit.
 - [ ] A real, visible label is passed, and its `layouts` placement matches every other field in the same form — one placement per form, as `recursica-skill-forms` requires.
 - [ ] The accepted types and the size limit are stated in help text before the user picks, and the picker is limited to those types.
 - [ ] No rule lives in the placeholder.
@@ -149,6 +149,6 @@ Never style an unfocused field so that it reads as disabled. An editable field m
 - [ ] Removals and rejections are announced, and focus is put somewhere on purpose after a removal.
 - [ ] The field's icon is silent, and the required state is shown in code.
 - [ ] No upload starts as a side effect of choosing a file. It starts when the user clearly asks, and when the form saves everything together, it finishes before submit.
-- [ ] You passed no variant, size, or state outside the inventory above.
-- [ ] You overrode no padding, border, or color that the component owns, and no field without focus looks disabled.
-- [ ] You invented nothing from the uncovered list: progress, success, more than one file, chips, and retrying.
+- [ ] Every variant, size, and state is one listed in the inventory above.
+- [ ] Padding, borders, and colors come from the component, and every field without focus looks editable, not disabled.
+- [ ] Uncovered items were asked about, not decided: progress, success, more than one file, chips, and retrying.

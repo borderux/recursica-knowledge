@@ -6,6 +6,7 @@ Please refer to the appropriate guide depending on what you would like to contri
 
 - **[Contributing Components](docs/CONTRIBUTING_COMPONENT.md)**: Guidelines for adding or updating UI component documentation in the `components/` directory.
 - **[Contributing Skills](docs/CONTRIBUTING_SKILL.md)**: Guidelines for creating, extending, and versioning modular Claude Agent Skills in the `skills/` directory.
+- **[Writing guide](WRITING.md)**: How every skill, agent instruction, doc, commit and pull request is written. Read it before writing anything here.
 
 ---
 

@@ -9,15 +9,15 @@ metadata:
 
 # Live regions
 
-These are the house rules for telling assistive technology (tools such as screen readers that help people with disabilities use a computer) that something on the page has changed. A live region is an area a screen reader announces automatically when its content changes. These rules are opinions, not neutral best practices — treat them as constraints.
+These are the house rules for telling assistive technology that something on the page has changed. A live region is an area a screen reader announces automatically when its content changes. These rules are opinions, not neutral best practices — treat them as constraints.
 
-These rules assume **complex enterprise web applications**, built on a component library that handles its own accessibility. What is left for you is the announcements that fall between components, and giving the components what they need to announce correctly.
+These rules assume **complex enterprise web applications**, built on a component library that handles its own accessibility. What remains is to make the announcements that fall between components, and to give each component what it needs to announce correctly.
 
 ## The three governing principles
 
 1. **Announce changes in substance, not changes in appearance.** New content and new interactive elements are announced. A change that is only visual is not. This is the house rule, and stating it is the reason this skill exists.
 2. **How to announce follows established accessibility practice.** Priority, debouncing, combining messages, and how much is too much are not house decisions. They are solved problems, and this is the one topic in the family where outside practice is openly the authority, rather than something to ask about.
-3. **Testing will not catch this.** These announcements are not routinely tested, so they must be right from the start. Nothing later on will find the omission for you.
+3. **Testing will not catch this.** These announcements are not routinely tested, so they must be right from the start. No later step will find a missing announcement.
 
 ## The test: what gets announced
 
@@ -38,13 +38,13 @@ Apply this to every change that happens without the page reloading:
 
 **Every component is responsible for announcing itself.** That is the default, and it holds in the great majority of cases.
 
-**Components also set what you must supply.** A component that announces for you can only announce what it was given — an accessible name (the name a screen reader reads out for a control), a message, a count. Where a component needs that information in order to comply, providing it is not optional, and each component skill states what it needs.
+**Each component sets what it must be given.** A component that announces on its own can only announce what it was given — an accessible name (the name a screen reader reads out for a control), a message, a count. Where a component needs that information in order to comply, providing it is not optional, and each component skill states what it needs.
 
-**The application covers whatever falls between components.** Where a change happens with no component to speak for it, the application makes the announcement. The clearest case is a flow that succeeds silently — a submission that goes to a new page and shows nothing. Nothing there announces on its own, so the application must.
+**When no component announces a change, add a live region that does.** The clearest case is a form that submits successfully, goes to a new page, and shows nothing. No component announces anything there, so the screen's code must add a live region with the message.
 
-**If there is a toast, the toast announces — always.** (A toast is a short message that appears briefly and then disappears.) There is no case where a toast appears without an announcement. Whatever the toast says is the announcement, so nothing else needs to repeat it.
+**If there is a toast, the toast announces — always.** There is no case where a toast appears without an announcement. Whatever the toast says is the announcement, so nothing else needs to repeat it.
 
-**The rule of thumb:** if a component is saying it, let the component say it. If nothing is saying it, say it yourself.
+**The rule of thumb:** if a component already announces the change to screen readers, add nothing. If no component announces it, add a live region with the message.
 
 ## Priority
 
@@ -52,7 +52,7 @@ Apply this to every change that happens without the page reloading:
 
 These are the two priority levels. An **assertive** announcement interrupts whatever the screen reader is currently reading. A polite announcement waits until the screen reader reaches a natural pause.
 
-**Assertive interrupts by design**, which is precisely why it is kept for rare cases. A confirmation, a result count, or a status update announced assertively cuts across whatever the user was reading or typing. That cost is only worth paying for something that cannot wait.
+**Assertive interrupts by design**, which is precisely why it is kept for rare cases. A confirmation, a result count, or a status update announced assertively cuts across whatever the user was reading or typing. Use assertive only for something that cannot wait.
 
 **A polite announcement waits for a natural break.** That is the default for the great majority of changes.
 
@@ -76,13 +76,13 @@ These are the two priority levels. An **assertive** announcement interrupts what
 
 ## Testing
 
-**These announcements are not routinely tested.** That is how things are done today, and it has one direct effect on how you build: nothing later on will catch an omission. So the announcement has to be correct when it is written, instead of being checked afterward.
+**These announcements are not routinely tested.** That is current practice, so no later step will catch a missing announcement. Write each announcement correctly when it is built, instead of relying on a check afterward.
 
-**Treat it as a minimum standard you are responsible for meeting**, not as a feature that someone will review.
+**Treat announcements as a minimum standard that whoever builds the screen is responsible for meeting**, not as a feature that someone will review.
 
-## Not your decision
+## Set by the theme or the component
 
-- **How a component announces things internally.** The component owns it; your job is to give it what it needs.
+- **How a component announces things internally.** The component owns it. Give the component what it needs.
 - **How the underlying library builds a live region.**
 - **Managing focus**, which is a separate concern from announcing, and is owned by the individual component skills.
 
@@ -91,7 +91,7 @@ These are the two priority levels. An **assertive** announcement interrupts what
 - **A component's accessible name, keyboard behavior, or focus handling.** Each component skill has its own.
 - **Which channel a message uses — toast, banner, or inline** — `recursica-skill-feedback-messaging`.
 - **Semantic markup, headings, and reading order** — `recursica-skill-typography-semantics`.
-- **Showing the same change visually.** Announcing is in addition to showing it, never instead of it — see `recursica-skill-system-conventions` on never carrying meaning in a single channel (a way of carrying meaning, such as color, shape, position, or text).
+- **Showing the same change visually.** Announcing is in addition to showing it, never instead of it — see `recursica-skill-system-conventions` on never carrying meaning in a single channel (color, shape, position or text, each a separate signal).
 
 ## Uncovered — ask, do not invent
 
@@ -104,13 +104,13 @@ These are the two priority levels. An **assertive** announcement interrupts what
 
 ## Pre-flight checklist
 
-- [ ] You ran every change that happens without a page reload through the test. New content and new interactive elements are announced; a change that is only visual is not.
+- [ ] Every change that happens without a page reload is announced if it adds new content or new interactive elements. A change that is only visual is not announced.
 - [ ] Changes the user did not cause are announced.
-- [ ] Components are left to announce for themselves, and you gave each one the information it needs to do so.
+- [ ] Components announce for themselves, and each one is given the information it needs to do so.
 - [ ] Anything that falls between components — including a flow that succeeds silently and goes to another page — is announced by the application.
 - [ ] Every toast carries its own announcement, and nothing repeats it.
 - [ ] Assertive is used only for errors and for conditions that cannot wait. Everything else is polite.
 - [ ] A filtered result count is announced when the filter applies, not on each keystroke.
-- [ ] You kept the number of announcements down by debouncing and combining them, following established practice, without dropping any truly new piece of content.
-- [ ] You wrote each announcement to be correct, instead of leaving it for testing to catch.
-- [ ] You invented nothing from the uncovered list.
+- [ ] Rapid updates are debounced and combined into fewer announcements, following established practice, and no truly new piece of content goes unannounced.
+- [ ] Each announcement is correct as built, not left for testing to catch.
+- [ ] Uncovered items were asked about, not decided: how many announcements become noise, which components announce for themselves, what each component must be given, background progress, translated announcements, and exceptions to announcing new content.

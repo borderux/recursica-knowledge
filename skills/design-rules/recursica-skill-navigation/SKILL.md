@@ -11,7 +11,7 @@ metadata:
 
 These are the house rules for application navigation — primary and secondary navigation, revealing lower levels, showing the user where they are, overflow, routing, and tabs. They are opinions, not neutral best practices. Treat them as constraints.
 
-These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The visual design of each component is not your decision — selected states, hover styling, spacing, and color are inherited. Your job is the structure, the interaction, and how routes behave.
+These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The visual design of each component is decided elsewhere — selected states, hover styling, spacing, and color are inherited. This skill decides the structure, the interaction, and how routes behave.
 
 **A control never navigates and does something else in the same click.** Moving the user, applying a filter, opening a surface (a region that holds content, such as a page, panel, or modal), and switching a tab are separate outcomes. Bundling them means the label can only honestly describe one of them. Where a destination must arrive already filtered, that is a different destination with its own route — not a link that applies a filter on the way. See convention 6 in `recursica-skill-system-conventions`.
 
@@ -46,11 +46,11 @@ This applies equally to moving through primary navigation, secondary navigation,
 1. **Does the layout need to work below desktop size?** An application used only on desktop can use either. A responsive target (tablet, mobile) limits the choice.
 2. **How many top-level items are there, and will that number grow?** With a known, fixed set of top-level items, this is a matter of preference — either pattern works, so pick one. If the number of items is expected to grow over time, a horizontal top bar becomes a problem; prefer a vertical sidebar.
 
-Do not treat horizontal versus vertical as a matter of taste when growth is expected. That is the one case where the answer is decided for you.
+Do not treat horizontal versus vertical as a matter of taste when growth is expected. That is the one case where the rule decides the answer.
 
 ## What does not belong in primary navigation
 
-**Keep search, notifications, and the user or account menu out of primary navigation.** They are tools used everywhere, not destinations in the information architecture. Put them elsewhere in the application chrome (the frame around the content). Mixing them into the primary navigation raises the number of items, and blurs what the navigation is a map of.
+**Keep search, notifications, and the user or account menu out of primary navigation.** They are tools used everywhere, not destinations in the information architecture. Put them elsewhere in the application chrome (the header, navigation and footer around the content). Mixing them into the primary navigation raises the number of items, and blurs what the navigation is a map of.
 
 ## Number of navigation items
 
@@ -61,7 +61,7 @@ Do not treat horizontal versus vertical as a matter of taste when growth is expe
 
 This limit is what makes the overflow rules possible to enforce. Horizontal navigation that runs out of room has almost always gone past 7 ± 2 first. Treat the count as the real defect, and the overflow as the symptom.
 
-**Hiding items based on permissions changes the count for each user.** Check the actual number of items for each role, not just the full list.
+**Hiding items based on permissions changes the count for each user.** Check the actual number of items for each role, not only the full list.
 
 ## Exposing sub-levels
 
@@ -78,9 +78,9 @@ This limit is what makes the overflow rules possible to enforce. Horizontal navi
 
 **Use the simplest structure the content allows.** A plain list of links is a valid answer, and often the right one. Reach for an accordion or a tree only when there is a real hierarchy.
 
-**MUST use semantic HTML** (using each element for what it means, not how it looks). Navigation is a list — ordered or unordered — and it must be marked up as one.
+**MUST use semantic HTML** (HTML elements chosen for their role, such as a button element for a button). Navigation is a list — ordered or unordered — and it must be marked up as one.
 
-**A top-level item with no children MUST stay directly navigable.** A dashboard with no sub-navigation is a link, not an accordion header that does nothing. Navigation often mixes items you can go to directly with groups that expand, and both must work in the same navigation.
+**A top-level item with no children MUST stay directly navigable.** A dashboard with no sub-navigation is a link, not an accordion header that does nothing. Navigation often mixes items the user can go to directly with groups that expand, and both must work in the same navigation.
 
 ## Default state of collapsible groups
 
@@ -90,23 +90,23 @@ Expanding everything defeats the purpose of having top-level labels at all — t
 
 ## Indicating location
 
-Location is shown by three things, and you need more than the first one:
+Location is shown by three things, and a screen needs more than the first one:
 
-1. **A selected state** on the active item. Tree and navigation components already provide this — use the component's state; do not invent your own.
+1. **A selected state** on the active item. Tree and navigation components provide this — use the component's state; do not invent a custom one.
 2. **Clear page titles that show the hierarchy** through heading levels (H1, H2, and so on).
-3. **Breadcrumbs** (a trail of links showing where the page sits), using the breadcrumb component, where the depth calls for them.
+3. **Breadcrumbs**, using the breadcrumb component, where the depth calls for them.
 
 **Whether or not the navigation is visible, information on the page itself MUST show the location** — headings, breadcrumbs, or both. Never rely on the navigation being on screen as the only answer to "where am I?"
 
 ## Hiding navigation
 
-**Hiding navigation entirely is acceptable when it is used rarely and the screen space is needed** — behind a hamburger menu (a button with three horizontal lines that opens a menu) or something similar. This is not a compromise. For navigation the user rarely touches, it is correct.
+**Hiding navigation entirely is acceptable when it is used rarely and the screen space is needed** — behind a hamburger menu or something similar. This is not a compromise. For navigation the user rarely touches, it is correct.
 
 **If the user moves back and forth between sections, keep the navigation visible at all times.** How often it is used is what decides this, not the size of the screen.
 
-**NEVER collapse a vertical navigation into a rail of icons only** (a narrow strip showing icons without labels). There is no real benefit to it. When space must be won back, hide the navigation behind a hamburger menu that opens with its text labels still in place. A fully hidden navigation that reads clearly when opened is better than one that is permanently visible but has to be decoded.
+**NEVER collapse a vertical navigation into a rail of icons only** (a narrow strip showing icons without labels). There is no real benefit to it. When space is needed, hide the navigation behind a hamburger menu that opens with its text labels still in place. A fully hidden navigation with clear labels when opened is better than one that is permanently visible but has to be decoded.
 
-**NEVER use icon-only primary navigation**, in any form. A narrow viewport (the visible area of the browser window) is not an exception — the ban holds at every width, and a rail of icons is not the way out for mobile or tablet. Beyond a handful of icons, nobody remembers what they mean, and without a hover state there is no affordance (a visible cue that tells the user they can act on something). A rail of fifteen icons whose collapsed state shrinks down to bare dots you have to hover over is the real-world extreme — and it is a published design system doing it. See `recursica-skill-responsive-behavior` and `recursica-skill-icon-semantics`.
+**NEVER use icon-only primary navigation**, in any form. A narrow viewport is not an exception — the ban holds at every width, and a rail of icons is not an alternative for mobile or tablet. Beyond a handful of icons, nobody remembers what they mean, and without a hover state there is no affordance (a visible cue that a control can be used, such as the underline on a link). A rail of fifteen icons whose collapsed state shrinks down to bare dots that must be hovered over to identify is the real-world extreme — and it is a published design system doing it. See `recursica-skill-responsive-behavior` and `recursica-skill-icon-semantics`.
 
 **Below desktop size, global navigation collapses into a hamburger menu**, and what slides in shows both the icon and the text.
 
@@ -114,7 +114,7 @@ Location is shown by three things, and you need more than the first one:
 
 **A drawer is a panel.** The navigation surface that slides in is a panel holding navigation — no different in kind from a hamburger menu. A sidebar is the permanent one: the desktop alternative to a top navigation, down the left side. Do not treat the two as separate things. See `recursica-skill-panels-modals`.
 
-**You must ask whether the application will be used on a tablet or a phone before choosing the navigation pattern** — not make room for it afterward. Owned by `recursica-skill-responsive-behavior`.
+**Ask whether the application will be used on a tablet or a phone before choosing the navigation pattern** — do not make room for it afterward. Owned by `recursica-skill-responsive-behavior`.
 
 ## Overflow
 
@@ -126,8 +126,8 @@ Location is shown by three things, and you need more than the first one:
 **Hard bans:**
 
 - **NEVER wrap horizontal navigation onto a second row.**
-- **NEVER scroll navigation sideways.** Horizontal navigation must be fully visible at all times. Avoid sideways scrolling anywhere in an enterprise application at almost any cost — and in navigation, there is no reason for it at all.
-- **NEVER put navigation in its own separate scrolling area.** Vertical navigation that scrolls _with the page_ is fine. A separate scrolling `div` just for the navigation is not.
+- **NEVER scroll navigation horizontally.** Horizontal navigation must be fully visible at all times. Avoid horizontal scrolling anywhere in an enterprise application at almost any cost — and in navigation, there is no reason for it at all.
+- **NEVER put navigation in its own separate scrolling area.** Vertical navigation that scrolls _with the page_ is fine. A separate scrolling `div` only for the navigation is not.
 
 **The only exception — customization the user owns.** An ellipsis or "more" control that hides top-level items is acceptable only when the user can customize the navigation, and the user chose what to hide. Without that explicit choice by the user, no overflow state is acceptable in a horizontal navigation.
 
@@ -139,15 +139,15 @@ Location is shown by three things, and you need more than the first one:
 
 ## Tabs
 
-**Tabs show parts of a whole.** The guiding picture is a file cabinet: the tabs are the folders in one drawer, and the user flips between them while looking at the same body of material. Use tabs only when the content really fits that picture.
+**Tabs show parts of one whole.** The user switches between them while looking at the same material. Use tabs only when the content fits that.
 
 **The first tab in reading order opens by default** — the leftmost one, in a locale that reads left to right, because that is where the eye starts. Owned by `recursica-skill-defaults`.
 
 **MUST NOT spread a form across tabs.** Tabs are for dividing content into sections, not for breaking up data entry. A form with several parts uses a stepper component (which walks the user through numbered steps), not tabs. Do not put several forms, or the fields of one form, on separate tabs.
 
-**Keyboard interaction inside a set of tabs is not your decision.** Whether tabs move focus with the arrow keys or with the Tab key is owned by the underlying coded library (MUI, Mantine, or whatever the Recursica tab component wraps). Use the component and keep its behavior — do not add your own key handling.
+**Keyboard interaction inside a set of tabs is decided elsewhere.** Whether tabs move focus with the arrow keys or with the Tab key is owned by the underlying coded library (MUI, Mantine, or whatever the Recursica tab component wraps). Use the component and keep its behavior — do not add custom key handling.
 
-**If forms on several tabs cannot be avoided**, you MUST ask the user about unsaved changes — most likely with a modal when a tab is clicked. Understand what this costs: it combines choosing a tab with handling unsaved changes into one interaction, which is the clearest sign that tabs were the wrong container. Treat the prompt as damage control, not as a supported pattern.
+**If forms on several tabs cannot be avoided**, the screen MUST ask the user about unsaved changes — most likely with a modal when a tab is clicked. This has a cost: it combines choosing a tab with handling unsaved changes into one interaction, which is the clearest sign that tabs were the wrong container. Treat the prompt as a last resort, not as a supported pattern.
 
 ## Uncovered — ask, do not invent
 
@@ -174,8 +174,8 @@ Before treating navigation as done, check:
 - [ ] No modal or panel creates a history entry, except one deliberately built to be linked to, with a URL that can be shared.
 - [ ] No tab state is kept as remembered UI state in place of a route.
 - [ ] Each tab has its own sub-path under its parent route.
-- [ ] You chose horizontal or vertical based on the responsive target and whether the top-level items will grow — vertical where they will grow.
-- [ ] Each level holds 7 ± 2 items — closer to 5 for complex subject matter, up to 9 for simple. You checked this for each role, after items were hidden by permission.
+- [ ] The navigation is horizontal or vertical based on the responsive target and on whether top-level items will grow. Vertical where they will grow.
+- [ ] Each level holds 7 ± 2 items: closer to 5 for complex subjects, up to 9 for simple ones. The count holds for each role, after permissions hide items.
 - [ ] Search, notifications, and the account menu are outside primary navigation.
 - [ ] Sub-navigation opens on click, not on hover.
 - [ ] Clicking a primary item that has a landing page goes there and expands its sub-navigation. Without a landing page, it expands in place.
@@ -193,7 +193,7 @@ Before treating navigation as done, check:
 - [ ] Horizontal navigation does not wrap, does not scroll, and does not sit in its own scrolling area.
 - [ ] There is no overflow control, unless the user can customize the navigation and chose to hide items.
 - [ ] Tabs hold parts of one whole — no form fields, and no forms spread across tabs.
-- [ ] You added no custom keyboard handling inside tab sets.
+- [ ] Tab sets have no custom keyboard handling.
 - [ ] Forms with several parts use a stepper.
 - [ ] Where forms on tabs cannot be avoided, switching tabs asks about unsaved changes.
-- [ ] You asked before deciding anything on the uncovered list: the order of items, the maximum depth, and where a dashboard goes.
+- [ ] Uncovered items were asked about, not decided: the order of items, the maximum depth, and where a dashboard goes.

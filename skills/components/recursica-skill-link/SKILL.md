@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-link
-description: How to use the Recursica link — link versus button, labels that name the destination, external and download links, new tabs, never disabled, and link accessibility. Use for anything the user clicks to go somewhere. Not for actions that change data — see recursica-skill-button.
+description: Rules for the Recursica link — link versus button, labels that name the destination, external and download links, new tabs, never disabled, and link accessibility. Use for anything the user clicks to go somewhere. Not for actions that change data — see recursica-skill-button.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -16,14 +16,14 @@ A link takes the user somewhere. It never changes data.
 - **Using it changes the location** — another page, a section of this page, an outside website, or a file to download.
 - **The navigation sits inside a sentence** — a source, a definition, or a related object mentioned in text.
 - **The navigation stands on its own** — a menu, a footer, or a "view all" beside a heading.
-- **Leaving a table row for a related object.** A link is quieter than a button, which is what a dense table needs.
+- **Leaving a table row for a related object.** A link has less visual weight than a button, which is what a dense table needs.
 
 ## Do not use it when
 
 | Instead of a link                                | Use                                                          |
 | ------------------------------------------------ | ------------------------------------------------------------ |
 | Using it changes data or state                   | `recursica-skill-button`                                     |
-| The action must simply look lightweight          | A button in the `text` style — not a link                    |
+| The action must look lightweight                 | A button in the `text` style — not a link                    |
 | Opening a modal on the same page                 | A button. A modal is not a location                          |
 | The destination is unavailable right now         | Leave the link out, or explain why in text. Never disable it |
 | Switching between parts of one whole on one page | `recursica-skill-tabs` — which have their own routes         |
@@ -38,7 +38,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 | -------- | --------- |
 | `states` | `visited` |
 
-**`visited` is the only state variant.** There is no size axis (a variant property, as Figma calls it — one way a component varies, such as its size), no style axis, and no disabled state — the browser and the component own everything else.
+**`visited` is the only state variant.** There is no size axis (a property a component varies on, such as size or style; Figma calls it a variant property), no style axis, and no disabled state — the browser and the component own everything else.
 
 **Properties defined here:** `text`, `icon-size`, `icon-text-gap`, and `colors`. An icon may sit before or after the label; both positions are shown only on the design-system website.
 
@@ -64,7 +64,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
-The component owns the underline, the color, and the focus ring (the outline that shows which element has keyboard focus). The meaning in the markup is up to you, and a link built from the wrong element fails every kind of assistive technology (tools such as screen readers that help people with disabilities use a computer) at once.
+The component owns the underline, the color, and the focus ring. The application sets the markup, and a link built from the wrong element fails every kind of assistive technology at once.
 
 ### Screen readers
 
@@ -73,20 +73,20 @@ The component owns the underline, the color, and the focus ring (the outline tha
 - **Two links with the same name must go to the same place.** Different destinations that share a label — "View" in every row — must be told apart, either in the name itself or through the row's context.
 - **An icon on the link is decorative and must be silent**, unless the icon is the only content — in that case, it must carry the name.
 - **If the link opens in a new tab or downloads a file, say so in the name or in text right next to it.** An unannounced switch of context is confusing for a screen reader user, who has no visual sign that the window changed.
-- **Never show "external" by color or icon alone** — `recursica-skill-system-conventions` requires a second channel (a way of carrying meaning, such as color, shape, position, or text).
+- **Never show "external" by color or icon alone** — `recursica-skill-system-conventions` requires a second channel (color, shape, position or text, each a separate signal).
 
 ### Keyboard and non-mouse navigation
 
 - **Every link is a tab stop (a place the Tab key lands) because it has an `href`.** Do not remove it from the tab order, and never add a tabindex to force an order.
-- **Enter activates a link. Space does not** — that is how browsers work, and it is correct. If you find yourself adding a Space handler, you have built a button.
+- **Enter activates a link. Space does not** — that is how browsers work, and it is correct. A link that needs a Space handler is a button.
 - **Do not intercept the modifier keys.** Ctrl, Cmd, Shift, and middle-click must reach the browser, so the user stays in control of where the destination opens.
 - **A link that appears only on hover cannot be reached** by keyboard or by touch. Links inside text and in rows must stay visible.
-- **Focus must be visible on the link itself**, not just implied by the underline. Never hide the focus ring.
+- **Focus must be visible on the link itself**, not only implied by the underline. Never hide the focus ring.
 - **After navigating, focus belongs at the start of the new content**, not left behind on the old page.
 
-## Not your decision
+## Set by the component
 
-Do not implement, override, or tune any of these — the component owns them:
+Do not set or override any of these. The component sets them:
 
 - Text styling, including the underline and its behavior on hover.
 - `colors` per layer and per state, including `visited`.
@@ -117,5 +117,5 @@ Do not implement, override, or tune any of these — the component owns them:
 - [ ] No link is disabled. Destinations that are unavailable are left out, or explained in text.
 - [ ] No link depends on hover to be visible, and the focus ring is intact.
 - [ ] Focus lands at the start of the new content after navigating.
-- [ ] You passed no variant or state other than `visited`, and overrode no styling that the component owns.
-- [ ] You invented nothing from the uncovered list.
+- [ ] Only `visited` is passed as a variant or state, and the styling the component owns comes from the component.
+- [ ] Uncovered items were asked about, not decided: which icon marks an external link, download links, a size or emphasis style for links, and links inside a paragraph in a table cell.

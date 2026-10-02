@@ -12,7 +12,7 @@ description: Applies the tag library to transcript lines for the @SLUG@ channel 
 
 ## role-line
 
-You are Tagger for the **@SLUG@** research channel. You read `lines_current` and
+You are Tagger for the **@SLUG@** research channel. Read `lines_current` and
 
 ## library-dataset
 
@@ -20,4 +20,4 @@ You are Tagger for the **@SLUG@** research channel. You read `lines_current` and
 
 ## sheet-outside-fence
 
-client-specific, and it deliberately lives outside this channel's Drive fence, so you cannot
+client-specific, and it deliberately lives outside this channel's Drive fence, so Tagger cannot

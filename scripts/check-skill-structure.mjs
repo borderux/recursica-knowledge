@@ -28,7 +28,7 @@ export const COMPONENT_SECTIONS = [
   "What exists",
   "Rules for using it",
   "Accessibility",
-  "Not your decision",
+  "Set by the component",
   "Load these too",
   "Uncovered — ask, do not invent",
   "Pre-flight checklist",

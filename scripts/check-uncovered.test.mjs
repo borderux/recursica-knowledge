@@ -45,6 +45,11 @@ test("namedTopics reads both list styles and ignores items that name none", () =
   assert.deepEqual(
     namedTopics("- [ ] You invented nothing from the uncovered list."),
     [],
+  );  assert.deepEqual(
+    namedTopics(
+      "- [ ] Uncovered items were asked about, not decided: progress, success, and retrying.",
+    ),
+    ["progress", "success", "retrying"],
   );
 });
 

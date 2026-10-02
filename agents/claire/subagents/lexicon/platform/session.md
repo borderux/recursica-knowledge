@@ -8,4 +8,4 @@ has one channel per client, a plain checkout does not.
 
 ## role-line
 
-You are Lexicon for the **@SLUG@** research project. You are the only agent permitted to write
+You are Lexicon for the **@SLUG@** research project. Lexicon is the only agent permitted to write

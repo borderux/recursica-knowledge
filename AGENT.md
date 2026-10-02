@@ -54,13 +54,13 @@ Write structurally instead — "the client", "a client dataset", "a participant"
 **Never enumerate the strings you searched for. State the result.** "Grepped the diff for
 `<slug>`/`<role>`/`<segment>` — zero hits" publishes, in the sentence claiming the text is
 clean, exactly what the search was protecting. This is the rule to reach for when in doubt,
-because it is the only one here that needs no judgement about what is sensitive: you can
+because it is the only one here that needs no judgment about what is sensitive: you can
 follow it without knowing, which is precisely the case where the category list above fails
 you. Write "the checker passes on every changed file" — the exit code is the evidence, and
 it already knows the terms so the reader does not need them.
 
-The pattern generalises past grep. Any sentence whose job is to prove a check ran is under
-pressure to quote the thing checked — a rejected value, a matched line, a filename, a table
+The pattern generalizes past grep. Any sentence whose job is to prove a check ran is under
+pressure to quote the value it checked — a rejected value, a matched line, a filename, a table
 row that "looks wrong." Prove it with the tool's output, never with the input.
 
 **Run the checker on the text, not just the diff:**
@@ -175,8 +175,8 @@ git commit -F <file> \
 ```
 
 **All three trailers coexist** — the operator's `Co-authored-by`, the model's, and the
-operator's `Signed-off-by`. The instruction to credit the model reads like a substitution
-and is not one. GitHub reads `Co-authored-by` for contribution credit and `Signed-off-by`
+operator's `Signed-off-by`. The instruction to credit the model looks like it replaces the
+operator's trailer, and it does not. GitHub reads `Co-authored-by` for contribution credit and `Signed-off-by`
 alone does not grant it, which is why both are required rather than either. Pass the model's
 as a `--trailer` flag too rather than leaving it at the end of the message body — that is
 what puts it in the right position and what makes it visible in the same place as the other
@@ -343,7 +343,7 @@ Two things about it differ from its siblings on purpose:
 `nest/bin/lib/shell-command.mjs` holds the heredoc stripping, statement splitting and verb
 extraction both guards need. It was extracted from `guard-stale-checkout.mjs` rather than
 copied, and that guard's 26 tests passing unchanged is the evidence the extraction is
-behaviour-preserving. A hand-copied second version of this logic is exactly the second source
+behavior-preserving. A hand-copied second version of this logic is exactly the second source
 of truth this repo keeps being bitten by.
 
 **It is not total, and the tests say so.** `cp ~/.ssh/id_rsa /tmp/k && cat /tmp/k` launders
@@ -446,7 +446,7 @@ per claim. She writes nothing — no `Write`, no `Edit` — and that is the whol
 precaution: a reviewer that can edit the code under review can make a finding vanish, and one that
 can edit `skills/` can resolve a violation by softening the rule. See
 [agents/barb/PORTING.md](agents/barb/PORTING.md), and note the two leaks it names even on Claude
-Code — `Bash` is a write path, and per-subagent `tools:` lines only hold if the platform honours them.
+Code — `Bash` is a write path, and per-subagent `tools:` lines only hold if the platform honors them.
 
 **She is built for Buzz as well**, so `restore-agents.mjs` deploys her with the others and any agent
 building a Recursica app can ask her for a review in a channel. A Buzz agent has no `tools:` line at
@@ -484,6 +484,10 @@ error rather than a guess. Run `skills:manifest:check` after an adapter upgrade.
 
 For detailed information on what this project is, what it does, and how it is structured, please read **[README.md](README.md)**.
 
+## ✍️ Writing rules
+
+**Follow [WRITING.md](WRITING.md) when writing or reviewing any text in this repository, including commits, pull requests and issues.**
+
 ---
 
 ## 🧠 Adding or Modifying Agent Skills
@@ -504,15 +508,16 @@ If you (the AI assistant) are tasked with creating, editing, or registering cust
 - **A paragraph several skills share is worded in [`skills/meta/SHARED-PASSAGES.md`](skills/meta/SHARED-PASSAGES.md).** The label-placement rule, the React-prop column note and the rest are copied into each skill for the same reason definitions are, and they had drifted into seven wordings. Change a shared passage there and in every copy together; a skill whose situation genuinely differs writes its own paragraph under an opening that file does not list.
 - **Run `npm run skills:check` before you push a skill change.** It runs every check below, and `npm test` and CI run them too:
 
-  | Check                    | What it holds                                                                                                                     |
-  | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-  | `skills:manifest:check`  | every adapter component resolves to a skill; every skill has a checklist                                                          |
-  | `skills:structure:check` | frontmatter parses, `name` matches the folder, description ≤ 1024; component sections in order; references resolve; tables render |
-  | `skills:glossary:check`  | in-place definitions match `GLOSSARY.md`                                                                                          |
-  | `skills:passages:check`  | shared paragraphs match `SHARED-PASSAGES.md`                                                                                      |
-  | `skills:uncovered:check` | every topic a checklist calls uncovered is in that skill's `## Uncovered`                                                         |
-  | `skills:kit:check`       | every `## What exists` inventory matches `recursica_ui-kit.json` in the pinned `@recursica/official-release`                      |
-  | `skills:wiring:check`    | every skill is wired to the agents: packaged, in `llms.txt`, routed to, and reachable by the reviewers — see below                |
+  | Check                    | What it holds                                                                                                                       |
+  | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+  | `skills:manifest:check`  | every adapter component resolves to a skill; every skill has a checklist                                                            |
+  | `skills:structure:check` | frontmatter parses, `name` matches the folder, description ≤ 1024; component sections in order; references resolve; tables render   |
+  | `skills:glossary:check`  | in-place definitions match `GLOSSARY.md`                                                                                            |
+  | `skills:passages:check`  | shared paragraphs match `SHARED-PASSAGES.md`                                                                                        |
+  | `skills:uncovered:check` | every topic a checklist calls uncovered is in that skill's `## Uncovered`                                                           |
+  | `skills:kit:check`       | every `## What exists` inventory matches `recursica_ui-kit.json` in the pinned `@recursica/official-release`                        |
+  | `skills:wiring:check`    | every skill is wired to the agents: packaged, in `llms.txt`, routed to, and reachable by the reviewers — see below                  |
+  | `writing:check`          | American spelling, no "you" in skills or agents, none of the vague phrases [WRITING.md](WRITING.md) lists, a reading grade below 10 |
 
   The last two carry a short `KNOWN` list of mismatches that are logged in [`docs/open-questions.md`](docs/open-questions.md) and waiting on a decision. They print on every run, and an entry fails the check once it is fixed, so the list cannot outlive the problem. **Bumping `@recursica/official-release` is a skill change**: pin the new version exactly and run `skills:kit:check`, which is how a release that adds or removes a variant reaches the skills.
 
@@ -523,7 +528,7 @@ If you (the AI assistant) are tasked with creating, editing, or registering cust
 
 Every skill in `skills/components/` follows one structure, and a new one must match it. Its only job is to help an agent use the component correctly — nothing goes in that does not serve that:
 
-`## Use it when` · `## Do not use it when` (a table naming the alternative) · `## What exists` (the variant and state inventory from the token file) · `## Rules for using it` · `## Accessibility` (with `### Screen readers` and `### Keyboard and non-mouse navigation`) · `## Not your decision` (token-owned properties) · `## Load these too` (skill names, what the component needs; alternatives and neighbours under `### Only if the screen also uses it`, which loaders follow only when the screen imports that component) · `## Uncovered — ask, do not invent` · `## Pre-flight checklist`
+`## Use it when` · `## Do not use it when` (a table naming the alternative) · `## What exists` (the variant and state inventory from the token file) · `## Rules for using it` · `## Accessibility` (with `### Screen readers` and `### Keyboard and non-mouse navigation`) · `## Set by the component` (properties the component sets from its tokens) · `## Load these too` (skill names, what the component needs; alternatives and neighbors under `### Only if the screen also uses it`, which loaders follow only when the screen imports that component) · `## Uncovered — ask, do not invent` · `## Pre-flight checklist`
 
 Anatomy diagrams, spec imagery, external documentation links, and generic best practices belong to the website, not the skill.
 
