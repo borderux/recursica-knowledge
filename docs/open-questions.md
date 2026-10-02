@@ -140,6 +140,8 @@ Two components are empty placeholders in both adapters. The file input and file 
 - **`FileInput`** applies none of the 40 `file-input` variables. See `mantine-adapter/src/components/FileInput/FileInput.module.css` and the matching MUI file.
 - **`FileUpload`** applies none of the 32 `file-upload` variables.
 
+The table skill warns that one adapter applies none of the 101 table variables. The evidence: the MUI adapter's `Table.module.css` refers to none of the `table`, `table-cell`, `table-header` and `table-footer` variables, and the Mantine adapter applies all of them.
+
 Two smaller notes worth keeping:
 
 - **`TextField`'s events are ordinary React synthetic events.** Reading `e.currentTarget.value` lazily inside a `setState` updater callback threw and blanked the whole panel. Capture eagerly.
