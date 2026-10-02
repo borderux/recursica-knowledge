@@ -94,10 +94,7 @@ test("component shape: a missing Variants section is reported", () => {
     full().replace("## Variants\n\nText.\n", ""),
   ).map((p) => p.message);
   assert.equal(missing.length, 1, missing.join("\n"));
-  assert.match(
-    missing[0],
-    /missing section `## Variants`/,
-  );
+  assert.match(missing[0], /missing section `## Variants`/);
 });
 
 test("component shape: a missing section and a swapped pair are both reported", () => {
