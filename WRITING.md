@@ -48,6 +48,8 @@ Quoted interface copy keeps the exact interface wording, such as a button label 
 | whatever it should look like    | even when the design shows a button                      |
 | if the link must look light     | when the link needs less visual weight                   |
 
+**Mention another component only when the reader needs that component.** Name another component when the reader should use that component instead, or when the rule depends on that component. Never compare in passing, as in "`placeholder-opacity` on this component, the same as on a text field". Write "`placeholder-opacity` sets the placeholder."
+
 **Never use "something", "somewhere", "anything", "the rest" or "whatever" in a rule.** Each one stands in for a specific noun. Find that noun.
 
 ### 4. Designer vocabulary
@@ -70,7 +72,7 @@ Quoted interface copy keeps the exact interface wording, such as a button label 
 
 **Standard HTML and ARIA names are allowed in accessibility rules**, such as `button`, `div`, `span`, `href` and `aria-label`. HTML and ARIA are web standards, not a library, and a reviewer can check a rule that names the element.
 
-**Skills never state a project's variants as fixed facts.** Each project can add, rename or remove variants in the project's UI kit. Describe a variant by role, such as "the primary style" or "the smaller size", and give the standard UI kit name only as an example.
+**Skills never state a project's variants or options as fixed facts.** A designer can add, rename or remove variants and options in Theme Forge, so each project can differ. Describe an option by role, such as "the primary style" or "the smaller size", and give the standard UI kit name only as an example. Tell the agent to get the project's list from the Recursica MCP server.
 
 ### 5. Concrete words instead of metaphors
 

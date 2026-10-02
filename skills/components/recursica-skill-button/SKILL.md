@@ -31,9 +31,9 @@ A button performs an action. A button never takes the user to a different page o
 
 ## Variants
 
-**Use only the button variants the Recursica MCP server lists for the project, under the names the code uses. Never invent a variant.** Get the list from the server's `recursica_get_component_doc` tool. Each project can add, rename, or remove button variants in the project's UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has).
+**Use only the button variants and options that the Recursica MCP server lists for the project.** A designer can add variants and options in Theme Forge, so each project can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
 
-The rules below describe each variant by role. The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples.
+The rules below describe each option by role, such as "the primary style". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
 - **Three styles, from most to least prominent.** The primary style is for the main action. The secondary style is for the next most important action. The least prominent style is for every other action. In the standard UI kit, the three styles are `solid`, `outline`, and `text`. The `text` style is also called "Ghost".
 - **Two sizes.** A button comes in a default size and a smaller size. The standard UI kit calls the smaller size `small`.
