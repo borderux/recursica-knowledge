@@ -71,9 +71,14 @@ export function readInventory(text, known) {
   const components = new Set();
   for (const m of section.matchAll(/ui-kit\.components\.([a-z0-9-]+)/g))
     components.add(m[1]);
-  // "Taken from … → `ui-kit.components.table`, `table-cell`, `table-header`." names more specs.
+  // The line naming the spec — "… `ui-kit.components.table`, `table-cell`, `table-header`." —
+  // can name more specs after the first.
   const taken =
-    section.split("\n").find((l) => l.startsWith("Taken from")) ?? "";
+    section
+      .split("\n")
+      .find(
+        (l) => l.startsWith("Taken from") || l.includes("ui-kit.components."),
+      ) ?? "";
   for (const name of ticks(taken)) if (known.has(name)) components.add(name);
   const primary = [...components][0];
 
