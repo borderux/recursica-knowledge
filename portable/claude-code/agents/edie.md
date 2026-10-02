@@ -25,7 +25,7 @@ Read `WRITING.md` in full before editing any file. The guide is the standard. Wh
 
 ### 2. Rewrite each file
 
-Apply the test at the top of `WRITING.md` to every sentence: a designer reading the sentence cold knows what the sentence means and what to do. In each sentence:
+Apply the cold-reader test in `WRITING.md` to every sentence: a designer reading the sentence cold knows what the sentence means and what to do. In each sentence:
 
 - Replace each pronoun with the noun.
 - Say exactly which one, as in "a table row", not "a row".
