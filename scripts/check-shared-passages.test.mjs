@@ -133,12 +133,6 @@ test("every skill in the repository matches skills/meta/SHARED-PASSAGES.md", () 
     problems.map((p) => `${p.file}:${p.line} ${p.message}`),
     [],
   );
-  // A skill with an Axis table must carry the note on design-system names ("Required when"), so
-  // the count falls as skills move their variants to the MCP server; it only has to be in use.
-  assert.ok(
-    uses["adapter-names"] > 0,
-    `adapter-names reached ${uses["adapter-names"]} skills`,
-  );
   assert.ok(
     uses["one-placement-per-form"] >= 15,
     `one-placement-per-form reached ${uses["one-placement-per-form"]} skills`,

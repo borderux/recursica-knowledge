@@ -18,7 +18,7 @@ Each passage below has three parts:
   opening listed here must then match one of the passages sharing that opening, from its first
   word. A skill may add its own sentences **after** the passage in the same paragraph, never inside
   it.
-- **Required when** — optional. A pattern tested against the skill's inventory section, the one right before `## Rules for …`; a
+- **Required when** — optional. A pattern tested against the skill's `## Variants` section; a
   component skill that matches must contain the passage.
 - **Passage** — the wording. `{a|b}` means either `a` or `b`, and `{a|}` means `a` or nothing.
   Those are the only permitted differences, and each one is here because the skills differ for a
@@ -30,20 +30,6 @@ label, panel, and stepper skills do for label placement. If it is not, use the p
 
 **When the wording should change**, change it here and in every copy in the same pull request.
 The check lists every copy.
-
-## adapter-names
-
-Starts with:
-
-```text
-**Look up each variant's name in code before using the variant.**
-```
-
-Passage:
-
-```text
-**Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
-```
 
 ## layouts-axis
 
