@@ -47,11 +47,11 @@ Rewrite the whole sentence when a word swap would leave the sentence unclear. Ne
 
 ```bash
 npm run -s writing:check
-npm run -s writing:flags
+npm run -s writing:flags -- --all <each file Edie rewrote>
 npm run -s skills:check
 ```
 
-Rewrite every sentence that `writing:flags` lists. A flagged pronoun can stay only when the noun is in the same sentence and nothing else could match.
+The vague-word report lists every sentence in the file that holds a pronoun or a vague word, such as "it", "these", "something" or "everything". Rewrite every listed sentence to name the noun, then run the report again. Repeat until the report lists nothing, or until each remaining flag is a pronoun whose noun is in the same sentence and nothing else could match. Without `--all`, the report reads only the lines changed since `main`.
 
 ### 4. Compare the old and new versions
 
