@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-autocomplete
-description: Rules for the Recursica autocomplete, the type-to-filter field for a large but familiar set — values from a defined set, placeholder rules, an unclipped list, and combobox accessibility including result counts. Use for typeahead fields and fields that search while the user types. Not for small sets — see recursica-skill-dropdown; not for free text — see recursica-skill-text-field.
+description: Rules for the Recursica autocomplete, a text field that filters a long list of options the user knows well — a value that must match an option, placeholder rules, a filtered list that is never cut off, and combobox accessibility, including result counts. Use for typeahead fields and fields that search while the user types. Not for short lists of options — see recursica-skill-dropdown. Not for free text — see recursica-skill-text-field.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -9,189 +9,181 @@ metadata:
 
 # Autocomplete
 
-An autocomplete is a text field whose value comes from a defined set. The user types to narrow the set down, then picks from it.
+An autocomplete is a text field whose value comes from a defined list of options. The user types to filter the list of options, then picks from the filtered list.
 
 ## When to use an autocomplete
 
-- **The set is too large to scan comfortably in a dropdown**, so opening it and reading down the list is worse than typing.
-- **The user knows the options well** and can start typing a value they already have in mind. Typing relies on recall (remembering the answer); if the user needs to recognize the answer from what is shown, they need a visible set instead.
-- **The value must still come from the set.** The typing is a filter, not free entry.
+- **The list of options is too long to scan comfortably in a dropdown.** Opening a dropdown and reading down the whole list is worse than typing.
+- **The user knows the options well** and can start typing a value the user already has in mind. Typing relies on recall (remembering the answer). When the user needs to recognize the answer among the options shown, the user needs a control that shows the options instead.
+- **The value must still come from the list of options.** The typed text filters the list. The typed text is not a free-text entry.
 
 ## When not to use an autocomplete
 
-| Instead of an autocomplete                                   | Use                                                                            |
-| ------------------------------------------------------------ | ------------------------------------------------------------------------------ |
-| The set is small enough to show at once                      | `recursica-skill-radio-button`, or `recursica-skill-checkbox` for zero to many |
-| The set is large, but the user does not know the values well | `recursica-skill-dropdown`, so the options can be read instead of recalled     |
-| The value is unpredictable free-form text                    | `recursica-skill-text-field`                                                   |
-| The list is a set of actions rather than values              | `recursica-skill-menu`                                                         |
-| The value is binary, with a known opposite                   | `recursica-skill-switch`                                                       |
-| This user can never edit the value                           | `recursica-skill-read-only-field` — shows the label and text, with no input    |
+| Situation                                                                     | Use instead                                                                                                                       |
+| ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| The list of options is short enough to show all at once                       | Radio buttons, or checkboxes when the user picks zero to many. See `recursica-skill-radio-button` and `recursica-skill-checkbox`. |
+| The list of options is long, but the user does not know the values well       | A dropdown, so the user can read the options instead of recalling the options. See `recursica-skill-dropdown`.                    |
+| The value is unpredictable free-form text                                     | A text field. See `recursica-skill-text-field`.                                                                                   |
+| The list holds actions, not values                                            | A menu. See `recursica-skill-menu`.                                                                                               |
+| The value has two options, and each option is the known opposite of the other | A switch. See `recursica-skill-switch`.                                                                                           |
+| The current user can never edit the value                                     | A read-only field, which shows the label and the text with no input. See `recursica-skill-read-only-field`.                       |
 
-**Do not use a disabled autocomplete to show a value.** If nobody can ever change it here, it is not a form control.
+**Do not use a disabled autocomplete to show a value.** When nobody can ever change the value here, a disabled autocomplete is not a form control.
 
 ## Variants
 
-Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.autocomplete`. **Do not pass a variant, size, or state that is not listed here.**
+**Use only the autocomplete variants and options that the Recursica MCP server lists for the project.** A designer can add variants and options in Theme Forge, so each project can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. The same tool gives the name of each variant in code. The code can use a different name from the name in Figma and the UI kit. A wrong name in code has no effect and shows no error. Never invent a variant or an option.
 
-**Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
+The rules below describe each option by role, such as "the error state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-| Variants  | Options                   |
-| --------- | ------------------------- |
-| `states`  | `error`, `disabled`       |
-| `layouts` | `stacked`, `side-by-side` |
+- **An error state and a disabled state.** The standard UI kit calls the state variant `states`, with the two options `error` and `disabled`.
+- **The placeholder is not a variant.** `placeholder-opacity` sets the placeholder.
+- **Never build a focus state.** The component draws the focus border.
+- **No size variant in the standard UI kit.** If the project adds a size variant in Theme Forge, use the project's variant. Otherwise, the autocomplete has a fixed height, the same height as every other single-line field.
+- **No multi-select variant in the standard UI kit.** The standard UI kit also has no chips or tokens that show the chosen values. If the project adds a multi-select variant or chips in Theme Forge, use the project's version. Otherwise, see the open questions.
+- **No loading state in the standard UI kit.** If the project adds a loading state in Theme Forge, use the project's state. Otherwise, see the open questions.
+- **The standard UI kit defines the closed field only.** The icon size and the gap between the icon and the text cover a leading icon and the trailing indicator. The filtered list, the option rows in the filtered list, and the content shown when no option matches are not in the autocomplete's inventory in the standard UI kit. If the project adds styles for the filtered list in Theme Forge, use the project's styles.
+- **Read-only is a separate component.** The read-only field, `read-only-field` in the UI kit, shows text instead of an input.
 
 **`layouts` is the label-placement variant.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
 **Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, under the names the code uses for both.
 
-**Placeholder is not a variant.** It is `placeholder-opacity` on this component, the same as on a text field.
-
-**Focused is not a state.** It comes from `globals.form.field.colors.border-selected`.
-
-**There is no size variant.** `height` is a fixed property, and `globals.form.field.size.single-line-input-height` sets the height for every single-line field.
-
-**There is no multi-select variant, no chip or token display for chosen values, and no loading state** — see the open questions.
-
-**The UI kit defines the closed field only.** `icon-size` and `icon-text-gap` cover a leading icon and the trailing indicator. The filtered list, its option rows, and anything shown when there are no results are not in this component's inventory.
-
-**Read-only is a separate component** — `read-only-field`, which shows text instead of an input.
-
-**Shown only on the design-system website**, under the component's former name, "Search":
+The design-system website shows the autocomplete under the component's former name, "Search", with the sections below. The website is the only place these sections appear.
 
 | Section    | Options                  |
 | ---------- | ------------------------ |
 | `State`    | Default, Focused, Valued |
 | `Behavior` | Suggestions (optional)   |
 
-Those states are not kit variants and must not be passed as variants — `Focused` and `Valued` are conditions the component works out for itself. They do show the component's parts: a **leading icon**, and a clear control that appears once there is text in the field. Suggestions are described as an optional extra, not the default.
+**The website's states are not UI kit variants and must not be set as variants.** The component sets `Focused` and `Valued` by itself, from what the user does. The website's states do show the parts of the autocomplete: a leading icon, and a clear control that appears once the field holds text. The website describes Suggestions as an optional extra, not the default.
 
 ## Rules
 
-**The set, not the field, decides whether this is the right control.** A large set the user recognizes items from belongs in a dropdown; a large set the user recalls items from belongs here. Length alone does not decide it — see `recursica-skill-working-memory` on recognition versus recall.
+**The list of options, not the field, decides whether an autocomplete is the right control.** Use a dropdown for a long list when the user recognizes the options on sight. Use an autocomplete for a long list when the user recalls the options from memory. The length of the list alone does not decide. See `recursica-skill-working-memory` on recognition versus recall.
 
-**Never below the dropdown floor.** If a dropdown would be wrong because there are fewer than four options, an autocomplete is wrong for the same reason. Small sets go on the page.
+**Never use an autocomplete below the dropdown floor.** A dropdown is wrong for fewer than four options, and an autocomplete is wrong for fewer than four options for the same reason. Show a short list of options on the page instead.
 
-**The value must match an option in the set.** Text the user typed that matches nothing is not a value; do not quietly accept it.
+**The value must match an option in the list.** Typed text that matches no option is not a value. Do not quietly accept typed text that matches no option.
 
-**Put the rule in assistive text** — what the field searches, whether partial matches count, any limits — through `recursica-skill-assistive-element`. The placeholder is not the place for it, because it disappears on the first keystroke and never carries required information.
+**Put the field's rules in the assistive text**: what the field searches, whether partial matches count, and any limits. See `recursica-skill-assistive-element`. Do not put the field's rules in the placeholder. The placeholder disappears on the first keystroke, and the placeholder never holds required information.
 
-**Provide a sensible default only where one is correct** for nearly everyone. Never pre-fill a value the user would have to think about, look up, or check — a default the user cannot check gets submitted without being checked.
+**Set a default value only when the default is correct for nearly everyone.** Never pre-fill a value the user would have to think about, look up, or check. A default the user cannot check gets submitted without being checked.
 
 **Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
-**On error, the assistive text is replaced, not added to.** The message must restate the rule that was broken, and the error state must have a signal that is not color, as well as the color change.
+**On error, the error message replaces the assistive text.** The error message is not added to the assistive text. The error message must restate the rule the user broke. The error state must have a signal that is not color, as well as the color change.
 
-**The filtered list must not be cut off by the viewport, or by any scrolling ancestor** (a container further up the page that scrolls). Check it near the bottom of the page, inside a panel, and inside a modal.
+**The filtered list must not be cut off by the viewport, or by any scrolling ancestor** (a container further up the page that scrolls). Check the filtered list near the bottom of the page, inside a panel, and inside a modal.
 
-**Never save on selection in a form that saves everything together.** Either every field in the system saves when it changes, or every field saves on submit.
+**Never save when the user selects an option in a form that saves every field together.** Across the whole system, either every field saves when the field changes, or every field saves on submit.
 
-**Choosing an autocomplete option may reveal more fields**, kept right below it and appearing immediately. The form still submits everything together.
+**Choosing an autocomplete option may show more fields.** Put the new fields right below the autocomplete, and show the new fields immediately. The form still submits every field together.
 
-**Disabled and read-only are different components, not two styles of one.**
+**A disabled autocomplete and a read-only field are different components, not two styles of one component.**
 
-- **Disabled autocomplete** — still a field, still clearly an input, but not usable right now. Use it when the user could make it usable by doing something else first.
-- **Read-only field** — a different component entirely, with no input. Use it when this user never changes this value here.
+- **Disabled autocomplete.** A disabled autocomplete is still a field and still clearly an input, but the user cannot use the field right now. Use a disabled autocomplete when the user could make the field usable by taking a different action first.
+- **Read-only field.** A read-only field is a different component, with no input. Use a read-only field when the current user never changes the value here.
 
-**The clear control appears only when the field has a value.** Clearing returns the field to empty and the collection to unfiltered. It does not blank out the text while leaving a filter applied.
+**The clear control appears only when the field has a value.** Clearing empties the field and returns the filtered collection to unfiltered. Clearing never empties the text while a filter stays applied.
 
-**Where the field filters a collection instead of setting a form value, it saves nothing** — so it does not use the form's save mode. See `recursica-skill-forms`.
+**An autocomplete that filters a collection, instead of setting a form value, saves nothing.** An autocomplete that filters a collection does not use the form's save mode. See `recursica-skill-forms`.
 
-**The placeholder names what is being searched** — "Search invoices" — so the reader knows what is being narrowed. It never replaces the label.
+**The placeholder names what the field searches**, as in "Search invoices". The placeholder tells the user which items the typed text narrows. The placeholder never replaces the label.
 
-**Never make this field the only way to reach the content.** A reader who does not know the right word must still be able to get there.
+**Never make an autocomplete the only way to reach the content the autocomplete searches.** A user who does not know the right word must still be able to reach the content.
 
 ## Accessibility
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
 
-The component connects the label to the input, provides the focus ring, and owns the filter-and-select interaction. The application decides what that interaction announces, and this is the hardest part of any control in this system to get right. The list changes under the user on every keystroke, and none of that reaches a screen reader unless it is announced.
+The autocomplete component connects the label to the input and provides the focus ring. The autocomplete component also handles filtering the list and selecting an option. The app decides what a screen reader announces during filtering and selecting. Getting the announcements right is the hardest part of any control in the design system. The filtered list changes on every keystroke, and a screen reader user hears none of the changes unless the app announces the changes.
 
 ### Screen readers
 
-- **Pass a real label.** It is the accessible name (the name a screen reader reads out for a control), and it must make sense on its own. Never let the placeholder be the name — it is not announced as a label, and it disappears on the first keystroke.
-- **The field must be announced as a text input with a list attached** (a combobox: a text field paired with a list of options), not as a plain text field. The user has to know that typing will produce options, and that there is somewhere to go with the arrow keys.
-- **Whether the list is expanded or collapsed must be available in code.** The user must hear that the results have opened, and hear that they closed.
-- **The number of filtered results must be announced after each filter**, politely, without interrupting the typing — "8 results", then "2 results", then "no results". This is the requirement missed most often: a sighted user watches the list shrink, and a screen reader user gets nothing.
-- **Announce "no results" clearly.** Silence after typing cannot be told apart from a broken field.
-- **The active option must be announced as the user moves through the list**, including its position and whether it is selected.
-- **Do not announce every keystroke, and do not announce the list on every character when the count has not changed.** Announcing too much makes the field as unusable as silence does.
-- **Selection must be available in code, never shown by a highlight or a checkmark alone.** Required by `recursica-skill-system-conventions`.
-- **The chosen value must be readable in the field after it is selected**, and announced as the field's value — not left only as text drawn on the screen.
-- **On error, the message is the only text announced**, because it has replaced the assistive text — so it has to state the rule. "Invalid input" is not an error message.
-- **Give the trailing indicator no separate announcement.** It is part of the field, not a second control.
-- **The clear control is a real control and needs its own accessible name**, and clearing must announce that the field is empty and the full set is back. The leading icon, by contrast, is decorative and must be silent.
+- **Give the autocomplete a real label.** The label is the accessible name (the name a screen reader reads out for a control). The label must make sense without the text around the field. Never let the placeholder be the accessible name. A screen reader does not announce the placeholder as a label, and the placeholder disappears on the first keystroke.
+- **A screen reader must announce the field as a combobox** (a text field paired with a list of options), not as a plain text field. The user has to know that typing shows options, and that the arrow keys move through the options.
+- **The code must expose whether the filtered list is expanded or collapsed.** The user must hear that the results opened, and hear that the results closed.
+- **The app must announce the number of filtered results after each filter**, politely, without interrupting the typing: "8 results", then "2 results", then "no results". The result count is the requirement missed most often. A sighted user watches the list shrink, and a screen reader user gets no news of the change.
+- **Announce "no results" clearly.** A user cannot tell silence after typing apart from a broken field.
+- **The active option must be announced as the user moves through the list**, with the option's position in the list and whether the option is selected.
+- **Do not announce every keystroke.** Do not announce the list on every typed character when the count has not changed. Too many announcements make the field as unusable as silence does.
+- **The selected option must be marked in code, never shown by a highlight or a checkmark alone.** `recursica-skill-system-conventions` sets this rule.
+- **The chosen value must be readable in the field after the user selects the value**, and announced as the field's value. Never leave the chosen value only as text drawn on the screen.
+- **On error, the error message is the only text announced**, because the error message has replaced the assistive text. The error message must state the rule. "Invalid input" is not an error message.
+- **Give the trailing indicator no separate announcement.** The trailing indicator is part of the field, not a second control.
+- **The clear control is a real control and needs a separate accessible name.** After clearing, a screen reader must announce that the field is empty and the full list of options is back. The leading icon is decorative and must be silent.
 
 ### Keyboard and non-mouse navigation
 
-- **The clear control is its own tab stop** (a place the Tab key lands), works with Enter or Space, and is never revealed only on hover.
-- **The field is one tab stop, whether open or closed.** Tab must never step through the results. While the list is open, Tab either closes it or moves past the whole field.
-- **Arrow Down and Up move the active option, Enter selects it, and Escape closes the list without changing the value**, returning focus to the input. Focus must never drop to the top of the page or to the body.
-- **Home and End belong to the caret in the input.** Do not repurpose them to jump to the first or last result — the user is in a text field, and expects them to move within what they typed.
-- **The library owns the key behavior inside the control**, including which key opens the list, wrapping around at the ends, and any inline completion. Do not attach custom key listeners, and do not rebuild the filtering or moving.
+- **The clear control is a separate tab stop** (a place the Tab key lands). The clear control works with Enter or Space, and never appears only on hover.
+- **The field is one tab stop, whether the list is open or closed.** Tab must never step through the results. While the list is open, Tab either closes the list or moves past the whole field.
+- **Arrow Down and Arrow Up move the active option.** Enter selects the active option. Escape closes the list without changing the value and returns focus to the input. Focus must never drop to the top of the page or to the `body` element.
+- **Home and End move the caret in the input.** Do not change Home and End to jump to the first or last result. The user is in a text field and expects Home and End to move the caret within the typed text.
+- **The autocomplete component handles the keys inside the field**, including which key opens the list, wrapping around at the ends of the list, and any inline completion. Do not attach custom key listeners, and do not rebuild the filtering or the movement through the list.
 - **Do not move focus into the list.** The input keeps focus and points to the active option. Moving real focus into the list stops the user from typing and from getting back to the input.
-- **Do not move focus for the user after a selection.** No jumping ahead to the next field because a value now exists, and no focus jump when the filter narrows down to exactly one result.
-- **Everything reachable by mouse must be reachable by key.** Nothing about filtering, moving through results, or choosing may depend on a pointer, and nothing needed may appear only on hover.
+- **Do not move focus for the user after a selection.** Do not jump focus to the next field because the field now has a value. Do not jump focus when the filter narrows the list to exactly one result.
+- **Every element and action a mouse can reach must also be reachable by keyboard.** Filtering, moving through results, and choosing an option must never depend on a pointer. Nothing the user needs may appear only on hover.
 
 ## Styling set by tokens
 
-Do not set or override any of these. The component sets them:
+**Do not set or override the autocomplete properties below.** The autocomplete component sets each property.
 
 - `border-radius`, `height`, `horizontal-padding`, `vertical-padding`, `border-size`.
 - `icon-size` and `icon-text-gap`.
-- `text` styling, `placeholder-opacity`, and `colors`, per layer and per state.
-- Field width and height — `globals.form.field.size` supplies `min-width`, `max-width`, and `single-line-input-height`; `globals.form.field` also supplies `border-radius`, the paddings, and `border-selected`.
-- The disabled treatment from `globals.states.disabled`.
-- The label-to-field gaps and the spacing between fields — `globals.form.properties.label-field-gap-horizontal`, `label-field-gap-vertical`, `vertical-item-gap`.
-- The label-to-input association, the filtering and matching behavior, hover and active styling, the focus ring, and the keyboard behavior inside the field.
+- `text` styling, `placeholder-opacity`, and `colors`, per layer (a numbered background level, 0 to 3, that sets the colors of the components on that level) and per state.
+- Field width and height. `globals.form.field.size` supplies `min-width`, `max-width`, and `single-line-input-height`. `globals.form.field.size.single-line-input-height` sets the height of every single-line field. `globals.form.field` also supplies `border-radius`, the paddings, and `border-selected`. `globals.form.field.colors.border-selected` sets the focus border.
+- The disabled look, from `globals.states.disabled`.
+- The gaps between the label and the field, and the spacing between fields, from `globals.form.properties.label-field-gap-horizontal`, `label-field-gap-vertical`, and `vertical-item-gap`.
+- The connection between the label and the input, the filtering and matching behavior, hover and active styling, the focus ring, and the keyboard behavior inside the field.
 
-Never style an unfocused field so that it looks disabled. An editable field must look editable at rest.
+**Never style an unfocused field so that the field looks disabled.** An editable field must look editable when the user is not interacting with the field.
 
 ## Related skills
 
-- `recursica-skill-selection-controls` — which control a field gets, option counts, the dropdown affordance test, pre-selection, disabled vs. read-only, and commit timing.
-- `recursica-skill-forms` — single-column layout, label placement, its container-width trigger, and one placement per form, required vs. optional marking, validation timing, pre-fill limits, and save mode.
-- `recursica-skill-label` — label copy that names the object and stands alone, and the required and optional markers.
-- `recursica-skill-assistive-element` — the help and error text below the field, and why the error replaces rather than joins it.
-- `recursica-skill-working-memory` — recognition versus recall, which is what separates this control from a dropdown.
-- `recursica-skill-system-conventions` — never carry meaning in a single channel.
-- `recursica-skill-live-regions` — announcing the result count as the list filters, and when the application must cover it.
+- `recursica-skill-selection-controls` — which control a field gets, option counts, the dropdown affordance test, pre-selection, disabled versus read-only, and when a selection is saved.
+- `recursica-skill-forms` — single-column layout, label placement and the container width that switches label placement, one placement per form, required and optional markers, when validation runs, limits on pre-filled values, and the form's save mode.
+- `recursica-skill-label` — label text that names the object and makes sense without the text around the label, and the required and optional markers.
+- `recursica-skill-assistive-element` — the help text and error text below the field, and why the error text replaces the help text instead of joining the help text.
+- `recursica-skill-working-memory` — recognition versus recall, the difference that decides between an autocomplete and a dropdown.
+- `recursica-skill-system-conventions` — never showing meaning in only one way.
+- `recursica-skill-live-regions` — announcing the result count as the list filters, and when the app must make the announcement.
 
 ### Only if used on the same screen
 
-- `recursica-skill-dropdown` — the control this one replaces, its four-option floor, and the affordance test.
-- `recursica-skill-text-field` — the control for free-form values, and the placeholder rules this field shares.
+- `recursica-skill-dropdown` — the control an autocomplete replaces, the four-option floor for a dropdown, and the affordance test.
+- `recursica-skill-text-field` — the control for free-form values, and the placeholder rules that also apply to an autocomplete.
 
 ## Open questions
 
-- **When an autocomplete replaces a dropdown.** `recursica-skill-selection-controls` records this as an open question; the dropdown's own guidance only says to consider a typeahead where the list is long and the user knows the values. No count or threshold exists. Ask.
-- **Whether free text that is not in the set may be submitted**, and whether the user may create a new option from what they typed.
-- **How many characters must be typed before results appear**, and whether the full set shows on focus with nothing typed.
-- **How matches are found and ordered** — matching the start versus anywhere in the text, fuzzy matching, and whether the matched characters are highlighted in the option.
-- **What happens when nothing matches.** What the field shows, and whether it offers a next step.
-- **Feedback while results are loading.** This component has no loading, pending, or failed-to-load state.
-- **Multi-select.** No variant supports it, and there is no chip or token display for several chosen values.
-- **The filtered list itself** — the height of each option row, hover and active styling, grouping, and the maximum height before it scrolls.
+- **When an autocomplete replaces a dropdown.** `recursica-skill-selection-controls` lists the switch from a dropdown to an autocomplete as an open question. The dropdown guidance says only to consider a typeahead when the list is long and the user knows the values. No count or threshold exists. Ask.
+- **Free text.** Whether the user may submit free text that matches no option, and whether the user may create a new option from the typed text.
+- **How many characters to type.** How many characters the user must type before results appear, and whether the full list of options shows when the field gets focus with no text typed.
+- **Match order.** How the field finds and orders matches: matching the start of the text versus any position in the text, fuzzy matching, and whether the option highlights the matched characters.
+- **No results.** What the field shows when no option matches the typed text, and whether the field offers a next step.
+- **Loading.** What the field shows while results are loading. The standard UI kit has no loading, pending, or failed-to-load state.
+- **Multi-select.** No variant in the standard UI kit supports multi-select, and the standard UI kit has no chips or tokens that show several chosen values.
+- **List details.** The height of each option row in the filtered list, hover and active styling, grouping, and the maximum height of the filtered list before the list scrolls.
 
 ## Pre-flight checklist
 
-- [ ] The set is too large to scan, and the user knows the values well enough to type one.
-- [ ] The set is above the dropdown floor; small sets are shown on the page instead.
-- [ ] The submitted value matches an option in the set, and text that matches nothing is not accepted as a value.
-- [ ] A real label is passed, it makes sense on its own, and the placeholder is not used as the label.
+- [ ] The list of options is too long to scan, and the user knows the values well enough to type one value.
+- [ ] The list has at least four options, the dropdown floor. A short list of options is shown on the page instead.
+- [ ] The submitted value matches an option in the list, and typed text that matches no option is not accepted as a value.
+- [ ] The field has a real label that makes sense without the text around the field, and the placeholder is not used as the label.
 - [ ] Label placement is side by side, unless the container is too narrow.
 - [ ] `layouts` matches every other field in the same form — one placement per form at any given breakpoint, with no mixing between fields or sections.
-- [ ] No required information lives in the placeholder; the rule is in the assistive text.
+- [ ] No required information is in the placeholder. The field's rules are in the assistive text.
 - [ ] Any default is correct for nearly everyone.
-- [ ] On error, the assistive text is replaced by a message that restates the rule, with a signal that is not color.
+- [ ] On error, an error message that restates the rule replaces the assistive text, with a signal that is not color.
 - [ ] The filtered list is not cut off by the viewport, a panel, a modal, or any scrolling ancestor.
-- [ ] The expanded state, the filtered result count after each change, "no results", the active option, and the chosen value are all announced — and nothing is announced too much.
-- [ ] The field is one tab stop. The arrows move, Enter selects, and Escape closes the list and returns focus to the input.
+- [ ] A screen reader announces the expanded state, the filtered result count after each change, "no results", the active option, and the chosen value. Nothing is announced too much.
+- [ ] The field is one tab stop. The arrow keys move the active option, Enter selects, and Escape closes the list and returns focus to the input.
 - [ ] Home and End still move the caret in the input.
-- [ ] The control's own key handling and filtering are left unchanged, and real focus never moves into the list.
-- [ ] Focus is never moved for the user, including when the filter narrows down to one result.
-- [ ] Nothing needed requires hover or a pointer. The focus ring is intact, and looks different from the active and selected option styles.
+- [ ] The autocomplete's built-in key handling and filtering are unchanged, and real focus never moves into the list.
+- [ ] Focus is never moved for the user, including when the filter narrows the list to one result.
+- [ ] Nothing the user needs requires hover or a pointer. The focus ring is intact, and looks different from the active option style and the selected option style.
 - [ ] Disabled is used only for fields that are unavailable for now. Values that can never be edited use the read-only field.
-- [ ] Every variant, size, and state passed is in the inventory above, every property the component owns comes from the component, and every field without focus looks editable, not disabled.
-- [ ] The field saves with the form, in the same save mode as everything else in the system.
+- [ ] Every variant, size, and state is one the project's UI kit lists. Every property the component sets comes from the component. Every field without focus looks editable, not disabled.
+- [ ] The field saves with the form, in the same save mode as every other field in the system.
 - [ ] Open questions were asked about, not decided: the replacement threshold, free text, how many characters to type, match order, no results, loading, multi-select, and list details.
