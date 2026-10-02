@@ -2,9 +2,9 @@
 
 This guide sets the writing rules for this repository. Agents are the main readers of the knowledge files. People also read, correct and maintain the knowledge files.
 
-## The cold-reader test
+## Clarity test
 
-**A designer reading the sentence cold knows what the sentence means and what to do.** If the designer would ask "which one?", "of what?", "where?", "what is that?" or "what does that mean?", the sentence is not finished. Rewrite the sentence until no question is left.
+**A designer who has never seen the text understands every sentence and knows what to do.** If the designer would ask "which one?", "of what?", "where?", "what is that?" or "what does that mean?", the sentence is not finished. Rewrite the sentence until no question is left.
 
 ## Writing rules
 
@@ -145,4 +145,4 @@ The repository is public. Follow `AGENT.md` on what never goes into a commit, a 
 - "whatever", "axis", "React" and "prop" in a skill, outside the chart skill's chart axes
 - a Flesch-Kincaid grade of 10 or higher in a skill or agent file
 
-The check cannot tell whether a sentence is vague, redundant or a fragment, or whether a pronoun is clear. `npm run writing:flags` lists every pronoun and vague word a change adds, without failing, and each one is a warning on the pull request. A person or an agent rewrites each flagged sentence, using the cold-reader test in this guide. When the check and this guide disagree, fix the check.
+The check cannot tell whether a sentence is vague, redundant or a fragment, or whether a pronoun is clear. `npm run writing:flags` lists every pronoun and vague word a change adds, without failing, and each one is a warning on the pull request. A person or an agent rewrites each flagged sentence, using the clarity test in this guide. When the check and this guide disagree, fix the check.
