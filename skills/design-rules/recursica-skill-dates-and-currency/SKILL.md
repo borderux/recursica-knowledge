@@ -177,7 +177,7 @@ Do not stretch a rule above to fit one of these. A wrong convention in a fiscal 
 - **Type styles, number fonts, and tabular figures.** Owned by the design system.
 - **Table structure** — columns, widths, sorting. Covered by `recursica-skill-tables`, which this skill provides cell formatting for.
 - **Null and missing values.** Covered by the null-cell rule in `recursica-skill-tables`.
-- **Abbreviating variant property labels in charts.** Covered by `recursica-skill-data-visualization`.
+- **Abbreviating variant labels in charts.** Covered by `recursica-skill-data-visualization`.
 
 ## Pre-flight checklist
 

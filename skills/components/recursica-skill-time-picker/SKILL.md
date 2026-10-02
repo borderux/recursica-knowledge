@@ -40,24 +40,24 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
 
-| Variant property | Options                   |
-| ---------------- | ------------------------- |
-| `layouts`        | `stacked`, `side-by-side` |
-| `states`         | `error`, `disabled`       |
+| Variants  | Options                   |
+| --------- | ------------------------- |
+| `layouts` | `stacked`, `side-by-side` |
+| `states`  | `error`, `disabled`       |
 
-**`layouts` is the label-placement variant property.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**`layouts` is the label-placement variant.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
 **Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, under the names the code uses for both.
 
 **Focus and placeholder are not variants.** The component handles them: `placeholder-opacity` here, and the focused border through `globals.form.field.colors.border-selected`. Do not build them as states.
 
-**There is no 12-hour or 24-hour variant property.** That is the user's preference, not a variant — see the rules below.
+**There is no 12-hour or 24-hour variant.** That is the user's preference, not a variant — see the rules below.
 
-**There is no size variant property.** `width` is a fixed property, the component defines no `min-height` of its own, and the height of a single-line field comes from `globals.form.field.size.single-line-input-height`.
+**There is no size variant.** `width` is a fixed property, the component defines no `min-height` of its own, and the height of a single-line field comes from `globals.form.field.size.single-line-input-height`.
 
-**There is no seconds variant property, and no range variant property.** No control for a start time and an end time exists. Do not build one without asking.
+**There is no seconds variant, and no range variant.** No control for a start time and an end time exists. Do not build one without asking.
 
-**There is no read-only state.** Read-only is a separate component — `read-only-field`, with the same `layouts` variant property and no input.
+**There is no read-only state.** Read-only is a separate component — `read-only-field`, with the same `layouts` variant and no input.
 
 ## Rules
 
@@ -131,7 +131,7 @@ Never style an unfocused time picker so it looks disabled. An editable field mus
 
 - `recursica-skill-dates-and-currency` — 12- vs 24-hour, time zones, when not to localize, seconds, duration formatting, and format follows focus.
 - `recursica-skill-forms` — label placement and one placement per form, the compound-control exception that puts date and time on one row, validation timing, and save mode.
-- `recursica-skill-label` — the label component, its placement variant property, and the one-label rule for a compound control.
+- `recursica-skill-label` — the label component, its placement variant, and the one-label rule for a compound control.
 - `recursica-skill-assistive-element` — the help and error text below the field, and why the error replaces the help.
 - `recursica-skill-selection-controls` — when a preset list replaces free entry, and disabled vs. read-only.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel.
@@ -145,8 +145,8 @@ Never style an unfocused time picker so it looks disabled. An editable field mus
 - **The AM/PM control.** A selector for AM or PM inside the field, hidden in 24-hour mode, is shown only on the design-system website. The UI kit defines no tokens for it. Whether it is part of this component, or a separate select on the row, is not stated. Do not rely on it without asking.
 - **What the popover contains.** A "dial or input picker" opened by a dropdown indicator is shown only on the design-system website, but the UI kit defines no popover tokens. Its step size — every minute, every five, every fifteen — is not stated. Do not rely on any of it without asking.
 - **Whether a time has a masked format while it has focus**, the way a date does. The format-follows-focus rule in `recursica-skill-dates-and-currency` is stated with a date example only.
-- **Seconds.** No variant property or property covers them, so whether the field can accept them at all is not known.
-- **Time ranges.** No range variant property exists, and how a start and an end are checked against each other is not stated.
+- **Seconds.** No variant or property covers them, so whether the field can accept them at all is not known.
+- **Time ranges.** No range variant exists, and how a start and an end are checked against each other is not stated.
 - **The UI kit defines a disabled state, but the design-system website does not show one.** Treat the UI kit as the authority — it is the source for which states exist — and flag the gap.
 
 ## Pre-flight checklist

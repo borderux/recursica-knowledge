@@ -31,7 +31,7 @@ A transfer list is two lists side by side, with controls that move items between
 | Exactly one value is chosen                           | `recursica-skill-dropdown`, or a radio group                                               |
 | Zero-to-many, but the unselected set is uninteresting | A multi-select dropdown — see `recursica-skill-selection-controls`                         |
 | The container cannot fit two columns                  | A different control entirely. The lists have a fixed `width`                               |
-| Items need reordering rather than including           | Not this component — no ordering variant property exists                                   |
+| Items need reordering rather than including           | Not this component — no ordering variant exists                                            |
 | The items are rows of stored data with actions        | A table — see `recursica-skill-tables`                                                     |
 | The value is not editable by this user                | `recursica-skill-read-only-field`                                                          |
 
@@ -43,12 +43,12 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.transfer-list`. **Pass
 
 **Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
 
-| Variant property | Options                   |
-| ---------------- | ------------------------- |
-| `layouts`        | `stacked`, `side-by-side` |
-| `states`         | `error`, `disabled`       |
+| Variants  | Options                   |
+| --------- | ------------------------- |
+| `layouts` | `stacked`, `side-by-side` |
+| `states`  | `error`, `disabled`       |
 
-**`layouts` is the label-placement variant property.** `side-by-side` — the label beside the control — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`. **It does not arrange the two lists** — they are always two columns.
+**`layouts` is the label-placement variant.** `side-by-side` — the label beside the control — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`. **It does not arrange the two lists** — they are always two columns.
 
 **Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, under the names the code uses for both.
 
@@ -58,7 +58,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.transfer-list`. **Pass
 
 **Height and width are fixed** — `height` and `width` are properties of the component, not choices. Both lists are the same size, no matter how many items are in them.
 
-**There is no size variant property, no focus state, and no loading or empty state.** There is no move-all variant property — and none is wanted; see the rule below. There are no tokens for single items; see the open questions.
+**There is no size variant, no focus state, and no loading or empty state.** There is no move-all variant — and none is wanted; see the rule below. There are no tokens for single items; see the open questions.
 
 ## Rules
 

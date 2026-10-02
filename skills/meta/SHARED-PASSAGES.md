@@ -50,13 +50,13 @@ Passage:
 Starts with:
 
 ```text
-**`layouts` is the label-placement variant property
+**`layouts` is the label-placement variant
 ```
 
 Passage:
 
 ```text
-**`layouts` is the label-placement variant property{|}.** `side-by-side` — the label beside the {field|control} — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**`layouts` is the label-placement variant{|}.** `side-by-side` — the label beside the {field|control} — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 ```
 
 ## layouts-axis-group
@@ -64,13 +64,13 @@ Passage:
 Starts with:
 
 ```text
-**`layouts` is the label-placement variant property
+**`layouts` is the label-placement variant
 ```
 
 Passage:
 
 ```text
-**`layouts` is the label-placement variant property, the same variant property every field has.** `side-by-side` puts the group's label beside the {stack of items|stack of options|switches}; `stacked` puts it above.
+**`layouts` is the label-placement variant, the same variant every field has.** `side-by-side` puts the group's label beside the {stack of items|stack of options|switches}; `stacked` puts it above.
 ```
 
 ## label-placement-default

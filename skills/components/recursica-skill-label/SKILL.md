@@ -33,12 +33,12 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
 
-| Variant property | Options                   |
-| ---------------- | ------------------------- |
-| `layouts`        | `stacked`, `side-by-side` |
-| `sizes`          | `default`, `small`        |
+| Variants  | Options                   |
+| --------- | ------------------------- |
+| `layouts` | `stacked`, `side-by-side` |
+| `sizes`   | `default`, `small`        |
 
-**`layouts` is the placement variant property, and it is the same variant property every field has.** Set it consistently: the label's layout and its field's layout are one decision, not two — and that decision belongs to the form, not to this label. See the placement rule below.
+**`layouts` is the placement variant, and it is the same variant every field has.** Set it consistently: the label's layout and its field's layout are one decision, not two — and that decision belongs to the form, not to this label. See the placement rule below.
 
 **Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, under the names the code uses for both.
 

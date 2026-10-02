@@ -36,7 +36,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
 
-| Variant property   | Options                       | On          |
+| Variants           | Options                       | On          |
 | ------------------ | ----------------------------- | ----------- |
 | `styles`           | `default`, `pills`, `outline` | `tabs`      |
 | `orientation`      | `horizontal`, `vertical`      | `tabs`      |

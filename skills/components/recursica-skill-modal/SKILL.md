@@ -32,7 +32,7 @@ A modal blocks the page to get one decision or one short task done, then closes.
 
 ## Variants
 
-Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.modal`. **The modal has no variant properties at all** — no sizes, no types, no severity variants. Everything is a fixed property.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.modal`. **The modal has no variants at all** — no sizes, no types, no severity variants. Everything is a fixed property.
 
 **What the component provides:** a header, a content area, a footer, a divider that appears when the content scrolls, and a gap between the buttons in the footer. Its `min-width`, `max-width`, `min-height`, and `max-height` are set by tokens.
 

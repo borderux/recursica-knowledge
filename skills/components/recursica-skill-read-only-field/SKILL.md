@@ -40,11 +40,11 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
 
-| Variant property | Options                   |
-| ---------------- | ------------------------- |
-| `layouts`        | `stacked`, `side-by-side` |
+| Variants  | Options                   |
+| --------- | ------------------------- |
+| `layouts` | `stacked`, `side-by-side` |
 
-**`layouts` is the label-placement variant property.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`. It is the same variant property every field has. Set it to match the fields around it — a read-only field placed among stacked fields stacks too.
+**`layouts` is the label-placement variant.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`. It is the same variant every field has. Set it to match the fields around it — a read-only field placed among stacked fields stacks too.
 
 **Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, under the names the code uses for both.
 
@@ -52,7 +52,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no placeholder, and no input.** The component's only properties are `text`, `colors`, and `min-height`.
 
-**There is no size variant property**, and no `rows`. No rule says how a long value is shown. See the open questions.
+**There is no size variant**, and no `rows`. No rule says how a long value is shown. See the open questions.
 
 **The read-only background comes from `globals.form.field.colors.background-color-read-only`.** Do not choose another style for it.
 
@@ -114,7 +114,7 @@ Do not set or override any of these. The component sets them:
 
 - `recursica-skill-forms` — label placement, the container-width trigger, one placement per form, the rule that read-only is a distinct component rather than a styled-down input, and the rule that no form control goes inside a card.
 - `recursica-skill-dates-and-currency` — the read-only date format, right alignment, precision, durations, and the format-follows-focus rule, which gives this component the display format.
-- `recursica-skill-label` — the label component, its placement variant property, and the reserved edit-icon gap.
+- `recursica-skill-label` — the label component, its placement variant, and the reserved edit-icon gap.
 - `recursica-skill-selection-controls` — disabled vs. read-only, and when a value should not be a form control at all.
 - `recursica-skill-tables` — where repeating read-only values belong instead.
 - `recursica-skill-system-conventions` — the accessibility baseline every component follows.

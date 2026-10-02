@@ -40,22 +40,22 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
 
-| Variant property | Options                   |
-| ---------------- | ------------------------- |
-| `layouts`        | `stacked`, `side-by-side` |
-| `states`         | `error`, `disabled`       |
+| Variants  | Options                   |
+| --------- | ------------------------- |
+| `layouts` | `stacked`, `side-by-side` |
+| `states`  | `error`, `disabled`       |
 
-**`layouts` is the label-placement variant property.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**`layouts` is the label-placement variant.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
 **Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, under the names the code uses for both.
 
 **Focus and placeholder are not variants.** The component handles them: `placeholder-opacity` here, and the focused border through `globals.form.field.colors.border-selected`. Do not build them as states.
 
-**There is no size variant property.** `min-height` is a fixed property, and `globals.form.field.size` supplies the field sizing.
+**There is no size variant.** `min-height` is a fixed property, and `globals.form.field.size` supplies the field sizing.
 
-**The UI kit defines no stepper or increment control.** There are no tokens for increase and decrease buttons, no `collapsed` or `expanded` state, and no content variant property. Do not claim that increment buttons exist, and do not build them out of buttons placed beside the field — see the open questions.
+**The UI kit defines no stepper or increment control.** There are no tokens for increase and decrease buttons, no `collapsed` or `expanded` state, and no content variant. Do not claim that increment buttons exist, and do not build them out of buttons placed beside the field — see the open questions.
 
-**There is no read-only state.** Read-only is a separate component — `read-only-field`, with the same `layouts` variant property and no input.
+**There is no read-only state.** Read-only is a separate component — `read-only-field`, with the same `layouts` variant and no input.
 
 ## Rules
 
@@ -130,7 +130,7 @@ Never style an unfocused number input to look disabled. An editable field must l
 
 - `recursica-skill-dates-and-currency` — right alignment, two-decimal currency, precision consistency, the symbol in the column header, accounting parentheses, ranges, rounding, and abbreviation.
 - `recursica-skill-forms` — label placement and one placement per form, validation timing, pre-fill and defaults, save mode, and the rule that no form control goes inside a card.
-- `recursica-skill-label` — the label component, its placement variant property, and required vs. optional marking.
+- `recursica-skill-label` — the label component, its placement variant, and required vs. optional marking.
 - `recursica-skill-assistive-element` — the help and error text below the field, and why the error replaces the help.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel.
 
@@ -142,8 +142,8 @@ Never style an unfocused number input to look disabled. An editable field must l
 ## Open questions
 
 - **Increase and decrease controls are shown only on the design-system website, with no token behind them.** The UI kit defines no stepper tokens at all — no increase button, no decrease button, no step. Increment controls must not be built out of buttons placed beside the field, and nothing in this system promises a stepper. Whether this component ever gets one, and what its step would be, must be settled by a person. Do not rely on this without asking.
-- **A `collapsed` and an `expanded` state are shown only on the design-system website.** Neither is a variant property in the UI kit. They seem to describe whether a stepper is visible. Do not build either one, and do not rely on them without asking.
-- **A content variant property** — `unvalued`, `unvalued with placeholder`, `valued` — is shown only on the design-system website, with no token behind it. It is not a variant property in the UI kit, and nothing says whether a placeholder is wanted on a number field at all. Do not rely on it without asking.
+- **A `collapsed` and an `expanded` state are shown only on the design-system website.** Neither is a variant in the UI kit. They seem to describe whether a stepper is visible. Do not build either one, and do not rely on them without asking.
+- **A content variant** — `unvalued`, `unvalued with placeholder`, `valued` — is shown only on the design-system website, with no token behind it. It is not a variant in the UI kit, and nothing says whether a placeholder is wanted on a number field at all. Do not rely on it without asking.
 - **Whether the field formats the value as the user types** — thousands separators appearing while typing, or only when the field loses focus.
 - **Negative values.** Whether the accounting parentheses from `recursica-skill-dates-and-currency` are ever used inside an input, or only when showing a value.
 - **Choosing the unit.** A value whose unit can be switched — kg or lb — has no stated pattern.
@@ -167,4 +167,4 @@ Never style an unfocused number input to look disabled. An editable field must l
 - [ ] Every variant and state comes from the inventory above, no size is set, and no stepper is built.
 - [ ] Styling comes from the component, and an unfocused field looks editable.
 - [ ] Numbers that are not editable here use the read-only component, not a disabled input.
-- [ ] Open questions were asked about, not decided: increase and decrease controls, the `collapsed` and `expanded` states, a content variant property, formatting as the user types, negative values, and choosing the unit.
+- [ ] Open questions were asked about, not decided: increase and decrease controls, the `collapsed` and `expanded` states, a content variant, formatting as the user types, negative values, and choosing the unit.

@@ -91,4 +91,4 @@ A guard believed to be total is worse than one known to be partial, so here is w
 
 Designers and agents already know these terms, so the skills use them without a definition. Do not add one back. See rule 5 in `WRITING.md`.
 
-alternative text, assistive technology, breadcrumbs, breakpoint, breakpoints, caret, cognitive load, dark pattern, DOM, empty state, focus ring, hamburger menu, infinite scroll, locale, microcopy, modal, persona, personas, popover, progressive disclosure, screen reader, screen reader user, scrim, scrims, segmented control, skeleton, skeletons, stepper, tablet breakpoint, toast, truncated, variant, variant property, variant properties, variants, viewport, viewport height.
+alternative text, assistive technology, breadcrumbs, breakpoint, breakpoints, caret, cognitive load, dark pattern, DOM, empty state, focus ring, hamburger menu, infinite scroll, locale, microcopy, modal, persona, personas, popover, progressive disclosure, screen reader, screen reader user, scrim, scrims, segmented control, skeleton, skeletons, stepper, tablet breakpoint, toast, truncated, variant, variants, viewport, viewport height.

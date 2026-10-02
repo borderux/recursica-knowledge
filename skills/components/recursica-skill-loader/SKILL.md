@@ -35,9 +35,9 @@ A loader says that something is in flight — still in progress. It cannot say h
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.loader`. **Do not pass a variant, type, or state that is not listed here.**
 
-| Variant property | Options                     |
-| ---------------- | --------------------------- |
-| `sizes`          | `small`, `default`, `large` |
+| Variants | Options                     |
+| -------- | --------------------------- |
+| `sizes`  | `small`, `default`, `large` |
 
 **The UI kit has an indeterminate spinner and nothing else. This is the most important fact about this component.** An indeterminate spinner shows that work is happening, but not how much of it is done. The only property is `indicator-color`.
 
@@ -45,7 +45,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no slot for a label or text.** Place any words that go with the spinner as a separate element.
 
-**There is no skeleton, no shimmer, no progress bar, and no type variant property — and skeletons are forbidden, not only missing.** Skeleton screens (also called skeleton loaders or ghost elements: gray placeholder shapes where content will appear) are a loading indicator, like a spinner. Users have to work out what the gray shapes are, and the shapes tell them nothing about the content. `recursica-skill-screen-scaffolding` sets the rule: a loading page shows nothing until it shows content.
+**There is no skeleton, no shimmer, no progress bar, and no type variant — and skeletons are forbidden, not only missing.** Skeleton screens (also called skeleton loaders or ghost elements: gray placeholder shapes where content will appear) are a loading indicator, like a spinner. Users have to work out what the gray shapes are, and the shapes tell them nothing about the content. `recursica-skill-screen-scaffolding` sets the rule: a loading page shows nothing until it shows content.
 
 **Three loader types have no tokens behind them, but both adapters do build them.** Oval, Bars, and Dots are missing from the UI kit — the UI kit defines only `indicator-color` and the three sizes — yet both adapters offer them as a real `variant` setting, and style each one. So they are available. They have no tokens, so their appearance comes from the adapter, not the UI kit, and it may differ between Mantine and MUI. `oval` is the default in both. Use the default unless there is a reason to change it. Do not use the choice of type to signal anything.
 

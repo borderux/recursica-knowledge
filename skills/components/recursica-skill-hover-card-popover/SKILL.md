@@ -34,15 +34,15 @@ A hover card or a popover reveals richer content beside the element that trigger
 
 ## Variants
 
-Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.hover-card-popover`. **The component has no variant properties at all** — no placement variant property, no size variant property, no content-type variant property, and nothing that tells a hover card apart from a popover. One spec, one set of fixed properties.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.hover-card-popover`. **The component has no variants at all** — no placement variant, no size variant, no content-type variant, and nothing that tells a hover card apart from a popover. One spec, one set of fixed properties.
 
 **What the component provides:** a content area and a beak — the pointer connecting the card to its target. `beak-size` is set by tokens; unlike the tooltip, there is no `beak-inset`.
 
 **There is no placement option.** There is no top, left, right, or bottom option. Do not pass a position setting, and do not position the beak by hand.
 
-**There is no size variant property.** `min-width` and `max-width` are fixed. Content that does not fit inside them is page content.
+**There is no size variant.** `min-width` and `max-width` are fixed. Content that does not fit inside them is page content.
 
-**There is no content-type variant property.** `content-text` is the only content property in the UI kit. A custom content type is shown only on the design-system website — see the open questions.
+**There is no content-type variant.** `content-text` is the only content property in the UI kit. A custom content type is shown only on the design-system website — see the open questions.
 
 **Nothing in the UI kit tells hover behavior apart from click behavior — but the house does, and the two are different components.** One token spec is behind both. Its behavior decides which of the two it is, and that decides every accessibility requirement below. Before building, state whether it is a hover card or a popover.
 
@@ -56,7 +56,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **A popover is a non-modal dialog** (a window that leaves the rest of the page usable). It does not block the page, and it does not trap focus. It is the click-triggered partner of the hover card, and the only one of the two that may hold anything the user can operate.
 
-**Neither has a placement variant property**, even though four positions and three beak alignments are shown only on the design-system website. See the open questions.
+**Neither has a placement variant**, even though four positions and three beak alignments are shown only on the design-system website. See the open questions.
 
 **`tooltip` and `hover-card-popover` are two different components with almost identical tokens.** Do not choose between them on styling, because the styling is effectively the same. Choose on content: a tooltip is a short text label for a control with no visible label, and this component holds richer content. Neither may hold anything the user needs in order to finish a task, and neither may be the only place a piece of information exists.
 

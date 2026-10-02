@@ -34,11 +34,11 @@ A link takes the user somewhere. It never changes data.
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.link`.
 
-| Variant property | Options   |
-| ---------------- | --------- |
-| `states`         | `visited` |
+| Variants | Options   |
+| -------- | --------- |
+| `states` | `visited` |
 
-**`visited` is the only state variant.** There is no size variant property, no style variant property, and no disabled state — the browser and the component own everything else.
+**`visited` is the only state variant.** There is no size variant, no style variant, and no disabled state — the browser and the component own everything else.
 
 **Properties defined here:** `text`, `icon-size`, `icon-text-gap`, and `colors`. An icon may sit before or after the label; both positions are shown only on the design-system website.
 
@@ -103,7 +103,7 @@ Do not set or override any of these. The component sets them:
 
 - **Which icon marks an external link**, and whether it is required or optional. `recursica-skill-icon-semantics` owns what icons mean, but names no symbol for this one.
 - **Download links** — whether the file type and size are shown, and where.
-- **Whether a link may have a size or emphasis style.** No variant property exists for either.
+- **Whether a link may have a size or emphasis style.** No variant exists for either.
 - **Links inside a paragraph in a table cell**, where a dense table and running text meet.
 
 ## Pre-flight checklist

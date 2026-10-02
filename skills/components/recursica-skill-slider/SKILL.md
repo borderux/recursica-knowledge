@@ -37,12 +37,12 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
 
-| Variant property | Options                       |
-| ---------------- | ----------------------------- |
-| `layouts`        | `stacked`, `side-by-side`     |
-| `states`         | `error`, `disabled`, `active` |
+| Variants  | Options                       |
+| --------- | ----------------------------- |
+| `layouts` | `stacked`, `side-by-side`     |
+| `states`  | `error`, `disabled`, `active` |
 
-**`layouts` is the label-placement variant property.** `side-by-side` — the label beside the control — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**`layouts` is the label-placement variant.** `side-by-side` — the label beside the control — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
 **Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, under the names the code uses for both.
 
@@ -58,7 +58,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is a `read-only-value` treatment** for the number readout. Its exact meaning is not stated; see the open questions.
 
-**There is no hover state, no size variant property, no vertical orientation, no variant property for smooth versus stepped, and no variant property for a range with two thumbs.** Other design systems have all of these. This one does not.
+**There is no hover state, no size variant, no vertical orientation, no variant for smooth versus stepped, and no variant for a range with two thumbs.** Other design systems have all of these. This one does not.
 
 ## Rules
 
@@ -129,13 +129,13 @@ Do not set or override any of these. The component sets them:
 
 ## Open questions
 
-- **Choosing a range with two thumbs.** Single and range selection are shown only on the design-system website, but the UI kit defines no second thumb and no range variant property. Do not build one, and do not rely on this without asking.
-- **Smooth versus stepped, as documented types.** Both are shown only on the design-system website. The UI kit has step-indicator properties but no types variant property, so what switches a slider between them is not stated. Do not rely on this without asking.
+- **Choosing a range with two thumbs.** Single and range selection are shown only on the design-system website, but the UI kit defines no second thumb and no range variant. Do not build one, and do not rely on this without asking.
+- **Smooth versus stepped, as documented types.** Both are shown only on the design-system website. The UI kit has step-indicator properties but no types variant, so what switches a slider between them is not stated. Do not rely on this without asking.
 - **A hover state.** One is shown only on the design-system website, but the UI kit's states are only `error`, `disabled`, and `active`. Do not rely on this without asking.
 - **What `read-only-value` means** — a readout that cannot be edited beside a track that can be used, or a read-only slider as a whole.
 - **Whether the number input is required or optional**, and on which surfaces. The house says "highly recommended", which is not a rule.
 - **Value labels other than the minimum and maximum**, including a label that moves with the thumb.
-- **Vertical orientation.** No variant property supports it.
+- **Vertical orientation.** No variant supports it.
 
 ## Pre-flight checklist
 

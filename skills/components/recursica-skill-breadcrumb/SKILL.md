@@ -36,9 +36,9 @@ Wayfinding is the user's sense of where they are and how to get where they want 
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.breadcrumb`. **Do not pass a variant, state, or content option — there are none.**
 
-| Variant property | Options                                            |
-| ---------------- | -------------------------------------------------- |
-| `variants`       | None. The component has no variant property at all |
+| Variants   | Options                                   |
+| ---------- | ----------------------------------------- |
+| `variants` | None. The component has no variant at all |
 
 **Two properties, and that is the whole component: `padding` and `item-gap`.**
 
@@ -46,7 +46,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no collapse, truncation, or overflow behavior.** How a long trail behaves is not defined. Whatever the answer turns out to be, it is not horizontal scrolling — `recursica-skill-navigation` forbids that outright.
 
-**There is no current-page state, and no content variant property.** An interactive item and a read-only item for the current page, plus a content variant property of Label only, Icon + Label, Icon only, and Mixed, are shown only on the design-system website. The UI kit defines none of it. See the open questions.
+**There is no current-page state, and no content variant.** An interactive item and a read-only item for the current page, plus a content variant of Label only, Icon + Label, Icon only, and Mixed, are shown only on the design-system website. The UI kit defines none of it. See the open questions.
 
 ## Rules
 
@@ -66,7 +66,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Never point a crumb at a modal or a panel.** A trigger opens those; the user does not navigate to them, and they get no history entry — `recursica-skill-navigation`.
 
-**Do not build a crumb that is only an icon.** The UI kit defines no content variant property, and an icon on its own cannot name a destination. Where an icon is clear — a home icon at the root — it still needs both a tooltip and an accessible name (the name a screen reader reads out for a control), as `recursica-skill-buttons-links` requires. Until the content variant property is settled, use text.
+**Do not build a crumb that is only an icon.** The UI kit defines no content variant, and an icon on its own cannot name a destination. Where an icon is clear — a home icon at the root — it still needs both a tooltip and an accessible name (the name a screen reader reads out for a control), as `recursica-skill-buttons-links` requires. Until the content variant is settled, use text.
 
 **Never let the trail wrap into a scrolling strip to make it fit.** A trail too long for its space means the hierarchy is too deep. Raise the depth as a problem rather than hiding it with layout — see `recursica-skill-system-conventions`.
 
@@ -121,7 +121,7 @@ Do not set or override any of these. The component sets them:
 
 - **The separator.** No token defines it. The character, whether it is an icon, and its spacing are all unset — `item-gap` is the only spacing property.
 - **Long trails.** No collapse, truncation, or overflow behavior exists. Whether a deep trail drops its middle levels, shortens its labels, or wraps has not been answered — and horizontal scrolling is not an option.
-- **A content variant property — Label only, Icon + Label, Icon only, Mixed — and separate styles for read-only and interactive items are shown only on the design-system website, with no token behind any of them.** Do not rely on this without asking.
+- **A content variant — Label only, Icon + Label, Icon only, Mixed — and separate styles for read-only and interactive items are shown only on the design-system website, with no token behind any of them.** Do not rely on this without asking.
 - **The depth at which a breadcrumb becomes required.** `recursica-skill-navigation` says "where depth warrants it", but gives no number. The maximum nesting depth is listed as uncovered there too.
 - **Whether the start of the trail is the application's home, or the section's landing page.**
 - **How the trail handles a level above it that has no landing page of its own** — a level that exists in the hierarchy but has no route to link to.
@@ -144,4 +144,4 @@ Do not set or override any of these. The component sets them:
 - [ ] The trail does not scroll horizontally, wrap into a strip, or shrink to fit.
 - [ ] The breadcrumb has no variant, state, content option, or separator token beyond the inventory above.
 - [ ] Styling comes from the component.
-- [ ] Open questions were asked about, not decided: the separator, long trails, the content variant property, the depth at which a breadcrumb becomes required, the start of the trail, and a level with no landing page.
+- [ ] Open questions were asked about, not decided: the separator, long trails, the content variant, the depth at which a breadcrumb becomes required, the start of the trail, and a level with no landing page.

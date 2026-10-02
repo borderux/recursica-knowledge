@@ -32,9 +32,9 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
 
-| Variant property | Options         |
-| ---------------- | --------------- |
-| `types`          | `help`, `error` |
+| Variants | Options         |
+| -------- | --------------- |
+| `types`  | `help`, `error` |
 
 **Two types, one slot.** The error does not appear alongside the help text. It replaces it in the same slot. Swapping types keeps the field's height the same, so the form below does not shift.
 
@@ -42,7 +42,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **An icon is part of the component** — it defines an `icon-size` and an `icon-text-gap`. That icon meets the requirement that an error have a signal that is not color.
 
-**There is no size variant property.** `top-margin` and `max-width` are fixed properties.
+**There is no size variant.** `top-margin` and `max-width` are fixed properties.
 
 ## Rules
 
@@ -60,7 +60,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Keep it under the field it belongs to.** An assistive element placed midway between two fields is not clearly tied to either one.
 
-**Its position follows the field's label placement, so it uses the one placement set for the whole form.** `recursica-skill-forms` requires one label placement per form — side by side or stacked, never both at the same breakpoint. The container-width test is applied once, to the form, and it governs every field in it. This element has no placement variant property of its own. Its position follows from where the field's label sits. So it is never positioned separately from the label, and its position never differs from field to field inside one form. A whole form may switch placement across breakpoints; a single section never gets its own.
+**Its position follows the field's label placement, so it uses the one placement set for the whole form.** `recursica-skill-forms` requires one label placement per form — side by side or stacked, never both at the same breakpoint. The container-width test is applied once, to the form, and it governs every field in it. This element has no placement variant of its own. Its position follows from where the field's label sits. So it is never positioned separately from the label, and its position never differs from field to field inside one form. A whole form may switch placement across breakpoints; a single section never gets its own.
 
 **Do not use it for marketing, reassurance, or filler text.** Users read every line here each time they go through the form.
 

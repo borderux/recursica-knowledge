@@ -29,7 +29,7 @@ Apply the clarity test in `WRITING.md` to every sentence: a designer who has nev
 
 - Replace each pronoun with the noun.
 - Say exactly which one, as in "a table row", not "a row".
-- Use the word a designer says, as in "variant property", not "axis".
+- Use the word a designer says, as in "variant", not "axis".
 - Cut every word that adds nothing.
 - Keep the sentence short, with one idea.
 

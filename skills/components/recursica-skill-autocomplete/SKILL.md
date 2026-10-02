@@ -36,12 +36,12 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
 
-| Variant property | Options                   |
-| ---------------- | ------------------------- |
-| `states`         | `error`, `disabled`       |
-| `layouts`        | `stacked`, `side-by-side` |
+| Variants  | Options                   |
+| --------- | ------------------------- |
+| `states`  | `error`, `disabled`       |
+| `layouts` | `stacked`, `side-by-side` |
 
-**`layouts` is the label-placement variant property.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**`layouts` is the label-placement variant.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
 **Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, under the names the code uses for both.
 
@@ -49,9 +49,9 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Focused is not a state.** It comes from `globals.form.field.colors.border-selected`.
 
-**There is no size variant property.** `height` is a fixed property, and `globals.form.field.size.single-line-input-height` sets the height for every single-line field.
+**There is no size variant.** `height` is a fixed property, and `globals.form.field.size.single-line-input-height` sets the height for every single-line field.
 
-**There is no multi-select variant property, no chip or token display for chosen values, and no loading state** — see the open questions.
+**There is no multi-select variant, no chip or token display for chosen values, and no loading state** — see the open questions.
 
 **The UI kit defines the closed field only.** `icon-size` and `icon-text-gap` cover a leading icon and the trailing indicator. The filtered list, its option rows, and anything shown when there are no results are not in this component's inventory.
 
@@ -64,7 +64,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 | `State`    | Default, Focused, Valued |
 | `Behavior` | Suggestions (optional)   |
 
-Those states are not kit variant properties and must not be passed as variants — `Focused` and `Valued` are conditions the component works out for itself. They do show the component's parts: a **leading icon**, and a clear control that appears once there is text in the field. Suggestions are described as an optional extra, not the default.
+Those states are not kit variants and must not be passed as variants — `Focused` and `Valued` are conditions the component works out for itself. They do show the component's parts: a **leading icon**, and a clear control that appears once there is text in the field. Suggestions are described as an optional extra, not the default.
 
 ## Rules
 
@@ -170,7 +170,7 @@ Never style an unfocused field so that it looks disabled. An editable field must
 - **How matches are found and ordered** — matching the start versus anywhere in the text, fuzzy matching, and whether the matched characters are highlighted in the option.
 - **What happens when nothing matches.** What the field shows, and whether it offers a next step.
 - **Feedback while results are loading.** This component has no loading, pending, or failed-to-load state.
-- **Multi-select.** No variant property supports it, and there is no chip or token display for several chosen values.
+- **Multi-select.** No variant supports it, and there is no chip or token display for several chosen values.
 - **The filtered list itself** — the height of each option row, hover and active styling, grouping, and the maximum height before it scrolls.
 
 ## Pre-flight checklist

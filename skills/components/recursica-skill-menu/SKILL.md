@@ -36,9 +36,9 @@ A menu is a temporary list of choices or actions. A trigger opens it, and dismis
 
 ## Variants
 
-Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has). Two specs, with one variant property between them.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has). Two specs, with one variant between them.
 
-| Spec        | Variant property   | Options                  |
+| Spec        | Variants           | Options                  |
 | ----------- | ------------------ | ------------------------ |
 | `menu`      | (none)             | —                        |
 | `menu-item` | `selection-states` | `unselected`, `selected` |
@@ -56,7 +56,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no submenu.** A trailing chevron for a nested submenu that opens "on hover or click" is shown only on the design-system website. The UI kit defines no nested menu, and a house rule forbids opening on hover. Do not build one — see the open questions.
 
-**There is no placement, size, density, or multi-select variant property.** Do not pass a position.
+**There is no placement, size, density, or multi-select variant.** Do not pass a position.
 
 ## Rules
 
@@ -127,11 +127,11 @@ The selected item's visual treatment comes with `selection-states`. Do not resty
 ## Open questions
 
 - **Submenus.** A trailing chevron that opens a nested submenu "on hover or click" is shown only on the design-system website. The UI kit defines no submenu, and opening on hover contradicts the navigation rule. Both whether it exists and how it is triggered need a decision. Ask before relying on it.
-- **Menus with multi-select.** A type variant property of single select, multi-select, and custom content is shown only on the design-system website. The UI kit defines only `unselected` and `selected` on `menu-item`. Ask before relying on it.
+- **Menus with multi-select.** A type variant of single select, multi-select, and custom content is shown only on the design-system website. The UI kit defines only `unselected` and `selected` on `menu-item`. Ask before relying on it.
 - **Custom content inside a menu item.** Shown only on the design-system website, and nothing in the UI kit supports it. Ask before relying on it.
 - **How the disabled state is set.** The UI kit defines `disabled` on `menu-item`. Whether the adapter exposes it as a setting has not been confirmed. Check the component's settings, or ask, before relying on it.
 - **The number of items at which a menu is too long.** `max-height` implies scrolling, but no threshold is stated. `recursica-skill-buttons-links` leaves the overflow threshold open too.
-- **Where the menu appears relative to its trigger**, and how it behaves near the edge of the viewport. There is no placement variant property.
+- **Where the menu appears relative to its trigger**, and how it behaves near the edge of the viewport. There is no placement variant.
 - **Right-click context menus.** Whether they are supported at all, and what happens to the browser's own menu.
 - **Whether a menu item may be a link** when it navigates, given that links must render a real `href`.
 

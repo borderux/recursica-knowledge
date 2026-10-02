@@ -37,20 +37,20 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
 
-| Variant property | Options                   |
-| ---------------- | ------------------------- |
-| `layouts`        | `stacked`, `side-by-side` |
-| `states`         | `error`, `disabled`       |
+| Variants  | Options                   |
+| --------- | ------------------------- |
+| `layouts` | `stacked`, `side-by-side` |
+| `states`  | `error`, `disabled`       |
 
-**`layouts` is the label-placement variant property.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**`layouts` is the label-placement variant.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
 **Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, under the names the code uses for both.
 
 **Focus and placeholder are not variants.** The component handles them: `placeholder-opacity` here, and the focused border through `globals.form.field.colors.border-selected`. Do not build them as states.
 
-**There is no size variant property.** `min-height` is a fixed property, and `globals.form.field.size.single-line-input-height` sets the height for every single-line field.
+**There is no size variant.** `min-height` is a fixed property, and `globals.form.field.size.single-line-input-height` sets the height for every single-line field.
 
-**Read-only is a separate component** — `read-only-field`, which has the same `layouts` variant property and shows text instead of an input.
+**Read-only is a separate component** — `read-only-field`, which has the same `layouts` variant and shows text instead of an input.
 
 ## Rules
 

@@ -46,22 +46,22 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.date-picker`. **Do not
 
 **Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
 
-| Variant property | Options                   |
-| ---------------- | ------------------------- |
-| `layouts`        | `stacked`, `side-by-side` |
-| `states`         | `error`, `disabled`       |
+| Variants  | Options                   |
+| --------- | ------------------------- |
+| `layouts` | `stacked`, `side-by-side` |
+| `states`  | `error`, `disabled`       |
 
-**`layouts` is the label-placement variant property.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**`layouts` is the label-placement variant.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
 **Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, under the names the code uses for both.
 
 **Focus and placeholder are not variants.** The component handles them: `placeholder-opacity` here, and the focused border through `globals.form.field.colors.border-selected`. Do not build them as states.
 
-**There is no size variant property.** `min-height` and `width` are fixed properties, and `globals.form.field.size` supplies the field sizing.
+**There is no size variant.** `min-height` and `width` are fixed properties, and `globals.form.field.size` supplies the field sizing.
 
-**There is no range variant property.** No control for a start date and an end date exists. Do not build one without asking.
+**There is no range variant.** No control for a start date and an end date exists. Do not build one without asking.
 
-**There is no read-only state.** Read-only is a separate component — `read-only-field`, with the same `layouts` variant property and no input.
+**There is no read-only state.** Read-only is a separate component — `read-only-field`, with the same `layouts` variant and no input.
 
 ## Rules
 
@@ -135,7 +135,7 @@ Never style an unfocused date picker so it looks disabled. An editable field mus
 
 - `recursica-skill-dates-and-currency` — the date format, time zones, relative vs. absolute time, ranges, and the format-follows-focus rule.
 - `recursica-skill-forms` — label placement and one placement per form, the compound-control exception, validation timing, pre-fill, save mode, and the rule that no form control goes inside a card.
-- `recursica-skill-label` — the label component, its placement variant property, and required vs. optional marking.
+- `recursica-skill-label` — the label component, its placement variant, and required vs. optional marking.
 - `recursica-skill-assistive-element` — the help and error text below the field, and why the error replaces the help.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel.
 
@@ -145,7 +145,7 @@ Never style an unfocused date picker so it looks disabled. An editable field mus
 
 ## Open questions
 
-- **Date ranges.** No range variant property exists. Whether a range is two date pickers or one control, and how the two ends are checked against each other, is not stated.
+- **Date ranges.** No range variant exists. Whether a range is two date pickers or one control, and how the two ends are checked against each other, is not stated.
 - **A `read-only` state on this component is shown only on the design-system website, with no token behind it.** The UI kit defines none, and treats read-only as a separate component. Ask before deciding this, and before relying on it.
 - **What the popover contains.** A month-and-year dropdown, navigation arrows, and Cancel/Confirm actions are shown only on the design-system website; the UI kit defines no popover tokens at all. Whether a selection is saved on click, or needs a Confirm, is not stated. Do not rely on any of it without asking.
 - **Whether the calendar opens on focus**, or only when its trigger is activated.

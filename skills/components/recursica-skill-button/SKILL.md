@@ -115,7 +115,7 @@ The button component provides the focus ring. The button component also handles 
 ## Open questions
 
 - **When to use the smaller size.** No rule says which screens use the smaller size.
-- **Full-width buttons.** No variant property supports a full-width button. No rule says whether a full-width button is ever allowed, or where.
+- **Full-width buttons.** No variant supports a full-width button. No rule says whether a full-width button is ever allowed, or where.
 - **The icon for a loading button.** A loading button uses the disabled look with an animated icon, and that part is settled. Which icon to use is not settled. Whether the UI kit or the adapter (the Recursica component library for one framework, such as Mantine or Angular Material) defines the animation is also unknown.
 - **Split buttons and button groups.** The UI kit has neither. Do not build either one.
 - **Setting the disabled state.** The standard UI kit defines a disabled state under each style. Nobody has confirmed that the adapter exposes the disabled state as a setting. Check the button component's settings, or ask, before relying on the disabled state.

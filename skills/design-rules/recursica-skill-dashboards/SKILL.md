@@ -148,7 +148,7 @@ No house rule covers these yet. **Ask the person instead of choosing** — see t
 
 ## Out of scope
 
-- **The inside of a chart** — its type, variant properties, labels, and thresholds. Covered by `recursica-skill-data-visualization`.
+- **The inside of a chart** — its type, variants, labels, and thresholds. Covered by `recursica-skill-data-visualization`.
 - **The anatomy of an individual card.** Covered by the card component skill.
 - **Grid column counts, gutters, widget shapes, and minimum sizes.** These come from the design system's layouts.
 - **Table structure.**

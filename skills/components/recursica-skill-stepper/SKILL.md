@@ -39,16 +39,16 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
 
-| Variant property | Options                  |
-| ---------------- | ------------------------ |
-| `sizes`          | `large`, `small`         |
-| `orientation`    | `horizontal`, `vertical` |
+| Variants      | Options                  |
+| ------------- | ------------------------ |
+| `sizes`       | `large`, `small`         |
+| `orientation` | `horizontal`, `vertical` |
 
 **A step may have a second line.** `description-text` exists beside `label-text`, so a step has a name and an optional short description. Never put a paragraph in it.
 
 **The connector (the line between steps) tells finished steps from upcoming steps.** `completed-connector-size` and `upcoming-connector-size` differ. The display of progress depends on a line's thickness and a color. That is a single visual channel (color, shape, position or text, each a separate signal), and progress must not rely on it alone. See the accessibility section and `recursica-skill-system-conventions`.
 
-**There is no state variant property on the component.** "Done, Current, & Upcoming" behavior is shown only on the design-system website, but the UI kit defines no `states`. A step's status is data the application supplies, not a variant. State it in what assistive technology reads.
+**There is no state variant on the component.** "Done, Current, & Upcoming" behavior is shown only on the design-system website, but the UI kit defines no `states`. A step's status is data the application supplies, not a variant. State it in what assistive technology reads.
 
 **There is no error, warning, skipped, or optional step state.** The component cannot show that a step failed validation. The step's text must state it.
 

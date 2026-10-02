@@ -38,14 +38,14 @@ A table shows many copies of one object, so the reader can compare values down a
 
 ## Variants
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.table`, `table-cell`, `table-header`, `table-footer`. **The table itself has no variant properties.** The three sub-specs each have one.
+Taken from `recursica_ui-kit.json` → `ui-kit.components.table`, `table-cell`, `table-header`, `table-footer`. **The table itself has no variants.** The three sub-specs each have one.
 
-| Spec           | Variant property | Options               |
-| -------------- | ---------------- | --------------------- |
-| `table`        | —                | no variant properties |
-| `table-cell`   | `states`         | `disabled`            |
-| `table-header` | `states`         | `disabled`            |
-| `table-footer` | `states`         | `disabled`            |
+| Spec           | Variants | Options     |
+| -------------- | -------- | ----------- |
+| `table`        | —        | no variants |
+| `table-cell`   | `states` | `disabled`  |
+| `table-header` | `states` | `disabled`  |
+| `table-footer` | `states` | `disabled`  |
 
 **Spec ownership:** `table` owns the outer frame, the row and column dividers, the row padding, the colors, and the transparencies. `table-header` is the row of column headers. `table-cell` is a body cell. `table-footer` is the row of totals.
 
@@ -53,7 +53,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.table`, `table-cell`, 
 
 **Currency has its own style.** Both `table-cell` and `table-footer` define a `currency-style`, separate from their normal `text-style`. Use it for currency, and follow `recursica-skill-dates-and-currency` for alignment and precision.
 
-**There is no density variant property** — no compact, comfortable, or spacious. Cell padding comes from `globals.table.cell` and the component's own padding properties. This matches the house rule against density variants.
+**There is no density variant** — no compact, comfortable, or spacious. Cell padding comes from `globals.table.cell` and the component's own padding properties. This matches the house rule against density variants.
 
 **`table-cell` defines a `max-width`, and on its own it does not limit anything.** A maximum width on a table cell is only a suggestion to the browser's automatic table layout, which sizes columns from their content and often goes past it — a 200px maximum measured 257px in a real table. **Do not use the token to fix a column that is too wide.** Set a column's width by its data type, as `recursica-skill-tables` describes. The browser applies a width set that way, and largely ignores `max-width`.
 

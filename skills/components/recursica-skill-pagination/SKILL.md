@@ -34,9 +34,9 @@ Pagination moves the user between pages of one set of records. It is a control i
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.pagination`. **Do not pass a variant or state — there are none.**
 
-| Variant property | Options                                            |
-| ---------------- | -------------------------------------------------- |
-| `variants`       | None. The component has no variant property at all |
+| Variants   | Options                                   |
+| ---------- | ----------------------------------------- |
+| `variants` | None. The component has no variant at all |
 
 **The properties split the controls into three groups, each styled separately:** `active-pages`, `inactive-pages`, and `navigation-controls`, plus `colors` and `item-gap`. The page numbers and the previous and next controls are styled apart from each other — do not restyle either to match the other.
 

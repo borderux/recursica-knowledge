@@ -40,22 +40,22 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
 
-| Variant property | Options                   |
-| ---------------- | ------------------------- |
-| `states`         | `error`, `disabled`       |
-| `layouts`        | `stacked`, `side-by-side` |
+| Variants  | Options                   |
+| --------- | ------------------------- |
+| `states`  | `error`, `disabled`       |
+| `layouts` | `stacked`, `side-by-side` |
 
-**`layouts` is the label-placement variant property.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**`layouts` is the label-placement variant.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
 **Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, under the names the code uses for both.
 
-**Placeholder and valued are not variants.** Both are shown only on the design-system website as content. In the UI kit, they are the same `text` property with different content, which is why there is no placeholder variant property. The field's `colors` cover both.
+**Placeholder and valued are not variants.** Both are shown only on the design-system website as content. In the UI kit, they are the same `text` property with different content, which is why there is no placeholder variant. The field's `colors` cover both.
 
 **Focused is not a state.** It is listed as one outside the UI kit, but the UI kit handles it through `globals.form.field.colors.border-selected`. Do not build it as a state.
 
-**There is no size variant property.** `min-height` is a fixed property, and `globals.form.field.size.single-line-input-height` sets the height for every single-line field.
+**There is no size variant.** `min-height` is a fixed property, and `globals.form.field.size.single-line-input-height` sets the height for every single-line field.
 
-**There is no multi-select variant property**, no variant property for grouping options into sections, and no searchable variant — see the open questions.
+**There is no multi-select variant**, no variant for grouping options into sections, and no searchable variant — see the open questions.
 
 **The UI kit defines the closed field only.** `icon-size` and `icon-text-gap` cover a leading icon and the expand indicator. The open menu, its options, and their rows are not part of this component's inventory.
 

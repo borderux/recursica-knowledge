@@ -37,7 +37,7 @@ A tree shows data arranged as parents and children, and lets the user open only 
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.tree`.
 
-| Variant property   | Options                  |
+| Variants           | Options                  |
 | ------------------ | ------------------------ |
 | `selection-states` | `unselected`, `selected` |
 
@@ -47,7 +47,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **The UI kit has no expanded or collapsed state, only selection.** It does not define how an open node looks different from a closed one. That difference is among the open questions. Do not invent a rotation or a second icon token for it.
 
-**There is no disabled state, no hover state, and no size variant property.**
+**There is no disabled state, no hover state, and no size variant.**
 
 **There are no checkboxes in the UI kit's tree.** This component does not provide a tree with checkboxes for choosing several items.
 

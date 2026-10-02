@@ -40,7 +40,7 @@ A switch turns one thing on or off. The label names what the switch controls. Th
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.switch`, `switch-group`, and `switch-item`. **Do not pass a variant, size, or state that is not listed here.**
 
-| Component      | Variant property   | Options                   |
+| Component      | Variants           | Options                   |
 | -------------- | ------------------ | ------------------------- |
 | `switch`       | `selection-states` | `selected`, `unselected`  |
 | `switch-group` | `layouts`          | `stacked`, `side-by-side` |
@@ -48,15 +48,15 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Three components make one form field.** The group owns the layout and the spacing between items. The item owns one switch's label. The switch owns the track (the bar), the thumb (the handle that slides), and its state. Use all three together, instead of placing a bare `switch` beside some text.
 
-**The variant properties sit on different parts, and that is on purpose.** `layouts` belongs to the group — one decision for the whole field. `disabled` belongs to the item — so a single switch can be unavailable while the ones beside it can still be used. The group has no disabled state. `globals.states.disabled` supplies the disabled styling.
+**The variants sit on different parts, and that is on purpose.** `layouts` belongs to the group — one decision for the whole field. `disabled` belongs to the item — so a single switch can be unavailable while the ones beside it can still be used. The group has no disabled state. `globals.states.disabled` supplies the disabled styling.
 
-**`layouts` is the label-placement variant property, the same variant property every field has.** `side-by-side` puts the group's label beside the switches; `stacked` puts it above.
+**`layouts` is the label-placement variant, the same variant every field has.** `side-by-side` puts the group's label beside the switches; `stacked` puts it above.
 
 **The thumb can carry an icon** — `thumb-icon-size` exists — and that icon is a second visual signal of the state, alongside the thumb's position and the track's color.
 
-**There is no size variant property**, none of the three has an error state, and there is no required variant property. `Enabled Selected`, `Disabled Selected`, `Enabled Unselected`, and `Disabled Unselected` are shown only on the design-system website. Those are the item's `disabled` combined with the switch's selection state — not four selection states.
+**There is no size variant**, none of the three has an error state, and there is no required variant. `Enabled Selected`, `Disabled Selected`, `Enabled Unselected`, and `Disabled Unselected` are shown only on the design-system website. Those are the item's `disabled` combined with the switch's selection state — not four selection states.
 
-**There is no variant property for which side of the label the switch sits on** — see the open questions, because one is shown only on the design-system website.
+**There is no variant for which side of the label the switch sits on** — see the open questions, because one is shown only on the design-system website.
 
 **Read-only is a separate component** — `read-only-field`, which shows text instead of a control.
 
@@ -143,7 +143,7 @@ Do not add margins or spacer elements between switches or around the group. The 
 
 ## Open questions
 
-- **A variant property for which side of the label the switch sits on is shown only on the design-system website, with no token behind it.** `On Left` and `On Right` appear there, but the UI kit defines no such variant property on `switch`, `switch-item`, or `switch-group`. Do not build one, and do not rely on this without asking.
+- **A variant for which side of the label the switch sits on is shown only on the design-system website, with no token behind it.** `On Left` and `On Right` appear there, but the UI kit defines no such variant on `switch`, `switch-item`, or `switch-group`. Do not build one, and do not rely on this without asking.
 - **How a switch shows an error.** The UI kit gives `dropdown` and `autocomplete` an `error` state, and gives the switch none.
 - **What a switch does while its change is in flight**, and what happens if the immediate save fails. There is no pending, loading, or failure state.
 - **Whether a `switch-group` may hold more than a handful of switches**, and whether the 7 ± 2 limit applies to switches at all — the limit is stated only for radio and checkbox groups.

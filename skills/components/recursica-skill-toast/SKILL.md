@@ -41,9 +41,9 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.toast`. **Do not pass 
 
 **Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
 
-| Variant property | Options                       |
-| ---------------- | ----------------------------- |
-| `styles`         | `default`, `success`, `error` |
+| Variants | Options                       |
+| -------- | ----------------------------- |
+| `styles` | `default`, `success`, `error` |
 
 **There are exactly three styles, and there is no warning.** Do not build one, and do not use `error` as a warning — an error style says something failed.
 
@@ -51,7 +51,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.toast`. **Do not pass 
 
 **The UI kit defines an `icon` and a `text`, and nothing else inside the toast.** There is no token for an action button and none for a close control, though both are shown only on the design-system website. There is no duration or timer token either. Check the open questions before building any of the three.
 
-**There is no size variant property and no position variant property.** `min-width`, `max-width`, and `min-height` are fixed properties, and nothing in the UI kit says where a toast appears or how several of them stack.
+**There is no size variant and no position variant.** `min-width`, `max-width`, and `min-height` are fixed properties, and nothing in the UI kit says where a toast appears or how several of them stack.
 
 **The three styles differ only by color and icon.** The style only backs up what the text says. It never carries the message on its own.
 
@@ -139,7 +139,7 @@ Do not set or override any of these. The component sets them for every style:
 
 - **Duration values.** The house position is settled — see the rule above — but no token records what any given library's default is. A duration cannot be checked from this repository.
 - **How a toast's action button is styled.** One action is allowed — see the rules above — but the UI kit defines no token for it, only `icon` and `text`. Ask before styling it.
-- **Where toasts appear on screen.** No position variant property exists. "Towards the bottom" is shown only on the design-system website. Ask before relying on it.
+- **Where toasts appear on screen.** No position variant exists. "Towards the bottom" is shown only on the design-system website. Ask before relying on it.
 - **Stacking.** How many toasts may be visible at once, in what order, and what happens past that limit.
 - **Warnings, and critical alerts.** No warning style exists, and no alert that stays on screen for serious problems exists in this system yet — nothing to hold an alert the user must not miss. The banner component is planned and may cover part of this. Until it ships, do not build a substitute, and do not name a component as though it were available.
 - **Whether a toast is ever right for a background job that finishes long after the action that started it.**

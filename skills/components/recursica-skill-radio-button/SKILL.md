@@ -37,7 +37,7 @@ A radio group is one label with several values, of which exactly one may be sele
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.radio-button`, `radio-button-group`, and `radio-button-item`. **Do not pass a variant, size, or state that is not listed here.**
 
-| Component            | Variant property   | Options                   |
+| Component            | Variants           | Options                   |
 | -------------------- | ------------------ | ------------------------- |
 | `radio-button`       | `selection-states` | `selected`, `unselected`  |
 | `radio-button-group` | `layouts`          | `stacked`, `side-by-side` |
@@ -45,13 +45,13 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Three components, one form field.** The group owns the layout and the spacing between items. The item owns one option's label, and pairs it with a control. The radio button owns the circle itself and whether it is selected. Use all three together. Never build a group in a form from bare `radio-button` instances.
 
-**The variant properties sit on different parts, and that is on purpose.** `layouts` belongs to the group — one decision for the whole field. `disabled` belongs to the item — so a single option can be unavailable while the rest of the choice can still be used. There is no disabled state for the group. `globals.states.disabled` supplies the disabled styling.
+**The variants sit on different parts, and that is on purpose.** `layouts` belongs to the group — one decision for the whole field. `disabled` belongs to the item — so a single option can be unavailable while the rest of the choice can still be used. There is no disabled state for the group. `globals.states.disabled` supplies the disabled styling.
 
-**`layouts` is the label-placement variant property, the same variant property every field has.** `side-by-side` puts the group's label beside the stack of options; `stacked` puts it above. **It does not set the direction the options run.** Options are always stacked vertically, and `recursica-skill-selection-controls` forbids a horizontal radio group outright. Never use `side-by-side` to put the radio buttons in a row.
+**`layouts` is the label-placement variant, the same variant every field has.** `side-by-side` puts the group's label beside the stack of options; `stacked` puts it above. **It does not set the direction the options run.** Options are always stacked vertically, and `recursica-skill-selection-controls` forbids a horizontal radio group outright. Never use `side-by-side` to put the radio buttons in a row.
 
-**There is no indeterminate state**, because a radio group has no partly selected condition. None of the three has an error state, and there is no required variant property.
+**There is no indeterminate state**, because a radio group has no partly selected condition. None of the three has an error state, and there is no required variant.
 
-**There is no size variant property.** `size` and `icon-size` are fixed properties of the radio button.
+**There is no size variant.** `size` and `icon-size` are fixed properties of the radio button.
 
 **Read-only is a separate component** — `read-only-field`, which shows text instead of inputs.
 

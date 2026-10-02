@@ -56,7 +56,7 @@ Quoted interface copy keeps the exact interface wording, such as a button label 
 
 | Insider word                                  | What a designer says                                  |
 | --------------------------------------------- | ----------------------------------------------------- |
-| axis                                          | variant property                                      |
+| axis                                          | variant                                               |
 | surface                                       | page, panel, or modal                                 |
 | gray bars where text will be                  | skeleton screen                                       |
 | summary figures                               | KPI tiles                                             |
@@ -99,7 +99,7 @@ Name the specific component, action or result. A reader should be able to pictur
 
 ### 7. Definitions for unfamiliar terms
 
-Do not define a modal, a tooltip, a placeholder or a variant property. Define a term at the term's first use when a designer could misread the term, or when Recursica uses the term in a Recursica-specific sense: a layer, an adapter, the standard UI kit, a tone, a token, a tab stop.
+Do not define a modal, a tooltip, a placeholder or a variant. Define a term at the term's first use when a designer could misread the term, or when Recursica uses the term in a Recursica-specific sense: a layer, an adapter, the standard UI kit, a tone, a token, a tab stop.
 
 Write the definition in brackets after the term: "a tab stop (a place the Tab key lands)". `skills/meta/GLOSSARY.md` holds the official wording, and `npm run skills:glossary:check` keeps the copies in step.
 

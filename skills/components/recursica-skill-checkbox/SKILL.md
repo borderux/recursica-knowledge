@@ -36,7 +36,7 @@ A checkbox turns a true/false flag on or off for one specific value. A group of 
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.checkbox`, `checkbox-group`, and `checkbox-item`. **Do not pass a variant, size, or state that is not listed here.**
 
-| Component        | Variant property   | Options                                 |
+| Component        | Variants           | Options                                 |
 | ---------------- | ------------------ | --------------------------------------- |
 | `checkbox`       | `selection-states` | `checked`, `unchecked`, `indeterminate` |
 | `checkbox-group` | `layouts`          | `stacked`, `side-by-side`               |
@@ -44,17 +44,17 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Three components, one form field.** The group owns the layout and the spacing between items. The item owns one option's label, and pairs it with a box. The checkbox owns the box itself and whether it is selected. Use all three together; never place bare `checkbox` instances in a form and call it a group.
 
-**The variant properties sit on different parts, and that is on purpose.** `layouts` belongs to the group — it is one decision for the whole field. `disabled` belongs to the item — so a single option can be unavailable while the ones next to it can still be used. There is no disabled state for the group as a whole; `globals.states.disabled` supplies the look.
+**The variants sit on different parts, and that is on purpose.** `layouts` belongs to the group — it is one decision for the whole field. `disabled` belongs to the item — so a single option can be unavailable while the ones next to it can still be used. There is no disabled state for the group as a whole; `globals.states.disabled` supplies the look.
 
-**`layouts` is the label-placement variant property, the same variant property every field has.** `side-by-side` puts the group's label beside the stack of items; `stacked` puts it above. **It is not a variant property for which way the items run.** Items are always stacked vertically — `recursica-skill-selection-controls` forbids a horizontal checkbox group outright — so `side-by-side` must never be read as "put the checkboxes in a row."
+**`layouts` is the label-placement variant, the same variant every field has.** `side-by-side` puts the group's label beside the stack of items; `stacked` puts it above. **It is not a variant for which way the items run.** Items are always stacked vertically — `recursica-skill-selection-controls` forbids a horizontal checkbox group outright — so `side-by-side` must never be read as "put the checkboxes in a row."
 
 **`indeterminate` is a state of the `checkbox`, not a separate component.** It is the partly-selected state, shown as a dash, that a select-all or a parent checkbox shows when some but not all of its children are checked.
 
-**None of the three has an error state**, and there is no required variant property. `Selected-disabled` and `Indeterminate-disabled` are shown only on the design-system website as states. Each is the item's `disabled` combined with the checkbox's selection state, not an extra selection state.
+**None of the three has an error state**, and there is no required variant. `Selected-disabled` and `Indeterminate-disabled` are shown only on the design-system website as states. Each is the item's `disabled` combined with the checkbox's selection state, not an extra selection state.
 
 **"Selected" and "Unselected" are shown only on the design-system website; the UI kit says `checked` and `unchecked`.** Both pairs name the same two states.
 
-**There is no size variant property.** `size` and `icon-size` are fixed properties of the checkbox.
+**There is no size variant.** `size` and `icon-size` are fixed properties of the checkbox.
 
 **Read-only is a separate component** — `read-only-field`, which shows text instead of inputs.
 
