@@ -13,37 +13,38 @@ A number input records a quantity that the user types.
 
 ## When to use a number input
 
-- **The value is a quantity** — a count, an amount, a rate, a measurement. Adding, subtracting or averaging it makes sense.
-- **The range is open, or too wide to list as options**, and the user knows the number they want.
-- **Precision matters.** The user needs the exact value, not a rough one.
+- **The value is a quantity**, such as a count, an amount, a rate, or a measurement. Adding, subtracting, or averaging the value makes sense.
+- **The range of values is open, or too wide to list as options**, and the user knows the number to enter.
+- **Precision matters.** The user needs the exact value, not a rough value.
 
 ## When not to use a number input
 
-Each case below has its own component. Use that component instead of adapting a number input:
+**Use the component in the right column instead of adapting a number input.**
 
-| Instead of a number input                            | Use                                                                                     |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| The number comes from a small, set list              | A radio group or a dropdown — see `recursica-skill-selection-controls`                  |
-| The exact value does not matter across a large range | `recursica-skill-slider` — the user is choosing a position, not entering a number       |
-| The digits are an identifier, not a quantity         | `recursica-skill-text-field`. Phone numbers, zips, account and card numbers are strings |
-| The value is a length of time                        | One field per unit, formatted `3h 20m` — see `recursica-skill-dates-and-currency`       |
-| The value is a date or a time                        | `recursica-skill-date-picker` or `recursica-skill-time-picker`                          |
-| The value can never be edited here                   | `recursica-skill-read-only-field` — shows the label and text, with no input             |
+| Situation                                            | Use instead                                                                                                                       |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| The number comes from a short, fixed list of options | A radio group or a dropdown. See `recursica-skill-selection-controls`.                                                            |
+| The exact value does not matter across a large range | A slider. The user chooses a position on the range, not a number. See `recursica-skill-slider`.                                   |
+| The digits are an identifier, not a quantity         | A text field. Phone numbers, ZIP codes, account numbers and card numbers are text, not numbers. See `recursica-skill-text-field`. |
+| The value is a length of time                        | One field for each unit of time, formatted as `3h 20m`. See `recursica-skill-dates-and-currency`.                                 |
+| The value is a date or a time                        | A date picker or a time picker. See `recursica-skill-date-picker` or `recursica-skill-time-picker`.                               |
+| Nobody can ever edit the value here                  | A read-only field, which shows the label and the text with no input. See `recursica-skill-read-only-field`.                       |
 
-**A leading zero, a fixed number of digits, or a check digit means it is not a number.** Anything where `007` and `7` are different is a text field.
+**A value with a leading zero, a fixed number of digits, or a check digit is not a number.** Use a text field for every value where `007` and `7` are different values.
 
-**Do not use a disabled number input to show a value.** If nobody can ever edit the value here, it does not belong in a form control.
+**Do not use a disabled number input to show a value.** When nobody can ever edit the value here, the value does not belong in a form control.
 
 ## Variants
 
-Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.number-input`. **Pass only the variants and states listed here** — other design systems have sizes, warning and success states, and content variants that this component does not.
+**Use only the number input variants and options that the Recursica MCP server lists for the project.** A designer can add variants and options in Theme Forge, so each project can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Look up the name of each variant in code with the same tool before using the variant. The code can use a different name from the name in Figma and the UI kit. A wrong name in code has no effect and shows no error. Never invent a variant or an option.
 
-**Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
+The rules below describe each option by role, such as "the error state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-| Variants  | Options                   |
-| --------- | ------------------------- |
-| `layouts` | `stacked`, `side-by-side` |
-| `states`  | `error`, `disabled`       |
+- **An error state and a disabled state.** The standard UI kit calls the state variant `states`, with the two options `error` and `disabled`.
+- **No warning state and no success state in the standard UI kit.** If the project adds a warning state or a success state in Theme Forge, use the project's state.
+- **No size variant in the standard UI kit.** If the project adds a size variant in Theme Forge, use the project's size variant. Otherwise, the number input has a fixed minimum height, and the form field tokens set the field size.
+- **No stepper in the standard UI kit.** The standard UI kit has no tokens for increase and decrease buttons, no collapsed or expanded state, and no content variant. If the project adds a stepper, a collapsed or expanded state, or a content variant in Theme Forge, use the project's version. Otherwise, do not claim that increase and decrease buttons exist. Do not build increase and decrease buttons from buttons placed beside the field. See the open questions.
+- **Read-only is a separate component, not a state.** The read-only field, `read-only-field` in the standard UI kit, has the same label-placement variant and no input.
 
 **Label placement is a variant.** The label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
 
@@ -51,120 +52,115 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Never build a focus state or a placeholder state.** The component draws the focus border and the placeholder text.
 
-**There is no size variant.** `min-height` is a fixed property, and `globals.form.field.size` supplies the field sizing.
-
-**The UI kit defines no stepper or increment control.** There are no tokens for increase and decrease buttons, no `collapsed` or `expanded` state, and no content variant. Do not claim that increment buttons exist, and do not build them out of buttons placed beside the field — see the open questions.
-
-**There is no read-only state.** Read-only is a separate component — `read-only-field`, with the same `layouts` variant and no input.
-
 ## Rules
 
-**Always pass a visible label.** Name the object — and, where the unit is not obvious from the object, name the unit too: "Weight (kg)", not "Weight". A screen reader user hears the label on its own.
+**Always give the number input a visible label.** The label names the object. When the object does not make the unit obvious, the label also names the unit: "Weight (kg)", not "Weight". A screen reader user hears the label without the text around the field.
 
 **Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields like this one that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
-**Right-align the value.** Every number is right-aligned, currency or not, so the alignment is uniform. The only exception is an explicit instruction from a person.
+**Right-align the value.** Right-align every number, currency or not, so every number lines up the same way. Use a different alignment only when a person explicitly asks for a different alignment.
 
-**Keep one precision.** Currency always shows two decimal places — `0.00`, `0.01`, `0.99`. Any set of numbers shown together keeps the same precision: `4.5` and `7.0`, never `4.5` and `7`. With fixed precision, the decimal points of right-aligned numbers line up.
+**Keep one precision.** Currency always shows two decimal places, as in `0.00`, `0.01`, and `0.99`. Numbers shown together keep the same number of decimal places: `4.5` and `7.0`, never `4.5` and `7`. With fixed precision, the decimal points of right-aligned numbers line up.
 
-**Read-only and editable values on the same screen must use the same alignment.** Left-aligning a read-only value next to a right-aligned editable one looks like two different systems.
+**Read-only values and editable values on the same screen must use the same alignment.** A left-aligned read-only value next to a right-aligned editable value looks like the two values come from two different systems.
 
-**A currency symbol or a unit is an affix (text attached to the start or end of the field) — not part of the label wording, and not joined onto the value.** The symbol goes first, and the unit goes last. Where several amounts sit in a column, the symbol belongs in the column header instead — see `recursica-skill-dates-and-currency`.
+**A currency symbol or a unit is an affix (text attached to the start or end of the field).** The currency symbol or unit is not part of the label wording, and is not joined onto the value. The currency symbol goes before the value, and the unit goes after the value. When several amounts sit in one column, put the currency symbol in the column header instead. See `recursica-skill-dates-and-currency`.
 
-**State the minimum, the maximum, and the step in help text**, before the user can break the rule. Preventing an error beats catching it.
+**State the minimum, the maximum, and the step in the help text**, before the user can type a value that breaks the limits. Preventing an error is better than catching the error.
 
-**Zero is a value; empty is not zero.** Do not pre-fill `0` to avoid an empty field. A submitted zero states that the value is zero.
+**Zero is a value, and an empty field is not zero.** Do not pre-fill `0` to avoid an empty field. A submitted zero states that the value is zero.
 
-**Do not pre-fill a number the user would have to think about, look up, or check.** A default the user cannot check gets submitted without being checked, which is worse than an empty field.
+**Do not pre-fill a number the user would have to think about, look up, or check.** A default the user cannot check gets submitted without being checked. A default that nobody checked is worse than an empty field.
 
-**On error, replace the help text; do not add to it.** Swapping keeps the field's height the same, so the form below does not shift. The message must restate the rule: "Invalid number" is not an error message; "Enter a whole number between 1 and 99" is.
+**On error, the error message replaces the help text.** Do not add the error message to the help text. Replacing the help text keeps the field the same height, and the form below the field does not move. The error message must restate the rule. "Invalid number" is not an error message. "Enter a whole number between 1 and 99" is an error message.
 
-**Pair the error state with a signal that is not color** — an icon, or the message itself. Required by `recursica-skill-system-conventions`.
+**Pair the error state with a signal that is not color**, either an icon or the error message. `recursica-skill-system-conventions` requires a signal that is not color.
 
-**Never quietly correct what the user typed, or force it into the allowed range.** Rewriting a value when the field loses focus destroys their input without telling them. Show the error, and let them fix it.
+**Never quietly correct the value the user typed, or force the typed value into the allowed range.** Rewriting a value when the field loses focus destroys the user's input without telling the user. Show the error, and let the user fix the value.
 
-**Disabled and read-only are different components, not two styles of one.**
+**A disabled number input and a read-only field are different components, not two styles of one component.**
 
-- **Disabled number input** — still a field, still clearly an input, but not usable right now. Use it when the user could make it usable by doing something else first.
-- **Read-only field** — a different component. A label and text, with no input. Use it when this user never edits this value here.
+- **Disabled number input.** A disabled number input is still a field and still clearly an input, but the user cannot use the field right now. Use a disabled number input when the user could make the field usable by taking a different action first.
+- **Read-only field.** A read-only field is a different component, with a label and text and no input. Use a read-only field when the current user never edits the value here.
 
 ## Accessibility
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
 
-The component connects the label to the input, and provides the focus ring. The application provides the unit, the limits, and any control inside the field.
+The number input component connects the label to the input and provides the focus ring. The app provides the unit, the limits, and every control inside the field.
 
 ### Screen readers
 
-- **Pass a real label.** Never let placeholder text be the accessible name (the name a screen reader reads out for a control) — it is not announced as a label, and it disappears when the user types. A field with no label has no accessible name.
-- **State the unit in text** — in the label, or in the help text. A visual prefix or suffix may not be announced with the value, and a currency symbol sitting in a column header is not connected to the field at all. A screen reader that announces "1000" with no unit leaves the user without the meaning of the number.
-- **State the expected format, the minimum, and the maximum in the help text.** Thousands separators, decimal places, and whether negative numbers are allowed have to be put in words. A mask, or a right-aligned display with two decimals, tells a screen reader nothing.
-- **Name every icon inside the field that can be used** — a clear control, or a stepper button if one is ever added. Decorative icons must be silent, and never announced as unlabeled graphics.
-- **Expose the current value and its limits to assistive technology** where the field limits the range, so a screen reader user knows the maximum.
-- **The error message is the text that gets announced.** The error replaces the help text, and a screen reader reads only the error. The error must state the rule and the limits.
+- **Give the field a real label.** Never let the placeholder text be the accessible name (the name a screen reader reads out for a control). A screen reader does not announce placeholder text as a label, and the placeholder text disappears when the user types. A field with no label has no accessible name.
+- **State the unit in text**, in the label or in the help text. A screen reader may not announce a visual prefix or suffix with the value. A currency symbol in a column header is not connected to the field at all. A user who hears "1000" with no unit does not know what the number means.
+- **State the expected format, the minimum, and the maximum in the help text.** Describe in words the thousands separators, the decimal places, and whether negative numbers are allowed. A mask tells a screen reader nothing. Right alignment with two decimal places also tells a screen reader nothing.
+- **Give every icon inside the field that the user can use an accessible name**, such as a clear control, or a stepper button if the project ever adds a stepper. Decorative icons must be silent. A screen reader must never announce a decorative icon as an unlabeled graphic.
+- **When the field limits the range, expose the current value, the minimum, and the maximum to assistive technology.** A screen reader user then knows the maximum.
+- **A screen reader announces the error message.** The error message replaces the help text, and a screen reader reads only the error message. The error message must state the rule and the limits.
 
 ### Keyboard and non-mouse navigation
 
-- **Never remove the field from the tab order**, and never make reaching it depend on a pointer.
-- **Typing is always enough to reach the value.** If any adjustment control exists, it is only a shortcut. A user must be able to reach the value by typing alone, and never have to press a button forty times.
-- **Every control inside the field is its own tab stop** (a place the Tab key lands), and works with Enter or Space — not with a handler that only responds to clicks.
-- **Do not move focus for the user.** No jumping ahead when the value reaches its number of digits, and no focus jump on a keystroke — both send the user's next keystrokes to a different field.
-- **Never let a scroll wheel or a stray arrow key change a saved value** while the field has focus but the user is only reading, and never trap arrow keys that the user needs to move the caret.
-- **Nothing needed to complete the field may appear only on hover** — not the limits, not the unit, and not an adjustment control.
+- **Never remove the field from the tab order.** Never make a pointer the only way to reach the field.
+- **Typing is always enough to enter the value.** Any adjustment control, such as a stepper button, is only a shortcut. A user must be able to enter the value by typing alone, and never has to press a button forty times.
+- **Every control inside the field is a separate tab stop** (a place the Tab key lands). Every control inside the field works with Enter or Space, not only with a mouse click.
+- **Do not move focus for the user.** Do not jump focus ahead when the value reaches a set number of digits. Do not jump focus on any keystroke. A focus jump sends the user's next keystrokes to a different field.
+- **Never let a scroll wheel or a stray arrow key change a saved value** while the field has focus and the user is only reading. Never take over the arrow keys that the user needs to move the caret.
+- **Show every part the user needs to complete the field without hover**, including the limits, the unit, and any adjustment control.
 
 ## Styling set by tokens
 
-Do not set or override any of these. The component sets them:
+**Do not set or override the number input properties below.** The number input component sets each property.
 
 - `border-radius`, `min-height`, `horizontal-padding`, `vertical-padding`, `border-size`.
-- Field width and sizing from `globals.form.field.size`.
+- Field width and sizing, from `globals.form.field.size`.
 - `icon-size` and `icon-text-gap`.
 - `text` styling and `placeholder-opacity`.
-- `colors` per layer, including the focused border from `globals.form.field.colors.border-selected` and the global disabled treatment from `globals.states.disabled`.
-- The label-field gaps and `vertical-item-gap` from `globals.form.properties`.
-- The label-to-input association and key handling inside the field.
+- `colors` per layer, including the focus border from `globals.form.field.colors.border-selected` and the disabled look from `globals.states.disabled`.
+- The gaps between the label and the field, and `vertical-item-gap`, from `globals.form.properties`.
+- The connection between the label and the input, and the keyboard behavior inside the field.
 
-Never style an unfocused number input to look disabled. An editable field must look editable at rest.
+**Never style an unfocused number input to look disabled.** An editable field must look editable when the user is not using the field.
 
 ## Related skills
 
-- `recursica-skill-dates-and-currency` — right alignment, two-decimal currency, precision consistency, the symbol in the column header, accounting parentheses, ranges, rounding, and abbreviation.
-- `recursica-skill-forms` — label placement and one placement per form, validation timing, pre-fill and defaults, save mode, and the rule that no form control goes inside a card.
-- `recursica-skill-label` — the label component, its placement variant, and required vs. optional marking.
-- `recursica-skill-assistive-element` — the help and error text below the field, and why the error replaces the help.
-- `recursica-skill-system-conventions` — never carry meaning in a single channel.
+- `recursica-skill-dates-and-currency` — right alignment, two decimal places for currency, the same precision across values, the currency symbol in the column header, accounting parentheses, ranges, rounding, and abbreviation.
+- `recursica-skill-forms` — label placement and one placement per form, when validation runs, pre-filled values and defaults, the form's save mode, and the rule that no form control goes inside a card.
+- `recursica-skill-label` — the label component, the label-placement variant, and required and optional markers.
+- `recursica-skill-assistive-element` — the help text and error text below the field, and why the error text replaces the help text.
+- `recursica-skill-system-conventions` — never showing meaning in only one way.
 
 ### Only if used on the same screen
 
 - `recursica-skill-slider` — the control for an approximate value across a range.
-- `recursica-skill-text-field` — the control for digit strings that are not quantities.
+- `recursica-skill-text-field` — the control for digits that are not quantities.
 
 ## Open questions
 
-- **Increase and decrease controls are shown only on the design-system website, with no token behind them.** The UI kit defines no stepper tokens at all — no increase button, no decrease button, no step. Increment controls must not be built out of buttons placed beside the field, and nothing in this system promises a stepper. Whether this component ever gets one, and what its step would be, must be settled by a person. Do not rely on this without asking.
-- **A `collapsed` and an `expanded` state are shown only on the design-system website.** Neither is a variant in the UI kit. They seem to describe whether a stepper is visible. Do not build either one, and do not rely on them without asking.
-- **A content variant** — `unvalued`, `unvalued with placeholder`, `valued` — is shown only on the design-system website, with no token behind it. It is not a variant in the UI kit, and nothing says whether a placeholder is wanted on a number field at all. Do not rely on it without asking.
-- **Whether the field formats the value as the user types** — thousands separators appearing while typing, or only when the field loses focus.
-- **Negative values.** Whether the accounting parentheses from `recursica-skill-dates-and-currency` are ever used inside an input, or only when showing a value.
-- **Choosing the unit.** A value whose unit can be switched — kg or lb — has no stated pattern.
+- **Increase and decrease controls.** Only the design-system website shows increase and decrease controls, with no token behind the controls. The standard UI kit defines no stepper tokens at all: no increase button, no decrease button, and no step. Do not build increase and decrease controls from buttons placed beside the field. Nothing in the design system promises a stepper. A person must decide whether the number input ever gets a stepper, and what the stepper's step would be. Do not rely on a stepper without asking. Ask only when the project has no stepper.
+- **Collapsed and expanded states.** Only the design-system website shows a `collapsed` state and an `expanded` state. Neither state is a variant in the standard UI kit. The two states seem to describe whether a stepper is visible. Do not build either state, and do not rely on either state without asking. Ask only when the project has no collapsed and expanded states.
+- **A content variant.** Only the design-system website shows a content variant, with the options `unvalued`, `unvalued with placeholder`, and `valued`, and no token behind the variant. The content variant is not a variant in the standard UI kit. No rule says whether a number input should show a placeholder at all. Do not rely on the content variant without asking. Ask only when the project has no content variant.
+- **Formatting while the user types.** No rule says whether the field formats the value while the user types, such as adding thousands separators, or only when the field loses focus.
+- **Negative values.** No rule says whether the accounting parentheses from `recursica-skill-dates-and-currency` are ever used inside a number input, or only when a value is shown outside an input.
+- **Choosing the unit.** No pattern exists for a value whose unit the user can switch, such as kg or lb.
 
 ## Pre-flight checklist
 
-- [ ] The value is a quantity — not an identifier, a length of time, or a position on a range.
-- [ ] A visible label is passed. It names the object, and names the unit where that is not obvious.
+- [ ] The value is a quantity, not an identifier, a length of time, or a position on a range.
+- [ ] The field has a visible label. The label names the object, and names the unit when the object does not make the unit obvious.
 - [ ] Label placement is side by side, unless the container is too narrow.
-- [ ] Label placement is set explicitly — `side-by-side`, unless the form's container is too narrow — and matches every other field in the same form. There is one placement per form at any given breakpoint, with no mixing between fields or sections. A missing setting means `stacked`, not the house rule, and `layouts` is not the setting name.
+- [ ] Label placement is set explicitly on every field, to side by side unless the form's container is too narrow, with the names the code uses, not `layouts`. A field with no setting gets the label above the field (`stacked`), not the house rule.
+- [ ] Label placement matches every other field in the same form, with one placement per form at each breakpoint and no mixing between fields or form sections.
 - [ ] The value is right-aligned, and the alignment matches the read-only values on the same screen.
 - [ ] Precision is fixed, and the same across every value shown together. Currency has two decimal places.
-- [ ] Any currency symbol or unit is an affix, and its meaning is also in the label or the help text.
-- [ ] The minimum, maximum, step, and expected format are stated in help text.
+- [ ] Any currency symbol or unit is an affix, and the label or the help text also states the currency or the unit.
+- [ ] The help text states the minimum, the maximum, the step, and the expected format.
 - [ ] The field is not pre-filled with `0` to avoid an empty field, and holds no default the user would have to understand to check.
-- [ ] Help and error text are passed through the component. The error replaces the help text, and restates the rule and its limits.
+- [ ] Help text and error text are set through the number input component. The error text replaces the help text, and restates the rule and the limits.
 - [ ] The error state has a signal that is not color, and no value is quietly forced into range or rewritten.
-- [ ] Every icon inside the field that can be used has an accessible name, and decorative icons are silent.
-- [ ] Typing alone reaches any valid value. Any adjustment control is only a shortcut, with its own tab stop.
+- [ ] Every icon inside the field that the user can use has an accessible name, and every decorative icon is silent.
+- [ ] Typing alone can enter any valid value. Any adjustment control is only a shortcut, and is a separate tab stop.
 - [ ] The arrow keys and the scroll wheel do not change the value unexpectedly.
-- [ ] Every variant and state comes from the inventory above, no size is set, and no stepper is built.
-- [ ] Styling comes from the component, and an unfocused field looks editable.
-- [ ] Numbers that are not editable here use the read-only component, not a disabled input.
+- [ ] Every variant, size, and state is one the Recursica MCP server lists for the project, and no variant or option is invented. No stepper is built unless the Recursica MCP server lists a stepper for the project.
+- [ ] Styling comes from the number input component, and an unfocused field looks editable.
+- [ ] Numbers that are not editable here use the read-only field, not a disabled number input.
 - [ ] Open questions were asked about, not decided: increase and decrease controls, the `collapsed` and `expanded` states, a content variant, formatting as the user types, negative values, and choosing the unit.
