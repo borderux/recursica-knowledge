@@ -40,6 +40,7 @@ Quoted interface copy keeps the exact interface wording, such as a button label 
 | ------------------------------- | -------------------------------------------------------- |
 | a row                           | a table row                                              |
 | a small set                     | two to five options                                      |
+| the set decides                 | the list of options decides                              |
 | an on/off state saved as data   | a setting the user turns on or off, such as email alerts |
 | more actions than fit           | more action buttons than the table row has room for      |
 | one primary button per surface  | one primary button per page, panel, or modal             |
