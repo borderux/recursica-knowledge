@@ -37,7 +37,7 @@ This applies equally to moving through primary navigation, secondary navigation,
 
 **Keeping a layout is a result of routing, not a remembered preference.** Do not build "remember which tab was open" as stored UI state. If the tab is a route, going back to that URL restores it, and the back button works. Anything beyond that is a question of how it is built, not a design decision.
 
-**Navigation sits on layer 0 beside the main content, unless one of them needs containing.** (A layer is a numbered level that sets which colors the components inside it use; layer 0 is the page itself.) Where containment is wanted, raise either the navigation or the main content to layer 1 — not both — and keep that direction across the whole application. Owned by `recursica-skill-layers`.
+**Navigation sits on layer 0 beside the main content, unless one of them needs containing.** (A layer is a numbered background level, 0 to 3, that sets the colors of the components on that level; layer 0 is the page itself.) Where containment is wanted, raise either the navigation or the main content to layer 1 — not both — and keep that direction across the whole application. Owned by `recursica-skill-layers`.
 
 ## Horizontal top bar vs. vertical sidebar
 

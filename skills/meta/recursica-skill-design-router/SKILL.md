@@ -111,7 +111,7 @@ Work from top to bottom. Each answer limits the ones below it.
 | 24  | Headings, emphasis, abbreviations, and the markup under the visual hierarchy                                                       | `recursica-skill-typography-semantics`             |
 | 25  | Empty, loading, error, and partial states                                                                                          | **No skill yet — ask**                             |
 
-A few terms from the table, since they come up in every skill below: a **surface** is a region that holds content, such as a page, panel, or modal. A layer is a numbered level that sets which colors the components inside it use; layer 0 is the page itself. A modal is a window that blocks the rest of the page until the user closes it. A toast is a short message that appears briefly and then disappears. Assistive technology means tools such as screen readers that help people with disabilities use a computer.
+A few terms from the table, since they come up in every skill below: a **surface** is a region that holds content, such as a page, panel, or modal. A layer is a numbered background level, 0 to 3, that sets the colors of the components on that level; layer 0 is the page itself. A modal is a window that blocks the rest of the page until the user closes it. A toast is a short message that appears briefly and then disappears. Assistive technology means tools such as screen readers that help people with disabilities use a computer.
 
 **Two ordering rules:**
 

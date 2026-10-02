@@ -68,6 +68,8 @@ Quoted interface copy keeps its own words, such as a button label `Save your cha
 
 **Skills never name a programming language or a code library.** No React, no props, no `formLayout`, no file paths in an adapter. Adapters exist for several languages, and a skill must hold for every adapter. Use the names in Figma and the UI kit, and tell the agent to look up the name the code uses with the Recursica MCP server.
 
+**Standard HTML and ARIA names are allowed in accessibility rules**, such as `button`, `div`, `span`, `href` and `aria-label`. These are web standards, not a library, and a reviewer can check a rule that names the element.
+
 **Skills never state a project's variants as fixed facts.** Each project can add, rename or remove variants in the project's UI kit. Describe a variant by role, such as "the primary style" or "the smaller size", and give the standard UI kit name only as an example.
 
 ### 5. Concrete words, no metaphors
@@ -97,7 +99,7 @@ Name the specific component, action or result. A reader should be able to pictur
 
 ### 7. Define only what a designer would not know
 
-Do not define a modal, a tooltip, a placeholder or a variant property. Define a term at the term's first use when a designer could misread the term, or when Recursica uses the term in a Recursica-specific sense: a layer, a tone, a token, a tab stop.
+Do not define a modal, a tooltip, a placeholder or a variant property. Define a term at the term's first use when a designer could misread the term, or when Recursica uses the term in a Recursica-specific sense: a layer, an adapter, the standard UI kit, a tone, a token, a tab stop.
 
 Write the definition in brackets after the term: "a tab stop (a place the Tab key lands)". `skills/meta/GLOSSARY.md` holds the official wording, and `npm run skills:glossary:check` keeps the copies in step.
 

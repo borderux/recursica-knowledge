@@ -91,7 +91,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Do not choose between Elevation and Outline at random** — which one a surface uses is not stated. See the open questions.
 
-**A card sits on a layer; it is not an alternative to one.** A layer is a numbered level that sets which colors the components inside it use. The card has its own set of colors for each of the four layer levels, so the layer it is placed on changes how it looks. A layer is a surface and a token scope (the area in which one set of design values applies); a card is the boundary of an object among repeating peers. See `recursica-skill-layers`.
+**A card sits on a layer; it is not an alternative to one.** A layer is a numbered background level, 0 to 3, that sets the colors of the components on that level. The card has its own set of colors for each of the four layer levels, so the layer it is placed on changes how it looks. A layer is a surface and a token scope (the area in which one set of design values applies); a card is the boundary of an object among repeating peers. See `recursica-skill-layers`.
 
 ## Rules
 

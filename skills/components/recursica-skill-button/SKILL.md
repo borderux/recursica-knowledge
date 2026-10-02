@@ -27,17 +27,17 @@ A button performs an action. A button never takes the user to a different page o
 | The user turns a setting on or off, such as email alerts            | A switch or a checkbox. See `recursica-skill-selection-controls`.                                                  |
 | A table row has more action buttons than the table row has room for | Fewer actions in the table row, not smaller buttons. See `recursica-skill-tables`.                                 |
 
-**Never use a button to go to a different page or URL.** Using a button to go to a different page is the most common misuse of buttons. If clicking a control changes the URL, build the control as a link, even when the design shows a button. When the link needs less visual weight, use the link's text style, never a button.
+**Never use a button to go to a different page or URL.** Using a button to go to a different page is the most common misuse of buttons. If clicking a control changes the URL, build the control as a link, even when the design shows a button. A link already has less visual weight than a button. When a page change must look light, use a link, never a button in the text style.
 
 ## Variants
 
 **Use only the button variants the Recursica MCP server lists for the project, under the names the code uses. Never invent a variant.** Get the list from the server's `recursica_get_component_doc` tool. Each project can add, rename, or remove button variants in the project's UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has).
 
-The rules below describe each variant by role. The names in the standard UI kit are examples.
+The rules below describe each variant by role. The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples.
 
 - **Three styles, from most to least prominent.** The primary style is for the main action. The secondary style is for the next most important action. The least prominent style is for every other action. In the standard UI kit, the three styles are `solid`, `outline`, and `text`. The `text` style is also called "Ghost".
 - **Two sizes.** A button comes in a default size and a smaller size. The standard UI kit calls the smaller size `small`.
-- **Three kinds of content.** A button shows a label alone, an icon with a label, or an icon alone. An icon with a label can show the icon before the label, after the label, or both. The settings are the same for each position.
+- **Three kinds of content.** A button shows a label alone, an icon with a label, or an icon alone. One variant covers an icon before the label, after the label, or both. There are no separate variants for each icon position.
 - **A disabled state for every style.** The opacity of a disabled button comes from `globals.states.disabled`. How to turn on the disabled state is an open question.
 - **No destructive style.** Never invent a destructive style. Color alone cannot mark a destructive action (an action that deletes data or cannot be undone). Name the destructive action in the label, as in "Delete invoice". Confirm any action that cannot be undone. See `recursica-skill-buttons-links`.
 - **No loading state.** Show a loading button (a button whose action is still running) in the disabled look with an animated icon, with or without a label. Never add a spinner beside the button, change the label, or invent any new state.
@@ -62,7 +62,7 @@ The rules below describe each variant by role. The names in the standard UI kit 
 
 **While a submit action runs, show the submit button in the disabled look with an animated icon.** `recursica-skill-forms` requires a disabled, loading look on the submit button. Build the look from the variants above: the disabled state and an icon, with or without a label. Animate the icon. Keep the button the same size and in the same place. A button that moves or resizes is no longer under the user's pointer.
 
-**Never use the smaller size to fit more buttons.** Too many actions in a row is a structural problem. See `recursica-skill-system-conventions`.
+**Never use the smaller size to fit more buttons side by side**, in a toolbar, a footer, or a table row. Too many buttons side by side means the screen offers too many actions. Fix the structure instead. See `recursica-skill-system-conventions`.
 
 **Hide a button the user has no permission to use.** Never show the button disabled instead. See `recursica-skill-navigation`.
 
@@ -103,7 +103,7 @@ The button component provides the focus ring. The button component also handles 
 - Height, horizontal and vertical padding, `border-size`, `border-radius`.
 - Icon size and the gap between the icon and the label.
 - Typography, letter case, and text alignment.
-- All colors, for every style and every layer, including hover, active, focus, and disabled.
+- All colors, for every style and every layer (a numbered background level, 0 to 3, that sets the colors of the components on that level), including hover, active, focus, and disabled.
 - Elevation.
 
 ## Related skills
@@ -116,7 +116,7 @@ The button component provides the focus ring. The button component also handles 
 
 - **When to use the smaller size.** No rule says which screens use the smaller size.
 - **Full-width buttons.** No variant property supports a full-width button. No rule says whether a full-width button is ever allowed, or where.
-- **The icon for a loading button.** A loading button uses the disabled look with an animated icon, and that part is settled. Which icon to use is not settled. Whether the UI kit or the adapter defines the animation is also unknown.
+- **The icon for a loading button.** A loading button uses the disabled look with an animated icon, and that part is settled. Which icon to use is not settled. Whether the UI kit or the adapter (the Recursica component library for one framework, such as Mantine or Angular Material) defines the animation is also unknown.
 - **Split buttons and button groups.** The UI kit has neither. Do not build either one.
 - **Setting the disabled state.** The standard UI kit defines a disabled state under each style. Nobody has confirmed that the adapter exposes the disabled state as a setting. Check the button component's settings, or ask, before relying on the disabled state.
 

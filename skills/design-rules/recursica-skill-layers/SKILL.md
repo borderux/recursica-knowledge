@@ -9,7 +9,7 @@ metadata:
 
 # Layers
 
-These are the house rules for Recursica's layer system — the way containers are stacked. A layer is a numbered level that sets which colors the components inside it use; layer 0 is the page itself. These rules are opinions, not neutral best practices — treat them as constraints.
+These are the house rules for Recursica's layer system — the way containers are stacked. A layer is a numbered background level, 0 to 3, that sets the colors of the components on that level; layer 0 is the page itself. These rules are opinions, not neutral best practices — treat them as constraints.
 
 These rules assume **complex enterprise web applications** built on a Recursica theme. The layer contract is defined in the theme, at `https://forge.recursica.com/theme/layers`. What a layer looks like is the theme's business. This skill decides only which layer a region sits on.
 

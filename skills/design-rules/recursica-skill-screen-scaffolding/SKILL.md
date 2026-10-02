@@ -29,7 +29,7 @@ These are the house rules for how a page is put together, and what each region s
 
 **Page titles, sections, and any high-level summary content sit below the header**, in the page.
 
-**The header, the navigation, and the main content all sit on layer 0, unless one of them needs containing.** (A layer is a numbered level that sets which colors the components inside it use; layer 0 is the page itself.) Where one does, that region is raised to layer 1 — the navigation or the main content, not both — and the direction is decided once for the whole application. Layer 0 is declared once, on the root element, and never declared again. Owned by `recursica-skill-layers`.
+**The header, the navigation, and the main content all sit on layer 0, unless one of them needs containing.** (A layer is a numbered background level, 0 to 3, that sets the colors of the components on that level; layer 0 is the page itself.) Where one does, that region is raised to layer 1 — the navigation or the main content, not both — and the direction is decided once for the whole application. Layer 0 is declared once, on the root element, and never declared again. Owned by `recursica-skill-layers`.
 
 ### Choosing between a top nav and a left rail
 
