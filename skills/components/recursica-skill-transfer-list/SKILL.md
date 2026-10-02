@@ -31,7 +31,7 @@ A transfer list is two lists side by side, with controls that move items between
 | Exactly one value is chosen                           | `recursica-skill-dropdown`, or a radio group                                               |
 | Zero-to-many, but the unselected set is uninteresting | A multi-select dropdown — see `recursica-skill-selection-controls`                         |
 | The container cannot fit two columns                  | A different control entirely. The lists have a fixed `width`                               |
-| Items need reordering rather than including           | Not this component — no ordering axis exists                                               |
+| Items need reordering rather than including           | Not this component — no ordering variant property exists                                   |
 | The items are rows of stored data with actions        | A table — see `recursica-skill-tables`                                                     |
 | The value is not editable by this user                | `recursica-skill-read-only-field`                                                          |
 
@@ -41,16 +41,16 @@ A transfer list is two lists side by side, with controls that move items between
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.transfer-list`. **Pass only a variant, size, or state listed here.**
 
-**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
+**Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
 
-| Axis      | Options                   |
-| --------- | ------------------------- |
-| `layouts` | `stacked`, `side-by-side` |
-| `states`  | `error`, `disabled`       |
+| Variant property | Options                   |
+| ---------------- | ------------------------- |
+| `layouts`        | `stacked`, `side-by-side` |
+| `states`         | `error`, `disabled`       |
 
-**`layouts` is the label-placement axis.** `side-by-side` — the label beside the control — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`. **It does not arrange the two lists** — they are always two columns.
+**`layouts` is the label-placement variant property.** `side-by-side` — the label beside the control — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`. **It does not arrange the two lists** — they are always two columns.
 
-**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, using the adapter's name for that axis and option.
+**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, under the names the code uses for both.
 
 **Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
@@ -58,7 +58,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.transfer-list`. **Pass
 
 **Height and width are fixed** — `height` and `width` are properties of the component, not choices. Both lists are the same size, no matter how many items are in them.
 
-**There is no size axis, no focus state, and no loading or empty state.** There is no move-all axis — and none is wanted; see the rule below. There are no tokens for single items; see the open questions.
+**There is no size variant property, no focus state, and no loading or empty state.** There is no move-all variant property — and none is wanted; see the rule below. There are no tokens for single items; see the open questions.
 
 ## Rules
 
@@ -84,7 +84,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.transfer-list`. **Pass
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
 
 Two lists with arrow buttons are often shipped so that they work only with a mouse. The application must provide everything below.
 
@@ -103,7 +103,7 @@ Two lists with arrow buttons are often shipped so that they work only with a mou
 - **The whole transfer must work from the keyboard, with no dragging.** Selecting items, moving them, and moving them back all have to work with keys alone. If drag-and-drop is added, it is extra, and never the only way.
 - **After a move, put focus somewhere on purpose** — on the moved item in its new list, or on the move control that still applies. Never leave focus on a control that has just become disabled, and never drop it back to the top of the page.
 - **Move controls are real buttons**, pressed with Enter and Space, and they are tab stops (places the Tab key lands), in visual order, between the two lists.
-- **A move control with nothing to move is disabled, and the reason is in text.** A disabled button does not say why it is disabled, and Tab skips it.
+- **A move control with nothing to move is disabled.**
 - **The tab order follows the visual order**: label, filter, first list, move controls, second list.
 - **Do not move focus for the user**, other than placing it on purpose after a move. Typing in the filter must not move focus into the list.
 - **Nothing the user needs may appear only on hover** — not the move controls, not a remove control on each item, and not the counts.

@@ -34,13 +34,13 @@ A badge is one piece of read-only metadata attached to something else. The syste
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.badge`. **Do not pass a variant that is not listed here.**
 
-**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
+**Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
 
-| Axis     | Options                                        |
-| -------- | ---------------------------------------------- |
-| `styles` | `primary-color`, `warning`, `success`, `alert` |
+| Variant property | Options                                        |
+| ---------------- | ---------------------------------------------- |
+| `styles`         | `primary-color`, `warning`, `success`, `alert` |
 
-**There is no size axis and no content axis in the UI kit**, though both are shown only on the design-system website. See the open questions before relying on either — that mismatch has not been settled.
+**There is no size variant property and no content variant property in the UI kit**, though both are shown only on the design-system website. See the open questions before relying on either — that mismatch has not been settled.
 
 **No disabled state, no interactive state, and no hover effect.** A badge has no states, because it is not a control.
 
@@ -68,7 +68,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
 
 A badge is text, not a control. That makes the risk the opposite of most components. The risk is not that a badge cannot be reached, but that it is announced apart from the object it describes, or not announced at all.
 
@@ -106,7 +106,7 @@ Do not set or override any of these. The component sets them:
 
 - **The mapping of statuses to intents.** The principle is settled — the intent agrees with the sentiment, and `alert` never carries a positive value. But which intent each status takes has not been decided. With four intents and more statuses than that, the mapping needs to be stated, not invented while building.
 - **What `warning` and `alert` are for**, given that a badge must not show an error. Until this is answered, do not use either one.
-- **A size axis, with default and large, and a content axis, with message and counter, are shown only on the design-system website, with no token behind either.** Do not assume they are available, and do not rely on this without asking.
+- **A size variant property, with default and large, and a content variant property, with message and counter, are shown only on the design-system website, with no token behind either.** Do not assume they are available, and do not rely on this without asking.
 - **A limit on counts** — whether a large number is cut short, and how.
 - **Whether a badge may carry an icon beside its text.**
 - **Zero.** Whether a count badge is hidden at zero, or shown.
@@ -125,6 +125,6 @@ Do not set or override any of these. The component sets them:
 - [ ] The badge is announced as part of its object, not as a stray fragment.
 - [ ] It has no tabindex, no click handler, and no interactive role.
 - [ ] Status changes swap with no animation, and any live update is polite or silent.
-- [ ] Every badge uses one of the four styles in the inventory, and none relies on a size or content axis.
+- [ ] Every badge uses one of the four styles in the inventory, and none relies on a size or content variant property.
 - [ ] The component's text, padding, border, elevation, and colors have no overrides.
-- [ ] Open questions were asked about, not decided: the mapping of statuses to intents, what `warning` and `alert` are for, a size axis and a content axis, a limit on counts, an icon beside the text, and a count of zero.
+- [ ] Open questions were asked about, not decided: the mapping of statuses to intents, what `warning` and `alert` are for, a size variant property and a content variant property, a limit on counts, an icon beside the text, and a count of zero.

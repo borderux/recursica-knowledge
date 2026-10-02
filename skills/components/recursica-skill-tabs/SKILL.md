@@ -34,9 +34,9 @@ Tabs switch between the parts of one whole and show one part at a time.
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.tabs` and `tabs-item`.
 
-**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
+**Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
 
-| Axis               | Options                       | On          |
+| Variant property   | Options                       | On          |
 | ------------------ | ----------------------------- | ----------- |
 | `styles`           | `default`, `pills`, `outline` | `tabs`      |
 | `orientation`      | `horizontal`, `vertical`      | `tabs`      |
@@ -70,7 +70,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
 
 A tab set is one of the few components where wrong roles or connections in the markup make the content unreachable, not only awkward to use. Leave all key handling to the library.
 

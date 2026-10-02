@@ -31,16 +31,16 @@ The label names the field. It is a real component, not plain text beside an inpu
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.label`.
 
-**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
+**Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
 
-| Axis      | Options                   |
-| --------- | ------------------------- |
-| `layouts` | `stacked`, `side-by-side` |
-| `sizes`   | `default`, `small`        |
+| Variant property | Options                   |
+| ---------------- | ------------------------- |
+| `layouts`        | `stacked`, `side-by-side` |
+| `sizes`          | `default`, `small`        |
 
-**`layouts` is the placement axis, and it is the same axis every field has.** Set it consistently: the label's layout and its field's layout are one decision, not two — and that decision belongs to the form, not to this label. See the placement rule below.
+**`layouts` is the placement variant property, and it is the same variant property every field has.** Set it consistently: the label's layout and its field's layout are one decision, not two — and that decision belongs to the form, not to this label. See the placement rule below.
 
-**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, using the adapter's name for that axis and option.
+**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, under the names the code uses for both.
 
 **The UI kit provides a required indicator and an optional text**, each with its own gaps, and a transparency setting for the optional text. Both exist. The form decides which one to use, not the field.
 
@@ -77,7 +77,7 @@ Mixing the two placements in one form causes three problems. It destroys the sin
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
 
 The label is where a field becomes usable by a screen reader at all. The connection between label and control is the whole reason this component exists.
 

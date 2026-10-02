@@ -48,7 +48,13 @@ Name the specific component, action or result. A reader should be able to pictur
 
 **Name the cost.** "Has a cost" says nothing until the cost is named. Write what happens: "KPI tiles take the top of the page and push the content down."
 
-**Use the term designers use.** "Skeleton screen", not "gray bars where text will be"; "KPI tiles", not "summary figures". Look the term up when unsure.
+**Use the term designers use.** "Skeleton screen", not "gray bars where text will be"; "KPI tiles", not "summary figures". "Variant property", not "axis". Look the term up when unsure.
+
+**Name the noun. Avoid pronouns.** Repeat the noun instead of writing "it", "they", "them", "this", "that", "these" or "those". Write "Keep the button the same size", not "Keep it the same size". A pronoun is acceptable only when the noun the pronoun replaces is in the same sentence and nothing else could match.
+
+**Say which one.** Every noun names the specific thing. Write "a table row", not "a row". Write "two to five options", not "a small set". Write "a setting the user turns on or off, such as email alerts", not "an on/off state saved as data".
+
+**Say what the reader sees and does, not what the code does.** Write "Clicking opens a different page", not "the user ends up somewhere else". Write "the name the code uses", not "the adapter's name for the axis".
 
 **No metaphors.** A summary row is not "furniture", and a misused badge is not "wearing another component's clothes". Say what is wrong.
 

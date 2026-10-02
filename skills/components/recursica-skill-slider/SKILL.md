@@ -35,16 +35,16 @@ A slider picks a value from a range with fixed ends, by moving a thumb (the hand
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.slider`. **Do not pass a variant, size, or state that is not listed here.**
 
-**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
+**Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
 
-| Axis      | Options                       |
-| --------- | ----------------------------- |
-| `layouts` | `stacked`, `side-by-side`     |
-| `states`  | `error`, `disabled`, `active` |
+| Variant property | Options                       |
+| ---------------- | ----------------------------- |
+| `layouts`        | `stacked`, `side-by-side`     |
+| `states`         | `error`, `disabled`, `active` |
 
-**`layouts` is the label-placement axis.** `side-by-side` — the label beside the control — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**`layouts` is the label-placement variant property.** `side-by-side` — the label beside the control — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
-**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, using the adapter's name for that axis and option.
+**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, under the names the code uses for both.
 
 **Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
@@ -58,7 +58,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is a `read-only-value` treatment** for the number readout. Its exact meaning is not stated; see the open questions.
 
-**There is no hover state, no size axis, no vertical orientation, no axis for smooth versus stepped, and no axis for a range with two thumbs.** Other design systems have all of these. This one does not.
+**There is no hover state, no size variant property, no vertical orientation, no variant property for smooth versus stepped, and no variant property for a range with two thumbs.** Other design systems have all of these. This one does not.
 
 ## Rules
 
@@ -82,7 +82,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
 
 The component provides the focus ring, the thumb, and the keyboard handling inside the track. The application must provide everything below. Sliders most often fail on these points, because most builds support dragging and nothing else.
 
@@ -129,13 +129,13 @@ Do not set or override any of these. The component sets them:
 
 ## Open questions
 
-- **Choosing a range with two thumbs.** Single and range selection are shown only on the design-system website, but the UI kit defines no second thumb and no range axis. Do not build one, and do not rely on this without asking.
-- **Smooth versus stepped, as documented types.** Both are shown only on the design-system website. The UI kit has step-indicator properties but no types axis, so what switches a slider between them is not stated. Do not rely on this without asking.
+- **Choosing a range with two thumbs.** Single and range selection are shown only on the design-system website, but the UI kit defines no second thumb and no range variant property. Do not build one, and do not rely on this without asking.
+- **Smooth versus stepped, as documented types.** Both are shown only on the design-system website. The UI kit has step-indicator properties but no types variant property, so what switches a slider between them is not stated. Do not rely on this without asking.
 - **A hover state.** One is shown only on the design-system website, but the UI kit's states are only `error`, `disabled`, and `active`. Do not rely on this without asking.
 - **What `read-only-value` means** — a readout that cannot be edited beside a track that can be used, or a read-only slider as a whole.
 - **Whether the number input is required or optional**, and on which surfaces. The house says "highly recommended", which is not a rule.
 - **Value labels other than the minimum and maximum**, including a label that moves with the thumb.
-- **Vertical orientation.** No axis supports it.
+- **Vertical orientation.** No variant property supports it.
 
 ## Pre-flight checklist
 

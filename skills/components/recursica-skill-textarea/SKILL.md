@@ -40,28 +40,28 @@ Each case below has its own component. Use that component instead of adapting a 
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.textarea`. **Pass only the variants and states listed here.** Other design systems have sizes, resize modes, warning states, and built-in counters that this component does not.
 
-**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
+**Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
 
-| Axis      | Options                   |
-| --------- | ------------------------- |
-| `layouts` | `stacked`, `side-by-side` |
-| `states`  | `error`, `disabled`       |
+| Variant property | Options                   |
+| ---------------- | ------------------------- |
+| `layouts`        | `stacked`, `side-by-side` |
+| `states`         | `error`, `disabled`       |
 
-**`layouts` is the label-placement axis.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**`layouts` is the label-placement variant property.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
-**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, using the adapter's name for that axis and option.
+**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, under the names the code uses for both.
 
 **Focus and placeholder are not variants.** The component handles them: `placeholder-opacity` here, and the focused border through `globals.form.field.colors.border-selected`. Do not build them as states.
 
 **The tokens set `rows`. Do not set it on each instance.** The component fixes the number of rows. Do not pass a height, do not set a row count to fit a particular answer, and do not add a wrapper to stretch it. If the fixed height is wrong for a case, ask a person — see the open questions.
 
-**There is no size axis, and no width property.** The field's width comes from `globals.form.field.size`.
+**There is no size variant property, and no width property.** The field's width comes from `globals.form.field.size`.
 
 **There is no icon property.** The component has no `icon-size` and no `icon-text-gap`, because it defines no icon inside the field.
 
 **There is no character counter.** Nothing in the UI kit shows a count.
 
-**There is no read-only state.** Read-only is a separate component — `read-only-field`, with the same `layouts` axis and no input.
+**There is no read-only state.** Read-only is a separate component — `read-only-field`, with the same `layouts` variant property and no input.
 
 ## Rules
 
@@ -92,7 +92,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
 
 The component connects the label to the input and provides the focus ring. The application must handle everything below. The keyboard rules matter more here than on a single-line field, because Enter and Tab mean something different inside a textarea.
 
@@ -134,7 +134,7 @@ Never style an unfocused textarea to look disabled. An editable field must look 
 ## Related skills
 
 - `recursica-skill-forms` — label placement and one placement per form, single-column layout, the no-custom-spacing rule, validation timing, microcopy, save mode, and the rule that no form control goes inside a card.
-- `recursica-skill-label` — the label component, its placement axis, and required vs. optional marking.
+- `recursica-skill-label` — the label component, its placement variant property, and required vs. optional marking.
 - `recursica-skill-assistive-element` — the help and error text below the field, and why the error replaces the help.
 - `recursica-skill-system-conventions` — never carry meaning in a single channel.
 
@@ -145,7 +145,7 @@ Never style an unfocused textarea to look disabled. An editable field must look 
 
 ## Open questions
 
-- **Growing to fit the content.** The UI kit fixes `rows`, and **a vertical-resize axis with `auto` and `custom` is shown only on the design-system website, with no token behind it. These disagree.** Whether the field grows with its content, and whether there is a handle the user can drag, must be settled by a person. Do not rely on a resize axis without asking.
+- **Growing to fit the content.** The UI kit fixes `rows`, and **a vertical-resize variant property with `auto` and `custom` is shown only on the design-system website, with no token behind it. These disagree.** Whether the field grows with its content, and whether there is a handle the user can drag, must be settled by a person. Do not rely on a resize variant property without asking.
 - **What a fixed `rows` does with a longer value.** A "default fixed height before content truncation" is described outside the UI kit. Whether the extra text scrolls or is cut off is not stated — and cutting off a user's own entry would be a serious problem. Do not rely on either behavior without asking.
 - **The character counter.** One is shown only on the design-system website, with no token behind it, and the UI kit shows none. Where a count lives, and what happens at the limit, is not settled — the same gap is open in `recursica-skill-assistive-element`. Do not rely on a counter without asking.
 - **A rich text editor.** No component in the UI kit produces formatted content. Do not build one out of a textarea.

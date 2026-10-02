@@ -36,19 +36,13 @@ The check lists every copy.
 Starts with:
 
 ```text
-**These are design-system names, not code names.**
-```
-
-Required when:
-
-```text
-Axis |
+**Look up each variant's name in code before using the variant.**
 ```
 
 Passage:
 
 ```text
-**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
+**Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
 ```
 
 ## layouts-axis
@@ -56,13 +50,13 @@ Passage:
 Starts with:
 
 ```text
-**`layouts` is the label-placement axis
+**`layouts` is the label-placement variant property
 ```
 
 Passage:
 
 ```text
-**`layouts` is the label-placement axis{ (a property a component varies on, such as size or style; Figma calls it a variant property)|}.** `side-by-side` — the label beside the {field|control} — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**`layouts` is the label-placement variant property{|}.** `side-by-side` — the label beside the {field|control} — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 ```
 
 ## layouts-axis-group
@@ -70,13 +64,13 @@ Passage:
 Starts with:
 
 ```text
-**`layouts` is the label-placement axis
+**`layouts` is the label-placement variant property
 ```
 
 Passage:
 
 ```text
-**`layouts` is the label-placement axis, the same axis every field has.** `side-by-side` puts the group's label beside the {stack of items|stack of options|switches}; `stacked` puts it above.
+**`layouts` is the label-placement variant property, the same variant property every field has.** `side-by-side` puts the group's label beside the {stack of items|stack of options|switches}; `stacked` puts it above.
 ```
 
 ## label-placement-default
@@ -90,7 +84,7 @@ Starts with:
 Passage:
 
 ```text
-**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, using the adapter's name for that axis and option.
+**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, under the names the code uses for both.
 ```
 
 ## one-placement-per-form
@@ -152,5 +146,5 @@ UI kit
 Passage:
 
 ```text
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`{, including the focus ring|}. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`{, including the focus ring|}. Only the rules specific to this component are listed here.
 ```

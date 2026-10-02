@@ -37,18 +37,18 @@ A stepper walks the user through one process that has several parts, and shows w
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.stepper`. **Do not pass a variant, size, or state that is not listed here.**
 
-**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
+**Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
 
-| Axis          | Options                  |
-| ------------- | ------------------------ |
-| `sizes`       | `large`, `small`         |
-| `orientation` | `horizontal`, `vertical` |
+| Variant property | Options                  |
+| ---------------- | ------------------------ |
+| `sizes`          | `large`, `small`         |
+| `orientation`    | `horizontal`, `vertical` |
 
 **A step may have a second line.** `description-text` exists beside `label-text`, so a step has a name and an optional short description. Never put a paragraph in it.
 
 **The connector (the line between steps) tells finished steps from upcoming steps.** `completed-connector-size` and `upcoming-connector-size` differ. The display of progress depends on a line's thickness and a color. That is a single visual channel (color, shape, position or text, each a separate signal), and progress must not rely on it alone. See the accessibility section and `recursica-skill-system-conventions`.
 
-**There is no state axis on the component.** "Done, Current, & Upcoming" behavior is shown only on the design-system website, but the UI kit defines no `states`. A step's status is data the application supplies, not a variant. State it in what assistive technology reads.
+**There is no state variant property on the component.** "Done, Current, & Upcoming" behavior is shown only on the design-system website, but the UI kit defines no `states`. A step's status is data the application supplies, not a variant. State it in what assistive technology reads.
 
 **There is no error, warning, skipped, or optional step state.** The component cannot show that a step failed validation. The step's text must state it.
 
@@ -80,7 +80,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
 
 The stepper shows position and progress visually, with an indicator, a color, and the thickness of a connector. **None of that reaches a screen reader.** State everything a sighted user sees at a glance in what assistive technology reads. The step change is the moment a screen reader user is most likely to lose their place.
 
@@ -103,7 +103,7 @@ The stepper shows position and progress visually, with an indicator, a color, an
 - **Step indicators that can be used to move between steps are real buttons**, reachable by Tab in visual order and activated by Enter and Space. Do not add a custom roving tabindex (where the arrow keys move between items that share one tab stop) on top of them.
 - **The tab order within a step follows the visual order** — the step's fields from top to bottom, then Back and Next in the footer. The single-column form layout is what keeps this true.
 - **Back must not lose the user's place.** Going back to a step puts focus at the start of that step's content, with the values they entered still there.
-- **Nothing needed may appear only on hover** — not a step's description, and not the reason a step is disabled.
+- **Nothing needed may appear only on hover** — not a step's description.
 
 ## Styling set by tokens
 

@@ -36,9 +36,9 @@ A menu is a temporary list of choices or actions. A trigger opens it, and dismis
 
 ## Variants
 
-Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has). Two specs, with one axis (a property a component varies on, such as size or style; Figma calls it a variant property) between them.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has). Two specs, with one variant property between them.
 
-| Spec        | Axis               | Options                  |
+| Spec        | Variant property   | Options                  |
 | ----------- | ------------------ | ------------------------ |
 | `menu`      | (none)             | —                        |
 | `menu-item` | `selection-states` | `unselected`, `selected` |
@@ -56,7 +56,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no submenu.** A trailing chevron for a nested submenu that opens "on hover or click" is shown only on the design-system website. The UI kit defines no nested menu, and a house rule forbids opening on hover. Do not build one — see the open questions.
 
-**There is no placement, size, density, or multi-select axis.** Do not pass a position.
+**There is no placement, size, density, or multi-select variant property.** Do not pass a position.
 
 ## Rules
 
@@ -80,7 +80,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
 
 Menu accessibility is mostly focus management. The list itself is easy to build. Menus fail on the trigger's state, the arrow keys, and returning focus when the menu closes. A menu that opens on hover fails all three at once.
 
@@ -91,7 +91,7 @@ Menu accessibility is mostly focus management. The list itself is easy to build.
 - **The menu is announced as a menu, and its items as its items**, so the user learns how long the list is before going through it.
 - **A selected item's state must be available in code.** A checkmark or a filled background is a single visual channel, which `recursica-skill-system-conventions` forbids.
 - **An icon-only item needs a real name.** An icon alone gives a screen reader nothing to read out.
-- **An unavailable item must still be perceivable, or must not be shown at all.** If it is disabled, it stays in the accessibility tree (the version of the page that assistive technology reads), is announced as disabled, and its reason is available in text. If the user can never use it, do not show it. Never show an item on screen while hiding it from assistive technology.
+- **An unavailable item must still be perceivable, or must not be shown at all.** If it is disabled, it stays in the accessibility tree (the version of the page that assistive technology reads), and is announced as disabled. If the user can never use it, do not show it. Never show an item on screen while hiding it from assistive technology.
 - **Supporting text must be part of the item's announcement**, not a separate element placed beside the label. A screen reader does not read a second line that is not connected to the item.
 - **A divider is decoration, and must not be announced as an item.**
 
@@ -127,11 +127,11 @@ The selected item's visual treatment comes with `selection-states`. Do not resty
 ## Open questions
 
 - **Submenus.** A trailing chevron that opens a nested submenu "on hover or click" is shown only on the design-system website. The UI kit defines no submenu, and opening on hover contradicts the navigation rule. Both whether it exists and how it is triggered need a decision. Ask before relying on it.
-- **Menus with multi-select.** A type axis of single select, multi-select, and custom content is shown only on the design-system website. The UI kit defines only `unselected` and `selected` on `menu-item`. Ask before relying on it.
+- **Menus with multi-select.** A type variant property of single select, multi-select, and custom content is shown only on the design-system website. The UI kit defines only `unselected` and `selected` on `menu-item`. Ask before relying on it.
 - **Custom content inside a menu item.** Shown only on the design-system website, and nothing in the UI kit supports it. Ask before relying on it.
 - **How the disabled state is set.** The UI kit defines `disabled` on `menu-item`. Whether the adapter exposes it as a setting has not been confirmed. Check the component's settings, or ask, before relying on it.
 - **The number of items at which a menu is too long.** `max-height` implies scrolling, but no threshold is stated. `recursica-skill-buttons-links` leaves the overflow threshold open too.
-- **Where the menu appears relative to its trigger**, and how it behaves near the edge of the viewport. There is no placement axis.
+- **Where the menu appears relative to its trigger**, and how it behaves near the edge of the viewport. There is no placement variant property.
 - **Right-click context menus.** Whether they are supported at all, and what happens to the browser's own menu.
 - **Whether a menu item may be a link** when it navigates, given that links must render a real `href`.
 

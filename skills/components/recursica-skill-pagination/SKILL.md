@@ -34,9 +34,9 @@ Pagination moves the user between pages of one set of records. It is a control i
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.pagination`. **Do not pass a variant or state — there are none.**
 
-| Axis       | Options                                        |
-| ---------- | ---------------------------------------------- |
-| `variants` | None. The component has no variant axis at all |
+| Variant property | Options                                            |
+| ---------------- | -------------------------------------------------- |
+| `variants`       | None. The component has no variant property at all |
 
 **The properties split the controls into three groups, each styled separately:** `active-pages`, `inactive-pages`, and `navigation-controls`, plus `colors` and `item-gap`. The page numbers and the previous and next controls are styled apart from each other — do not restyle either to match the other.
 
@@ -70,7 +70,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
 
 Pagination is a row of small controls that all look alike. Without names added in code, a screen reader announces nothing useful for any of them. Every failure here is a failure of naming or of focus.
 
@@ -82,7 +82,7 @@ Pagination is a row of small controls that all look alike. Without names added i
 - **The previous and next controls are icon-only**, so each one needs a tooltip for sighted mouse users and, separately, an accessible name (the name a screen reader reads out for a control) — as `recursica-skill-buttons-links` requires.
 - **After a page change, announce that new rows arrived** — "Page 3 of 20, 10 invoices". Without it, nothing tells the user that activating the control worked, because the visual change is out of their sight.
 - **That announcement must be polite**, and must not fire on every click while the user pages quickly.
-- **The ends must be perceivable.** When previous cannot be used on the first page, the code must expose that, and text must state the reason — never a lighter gray alone.
+- **The ends must be perceivable.** When previous cannot be used on the first page, the code must expose that, not a lighter gray alone.
 - **The controls must be marked up as a list**, as all navigation is, according to `recursica-skill-navigation`, so the user hears how many pages there are.
 - **A truncation indicator, if one ever exists, is decorative and silent.** An ellipsis read aloud between numbers adds nothing.
 
@@ -92,7 +92,6 @@ Pagination is a row of small controls that all look alike. Without names added i
 - **After a page change, set focus deliberately.** Keep focus on the control the user activated, where it still exists — the number they clicked, or next — so they can page again right away. Never drop the user at the top of the document, and never let focus fall to the page body because the rows it was in were replaced.
 - **If focus was inside the rows, move it into the new rows** — the table, or its first row — not past the whole page.
 - **Previous and next are never disabled links at the ends.** They are missing or cannot be used, and they are handled the same way at both ends and on every table in the application. A control that is present and looks usable, but quietly does nothing, is worse than one that is gone.
-- **A control that cannot be used is not a tab stop**, so a reason shown only visually cannot be reached by keyboard. Put the reason in text.
 - **Add no custom key handling inside the component.** Keyboard behavior inside a component is owned by the underlying coded library — `recursica-skill-navigation`.
 
 ## Styling set by tokens
@@ -140,7 +139,7 @@ Do not set or override any of these. The component sets them:
 - [ ] The current page is marked as current in code, not only by the `active-pages` style.
 - [ ] Every control has a name that says where it goes, and previous and next have tooltips as well as names.
 - [ ] A page change is announced politely, states the new page, and says that new rows arrived.
-- [ ] The code exposes that previous or next cannot be used at the ends, and text states the reason — not gray alone.
+- [ ] The code exposes that previous or next cannot be used at the ends, not gray alone.
 - [ ] Previous and next are never disabled links. At the ends, they are missing or cannot be used, the same way at both ends and across the application.
 - [ ] Every control is a tab stop in visual order, and focus after a page change is set deliberately — never at the top of the document.
 - [ ] The component carries no custom keyboard handling.

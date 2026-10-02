@@ -33,23 +33,23 @@ An avatar is a small visual stand-in for a person or entity. It helps people rec
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.avatar`. **Do not pass a style or size that is not listed here.**
 
-**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
+**Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
 
-| Axis     | Options                     |
-| -------- | --------------------------- |
-| `styles` | `text`, `icon`, `image`     |
-| `sizes`  | `small`, `default`, `large` |
-| `types`  | `solid`, `outline`, `ghost` |
+| Variant property | Options                     |
+| ---------------- | --------------------------- |
+| `styles`         | `text`, `icon`, `image`     |
+| `sizes`          | `small`, `default`, `large` |
+| `types`          | `solid`, `outline`, `ghost` |
 
 **The three styles are three sources of content, and they are ranked.** `image` is a photograph, `text` is initials, and `icon` is a generic person or placeholder. Use the highest-ranked style that the available data supports, and fall back down the list.
 
 **There is no status dot, no presence indicator, and no slot for a badge.** A badge is a separate component, and it does not attach to this one.
 
-**There is no group, stack, or overlapping-cluster variant**, and no shape axis. Do not build an avatar group out of several avatars.
+**There is no group, stack, or overlapping-cluster variant**, and no shape variant property. Do not build an avatar group out of several avatars.
 
 **`types` applies to the `text` and `icon` styles only** — `solid`, `outline`, or `ghost`. An `image` avatar has no type. When to use each is among the open questions.
 
-**A different set of styles is shown only on the design-system website** — styles named Image, Primary, Background, and Ghost, plus a Border true/false axis — along with spacing out overlapping avatars in a group. Of those, only Ghost has a match in the UI kit: the `ghost` type. The rest do not exist in the UI kit, whose only other property is `elevation`. See the open questions before relying on any of it.
+**A different set of styles is shown only on the design-system website** — styles named Image, Primary, Background, and Ghost, plus a Border true/false variant property — along with spacing out overlapping avatars in a group. Of those, only Ghost has a match in the UI kit: the `ghost` type. The rest do not exist in the UI kit, whose only other property is `elevation`. See the open questions before relying on any of it.
 
 ## Rules
 
@@ -71,7 +71,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
 
 An avatar is either a picture or a control, and the two fail in different ways. As a picture, the risk is being announced as an unlabeled graphic, or as a second, repeated copy of a name that was already read. As a control, the risk is having no name at all.
 
@@ -119,7 +119,7 @@ Do not set or override any of these. The component sets them for every combinati
 
 ## Open questions
 
-- **Two sets of styles that do not agree.** Styles named Image, Primary, Background, and Ghost, plus a Border true/false axis, are shown only on the design-system website. The UI kit defines `text`, `icon`, and `image`, with `solid`, `outline`, and `ghost` types under the first two, and `elevation` as its only other property. Which one is the authority has not been settled — do not rely on this without asking.
+- **Two sets of styles that do not agree.** Styles named Image, Primary, Background, and Ghost, plus a Border true/false variant property, are shown only on the design-system website. The UI kit defines `text`, `icon`, and `image`, with `solid`, `outline`, and `ghost` types under the first two, and `elevation` as its only other property. Which one is the authority has not been settled — do not rely on this without asking.
 - **Avatar groups.** Overlapping avatars in a group are shown only on the design-system website, but no group or stack exists in the UI kit. Do not build one, and do not rely on this without asking.
 - **Which size belongs on which surface.** No rule says where `small`, `default`, and `large` each apply.
 - **How initials are chosen** — one letter or two, and what happens with a one-word, hyphenated, or non-Latin name.
@@ -140,6 +140,6 @@ Do not set or override any of these. The component sets them for every combinati
 - [ ] No name is repeated in a hidden element while the visible one stays in the reading order.
 - [ ] Size follows how dense the surface is, not how important the person is.
 - [ ] The account menu sits outside primary navigation.
-- [ ] Every style and size is in the inventory above. No avatar has an invented group, status dot, badge slot, or border axis.
+- [ ] Every style and size is in the inventory above. No avatar has an invented group, status dot, badge slot, or border variant property.
 - [ ] No code overrides styling that the component owns.
 - [ ] Open questions were asked about, not decided: the two sets of styles, avatar groups, which size belongs on which surface, how initials are chosen, avatars for something that is not a person, presence and status, and when to use each type.

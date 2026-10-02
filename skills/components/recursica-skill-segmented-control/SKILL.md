@@ -36,7 +36,7 @@ A segmented control is a horizontal radio group: exactly one of a few options, a
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.segmented-control` and `segmented-control-item`. **Pass only the variants listed here.**
 
-| Axis               | Options                  | On                       |
+| Variant property   | Options                  | On                       |
 | ------------------ | ------------------------ | ------------------------ |
 | `orientation`      | `horizontal`, `vertical` | `segmented-control`      |
 | `fill-width`       | `false`, `true`          | `segmented-control`      |
@@ -48,7 +48,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **An item may have a leading icon.** Only the design-system website shows it, as part of the item.
 
-**There is no size axis (a property a component varies on, such as size or style; Figma calls it a variant property), no style axis, and no disabled state** on either the control or the item.
+**There is no size variant property, no style variant property, and no disabled state** on either the control or the item.
 
 ## Rules
 
@@ -72,7 +72,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
 
 A segmented control is a radio group, and it must be built as one. The most common mistake is a row of buttons where only color marks the selected one. A screen reader does not announce that color, and keyboard users have to tab through every segment.
 
@@ -128,6 +128,6 @@ Do not set or override any of these. The component sets them:
 - [ ] The group is one tab stop. The arrow keys move the selection, and no segment has its own tabindex.
 - [ ] Focus lands on the selected segment when the user tabs in.
 - [ ] Content changes caused by switching are perceivable to a screen reader user.
-- [ ] The control uses no size or style axis. The orientation is `horizontal`, and any vertical single-select is a radio group.
+- [ ] The control uses no size or style variant property. The orientation is `horizontal`, and any vertical single-select is a radio group.
 - [ ] Styling comes from the component.
 - [ ] Open questions were asked about, not decided: when `fill-width: true` applies, whether a single segment may be disabled, use as a labeled form field, and behavior below desktop size.

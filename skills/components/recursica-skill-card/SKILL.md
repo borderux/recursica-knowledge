@@ -74,7 +74,7 @@ When the tests fail and grouping is still needed, use these, in this order:
 
 ## Variants
 
-Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.card`. **The UI kit defines no variant axes (the properties a component varies on, such as size and style; Figma calls them variant properties) on the card** — everything is a property. Two more choices are shown only on the design-system website.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.card`. **The UI kit defines no variant properties on the card** — everything is a property. Two more choices are shown only on the design-system website.
 
 | Choice | Options            | Source             |
 | ------ | ------------------ | ------------------ |
@@ -85,7 +85,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **What the component provides:** a header with an optional button, a content area, sections separated by a divider, and a footer. `section-gap`, `vertical-gutter`, and `divider-size` are defined by tokens.
 
-**There is no size axis.** `min-width` and `max-width` are fixed properties. Do not build a wide card and a narrow card as variants.
+**There is no size variant property.** `min-width` and `max-width` are fixed properties. Do not build a wide card and a narrow card as variants.
 
 **The card defines no interactive, selected, or hover state.** A card is not a control; see the accessibility section for what that means when the card links somewhere.
 
@@ -109,7 +109,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
 
 A card set is a list of objects, and it must be announced as one. Two failures matter: a set announced as one long run of text with no boundaries, and a "clickable card" that a keyboard user cannot activate, or that swallows the controls inside it.
 
@@ -152,7 +152,7 @@ Do not set or override any of these. The component sets them:
 
 ## Open questions
 
-- **When Elevation applies, and when Outline does.** Both are shown only on the design-system website, which has no variant axis for either, and no rule assigns them to surfaces. Do not rely on this without asking.
+- **When Elevation applies, and when Outline does.** Both are shown only on the design-system website, which has no variant property for either, and no rule assigns them to surfaces. Do not rely on this without asking.
 - **How many cards count as a "small and finite" set.** The limit is stated as a judgment, not a number.
 - **Card layout across breakpoints** — how many go across, and what happens below desktop size. Named as having no owner in `recursica-skill-design-router`.
 - **Whether a card may be selectable** as part of a multi-select, and what the selected state looks like. No such state exists.

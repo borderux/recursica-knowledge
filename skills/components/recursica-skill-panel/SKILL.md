@@ -35,7 +35,7 @@ A panel puts extra content beside the page, without blocking it.
 
 ## Variants
 
-Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.panel`. **The panel has no variant axes (the properties a component varies on, such as size and style; Figma calls them variant properties) at all** — no sizes, no sides, no widths, no types. Every entry below is a fixed property.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.panel`. **The panel has no variant properties at all** — no sizes, no sides, no widths, no types. Every entry below is a fixed property.
 
 **Parts of the component:** the panel has a header with a close control (`header-close-gap`), a content area, and a footer with a gap between buttons. Tokens define `min-width` and `max-width`, and the UI kit also defines a `divider-size`.
 
@@ -43,7 +43,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Do not pass a width or a size.** `min-width` and `max-width` are fixed. There is no narrow, wide, or full-height panel.
 
-**There is no types axis.** A "Standard" panel and a "Scrollable" panel are shown only on the design-system website. The UI kit defines only `divider-size`, with nothing that says when the divider appears, or which of the two a given panel is.
+**There is no types variant property.** A "Standard" panel and a "Scrollable" panel are shown only on the design-system website. The UI kit defines only `divider-size`, with nothing that says when the divider appears, or which of the two a given panel is.
 
 **In structure, the panel is the modal without the blocking.** It has the same header, content, footer, and close control as the modal. The only difference is that the page behind a panel stays usable. That difference changes the accessibility work described below.
 
@@ -106,7 +106,7 @@ Look up each setting's name in the adapter with the Recursica MCP server's `recu
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
 
 **A panel is never modal, so build every part of it as non-modal.** Almost every panel accessibility failure comes from a panel built partly as a modal. It looks like it leaves the page usable, but it traps focus like a dialog, or hides the page from assistive technology while leaving it clickable. The page behind stays usable, readable, and reachable.
 
@@ -160,9 +160,9 @@ Do not set or override any of these. The component sets them:
 ## Open questions
 
 - **Opening transition.** The side is set, and how the panel is anchored is settled. Whether it slides in or expands when it opens is not settled.
-- **Panel width.** `min-width` and `max-width` are fixed, and there is no size axis, so a "wide panel" cannot be built. Stacked panels may still differ in width from each other, and nothing says whether a left panel and a right panel share a width.
+- **Panel width.** `min-width` and `max-width` are fixed, and there is no size variant property, so a "wide panel" cannot be built. Stacked panels may still differ in width from each other, and nothing says whether a left panel and a right panel share a width.
 - **Top or bottom panel design.** A top or bottom panel is allowed but has no design. Building one needs approval, because no rule covers it.
-- **Divider visibility.** Nothing says when the divider appears. "Standard" and "Scrollable" types are shown only on the design-system website, with no token behind either, and no types axis — the UI kit defines only `divider-size`. Ask before relying on either type.
+- **Divider visibility.** Nothing says when the divider appears. "Standard" and "Scrollable" types are shown only on the design-system website, with no token behind either, and no types variant property — the UI kit defines only `divider-size`. Ask before relying on either type.
 - **Loading state.** The component has no state for a panel whose content is being fetched.
 
 ## Pre-flight checklist

@@ -38,14 +38,14 @@ The critical path is the set of steps needed to finish the task.
 
 ## Variants
 
-Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has). Four specs make up one accordion, and **only one of them has a variant axis (a property a component varies on, such as size or style; Figma calls it a variant property) at all.**
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has). Four specs make up one accordion, and **only one of them has a variant property at all.**
 
-| Spec                | Axis         | Options          |
-| ------------------- | ------------ | ---------------- |
-| `accordion`         | (none)       | —                |
-| `accordion-item`    | (none)       | —                |
-| `accordion-header`  | `appearance` | `open`, `closed` |
-| `accordion-content` | (none)       | —                |
+| Spec                | Variant property | Options          |
+| ------------------- | ---------------- | ---------------- |
+| `accordion`         | (none)           | —                |
+| `accordion-item`    | (none)           | —                |
+| `accordion-header`  | `appearance`     | `open`, `closed` |
+| `accordion-content` | (none)           | —                |
 
 **Which one owns what:**
 
@@ -58,9 +58,9 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no nesting construct.** This matches the house rule: accordions have one level only.
 
-**There is no single-open or multi-open axis.** Nothing in the UI kit makes opening one item close another — see the open questions.
+**There is no single-open or multi-open variant property.** Nothing in the UI kit makes opening one item close another — see the open questions.
 
-**There is no size, density, or emphasis axis** on any of the four, and no state axis for hover, focus, or error.
+**There is no size, density, or emphasis variant property** on any of the four, and no state variant property for hover, focus, or error.
 
 ## Rules
 
@@ -86,7 +86,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
 
 The component draws the header and the chevron. Making the header a real button, and making a collapsed panel's content unreachable, are left to the implementation. These two are the most often done wrong.
 
@@ -136,7 +136,7 @@ The chevron, its rotation, and the per-appearance colors come with the component
 
 ## Open questions
 
-- **Whether opening one item closes the others.** No axis defines it, and no rule states it.
+- **Whether opening one item closes the others.** No variant property defines it, and no rule states it.
 - **Whether the divider between items can be hidden.** A divider that "can be hidden if accordion is the last child in a list or accordion group" is shown only on the design-system website. The UI kit only offers `divider-size` on `accordion`, with no option to turn it off. Do not rely on this without asking.
 - **How to show an item the user cannot open right now.** `recursica-skill-navigation` says to disable what the user can unlock, but `accordion-header` has no disabled appearance.
 - **Animation for opening and closing.** No duration or easing is defined.

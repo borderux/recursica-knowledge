@@ -32,7 +32,7 @@ A modal blocks the page to get one decision or one short task done, then closes.
 
 ## Variants
 
-Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.modal`. **The modal has no variant axes (the properties a component varies on, such as size and style; Figma calls them variant properties) at all** — no sizes, no types, no severity variants. Everything is a fixed property.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.modal`. **The modal has no variant properties at all** — no sizes, no types, no severity variants. Everything is a fixed property.
 
 **What the component provides:** a header, a content area, a footer, a divider that appears when the content scrolls, and a gap between the buttons in the footer. Its `min-width`, `max-width`, `min-height`, and `max-height` are set by tokens.
 
@@ -62,7 +62,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
 
 A modal is the component where accessibility failures are most serious. Get the focus handling wrong, and a keyboard or screen reader user is either trapped, or reading a page they cannot see. Most of this is behavior to build and test, not styling.
 

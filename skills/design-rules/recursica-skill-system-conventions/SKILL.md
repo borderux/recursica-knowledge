@@ -137,9 +137,8 @@ Examples:
 **These apply to every component, and no component skill repeats them.** They are not a seventh convention. They are the accessibility rules the component skills each used to state for themselves — the focus ring was in 34 of 39 — gathered here once, so they cannot drift apart. A component skill's own accessibility section adds what is specific to that component, and where it says something more specific, it wins.
 
 - **Never hide the focus ring**. Keep it on whatever has focus, and keep it looking different from the hover style, from the caret alone, and from any selected, checked, active, or on state. Focus and selection are different facts, and a user must be able to tell them apart at a glance.
-- **Nothing the user needs appears only on hover** — not a control, an action, a label, a value, a count, or a reason. A keyboard user and a touch user never hover.
+- **Nothing the user needs appears only on hover** — not a control, an action, a label, a value, or a count. A keyboard user and a touch user never hover.
 - **The tab order follows the visual order.**
-- **Tab skips a disabled control**, so the reason something is disabled goes in visible text. The disabled look alone tells a keyboard user nothing, because they never reach it.
 - **A form control's help, error, and rule text passes through the component** — for a group, through the group — never as a separate element placed beside it. Only the component can connect that text to the control, and text that is not connected is invisible to someone who tabs straight into the field.
 - **The required state is set in code**, not shown by an asterisk alone. The asterisk is a visual convention, not an accessible way of saying "required".
 - **Never move focus for the user**, except where a component skill says when to — opening a modal, for example.
@@ -163,7 +162,7 @@ Examples:
 - [ ] Every hidden control can be reached by keyboard and by assistive technology. Where the gesture is a drag or a long-press, there is a second way to do it that is not a drag.
 - [ ] No meaning relies on one channel alone. Each meaning has a second channel.
 - [ ] Every component meets the accessibility baseline: the focus ring is never hidden and looks different from hover and from any selected state, nothing the user needs appears only on hover, and the tab order follows the visual order.
-- [ ] Every disabled control has its reason in visible text. A form control's help, error, and rule text passes through the component, and the required state is set in code, not by an asterisk alone.
+- [ ] A form control's help, error, and rule text passes through the component, and the required state is set in code, not by an asterisk alone.
 - [ ] Focus is never moved for the user except where a component skill says when. Icons that are controls have an accessible name, and decorative icons are silent.
 - [ ] No workaround, such as an overflow menu or an inner scroll area, hides a broken structure. Where a limit can't be changed, a reason is provided.
 - [ ] Every visible container separates its contents from a peer. Regions with no peer are grouped with space.

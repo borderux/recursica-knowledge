@@ -34,15 +34,15 @@ A tooltip is a short text label for a control that has no visible one.
 
 ## Variants
 
-Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.tooltip`. **The tooltip has no variant axes (the properties a component varies on, such as size and style; Figma calls them variant properties) at all** — no placement axis, no size axis, no content-type axis. Every listed item is a fixed property.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.tooltip`. **The tooltip has no variant properties at all** — no placement variant property, no size variant property, no content-type variant property. Every listed item is a fixed property.
 
 **Parts of the component:** a text area and a beak — the small pointer that connects the tooltip to its trigger. `beak-size` and `beak-inset` are set by tokens (named design values, such as colors or sizes, set by the design system).
 
 **The tooltip has no placement setting.** It has no top, left, right, or bottom option, and no option for aligning the beak. The design-system website shows both, but the UI kit defines neither — see the open questions. Do not pass a position setting, and do not position the beak by hand.
 
-**There is no size axis.** `min-width`, `max-width`, and `min-height` are fixed. If the content does not fit inside them, it is not tooltip content.
+**There is no size variant property.** `min-width`, `max-width`, and `min-height` are fixed. If the content does not fit inside them, it is not tooltip content.
 
-**There is no axis for rich or custom content.** `text` is the only content property. A tooltip holds text.
+**There is no variant property for rich or custom content.** `text` is the only content property. A tooltip holds text.
 
 **`tooltip` and `hover-card-popover` are two different components with almost the same tokens.** Do not choose between them by their look, because they look almost the same. Choose by content:
 
@@ -71,7 +71,7 @@ Neither may hold anything the user needs to complete a task, and neither may be 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
 
 A tooltip is the component most often used in place of a missing accessible name, and it cannot replace one. Ensure every behavior below.
 
@@ -118,12 +118,12 @@ The beak is part of the component. Do not draw a separate beak, and do not repos
 
 ## Open questions
 
-- **Placement.** A position axis of top, left, right, and bottom, a beak-alignment axis of start, middle, and end, and a `position` setting are all shown only on the design-system website. The UI kit defines no placement axis at all — only `beak-size` and `beak-inset` as fixed properties. Do not rely on this without asking.
+- **Placement.** A position variant property of top, left, right, and bottom, a beak-alignment variant property of start, middle, and end, and a `position` setting are all shown only on the design-system website. The UI kit defines no placement variant property at all — only `beak-size` and `beak-inset` as fixed properties. Do not rely on this without asking.
 - **Custom content.** Content types of "text" and "custom" are shown only on the design-system website. The UI kit has only `text`. Do not rely on this without asking.
 - **The delay before showing, the delay before hiding, and any time before it hides on its own.** No token or rule defines them.
 - **Touch behavior.** Hover does not exist on touch screens, and no other pattern is given for reaching a tooltip's content there.
 - **Whether a tooltip may attach to an element the user cannot interact with** — a table cell with cut-off text, a chart label — given that a target that cannot take focus can never show the tooltip from the keyboard.
-- **What happens at the edge of the viewport**, with no placement axis available to flip it.
+- **What happens at the edge of the viewport**, with no placement variant property available to flip it.
 
 ## Pre-flight checklist
 

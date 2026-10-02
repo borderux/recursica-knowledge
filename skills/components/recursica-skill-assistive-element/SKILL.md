@@ -30,11 +30,11 @@ One component shows both the help text and the error text below a field. Its typ
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.assistive-element`.
 
-**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
+**Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
 
-| Axis    | Options         |
-| ------- | --------------- |
-| `types` | `help`, `error` |
+| Variant property | Options         |
+| ---------------- | --------------- |
+| `types`          | `help`, `error` |
 
 **Two types, one slot.** The error does not appear alongside the help text. It replaces it in the same slot. Swapping types keeps the field's height the same, so the form below does not shift.
 
@@ -42,7 +42,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **An icon is part of the component** — it defines an `icon-size` and an `icon-text-gap`. That icon meets the requirement that an error have a signal that is not color.
 
-**There is no size axis.** `top-margin` and `max-width` are fixed properties.
+**There is no size variant property.** `top-margin` and `max-width` are fixed properties.
 
 ## Rules
 
@@ -60,13 +60,13 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Keep it under the field it belongs to.** An assistive element placed midway between two fields is not clearly tied to either one.
 
-**Its position follows the field's label placement, so it uses the one placement set for the whole form.** `recursica-skill-forms` requires one label placement per form — side by side or stacked, never both at the same breakpoint. The container-width test is applied once, to the form, and it governs every field in it. This element has no placement axis of its own. Its position follows from where the field's label sits. So it is never positioned separately from the label, and its position never differs from field to field inside one form. A whole form may switch placement across breakpoints; a single section never gets its own.
+**Its position follows the field's label placement, so it uses the one placement set for the whole form.** `recursica-skill-forms` requires one label placement per form — side by side or stacked, never both at the same breakpoint. The container-width test is applied once, to the form, and it governs every field in it. This element has no placement variant property of its own. Its position follows from where the field's label sits. So it is never positioned separately from the label, and its position never differs from field to field inside one form. A whole form may switch placement across breakpoints; a single section never gets its own.
 
 **Do not use it for marketing, reassurance, or filler text.** Users read every line here each time they go through the form.
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
 
 This component helps only when it is connected to its field in code. Text shown near a field but not connected to it is never read out to a screen reader user who tabs straight into the input. Tabbing into the input is the usual way to move through a form.
 

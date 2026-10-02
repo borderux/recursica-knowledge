@@ -36,7 +36,7 @@ A checkbox turns a true/false flag on or off for one specific value. A group of 
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.checkbox`, `checkbox-group`, and `checkbox-item`. **Do not pass a variant, size, or state that is not listed here.**
 
-| Component        | Axis               | Options                                 |
+| Component        | Variant property   | Options                                 |
 | ---------------- | ------------------ | --------------------------------------- |
 | `checkbox`       | `selection-states` | `checked`, `unchecked`, `indeterminate` |
 | `checkbox-group` | `layouts`          | `stacked`, `side-by-side`               |
@@ -44,17 +44,17 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Three components, one form field.** The group owns the layout and the spacing between items. The item owns one option's label, and pairs it with a box. The checkbox owns the box itself and whether it is selected. Use all three together; never place bare `checkbox` instances in a form and call it a group.
 
-**The axes (the properties a component varies on, such as size and style; Figma calls them variant properties) sit on different parts, and that is on purpose.** `layouts` belongs to the group — it is one decision for the whole field. `disabled` belongs to the item — so a single option can be unavailable while the ones next to it can still be used. There is no disabled state for the group as a whole; `globals.states.disabled` supplies the look.
+**The variant properties sit on different parts, and that is on purpose.** `layouts` belongs to the group — it is one decision for the whole field. `disabled` belongs to the item — so a single option can be unavailable while the ones next to it can still be used. There is no disabled state for the group as a whole; `globals.states.disabled` supplies the look.
 
-**`layouts` is the label-placement axis, the same axis every field has.** `side-by-side` puts the group's label beside the stack of items; `stacked` puts it above. **It is not an axis for which way the items run.** Items are always stacked vertically — `recursica-skill-selection-controls` forbids a horizontal checkbox group outright — so `side-by-side` must never be read as "put the checkboxes in a row."
+**`layouts` is the label-placement variant property, the same variant property every field has.** `side-by-side` puts the group's label beside the stack of items; `stacked` puts it above. **It is not a variant property for which way the items run.** Items are always stacked vertically — `recursica-skill-selection-controls` forbids a horizontal checkbox group outright — so `side-by-side` must never be read as "put the checkboxes in a row."
 
 **`indeterminate` is a state of the `checkbox`, not a separate component.** It is the partly-selected state, shown as a dash, that a select-all or a parent checkbox shows when some but not all of its children are checked.
 
-**None of the three has an error state**, and there is no required axis. `Selected-disabled` and `Indeterminate-disabled` are shown only on the design-system website as states. Each is the item's `disabled` combined with the checkbox's selection state, not an extra selection state.
+**None of the three has an error state**, and there is no required variant property. `Selected-disabled` and `Indeterminate-disabled` are shown only on the design-system website as states. Each is the item's `disabled` combined with the checkbox's selection state, not an extra selection state.
 
 **"Selected" and "Unselected" are shown only on the design-system website; the UI kit says `checked` and `unchecked`.** Both pairs name the same two states.
 
-**There is no size axis.** `size` and `icon-size` are fixed properties of the checkbox.
+**There is no size variant property.** `size` and `icon-size` are fixed properties of the checkbox.
 
 **Read-only is a separate component** — `read-only-field`, which shows text instead of inputs.
 
@@ -93,11 +93,9 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 - **Disabled item** — still a checkbox, still clearly a control, but not usable right now. Use it when the user could make it usable by doing something else first.
 - **Read-only field** — a different component entirely, with no input at all. Use it when this user never changes this value here.
 
-**Never disable a checkbox as the only explanation.** The reason must be in text nearby, because the keyboard skips a disabled control.
-
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
 
 The component pairs each box with its item label, and provides the focus ring. The application must provide the group's name, make the state available in code, and cover everything listed below. These are the parts most often missed.
 
@@ -110,7 +108,6 @@ The component pairs each box with its item label, and provides the focus ring. T
 - **Indeterminate must be made available as a mixed state**, not as a dash that exists only on screen. "Partially checked" is information; a horizontal bar is not.
 - **A select-all control must name what it selects** — "Select all rows", not "Select all" floating in a table header.
 - **In a table, each row checkbox must name its row.** Thirteen announcements of "checkbox, unchecked" tell the user nothing. Either the name carries the object, or the row supplies it in code.
-- **A disabled item is announced as disabled, but Tab skips it**, so any explanation carried only by how it looks cannot be reached. Put the reason in text.
 - **When a checkbox reveals more fields, say so before it is ticked** — in the item label, or in the group's assistive text. Content that appears silently below is easy to miss when read in order.
 
 ### Keyboard and non-mouse navigation
@@ -168,7 +165,7 @@ Do not add margins or spacer elements between items or between the group and its
 - [ ] Space toggles the box, every checkbox is its own tab stop, arrow keys do not move focus between items, and key handling comes from the library.
 - [ ] Clicking the item label toggles the box.
 - [ ] Focus is never moved for the user, including when a checkbox reveals fields below.
-- [ ] Disabled is used only for options that are unavailable for now, with the reason in text. Values that can never be edited use the read-only field.
+- [ ] Disabled is used only for options that are unavailable for now. Values that can never be edited use the read-only field.
 - [ ] Only variants, sizes, and states from the inventory above are used, and every property the component owns comes from the component.
 - [ ] The group saves with the form, in the same save mode as everything else in the system.
 - [ ] Open questions were asked about, not decided: the group error state, the multi-select dropdown, where a select-all control sits, limits on selection, and nesting depth.

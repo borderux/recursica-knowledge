@@ -37,7 +37,7 @@ A radio group is one label with several values, of which exactly one may be sele
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.radio-button`, `radio-button-group`, and `radio-button-item`. **Do not pass a variant, size, or state that is not listed here.**
 
-| Component            | Axis               | Options                   |
+| Component            | Variant property   | Options                   |
 | -------------------- | ------------------ | ------------------------- |
 | `radio-button`       | `selection-states` | `selected`, `unselected`  |
 | `radio-button-group` | `layouts`          | `stacked`, `side-by-side` |
@@ -45,13 +45,13 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Three components, one form field.** The group owns the layout and the spacing between items. The item owns one option's label, and pairs it with a control. The radio button owns the circle itself and whether it is selected. Use all three together. Never build a group in a form from bare `radio-button` instances.
 
-**The axes (the properties a component varies on, such as size and style; Figma calls them variant properties) sit on different parts, and that is on purpose.** `layouts` belongs to the group — one decision for the whole field. `disabled` belongs to the item — so a single option can be unavailable while the rest of the choice can still be used. There is no disabled state for the group. `globals.states.disabled` supplies the disabled styling.
+**The variant properties sit on different parts, and that is on purpose.** `layouts` belongs to the group — one decision for the whole field. `disabled` belongs to the item — so a single option can be unavailable while the rest of the choice can still be used. There is no disabled state for the group. `globals.states.disabled` supplies the disabled styling.
 
-**`layouts` is the label-placement axis, the same axis every field has.** `side-by-side` puts the group's label beside the stack of options; `stacked` puts it above. **It does not set the direction the options run.** Options are always stacked vertically, and `recursica-skill-selection-controls` forbids a horizontal radio group outright. Never use `side-by-side` to put the radio buttons in a row.
+**`layouts` is the label-placement variant property, the same variant property every field has.** `side-by-side` puts the group's label beside the stack of options; `stacked` puts it above. **It does not set the direction the options run.** Options are always stacked vertically, and `recursica-skill-selection-controls` forbids a horizontal radio group outright. Never use `side-by-side` to put the radio buttons in a row.
 
-**There is no indeterminate state**, because a radio group has no partly selected condition. None of the three has an error state, and there is no required axis.
+**There is no indeterminate state**, because a radio group has no partly selected condition. None of the three has an error state, and there is no required variant property.
 
-**There is no size axis.** `size` and `icon-size` are fixed properties of the radio button.
+**There is no size variant property.** `size` and `icon-size` are fixed properties of the radio button.
 
 **Read-only is a separate component** — `read-only-field`, which shows text instead of inputs.
 
@@ -82,11 +82,9 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 - **Disabled item.** It is still a radio button and still visibly a control, but it cannot be selected right now. Use it when the user could make it selectable by doing something else first.
 - **Read-only field.** It is a different component, with no input. Use it when this user never changes this value here.
 
-**Never disable an option without stating the reason in text nearby.** The keyboard skips a disabled control. A keyboard user never lands on it to learn why it is unavailable.
-
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
 
 The component pairs each control with its item label, manages focus within the group, and provides the focus ring. The application provides the group's name, makes the selected state available in code, and covers everything below.
 
@@ -97,7 +95,6 @@ The component pairs each control with its item label, manages focus within the g
 - **The group must be announced as a group**, with a position within it — "option 2 of 5". That is what tells the user the options are alternatives, rather than separate fields.
 - **The selected state must be available in code**, never shown only by a fill color or a dot. A user who cannot see the control must still hear "selected" or "not selected". Required by `recursica-skill-system-conventions`.
 - **A value selected in advance is announced as the current answer.** The pre-selection caution exists for this reason: a screen reader user hears the default as a decision they made.
-- **A disabled option is announced as disabled, but the arrow keys skip it.** A screen reader user cannot reach an explanation shown only by its styling. Put the reason in text.
 - **When an option reveals more fields, say so before it is chosen** — in the item label, or in the group's assistive text.
 
 ### Keyboard and non-mouse navigation
@@ -157,7 +154,7 @@ Do not add margins or spacer elements between options or around the group; the c
 - [ ] Key handling, tabindex, and wrapping inside the group come from the component.
 - [ ] Clicking the item label selects the option.
 - [ ] Focus is never moved for the user, including when an option reveals fields below.
-- [ ] Disabled is used only for options that are unavailable for now, with the reason in text. Values that can never be edited use the read-only field.
+- [ ] Disabled is used only for options that are unavailable for now. Values that can never be edited use the read-only field.
 - [ ] Every variant, size, and state is one listed in the inventory above, and every property the component owns comes from the component.
 - [ ] The group saves with the form, in the same save mode as everything else in the system.
 - [ ] Open questions were asked about, not decided: the group error state, clearing a group, and radio buttons in table rows.

@@ -39,7 +39,7 @@ A timeline lists events that already happened, in order, each with a timestamp.
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.timeline` and `ui-kit.components.timeline-bullet`. **This skill covers both; there is no separate bullet skill.** Do not pass a variant or state that is not listed here.
 
-| Component         | Axis               | Options                                         |
+| Component         | Variant property   | Options                                         |
 | ----------------- | ------------------ | ----------------------------------------------- |
 | `timeline`        | `selection-states` | `active`, `inactive`                            |
 | `timeline-bullet` | `types`            | `default`, `icon`, `icon-alternative`, `avatar` |
@@ -50,7 +50,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no connector token on the timeline.** A connecting line with a highlighted state for completed events is shown only on the design-system website, but the UI kit defines no such property here. Do not use the line to show progress.
 
-**There is no alignment axis (a property a component varies on, such as size or style; Figma calls it a variant property), no orientation axis, and no size axis.** Left and right alignment are shown only on the design-system website, but the UI kit defines neither, and nothing supports two opposing tracks or a timeline that compares two streams side by side. `max-text-width` is a fixed property.
+**There is no alignment variant property, no orientation variant property, and no size variant property.** Left and right alignment are shown only on the design-system website, but the UI kit defines neither, and nothing supports two opposing tracks or a timeline that compares two streams side by side. `max-text-width` is a fixed property.
 
 **`icon-alternative` is also called "theme icon"** in material shown only on the design-system website. It is one bullet type with two names, and no rule says when each name is used.
 
@@ -82,7 +82,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
 
 **Give each visual cue in a timeline an equivalent in the code that assistive technology can read.** The four cues are a vertical line that suggests sequence, a bullet that suggests a type, a color that suggests selection, and a relative timestamp that hides the real date. Almost everything that makes a timeline readable is visual.
 
@@ -130,7 +130,7 @@ Do not set or override any of these. The components set them:
 
 ## Open questions
 
-- **Alignment.** Left and right alignment are shown only on the design-system website, but the UI kit defines no alignment axis. Do not rely on this without asking.
+- **Alignment.** Left and right alignment are shown only on the design-system website, but the UI kit defines no alignment variant property. Do not rely on this without asking.
 - **The connecting line.** A connector with a highlighted state for completed events is shown only on the design-system website, but the UI kit defines no connector property on the timeline, so whether progress may be shown at all is not settled. Do not rely on this without asking.
 - **Two-track or comparing timelines** — two streams of events compared side by side. Nothing in the UI kit supports it.
 - **What `active` means in house terms** — the item the user selected, or the most recent event. Only the two selection states exist.

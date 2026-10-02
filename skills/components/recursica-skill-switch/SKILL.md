@@ -40,7 +40,7 @@ A switch turns one thing on or off. The label names what the switch controls. Th
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.switch`, `switch-group`, and `switch-item`. **Do not pass a variant, size, or state that is not listed here.**
 
-| Component      | Axis               | Options                   |
+| Component      | Variant property   | Options                   |
 | -------------- | ------------------ | ------------------------- |
 | `switch`       | `selection-states` | `selected`, `unselected`  |
 | `switch-group` | `layouts`          | `stacked`, `side-by-side` |
@@ -48,15 +48,15 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Three components make one form field.** The group owns the layout and the spacing between items. The item owns one switch's label. The switch owns the track (the bar), the thumb (the handle that slides), and its state. Use all three together, instead of placing a bare `switch` beside some text.
 
-**The axes (the properties a component varies on, such as size and style; Figma calls them variant properties) sit on different parts, and that is on purpose.** `layouts` belongs to the group — one decision for the whole field. `disabled` belongs to the item — so a single switch can be unavailable while the ones beside it can still be used. The group has no disabled state. `globals.states.disabled` supplies the disabled styling.
+**The variant properties sit on different parts, and that is on purpose.** `layouts` belongs to the group — one decision for the whole field. `disabled` belongs to the item — so a single switch can be unavailable while the ones beside it can still be used. The group has no disabled state. `globals.states.disabled` supplies the disabled styling.
 
-**`layouts` is the label-placement axis, the same axis every field has.** `side-by-side` puts the group's label beside the switches; `stacked` puts it above.
+**`layouts` is the label-placement variant property, the same variant property every field has.** `side-by-side` puts the group's label beside the switches; `stacked` puts it above.
 
 **The thumb can carry an icon** — `thumb-icon-size` exists — and that icon is a second visual signal of the state, alongside the thumb's position and the track's color.
 
-**There is no size axis**, none of the three has an error state, and there is no required axis. `Enabled Selected`, `Disabled Selected`, `Enabled Unselected`, and `Disabled Unselected` are shown only on the design-system website. Those are the item's `disabled` combined with the switch's selection state — not four selection states.
+**There is no size variant property**, none of the three has an error state, and there is no required variant property. `Enabled Selected`, `Disabled Selected`, `Enabled Unselected`, and `Disabled Unselected` are shown only on the design-system website. Those are the item's `disabled` combined with the switch's selection state — not four selection states.
 
-**There is no axis for which side of the label the switch sits on** — see the open questions, because one is shown only on the design-system website.
+**There is no variant property for which side of the label the switch sits on** — see the open questions, because one is shown only on the design-system website.
 
 **Read-only is a separate component** — `read-only-field`, which shows text instead of a control.
 
@@ -87,11 +87,9 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 - **Disabled item** — still a switch, still clearly a control, but not usable right now. Use it when the user could make it usable by doing something else first.
 - **Read-only field** — a different component entirely, with no control at all. Use it when this user never changes this value here.
 
-**Never disable a switch without stating the reason in text nearby.** The keyboard skips a disabled control. A keyboard user never lands on it to learn why it is unavailable.
-
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
 
 The component pairs the switch with its item label, makes on and off available, and provides the focus ring. The application must provide everything below. A switch is unusually easy to get wrong, because it shows its state only through the thumb's position and the track's color.
 
@@ -105,7 +103,6 @@ The component pairs the switch with its item label, makes on and off available, 
 - **A group of switches needs a group label passed to `switch-group`**, announced when focus enters the group.
 - **If flipping the switch saves immediately, that result must be announced** — as a status message the user can perceive, not a silent save. A screen reader user does not hear a confirmation that is only visual.
 - **Do not announce a change the user did not make.** When another control changes a switch's state, the switch shows the new state when the user reaches it, with no announcement.
-- **A disabled switch is announced as disabled, but Tab skips it.** A keyboard user cannot reach an explanation that only its appearance gives. Put the reason in text.
 - **When a switch reveals more fields, say so before it is flipped** — in the label or in the assistive text.
 
 ### Keyboard and non-mouse navigation
@@ -146,7 +143,7 @@ Do not add margins or spacer elements between switches or around the group. The 
 
 ## Open questions
 
-- **An axis for which side of the label the switch sits on is shown only on the design-system website, with no token behind it.** `On Left` and `On Right` appear there, but the UI kit defines no such axis on `switch`, `switch-item`, or `switch-group`. Do not build one, and do not rely on this without asking.
+- **A variant property for which side of the label the switch sits on is shown only on the design-system website, with no token behind it.** `On Left` and `On Right` appear there, but the UI kit defines no such variant property on `switch`, `switch-item`, or `switch-group`. Do not build one, and do not rely on this without asking.
 - **How a switch shows an error.** The UI kit gives `dropdown` and `autocomplete` an `error` state, and gives the switch none.
 - **What a switch does while its change is in flight**, and what happens if the immediate save fails. There is no pending, loading, or failure state.
 - **Whether a `switch-group` may hold more than a handful of switches**, and whether the 7 ± 2 limit applies to switches at all — the limit is stated only for radio and checkbox groups.
@@ -170,6 +167,6 @@ Do not add margins or spacer elements between switches or around the group. The 
 - [ ] Each switch is its own tab stop, with no arrow-key movement or roving focus between switches.
 - [ ] Clicking the item label toggles the switch.
 - [ ] Focus is never moved for the user, including when flipping it reveals fields below.
-- [ ] Disabled is used only for switches that are unavailable for now, with the reason in text. Values that can never be edited use the read-only field.
+- [ ] Disabled is used only for switches that are unavailable for now. Values that can never be edited use the read-only field.
 - [ ] Every variant, size, and state is from the inventory above, and every property the component owns comes from the component.
 - [ ] Open questions were asked about, not decided: which side of the label the switch sits on, the error state, the in-flight state, and group size.

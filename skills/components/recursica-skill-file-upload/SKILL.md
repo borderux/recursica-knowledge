@@ -39,12 +39,12 @@ A file upload is a bordered area for adding files, with a list below it of the f
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.file-upload`. **Do not pass a variant, size, or state that is not listed here.**
 
-| Axis      | Options                   |
-| --------- | ------------------------- |
-| `layouts` | `stacked`, `side-by-side` |
-| `states`  | `error`, `disabled`       |
+| Variant property | Options                   |
+| ---------------- | ------------------------- |
+| `layouts`        | `stacked`, `side-by-side` |
+| `states`         | `error`, `disabled`       |
 
-**`layouts` is the label-placement axis (a property a component varies on, such as size or style; Figma calls it a variant property).** `side-by-side` — the label beside the control — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**`layouts` is the label-placement variant property.** `side-by-side` — the label beside the control — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
 **Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
@@ -52,7 +52,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.file-upload`. **Do not
 
 **The list of added files is part of this component.** Do not build a separate list, chips, or rows below it.
 
-**There is no progress state, no success state, and no error state for each file.** There is no styles axis, no size axis, and no axis for one file versus several. See the open questions.
+**There is no progress state, no success state, and no error state for each file.** There is no styles variant property, no size variant property, and no variant property for one file versus several. See the open questions.
 
 ## Rules
 
@@ -82,7 +82,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.file-upload`. **Do not
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
 
 The application must provide everything listed below. A drop zone is the single most common control in an enterprise application that works only with a mouse.
 
@@ -130,8 +130,8 @@ Do not set or override any of these. The component sets them:
 ## Open questions
 
 - **Upload feedback.** The UI kit defines no progress, no success, and no error state for each file. Upload feedback is a real need, and this component cannot show it — do not invent a bar, a spinner, or a checkmark on each row.
-- **A button versus a drop zone, as documented styles.** Both are shown only on the design-system website. The UI kit has a single `border-style` property and no styles axis, so which arrangement it produces, and whether both are available, is not settled — do not rely on this without asking.
-- **One file versus several, as documented types.** Both are shown only on the design-system website, but the UI kit has no such axis. Do not rely on this without asking.
+- **A button versus a drop zone, as documented styles.** Both are shown only on the design-system website. The UI kit has a single `border-style` property and no styles variant property, so which arrangement it produces, and whether both are available, is not settled — do not rely on this without asking.
+- **One file versus several, as documented types.** Both are shown only on the design-system website, but the UI kit has no such variant property. Do not rely on this without asking.
 - **Retrying.** Nothing says what happens to a file that failed to upload, or whether the user can retry it in place.
 - **Overall limits.** A maximum number of files, or a total size across the whole set.
 - **Thumbnails or previews** of image files in the list.

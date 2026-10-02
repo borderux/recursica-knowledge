@@ -41,12 +41,12 @@ type="file">` until this lands, and raise it instead of working around it.
 
 Taken from `recursica_ui-kit.json` → `ui-kit.components.file-input`. **Do not pass a variant, size, or state that is not listed here.**
 
-| Axis      | Options                   |
-| --------- | ------------------------- |
-| `layouts` | `stacked`, `side-by-side` |
-| `states`  | `error`, `disabled`       |
+| Variant property | Options                   |
+| ---------------- | ------------------------- |
+| `layouts`        | `stacked`, `side-by-side` |
+| `states`         | `error`, `disabled`       |
 
-**`layouts` is the label-placement axis (a property a component varies on, such as size or style; Figma calls it a variant property).** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**`layouts` is the label-placement variant property.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
 **Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
@@ -56,7 +56,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.file-input`. **Do not 
 
 **Placeholder is not a state**, and neither is focus. `placeholder-opacity`, and the focused border from `globals.form.field`, are handled by the component.
 
-**There is no progress state, no success state, and no error state for each file.** There is no drop-zone axis, no size axis, and no axis for more than one file. See the open questions.
+**There is no progress state, no success state, and no error state for each file.** There is no drop-zone variant property, no size variant property, and no variant property for more than one file. See the open questions.
 
 ## Rules
 
@@ -80,7 +80,7 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.file-input`. **Do not 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
 
 A file input is a form field, and it follows the same rules as any other field. Every item below is the application's job. Most failures come from a control that works only with a pointer.
 
@@ -129,7 +129,7 @@ Never style an unfocused field so that it looks disabled. An editable field must
 ## Open questions
 
 - **Upload feedback.** The UI kit defines no progress, no success, and no error state for each file on this component. Upload feedback is a real need, and there is nothing here to show it — do not invent a spinner, a bar, or a checkmark.
-- **More than one file in one field.** A "multiple files" content option is shown only on the design-system website, but the UI kit has no axis for more than one file, and no tokens for each file. Whether this field may hold more than one, and what that looks like, is not settled — do not rely on this without asking.
+- **More than one file in one field.** A "multiple files" content option is shown only on the design-system website, but the UI kit has no variant property for more than one file, and no tokens for each file. Whether this field may hold more than one, and what that looks like, is not settled — do not rely on this without asking.
 - **The file chip and the clear icon.** Showing each file as a dismissible chip, plus an optional clear-all icon, is shown only on the design-system website. The UI kit defines no chip, no dismiss, and no clear control on this component. Do not rely on this without asking.
 - **Retrying after a file is rejected or fails.** Nothing says whether the user can retry in place, or what the field shows while a retry is waiting.
 - **A drop target on this field.** Nothing in the UI kit describes one. If drag and drop is wanted, ask.

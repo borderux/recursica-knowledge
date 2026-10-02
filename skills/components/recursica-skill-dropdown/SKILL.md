@@ -38,24 +38,24 @@ A dropdown is a form field that hides its options until it is opened, and return
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.dropdown`. **Do not pass a variant, size, or state that is not listed here.**
 
-**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
+**Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
 
-| Axis      | Options                   |
-| --------- | ------------------------- |
-| `states`  | `error`, `disabled`       |
-| `layouts` | `stacked`, `side-by-side` |
+| Variant property | Options                   |
+| ---------------- | ------------------------- |
+| `states`         | `error`, `disabled`       |
+| `layouts`        | `stacked`, `side-by-side` |
 
-**`layouts` is the label-placement axis.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**`layouts` is the label-placement variant property.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
-**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, using the adapter's name for that axis and option.
+**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, under the names the code uses for both.
 
-**Placeholder and valued are not variants.** Both are shown only on the design-system website as content. In the UI kit, they are the same `text` property with different content, which is why there is no placeholder axis. The field's `colors` cover both.
+**Placeholder and valued are not variants.** Both are shown only on the design-system website as content. In the UI kit, they are the same `text` property with different content, which is why there is no placeholder variant property. The field's `colors` cover both.
 
 **Focused is not a state.** It is listed as one outside the UI kit, but the UI kit handles it through `globals.form.field.colors.border-selected`. Do not build it as a state.
 
-**There is no size axis.** `min-height` is a fixed property, and `globals.form.field.size.single-line-input-height` sets the height for every single-line field.
+**There is no size variant property.** `min-height` is a fixed property, and `globals.form.field.size.single-line-input-height` sets the height for every single-line field.
 
-**There is no multi-select axis**, no axis for grouping options into sections, and no searchable variant — see the open questions.
+**There is no multi-select variant property**, no variant property for grouping options into sections, and no searchable variant — see the open questions.
 
 **The UI kit defines the closed field only.** `icon-size` and `icon-text-gap` cover a leading icon and the expand indicator. The open menu, its options, and their rows are not part of this component's inventory.
 
@@ -95,11 +95,9 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 - **Disabled dropdown** — still a field, still clearly an input, but not usable right now. Use it when the user could make it usable by doing something else first.
 - **Read-only field** — a different component entirely, with no input. Use it when this user never changes this value here.
 
-**Never disable a dropdown as the only explanation.** The keyboard skips a disabled field, so the reason must be in text nearby.
-
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
 
 The component connects the label to the field, provides the focus ring, and owns the open-and-select interaction. Everything listed below, including what that interaction announces, is the application's responsibility. Of all controls, a dropdown is the one most likely to work with a mouse and fail with a keyboard or a screen reader.
 
@@ -113,7 +111,6 @@ The component connects the label to the field, provides the focus ring, and owns
 - **Selection must be available in code, never shown by a checkmark or a highlight alone.** Required by `recursica-skill-system-conventions`.
 - **On error, the message is the only text announced**, because it has replaced the assistive text — so it has to state the rule. "Invalid input" is not an error message.
 - **Give the expand indicator no separate announcement.** It is part of the field, not a second control. It must not show up as an unlabeled graphic or as its own button.
-- **A disabled dropdown is announced as disabled, but Tab skips it**, so any explanation carried only by how it looks cannot be reached. Put the reason in text.
 - **If choosing an option reveals more fields, say so before the choice is made** — in the label or in the assistive text.
 
 ### Keyboard and non-mouse navigation
@@ -179,7 +176,7 @@ Never style an unfocused dropdown so that it looks disabled. An editable field m
 - [ ] Key handling inside the control comes from the library, and real focus never moves into the list.
 - [ ] Focus is never moved for the user after a selection.
 - [ ] Nothing needed requires hover or a pointer. The focus ring is intact, and looks different from the active and selected option styles.
-- [ ] Disabled is used only for fields that are unavailable for now, with the reason in text. Values that can never be edited use the read-only field.
+- [ ] Disabled is used only for fields that are unavailable for now. Values that can never be edited use the read-only field.
 - [ ] Every variant, size, and state is from the inventory above, every property the component owns comes from the component, and no field without focus looks disabled.
 - [ ] The field saves with the form, in the same save mode as everything else in the system.
 - [ ] Open questions were asked about, not decided: multi-select, the menu's details, the autocomplete threshold, clearing, grouped options, and empty sets.

@@ -37,7 +37,7 @@ A tree shows data arranged as parents and children, and lets the user open only 
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.tree`.
 
-| Axis               | Options                  |
+| Variant property   | Options                  |
 | ------------------ | ------------------------ |
 | `selection-states` | `unselected`, `selected` |
 
@@ -47,7 +47,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **The UI kit has no expanded or collapsed state, only selection.** It does not define how an open node looks different from a closed one. That difference is among the open questions. Do not invent a rotation or a second icon token for it.
 
-**There is no disabled state, no hover state, and no size axis (a property a component varies on, such as size or style; Figma calls it a variant property).**
+**There is no disabled state, no hover state, and no size variant property.**
 
 **There are no checkboxes in the UI kit's tree.** This component does not provide a tree with checkboxes for choosing several items.
 
@@ -71,7 +71,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
 
 A tree has the most specific keyboard rules of any component, and they are the ones most often ignored. A tree built as nested `div`s with click handlers cannot be used with a keyboard or a screen reader. It has no level, no expand state, and no way to reach it with the keyboard.
 

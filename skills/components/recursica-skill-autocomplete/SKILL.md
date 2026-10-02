@@ -34,24 +34,24 @@ An autocomplete is a text field whose value comes from a defined set. The user t
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.autocomplete`. **Do not pass a variant, size, or state that is not listed here.**
 
-**These are design-system names, not code names.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) and its options are named in the UI kit. Each adapter names them its own way, and an adapter may ignore a name it does not know, with no error. Before setting one in code, look up the adapter's name for it with the Recursica MCP server's `recursica_get_component_doc` tool.
+**Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
 
-| Axis      | Options                   |
-| --------- | ------------------------- |
-| `states`  | `error`, `disabled`       |
-| `layouts` | `stacked`, `side-by-side` |
+| Variant property | Options                   |
+| ---------------- | ------------------------- |
+| `states`         | `error`, `disabled`       |
+| `layouts`        | `stacked`, `side-by-side` |
 
-**`layouts` is the label-placement axis.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**`layouts` is the label-placement variant property.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
 
-**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, using the adapter's name for that axis and option.
+**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, under the names the code uses for both.
 
 **Placeholder is not a variant.** It is `placeholder-opacity` on this component, the same as on a text field.
 
 **Focused is not a state.** It comes from `globals.form.field.colors.border-selected`.
 
-**There is no size axis.** `height` is a fixed property, and `globals.form.field.size.single-line-input-height` sets the height for every single-line field.
+**There is no size variant property.** `height` is a fixed property, and `globals.form.field.size.single-line-input-height` sets the height for every single-line field.
 
-**There is no multi-select axis, no chip or token display for chosen values, and no loading state** — see the open questions.
+**There is no multi-select variant property, no chip or token display for chosen values, and no loading state** — see the open questions.
 
 **The UI kit defines the closed field only.** `icon-size` and `icon-text-gap` cover a leading icon and the trailing indicator. The filtered list, its option rows, and anything shown when there are no results are not in this component's inventory.
 
@@ -64,7 +64,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 | `State`    | Default, Focused, Valued |
 | `Behavior` | Suggestions (optional)   |
 
-Those states are not kit axes and must not be passed as variants — `Focused` and `Valued` are conditions the component works out for itself. They do show the component's parts: a **leading icon**, and a clear control that appears once there is text in the field. Suggestions are described as an optional extra, not the default.
+Those states are not kit variant properties and must not be passed as variants — `Focused` and `Valued` are conditions the component works out for itself. They do show the component's parts: a **leading icon**, and a clear control that appears once there is text in the field. Suggestions are described as an optional extra, not the default.
 
 ## Rules
 
@@ -93,8 +93,6 @@ Those states are not kit axes and must not be passed as variants — `Focused` a
 - **Disabled autocomplete** — still a field, still clearly an input, but not usable right now. Use it when the user could make it usable by doing something else first.
 - **Read-only field** — a different component entirely, with no input. Use it when this user never changes this value here.
 
-**Never disable the field as the only explanation.** The keyboard skips a disabled field, so the reason must be in text nearby.
-
 **The clear control appears only when the field has a value.** Clearing returns the field to empty and the collection to unfiltered. It does not blank out the text while leaving a filter applied.
 
 **Where the field filters a collection instead of setting a form value, it saves nothing** — so it does not use the form's save mode. See `recursica-skill-forms`.
@@ -105,7 +103,7 @@ Those states are not kit axes and must not be passed as variants — `Focused` a
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
 
 The component connects the label to the input, provides the focus ring, and owns the filter-and-select interaction. The application decides what that interaction announces, and this is the hardest part of any control in this system to get right. The list changes under the user on every keystroke, and none of that reaches a screen reader unless it is announced.
 
@@ -123,7 +121,6 @@ The component connects the label to the input, provides the focus ring, and owns
 - **On error, the message is the only text announced**, because it has replaced the assistive text — so it has to state the rule. "Invalid input" is not an error message.
 - **Give the trailing indicator no separate announcement.** It is part of the field, not a second control.
 - **The clear control is a real control and needs its own accessible name**, and clearing must announce that the field is empty and the full set is back. The leading icon, by contrast, is decorative and must be silent.
-- **A disabled field is announced as disabled, but Tab skips it**, so any explanation carried only by how it looks cannot be reached. Put the reason in text.
 
 ### Keyboard and non-mouse navigation
 
@@ -173,7 +170,7 @@ Never style an unfocused field so that it looks disabled. An editable field must
 - **How matches are found and ordered** — matching the start versus anywhere in the text, fuzzy matching, and whether the matched characters are highlighted in the option.
 - **What happens when nothing matches.** What the field shows, and whether it offers a next step.
 - **Feedback while results are loading.** This component has no loading, pending, or failed-to-load state.
-- **Multi-select.** No axis supports it, and there is no chip or token display for several chosen values.
+- **Multi-select.** No variant property supports it, and there is no chip or token display for several chosen values.
 - **The filtered list itself** — the height of each option row, hover and active styling, grouping, and the maximum height before it scrolls.
 
 ## Pre-flight checklist
@@ -194,7 +191,7 @@ Never style an unfocused field so that it looks disabled. An editable field must
 - [ ] The control's own key handling and filtering are left unchanged, and real focus never moves into the list.
 - [ ] Focus is never moved for the user, including when the filter narrows down to one result.
 - [ ] Nothing needed requires hover or a pointer. The focus ring is intact, and looks different from the active and selected option styles.
-- [ ] Disabled is used only for fields that are unavailable for now, with the reason in text. Values that can never be edited use the read-only field.
+- [ ] Disabled is used only for fields that are unavailable for now. Values that can never be edited use the read-only field.
 - [ ] Every variant, size, and state passed is in the inventory above, every property the component owns comes from the component, and every field without focus looks editable, not disabled.
 - [ ] The field saves with the form, in the same save mode as everything else in the system.
 - [ ] Open questions were asked about, not decided: the replacement threshold, free text, how many characters to type, match order, no results, loading, multi-select, and list details.

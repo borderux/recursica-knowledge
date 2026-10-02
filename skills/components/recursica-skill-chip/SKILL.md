@@ -35,22 +35,22 @@ A chip is one of several short values the user can see, select, or remove.
 
 Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.chip`. **Do not pass a variant or state that is not listed here.**
 
-| Axis               | Options                  |
+| Variant property   | Options                  |
 | ------------------ | ------------------------ |
 | `selection-states` | `unselected`, `selected` |
 | `states`           | `error`                  |
 
-**`states` is nested under `selection-states`.** The UI kit defines `error` separately for an unselected chip and for a selected one, so error and selection are independent axes (the properties a component varies on, such as size and style; Figma calls them variant properties) that combine.
+**`states` is nested under `selection-states`.** The UI kit defines `error` separately for an unselected chip and for a selected one, so error and selection are independent variant properties that combine.
 
-**There is no size axis, no style axis, and no disabled state.**
+**There is no size variant property, no style variant property, and no disabled state.**
 
 **Two setups are shown only on the design-system website:** a selectable chip, and a removable chip with a close icon. The UI kit defines a `close-icon-size` and a `close-icon-color`, which is what a removable chip uses. It also defines a `leading-icon-color` for an optional icon before the label.
 
 **A chip has a `min-width` and a `max-width`.** The component limits long values, which is another reason a chip is not for phrases.
 
-**The error state exists in the UI kit and in both adapters, and the house rule forbids using it.** Both facts are true, and neither cancels the other. The UI kit defines seven error colors for each selection state — background, border, text, icon, leading icon, selected icon, and close icon — and both adapters offer an `error` setting that applies them. "Error-selected" is not a fourth state; it is `error` combined with `selected`, which is why the axis is nested.
+**The error state exists in the UI kit and in both adapters, and the house rule forbids using it.** Both facts are true, and neither cancels the other. The UI kit defines seven error colors for each selection state — background, border, text, icon, leading icon, selected icon, and close icon — and both adapters offer an `error` setting that applies them. "Error-selected" is not a fourth state; it is `error` combined with `selected`, which is why the variant property is nested.
 
-**Do not pass it.** `recursica-skill-badges-chips` says it plainly: do not use a chip to show an error, ever. A required chip group with nothing selected is a form validation error that the group reports below itself, and no chip changes how it looks to report it. An `error` setting found in code is this axis, not a typo. The axis is listed above for that reason only, not as an option to pass.
+**Do not pass it.** `recursica-skill-badges-chips` says it plainly: do not use a chip to show an error, ever. A required chip group with nothing selected is a form validation error that the group reports below itself, and no chip changes how it looks to report it. An `error` setting found in code is this variant property, not a typo. The variant property is listed above for that reason only, not as an option to pass.
 
 ## Rules
 
@@ -74,7 +74,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
+This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
 
 A chip group is a form control that happens to be laid out horizontally, and it must behave like one. The most common failure is a set of clickable `div`s with a colored selected state — invisible and unusable to anyone not using a mouse.
 
