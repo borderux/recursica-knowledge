@@ -377,7 +377,7 @@ does.** Buzz has `sync-prompts.mjs`, CircleChat has `circlechat/sync-skills.sh`,
 has this — run it after pulling a change to an agent:
 
 ```bash
-npm run agents:install         # Betty, Barb, her checkers and Alan into ~/.claude/agents
+npm run agents:install         # Betty, Barb, her checkers, Alan, and Edie with her comparer into ~/.claude/agents
 npm run agents:install:check   # report what is out of date; change nothing
 ```
 
@@ -453,6 +453,12 @@ building a Recursica app can ask her for a review in a channel. A Buzz agent has
 all, though, so that property arrives as prose and the two mechanisms that look like they would fix
 it — `agent_args`, a per-agent `CLAUDE_CODE_EXECUTABLE` — are both recorded failures. Her PORTING.md
 has the one that works, what it is worth, and what it costs.
+
+**Edie is the editor.** Edie rewrites skills, agent instructions and docs to follow
+[WRITING.md](WRITING.md) and opens a pull request. A read-only `comparer` subagent checks every
+rewrite against the old version for rules that were lost, narrowed, widened or added, and Edie
+fixes each one before the pull request opens. Edie changes wording, never rules, and never
+merges. Built for Claude Code only for now; see [agents/edie/PORTING.md](agents/edie/PORTING.md).
 
 Which skills apply to a screen is **computed, not judged**:
 

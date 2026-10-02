@@ -1,0 +1,8 @@
+{
+  "$comment": "Claude Code runtime settings for Edie. The prompt is portable/claude-code/agents/edie.md; this file is the configuration that has no business inside a prompt. Read agents/edie/PORTING.md before wiring it up.",
+  "model": "opus",
+  "tools": ["Read", "Write", "Edit", "Bash", "Glob", "Grep", "Task"],
+  "$toolsComment": "Edie edits text files in the knowledge repository and runs npm, git and gh. Task is how she dispatches the comparer, and the comparer has no write tools: a comparer that could edit the file it checks could make a lost rule disappear instead of reporting the lost rule.",
+  "subagents": ["comparer"],
+  "$modelComment": "opus because the judgment is whether a clearer sentence still states the same rule. A smaller model narrows rules without noticing, which is the failure the comparer exists to catch, and a weaker writer gives the comparer more to catch."
+}
