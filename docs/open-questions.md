@@ -135,10 +135,11 @@ From Test 4, an IT equipment provisioning tool. These are **engineering defects,
 | **No chart or graph component of any kind**                                                                                                                     | `recursica-skill-data-visualization` is nineteen sections of rules with nothing to apply them to. The test hand-built a bar chart from layout primitives with badges as bars | Now stated at the top of that skill, which previously read as though charts existed                                                                                             |
 | **`Dropdown` maps to `Select`, not `MultiSelect`** — no multi-select anywhere                                                                                   | `recursica-skill-selection-controls` requires a multi-select dropdown in two places                                                                                          | Confirmed in the shipped adapter, not just absent from the tokens. Independent single-value filters that AND together were an acceptable substitute                             |
 
-Two components are empty placeholders in both adapters. The file input and file upload skills say so, but skills name no code or library, so the evidence is kept here:
+Three components are empty placeholders in both adapters. The file input, file upload and transfer list skills say so, but skills name no code or library, so the evidence is kept here:
 
 - **`FileInput`** applies none of the 40 `file-input` variables. See `mantine-adapter/src/components/FileInput/FileInput.module.css` and the matching MUI file.
 - **`FileUpload`** applies none of the 32 `file-upload` variables.
+- **`TransferList`** ships as an empty placeholder.
 
 The table skill warns that one adapter applies none of the 101 table variables. The evidence: the MUI adapter's `Table.module.css` refers to none of the `table`, `table-cell`, `table-header` and `table-footer` variables, and the Mantine adapter applies all of them.
 

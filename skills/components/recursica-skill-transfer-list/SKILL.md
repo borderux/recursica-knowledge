@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-transfer-list
-description: Rules for the Recursica transfer list — two lists with controls to move items between them, when a set is large enough to need one, the filter, and moving items without dragging. Use for assigning items to a group or picking columns. Not for small sets — see recursica-skill-checkbox; not for one value — see recursica-skill-dropdown.
+description: Rules for the Recursica transfer list — two lists side by side with buttons that move items from one list to the other, when a list of options is long enough to need a transfer list, the filter, and moving items without dragging. Use for assigning items to a group or picking columns. Not for a short list of options — see recursica-skill-checkbox; not for one value — see recursica-skill-dropdown.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -9,149 +9,145 @@ metadata:
 
 # Transfer list
 
-A transfer list is two lists side by side, with controls that move items between them. It is also called a dual listbox, because each side is a listbox (a list the user picks one or more options from).
+A transfer list is two lists side by side, with move buttons that move items from one list to the other. A transfer list is also called a dual listbox, because each list is a listbox (a list the user picks one or more options from).
 
-> **Not implemented yet.** Both adapters ship `TransferList` as an empty placeholder. It shows
-> placeholder content and applies none of the 31 `transfer-list` variables the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) exports. The text below
-> describes the intended component and matches the UI kit, but building with it today renders
-> a placeholder, with no error. Raise the missing implementation with a person instead of working around it.
+> **The transfer list is not built yet.** Both adapters (the Recursica component library for one framework, such as Mantine or Angular Material) ship the transfer list as a stub (an empty placeholder) that shows placeholder content. The adapters apply none of the 31 `transfer-list` tokens (named design values, such as colors or sizes, set by the design system) that the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) exports. The rules in this skill describe the intended transfer list, and the rules match the UI kit. A transfer list built today shows only a placeholder, with no error. Raise the missing transfer list with a person instead of building a workaround.
 
 ## When to use a transfer list
 
-- **The set is large** — well past the 7 ± 2 limit where a checkbox group stops working. See `recursica-skill-working-memory`.
-- **The items not chosen matter as much as the items chosen.** Assigning people to a group, picking the columns of a report, choosing which options a setup includes: the user needs to see what was left out, not only what was taken.
-- **Included and excluded are the real states.** Two lists show at a glance which items belong. Checkmarks spread through one long group do not.
-- **The user works in bulk** — selecting several items, then moving them in one action.
+- **The list of options is long, well past the 7 ± 2 limit where a checkbox group stops working.** See `recursica-skill-working-memory`.
+- **The items not chosen matter as much as the items chosen.** Examples are assigning people to a group, picking the columns of a report, and choosing which options a setup includes. The user needs to see the items left out, not only the items chosen.
+- **Included and excluded are the real states of each item.** Two lists show at a glance which items are included. Checkmarks spread through one long checkbox group do not show the included items at a glance.
+- **The user works in bulk.** The user selects several items, then moves the selected items in one action.
 
 ## When not to use a transfer list
 
-| Instead of a transfer list                            | Use                                                                                        |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| There are only a handful of items                     | A checkbox group — see `recursica-skill-checkbox` and `recursica-skill-selection-controls` |
-| Exactly one value is chosen                           | `recursica-skill-dropdown`, or a radio group                                               |
-| Zero-to-many, but the unselected set is uninteresting | A multi-select dropdown — see `recursica-skill-selection-controls`                         |
-| The container cannot fit two columns                  | A different control entirely. The lists have a fixed `width`                               |
-| Items need reordering rather than including           | Not this component — no ordering variant exists                                            |
-| The items are rows of stored data with actions        | A table — see `recursica-skill-tables`                                                     |
-| The value is not editable by this user                | `recursica-skill-read-only-field`                                                          |
+| Situation                                                                                        | Use instead                                                                                                                                                                  |
+| ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The list has only a few options                                                                  | A checkbox group. See `recursica-skill-checkbox` and `recursica-skill-selection-controls`.                                                                                   |
+| The user chooses exactly one value                                                               | A dropdown or a radio group. See `recursica-skill-dropdown`.                                                                                                                 |
+| The user chooses any number of options, including none, and the options not chosen do not matter | A multi-select dropdown. See `recursica-skill-selection-controls`.                                                                                                           |
+| The container is too narrow for two lists side by side                                           | A different component. Each list has a fixed width.                                                                                                                          |
+| The user puts items in order, instead of including or excluding items                            | A different component. The standard UI kit has no ordering variant for the transfer list. If the project adds an ordering variant in Theme Forge, use the project's variant. |
+| The items are stored records with actions                                                        | A table. See `recursica-skill-tables`.                                                                                                                                       |
+| The current user cannot change the value                                                         | A read-only field. See `recursica-skill-read-only-field`.                                                                                                                    |
 
-**A transfer list fixes a structural problem: a set too large for a checkbox group. It is not for a small set.** `recursica-skill-selection-controls` says that needing select-all across twenty checkboxes means the control is wrong — this is the control that replaces it. The reverse is also true: using a transfer list where nine checkboxes would do is the same mistake in the other direction.
+**A transfer list fixes one problem in a screen's structure: a list of options too long for a checkbox group.** A transfer list is not for a short list of options. `recursica-skill-selection-controls` says that twenty checkboxes that need a select-all checkbox are the wrong control, and a transfer list replaces those checkboxes. A transfer list where nine checkboxes would do is also the wrong control.
 
 ## Variants
 
-Taken from `recursica_ui-kit.json` → `ui-kit.components.transfer-list`. **Pass only a variant, size, or state listed here.**
+**Use only the transfer list variants and options that the Recursica MCP server lists for the project.** A designer can add variants and options in Theme Forge, so each project can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. A wrong name in code has no effect and shows no error. Never invent a variant or an option.
 
-**Look up each variant's name in code before using the variant.** The names in this skill are the names in Figma and the UI kit. The code can use a different name for the same variant. A wrong name in code has no effect and shows no error. The Recursica MCP server's `recursica_get_component_doc` tool gives the name to use in code.
+The rules below describe each option by role, such as "the error state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-| Variants  | Options                   |
-| --------- | ------------------------- |
-| `layouts` | `stacked`, `side-by-side` |
-| `states`  | `error`, `disabled`       |
+- **An error state and a disabled state.** In the standard UI kit, the variant is `states`, with the options `error` and `disabled`.
+- **A header, a filter, and two item lists, all drawn by the transfer list component.** The component also sets the spacing between the title and the filter, between the filter and the items, and between the two lists. Do not build a separate search field or heading above the transfer list.
+- **A fixed height and width.** The component sets the height and the width, and neither one is an option. Both lists are the same size, however many items each list holds.
+- **No size variant in the standard UI kit.** If the project adds a size variant in Theme Forge, use the project's size variant.
+- **No focus state in the standard UI kit.** If the project adds a focus state in Theme Forge, use the project's focus state.
+- **No loading state and no empty state in the standard UI kit.** If the project adds a loading state or an empty state in Theme Forge, use the project's state.
+- **No move-all variant, and none is wanted.** See the move-all rule under Rules.
+- **No tokens for a single item in a list.** See the open questions.
 
-**Label placement is a variant.** The label sits beside the control or above the control. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the control is the house default. The label above the control is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`. **It does not arrange the two lists** — they are always two columns.
+**Label placement is a variant.** The label sits beside the control or above the control. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the control is the house default. The label above the control is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`. The label placement variant does not arrange the two lists. The two lists always sit in two columns.
 
 **Set label placement explicitly on every field.** An adapter's default may put the label above the input at every container width, which breaks the house rule. Set the label beside the input on every field, using the names the code uses for the variant and the option.
 
 **Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
-**The component owns a header, a filter, and two item lists** — `header-style`, `title-filter-gap`, `filter-items-gap`, and the `gap` between the lists. Do not build a separate search field or heading above it.
-
-**Height and width are fixed** — `height` and `width` are properties of the component, not choices. Both lists are the same size, no matter how many items are in them.
-
-**There is no size variant, no focus state, and no loading or empty state.** There is no move-all variant — and none is wanted; see the rule below. There are no tokens for single items; see the open questions.
-
 ## Rules
 
-**Both lists need a name that says which side is which.** "Available" and "Selected", "Excluded" and "Included" — whatever the product calls them. Without names, the user cannot tell which column holds the chosen items.
+**Give both lists a name that tells the two lists apart.** Use the product's words, such as "Available" and "Selected", or "Excluded" and "Included". Without names, the user cannot tell which list holds the chosen items.
 
-**The filter is required, and its label names the list it filters.** In a set large enough for this control, the user cannot read through every item.
+**The filter is required, and the filter's label names the list the filter searches.** A list long enough for a transfer list is too long for the user to read every item.
 
-**Selecting an item and moving it are two different things.** Ticking an item marks it to be moved. Moving it changes which list it is in. Keep the two actions separate, and do not move an item the moment it is ticked. Moving many items at once is the reason this control exists.
+**Selecting an item and moving an item are two separate actions.** Selecting, or ticking, an item marks the item to be moved. Moving the item puts the item in the other list. Keep the two actions separate. Do not move an item at the moment the user selects the item. Moving many items at once is the reason a transfer list exists.
 
-**Do not build move-all.** `recursica-skill-selection-controls` treats a need for select-all as a sign to rethink the control, and the UI kit defines no tokens for a move-all control. The filter is the tool for working with a large set, and it stays. A set so large that move-all feels necessary is a sign that the structure is wrong. Raise it with a person instead of adding the control, as `recursica-skill-system-conventions` says.
+**Do not build a move-all control.** `recursica-skill-selection-controls` treats a need for select-all as a sign to reconsider the control. The standard UI kit defines no tokens for a move-all control. The filter is the tool for working with a long list, and the filter stays. A list so long that a move-all control seems necessary is a sign that the screen's structure is wrong. Raise the problem with a person instead of adding a move-all control, as `recursica-skill-system-conventions` says.
 
-**Sort both lists the same way**, and keep that order the same after a move. An item that shows up somewhere unexpected after being moved back looks lost.
+**Sort both lists the same way, and keep the sort order the same after a move.** An item that appears in an unexpected place after the user moves the item back looks lost.
 
-**It is a form control, so it goes in the form's single column**, and never inside a card. Owned by `recursica-skill-forms`.
+**Put the transfer list in the form's single column, and never inside a card.** A transfer list is a form control. `recursica-skill-forms` sets this rule.
 
-**Pass a real label, and put the selection rule in assistive text** (help text shown with the control) — minimums, maximums, and what the two lists mean. "At least two must be included" belongs under the control, not in a validation message after the fact. See `recursica-skill-label` and `recursica-skill-assistive-element`.
+**Give the transfer list a real label, and put the selection rules in assistive text** (help text shown with the control). The selection rules are the minimum, the maximum, and what the two lists mean. Put a rule such as "At least two must be included" under the transfer list, not in a validation message after the user makes a mistake. See `recursica-skill-label` and `recursica-skill-assistive-element`.
 
-**Pair the error state with a signal that is not color.** Required by `recursica-skill-system-conventions`.
+**Pair the error state with a signal that is not color.** `recursica-skill-system-conventions` requires the second signal.
 
-**If a list needs long scrolling inside its fixed height, the structure is the problem.** A scrolling area inside the control works around the problem and does not fix it. See `recursica-skill-system-conventions` and the open questions.
+**When a list needs long scrolling inside the fixed height, the screen's structure is the problem.** A scrolling area inside the transfer list works around the problem and does not fix the problem. See `recursica-skill-system-conventions` and the open questions.
 
-**Never disable a transfer list to show what belongs.** If the user cannot change it here, show the included set as read-only content.
+**Never disable a transfer list to show which items are included.** When the user cannot change the included items in the current context, show the included items as read-only content.
 
 ## Accessibility
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
 
-Two lists with arrow buttons are often shipped so that they work only with a mouse. The application must provide everything below.
+Transfer lists with arrow buttons often ship working only with a mouse. The app must add every behavior listed under "Screen readers" and "Keyboard and non-mouse navigation".
 
 ### Screen readers
 
-- **Each list has its own accessible name** (the name a screen reader reads out for a control). Without one, a user hears a list of items, cannot tell which list it is, and cannot use the control.
-- **The selected state must be set in code, not shown by color.** To assistive technology, an item with only a tinted background is not selected. Required by `recursica-skill-system-conventions`.
-- **Each move control's name says what moves where** — "Move selected to included", "Remove selected from included". A name like "Right arrow" or ">" does not say what moves where, and two arrows with no labels cannot be told apart.
-- **After a move, the result must be announced**: what moved, and how many items are now in each list. The user cannot see two columns change at once.
-- **The filter must announce how many results it shows** when it changes the list — "3 of 120 shown". Without the count, a screen reader user hears a list that seems to empty for no reason.
-- **Each list's item count should be available**, so the user does not have to count by going through every item.
-- **Do not announce the same event twice.** If the result of a move is announced, do not also announce every item again as focus lands on it.
+- **Give each list a separate accessible name** (the name a screen reader reads out for a control). Without an accessible name, a screen reader user hears a list of items, cannot tell which list holds the items, and cannot use the transfer list.
+- **Set the selected state in code, not by color.** To assistive technology, an item with only a tinted background is not selected. `recursica-skill-system-conventions` sets this rule.
+- **Name each move button with what moves and where**, such as "Move selected to included" or "Remove selected from included". A name like "Right arrow" or ">" does not say what moves where. Two arrow buttons with no labels cannot be told apart.
+- **After a move, announce the result.** Announce the items that moved, and how many items each list now holds. The user cannot see two lists change at once.
+- **When the filter changes a list, announce how many items the list shows**, such as "3 of 120 shown". Without the count, a screen reader user hears a list that seems to empty for no reason.
+- **Each list's item count should be available**, so the user does not have to go through every item to count the items.
+- **Do not announce the same event twice.** When the result of a move is announced, do not also announce every item again as focus lands on each item.
 
 ### Keyboard and non-mouse navigation
 
-- **The whole transfer must work from the keyboard, with no dragging.** Selecting items, moving them, and moving them back all have to work with keys alone. If drag-and-drop is added, it is extra, and never the only way.
-- **After a move, put focus somewhere on purpose** — on the moved item in its new list, or on the move control that still applies. Never leave focus on a control that has just become disabled, and never drop it back to the top of the page.
-- **Move controls are real buttons**, pressed with Enter and Space, and they are tab stops (places the Tab key lands), in visual order, between the two lists.
-- **A move control with nothing to move is disabled.**
-- **The tab order follows the visual order**: label, filter, first list, move controls, second list.
-- **Do not move focus for the user**, other than placing it on purpose after a move. Typing in the filter must not move focus into the list.
-- **Nothing the user needs may appear only on hover** — not the move controls, not a remove control on each item, and not the counts.
+- **Every step of a transfer must work from the keyboard, with no dragging.** Selecting items, moving the items, and moving the items back must all work with keys alone. Drag and drop may be added as an extra way to move items, and never as the only way.
+- **After a move, put focus in a chosen place.** Put focus on the moved item in the moved item's new list, or on the move button that still applies. Never leave focus on a control that has just become disabled. Never let focus drop back to the top of the page.
+- **Each move button is a real button, pressed with Enter and Space.** The move buttons are tab stops (places the Tab key lands), in visual order, between the two lists.
+- **Disable a move button when the move button has no item to move.**
+- **The tab order follows the visual order**: label, filter, first list, move buttons, second list.
+- **Do not move focus for the user**, except to put focus in a chosen place after a move. Typing in the filter must not move focus into the list the filter searches.
+- **No control, label, count or other content the user needs may appear only on hover.** This rule covers the move buttons, a remove control on each item, and the item counts.
 
 ## Styling set by tokens
 
-Do not set or override any of these. The component sets them:
+**Do not set or override the transfer list properties below.** The transfer list component sets each property.
 
 - `height`, `width`, `border-size`, `border-radius`.
 - `horizontal-padding`, `vertical-padding`, and every gap: `gap`, `title-filter-gap`, `filter-items-gap`.
 - `header-style` and all `colors`.
-- Field colors and sizes from `globals.form.field`, label-field gaps and `vertical-item-gap` from `globals.form.properties`, and the disabled treatment from `globals.states.disabled`.
+- Field colors and sizes from `globals.form.field`, the gaps between the label and the field and `vertical-item-gap` from `globals.form.properties`, and the disabled look from `globals.states.disabled`.
 
 ## Related skills
 
-- `recursica-skill-selection-controls` — the control-choice ladder, the option ceiling, select-all as a signal that the structure is wrong, disabled versus read-only, and the commit model.
-- `recursica-skill-working-memory` — the 7 ± 2 basis, and why a recognition list may be long while a comparison set may not.
-- `recursica-skill-forms` — single-column layout, one label placement per form and the container-width trigger for it, validation, save mode, and the no-form-control-in-a-card rule.
-- `recursica-skill-label` — the control's name and the group-level label.
-- `recursica-skill-assistive-element` — the selection rules and the error message.
-- `recursica-skill-system-conventions` — never carry meaning in a single channel; fix the structure rather than adding a mechanism to cope with it.
+- `recursica-skill-selection-controls` — which selection control to choose, the most options each selection control can hold, select-all as a sign that the structure is wrong, disabled versus read-only, and when a selection is saved.
+- `recursica-skill-working-memory` — the research behind the 7 ± 2 limit, and why a list the user scans to recognize an item may be long while a set of items the user compares may not.
+- `recursica-skill-forms` — the single-column layout, one label placement per form and the container width that sets the label placement, validation, save mode, and the rule against a form control inside a card.
+- `recursica-skill-label` — the transfer list's label, and the label for a group of fields.
+- `recursica-skill-assistive-element` — the help text for the selection rules, and the error message.
+- `recursica-skill-system-conventions` — showing meaning in more than one way, and fixing the screen's structure instead of adding a feature to work around a problem in the structure.
 
 ## Open questions
 
-- **Where this control fits among the selection controls.** `recursica-skill-selection-controls` sends zero-to-many sets above the limit to a multi-select dropdown, and never mentions a transfer list. The set size at which a transfer list replaces the multi-select dropdown is not stated.
-- **Checkboxes on each item.** A checkbox on every item is shown only on the design-system website, but the UI kit defines no item or checkbox properties on this component. Whether items are checkbox rows or a selectable listbox is not settled — ask before relying on it.
-- **Overflow.** `height` is fixed, so a long list must scroll inside the control — which `recursica-skill-system-conventions` treats as a failure. No overflow behavior is stated.
-- **Narrow containers.** `layouts` moves the label only, and the lists have a fixed `width`. The old house note said to avoid this control on small screens, but no responsive behavior exists.
-- **Empty states** for either list, including the starting state where every item is on one side.
-- **Ordering.** Whether items are sorted alphabetically, keep their original order, or can be reordered by the user.
-- **Whether a single item can be disabled** — locked into one list while the rest move freely.
+- **Where the transfer list fits among the selection controls.** `recursica-skill-selection-controls` sends a choice of any number of options, including none, to a multi-select dropdown when the options pass the option limit. `recursica-skill-selection-controls` never mentions a transfer list. No rule says at how many options a transfer list replaces the multi-select dropdown.
+- **Checkboxes on each item.** Only the design-system website shows a checkbox on every item. The standard UI kit defines no item properties and no checkbox properties for the transfer list. Nobody has settled whether the items are rows with checkboxes or items in a selectable listbox. Ask before relying on a checkbox on each item. Ask only when the project has no checkbox option for an item.
+- **Overflow.** The height is fixed, so a long list must scroll inside the transfer list. `recursica-skill-system-conventions` treats a scrolling area inside a control as a failure. No rule says what a list does when the items do not fit the height.
+- **Narrow containers.** The label placement variant moves only the label, and the lists have a fixed width. An earlier house note said to avoid the transfer list on small screens, but the transfer list has no responsive behavior.
+- **Empty states.** No rule sets an empty state for either list, including the starting state where every item is in one list. Ask only when the project has no empty state.
+- **Ordering.** No rule says whether items are sorted alphabetically, keep the original order, or can be reordered by the user.
+- **Disabled items.** No rule says whether a single item can be disabled, locked in one list while the other items move. Ask only when the project has no disabled state for a single item.
 
 ## Pre-flight checklist
 
-- [ ] The set is large, and the user needs to see the excluded items. A checkbox group or dropdown was ruled out for those reasons.
-- [ ] Both lists have visible names that say which side is which, and each has an accessible name.
-- [ ] A filter is present, and it announces how many results it shows.
-- [ ] Selecting an item does not move it. Items move through the move controls.
-- [ ] Both lists use the same order, and it stays the same after a move.
-- [ ] Move control names say what moves where, and they are real buttons pressed with Enter and Space.
-- [ ] The whole transfer works from the keyboard with no dragging. Any drag support is extra.
-- [ ] After a move, focus is placed on purpose, and the result is announced — what moved, and the new count in each list.
+- [ ] The list of options is long, and the user needs to see the excluded items. A checkbox group and a dropdown were ruled out for those reasons.
+- [ ] Both lists have visible names that tell the two lists apart, and each list has an accessible name.
+- [ ] A filter is present, and the filter announces how many items a filtered list shows.
+- [ ] Selecting an item does not move the item. Items move through the move buttons.
+- [ ] Both lists use the same sort order, and the sort order stays the same after a move.
+- [ ] Each move button's name says what moves where. Each move button is a real button, pressed with Enter and Space.
+- [ ] Every step of a transfer works from the keyboard, with no dragging. Any drag and drop is an extra way to move items.
+- [ ] After a move, focus goes to a chosen place, and the result is announced: the items that moved, and the new count in each list.
 - [ ] The selected state is set in code, not shown by highlight color alone.
-- [ ] No move-all control was built. A set large enough to want one was raised with a person as a sign that the structure is wrong.
-- [ ] A real label is passed with the selection rules in assistive text, and its `layouts` placement matches every other field in the same form — one placement per form, per `recursica-skill-forms`.
-- [ ] The error state has a signal that is not color. Label, help, and error text are passed through the component.
-- [ ] The tab order runs: label, filter, first list, move controls, second list.
-- [ ] The control is in the form's single column, and not inside a card.
-- [ ] Every variant, size, and state comes from the inventory above. No header, filter, or wrapper is built by hand.
-- [ ] Sizes, padding, and gaps come from the component.
+- [ ] No move-all control was built. A list long enough to seem to need a move-all control was raised with a person as a sign that the structure is wrong.
+- [ ] The transfer list has a real label, with the selection rules in assistive text.
+- [ ] The label placement matches every other field in the same form, with one placement per form, as `recursica-skill-forms` requires.
+- [ ] The error state has a signal that is not color. The label, the help text, and the error text are set through the transfer list component.
+- [ ] The tab order runs: label, filter, first list, move buttons, second list.
+- [ ] The transfer list is in the form's single column, and not inside a card.
+- [ ] Every variant, size, and state is one the project's UI kit lists, and no variant or option is invented. No header, filter, or wrapper is built by hand.
+- [ ] Sizes, padding, and gaps come from the transfer list component.
 - [ ] Open questions were asked about, not decided: item checkboxes, overflow, ordering.
