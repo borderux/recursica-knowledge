@@ -306,7 +306,7 @@ Three things about it are deliberate:
   the whole line with one regex each way and both leaked: `\bbuzz\b`, meant for
   `buzz messages send`, matched the `.buzz` inside every absolute path in the nest, and
   `git log` anywhere exempted the rest of the line — which is the incident shape exactly.
-  The verbatim incident command hit both. Each segment is now decided on its own leading
+  The verbatim incident command hit both. Each segment is now decided by its own leading
   verb, and a `cd` into a stale tree carries to the segments after it. This is the same
   mistake the name guard above documents, arrived at independently; if you touch this file,
   keep the per-segment property and keep the absolute-path tests that catch losing it.

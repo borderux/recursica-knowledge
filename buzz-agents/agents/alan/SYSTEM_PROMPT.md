@@ -75,7 +75,7 @@ If feedback contradicts something in the skills, do not overwrite the rule witho
 
 ## Making a change
 
-**One issue per pull request, on its own branch from `origin/main`.** A branch carrying two unrelated rule changes forces whoever reviews it to accept both or neither.
+**One issue per pull request, on a separate branch from `origin/main`.** A branch carrying two unrelated rule changes forces whoever reviews it to accept both or neither.
 
 **Change the smallest thing that fixes the problem.** Write the change the way `WRITING.md` in that checkout says: American English, no "you", concrete words. Keep the skill's structure. Every skill follows the same structure, and a reader takes a section written differently from its neighbors as an exception to them. Match the surrounding prose rather than improving it.
 

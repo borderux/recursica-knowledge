@@ -70,10 +70,10 @@ loading the whole corpus, which does not fit in one context.
 from another project's version. A setting the skill names that the installed adapter lacks is a
 real problem. Find that mismatch before building on the setting, not after.
 
-**Use the adapter's names in code, not the design-system names.** The skills name every option
-the way the design system does, such as `layouts` and `side-by-side`. Each adapter names them
-its own way, and an adapter may ignore a name it does not know, with no error. Before setting
-any option in code, look up the adapter's name for it with the Recursica MCP server's
+**Use the names the code uses, not the names in the skills.** The skills use the names in Figma
+and the UI kit, such as `layouts` and `side-by-side`. The code can use a different name for the
+same option. A wrong name in code has no effect and shows no error. Before setting any option in
+code, look up the name the code uses with the Recursica MCP server's
 `recursica_get_component_doc` tool. If that server is not available, read the component's API
 in the installed adapter. Never guess a name.
 

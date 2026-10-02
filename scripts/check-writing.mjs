@@ -5,7 +5,8 @@
  *   spelling   American English: no British spellings, in any file this covers
  *   you        no "you" or "your" in skills and agent instructions, apart from an agent's
  *              identity line ("You are Betty, …"), code and quoted text
- *   phrase     none of the vague phrases WRITING.md lists under rule 3
+ *   phrase     none of the vague phrases WRITING.md lists under rule 5, nor "on its own" or "its own way"
+ *   words      in a skill: no "whatever", "axis", "React" or "prop" (rule 4)
  *   grade      a Flesch-Kincaid grade below 10 (a 9th-grade reading level) in skills and agent
  *              instructions
  *
@@ -119,7 +120,31 @@ export const PHRASES = [
   /\breads (as|like)\b/i,
   /\b(earns?|earned|earning)\b/i,
   /\bshape of (the|its) data\b|\bdata's shape\b/i,
+  /\bon its own\b/i,
+  /\bits own way\b/i,
 ];
+
+/**
+ * Words a skill never uses (WRITING.md rule 4): a vague stand-in, an insider word a designer would
+ * not say, and code names that tie a skill to one language. The chart skill's axes are chart axes.
+ */
+export const SKILL_WORDS = [
+  { re: /\bwhatever\b/i, label: "whatever" },
+  {
+    re: /\b(axis|axes)\b/i,
+    label: "axis",
+    except: /recursica-skill-data-visualization/,
+  },
+  { re: /\bReact\b/, label: "React" },
+  { re: /\bprops?\b/i, label: "prop" },
+];
+
+export function skillWordsFound(file, text) {
+  const t = prose(text);
+  return SKILL_WORDS.filter(
+    (w) => !(w.except && w.except.test(file)) && w.re.test(t),
+  ).map((w) => w.label);
+}
 
 const YOU =
   /\b(you|your|yours|yourself|yourselves|you're|you've|you'll|you'd)\b/gi;
@@ -286,6 +311,10 @@ export function problemsIn(f, text) {
   }
   const ph = phrasesFound(text);
   if (ph.length) out.push({ rule: "phrase", detail: ph.join(", ") });
+  if (f.startsWith("skills/")) {
+    const w = skillWordsFound(f, text);
+    if (w.length) out.push({ rule: "words", detail: w.join(", ") });
+  }
   if (youApplies(f)) {
     const g = readingGrade(text);
     if (g >= GRADE_LIMIT)
