@@ -13,27 +13,27 @@ A text field records free-form text on a single line.
 
 ## Use it when
 
-- **The value is unpredictable** — names, addresses, descriptions, references. Anything a set list could not cover.
-- **Typing beats choosing** — data the user knows well and can type faster than they could pick it from a control.
+- **The value is unpredictable** — names, addresses, descriptions, references. No set list of options could cover them.
+- **Typing is faster than choosing** — the user knows the value well, and can type it faster than pick it from a control.
 - **The content is short, and fits on one line.**
 
 ## Do not use it when
 
-Each of these has a different component. Switch to it, instead of adapting a text field:
+Each case below has its own component. Use that component instead of adapting a text field:
 
 | Instead of a text field                                                            | Use                                                                                       |
 | ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | The value comes from a known set of options                                        | A dropdown, a radio group, or an autocomplete — see `recursica-skill-selection-controls`  |
 | The answer is yes or no                                                            | A switch or a checkbox                                                                    |
 | The content runs to several lines                                                  | `recursica-skill-textarea`                                                                |
-| The value is a quantity the user types — a count, an amount, a rate, a measurement | `recursica-skill-number-input`. Free-form entry is wrong for something you can do math on |
+| The value is a quantity the user types — a count, an amount, a rate, a measurement | `recursica-skill-number-input`. Free-form entry is wrong for a value used in calculations |
 | This user can never edit the value                                                 | The read-only field component — shows text, with no input                                 |
 
-**A disabled text field is not a way to show a value.** If nobody can ever edit it here, it is not a form control.
+**Never use a disabled text field to show a value.** A value nobody can ever edit here does not belong in a form control.
 
 ## What exists
 
-Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.text-field`. **Do not pass a variant or state that is not listed here** — other design systems have field sizes, fluid styles, and warning, success, and loading states that this component does not.
+Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.text-field`. **Pass only the variants and states listed here.** Other design systems have field sizes, fluid styles, and warning, success, and loading states. This component has none of them.
 
 **The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop, and React ignores it without an error if it is passed as one. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
 
@@ -54,51 +54,51 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 ## Rules for using it
 
-**Always pass a visible label.** Name the object clearly; a screen reader user hears the label on its own, without the context around it. Use sentence capitalization, no colon at the end, and keep it short enough not to wrap.
+**Always pass a visible label.** Name the object clearly in the label. A screen reader user hears the label on its own, without the context around it. Write it in sentence case with no colon at the end, and keep it short enough to fit on one line.
 
-**Never put required information in the placeholder.** It disappears on the first keystroke. Use it only to show the form of the value you expect.
+**Never put required information in the placeholder.** It disappears on the first keystroke. Use the placeholder only to show the format of the expected value.
 
-**Put the field's rule in assistive text** — formats, character requirements, minimums — so the user has it before they get it wrong.
+**Put the field's rule in assistive text** — formats, character requirements, minimums — so the user sees the rule before entering a value that breaks it.
 
 **Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
 
-**On error, replace the assistive text; do not add to it.** Swapping keeps the field's height the same, so the form below does not shift. The error message must restate the rule that was broken: "Invalid input" is not an error message.
+**On error, replace the assistive text with the error message, instead of adding the message to it.** Replacing the text keeps the field's height the same, and the form below does not move. The error message must restate the rule that was broken. "Invalid input" is not an error message.
 
-**Pair the error state with a signal that is not color** — an icon, or the message itself. Required by `recursica-skill-system-conventions`.
+**Show the error state with an icon or the message text, as well as color.** `recursica-skill-system-conventions` requires this.
 
-**Prefixes and suffixes go inside the field** — not in the label, and not joined onto the value. A currency symbol goes before an amount; a unit or an email domain goes after it. These are called affixes: text attached to the start or end of a field.
+**Prefixes and suffixes go inside the field** — not in the label, and not joined onto the value. A currency symbol goes before an amount. A unit or an email domain goes after the value. Prefixes and suffixes are called affixes: text attached to the start or end of a field.
 
 **Disabled and read-only are different components, not two styles of one.**
 
-- **Disabled text field** — still a field, still clearly an input, just not usable right now. Use it when the user could make it usable by doing something else first. A disabled field cannot be edited, but that is not the same as read-only.
-- **Read-only field** — a different component entirely. It shows no input: a label and text only. Use it when this user never edits this value here.
+- **Disabled text field** — a field that still looks like an input, but the user cannot use it at the moment. Use it when the user can make it usable by doing something else first. A disabled field cannot be edited, but it is not a read-only field.
+- **Read-only field** — a separate component. It shows a label and text, with no input. Use it when this user never edits this value here.
 
-Never reach for a disabled text field as a way to show a value.
+Never use a disabled text field to show a value.
 
-**A field that often overflows is the wrong component.** The value scrolls sideways past the right edge, which makes long entries unreadable. Move to a textarea or a detail view.
+**If values often overflow the field, use a textarea or a detail view instead.** A value that overflows scrolls horizontally past the right edge, and the user cannot read a long entry in full.
 
-**Some values change format when the field has focus.** A date is readable at rest, and switches to a masked number format (a pattern that guides what the user types) while the field has focus. See `recursica-skill-dates-and-currency`.
+**Some values change format when the field has focus.** A date shows in a readable format when the field does not have focus, and switches to a masked number format (a pattern that guides what the user types) while the field has focus. See `recursica-skill-dates-and-currency`.
 
 ## Accessibility
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
 
-The component connects the label to the input, provides the focus ring, and handles the keys inside the field. Everything below is up to you to get right — and it is the part most often missed.
+The component connects the label to the input, provides the focus ring, and handles the keys inside the field. The application provides everything listed below. These are the parts most often missed.
 
 ### Screen readers
 
 - **Pass a real label.** Never let placeholder text be the accessible name (the name a screen reader reads out for a control) — it is not announced as a label, and it disappears when the user types. A field with no label has no accessible name.
-- **The error message must be the text that gets announced.** Because the error replaces the assistive text instead of adding to it, the message is the only thing that will be read — so it has to state the rule, not "Invalid input".
-- **Give every icon inside the field that can be used an accessible name** — a clear control, a calendar trigger. Decorative icons must be silent, not announced as unlabeled graphics.
-- **If a prefix or suffix changes what the value means** — a currency symbol, a unit — make sure that meaning is in the label or the assistive text. A visual affix on its own may not be announced with the value.
-- **When a value's format changes on focus**, state the expected format in the assistive text. The mask is a visual aid, and tells a screen reader nothing.
+- **The error message must be the text the screen reader announces.** The error replaces the assistive text, and a screen reader reads only the error. The message must state the rule, not "Invalid input".
+- **Give every clickable icon inside the field an accessible name** — a clear control, a calendar trigger. Hide decorative icons from screen readers, so they are never announced as unlabeled graphics.
+- **If a prefix or suffix changes what the value means** — a currency symbol, a unit — state that meaning in the label or the assistive text. A visual affix on its own may not be announced with the value.
+- **When a value's format changes on focus**, state the expected format in the assistive text. The mask is visual only, and a screen reader does not announce it.
 
 ### Keyboard and non-mouse navigation
 
 - **Never remove the field from the tab order**, and never make reaching it depend on a pointer.
-- **The tab order follows the visual order.** The single-column form rule in `recursica-skill-forms` is what keeps this true. Do not reorder fields on screen while leaving the DOM order (the order in the page's code) alone, or the other way round.
-- **Every control inside the field is its own tab stop** (a place the Tab key lands), and works from the keyboard — Enter or Space, not handlers that only respond to clicks.
-- **Do not move focus for the user.** No jumping ahead to the next field when a value looks complete, and no focus jumps on a keystroke. Both strand keyboard and screen reader users partway through typing.
+- **The tab order follows the visual order.** The single-column form rule in `recursica-skill-forms` keeps the two orders the same. Change the on-screen order and the DOM order (the order in the page's code) together.
+- **Every control inside the field is its own tab stop** (a place the Tab key lands), and responds to Enter or Space as well as to clicks.
+- **Do not move focus for the user.** Do not jump to the next field when a value looks complete, and do not move focus on a keystroke. Either jump sends a keyboard or screen reader user's next keystrokes into a different field partway through typing.
 
 ## Set by the component
 
@@ -111,7 +111,7 @@ Do not set or override any of these. The component sets them:
 - Per-layer colors, the focused border, hover, and active styling.
 - The label-to-input association and keyboard behavior inside the field.
 
-Never style an unfocused field so that it reads as disabled. An editable field must look editable at rest.
+Never style an unfocused field to look disabled. An editable field must look editable when it does not have focus.
 
 ## Load these too
 
@@ -130,15 +130,15 @@ Never style an unfocused field so that it reads as disabled. An editable field m
 
 ## Pre-flight checklist
 
-- [ ] The value really cannot come from a set list of options.
+- [ ] The value cannot come from a set list of options.
 - [ ] A visible label is passed, and it makes sense on its own.
 - [ ] Label placement is side by side, unless the container is too narrow.
 - [ ] `formLayout` is passed explicitly — `side-by-side`, unless the form's container is too narrow — and matches every other field in the same form. There is one placement per form at any given breakpoint, with no mixing between fields or sections. A missing prop means `stacked`, not the house rule, and `layouts` is not the prop name.
-- [ ] No required information lives in placeholder text.
+- [ ] Placeholder text holds no required information.
 - [ ] Assistive text states the rule. On error, it is replaced by a message that restates that rule.
-- [ ] The error state has a signal that is not color.
-- [ ] Every icon inside the field that can be used has an accessible name, and decorative icons are silent.
-- [ ] You passed no variant, size, or state outside the inventory defined by tokens above.
-- [ ] You overrode no styling that the component owns, and no field without focus looks disabled.
-- [ ] Values that cannot be edited use the read-only component, text on several lines moved to a textarea, and quantities moved to a number input.
-- [ ] You invented nothing from the uncovered list.
+- [ ] The error state shows an icon or the message text, as well as color.
+- [ ] Every clickable icon inside the field has an accessible name, and decorative icons are hidden from screen readers.
+- [ ] Only variants and states listed under What exists are passed, and no size is passed.
+- [ ] Styling comes from the component, and every unfocused field looks editable.
+- [ ] Values nobody can edit use the read-only component, multi-line text uses a textarea, and quantities use a number input.
+- [ ] Uncovered items were asked about, not decided: character or word counters, a clear or reset control inside the field, and password fields.
