@@ -50,7 +50,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **The variants sit on different parts, and that is on purpose.** `layouts` belongs to the group — one decision for the whole field. `disabled` belongs to the item — so a single switch can be unavailable while the ones beside it can still be used. The group has no disabled state. `globals.states.disabled` supplies the disabled styling.
 
-**`layouts` is the label-placement variant, the same variant every field has.** `side-by-side` puts the group's label beside the switches; `stacked` puts it above.
+**Label placement is a variant, the same variant every field has.** The group's label sits beside the switches or above the switches. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`.
 
 **The thumb can carry an icon** — `thumb-icon-size` exists — and that icon is a second visual signal of the state, alongside the thumb's position and the track's color.
 
@@ -80,7 +80,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Stack switches vertically** in a group, one per row, like every other form field.
 
-**Label placement is one decision per form, not per field.** This group's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
+**Label placement is one decision per form, not per field.** This group uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
 **Disabled and read-only are different components, not two styles of one.**
 
@@ -159,7 +159,7 @@ Do not add margins or spacer elements between switches or around the group. The 
 - [ ] When it saves matches every other switch in the system, and saving immediately comes with a save status that stays on the page.
 - [ ] Nothing mixes switches that save when flipped with switches that wait for Save.
 - [ ] `switch`, `switch-item`, and `switch-group` are used together, and groups are stacked vertically.
-- [ ] `layouts` matches every other field in the same form — one placement per form at any given breakpoint, with no mixing between fields or sections.
+- [ ] Label placement matches every other field in the same form, with one placement per form at each breakpoint and no mixing between fields or form sections.
 - [ ] Consequences and rules are in assistive text passed through the component.
 - [ ] The on/off state is available in code, never shown only by the thumb's position or the track's color, and the thumb icon is hidden from screen readers.
 - [ ] A group of switches has a group label, announced when focus enters it.

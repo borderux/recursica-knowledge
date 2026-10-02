@@ -45,9 +45,9 @@ The rules below describe each option by role, such as "the error state". The nam
 - **The standard UI kit defines the closed field only.** The icon size and the gap between the icon and the text cover a leading icon and the trailing indicator. The filtered list, the option rows in the filtered list, and the content shown when no option matches are not in the autocomplete's inventory in the standard UI kit. If the project adds styles for the filtered list in Theme Forge, use the project's styles.
 - **Read-only is a separate component.** The read-only field, `read-only-field` in the UI kit, shows text instead of an input.
 
-**`layouts` is the label-placement variant.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**Label placement is a variant.** The label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
 
-**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, under the names the code uses for both.
+**Set label placement explicitly on every field.** An adapter's default may put the label above the input at every container width, which breaks the house rule. Set the label beside the input on every field, using the names the code uses for the variant and the option.
 
 The design-system website shows the autocomplete under the component's former name, "Search", with the sections below. The website is the only place these sections appear.
 
@@ -70,7 +70,7 @@ The design-system website shows the autocomplete under the component's former na
 
 **Set a default value only when the default is correct for nearly everyone.** Never pre-fill a value the user would have to think about, look up, or check. A default the user cannot check gets submitted without being checked.
 
-**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
+**Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
 **On error, the error message replaces the assistive text.** The error message is not added to the assistive text. The error message must restate the rule the user broke. The error state must have a signal that is not color, as well as the color change.
 
@@ -172,7 +172,7 @@ The autocomplete component connects the label to the input and provides the focu
 - [ ] The submitted value matches an option in the list, and typed text that matches no option is not accepted as a value.
 - [ ] The field has a real label that makes sense without the text around the field, and the placeholder is not used as the label.
 - [ ] Label placement is side by side, unless the container is too narrow.
-- [ ] `layouts` matches every other field in the same form — one placement per form at any given breakpoint, with no mixing between fields or sections.
+- [ ] Label placement matches every other field in the same form, with one placement per form at each breakpoint and no mixing between fields or form sections.
 - [ ] No required information is in the placeholder. The field's rules are in the assistive text.
 - [ ] Any default is correct for nearly everyone.
 - [ ] On error, an error message that restates the rule replaces the assistive text, with a signal that is not color.

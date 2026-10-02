@@ -45,11 +45,11 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 | `layouts` | `stacked`, `side-by-side` |
 | `states`  | `error`, `disabled`       |
 
-**`layouts` is the label-placement variant.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**Label placement is a variant.** The label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
 
-**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, under the names the code uses for both.
+**Set label placement explicitly on every field.** An adapter's default may put the label above the input at every container width, which breaks the house rule. Set the label beside the input on every field, using the names the code uses for the variant and the option.
 
-**Focus and placeholder are not variants.** The component handles them: `placeholder-opacity` here, and the focused border through `globals.form.field.colors.border-selected`. Do not build them as states.
+**Never build a focus state or a placeholder state.** The component draws the focus border and the placeholder text.
 
 **There is no 12-hour or 24-hour variant.** That is the user's preference, not a variant — see the rules below.
 
@@ -63,7 +63,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Always pass a visible label.** Name the object clearly — "Start time", not "Time". A screen reader user hears the label on its own, without the context around it. Use sentence capitalization, with no colon at the end.
 
-**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones like this one that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
+**Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields like this one that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
 **Whether time is 12-hour or 24-hour is the user's preference**, set by their locale or by an explicit setting. It is not a design decision, and it does not change from screen to screen.
 
@@ -154,7 +154,7 @@ Never style an unfocused time picker so it looks disabled. An editable field mus
 - [ ] The value is a point in the day — not an offset, a duration, or one of a few set times.
 - [ ] A visible label is passed and makes sense on its own, and a date-plus-time row is one control with one label.
 - [ ] Label placement is side by side, unless the container is too narrow.
-- [ ] `layouts` matches every other field in the same form — one placement per form at any given breakpoint, with no mixing between fields or sections.
+- [ ] Label placement matches every other field in the same form, with one placement per form at each breakpoint and no mixing between fields or form sections.
 - [ ] 12-hour or 24-hour time follows the user's preference, and does not change from screen to screen.
 - [ ] The time is in the user's time zone, or the time zone is stated. A time that happened elsewhere is shown in its own time zone, labeled, with a way to convert it.
 - [ ] Seconds appear only across a set of values under a minute that are being compared — and then on every value in it.

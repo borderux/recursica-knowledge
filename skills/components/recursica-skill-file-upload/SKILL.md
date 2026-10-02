@@ -44,9 +44,9 @@ Taken from `recursica_ui-kit.json` → `ui-kit.components.file-upload`. **Do not
 | `layouts` | `stacked`, `side-by-side` |
 | `states`  | `error`, `disabled`       |
 
-**`layouts` is the label-placement variant.** `side-by-side` — the label beside the control — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**Label placement is a variant.** The label sits beside the control or above the control. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the control is the house default. The label above the control is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
 
-**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
+**Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
 **This is the larger area, and the tokens say so.** `border-style`, `border-size`, `border-radius`, and `padding` describe a region rather than a line. `item-gap`, `list-spacing`, and `vertical-element-gap` describe the list of added files beneath it. That is the whole difference from `file-input`, which is shaped like a single-line field.
 

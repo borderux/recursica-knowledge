@@ -47,7 +47,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **The variants sit on different parts, and that is on purpose.** `layouts` belongs to the group — one decision for the whole field. `disabled` belongs to the item — so a single option can be unavailable while the rest of the choice can still be used. There is no disabled state for the group. `globals.states.disabled` supplies the disabled styling.
 
-**`layouts` is the label-placement variant, the same variant every field has.** `side-by-side` puts the group's label beside the stack of options; `stacked` puts it above. **It does not set the direction the options run.** Options are always stacked vertically, and `recursica-skill-selection-controls` forbids a horizontal radio group outright. Never use `side-by-side` to put the radio buttons in a row.
+**Label placement is a variant, the same variant every field has.** The group's label sits beside the stack of options or above the stack of options. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. **It does not set the direction the options run.** Options are always stacked vertically, and `recursica-skill-selection-controls` forbids a horizontal radio group outright. Never use `side-by-side` to put the radio buttons in a row.
 
 **There is no indeterminate state**, because a radio group has no partly selected condition. None of the three has an error state, and there is no required variant.
 
@@ -69,7 +69,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Stack the options vertically, never horizontally.** In a row of radio buttons, it is hard to tell which circle belongs to which label. If the layout needs a row, use a segmented control instead, which is limited to 2–5 options. Never use tabs instead.
 
-**Label placement is one decision per form, not per field.** This group's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
+**Label placement is one decision per form, not per field.** This group uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
 **Put the selection rule in assistive text**, instead of in a validation message the user sees only after a failed submit. Show it with the assistive element — see `recursica-skill-assistive-element`.
 
@@ -143,7 +143,7 @@ Do not add margins or spacer elements between options or around the group; the c
 - [ ] The options rule each other out, and no choice of one is built as checkboxes.
 - [ ] The group holds at least two options, within 7 ± 2, and fewer for options that are hard to tell apart.
 - [ ] Options are stacked vertically. There is no horizontal group, and `side-by-side` is used only for label placement.
-- [ ] `layouts` matches every other field in the same form — one placement per form at any given breakpoint, with no mixing between fields or sections.
+- [ ] Label placement matches every other field in the same form, with one placement per form at each breakpoint and no mixing between fields or form sections.
 - [ ] `radio-button`, `radio-button-item`, and `radio-button-group` are used together.
 - [ ] No value is selected in advance unless the default is right for nearly everyone.
 - [ ] The group has a real label that states the question, and every option has a real label that states its value.

@@ -47,11 +47,11 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 | `layouts` | `stacked`, `side-by-side` |
 | `states`  | `error`, `disabled`       |
 
-**`layouts` is the label-placement variant.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**Label placement is a variant.** The label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
 
-**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, under the names the code uses for both.
+**Set label placement explicitly on every field.** An adapter's default may put the label above the input at every container width, which breaks the house rule. Set the label beside the input on every field, using the names the code uses for the variant and the option.
 
-**Focus and placeholder are not variants.** The component handles them: `placeholder-opacity` here, and the focused border through `globals.form.field.colors.border-selected`. Do not build them as states.
+**Never build a focus state or a placeholder state.** The component draws the focus border and the placeholder text.
 
 **The tokens set `rows`. Do not set it on each instance.** The component fixes the number of rows. Do not pass a height, do not set a row count to fit a particular answer, and do not add a wrapper to stretch it. If the fixed height is wrong for a case, ask a person — see the open questions.
 
@@ -81,7 +81,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Do not add spacing around it to make up for its height.** The spacing between fields and sections is built into the components. A textarea is the tallest field in a form, and the difference in height is expected. `recursica-skill-forms` owns this rule.
 
-**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
+**Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
 **Never stack a textarea on its own because it is tall.** A stacked layout often looks better around a textarea, because a tall field beside a single-line label looks unbalanced in a narrow container. The width of the form's container decides placement, not the height of the field. If the form is side by side, this field is side by side too.
 
@@ -157,7 +157,7 @@ Never style an unfocused textarea to look disabled. An editable field must look 
 - [ ] No field whose label promises prose — `Description`, `Notes`, `Comments`, `Justification`, `Reason`, `Summary`, `Details` — is built as a single-line text field.
 - [ ] A visible label is passed, and it makes sense on its own.
 - [ ] Label placement is side by side, unless the container is too narrow.
-- [ ] `layouts` matches every other field in the same form — one placement per form at any given breakpoint, with no mixing between fields or sections — and this field is stacked only when the whole form is.
+- [ ] Label placement matches every other field in the same form, with one placement per form at each breakpoint and no mixing between fields or form sections — and this field is stacked only when the whole form is.
 - [ ] No required information lives in placeholder text.
 - [ ] Help text says what to include and any limit. On error, it is replaced by a message that restates the rule.
 - [ ] The error state has a signal that is not color.

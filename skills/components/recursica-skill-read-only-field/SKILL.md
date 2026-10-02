@@ -44,9 +44,9 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 | --------- | ------------------------- |
 | `layouts` | `stacked`, `side-by-side` |
 
-**`layouts` is the label-placement variant.** `side-by-side` — the label beside the field — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`. It is the same variant every field has. Set it to match the fields around it — a read-only field placed among stacked fields stacks too.
+**Label placement is a variant.** The label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`. It is the same variant every field has. Set it to match the fields around it — a read-only field placed among stacked fields stacks too.
 
-**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, under the names the code uses for both.
+**Set label placement explicitly on every field.** An adapter's default may put the label above the input at every container width, which breaks the house rule. Set the label beside the input on every field, using the names the code uses for the variant and the option.
 
 **There are no states.** The component has no `error`, no `disabled`, no focus, and no hover state. It is not a control. Nothing about it can be invalid or unusable. Do not pass a state, and do not fake one.
 
@@ -60,7 +60,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Always pass a visible label**, and let the component pair it with the value. Name the object clearly, use sentence capitalization, and leave off any colon at the end. The rules in `recursica-skill-label` apply without change.
 
-**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form, whether they can be edited or not. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
+**Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form, editable or not. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
 **Make it clearly different from an input.** The difference between read-only, disabled, and editable must be visible at a glance. The most common failure is the reverse: a light gray background on editable fields, which makes a whole form look read-only. Keep the look this component's tokens set, and do not restyle read-only or editable fields to look like each other.
 
@@ -137,7 +137,7 @@ Do not set or override any of these. The component sets them:
 - [ ] The value cannot be edited here, and it is shown with this component, not a disabled input.
 - [ ] Data that nobody ever edits, outside a form, is plain text instead of this component.
 - [ ] A visible label is passed to the component, and it makes sense on its own.
-- [ ] `layouts` matches every other field in the same form — one placement per form at any given breakpoint, with no mixing between fields or sections — and is side by side unless the container is too narrow.
+- [ ] Label placement matches every other field in the same form, with one placement per form at each breakpoint and no mixing between fields or form sections — and is side by side unless the container is too narrow.
 - [ ] No state is passed or faked — no error, no disabled, and no focus styling.
 - [ ] The value uses the display format: dates with a spelled-out month, fixed precision, and unit labels for durations.
 - [ ] The alignment matches the editable values on the same screen.

@@ -40,7 +40,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **`layouts` is the placement variant, and it is the same variant every field has.** Set it consistently: the label's layout and its field's layout are one decision, not two — and that decision belongs to the form, not to this label. See the placement rule below.
 
-**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, under the names the code uses for both.
+**Set label placement explicitly on every field.** An adapter's default may put the label above the input at every container width, which breaks the house rule. Set the label beside the input on every field, using the names the code uses for the variant and the option.
 
 **The UI kit provides a required indicator and an optional text**, each with its own gaps, and a transparency setting for the optional text. Both exist. The form decides which one to use, not the field.
 

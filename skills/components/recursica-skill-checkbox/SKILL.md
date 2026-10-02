@@ -50,7 +50,7 @@ The rules below describe each option by role, such as "the checked state". The n
 - **Read-only is a separate component.** The read-only field, `read-only-field` in the standard UI kit, shows text instead of inputs.
 - **Two label placements on the checkbox group.** The group label sits beside the checkbox items or above the checkbox items. Label placement is one decision for the whole field, so the variant belongs to the checkbox group. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`.
 
-**`layouts` is the label-placement variant, the same variant every field has.** `side-by-side` puts the group's label beside the stack of items; `stacked` puts it above. **It is not a variant for which way the items run.** Items are always stacked vertically — `recursica-skill-selection-controls` forbids a horizontal checkbox group outright — so `side-by-side` must never be read as "put the checkboxes in a row."
+**Label placement is a variant, the same variant every field has.** The group's label sits beside the stack of items or above the stack of items. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. **It is not a variant for which way the items run.** Items are always stacked vertically — `recursica-skill-selection-controls` forbids a horizontal checkbox group outright — so `side-by-side` must never be read as "put the checkboxes in a row."
 
 ## Rules
 
@@ -62,7 +62,7 @@ The rules below describe each option by role, such as "the checked state". The n
 
 **Stack checkbox items vertically. Never lay out checkbox items horizontally.** In a horizontal row of checkboxes, the user cannot easily tell which box belongs to which label. If the layout needs the options in a row, change the control to selectable chips.
 
-**Label placement is one decision per form, not per field.** This group's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
+**Label placement is one decision per form, not per field.** This group uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
 **Pre-select freely.** A checkbox group may start with no options, some options, or all options checked. No house rule limits pre-selection in a checkbox group. The radio group rule is the opposite.
 
@@ -148,7 +148,7 @@ The checkbox component pairs each box with the item label and provides the focus
 - [ ] Selecting one option never rules out another option, and no single-choice question is built as checkboxes.
 - [ ] The group holds at least two items, within 7 ± 2, and fewer where the options are hard to tell apart.
 - [ ] Items are stacked vertically. There is no horizontal group, and `side-by-side` is used only for label placement.
-- [ ] `layouts` matches every other field in the same form — one placement per form at any given breakpoint, with no mixing between fields or sections.
+- [ ] Label placement matches every other field in the same form, with one placement per form at each breakpoint and no mixing between fields or form sections.
 - [ ] `checkbox`, `checkbox-item`, and `checkbox-group` are used together. No form holds a bare `checkbox` without the item and the group.
 - [ ] The group has a real label, and every item has a real label. The group label never does an item label's job, and an item label never does the group label's job.
 - [ ] The group label is announced when focus enters the group.

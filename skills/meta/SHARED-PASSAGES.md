@@ -50,13 +50,13 @@ Passage:
 Starts with:
 
 ```text
-**`layouts` is the label-placement variant
+**Label placement is a variant
 ```
 
 Passage:
 
 ```text
-**`layouts` is the label-placement variant{|}.** `side-by-side` — the label beside the {field|control} — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**Label placement is a variant.** The label sits beside the {field|control} or above the {field|control}. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the {field|control} is the house default. The label above the {field|control} is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
 ```
 
 ## layouts-axis-group
@@ -64,13 +64,13 @@ Passage:
 Starts with:
 
 ```text
-**`layouts` is the label-placement variant
+**Label placement is a variant
 ```
 
 Passage:
 
 ```text
-**`layouts` is the label-placement variant, the same variant every field has.** `side-by-side` puts the group's label beside the {stack of items|stack of options|switches}; `stacked` puts it above.
+**Label placement is a variant, the same variant every field has.** The group's label sits beside the {stack of items|stack of options|switches} or above the {stack of items|stack of options|switches}. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`.
 ```
 
 ## label-placement-default
@@ -84,7 +84,7 @@ Starts with:
 Passage:
 
 ```text
-**Set label placement explicitly on every field.** An adapter's default may be `stacked`, which puts the label above the input at any container width and breaks the house rule. Set `layouts` to `side-by-side` to put the label beside the input, under the names the code uses for both.
+**Set label placement explicitly on every field.** An adapter's default may put the label above the input at every container width, which breaks the house rule. Set the label beside the input on every field, using the names the code uses for the variant and the option.
 ```
 
 ## one-placement-per-form
@@ -98,7 +98,7 @@ Starts with:
 Passage:
 
 ```text
-**Label placement is one decision per form, not per field.** This {field's|group's} `layouts` value is not a separate choice — it matches every other field in the same form{, whether they can be edited or not|}. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones {like this one |}that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
+**Label placement is one decision per form, not per field.** This {field|group} uses the same label placement as every other field in the form{, editable or not|}. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields {like this one |}that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 ```
 
 ## one-placement-checklist
@@ -106,13 +106,13 @@ Passage:
 Starts with:
 
 ```text
-- [ ] `layouts` matches every other field
+- [ ] Label placement matches every other field
 ```
 
 Passage:
 
 ```text
-- [ ] `layouts` matches every other field in the same form — one placement per form at any given breakpoint, with no mixing between fields or sections
+- [ ] Label placement matches every other field in the same form, with one placement per form at each breakpoint and no mixing between fields or form sections
 ```
 
 ## focus-and-placeholder
@@ -120,13 +120,13 @@ Passage:
 Starts with:
 
 ```text
-**Focus and placeholder are not variants.**
+**Never build a focus state or a placeholder state.**
 ```
 
 Passage:
 
 ```text
-**Focus and placeholder are not variants.** The component handles them: `placeholder-opacity` here, and the focused border through `globals.form.field.colors.border-selected`. Do not build them as states.
+**Never build a focus state or a placeholder state.** The component draws the focus border and the placeholder text.
 ```
 
 ## accessibility-baseline-pointer
