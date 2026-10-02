@@ -10,7 +10,7 @@ Betty has no BigQuery access and no Drive access, and she must not be given any.
 
 Where research exists, it reaches her through Claire — who holds one client's fence — as
 findings she quotes by id. That indirection is not a convenience. It is what lets a **single**
-Betty serve every client without ever being inside more than one client's data, and it is the
+Betty serve every client without ever being inside more than one client's data. It is also the
 reason she does not need the per-client instancing the research pipeline requires.
 
 **Giving Betty her own credentials to "simplify" this builds exactly what the fence exists to
@@ -27,12 +27,12 @@ grant to save a message.
 | `buzz-agents/agents/betty/SYSTEM_PROMPT.md` | the Buzz prompt |
 
 Both prompt files are generated from `agents/betty/SKILL.md` by
-`node scripts/build-agents.mjs`. Edit the source, not the artifact — the build overwrites it,
-and `--check` reports whether they have diverged.
+`node scripts/build-agents.mjs`. Edit the source, not the artifact. The build overwrites the
+artifact, and `--check` reports whether the two have diverged.
 
-**Barb is not optional.** Betty's review tiers assume she exists. Installing Betty
+**Barb is required.** Betty's review tiers assume she exists. Installing Betty
 without `barb`, `checker` and `feisty` leaves her with a prompt that describes a review she
-cannot run, which a user cannot tell apart from a review that found nothing.
+cannot run. A user cannot tell that missing review apart from a review that found nothing.
 
 ## The tokens that must be filled in
 
@@ -55,8 +55,8 @@ and guessing them would be wrong.
 
 ## Before pointing her at a public repository
 
-She writes commit messages, pull request bodies and issue bodies, and the repositories she
-files design-system gaps into are public even when the prototype fork is private. Her prompt
+She writes commit messages, pull request bodies and issue bodies. The repositories she
+files design-system gaps into are public, even when the prototype fork is private. Her prompt
 requires `buzz-agents/scripts/check-text-for-names.mjs` on every one of those before it is
-posted. That script reads a gitignored per-machine rules file, so **a pass on one machine does
-not prove the text is clean on another.** Treat it as a minimum check.
+posted. That script reads a gitignored rules file that differs per machine. **A pass on one machine
+does not prove the text is clean on another.** Treat it as a minimum check.

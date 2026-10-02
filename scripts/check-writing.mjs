@@ -6,6 +6,8 @@
  *   you        no "you" or "your" in skills and agent instructions, apart from an agent's
  *              identity line ("You are Betty, …"), code and quoted text
  *   phrase     none of the vague phrases WRITING.md lists under rule 3
+ *   grade      a Flesch-Kincaid grade below 10 (a 9th-grade reading level) in skills and agent
+ *              instructions
  *
  * Code, inline code and text in double quotes are skipped: they quote an interface, a value or
  * a bad example, and keep their own words. WRITING.md itself is skipped, because it has to quote
@@ -171,6 +173,52 @@ export function phrasesFound(text) {
   return PHRASES.filter((p) => p.test(t)).map((p) => p.source);
 }
 
+/** Rough syllable count, the usual vowel-group estimate. */
+function syllables(word) {
+  let w = word.toLowerCase().replace(/[^a-z]/g, "");
+  if (!w) return 0;
+  if (w.length <= 3) return 1;
+  w = w.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, "").replace(/^y/, "");
+  const groups = w.match(/[aeiouy]{1,2}/g);
+  return groups ? groups.length : 1;
+}
+
+/**
+ * Flesch-Kincaid grade of the prose. Front matter, headings, tables, code and quoted text are
+ * left out. Every other line counts as the end of a sentence, so a list item without a full stop
+ * is not merged into the next one. Sentences of one or two words are left out, so short labels
+ * do not pull the grade down.
+ */
+export function readingGrade(text) {
+  const lines = prose(text.replace(/^---\n[\s\S]*?\n---\n/, ""))
+    .replace(/<!--[\s\S]*?-->/g, "")
+    .split("\n")
+    .map((l) => l.trim())
+    .filter((l) => l && !/^(#|\||<)/.test(l))
+    .map((l) =>
+      l
+        .replace(/^(?:[-*]\s+(?:\[[ x]\]\s+)?|\d+\.\s+)/, "")
+        .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+        .replace(/[*_]/g, ""),
+    )
+    .map((l) => (/[.!?]$/.test(l) ? l : `${l.replace(/[:;]$/, "")}.`));
+  const sentences = lines
+    .join(" ")
+    .split(/[.!?]+(?=\s|$)/)
+    .map((s) => s.match(/[A-Za-z][A-Za-z'-]*/g) ?? [])
+    .filter((words) => words.length > 2);
+  const words = sentences.flat();
+  if (!words.length) return 0;
+  const syl = words.reduce((n, w) => n + syllables(w), 0);
+  return (
+    0.39 * (words.length / sentences.length) +
+    11.8 * (syl / words.length) -
+    15.59
+  );
+}
+
+export const GRADE_LIMIT = 10;
+
 function list(dir, pattern) {
   const out = [];
   const walk = (d) => {
@@ -196,13 +244,28 @@ export function files() {
       "agents",
       /^agents\/[^/]+\/(SKILL\.md|PORTING\.md|platform\/.+\.md|subagents\/[^/]+\/(SKILL\.md|platform\/.+\.md))$/,
     ),
+    ...handWrittenBuzzPrompts(),
     ...list("docs", /^docs\/CONTRIBUTING_[^/]+\.md$/),
     ...top,
   ];
 }
 
-/** Which rules "you" applies to: the knowledge and the agents, not the repo's own docs yet. */
-const youApplies = (f) => f.startsWith("skills/") || f.startsWith("agents/");
+/**
+ * A Buzz prompt with no source under agents/ is written by hand, so it is checked directly. A
+ * prompt built from agents/<name>/ follows its source.
+ */
+function handWrittenBuzzPrompts() {
+  return list(
+    "buzz-agents/agents",
+    /^buzz-agents\/agents\/[^/]+\/SYSTEM_PROMPT\.md$/,
+  ).filter((f) => !fs.existsSync(path.join(ROOT, "agents", f.split("/")[2])));
+}
+
+/** Which rules "you" and the grade apply to: the knowledge and the agents, not the repo's docs. */
+const youApplies = (f) =>
+  f.startsWith("skills/") ||
+  f.startsWith("agents/") ||
+  f.startsWith("buzz-agents/agents/");
 
 /** `<file>: <rule>` → why it is still open. */
 export const KNOWN = JSON.parse(
@@ -223,6 +286,14 @@ export function problemsIn(f, text) {
   }
   const ph = phrasesFound(text);
   if (ph.length) out.push({ rule: "phrase", detail: ph.join(", ") });
+  if (youApplies(f)) {
+    const g = readingGrade(text);
+    if (g >= GRADE_LIMIT)
+      out.push({
+        rule: "grade",
+        detail: `reading grade ${g.toFixed(1)}, above 9th grade`,
+      });
+  }
   return out;
 }
 

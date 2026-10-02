@@ -1,5 +1,5 @@
 <!--
-Platform fragment for Barb's checker on a plain session surface.
+Platform fragment for Barb's Feisty subagent on a plain session surface.
 
 There is no nest fragment and no nest target. Claire's subagents are per-client — each one is
 rendered with a dataset and a slug and belongs to one channel's deploy. Barb's are not: a reviewer

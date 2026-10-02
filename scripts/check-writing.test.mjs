@@ -7,6 +7,7 @@ import {
   youCount,
   phrasesFound,
   problemsIn,
+  readingGrade,
 } from "./check-writing.mjs";
 
 const SCRIPT = path.join(import.meta.dirname, "check-writing.mjs");
@@ -56,6 +57,20 @@ test("you is checked in skills and agents, not in the repository's own docs", ()
     problemsIn("agents/betty/SKILL.md", text).some((p) => p.rule === "you"),
   );
   assert.ok(!problemsIn("AGENT.md", text).some((p) => p.rule === "you"));
+});
+
+test("the reading grade rises with long sentences and long words", () => {
+  const plain = "Use a table. A badge holds one value. Keep the label short.";
+  const dense =
+    "Implementations necessitating comprehensive accessibility considerations invariably require substantially more sophisticated architectural deliberation than conventional alternatives.";
+  assert.ok(readingGrade(plain) < 5, String(readingGrade(plain)));
+  assert.ok(readingGrade(dense) >= 10, String(readingGrade(dense)));
+  assert.ok(
+    problemsIn("skills/components/x/SKILL.md", dense).some(
+      (p) => p.rule === "grade",
+    ),
+  );
+  assert.ok(!problemsIn("AGENT.md", dense).some((p) => p.rule === "grade"));
 });
 
 test("every covered file passes, apart from the logged gaps", () => {

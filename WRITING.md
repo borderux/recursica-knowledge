@@ -54,6 +54,7 @@ Name the specific component, action or result. A reader should be able to pictur
 
 ### 4. Short and direct
 
+- **Write at a 9th-grade reading level or lower.** Use short sentences and common words. The check fails a skill or agent file with a Flesch-Kincaid grade of 10 or higher. A low score does not prove a sentence is clear. A short sentence full of jargon still fails review.
 - **Cut every sentence that adds nothing.** Delete a sentence that repeats another, restates a rule in different words, or says that clear writing is good. Make a vague sentence specific, or delete it.
 - **Write complete sentences, with a subject and a verb.** Never open a document, a paragraph or a list item with a fragment such as "How everything is written:" or "How wide a panel is." A list item that names a topic uses a noun phrase: "Panel width."
 - **Lead with the rule.** The first sentence of a paragraph says what to do. The reason follows.
@@ -101,5 +102,6 @@ The repository is public. Follow `AGENT.md` on what never goes into a commit, a 
 - British spellings
 - "you" and "your" in skills and agent instructions, except an agent's identity line, code and quoted text
 - the phrases listed under rule 3
+- a Flesch-Kincaid grade of 10 or higher in a skill or agent file
 
 It cannot tell whether a sentence is vague, redundant or a fragment. Review catches those. When the check and this guide disagree, fix the check.
