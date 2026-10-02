@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-link
-description: Rules for the Recursica link — link versus button, labels that name the destination, external and download links, new tabs, never disabled, and link accessibility. Use for anything the user clicks to go somewhere. Not for actions that change data — see recursica-skill-button.
+description: Rules for the Recursica link — link versus button, labels that name the destination, external and download links, new tabs, never disabled, and link accessibility. Use for any text or control the user clicks to go to a different location. Not for actions that change data — see recursica-skill-button.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -9,113 +9,114 @@ metadata:
 
 # Link
 
-A link takes the user somewhere. It never changes data.
+A link takes the user to a different location. A link never changes data.
 
 ## When to use a link
 
-- **Using it changes the location** — another page, a section of this page, an outside website, or a file to download.
-- **The navigation sits inside a sentence** — a source, a definition, or a related object mentioned in text.
-- **The navigation stands on its own** — a menu, a footer, or a "view all" beside a heading.
-- **Leaving a table row for a related object.** A link has less visual weight than a button, which is what a dense table needs.
+- **The action changes the location.** The new location is another page, a section of the same page, an outside website, or a file to download.
+- **The link sits inside a sentence**, as a link to a source, a definition, or a related object the text mentions.
+- **The link stands apart from any sentence**, as in a menu, a footer, or a "view all" link beside a heading.
+- **The user goes from a table row to a related object.** A link has less visual weight than a button, and a dense table needs less visual weight in each table row.
 
 ## When not to use a link
 
-| Instead of a link                                | Use                                                          |
-| ------------------------------------------------ | ------------------------------------------------------------ |
-| Using it changes data or state                   | `recursica-skill-button`                                     |
-| The action must look lightweight                 | A button in the `text` style — not a link                    |
-| Opening a modal on the same page                 | A button. A modal is not a location                          |
-| The destination is unavailable right now         | Leave the link out, or explain why in text. Never disable it |
-| Switching between parts of one whole on one page | `recursica-skill-tabs` — which have their own routes         |
+| Situation                                                | Use instead                                                                                                                                               |
+| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The action changes data or state                         | A button. See `recursica-skill-button`.                                                                                                                   |
+| The action must have less visual weight                  | A button in the least prominent button style, such as `text` in the standard UI kit (the unchanged UI kit in the official Recursica release). Not a link. |
+| The control opens a modal on the same page               | A button. A modal is not a location.                                                                                                                      |
+| The destination is unavailable right now                 | Leave the link out, or explain in text why the destination is unavailable. Never disable the link.                                                        |
+| The user switches between parts of one whole on one page | Tabs. Tabs have separate routes. See `recursica-skill-tabs`.                                                                                              |
 
-**A link that changes state is the misuse to watch for.** Save, Delete, Close, and Apply are buttons, even when a link would look better.
+**The misuse to watch for is a link that changes state.** Save, Delete, Close, and Apply are buttons, even when a link would look better.
 
 ## Variants
 
-Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.link`.
+**Use only the link variants and options that the Recursica MCP server lists for the project.** A designer can add variants and options in Theme Forge, so each project can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
 
-| Variants | Options   |
-| -------- | --------- |
-| `states` | `visited` |
+The rules below describe each option by role. The names in the standard UI kit are examples only.
 
-**`visited` is the only state variant.** There is no size variant, no style variant, and no disabled state — the browser and the component own everything else.
-
-**Properties defined here:** `text`, `icon-size`, `icon-text-gap`, and `colors`. An icon may sit before or after the label; both positions are shown only on the design-system website.
-
-**Behavior shown only on the design-system website:** a link that navigates within the product, and an external link, which is marked as leaving the product.
+- **A visited state.** In the standard UI kit, the only state variant is `visited`.
+- **No size variant in the standard UI kit.** If the project adds a size variant in Theme Forge, use the project's size variant.
+- **No style variant in the standard UI kit.** If the project adds a style variant in Theme Forge, use the project's style variant.
+- **No disabled state.** The standard UI kit has no disabled state for a link. Never disable a link, even when the project adds a disabled state in Theme Forge. The user can always go to a related object. See the rules below.
+- **The browser and the link component set every other part of the link's look and behavior.** In the standard UI kit, the link component sets the text style, the icon size, the gap between the icon and the label, and the colors.
+- **An icon may sit before or after the label.** Only the design-system website shows the two icon positions.
+- **Only the design-system website shows two link behaviors.** One link goes to a location within the product. The other is an external link, marked as leaving the product.
 
 ## Rules
 
-**Always render a real `href`.** Not a click handler on text. A real `href` is what gives the user right-click, middle-click, opening in a new tab, copying the link address, and the browser's own preview of where the link goes — and it is what makes the link announce itself as a link.
+**Always give a link a real `href`, never a click handler on text.** A real `href` lets the user right-click, middle-click, open the link in a new tab, copy the link address, and see the browser's preview of the link's destination. A real `href` also makes the link announce itself as a link.
 
-**The label names the destination, with no verb.** "Billing settings" — not "Go to billing settings", and never "Click here" or "Learn more". What the user does once they arrive is up to them.
+**Write the label as the name of the destination, with no verb.** Write "Billing settings", not "Go to billing settings". Never write "Click here" or "Learn more". The user decides what to do after arriving at the destination.
 
-**The label must be unique, and make sense on its own.** Screen reader users bring up lists of links out of context; three links reading "View" tell them nothing.
+**Give each link a unique label that makes sense without the text around the link.** Screen reader users bring up lists of links without the text around each link. Three links that all say "View" tell a screen reader user nothing.
 
-**Never open a new tab automatically**, unless that is clearly the only possible behavior. The user chooses, with their own context menu or a modifier key.
+**Never open a new tab automatically**, unless a new tab is clearly the only possible behavior. The user chooses a new tab with the browser's context menu or a modifier key.
 
-**Mark an external link as external** — a behavior shown only on the design-system website — so the user knows they are leaving before they click. Which icon or wording shows this is not settled; see the open questions.
+**Mark an external link as external.** Only the design-system website shows the external link behavior. The mark tells the user, before clicking, that the link leaves the product. The icon or wording for the mark is not settled. See the open questions.
 
-**Never disable a link.** Going to a related object is always possible. If the destination should not exist for this user, do not show the link at all; see `recursica-skill-navigation`.
+**Never disable a link.** The user can always go to a related object. If the destination should not exist for the current user, do not show the link at all. See `recursica-skill-navigation`.
 
-**Do not use a link as a primary call to action (CTA — the main button or link that prompts the user's next step).** A prominent CTA that navigates is still a link, but its prominence comes from the layout — not from restyling the link to look like a button.
+**Do not use a link as a primary call to action (CTA, the main button or link that prompts the user's next step).** A prominent CTA that goes to a new location is still a link. The CTA's prominence comes from the layout, not from restyling the link to look like a button.
 
 ## Accessibility
 
 This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
 
-The component owns the underline, the color, and the focus ring. The application sets the markup, and a link built from the wrong element fails every kind of assistive technology at once.
+The link component provides the underline, the color, and the focus ring. The app sets the markup. A link built from the wrong element fails every kind of assistive technology at once.
 
 ### Screen readers
 
-- **It must be a real anchor (the HTML element for a link) with an `href`.** A `div` or `span` with a click handler is not announced as a link, does not appear in a screen reader's list of links, and cannot be reached by keyboard.
-- **The accessible name (the name a screen reader reads out for a control) must name the destination**, and must make sense when read completely out of context. This is why "Click here" is forbidden: in a list of links, it cannot be used.
-- **Two links with the same name must go to the same place.** Different destinations that share a label — "View" in every row — must be told apart, either in the name itself or through the row's context.
-- **An icon on the link is decorative and must be silent**, unless the icon is the only content — in that case, it must carry the name.
-- **If the link opens in a new tab or downloads a file, say so in the name or in text right next to it.** An unannounced switch of context is confusing for a screen reader user, who has no visual sign that the window changed.
-- **Never show "external" by color or icon alone** — `recursica-skill-system-conventions` requires a second channel (color, shape, position or text, each a separate signal).
+- **Every link must be a real anchor (the HTML element for a link) with an `href`.** A `div` or `span` with a click handler is not announced as a link, does not appear in a screen reader's list of links, and cannot be reached by keyboard.
+- **The accessible name (the name a screen reader reads out for a control) must name the destination**, and must make sense when read completely out of context. "Click here" is forbidden for that reason. In a list of links, a screen reader user cannot use a link named "Click here".
+- **Two links with the same name must go to the same destination.** Links to different destinations that share a label, such as "View" in every table row, must be told apart in the accessible name or through the row's context.
+- **An icon on a link is decorative and must be silent**, unless the icon is the link's only content. An icon that is the link's only content must have the accessible name.
+- **If a link opens in a new tab or downloads a file, say so in the accessible name or in text right next to the link.** A new tab or a download that nobody announces confuses a screen reader user. A screen reader user has no visual sign that the window changed.
+- **Never mark an external link by color or icon alone.** `recursica-skill-system-conventions` requires a second channel (color, shape, position or text, each a separate signal).
 
 ### Keyboard and non-mouse navigation
 
-- **Every link is a tab stop (a place the Tab key lands) because it has an `href`.** Do not remove it from the tab order, and never add a tabindex to force an order.
-- **Enter activates a link. Space does not** — that is how browsers work, and it is correct. A link that needs a Space handler is a button.
-- **Do not intercept the modifier keys.** Ctrl, Cmd, Shift, and middle-click must reach the browser, so the user stays in control of where the destination opens.
-- **A link that appears only on hover cannot be reached** by keyboard or by touch. Links inside text and in rows must stay visible.
-- **Focus must be visible on the link itself**, not only implied by the underline. Never hide the focus ring.
-- **After navigating, focus belongs at the start of the new content**, not left behind on the old page.
+- **Every link is a tab stop (a place the Tab key lands) because every link has an `href`.** Do not remove a link from the tab order. Never add a tabindex to force an order.
+- **Enter activates a link. Space does not.** Browsers activate a link with Enter only, and the browser behavior is correct. A link that needs a Space handler is a button.
+- **Do not intercept the modifier keys.** Ctrl, Cmd, Shift, and middle-click must reach the browser. The user then decides where the destination opens.
+- **A link that appears only on hover cannot be reached** by keyboard or by touch. Links inside text and in rows, such as table rows, must stay visible.
+- **Focus must be visible on the link**, not only implied by the underline. Never hide the focus ring.
+- **After navigation, focus belongs at the start of the new content**, not on the old page.
 
 ## Styling set by tokens
 
-Do not set or override any of these. The component sets them:
+**Do not set or override the link properties below.** The link component sets each property.
 
-- Text styling, including the underline and its behavior on hover.
-- `colors` per layer and per state, including `visited`.
+- Text styling (`text`), including the underline and the underline's behavior on hover.
+- `colors` per layer (a numbered background level, 0 to 3, that sets the colors of the components on that level) and per state, including `visited`.
 - `icon-size` and `icon-text-gap`.
 - The focus ring.
 
 ## Related skills
 
-- `recursica-skill-buttons-links` — link vs. button semantics, label copy, table row usage, new-tab behavior, modal triggers.
-- `recursica-skill-navigation` — routing, browser history, permissions, and where links belong in the app shell.
-- `recursica-skill-system-conventions` — never carry meaning in a single channel.
+- `recursica-skill-buttons-links` — link versus button, label wording, links in table rows, opening a link in a new tab, and buttons that open a modal.
+- `recursica-skill-navigation` — routes, browser history, permissions, and where links go in the app shell.
+- `recursica-skill-system-conventions` — never show a meaning in only one way.
 
 ## Open questions
 
-- **Which icon marks an external link**, and whether it is required or optional. `recursica-skill-icon-semantics` owns what icons mean, but names no symbol for this one.
-- **Download links** — whether the file type and size are shown, and where.
-- **Whether a link may have a size or emphasis style.** No variant exists for either.
-- **Links inside a paragraph in a table cell**, where a dense table and running text meet.
+- **The icon for an external link.** No rule says which icon marks an external link, or whether the icon is required or optional. `recursica-skill-icon-semantics` sets what icons mean, but names no icon for an external link.
+- **Download links.** No rule says whether a download link shows the file type and size, or where.
+- **A size or emphasis style for links.** The standard UI kit has no size variant and no emphasis style for links. No rule says whether a link may have either one. Ask about a size variant only when the project has no size variant. Ask about an emphasis style only when the project has no emphasis style.
+- **Links inside a paragraph in a table cell.** No rule covers a link in running text inside a dense table.
 
 ## Pre-flight checklist
 
-- [ ] Nothing that changes data or state is built as a link.
+- [ ] No action that changes data or state is built as a link.
 - [ ] Every link is a real anchor with a real `href`.
-- [ ] Every label names its destination, has no verb, and makes sense out of context.
-- [ ] No two links share a name while going to different places.
-- [ ] Nothing opens in a new tab automatically, and the modifier keys are not intercepted.
-- [ ] External and download links say so, and not by icon or color alone.
-- [ ] No link is disabled. Destinations that are unavailable are left out, or explained in text.
-- [ ] No link depends on hover to be visible, and the focus ring is intact.
-- [ ] Focus lands at the start of the new content after navigating.
-- [ ] Only `visited` is passed as a variant or state, and the styling the component owns comes from the component.
-- [ ] Open questions were asked about, not decided: which icon marks an external link, download links, a size or emphasis style for links, and links inside a paragraph in a table cell.
+- [ ] Every link label names the destination, has no verb, and makes sense out of context.
+- [ ] No two links share a name while going to different destinations.
+- [ ] No new tab opens automatically, and the modifier keys are not intercepted.
+- [ ] Every external link and every download link says so, and not by icon or color alone.
+- [ ] No link is disabled. Links to unavailable destinations are left out, or the text explains why the destination is unavailable.
+- [ ] No link appears only on hover, and the focus ring is intact.
+- [ ] After navigation, focus lands at the start of the new content.
+- [ ] Every variant and state is one the Recursica MCP server lists for the project, under the name the code uses, and no variant or option is invented.
+- [ ] The styling the link component sets comes from the link component.
+- [ ] Open questions were asked about, not decided: the icon for an external link, download links, a size or emphasis style for links, and links inside a paragraph in a table cell.
