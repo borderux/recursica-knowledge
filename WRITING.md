@@ -48,6 +48,8 @@ Quoted interface copy keeps the exact interface wording, such as a button label 
 | whatever it should look like    | even when the design shows a button                      |
 | if the link must look light     | when the link needs less visual weight                   |
 
+**Quote a token path only when the reader must use the token.** A skill lists token paths under "Styling set by tokens". Elsewhere, say what the reader does: write "**Never build a focus state.** The component draws the focus border.", not "**Focused is not a state.** It comes from `globals.form.field.colors.border-selected`."
+
 **Mention another component only when the reader needs that component.** Name another component when the reader should use that component instead, or when the rule depends on that component. Never compare in passing, as in "`placeholder-opacity` on this component, the same as on a text field". Write "`placeholder-opacity` sets the placeholder."
 
 **Never use "something", "somewhere", "anything", "the rest" or "whatever" in a rule.** Each one stands in for a specific noun. Find that noun.
