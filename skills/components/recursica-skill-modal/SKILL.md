@@ -54,7 +54,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **The one exception is replacing, not stacking.** A shared confirmation modal used across the application may appear after an action finishes inside another modal — but it appears in place of the first one, which goes away as the new one appears. Never on top. This is not ideal. It exists because secondary modals get reused. Owned by `recursica-skill-panels-modals`.
 
-**Never put a form in a card inside a modal**, and do not wrap the modal's own content in a card. The modal is already the boundary; see `recursica-skill-card`.
+**Never put a form in a card inside a modal**, and do not wrap the modal's own content in a card. The modal is the boundary; see `recursica-skill-card`.
 
 **A modal that scrolls is a warning sign.** The scroll divider exists for content that sometimes runs long — not as permission to put a whole page inside a dialog.
 

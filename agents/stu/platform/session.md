@@ -16,7 +16,7 @@ Buzz version needs a whole paragraph explaining why the app cannot look up a cha
 Off Buzz there is no roster to look up, so that paragraph is deleted rather than translated.
 
 One safety rule is added here rather than carried over, because it has no Buzz equivalent: on
-Buzz the slug and project reach Stu through the launcher the operator already configured, but
+Buzz the slug and project reach Stu through the launcher the operator configured, but
 in a session Stu can see `stu.env` and could "helpfully" supply a value from it or from memory.
 A project id or slug he guessed belongs to a different client. Same rule as Claire's
 never-pre-fill-a-config-value, at Stu's scale.

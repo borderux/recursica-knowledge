@@ -52,7 +52,7 @@ It is narrow:
 | One object's properties                             | A detail view or a form                                               |
 | A form, a form section, or a single form control    | Nothing. **Never a card** — see below                                 |
 | A region of a page that needs to look like one unit | White space and type hierarchy. No box                                |
-| Wrapping a chart or a table "to contain it"         | Nothing. The chart or table is already an object                      |
+| Wrapping a chart or a table "to contain it"         | Nothing. The chart or table is an object                              |
 | A list of names or files that are all alike         | A list                                                                |
 | An object too complex to summarize                  | A page of its own, not a taller card                                  |
 

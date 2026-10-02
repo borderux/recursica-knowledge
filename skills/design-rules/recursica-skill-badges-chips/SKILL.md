@@ -11,7 +11,7 @@ metadata:
 
 These are the house rules for deciding whether something is a badge or a chip, how many of them an object may carry, and where they sit. They are opinions, not neutral best practices. Treat them as constraints.
 
-These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The components already handle badge and chip styling, sizing, and hover and focus states. The decisions left are which component to use, how many, and where.
+These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The components handle badge and chip styling, sizing, and hover and focus states. The decisions left are which component to use, how many, and where.
 
 ## Governing principles
 
@@ -52,7 +52,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **So the default is an icon.** It shows the same fact while drawing far less attention, and it keeps the badge for what must be noticed. `recursica-skill-icon-semantics` owns the icon and its meaning.
 
-**Use a badge for:** the object's one main status, when the reader's next decision depends on it, and when a word rather than a symbol is what makes it clear. One per object, as principle 2 already requires.
+**Use a badge for:** the object's one main status, when the reader's next decision depends on it, and when a word rather than a symbol is what makes it clear. One per object, as principle 2 requires.
 
 **Do not use a badge for:** a rare exception or warning, a role or type that is an ordinary field value, a count, or anything that appears on most rows. Those should be an icon, a column, or plain text.
 
@@ -105,7 +105,7 @@ The status must sit where a reader sees at once which object it belongs to. Colu
 
 ## Placement in cards
 
-**The card component already places the badge in the upper right corner**, on the opposite side of the card from the heading. Do not invent a different position.
+**The card component places the badge in the upper right corner**, on the opposite side of the card from the heading. Do not invent a different position.
 
 **Chips belong in the card's content area.**
 

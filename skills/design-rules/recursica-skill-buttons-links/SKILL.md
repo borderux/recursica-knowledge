@@ -11,7 +11,7 @@ metadata:
 
 These are the house rules for deciding whether a trigger is a button or a link, how to label it, and how several triggers on one surface (a region that holds content, such as a page, panel, or modal) rank against each other. They are opinions, not neutral best practices. Treat them as constraints.
 
-These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The components already handle how buttons and links look, their focus states, how the external-link icon is styled, and the markup that makes a link styled as a button accessible. This skill decides which component to use, what the label says, and which action ranks first.
+These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The components handle how buttons and links look, their focus states, how the external-link icon is styled, and the markup that makes a link styled as a button accessible. This skill decides which component to use, what the label says, and which action ranks first.
 
 **A button label is a verb plus an object — `Save form`. A navigation label is the object alone — `Forms`.** In terms of wording, that split is the whole difference. The naming side of it is owned by `recursica-skill-naming-terminology`.
 

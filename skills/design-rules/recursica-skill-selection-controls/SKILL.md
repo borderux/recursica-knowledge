@@ -104,14 +104,14 @@ Work down this list; the first match wins.
 
 **MUST arrange checkboxes and radio buttons vertically. NEVER horizontally.** A horizontal arrangement is hard to scan, and it is hard to tell which control belongs to which label — the pairing between each control and its value stops being clear. The system should never produce a horizontal checkbox or radio group.
 
-**When the layout calls for a horizontal arrangement, change the control instead of turning the group sideways:**
+**When the layout calls for a horizontal arrangement, change the control instead of laying the group out in a row:**
 
 | Need                                        | Horizontal control                                                    |
 | ------------------------------------------- | --------------------------------------------------------------------- |
 | Single select (options rule each other out) | **Segmented control** — this is how horizontal radio buttons are done |
 | Multi-select                                | **Selectable chips**                                                  |
 
-Both keep the edge of each value visible, which is exactly what a sideways radio or checkbox group loses. All the other rules still apply — the limit on the number of options, care with pre-selection for single select, and how saving works.
+Both keep the edge of each value visible, which is exactly what a radio or checkbox group laid out in a row loses. All the other rules still apply — the limit on the number of options, care with pre-selection for single select, and how saving works.
 
 **The segmented control is limited to 2–5 options**, tighter than the general 7 ± 2 limit, because it is horizontal and compact. Above five, go back to a vertical radio group — or a dropdown, if the set is also over the general limit. Never fall back to tabs.
 

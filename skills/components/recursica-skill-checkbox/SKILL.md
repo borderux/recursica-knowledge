@@ -165,10 +165,10 @@ Do not add margins or spacer elements between items or between the group and its
 - [ ] Selection rules are in assistive text passed through the component, and the required state is available in code.
 - [ ] Select all appears only where the group is long, and clicking an indeterminate header checkbox selects all.
 - [ ] Row checkboxes in a table name their row, and the header checkbox names what it selects.
-- [ ] Space toggles the box, every checkbox is its own tab stop, arrow keys do not move focus between items, and the library's key handling is not overridden.
+- [ ] Space toggles the box, every checkbox is its own tab stop, arrow keys do not move focus between items, and key handling comes from the library.
 - [ ] Clicking the item label toggles the box.
 - [ ] Focus is never moved for the user, including when a checkbox reveals fields below.
 - [ ] Disabled is used only for options that are unavailable for now, with the reason in text. Values that can never be edited use the read-only field.
-- [ ] Only variants, sizes, and states from the inventory above are used, and no property the component owns is overridden.
+- [ ] Only variants, sizes, and states from the inventory above are used, and every property the component owns comes from the component.
 - [ ] The group saves with the form, in the same save mode as everything else in the system.
 - [ ] Uncovered items were asked about, not decided: the group error state, the multi-select dropdown, where a select-all control sits, limits on selection, and nesting depth.

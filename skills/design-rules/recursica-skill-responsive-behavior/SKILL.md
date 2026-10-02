@@ -23,7 +23,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 **These are questions to ask at the start, not during review.** They change the navigation pattern, so they have to be answered before it is chosen. Having to fix it afterward is the failure this prevents.
 
-1. **How likely is it that a tablet or a phone will be a main way people use this?** Desktop is already assumed. If these other situations are real, they get built in from the beginning.
+1. **How likely is it that a tablet or a phone will be a main way people use this?** Desktop is assumed. If these other situations are real, they get built in from the beginning.
 2. **What does "responsive" mean to this client?** There are three different promises hiding behind the word, and they cannot be swapped for each other:
    - **It does not break.** Content reflows, but nothing beyond that was checked.
    - **It is a designed, checked experience** on the smaller size.
@@ -87,25 +87,25 @@ A breakpoint is the screen width at which the layout changes. There are three ti
 
 **MUST NOT adopt iOS or Android interaction patterns.** The iOS sheet (a panel that slides up from the bottom on iPhones) is the specific case. It does not exist on Android, and to someone who does not use that platform, it is confusing, not familiar. It is a habit learned on one platform, not an established best practice.
 
-**Keep the same interaction patterns the desktop application uses.** Recursica does not introduce new patterns just for a small device, an operating system, or the programming language it is written in.
+**Keep the same interaction patterns the desktop application uses.** Recursica does not introduce new patterns only for a small device, an operating system, or the programming language it is written in.
 
 **The exception is a mobile-first native product**, which would be a very specific thing to be building. Recursica is focused on web applications, not native apps — so unless someone clearly says otherwise, this exception does not apply.
 
 ## Horizontal scrolling
 
-**Avoid sideways scrolling wherever possible**, at every width.
+**Avoid horizontal scrolling wherever possible**, at every width.
 
-**The one component with a valid reason to move sideways is a carousel** (a row of items the user swipes or clicks through sideways), which is used far more on mobile than on desktop.
+**The one component with a valid reason to scroll horizontally is a carousel** (a row of items the user swipes or clicks through horizontally), which is used far more on mobile than on desktop.
 
 **Where content does run past the edge, it MUST be hinted at.** Show items partly cut off at the side, so the user can see that there is more to scroll to. That kind of hint, sometimes called scent, is what makes the interaction discoverable. If content stops exactly at the edge, the user cannot see that more exists.
 
-**Nothing else was found to need sideways scrolling.**
+**Nothing else was found to need horizontal scrolling.**
 
 ## Tables
 
 **A complex data table is not shown below tablet size.** There is too much data for the space.
 
-**That is why the question of sideways scrolling does not come up for tables** — the table is not there to scroll. Do not solve a narrow table by making it swipeable; solve it by not putting it there. See `recursica-skill-tables`, which forbids sideways scrolling in a table at any width.
+**That is why the question of horizontal scrolling does not come up for tables** — the table is not there to scroll. Do not solve a narrow table by making it swipeable; solve it by not putting it there. See `recursica-skill-tables`, which forbids sideways scrolling in a table at any width.
 
 ## Touch and input
 
@@ -117,7 +117,7 @@ A breakpoint is the screen width at which the layout changes. There are three ti
 
 **Whether touch targets get bigger on smaller devices is a decision for each design**, not a system rule.
 
-**Interactions that depend on hover must have a way to work without hover**, because a touch device has no hover at all. This is already absolute in `recursica-skill-system-conventions` — nothing may be reachable by hover alone.
+**Interactions that depend on hover must have a way to work without hover**, because a touch device has no hover at all. This is absolute in `recursica-skill-system-conventions` — nothing may be reachable by hover alone.
 
 ## Navigation below desktop
 
@@ -167,7 +167,7 @@ There are two good signs. A narrow layout with neither was not designed:
 - **An icon rail on tablet specifically.** It was suggested as a middle option and pushed back on. The ban on icon-only navigation stands, so there is no approved tablet rail.
 - **How the layout grid behaves across tiers**, and how many columns there are at tablet and small-device sizes.
 - **Which components have a defined look below desktop at all.** Only the panel, the table, and the swap from cards to a carousel were named.
-- **Whether a carousel exists in the component inventory.** It is named as the approved sideways-moving component and as the mobile replacement for cards — confirm it exists before planning around it.
+- **Whether a carousel exists in the component inventory.** It is named as the approved horizontally scrolling component and as the mobile replacement for cards — confirm it exists before planning around it.
 - **What tablet behavior looks like between the two thresholds.** Rules are stated for below tablet and for small devices, but tablet itself is mostly not described.
 - **Whether the tablet and small-device tiers each get their own design**, or one narrow design serves both.
 
@@ -183,7 +183,7 @@ There are two good signs. A narrow layout with neither was not designed:
 - [ ] Adaptation is based on the viewport width, never on the container width.
 - [ ] Panels open as pages below tablet size. Modals where work is done become pages, while confirmations stay modals.
 - [ ] There is no iOS or Android pattern, and no interaction pattern exists only below desktop.
-- [ ] There is no sideways scrolling except in a carousel, and any content past the edge is hinted at with items shown partly cut off.
+- [ ] There is no horizontal scrolling except in a carousel, and any content past the edge is hinted at with items shown partly cut off.
 - [ ] No complex data table appears below tablet size.
 - [ ] One main input method applies across the whole application, and nothing is reachable by hover alone.
 - [ ] Global navigation collapses into a hamburger menu that shows the icon and the text. There is no icon-only rail and no bottom navigation bar at any width.

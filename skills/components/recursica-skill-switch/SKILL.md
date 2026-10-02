@@ -72,7 +72,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **If the system's switches save immediately, the page must show a save status that stays on the page.** Saving field by field requires that status. Saving everything together requires the opposite: no save status, and no indicator of unsaved changes. See the save-mode table in `recursica-skill-forms`.
 
-**Never mix instant saving with saving everything together.** Either everything saves when it changes, or everything saves on submit — across the whole system, not just within one form.
+**Never mix instant saving with saving everything together.** Either everything saves when it changes, or everything saves on submit — across the whole system, not only within one form.
 
 **Put the rule or the consequence in assistive text**, below the switch, through `recursica-skill-assistive-element`. If flipping it changes something the user cannot see, say so there.
 

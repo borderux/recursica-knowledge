@@ -20,16 +20,16 @@ A radio group is one label with several values, of which exactly one may be sele
 
 ## Do not use it when
 
-| Instead of a radio group                                      | Use                                                                                        |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Zero through N options may be selected                        | `recursica-skill-checkbox`                                                                 |
-| The value is binary, and its opposite is known and unique     | `recursica-skill-switch` — see the binary-inverse test in the design rules                 |
-| There are more options than the limit                         | `recursica-skill-dropdown` (single select)                                                 |
-| The user must type to find the value in a large, familiar set | `recursica-skill-autocomplete`                                                             |
-| The options must sit in a row                                 | `recursica-skill-segmented-control`. Never turn a radio group sideways, and never use tabs |
-| Nothing has to be chosen at all                               | Check whether it is a choice of one — see the design rules                                 |
-| The user is choosing an action rather than setting a value    | `recursica-skill-button`                                                                   |
-| This user can never edit the value                            | `recursica-skill-read-only-field` — shows the label and text, with no input                |
+| Instead of a radio group                                      | Use                                                                                           |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Zero through N options may be selected                        | `recursica-skill-checkbox`                                                                    |
+| The value is binary, and its opposite is known and unique     | `recursica-skill-switch` — see the binary-inverse test in the design rules                    |
+| There are more options than the limit                         | `recursica-skill-dropdown` (single select)                                                    |
+| The user must type to find the value in a large, familiar set | `recursica-skill-autocomplete`                                                                |
+| The options must sit in a row                                 | `recursica-skill-segmented-control`. Never lay a radio group out in a row, and never use tabs |
+| Nothing has to be chosen at all                               | Check whether it is a choice of one — see the design rules                                    |
+| The user is choosing an action rather than setting a value    | `recursica-skill-button`                                                                      |
+| This user can never edit the value                            | `recursica-skill-read-only-field` — shows the label and text, with no input                   |
 
 **Never use checkboxes for options that rule each other out.** A checkbox means "select as many as apply", by definition. Checkboxes let the user submit two answers to a question that has one. There is no exception.
 

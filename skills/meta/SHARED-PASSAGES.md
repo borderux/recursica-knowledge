@@ -25,7 +25,7 @@ Each passage below has three parts:
   real reason — "this field's" and "this group's", or a component that has no `formLayout` prop.
 
 **When a skill needs different wording**, do not add another `{…|…}` to fit it. If its situation
-really is different, write its own paragraph with an opening that is not listed here — as the
+is different, write its own paragraph with an opening that is not listed here — as the
 label, panel, and stepper skills do for label placement. If it is not, use the passage.
 
 **When the wording should change**, change it here and in every copy in the same pull request.

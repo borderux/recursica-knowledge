@@ -147,6 +147,6 @@ Do not set or override any of these. The component sets them for every combinati
 - [ ] A button in flight is the disabled look with an animated icon — no spinner beside it, no swapped label, no invented state — and it neither moves nor resizes.
 - [ ] A busy button announces that it is busy, keeps the same name, can still receive focus, and respects reduced motion.
 - [ ] Every variant, size, and state passed is in the inventory above, and there is no invented destructive style.
-- [ ] No styling the component owns is overridden, and the focus ring is intact.
+- [ ] Styling comes from the component, and the focus ring is intact.
 - [ ] Any disabled button has its reason in text, and actions the user has no permission for are missing, not disabled.
 - [ ] Uncovered items were asked about, not decided: when `small` is the correct size, whether a full-width button is allowed, which icon marks a button in flight, split buttons and button groups, and how the disabled state is set.

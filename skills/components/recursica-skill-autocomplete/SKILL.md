@@ -195,6 +195,6 @@ Never style an unfocused field so that it looks disabled. An editable field must
 - [ ] Focus is never moved for the user, including when the filter narrows down to one result.
 - [ ] Nothing needed requires hover or a pointer. The focus ring is intact, and looks different from the active and selected option styles.
 - [ ] Disabled is used only for fields that are unavailable for now, with the reason in text. Values that can never be edited use the read-only field.
-- [ ] Every variant, size, and state passed is in the inventory above, no property the component owns is overridden, and no field without focus looks disabled.
+- [ ] Every variant, size, and state passed is in the inventory above, every property the component owns comes from the component, and every field without focus looks editable, not disabled.
 - [ ] The field saves with the form, in the same save mode as everything else in the system.
 - [ ] Uncovered items were asked about, not decided: the replacement threshold, free text, how many characters to type, match order, no results, loading, multi-select, and list details.

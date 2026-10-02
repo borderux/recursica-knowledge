@@ -11,7 +11,7 @@ metadata:
 
 These are the house rules for what the application says back to the user after they act, and while they wait. They are opinions, not neutral best practices — treat them as constraints.
 
-These rules assume **complex enterprise web applications, designed for desktop first**, built on a design system whose components are already accessible. The channel (the form a message takes: a toast, a banner or a modal) and the content are design decisions. The timing mostly is not.
+These rules assume **complex enterprise web applications, designed for desktop first**, built on a design system whose components are accessible. The channel (the form a message takes: a toast, a banner or a modal) and the content are design decisions. The timing mostly is not.
 
 ## The three governing principles
 

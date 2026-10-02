@@ -32,7 +32,7 @@ Analyst's "never regenerate."
 The input is **raw tagged transcript lines across a whole population**, not Analyst's
 per-interview write-up, so provenance starts here: extract cited observations first (Pass 0),
 then cluster (Pass 1), then synthesize (Pass 2). Every persona attribute traces back through an
-extracted observation to a specific line, the same citation shape `write_finding` already checks —
+extracted observation to a specific line, the same citation shape `write_finding` checks —
 one grounding contract across both agents.
 
 Percy is the designated **synthesis** step. Unlike Analyst, which must not draw conclusions across

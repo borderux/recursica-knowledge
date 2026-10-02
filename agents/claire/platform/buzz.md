@@ -82,11 +82,11 @@ for:
 ```
 
 Check before handing over the long template: `client-config.mjs resolve` on their existing
-channel prints what is already recorded.
+channel prints what is recorded.
 
 ## config-bq-project
 
-- **bq_project** — already filled in above, the same for every channel.
+- **bq_project** — filled in above, the same for every channel.
 
 ## preflight-trigger
 

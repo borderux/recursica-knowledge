@@ -11,7 +11,7 @@ metadata:
 
 These are the house rules for charts in enterprise applications. They are opinions, not neutral best practices. Treat them as constraints.
 
-These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The color palette and component styling are already handled. The decisions left to make are whether to visualize at all, which chart to use, what the axes do, what gets labeled, and what the user can interact with.
+These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The color palette and component styling are handled. The decisions left to make are whether to visualize at all, which chart to use, what the axes do, what gets labeled, and what the user can interact with.
 
 ## Read this first: charts come from a library, not from Recursica
 
@@ -31,7 +31,7 @@ Judge the options against this application, not by how popular they are:
 - **Truly open source**, under a permissive license — MIT, Apache 2.0, or BSD.
 - **Built for React first**, rather than an older library with a thin React wrapper that conflicts with how React draws the page.
 - **Themeable from the outside**, so series colors, axes, and gridlines can be driven by Recursica tokens. A library that insists on its own palette cannot meet the color rules below.
-- **No competing theme provider.** A library that brings its own theme settings and expects to control the color scheme is how a page ends up only half themed — the same problem already seen between the Recursica and Mantine layers.
+- **No competing theme provider.** A library that brings its own theme settings and expects to control the color scheme is how a page ends up only half themed — the same problem seen between the Recursica and Mantine layers.
 - **Exposes settings for what these rules require**: a zero baseline, linear scales, axis labels, and pattern or texture in addition to color. A library whose defaults are decorative — 3D effects, gradient fills, animated pie charts — will conflict with every rule below.
 - **Reasonable in size.** These are dense data screens that people use all day. Downloading a large library for one chart is a poor trade.
 - **Accessible output, or output that works alongside a data table.** The rule requiring an accompanying data table is not optional, so the chart does not have to solve accessibility on its own — but it must not actively block it.

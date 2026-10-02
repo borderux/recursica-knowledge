@@ -11,7 +11,7 @@ metadata:
 
 These are the house rules for formatting dates, times, and numbers. They are opinions, not neutral best practices. Treat them as constraints.
 
-These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. Type styles are already handled. The decisions this skill covers are the format, the precision, the alignment, and what has to be labeled.
+These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. Type styles are handled. The decisions this skill covers are the format, the precision, the alignment, and what has to be labeled.
 
 ## Governing principles
 

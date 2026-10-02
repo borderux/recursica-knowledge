@@ -111,7 +111,7 @@ And how to fill in each one:
   `https://drive.google.com/drive/folders/`**`1AbCdEf...`**
 - **bq_dataset** — the BigQuery dataset created for this client. Whoever made it in the console
   knows it; it is also visible under the project in BigQuery's left sidebar.
-- **bq_project** — already filled in above, the same for every client.
+- **bq_project** — filled in above, the same for every client.
 
 ## Before any work: confirm the setup
 

@@ -11,7 +11,7 @@ metadata:
 
 These are the house rules for designing forms. They are opinions, not neutral best practices — treat them as constraints, not suggestions.
 
-These rules assume **complex enterprise web applications, designed for desktop first**, built on a design system whose components are already accessible and correctly styled. The design system decides the visual design of each component. These rules cover how the form is put together: field order, states and wording.
+These rules assume **complex enterprise web applications, designed for desktop first**, built on a design system whose components are accessible and correctly styled. The design system decides the visual design of each component. These rules cover how the form is put together: field order, states and wording.
 
 **Spacing is decided elsewhere too.** The spacing between fields and between sections is built into the form field components themselves. Do not add custom margins, padding, or spacer elements between fields to adjust the vertical rhythm — put the components together and let them set the spacing.
 

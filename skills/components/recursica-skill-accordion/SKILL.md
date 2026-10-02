@@ -78,7 +78,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **Nothing on the critical path goes inside a panel.** If the user must read it to move forward, it is not content that can be collapsed.
 
-**Do not wrap the panel's content in a card**, and do not wrap the accordion in one. The item already marks the boundary of its content — see `recursica-skill-card`.
+**Do not wrap the panel's content in a card**, and do not wrap the accordion in one. The item marks the boundary of its content — see `recursica-skill-card`.
 
 **Keep the set easy to scan.** Above about nine headers, the list can no longer be taken in at a glance; see `recursica-skill-working-memory` for what that limit is and is not.
 
@@ -160,5 +160,5 @@ The chevron, its rotation, and the per-appearance colors come with the component
 - [ ] Collapsed panel content is removed from the accessibility tree and the tab order, not only hidden.
 - [ ] Focus never moves on toggle, nothing opens on hover, and the focus ring is intact.
 - [ ] Every variant, size, and state comes from the four specs above, and no header has an invented disabled appearance.
-- [ ] The padding, gaps, dividers, and colors the component owns are not overridden.
+- [ ] Padding, gaps, dividers, and colors come from the component.
 - [ ] Uncovered items were asked about, not decided: whether opening one item closes the others, whether the divider can be hidden, an item the user cannot open, animation when a panel opens or closes, linking directly to a panel, and an accordion inside a table row.

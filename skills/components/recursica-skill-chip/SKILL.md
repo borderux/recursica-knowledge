@@ -14,7 +14,7 @@ A chip is one of several short values the user can see, select, or remove.
 ## Use it when
 
 - **The values are plural.** Several tags, several categories, several applied filters on one object.
-- **The layout calls for a horizontal multi-select.** Use selectable chips for it. Never lay a checkbox group out sideways in a row.
+- **The layout calls for a horizontal multi-select.** Use selectable chips for it. Never lay a checkbox group out in a horizontal row.
 - **The user filters or narrows things down** by turning options on and off.
 - **The user added the values**, and may take them off again.
 
@@ -136,5 +136,5 @@ Do not set or override any of these. The component sets them:
 - [ ] Chips and close controls can be used from the keyboard, and nothing depends on hover.
 - [ ] Focus is moved on purpose after a removal.
 - [ ] No chip is passed a state other than `selected` or `unselected`, or any size or style prop.
-- [ ] No styling that the component owns is overridden.
+- [ ] Styling comes from the component.
 - [ ] Uncovered items were asked about, not decided: whether a chip may be disabled, overflow, select-all or clear-all, and a chip that opens a menu.

@@ -78,7 +78,7 @@ Most feedback is not a new rule. Work out which of these it is before writing an
 
 **Write what it should be as an instruction, not a preference.** "Labels sit above the field in a panel", not "I'd rather see labels on top here." If the feedback is phrased as a preference, work out the general rule. If the general rule cannot be worked out, ask.
 
-If feedback contradicts something already in the skills, do not overwrite the rule without saying so and do not argue the feedback away. Propose the change as a pull request that names the rule it replaces, as below, and let the owner decide. Do not over-fit to the most recent or the most emphatic comment — say how much evidence there is.
+If feedback contradicts something in the skills, do not overwrite the rule without saying so and do not argue the feedback away. Propose the change as a pull request that names the rule it replaces, as below, and let the owner decide. Do not over-fit to the most recent or the most emphatic comment — say how much evidence there is.
 
 ## Making a change
 
@@ -94,7 +94,7 @@ If feedback contradicts something already in the skills, do not overwrite the ru
 
 ### Default to a pull request
 
-**The design-system owner would rather review, edit and merge a proposal than wait on a question.** So when feedback says what should be true, propose it — from the owner or from any designer, even where it settles an item the skill lists as `## Uncovered`, and even where it overturns a rule that already exists.
+**The design-system owner would rather review, edit and merge a proposal than wait on a question.** So when feedback says what should be true, propose it — from the owner or from any designer, even where it settles an item the skill lists as `## Uncovered`, and even where it overturns an existing rule.
 
 The pull request makes the case, because the owner is deciding from it:
 
@@ -102,7 +102,7 @@ The pull request makes the case, because the owner is deciding from it:
 - **What it changes.** If it overturns an existing rule, quote the rule it replaces and say plainly that it does. If it settles an Uncovered item, remove that item in the same change.
 - **How strong the evidence is** — one comment on one screen, or the same correction across several reports. A proposal from a single comment is still worth making; say that it is one.
 
-**Open an issue only when there is nothing to propose** — the feedback names a problem without saying what should be true, and any change written would be Alan's invention rather than their direction. Then open an issue on `{{KNOWLEDGE_REPO_NAME}}` with the skill involved, the problem, what the skills say now, and two or three real options with what each would mean. Check the open issues first and add the evidence to one that already covers it.
+**Open an issue only when there is nothing to propose** — the feedback names a problem without saying what should be true, and any change written would be Alan's invention rather than their direction. Then open an issue on `{{KNOWLEDGE_REPO_NAME}}` with the skill involved, the problem, what the skills say now, and two or three real options with what each would mean. Check the open issues first and add the evidence to one that covers it.
 
 **This judgment matters most: a pull request carries a direction someone gave, and never a rule made up to make feedback go away.** An invented rule has all the authority of a real one and none of the agreement behind it, and the next reviewer will enforce it.
 

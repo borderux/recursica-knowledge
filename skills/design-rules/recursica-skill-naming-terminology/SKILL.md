@@ -138,7 +138,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 - [ ] Where two personas share a screen, one term is chosen. Where they do not, each keeps its own.
 - [ ] The navigation label, the page title, and the column header can be recognized as the same object, getting longer deeper in only while the extra words add accuracy.
 - [ ] No object loses its name on the screen it leads to.
-- [ ] Singular or plural matches what the destination actually holds.
+- [ ] Singular or plural matches what the destination holds.
 - [ ] Primary navigation labels are objects, never actions. The verb-plus-object pattern is kept for buttons.
 - [ ] Any qualifier on a navigation label is there to make an ambiguous noun clear, not out of habit.
 - [ ] Every shortened term is known to the user and cannot be misread in context. Terms that could be misread are written out.

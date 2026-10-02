@@ -11,7 +11,7 @@ metadata:
 
 These are the house rules for deciding where a task lives: in a panel beside the page, in a modal over it, or on a page of its own. They are opinions, not neutral best practices — treat them as constraints.
 
-These rules assume **complex enterprise web applications, designed for desktop first**, built on a design system whose components are already accessible. Choose which surface (a region that holds content, such as a page, panel, or modal) a task belongs on. What that surface looks like is set by the components, not chosen here.
+These rules assume **complex enterprise web applications, designed for desktop first**, built on a design system whose components are accessible. Choose which surface (a region that holds content, such as a page, panel, or modal) a task belongs on. What that surface looks like is set by the components, not chosen here.
 
 ## The three governing principles
 
@@ -70,7 +70,7 @@ The viewport is the visible area of the browser window. A breakpoint is the scre
 
 ## Scrolling
 
-**A panel MUST NEVER scroll sideways.** There is no exception, whatever the content. A sideways scrollbar inside a panel means the content does not belong in a panel — not that it needs a scrolling area.
+**A panel MUST NEVER scroll horizontally.** There is no exception, whatever the content. A horizontal scrollbar inside a panel means the content does not belong in a panel — not that it needs a scrolling area.
 
 **Scrolling up and down is the sign that the work belongs on a page.** Content that makes the user scroll down shows that too much is going on in there. Once it is more than the panel holds on a screen of normal resolution, move it to a page.
 
@@ -122,7 +122,7 @@ Hard work can properly live in a panel: a task with a high mental load may _need
 
 ## What a panel's content looks like
 
-**NEVER put a table inside a panel.** A panel is narrow and a table needs width. The result either scrolls sideways, which is absolutely forbidden, or cuts every column down until it is useless. Where a panel needs to show several records, or several attributes of one record, they become groups of stacked fields, not rows and columns.
+**NEVER put a table inside a panel.** A panel is narrow and a table needs width. The result either scrolls horizontally, which is forbidden without exception, or cuts every column down until it is useless. Where a panel needs to show several records, or several attributes of one record, they become groups of stacked fields, not rows and columns.
 
 **Repeating structures inside a panel are groups of stacked fields.** One group for each item, with each field on its own line under its label. A narrow surface has room for one field per line.
 
@@ -200,7 +200,7 @@ A panel exists to sit beside the page it depends on. Below the width where both 
 - [ ] Every modal exists because the user must interact or decide there before continuing.
 - [ ] The work in every panel depends on the page beside it, or the page depends on the panel's work.
 - [ ] No form that adds to or edits the collection on the page sits inline beside it. Each one opens in a modal or panel, so that closing the surface is what confirms the list changed.
-- [ ] No panel scrolls sideways, under any circumstances.
+- [ ] No panel scrolls horizontally, under any circumstances.
 - [ ] Nothing in a panel causes scrolling up and down. Content that did is on a page.
 - [ ] Every panel is flush against the left or right edge of the viewport and runs full height, from top to bottom.
 - [ ] Only one side is in use at a time, and stacked panels all share that side.

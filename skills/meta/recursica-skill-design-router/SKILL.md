@@ -34,7 +34,7 @@ This repository holds more than the skills. Website content, build scripts, pack
 
 **Never use as a source:**
 
-- **`DOCS.md`, anywhere.** These are pages from the design-system website: marketing-style copy, spec images, and anatomy diagrams written for people browsing a site. Some of it is out of date, and some of it contradicts the rules in these skills. **Do not read a `DOCS.md` to answer a build question, and do not cite one.** Everything a build agent needs about a component is already in that component's `SKILL.md`.
+- **`DOCS.md`, anywhere.** These are pages from the design-system website: marketing-style copy, spec images, and anatomy diagrams written for people browsing a site. Some of it is out of date, and some of it contradicts the rules in these skills. **Do not read a `DOCS.md` to answer a build question, and do not cite one.** Everything a build agent needs about a component is in that component's `SKILL.md`.
 - **`docs/` in general**, including the contribution guides and the open-questions record. Those are for the people who maintain this repository.
 - **`template/`, `scripts/`, `spec/`, `scratch/`, `n8n/`, `dist/`.** These are packaging and tooling.
 - **Another design system.** Material, Carbon, Mantine, and the rest have no authority here. When a Recursica skill says nothing about something, the answer is to ask — not to borrow a convention from somewhere else.
@@ -131,7 +131,7 @@ Apply these in order. The first one that settles the conflict wins.
 
    The component skill still wins on exactly one thing: **which variants and states exist.** A design rule that assumes a capability the component does not have is a gap to raise. It is not permission to invent that capability.
 
-4. **The more specific surface wins, within the same tier.** A rule about one control beats a general rule about all controls. For example, a segmented control is capped at 2–5 options even though the general limit is 7 ± 2, because the segmented control's own rule is narrower. This does not raise a component skill above a design rule — rule 3 already settles that.
+4. **The more specific surface wins, within the same tier.** A rule about one control beats a general rule about all controls. For example, a segmented control is capped at 2–5 options even though the general limit is 7 ± 2, because the segmented control's own rule is narrower. This does not raise a component skill above a design rule — rule 3 settles that.
 5. **The skill that names the surface owns it.** When two skills both seem to apply, the one whose description names that surface is in charge; the other is background.
 6. **A stated house rule beats an outside convention.** Common practice from elsewhere does not override a Recursica rule, and it is never a reason to loosen one. If the house rule looks wrong, say so and ask — do not work around it.
 7. **A later clarification beats an earlier general statement** — but only on wording and scope. If the substance conflicts, ask instead of assuming the newer text wins.

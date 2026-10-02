@@ -122,5 +122,5 @@ Do not set or override any of these. The component sets them:
 - [ ] The icon is silent, and the words carry the meaning.
 - [ ] Nothing here is a control or a tab stop, and nothing is revealed only on hover.
 - [ ] Focus does not move when an error appears.
-- [ ] Only the `help` and `error` types are used, and no styling, margin, or width is overridden.
+- [ ] Only the `help` and `error` types are used, and styling, margins, and width come from the component.
 - [ ] Uncovered items were asked about, not decided: character and word counters, success on a field, links in help text, and several errors on one field.

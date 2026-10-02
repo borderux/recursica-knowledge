@@ -92,7 +92,7 @@ Expanding everything defeats the purpose of having top-level labels at all — t
 
 Location is shown by three things, and a screen needs more than the first one:
 
-1. **A selected state** on the active item. Tree and navigation components already provide this — use the component's state; do not invent a custom one.
+1. **A selected state** on the active item. Tree and navigation components provide this — use the component's state; do not invent a custom one.
 2. **Clear page titles that show the hierarchy** through heading levels (H1, H2, and so on).
 3. **Breadcrumbs**, using the breadcrumb component, where the depth calls for them.
 
@@ -126,7 +126,7 @@ Location is shown by three things, and a screen needs more than the first one:
 **Hard bans:**
 
 - **NEVER wrap horizontal navigation onto a second row.**
-- **NEVER scroll navigation sideways.** Horizontal navigation must be fully visible at all times. Avoid sideways scrolling anywhere in an enterprise application at almost any cost — and in navigation, there is no reason for it at all.
+- **NEVER scroll navigation horizontally.** Horizontal navigation must be fully visible at all times. Avoid horizontal scrolling anywhere in an enterprise application at almost any cost — and in navigation, there is no reason for it at all.
 - **NEVER put navigation in its own separate scrolling area.** Vertical navigation that scrolls _with the page_ is fine. A separate scrolling `div` only for the navigation is not.
 
 **The only exception — customization the user owns.** An ellipsis or "more" control that hides top-level items is acceptable only when the user can customize the navigation, and the user chose what to hide. Without that explicit choice by the user, no overflow state is acceptable in a horizontal navigation.

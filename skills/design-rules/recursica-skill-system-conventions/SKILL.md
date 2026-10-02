@@ -46,7 +46,7 @@ Examples:
 | --------------------------------------------- | ------------------------------------------------------------------------------------- | ---------------------------- |
 | Dashboard configuration                       | A settings entry point that does not draw attention; the layout is kept across visits | `recursica-skill-dashboards` |
 | Showing, hiding, and reordering table columns | A gear or settings icon on the table, which opens a configuration screen              | `recursica-skill-tables`     |
-| Sorting by more than one column               | Long-press on a column header; a plain click still just flips the direction           | `recursica-skill-tables`     |
+| Sorting by more than one column               | Long-press on a column header; a plain click still flips the direction                | `recursica-skill-tables`     |
 
 **Why it applies generally:** users who need the feature will look for it, ask a colleague, or find it while exploring — and finding it themselves gives them a sense of ownership. Users who do not need it are not burdened with a control they will never use. See `recursica-skill-discoverability` for the research behind this, and its limits.
 
@@ -56,7 +56,7 @@ Examples:
 2. **Only a small minority of users truly need the feature.**
 3. **No task requires it.** If a user cannot finish their work without finding the control, it must be visible.
 
-**Unadvertised does not mean inaccessible.** The control MUST stay reachable by keyboard and by assistive technology. Where the interaction is a drag or a long-press, a second way to do it MUST exist — a requirement that is already stated for reordering columns.
+**Unadvertised does not mean inaccessible.** The control MUST stay reachable by keyboard and by assistive technology. Where the interaction is a drag or a long-press, a second way to do it MUST exist — a requirement also stated for reordering columns.
 
 ## 3. Never carry meaning in a single channel
 

@@ -81,7 +81,7 @@ The component owns the underline, the color, and the focus ring. The application
 - **Enter activates a link. Space does not** — that is how browsers work, and it is correct. A link that needs a Space handler is a button.
 - **Do not intercept the modifier keys.** Ctrl, Cmd, Shift, and middle-click must reach the browser, so the user stays in control of where the destination opens.
 - **A link that appears only on hover cannot be reached** by keyboard or by touch. Links inside text and in rows must stay visible.
-- **Focus must be visible on the link itself**, not just implied by the underline. Never hide the focus ring.
+- **Focus must be visible on the link itself**, not only implied by the underline. Never hide the focus ring.
 - **After navigating, focus belongs at the start of the new content**, not left behind on the old page.
 
 ## Set by the component

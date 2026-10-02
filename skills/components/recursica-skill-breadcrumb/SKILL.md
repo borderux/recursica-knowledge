@@ -44,7 +44,7 @@ Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which 
 
 **There is no separator token.** What sits between items — a slash, a chevron, a dot — is not defined in the UI kit. Do not invent one; see the uncovered list.
 
-**There is no collapse, truncation, or overflow behavior.** How a long trail behaves is not defined. Whatever the answer turns out to be, it is not sideways scrolling — `recursica-skill-navigation` forbids that outright.
+**There is no collapse, truncation, or overflow behavior.** How a long trail behaves is not defined. Whatever the answer turns out to be, it is not horizontal scrolling — `recursica-skill-navigation` forbids that outright.
 
 **There is no current-page state, and no content axis (a property a component varies on, such as size or style; Figma calls it a variant property).** An interactive item and a read-only item for the current page, plus a content axis of Label only, Icon + Label, Icon only, and Mixed, are shown only on the design-system website. The UI kit defines none of it. See the uncovered list.
 
@@ -120,7 +120,7 @@ Do not set or override any of these. The component sets them:
 ## Uncovered — ask, do not invent
 
 - **The separator.** No token defines it. The character, whether it is an icon, and its spacing are all unset — `item-gap` is the only spacing property.
-- **Long trails.** No collapse, truncation, or overflow behavior exists. Whether a deep trail drops its middle levels, shortens its labels, or wraps has not been answered — and sideways scrolling is not an option.
+- **Long trails.** No collapse, truncation, or overflow behavior exists. Whether a deep trail drops its middle levels, shortens its labels, or wraps has not been answered — and horizontal scrolling is not an option.
 - **A content axis — Label only, Icon + Label, Icon only, Mixed — and separate styles for read-only and interactive items are shown only on the design-system website, with no token behind any of them.** Do not rely on this without asking.
 - **The depth at which a breadcrumb becomes required.** `recursica-skill-navigation` says "where depth warrants it", but gives no number. The maximum nesting depth is listed as uncovered there too.
 - **Whether the start of the trail is the application's home, or the section's landing page.**
@@ -141,7 +141,7 @@ Do not set or override any of these. The component sets them:
 - [ ] There is no hidden copy of the trail or the page title for screen readers.
 - [ ] Every crumb is a tab stop, in visual order, and the current page cannot receive focus.
 - [ ] Nothing in the trail depends on hover, and the modifier keys are not intercepted.
-- [ ] The trail does not scroll sideways, wrap into a strip, or shrink to fit.
+- [ ] The trail does not scroll horizontally, wrap into a strip, or shrink to fit.
 - [ ] The breadcrumb has no variant, state, content option, or separator token beyond the inventory above.
-- [ ] Styling the component owns is not overridden.
+- [ ] Styling comes from the component.
 - [ ] Uncovered items were asked about, not decided: the separator, long trails, the content axis, the depth at which a breadcrumb becomes required, the start of the trail, and a level with no landing page.

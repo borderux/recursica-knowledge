@@ -77,7 +77,7 @@ A surface that opens on hover and has a control in it is not a third option; it 
 
 **Do not put a form, a form section, or a single form control inside it.** `recursica-skill-forms` forbids that, with no exception.
 
-**Do not wrap the content in a card.** The popover is already the boundary — see `recursica-skill-card`.
+**Do not wrap the content in a card.** The popover is the boundary — see `recursica-skill-card`.
 
 **A short delay before it shows prevents it opening by accident** when the pointer crosses the target on its way somewhere else. The length of the delay is not set by a token — see Uncovered.
 

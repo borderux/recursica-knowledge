@@ -75,7 +75,7 @@ class of failure as an empty one — do not accept it, and do not silently read 
 
 ## config-bq-project
 
-- **bq_project** — already filled in above, the same for every client.
+- **bq_project** — filled in above, the same for every client.
 
 ## preflight-trigger
 

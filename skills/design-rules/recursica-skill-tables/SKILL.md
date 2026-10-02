@@ -16,7 +16,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 ## Governing principles
 
 1. **A table is a high-level view with a way in, not a spreadsheet.** Clients often ask for a table because they were using a spreadsheet outside the application and want to recreate it. That is the wrong goal. Show enough to understand and act, and put the rest behind an expansion, a panel, or a detail page.
-2. **Fit the screen.** Every decision about column width, stacking, and cutting text short exists to keep the table inside the main desktop dimensions. Sideways scrolling is the failure state, not a layout option.
+2. **Fit the screen.** Every decision about column width, stacking, and cutting text short exists to keep the table inside the main desktop dimensions. Horizontal scrolling is a failure, not a layout option.
 3. **One way of interacting per row, and per application.** A row can be clicked only when nothing else in it can be. Inline editing is either on for every table or for none, because the user cannot see which mode a cell is in.
 4. **One object type, one table.** Status is a column. A screen that stacks a separate section for each state has taken a filter and built page structure out of it.
 
@@ -72,7 +72,7 @@ These rules assume **complex enterprise web applications, designed for desktop f
 
 ## Horizontal scrolling
 
-**Avoid scrolling sideways.** It is unusual in an application, awkward with a mouse, and has almost no affordance (a visible cue that a control can be used, such as the underline on a link) — a user may never find out that there is more table to the right.
+**Avoid horizontal scrolling.** It is unusual in an application, awkward with a mouse, and has almost no affordance (a visible cue that a control can be used, such as the underline on a link) — a user may never find out that there is more table to the right.
 
 It is sometimes unavoidable — for example, when a client insists that every field gets its own column and will not accept splitting the view. When it is, say so, and treat it as a last resort, not a pattern: the goal is always to fit.
 
@@ -84,7 +84,7 @@ It is sometimes unavoidable — for example, when a client insists that every fi
 
 **Stacking also fails when there is too much of it.** If nearly every cell has two lines, the table becomes overwhelming, even when each stack is valid on its own.
 
-**Unrelated data in one column is never allowed.** If the only way to fit everything is to combine unrelated values, the table has already lost, and sideways scrolling is what is left.
+**Unrelated data in one column is never allowed.** If the only way to fit everything is to combine unrelated values, the table has too many columns, and horizontal scrolling is the only option left.
 
 **A complex data table is not shown below the tablet breakpoint at all**. There is too much data for the space, so the problem of a narrow table is solved by the table not being there — never by making it swipeable. Owned by `recursica-skill-responsive-behavior`.
 
@@ -142,7 +142,7 @@ Decide in this order:
 
 **An interior table** — a smaller grid set inside a container alongside other elements — gets a fixed number of rows, usually five or ten, and then paginates.
 
-**An interior table MUST NOT scroll, up and down or sideways.** Every row it holds is visible, and pagination takes over from there.
+**An interior table MUST NOT scroll, vertically or horizontally.** Every row it holds is visible, and pagination takes over from there.
 
 ## Fixed header and footer
 
@@ -262,7 +262,7 @@ Density is how tightly content is packed together.
 
 ## Frozen columns
 
-A frozen column stays in place while the rest of the table scrolls sideways.
+A frozen column stays in place while the rest of the table scrolls horizontally.
 
 **The header and footer are always sticky. Columns usually do not need freezing** — with the headers already fixed, there is little left for a frozen column to solve.
 
