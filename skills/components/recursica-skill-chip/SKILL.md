@@ -15,7 +15,7 @@ A chip is one of several short values the user can see, select, or remove.
 
 - **The chips show several values, not one.** Examples are several tags, several categories, or several applied filters on one object.
 - **The layout needs a horizontal multi-select, where the user picks several options laid out side by side.** Use selectable chips for a horizontal multi-select. Never lay out a checkbox group in a horizontal row.
-- **The user filters or narrows down the items shown** by turning options on and off.
+- **The user filters or narrows down the content on the screen** by turning options on and off.
 - **The user added the values**, and may remove the values again.
 
 ## When not to use a chip
@@ -24,7 +24,7 @@ A chip is one of several short values the user can see, select, or remove.
 | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | One read-only value that the system sets            | A badge. See `recursica-skill-badge`.                                                                                                            |
 | One choice that rules out every other option        | A segmented control for options laid out horizontally, or radio buttons for options stacked vertically. See `recursica-skill-segmented-control`. |
-| A status of any kind                                | A badge. See `recursica-skill-badge`. Never show a status as a chip, and never show a status in a control the user can act on.                   |
+| A status of any kind                                | A badge. See `recursica-skill-badge`. Never a chip, and never any element the user can act on.                                                   |
 | Space is tight, as in a table row                   | A badge. See `recursica-skill-badge`. A chip takes more room, with padding, an icon and a close control.                                         |
 | More options than one row of chips can hold         | A dropdown or an autocomplete. See `recursica-skill-selection-controls`.                                                                         |
 | Primary navigation, or a label on a navigation item | Links for navigation, and a badge for the label on a navigation item.                                                                            |
@@ -39,7 +39,7 @@ The rules below describe each option by role, such as "the selected state". The 
 
 - **Two selection states.** A chip is either unselected or selected. In the standard UI kit, the two selection states are `unselected` and `selected`.
 - **An error state that the house rule forbids.** The error state is defined in the UI kit and in both adapters (the Recursica component library for one framework, such as Mantine or Angular Material). The house rule forbids using the error state. Both facts are true, and neither fact cancels the other.
-- **No size variant, no style variant, and no disabled state.**
+- **No size variant, no style variant, and no disabled state in the standard UI kit.** The standard UI kit has no size variant, no style variant and no disabled state. If the project adds one in Theme Forge, use the project's version.
 - **Two chip setups, shown only on the design-system website.** The two setups are a selectable chip and a removable chip with a close icon. The UI kit defines a size and a color for the close icon, and a removable chip uses that size and color. The UI kit also defines a color for an optional icon before the label.
 - **A minimum width and a maximum width.** The chip component limits how long a value can be. The width limit is one more reason to keep phrases out of a chip.
 
@@ -105,7 +105,7 @@ A chip group is a form control laid out horizontally, and a chip group must beha
 
 ## Related skills
 
-- `recursica-skill-badges-chips` — chip versus badge, tags, removable chips and selectable chips, counts on a chip group, and where chips go.
+- `recursica-skill-badges-chips` — chip versus badge, tags, removable chips and selectable chips, chip-group counts, and where chips go.
 - `recursica-skill-selection-controls` — when to use selectable chips, and the checkbox group rules that selectable chips follow.
 - `recursica-skill-forms` — the form's save mode, and how to show the chip group's validation error.
 - `recursica-skill-assistive-element` — the element below the chip group that shows the chip group's validation error, and the wording of the error.
@@ -114,7 +114,7 @@ A chip group is a form control laid out horizontally, and a chip group must beha
 
 ## Open questions
 
-- **Whether a chip may be disabled.** No rule says whether a chip may be disabled, or what a disabled chip would mean for a filter.
+- **Whether a chip may be disabled.** No rule says whether a chip may be disabled, or what a disabled chip would mean for a filter. Ask only when the project has no disabled state.
 - **Overflow.** No rule says what a chip group does when the chip group has more chips than one row can hold. No rule says whether chips may wrap to a second row.
 - **Select-all or clear-all.** No rule says whether a chip group supports a select-all or a clear-all control, or where that control would go.
 - **A chip that opens a menu.** Other design systems document a chip that opens a menu. Recursica does not.
@@ -132,6 +132,6 @@ A chip group is a form control laid out horizontally, and a chip group must beha
 - [ ] Every close control's accessible name includes the value the close control removes, and every removal is announced.
 - [ ] Every chip and every close control works from the keyboard, and nothing in the chip group depends on hover.
 - [ ] Focus moves on purpose after a chip is removed.
-- [ ] Every chip is in the selected or the unselected state, with no other state, and no chip has a size or style setting.
+- [ ] Every chip uses only the states and variants the project lists, and no chip is set to the error state.
 - [ ] Styling comes from the chip component.
 - [ ] Open questions were asked about, not decided: whether a chip may be disabled, overflow, select-all or clear-all, and a chip that opens a menu.
