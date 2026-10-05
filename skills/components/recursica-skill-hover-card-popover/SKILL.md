@@ -38,12 +38,11 @@ A hover card or a popover shows richer content beside the element that opens the
 
 The rules below describe each part and option by role, such as "the beak". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-- **Two parts.** The component has a content area and a beak. The beak is the pointer that connects the card to the trigger. Tokens set the beak's size.
-- **No variants in the standard UI kit.** The standard UI kit has one set of fixed properties for the component, and no variant of any kind. If the project adds a variant in Theme Forge, use the project's variant.
-- **No placement option in the standard UI kit.** The standard UI kit has no top, left, right, or bottom option. The design-system website shows four positions and three beak alignments, but the standard UI kit has no tokens for the positions or the beak alignments. See the open questions. If the project adds a placement option in Theme Forge, use the project's option. Otherwise, never set a position. Never position the beak by hand.
-- **No size variant in the standard UI kit.** The minimum width and the maximum width are fixed. If the project adds a size variant in Theme Forge, use the project's size variant. Content that does not fit inside the width limits belongs on the page.
-- **No content-type variant in the standard UI kit.** The standard UI kit styles text content only. The design-system website also shows a custom content type, which the standard UI kit lacks. See the open questions. If the project adds a content-type variant in Theme Forge, use the project's variant.
-- **No variant that tells a hover card apart from a popover in the standard UI kit.** One set of tokens styles both. If the project adds a variant for the hover card or the popover in Theme Forge, use the project's variant. The house rules treat the hover card and the popover as two different components. The behavior decides which of the two a build is, and that choice sets every accessibility requirement below.
+- **A hover card or popover has two parts:** a content area and a beak. The beak is the pointer that connects the card to the trigger. Tokens set the beak's size.
+- **Placement.** If the project has a placement option, use the project's option. Otherwise, never set a position. Never position the beak by hand. See the open questions.
+- **Width.** Tokens set a minimum width and a maximum width. If the project has a size variant, use the project's size variant. Content that does not fit inside the width limits belongs on the page.
+- **Content type.** If the project has a content-type variant, use the project's variant. Ask before showing custom content when the project has no custom content type. See the open questions.
+- **Hover card or popover.** If the project has a variant for the hover card or the popover, use the project's variant. The house rules treat a hover card and a popover as two different components. The behavior decides which of the two a build is, and the choice sets every accessibility requirement below.
 
 The table compares the hover card and the popover.
 
@@ -59,7 +58,7 @@ The table compares the hover card and the popover.
 
 ## Rules
 
-**Before building, decide and state whether the build is a hover card or a popover.** There are exactly two valid choices, and the requirements of the two differ:
+**Before building, decide and state whether the build is a hover card or a popover.** Exactly two choices are valid, and the requirements of the two differ:
 
 - **Hover card.** A hover card opens when the pointer hovers over the trigger. A hover card contains no control (a button, a link, a form control, or any other element the user can operate) and holds no content the user needs. A hover card is a read-only preview and nothing else.
 - **Popover.** A real trigger opens a popover on a click, Enter, or Space. A popover may contain controls. A keyboard user can use every part of a popover, and focus returns to the trigger.
@@ -76,7 +75,7 @@ A card that opens on hover and holds a control is not a third option. A card tha
 
 **Do not wrap the content in a card.** The hover card or popover is already the container. See `recursica-skill-card`.
 
-**A short delay before a hover card or popover shows stops the card from opening by accident.** Without the delay, the card opens when the pointer crosses the trigger on the way to a different place on the screen. No token sets the length of the delay. See the open questions.
+**A short delay before a hover card or popover shows stops the card from opening by accident.** Without the delay, the card opens when the pointer crosses the trigger on the way to a different place on the screen. See the open questions.
 
 **Closing a hover card or popover must be possible and obvious.** A popover closes on Escape, on a click outside the popover, and on a second click of the trigger. A hover card closes when the pointer leaves both the trigger and the hover card.
 
@@ -112,13 +111,13 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - **Do not trap focus.** A popover does not block the page. A modal blocks the page, and a modal is the only component that traps focus. See `recursica-skill-modal`.
 - **A hover card must contain no tab stops at all.** A hover card has none of the focus handling above. Content that needs a tab stop belongs in a popover.
 - **A hover card must also appear when the trigger receives keyboard focus**, if the trigger can receive focus. The hover card must close with Escape without moving focus.
-- **A hover card must stay open while the pointer moves from the trigger into the hover card.** A user cannot read a hover card that disappears in the gap. A user with unsteady pointer control can never read the hover card.
+- **A hover card must stay open while the pointer moves from the trigger into the hover card.** A user cannot read a hover card that disappears in the gap between the trigger and the hover card. A user with unsteady pointer control can never read the hover card.
 - **A hover card never takes focus.** Hovering never moves the user's focus.
 - **No content, control or action the user needs may appear only on hover.** The whole component depends on this one rule.
 
 ## Styling set by tokens
 
-**Do not set or override the properties below.** The hover card and popover component sets each one:
+**Do not set or override the properties below.** The hover card and popover tokens set each property:
 
 - `colors`, `content-text`.
 - `border-radius`, `border-size`.
@@ -126,9 +125,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - `min-width`, `max-width`.
 - `beak-size`, `elevation`.
 
-The standard UI kit has no `beak-inset` token for this component.
-
-**The beak is part of the component.** Do not draw a separate beak, and do not move the beak the component provides.
+**The beak is part of the hover card or popover.** Do not draw a separate beak, and do not move the beak the hover card or popover already shows.
 
 ## Related skills
 
@@ -143,10 +140,10 @@ The standard UI kit has no `beak-inset` token for this component.
 
 ## Open questions
 
-- **Whether the single set of tokens should become two sets.** The behavior of each is settled and written down separately. One set of tokens styles both, so the UI kit does not say which properties a popover uses and which a hover card uses. Ask before assuming a hover card and a popover can look different. Ask only when the project has no separate hover card and popover styles.
-- **Placement.** The design-system website shows four positions (top, left, right and bottom) and three beak alignments (start, middle and end), with no tokens behind the positions or the beak alignments. Do not rely on a position or a beak alignment without asking. Ask about a position or a beak alignment only when the project has no placement option. With or without a placement option, no rule covers what happens at the edge of the viewport.
-- **The delay before showing, the delay before hiding, and the grace period** while the pointer crosses from the trigger to the card. No token or rule sets any of the three.
-- **Custom content.** The design-system website shows two content types, text and custom, but the standard UI kit styles text content only. Do not rely on custom content without asking. Ask only when the project has no custom content type.
+- **Whether the single set of tokens should become two sets.** The standard UI kit uses one set of tokens for both a hover card and a popover. The behavior of each is settled and written down separately. Ask before assuming a hover card and a popover can look different. Ask only when the project has no separate hover card and popover styles.
+- **Placement.** The design-system website shows four positions (top, left, right and bottom) and three beak alignments (start, middle and end). Do not rely on a position or a beak alignment without asking. Ask about a position or a beak alignment only when the project has no placement option. With or without a placement option, no rule covers what happens at the edge of the viewport.
+- **The delay before showing, the delay before hiding, and the grace period** while the pointer crosses from the trigger to the card. No rule sets any of the three.
+- **Custom content.** The design-system website shows two content types, text and custom. Do not rely on custom content without asking. Ask only when the project has no custom content type.
 - **Behavior on touch.** A touch screen has no hover, and no rule sets a different pattern for touch.
 - **Whether a popover may open from inside a menu, a modal, or another popover.** `recursica-skill-modal` forbids stacking modals, but no rule covers a popover.
 
@@ -157,7 +154,7 @@ The standard UI kit has no `beak-inset` token for this component.
 - [ ] No content in the hover card or popover is needed to finish a task, and no content exists only in the hover card or popover.
 - [ ] No form, form control, primary action, or list of actions is in the hover card or popover.
 - [ ] No card wraps the content.
-- [ ] **Hover card:** the hover card holds no control and no tab stops. The hover card appears when a trigger that can take focus receives focus, stays open as the pointer crosses the gap, closes with Escape, and never takes focus.
+- [ ] **Hover card:** the hover card holds no control and no tab stops. The hover card appears when a trigger that can take focus receives focus, stays open as the pointer crosses the gap between the trigger and the hover card, closes with Escape, and never takes focus.
 - [ ] **Popover:** the trigger is a real button in the tab order that announces what the trigger opens and whether the popover is open. Enter or Space opens the popover, and the popover has an accessible name.
 - [ ] **Popover:** focus moves into the popover when the popover opens, and returns to the trigger on every way of closing the popover. Escape closes the popover, and focus is not trapped.
 - [ ] Every control in a popover is a tab stop, in visual order, with a real accessible name.
