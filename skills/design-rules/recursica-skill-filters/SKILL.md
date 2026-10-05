@@ -21,7 +21,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 ## Labels
 
-**A filter's label is a noun that names the field being filtered.** A field is one piece of data that each item in the collection holds, such as a name or a status. A filter label is never a verb, and never names the action the user is taking.
+**A filter's label is a noun that names a field.** A field is one piece of data that each item in the collection holds, such as a name or a status. The label names the field being filtered. A filter label is never a verb, and never names the action the user is taking.
 
 - **`Name`, not `Search`.** The user is not filtering a field called "search". The user is filtering by name.
 - **`Status`, `Department`, `Requested`.** Each label names the field the way the table names the field.
@@ -54,7 +54,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 **A filter over a known set of categories is multi-select.** People filtering a queue want two statuses at once far more often than one status. A single-select filter forces the user to run the search twice.
 
-**The standard UI kit (the unchanged UI kit in the official Recursica release) has no multi-select control.** If the project adds a multi-select control in Theme Forge, use the project's control. Otherwise, the missing multi-select control is a known gap. See `recursica-skill-selection-controls` and `recursica-skill-dropdown`. Do not build a multi-select control out of other parts. Where a filter needs multi-select, raise the gap. Until the gap is closed, the working substitute is separate single-value filters that all apply at once.
+**If the project has a multi-select control, use the project's multi-select control.** Otherwise, the missing multi-select control is a known gap. See `recursica-skill-selection-controls` and `recursica-skill-dropdown`. Do not build a multi-select control out of other parts. Where a filter needs multi-select, raise the gap. Until the gap is closed, the working substitute is separate single-value filters that all apply at once.
 
 **A lone on/off toggle is usually a filter with a bad name.** Before adding an on/off toggle, name the field the toggle filters. Then check whether the collection shows that field. When the matching column does not exist, the user cannot check what the toggle did. When the toggle's meaning repeats information already shown in every row, the toggle does nothing.
 
@@ -66,7 +66,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 **A filter and the filter's chip are one state, not two.** Removing the chip clears the filter.
 
-**Announce the result of filtering.** Filtering changes the number of rows without moving the focus. A screen reader user hears nothing about the change unless the application announces the change. Announce the result politely and debounced, which means only after the user pauses, not on every keystroke. `recursica-skill-autocomplete` sets the same requirement for a typed filter.
+**Announce the result of filtering.** Filtering changes the number of rows without moving the focus. A screen reader user hears nothing about the change unless the application announces the change. Announce the result politely, which means the screen reader finishes speaking first, and debounced, which means only after the user pauses, not on every keystroke. `recursica-skill-autocomplete` sets the same requirement for a typed filter.
 
 **Filtering down to zero results is not an empty collection.** "No results for these filters" and "nothing here yet" are different states, with different next steps.
 
