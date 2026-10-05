@@ -11,7 +11,7 @@ metadata:
 
 This skill holds the house rules for clickable controls. The rules decide whether a control is a button or a link, how to label the control, and how several controls on one page, panel, modal, or other region that holds content rank against each other. The house rules are opinions, not neutral best practices. Treat the house rules as constraints.
 
-The rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The Recursica components handle the look of buttons and links, the focus states of buttons and links, the style of the external-link icon, and the HTML that makes a link styled as a button accessible. This skill decides which component to use, what the label says, and which action ranks first.
+The rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The Recursica components handle the look of buttons and links, the focus states of buttons and links, the style of the icon that marks an external link, and the HTML that makes a link styled as a button accessible. This skill decides which component to use, what the label says, and which action ranks first.
 
 **A button label is a verb plus an object, as in `Save form`. A navigation label is the object alone, as in `Forms`.** This split is the whole difference in wording between the two labels. `recursica-skill-naming-terminology` owns the naming side of this split.
 
@@ -23,7 +23,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 ## Governing principles
 
-1. **Choose the component by what the component does, not by how the component looks.** A link goes to a different location, such as another page, another object, or a different URL. A button performs an action on an object. When an action must not look heavy, use a button in the least prominent style, such as `text` in the standard UI kit, never a link. The look of a control can be adjusted. The meaning of a control cannot.
+1. **Choose the component by what the component does, not by how the component looks.** A link goes to a different location, such as another page, another object, or a different URL. A button performs an action on an object. When an action must not look heavy, use a button in the least prominent style, such as `text` in the standard UI kit (the unchanged UI kit in the official Recursica release), never a link. The look of a control can be adjusted. The meaning of a control cannot.
 2. **Use one primary action per page, panel, modal, or other region that holds content.** The primary action is the main action the region asks the user to take. In a row, a panel, a page, or a dialog, choose a single primary action. Move every other action into a menu of secondary actions. A region with no single primary action is trying to do too much.
 3. **Leave the browser under the user's control.** Give every link a real `href`, never open a new tab automatically, and never disable a link. The user decides how to move around, and the link component keeps the browser features that let the user decide.
 
@@ -67,7 +67,7 @@ A link may show an icon that marks the destination as external or as opening in 
 
 ## Button hierarchy
 
-**Give the primary function a button in the primary style. Give secondary and tertiary functions a button in a less prominent style.** In the standard UI kit (the unchanged UI kit in the official Recursica release), the primary style is `solid`, and the less prominent styles are `outline` and `text`. If the project names or adds styles in Theme Forge, use the project's styles. Buttons rank in the same order as the functions the buttons perform, by definition.
+**Give the primary function a button in the primary style. Give secondary and tertiary functions a button in a less prominent style.** In the standard UI kit, the primary style is `solid`, and the less prominent styles are `outline` and `text`. If the project names or adds styles in Theme Forge, use the project's styles. Buttons rank in the same order as the functions the buttons perform, by definition.
 
 **Aim for exactly one primary action per page, panel, modal, or other region that holds content.**
 
@@ -97,7 +97,7 @@ To place a second control, decide whether the second control is a real alternati
 
 ### Icon-only or text buttons in table rows
 
-Choose between an icon-only button and a text button by whether the label is the same on every table row.
+Choose between an icon-only button and a text button by whether the button label is the same on every table row.
 
 1. **When every table row has the same action on the table row's object, such as delete, use an icon-only button** with a tooltip.
 2. **When every table row has more than one such action, collapse the actions into one menu button, shown as an ellipsis or "more".** The menu lists the actions on the object, such as Delete and Edit name.
@@ -118,7 +118,7 @@ Choose between an icon-only button and a text button by whether the label is the
 
 **Never put bulk controls inside a filter bar.** Bulk controls act on the data, not on which data is shown. See `recursica-skill-filters`.
 
-**The bulk action area, where the bulk actions sit, holds controls and nothing else.**
+**A bulk action area holds controls and nothing else.** The bulk action area is the place on the screen where the bulk actions sit.
 
 **NEVER repeat the selection inside the bulk action area.** The checkboxes in the selected rows show which rows are selected. The number in parentheses shows how many rows are selected. A list of the selected records' names repeats the selection a third time, in the weakest of the three forms. A list of names also makes the height of the bulk action area change with the selection. The table then slides down the page while the user works, and the rows the user selects from move during the selection.
 
@@ -126,7 +126,7 @@ Choose between an icon-only button and a text button by whether the label is the
 
 **Do not add a "nothing selected" placeholder.** An empty bulk action area is the right way to show an empty selection. With one bulk action, the bulk action area stays empty until the user selects a row. With several bulk actions, the bulk actions are visible and disabled. A sentence saying no item is selected takes the space the bulk controls will need, and repeats what the row checkboxes show.
 
-**Never put an action on a single record in the bulk action area.** Selecting rows only feeds bulk actions. Start editing one record from the record itself. See `recursica-skill-tables`.
+**Never put an action on a single record in the bulk action area.** Selecting rows only sets which rows a bulk action acts on. Start editing one record from the record itself. See `recursica-skill-tables`.
 
 ## Destructive actions and confirmation
 
@@ -146,7 +146,7 @@ A destructive action deletes an object, a value, or any other data, or cannot ea
 
 **When the user deletes one row item, or one of many objects, replace the delete control with an undo button in the same place.** The undo button appears where the delete control was.
 
-**When the user destroys a whole object, use a confirmation modal instead.** Saving over a whole object, deleting a whole object, and destroying a whole form of data each count. After a loss that large, an undo afterward is no longer useful. Ask for confirmation before the action.
+**When the user destroys a whole object, use a confirmation modal instead.** A whole object is destroyed when the user saves over the whole object, deletes the whole object, or destroys a whole form of data. An undo is no longer useful after a loss that large. Ask for confirmation before the action.
 
 **Show a global undo notification as a toast.**
 
@@ -182,8 +182,8 @@ A label of "Unfollow" puts a negative action in front of the user and invites th
 ## Out of scope
 
 - **All color, visual design, and styling**, including focus states for buttons and links, how the external-link icon looks, and the HTML that makes a link styled as a button work for assistive technology. The Recursica components handle color, visual design, and styling.
-- **The order of steps in submitting a form, and when validation happens.** Covered by `recursica-skill-forms`. This skill decides what a control _is_ and how the control is labeled. The forms skill decides when a form may be submitted.
-- **Navigation structure, tabs, and route design.** Covered by `recursica-skill-navigation`.
+- **The order of steps in submitting a form, and when validation happens.** `recursica-skill-forms` covers the order of steps and the timing of validation. This skill decides what a control _is_ and how the control is labeled. The forms skill decides when a form may be submitted.
+- **Navigation structure, tabs, and route design.** `recursica-skill-navigation` covers navigation structure, tabs, and route design.
 
 ## Pre-flight checklist
 
