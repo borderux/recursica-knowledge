@@ -85,13 +85,9 @@ A tab set is one of the few components where a wrong role or a wrong connection 
 
 ## Styling set by tokens
 
-**Do not set or override the tab properties below.** The tab set sets each property:
+**Never set or override the tabs' styling.** The theme sets every visual property of the tabs, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the tabs' look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
-- Padding, gaps, the active indicator, and the active indicator's animation.
-- Typography, and the font weight of the selected tab.
-- All colors, for every style, every layer (a numbered background level, 0 to 3, that sets the colors of the components on that level), and every state.
-- Borders and corner radius for the `pills` and `outline` styles.
-- Keyboard interaction inside the tab set.
+**Never set or override the keyboard behavior inside the tab set either.** The tab set sets the keyboard behavior.
 
 ## Related skills
 
@@ -121,5 +117,5 @@ A tab set is one of the few components where a wrong role or a wrong connection 
 - [ ] Selection is shown by more than color, and the selected tab is announced as selected.
 - [ ] The tab list is one tab stop, the arrow keys move between tabs, and the tab set has no custom code for key presses.
 - [ ] Each counter is announced with the counter's tab, cannot be used as a control, and does not animate.
-- [ ] Styling comes from the tabs component.
+- [ ] No styling is set or overridden on the tabs, and no container or spacer is added to change the tabs' look.
 - [ ] Open questions were asked about, not decided: whether the tab styles have different meanings, what an empty tab shows, whether a tab may be disabled, and how the orientation is set.
