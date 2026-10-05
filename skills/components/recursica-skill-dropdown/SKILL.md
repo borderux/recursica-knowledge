@@ -43,6 +43,7 @@ The rules below describe each option by role, such as "the error state". The nam
 - **An error state and a disabled state.** The standard UI kit calls the state variant `states`, with the two options `error` and `disabled`.
 - **The placeholder and the chosen value are not variants.** The design-system website shows the placeholder and the chosen value only as examples of content. In the UI kit, both are the same `text` property with different content.
 - **Never build a focus state**, even where a source outside the UI kit lists a focused state. The dropdown already shows the focus border.
+- **Leading icon.** A dropdown can show an icon before the value.
 - **Size.** If the project has a size variant, use the project's size variant. Otherwise, the dropdown has a fixed height, the same height as every other single-line field.
 - **Multi-select, grouped options and search.** If the project has a multi-select variant, a variant that groups options into sections, or a searchable variant, use the project's variant. Otherwise, see the open questions.
 - **Read-only is a separate component.** The read-only field, `read-only-field` in the UI kit, shows text instead of an input.
