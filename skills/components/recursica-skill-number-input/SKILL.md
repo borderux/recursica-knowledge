@@ -41,7 +41,7 @@ A number input records a quantity that the user types.
 The rules below describe each option by role, such as "the error state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
 - **An error state and a disabled state.** The standard UI kit calls the state variant `states`, with the two options `error` and `disabled`.
-- **Size.** If the project has a size variant, use the size variant. Otherwise, the number input has a fixed minimum height, and the form field tokens set the field size.
+- **Size.** If the project has a size variant, use the size variant.
 - **Stepper.** If the project has a stepper, a collapsed or expanded state, or a content variant, use the project's version. Otherwise, do not claim that increase and decrease buttons exist. Do not build increase and decrease buttons from buttons placed beside the field. See the open questions.
 - **Read-only is a separate component, not a state.** A read-only field shows a label and text, with no input. The standard UI kit calls the read-only field `read-only-field`. A read-only field has the same label-placement variant as the number input.
 
@@ -108,15 +108,9 @@ The number input component connects the label to the input and provides the focu
 
 ## Styling set by tokens
 
-**Do not set or override the number input properties below.** The number input component sets each property.
+**Never set or override the number input's styling.** The theme sets every visual property of the number input, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the number input's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
-- `border-radius`, `min-height`, `horizontal-padding`, `vertical-padding`, `border-size`.
-- Field width and sizing, from `globals.form.field.size`.
-- `icon-size` and `icon-text-gap`.
-- `text` styling and `placeholder-opacity`.
-- `colors` per layer, including the focus border from `globals.form.field.colors.border-selected` and the disabled look from `globals.states.disabled`.
-- The gaps between the label and the field, and `vertical-item-gap`, from `globals.form.properties`.
-- The connection between the label and the input, and the keyboard behavior inside the field.
+The number input component connects the label to the input and sets the keyboard behavior inside the field. Never set or override the label connection or the keyboard behavior.
 
 **Never style an unfocused number input to look disabled.** An editable field must look editable when the user is not using the field.
 
@@ -160,6 +154,6 @@ The number input component connects the label to the input and provides the focu
 - [ ] Typing alone can enter any valid value. Any adjustment control is only a shortcut, and is a separate tab stop.
 - [ ] The arrow keys and the scroll wheel do not change the value unexpectedly.
 - [ ] Every variant, size, and state is one the Recursica MCP server lists for the project, and no variant or option is invented. No stepper is built unless the Recursica MCP server lists a stepper for the project.
-- [ ] Styling comes from the number input component, and an unfocused field looks editable.
+- [ ] No styling is set or overridden on the number input, and an unfocused field looks editable.
 - [ ] Numbers that are not editable here use the read-only field, not a disabled number input.
 - [ ] Open questions were asked about, not decided: increase and decrease controls, the `collapsed` and `expanded` states, a content variant, formatting as the user types, negative values, and choosing the unit.
