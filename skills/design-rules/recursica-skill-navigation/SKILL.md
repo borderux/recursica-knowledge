@@ -114,7 +114,7 @@ A screen shows the user's location in three ways, and a screen needs more than t
 
 **NEVER use a bottom navigation bar.** A bottom navigation bar is not a house pattern at any width. Below desktop size, a hamburger menu is the answer.
 
-**A drawer is a panel.** A drawer is the navigation area that slides in: a panel holding navigation. A drawer is no different in kind from a hamburger menu. A sidebar is the permanent navigation: the desktop alternative to a top navigation, down the left side. Do not treat the two as separate things. See `recursica-skill-panels-modals`.
+**A drawer is a panel.** A drawer is the navigation area that slides in: a panel holding navigation. A drawer is no different in kind from a hamburger menu. A sidebar is the permanent navigation: the desktop alternative to a top navigation, down the left side. **An application uses a drawer or a sidebar for its navigation, never both at the same time.** Both are valid. Do not add an option to pin the drawer open as a sidebar. Show the navigation or hide the navigation, and keep the choice that simple. See `recursica-skill-panels-modals`.
 
 **Ask whether the application will be used on a tablet or a phone before choosing the navigation pattern.** Do not add room for tablet or phone use to the navigation afterward. `recursica-skill-responsive-behavior` sets this rule.
 
@@ -171,6 +171,7 @@ No house rule covers the topics below yet. **Ask the person instead of choosing.
 
 Check every item below before treating the navigation as done.
 
+- [ ] The application uses a drawer or a sidebar for navigation, not both at once, and has no option to pin the drawer open.
 - [ ] Every view the user can navigate to has its own route, reachable by URL.
 - [ ] Navigation adds entries to the browser history, and back and forward work correctly.
 - [ ] No modal or panel creates a history entry, except a modal or panel deliberately built to be linked to, with a URL that can be shared.
