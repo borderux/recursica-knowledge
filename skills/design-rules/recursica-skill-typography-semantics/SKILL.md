@@ -11,7 +11,7 @@ metadata:
 
 The house rules below cover type and the markup under the type. The house rules are opinions, not neutral best practices. Treat the house rules as constraints.
 
-**The rules assume complex enterprise web applications, designed for desktop first.** The applications use a design system that delivers typography as tokens (named design values, such as colors or sizes, set by the design system). The builder chooses which HTML element holds each meaning. The design system's tokens set how each element looks.
+**The rules assume complex enterprise web applications, designed for desktop first.** The applications use a design system that delivers typography as tokens (named design values, such as colors or sizes, set by the design system). The person or agent who builds the screen chooses which HTML element holds each meaning. The design system's tokens set how each element looks.
 
 ## The three governing principles
 
@@ -21,19 +21,19 @@ The house rules below cover type and the markup under the type. The house rules 
 
 ## Real HTML elements
 
-**A button is a `button` element.** An `onclick` handler on a `div` is semantically wrong. A `role="button"` on a `div` only imitates the `button` element that the platform already provides. The `button` element rule holds even when the visual result would be identical.
+**A button is a `button` element.** An `onclick` handler on a `div` is semantically wrong. A `role="button"` on a `div` only imitates the `button` element that the web platform already provides. The `button` element rule holds even when the visual result would be identical.
 
-**Emphasis is `em` or `strong`, never a visual style in place of one of those tags.** Add the `em` or `strong` tag in the markup, and let the styles decide how the tag looks. A font weight or an italic style used to suggest emphasis makes text that is emphasized on screen and plain in every place other than the screen.
+**Emphasis is `em` or `strong`, never a visual style in place of one of those tags.** Add the `em` or `strong` tag in the markup, and let styles decide how the tag looks. A font weight or an italic style used to suggest emphasis makes text that is emphasized on screen and plain in every place other than the screen.
 
 **A data table is a semantic table, structured to match what is on the screen.** See `recursica-skill-table`.
 
-**The general rule: when the platform has an element for a purpose, use that element.** Styling the element is a separate decision.
+**The general rule: when the web platform has an element for a purpose, use that element.** Styling the element is a separate decision.
 
 ## Headings
 
 **MUST: exactly one H1 per page.** No case in the applications this design system serves needs a second H1.
 
-**The H1 must be in the markup, even when the H1 is not visible.** Where the design has no place for the H1, the H1 may be hidden with styles. The page needs the identity the H1 gives, even when the layout does not show the H1.
+**The H1 must be in the markup, even when the H1 is not visible.** Where the design has no place for the H1, the H1 may be hidden with styles. The H1 says what the page is, even when the layout does not show the H1.
 
 **Choose a heading level by meaning, not by size.** Choose the level by where the content sits in the structure of the document. To make a heading look smaller, use a smaller type style. Do not lower the heading level, such as to H4.
 
@@ -80,7 +80,7 @@ The house rules below cover type and the markup under the type. The house rules 
 
 Eyebrow text is a small label that sits above a heading.
 
-**Eyebrow text with markup that does not match the eyebrow text's meaning is an anti-pattern.** The markup for eyebrow text must match what the eyebrow text is. When the eyebrow text is a category, the eyebrow text is not a heading. When the eyebrow text is part of the title, the eyebrow text belongs in the heading. Using a heading level to get the eyebrow text's size is exactly the wrong-element swap these typography rules exist to prevent.
+**Eyebrow text with markup that does not match the eyebrow text's meaning is an anti-pattern.** The markup for eyebrow text must match what the eyebrow text is. When the eyebrow text is a category, the eyebrow text is not a heading. When the eyebrow text is part of the title, the eyebrow text belongs in the heading. Using a heading level to get the eyebrow text's size is exactly the mistake the typography rules exist to prevent: using the wrong element to get a visual effect.
 
 ## Abbreviations
 
@@ -216,7 +216,7 @@ W_max = 44 × 12.48                 = 555px
 ## Open questions
 
 - **The `c_font` value for a specific typeface.** The typeface classes above cover the common cases. A typeface with unusual proportions needs a ratio measured for that typeface, not an estimated ratio.
-- **Text wrapping and truncation.** The topic was openly set aside in the session that recorded these rules. `recursica-skill-tables` covers truncation inside a table cell. Every other part of text wrapping and truncation is open.
+- **Text wrapping and truncation.** The team openly set the topic aside when the team recorded the typography rules. `recursica-skill-tables` covers truncation inside a table cell. Every other part of text wrapping and truncation is open.
 - **Live regions and `aria-live`.** This skill put the topic off, and no other skill took the topic up. Each component skill states the component's announcement requirements, but no policy covers every surface (a region that holds content, such as a page, panel, or modal).
 - **Which heading level a page's sections start at**, given that the single H1 may be hidden.
 - **Whether `abbr` markup is used** for the later, abbreviated uses, or whether plain text is enough once the term has been written out.
@@ -226,7 +226,7 @@ W_max = 44 × 12.48                 = 555px
 
 - [ ] Every typeface the brand names is loaded, not only the primary typeface.
 - [ ] The document's base font family is set from the brand's primary token, and the computed font family on the body, on a navigation link, and inside a component all name the same typeface.
-- [ ] Every interactive element is the real platform element. No `div` carries an `onclick` or a `role="button"`.
+- [ ] Every interactive element is the real web platform element. No `div` carries an `onclick` or a `role="button"`.
 - [ ] Emphasis uses `em` or `strong`, never a visual style in place of one of those tags.
 - [ ] Exactly one H1 exists on the page, and the H1 is in the markup even if the H1 is hidden with styles.
 - [ ] Heading levels follow the structure of the document, not the visual size.
