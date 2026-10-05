@@ -9,7 +9,7 @@ metadata:
 
 # Time picker
 
-A time picker records a time of day. The user types the time or picks the time.
+A time picker is a form field that records a time of day. Each time picker has a visible label. The user types the time in the field, or picks the time, such as from a clock popover.
 
 ## When to use a time picker
 
@@ -47,11 +47,10 @@ The rules below describe each option by role, such as "the error state". The nam
 **Never build a focus state or a placeholder state.** Every Recursica field already shows the focus border and the placeholder text.
 
 - **An error state and a disabled state.** In the standard UI kit, the variant is `states`, with the options `error` and `disabled`.
-- **No 12-hour or 24-hour variant.** The user's preference sets a 12-hour or a 24-hour clock. The clock format is not a variant. See the rules below.
-- **The standard UI kit has no size variant.** The time picker component sets the field's width and height. Other design systems have size variants. If the project adds a size variant in Theme Forge, use the project's size variant. Never invent a size variant.
-- **The standard UI kit has no seconds variant and no range variant.** No control in the standard UI kit takes a start time and an end time. Other design systems have seconds variants. If the project adds a seconds variant or a range variant in Theme Forge, use the project's variant. Otherwise, never add a seconds variant, and do not build a range control without asking.
-- **No read-only state.** Show a read-only time with the read-only field component, even when the project adds a read-only state. A value nobody can edit does not belong in a form control. The read-only field has the same label-placement variant and no input.
-- **The standard UI kit has no warning state and no inline clock.** Other design systems have both. If the project adds a warning state or an inline clock in Theme Forge, use the project's version. Never invent a warning state or an inline clock.
+- **Clock format.** The user's preference sets a 12-hour or a 24-hour clock. The clock format is not a variant. See the rules below.
+- **Seconds.** If the project has a seconds variant, use the seconds variant. Otherwise, never add a seconds variant.
+- **Time range.** A time range is one control that takes a start time and an end time. If the project has a range variant, use the range variant. Otherwise, do not build a range control without asking.
+- **Read-only time.** Show a read-only time with the read-only field component, never with a read-only state of the time picker. A value nobody can edit does not belong in a form control. The read-only field has the same label-placement variant and no input.
 
 ## Rules
 
@@ -112,12 +111,12 @@ The time picker component connects the label to the input and provides the focus
 **Do not set or override the time picker properties below.** The time picker component sets each property.
 
 - `border-radius`, `horizontal-padding`, `vertical-padding`, `border-size`.
-- `width`, a fixed property, plus the field sizing from `globals.form.field.size`. The height of the single-line field comes from `globals.form.field.size.single-line-input-height`. The time picker defines no `min-height`.
+- `width`, a fixed property, plus the field sizing from `globals.form.field.size`. The height of the single-line field comes from `globals.form.field.size.single-line-input-height`.
 - `icon-size` and `icon-text-gap`.
 - `text` styling and `placeholder-opacity`.
 - `colors` per layer (a numbered background level, 0 to 3, that sets the colors of the components on that level), including the focused border from `globals.form.field.colors.border-selected` and the global disabled look from `globals.states.disabled`.
 - The gaps between the label and the field, and `vertical-item-gap`, from `globals.form.properties`.
-- The link between the label and the input, and the key handling inside the field.
+- The link between the label and the input, and what each key does inside the field.
 
 **Never style a time picker without focus to look disabled.** An editable field must look editable at rest.
 
@@ -136,11 +135,11 @@ The time picker component connects the label to the input and provides the focus
 
 ## Open questions
 
-- **The AM/PM control.** Only the design-system website shows an AM or PM selector inside the field, hidden when the clock is 24-hour. The UI kit defines no tokens for the AM/PM selector. Whether the AM/PM selector is part of the time picker, or a separate select on the same line, is not stated. Do not rely on the AM/PM selector without asking.
-- **What the popover contains.** Only the design-system website shows a "dial or input picker" that a dropdown indicator opens. The UI kit defines no popover tokens. The step between times in the popover, such as every minute, every five minutes, or every fifteen minutes, is not stated. Do not rely on any popover content without asking.
+- **The AM/PM control.** Only the design-system website shows an AM or PM selector inside the field, hidden when the clock is 24-hour. Whether the AM/PM selector is part of the time picker, or a separate select on the same line, is not stated. Do not rely on the AM/PM selector without asking.
+- **What the popover contains.** Only the design-system website shows a "dial or input picker" that a dropdown indicator opens. The step between times in the popover, such as every minute, every five minutes, or every fifteen minutes, is not stated. Do not rely on any popover content without asking.
 - **Whether a time has a masked format while the field has focus**, as a date does. The rule in `recursica-skill-dates-and-currency` that focus decides the format gives only a date example.
-- **Seconds.** The standard UI kit has no variant or property for seconds, so whether the field can accept seconds at all is unknown. Ask only when the project has no seconds variant.
-- **Time ranges.** The standard UI kit has no range variant. How a start time and an end time are checked against each other is not stated. Ask only when the project has no range variant.
+- **Seconds.** Whether the field can accept seconds at all is unknown. Ask only when the project has no seconds variant.
+- **Time ranges.** How a start time and an end time are checked against each other is not stated. Ask only when the project has no range variant.
 - **The UI kit defines a disabled state, but the design-system website does not show one.** Treat the list of states that the Recursica MCP server gives for the project as the authority, and flag the gap.
 
 ## Pre-flight checklist
