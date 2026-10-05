@@ -36,7 +36,7 @@ Pagination moves the user between pages of one list of records. Pagination is a 
 
 The rules below describe each option by role. The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-- **Pagination has three groups of controls, and each group is styled separately.** A page number is a control that goes to one page of the table. The current page number marks the page the table shows now. The previous control goes to the page before the current page, and the next control goes to the page after the current page. The three groups are the current page number, the other page numbers, and the previous and next controls. In the standard UI kit, the groups are `active-pages`, `inactive-pages` and `navigation-controls`. The standard UI kit also sets the colors and the gap between the controls. Never restyle the page numbers to match the previous and next controls, or the previous and next controls to match the page numbers.
+- **Pagination has three groups of controls, and each group has a separate look.** A page number is a control that goes to one page of the table. The current page number marks the page the table shows now. The previous control goes to the page before the current page, and the next control goes to the page after the current page. The three groups are the current page number, the other page numbers, and the previous and next controls. In the standard UI kit, the groups are `active-pages`, `inactive-pages` and `navigation-controls`. Never restyle the page numbers to match the previous and next controls, or the previous and next controls to match the page numbers.
 - **The current-page style is only a look, not a state in the code.** The current-page style makes the current page number look current. The style does not tell a screen reader that the page is current. Mark the current page as current in code as well.
 - **Rows-per-page select and results readout.** A results readout is a line such as "Showing 1–10 of 200". If the project has a rows-per-page select or a results readout, use the project's version. Otherwise, a required rows-per-page select or results readout is not part of the pagination component.
 - **First-page and last-page controls, an ellipsis, and a shortened list of page numbers.** Only the design-system website shows the three, as behaviors. If the project has a first-page or last-page control, an ellipsis, or a way to shorten a long list of page numbers, use the project's version. See the open questions.
@@ -72,7 +72,7 @@ Pagination is a row of small controls that all look alike. Without names added i
 ### Screen readers
 
 - **Make the pagination controls a navigation region with a name**, such as "Pagination", or "Invoice pages" when the page has more than one navigation region. A page with several navigation regions must name each navigation region. Otherwise, a screen reader user cannot tell the navigation regions apart in a landmark list (the list of labeled page regions a screen reader can jump between).
-- **The current page must be announced as current.** The current-page style is a fill and a color. Color is a single visual channel (color, shape, position or text, each a separate signal), and `recursica-skill-system-conventions` forbids color as the only way to show meaning. Mark the current page as current in code as well.
+- **The current page must be announced as current.** On screen, color shows which page is current. Color is a single visual channel (color, shape, position or text, each a separate signal), and `recursica-skill-system-conventions` forbids color as the only way to show meaning. Mark the current page as current in code as well.
 - **Give every control a name that says where the control goes**, such as "Page 3", "Next page" or "Previous page". A bare "3" is not a name. A bare chevron has no name at all.
 - **The previous and next controls are icon-only, so each one needs a tooltip and an accessible name** (the name a screen reader reads out for a control). The tooltip is for sighted mouse users. `recursica-skill-buttons-links` requires both.
 - **After a page change, announce that new table rows arrived**, as in "Page 3 of 20, 10 invoices". Without the announcement, nothing tells the user that the control worked, because the change on the screen is out of the user's sight.
@@ -91,13 +91,11 @@ Pagination is a row of small controls that all look alike. Without names added i
 
 ## Styling set by tokens
 
-**Do not set or override the pagination properties below.** The pagination component sets each property.
+**Never set or override the pagination's styling.** The theme sets every visual property of the pagination, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the pagination's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
-- `colors`, for each group of controls and each layer.
-- `item-gap`.
-- The styling of `active-pages`, `inactive-pages`, and `navigation-controls`.
-- Control size, the area that responds to a click or a tap, padding, and border radius.
-- The focus ring, and keyboard behavior inside the component.
+The theme also sets the focus ring and the area that responds to a click or a tap. Never change either one.
+
+The pagination component also handles keyboard behavior. Never add custom key handling, as the rules above say.
 
 ## Related skills
 
@@ -140,5 +138,5 @@ Pagination is a row of small controls that all look alike. Without names added i
 - [ ] The pagination component has no custom key handling.
 - [ ] Changing pages did not change the default sort, and each total says what the total covers.
 - [ ] Every variant, state and control is one the project's UI kit lists. No variant, state, first-page or last-page control, or ellipsis is invented.
-- [ ] Styling comes from the pagination component.
+- [ ] No styling is set or overridden on the pagination, and no container or spacer is added to change the pagination's look.
 - [ ] Open questions were asked about, not decided: missing or unusable controls on the first page and the last page, first-page and last-page controls, the ellipsis, whether a page is a real route, rows per page, a results readout, where pagination sits in the footer, and loading and error states between pages.
