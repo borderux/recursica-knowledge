@@ -29,15 +29,15 @@ The label names a form field. The label is a real component, not plain text besi
 
 ## Variants
 
-**Use only the label variants and options that the Recursica MCP server lists for the project.** A designer can add variants and options in Theme Forge, so each project can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. The code can use a different name from the name in Figma and the standard UI kit. A wrong name in code has no effect and shows no error. Never invent a variant or an option.
+**Use only the label variants and options that the Recursica MCP server lists for the project.** A designer can add variants and options in Theme Forge, so each project can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
 
-The rules below describe each option by role, such as "the smaller size". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
+The rules below describe each option by role, such as "the smaller size". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only. The code can use a different name from the name in Figma and the standard UI kit. A wrong name in code has no effect and shows no error.
 
 - **Two placements, the same two placements every field has.** The label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. Set the label's placement to match the field's placement. The label's placement and the field's placement are one decision, not two. The form makes that decision, not the label. See the placement rules below.
 - **Two sizes.** A label comes in a default size and a smaller size. In the standard UI kit, the variant is `sizes`, with the options `default` and `small`. When to use the smaller size is an open question.
-- **A required indicator and an optional text.** The standard UI kit has both. Each one has gaps, and the optional text has a transparency setting. The form decides which of the two to use, not the field.
+- **A required indicator and an optional text.** The standard UI kit has both, with gap settings for each one. The optional text also has a transparency setting. The form decides which of the two to use, not the field.
 - **A gap for an edit icon.** The standard UI kit sets a gap for an edit icon, so a label can hold an edit control. The purpose of the edit control is an open question.
-- **The standard UI kit has no disabled state for the label.** The field's tokens set the label's color in each of the field's states. If the project adds a disabled state for the label in Theme Forge, use the project's state.
+- **Disabled state.** If the project has a disabled state for the label, use the label's disabled state. Otherwise, the field's tokens set the label's color in each of the field's states.
 
 **Set label placement explicitly on every field.** An adapter's default may put the label above the input at every container width, which breaks the house rule. Set the label beside the input on every field, using the names the code uses for the variant and the option.
 
@@ -76,14 +76,14 @@ A screen reader user can use a field only when the field has a label. The label 
 
 ### Screen readers
 
-- **The label must be connected in code to the form control the label names.** The field components make the connection. Give each field component a real label to connect. A field with no label has no accessible name (the name a screen reader reads out for a control).
+- **The label must be connected in code to the form control the label names.** Each Recursica field component makes the connection. Give each field component a real label to connect. A field with no label has no accessible name (the name a screen reader reads out for a control).
 - **Never replace a label with text that is only visual.** Text placed next to an input is not a label. If the field component takes a label, use the field component's label.
 - **The label must make sense when read alone**, out of order and out of context. A label read alone is the whole reason for the rule to name the object clearly.
 - **The required state must be available in code, not only shown by an indicator.** The asterisk or the bold weight is the visual channel (color, shape, position or text, each a separate signal). The field must also mark in code that the field is required. `recursica-skill-system-conventions` forbids relying on a single channel.
 - **An optional marker must also be available in code.** When a word marks a field as optional, the word must be part of the label the screen reader announces, not a separate fragment of text.
 - **Do not hide the label visually.** Sighted keyboard users and voice-control users need the visible label too. A visible label is a house requirement.
 - **A group label must be announced when focus enters the group.** Placing the group label before the group in the reading order is not enough. Without the announcement, the user hears the options with no question.
-- **Do not cram instructions into the label.** Put the rules for a field in the assistive element. A screen reader announces a long label in full every time the user reaches the field.
+- **Do not cram instructions into the label.** Put the rules for a field in an assistive element (`recursica-skill-assistive-element`). A screen reader announces a long label in full every time the user reaches the field.
 
 ### Keyboard and non-mouse navigation
 
