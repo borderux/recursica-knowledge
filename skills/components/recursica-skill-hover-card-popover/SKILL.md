@@ -50,7 +50,7 @@ The table compares the hover card and the popover.
 |                      | **Hover card**                                         | **Popover**                                                                                               |
 | -------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
 | Opens on             | The pointer entering the trigger                       | A click or a tap, always                                                                                  |
-| May contain controls | **No**                                                 | **Yes** — buttons, links, simple form controls                                                            |
+| May contain controls | **No**                                                 | **Yes** — buttons and links, never a form control                                                         |
 | Closes when          | The pointer leaves both the trigger and the hover card | A click outside the popover, a second click on the trigger, or Escape                                     |
 | Focus                | Never moves                                            | Moves to the first control when the popover opens, and **returns to the trigger** when the popover closes |
 | On a touch device    | Not available, because a touch screen has no hover     | The pattern that replaces a hover card                                                                    |
