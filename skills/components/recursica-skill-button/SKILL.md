@@ -129,7 +129,7 @@ The button component provides the focus ring. The button component also handles 
 - [ ] A loading button shows the disabled look with an animated icon, with no spinner beside the button, no new label, and no new state. The loading button does not move or resize.
 - [ ] A loading button is marked busy, keeps the accessible name, stays in the tab order, and follows the user's reduced-motion preference.
 - [ ] Every variant, size, and state is one the project's UI kit lists, and no variant or option is invented.
-- [ ] No styling is set or overridden on the button.
+- [ ] No styling is set or overridden on the button, and no container or spacer is added to change the button's look.
 - [ ] The focus ring comes from the button component.
 - [ ] Actions the user has no permission for are hidden, not disabled.
 - [ ] Open questions were asked about, not decided: when to use the smaller size, full-width buttons, the icon for a loading button, split buttons and button groups, and setting the disabled state.

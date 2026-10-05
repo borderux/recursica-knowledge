@@ -140,5 +140,5 @@ The accordion already shows the chevron and turns the chevron when an item opens
 - [ ] A closed item's content is removed from the accessibility tree and the tab order, not only hidden.
 - [ ] Focus never moves when an item opens or closes, nothing opens on hover, and the focus ring is intact.
 - [ ] Every variant, size, and state is one the Recursica MCP server lists for the project, and no header has an invented disabled look.
-- [ ] No styling is set or overridden on the accordion.
+- [ ] No styling is set or overridden on the accordion, and no container or spacer is added to change the accordion's look.
 - [ ] Open questions were asked about, not decided: whether opening one item closes the other items, whether the divider can be hidden, an item the user cannot open, animation for opening and closing an item, linking directly to an item, and an accordion inside a table row.

@@ -164,5 +164,5 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - [ ] Every repeated control names the control's object.
 - [ ] No static card is a tab stop, and a clickable card contains no other element the user can act on.
 - [ ] Every card variant, option and state is one the project lists, and no variant or option is invented.
-- [ ] No styling is set or overridden on the card.
+- [ ] No styling is set or overridden on the card, and no container or spacer is added to change the card's look.
 - [ ] Open questions were asked about, not decided: the raised style versus the outlined style, how many cards make a small finite card set, card layout across breakpoints, selectable cards, the empty state of a card set, the header button with the footer in one card.

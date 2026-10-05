@@ -155,5 +155,5 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - [ ] Every image in a hover card or popover has alternative text, or is marked as decorative.
 - [ ] No content, control or action the user needs appears only on hover, and the focus ring is intact everywhere.
 - [ ] Every variant and option is one the Recursica MCP server lists for the project, and no placement, size, or content variant is invented.
-- [ ] No styling is set or overridden on the hover card or popover.
+- [ ] No styling is set or overridden on the hover card or popover, and no container or spacer is added to change the hover card or popover's look.
 - [ ] Open questions were asked about, not decided: placement, the show and hide delays and the grace period, custom content, behavior on touch, and a popover opened from a menu, a modal, or another popover.

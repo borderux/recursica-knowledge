@@ -131,5 +131,5 @@ The separator's look, wherever the separator comes from, and the focus ring are 
 - [ ] No part of the trail depends on hover, and the modifier keys are not intercepted.
 - [ ] The trail does not scroll horizontally, wrap into a strip, or shrink to fit.
 - [ ] Every variant, state and content option is one the Recursica MCP server lists for the project, under the name the code uses, and no separator token is invented.
-- [ ] No styling is set or overridden on the breadcrumb.
+- [ ] No styling is set or overridden on the breadcrumb, and no container or spacer is added to change the breadcrumb's look.
 - [ ] Open questions were asked about, not decided: the separator, long trails, the content variant, the depth at which a breadcrumb becomes required, the start of the trail, and a level with no landing page.

@@ -180,6 +180,6 @@ The autocomplete already links the label to the input and shows the focus ring. 
 - [ ] Nothing the user needs requires hover or a pointer. The focus ring is intact, and looks different from the active option style and the selected option style.
 - [ ] Disabled is used only for fields that are unavailable for now. Values that can never be edited use the read-only field.
 - [ ] Every variant, size, and state is one the project's UI kit lists. The built-in connection between the label and the input is unchanged. The space between the label and the field, and the space between fields, are unchanged. Every field without focus looks editable, not disabled.
-- [ ] No styling is set or overridden on the autocomplete.
+- [ ] No styling is set or overridden on the autocomplete, and no container or spacer is added to change the autocomplete's look.
 - [ ] The field saves with the form, in the same save mode as every other field in the system.
 - [ ] Open questions were asked about, not decided: the replacement threshold, free text, how many characters to type, match order, no results, loading, multi-select, and list details.

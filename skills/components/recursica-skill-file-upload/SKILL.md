@@ -144,5 +144,5 @@ The application must add every behavior in the two lists below. A drop zone is t
 - [ ] The tab order runs from the label to the add control, then down the list. The focus ring is intact, and the focus ring looks different from the highlight that shows where to drop a file.
 - [ ] The file upload sits in the form's single column, not inside a card.
 - [ ] Every variant, size, and state is one the Recursica MCP server lists for the project, and no variant or option is invented. The list of added files comes from the file upload component, with no hand-built list, chips, or list rows.
-- [ ] No styling is set or overridden on the file upload.
+- [ ] No styling is set or overridden on the file upload, and no container or spacer is added to change the file upload's look.
 - [ ] Open questions were asked about, not decided: progress, success, retrying, previews, and overall limits.

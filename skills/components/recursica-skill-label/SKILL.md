@@ -123,5 +123,5 @@ A screen reader user can use a field only when the field has a label. The label 
 - [ ] A compound control has one label, and no group label is used as an item label.
 - [ ] Clicking a label moves focus to the label's control.
 - [ ] Any edit icon on a label is a separate tab stop with a separate accessible name.
-- [ ] No styling is set or overridden on the label.
+- [ ] No styling is set or overridden on the label, and no container or spacer is added to change the label's look.
 - [ ] Open questions were asked about, not decided: the edit control on a label, the form-wide signal for required fields, showing the required indicator with the optional text in one application, truncating a label, and when to use the smaller size.

@@ -164,6 +164,6 @@ Do not set or override the parts the dropdown already provides: the connection b
 - [ ] Nothing the user needs requires hover or a pointer. The focus ring is intact, and looks different from the active option style and the selected option style.
 - [ ] Disabled is used only for fields that are unavailable for now. Values that can never be edited use the read-only field.
 - [ ] Every variant, size, and state is one the project's UI kit lists. No field without focus looks disabled.
-- [ ] No styling is set or overridden on the dropdown.
+- [ ] No styling is set or overridden on the dropdown, and no container or spacer is added to change the dropdown's look.
 - [ ] The field saves with the form, in the same save mode as every other field in the system.
 - [ ] Open questions were asked about, not decided: multi-select, the open menu, the autocomplete threshold, clearing, grouped options, and an empty list of options.

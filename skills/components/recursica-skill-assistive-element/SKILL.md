@@ -113,5 +113,5 @@ The assistive element helps only when the code connects the assistive element to
 - [ ] The assistive element is not a tab stop, holds no control, and shows no text only on hover.
 - [ ] Focus does not move when an error appears.
 - [ ] Every type is one the project lists, such as the help type and the error type, and no third type is invented.
-- [ ] No styling is set or overridden on the assistive element.
+- [ ] No styling is set or overridden on the assistive element, and no container or spacer is added to change the assistive element's look.
 - [ ] Open questions were asked about, not decided: character and word counters, links in help text, and several errors on one field.

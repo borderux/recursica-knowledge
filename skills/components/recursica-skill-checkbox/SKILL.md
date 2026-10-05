@@ -151,6 +151,6 @@ The checkbox component pairs each box with the item label and provides the focus
 - [ ] Focus is never moved for the user, including when a checkbox reveals fields below.
 - [ ] The disabled state is used only for options that are unavailable for now. A value that can never be edited uses the read-only field.
 - [ ] Every variant, size, and state is one the Recursica MCP server lists for the project.
-- [ ] No styling is set or overridden on the checkbox.
+- [ ] No styling is set or overridden on the checkbox, and no container or spacer is added to change the checkbox's look.
 - [ ] The group saves with the form, in the same save mode as every other part of the system.
 - [ ] Open questions were asked about, not decided: the group error state, the multi-select dropdown, where a select-all control sits, limits on selection, and nesting depth.

@@ -125,5 +125,5 @@ The chip has a maximum width, which limits how long a chip label can be. The max
 - [ ] Every chip and every close control works from the keyboard, and nothing in the chip group depends on hover.
 - [ ] Focus moves on purpose after a chip is removed.
 - [ ] Every chip uses only the states and variants the project lists, and no chip is set to the error state.
-- [ ] No styling is set or overridden on the chip.
+- [ ] No styling is set or overridden on the chip, and no container or spacer is added to change the chip's look.
 - [ ] Open questions were asked about, not decided: whether a chip may be disabled, overflow, select-all or clear-all, and a chip that opens a menu.

@@ -148,5 +148,5 @@ The selection variant sets the look of the selected menu item. Do not restyle th
 - [ ] Keyboard focus scrolls into view in a long menu.
 - [ ] No trigger appears only on hover, and the focus ring is intact.
 - [ ] Every variant, size, placement, and state is one the project's UI kit lists, and no variant or option is invented. No submenu is built unless the project has a submenu.
-- [ ] No styling is set or overridden on the menu.
+- [ ] No styling is set or overridden on the menu, and no container or spacer is added to change the menu's look.
 - [ ] Open questions were asked about, not decided: submenus, menus with multi-select, custom content inside a menu item, how the disabled state is set, the number of items at which a menu is too long, where the menu appears relative to the trigger, right-click context menus, and whether a menu item may be a link.

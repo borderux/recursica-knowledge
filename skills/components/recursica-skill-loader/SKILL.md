@@ -136,6 +136,6 @@ The theme also sets the spinner's animation. Never change the animation.
 - [ ] Content that the loader covers, or that has not arrived, is not left as hidden tab stops.
 - [ ] The text that says what is loading does not appear only on hover, and the focus ring on the controls around the loader is intact.
 - [ ] Every loader size is one the project's UI kit lists, such as `small`, `default`, or `large` in the standard UI kit. No type, label, track, skeleton screen, or determinate variant is invented.
-- [ ] No styling is set or overridden on the loader.
+- [ ] No styling is set or overridden on the loader, and no container or spacer is added to change the loader's look.
 - [ ] The spinner's animation is not changed.
 - [ ] Open questions were asked about, not decided: showing progress, a label on the loader, the three adapter loader types, a spinner for the whole page, loading and error states for a table, a pending state on an action other than submit, delaying the loader, and which size to use in which region that holds content.

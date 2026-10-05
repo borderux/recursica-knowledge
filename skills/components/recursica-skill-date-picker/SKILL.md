@@ -151,7 +151,7 @@ The date picker component connects the label to the input and provides the focus
 - [ ] The popover opens from the keyboard, the arrow keys move between dates, and Escape closes the popover and returns focus to the field.
 - [ ] Focus never jumps ahead automatically between the parts of a date, and is never moved for the user.
 - [ ] Every variant and state is one the Recursica MCP server lists for the project. No size variant, range variant, or inline calendar is added unless the Recursica MCP server lists one for the project.
-- [ ] No styling is set or overridden on the date picker.
+- [ ] No styling is set or overridden on the date picker, and no container or spacer is added to change the date picker's look.
 - [ ] Every field without focus looks editable, not disabled.
 - [ ] Dates that are not editable in this place use the read-only field, not a disabled date picker.
 - [ ] Open questions were asked about, not decided: date ranges, what the popover contains, whether the calendar opens on focus, the earliest and latest dates and unavailable dates, and conventions for weeks, quarters, and fiscal periods.

@@ -126,5 +126,5 @@ An avatar is either a picture or a control, and each kind fails a screen reader 
 - [ ] Each avatar's size follows how dense the layout around the avatar is, not how important the person is.
 - [ ] The account menu sits outside primary navigation.
 - [ ] Every style and size is one the project's UI kit lists. No avatar has an invented group, status dot, badge slot, or border variant.
-- [ ] No styling is set or overridden on the avatar.
+- [ ] No styling is set or overridden on the avatar, and no container or spacer is added to change the avatar's look.
 - [ ] Open questions were asked about, not decided: the two sets of styles, avatar groups, which size belongs in which layout, how initials are chosen, avatars for an entity that is not a person, presence and status, and when to use each type.

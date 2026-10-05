@@ -123,6 +123,6 @@ Never restyle the overlay behind the modal. Never change when the scroll divider
 - [ ] Escape closes the modal and acts as cancel, and closing the modal is never pointer-only.
 - [ ] The close control has a real accessible name, and the focus ring is intact.
 - [ ] The destructive consequence is stated in words, not shown by color.
-- [ ] No styling is set or overridden on the modal.
+- [ ] No styling is set or overridden on the modal, and no container or spacer is added to change the modal's look.
 - [ ] The overlay behind the modal is not restyled.
 - [ ] Open questions were asked about, not decided: whether clicking the overlay closes the modal, a loading state inside a modal, whether a modal that cannot be closed is allowed, and confirming inside a modal.

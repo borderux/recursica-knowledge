@@ -115,5 +115,5 @@ A badge is text, not a control. For most components, the risk is that a user can
 - [ ] No badge has a `tabindex`, a click handler, or a role that suggests a user can act on the badge.
 - [ ] A status change swaps the badge with no animation, and any live update is announced politely or not at all.
 - [ ] Every badge uses a style the project lists, and no badge relies on a size variant or a content variant that the project does not list.
-- [ ] No styling is set or overridden on the badge.
+- [ ] No styling is set or overridden on the badge, and no container or spacer is added to change the badge's look.
 - [ ] Open questions were asked about, not decided: the mapping of statuses to intents, what the warning style and the problem style are for, a size variant and a content variant, a limit on counts, an icon beside the badge text, and a count of zero.

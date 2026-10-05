@@ -111,5 +111,5 @@ Every Recursica link already shows the underline, the color, and the focus ring.
 - [ ] No link appears only on hover, and the focus ring is intact.
 - [ ] After navigation, focus lands at the start of the new content.
 - [ ] Every variant and state is one the Recursica MCP server lists for the project, under the name the code uses, and no variant or option is invented.
-- [ ] No styling is set or overridden on the link.
+- [ ] No styling is set or overridden on the link, and no container or spacer is added to change the link's look.
 - [ ] Open questions were asked about, not decided: the icon for an external link, download links, a size or emphasis style for links, and links inside a paragraph in a table cell.

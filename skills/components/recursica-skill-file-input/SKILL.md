@@ -140,6 +140,6 @@ Do not change the gap between the label and the file input, or the gap between t
 - [ ] The field's icon is silent, and the required state is set in code.
 - [ ] Choosing a file does not start an upload. The upload starts when the user clearly asks for the upload. When the form saves every field together, the upload finishes before the form submits.
 - [ ] Every variant, size, and state is one the project's UI kit lists, and no variant or option is invented.
-- [ ] No styling is set or overridden on the file input.
+- [ ] No styling is set or overridden on the file input, and no container or spacer is added to change the file input's look.
 - [ ] Every file input without focus looks editable, not disabled.
 - [ ] Open questions were asked about, not decided: progress, success, more than one file, chips, and retrying.
