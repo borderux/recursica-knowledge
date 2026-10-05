@@ -98,7 +98,7 @@ The accordion component already shows the header and the chevron. Two jobs belon
 
 ## Styling set by tokens
 
-**Never set or override the accordion's styling.** The theme sets every visual property of the accordion, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the accordion's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the accordion's styling.** The theme sets every visual property of the accordion, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the accordion's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 The accordion already shows the chevron and turns the chevron when an item opens or closes. Do not add extra containers or spacers to change the chevron or the chevron's turn.
 

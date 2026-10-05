@@ -99,7 +99,7 @@ A file input is a form field, and a file input follows the same rules as every o
 
 ## Styling set by tokens
 
-**Never set or override the file input's styling.** The theme sets every visual property of the file input, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the file input's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the file input's styling.** The theme sets every visual property of the file input, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the file input's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 Do not change the gap between the label and the file input, or the gap between the file input and the next item in the form.
 

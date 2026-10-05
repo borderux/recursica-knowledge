@@ -105,7 +105,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 ## Styling set by tokens
 
-**Never set or override the timeline's styling.** The theme sets every visual property of the timeline, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the timeline's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the timeline's styling.** The theme sets every visual property of the timeline, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the timeline's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 The same applies to the timeline bullet. Never set or override the styling of the timeline bullet for any bullet type.
 

@@ -107,7 +107,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 ## Styling set by tokens
 
-**Never set or override the toast's styling.** The theme sets every visual property of the toast, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the toast's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the toast's styling.** The theme sets every visual property of the toast, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the toast's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 The theme also sets which icon each toast style shows. Never change the icon a style shows.
 

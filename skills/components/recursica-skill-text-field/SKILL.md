@@ -97,7 +97,7 @@ The text field component connects the label to the input and provides the focus 
 
 ## Styling set by tokens
 
-**Never set or override the text field's styling.** The theme sets every visual property of the text field, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the text field's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the text field's styling.** The theme sets every visual property of the text field, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the text field's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 Every single-line field has the same fixed height.
 

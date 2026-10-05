@@ -96,7 +96,7 @@ The tooltip is the component most often used in place of a missing accessible na
 
 ## Styling set by tokens
 
-**Never set or override the tooltip's styling.** The theme sets every visual property of the tooltip, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the tooltip's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the tooltip's styling.** The theme sets every visual property of the tooltip, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the tooltip's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 The beak is part of the tooltip component. Do not draw a separate beak, and do not move the component's beak.
 

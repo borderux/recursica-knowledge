@@ -111,7 +111,7 @@ The radio components pair each radio button with the item label, control where f
 
 ## Styling set by tokens
 
-**Never set or override the radio button's styling.** The theme sets every visual property of the radio button, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the radio button's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the radio button's styling.** The theme sets every visual property of the radio button, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the radio button's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 Never set or override the styling of the radio group or the radio items either.
 

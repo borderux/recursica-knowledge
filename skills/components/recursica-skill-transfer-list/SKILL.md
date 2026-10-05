@@ -101,7 +101,7 @@ Transfer lists with arrow buttons often ship working only with a mouse. The app 
 
 ## Styling set by tokens
 
-**Never set or override the transfer list's styling.** The theme sets every visual property of the transfer list, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the transfer list's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the transfer list's styling.** The theme sets every visual property of the transfer list, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the transfer list's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 ## Related skills
 

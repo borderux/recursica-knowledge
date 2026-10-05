@@ -117,7 +117,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 ## Styling set by tokens
 
-**Never set or override the hover card or popover's styling.** The theme sets every visual property of the hover card or popover, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the hover card or popover's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the hover card or popover's styling.** The theme sets every visual property of the hover card or popover, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the hover card or popover's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 **The beak is part of the hover card or popover.** Do not draw a separate beak, and do not move the beak the hover card or popover already shows.
 

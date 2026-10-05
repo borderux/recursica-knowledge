@@ -109,7 +109,7 @@ The textarea component connects the label to the input and provides the focus ri
 
 ## Styling set by tokens
 
-**Never set or override the textarea's styling.** The theme sets every visual property of the textarea, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the textarea's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the textarea's styling.** The theme sets every visual property of the textarea, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the textarea's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 The textarea's height is fixed.
 

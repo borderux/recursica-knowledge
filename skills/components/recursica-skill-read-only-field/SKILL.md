@@ -93,7 +93,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 ## Styling set by tokens
 
-**Never set or override the read-only field's styling.** The theme sets every visual property of the read-only field, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the read-only field's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the read-only field's styling.** The theme sets every visual property of the read-only field, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the read-only field's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 Never set or override the connection between the label and the value. The read-only field makes the connection.
 

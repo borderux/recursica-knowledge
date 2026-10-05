@@ -105,7 +105,7 @@ Most menu accessibility rules are about where keyboard focus goes. The list of m
 
 ## Styling set by tokens
 
-**Never set or override the menu's styling.** The theme sets every visual property of the menu, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the menu's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the menu's styling.** The theme sets every visual property of the menu, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the menu's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 The selection variant sets the look of the selected menu item. Do not restyle the selected menu item.
 

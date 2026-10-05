@@ -91,7 +91,7 @@ Pagination is a row of small controls that all look alike. Without names added i
 
 ## Styling set by tokens
 
-**Never set or override the pagination's styling.** The theme sets every visual property of the pagination, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the pagination's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the pagination's styling.** The theme sets every visual property of the pagination, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the pagination's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 The theme also sets the focus ring and the area that responds to a click or a tap. Never change either one.
 

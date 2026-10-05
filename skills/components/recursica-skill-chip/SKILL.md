@@ -91,7 +91,7 @@ A chip group is a form control laid out horizontally, and a chip group must beha
 
 ## Styling set by tokens
 
-**Never set or override the chip's styling.** The theme sets every visual property of the chip, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the chip's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the chip's styling.** The theme sets every visual property of the chip, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the chip's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 The chip has a maximum width, which limits how long a chip label can be. The maximum width is one more reason to keep phrases out of a chip.
 

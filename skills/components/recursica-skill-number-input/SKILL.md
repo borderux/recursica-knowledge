@@ -108,7 +108,7 @@ The number input component connects the label to the input and provides the focu
 
 ## Styling set by tokens
 
-**Never set or override the number input's styling.** The theme sets every visual property of the number input, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the number input's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the number input's styling.** The theme sets every visual property of the number input, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the number input's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 The number input component connects the label to the input and sets the keyboard behavior inside the field. Never set or override the label connection or the keyboard behavior.
 

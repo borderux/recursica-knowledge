@@ -111,7 +111,7 @@ The checkbox component pairs each box with the item label and provides the focus
 
 ## Styling set by tokens
 
-**Never set or override the checkbox's styling.** The theme sets every visual property of the checkbox, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the checkbox's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the checkbox's styling.** The theme sets every visual property of the checkbox, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the checkbox's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 **Do not add margins or spacer elements between checkbox items, between the group label and the checkbox items, or between the checkbox group and the elements next to the group.**
 

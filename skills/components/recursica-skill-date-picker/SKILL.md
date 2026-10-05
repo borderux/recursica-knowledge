@@ -108,7 +108,7 @@ The date picker component connects the label to the input and provides the focus
 
 ## Styling set by tokens
 
-**Never set or override the date picker's styling.** The theme sets every visual property of the date picker, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the date picker's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the date picker's styling.** The theme sets every visual property of the date picker, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the date picker's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 **Do not set or override the date picker's built-in behavior**: the link between the label and the input, and what each key does inside the field. The date picker component sets both.
 

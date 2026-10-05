@@ -128,7 +128,7 @@ The autocomplete already links the label to the input and shows the focus ring. 
 
 ## Styling set by tokens
 
-**Never set or override the autocomplete's styling.** The theme sets every visual property of the autocomplete, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the autocomplete's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the autocomplete's styling.** The theme sets every visual property of the autocomplete, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the autocomplete's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 **Do not set or override the autocomplete's built-in behavior**: the connection between the label and the input, the filtering and matching, and the keyboard behavior inside the field. Do not change the space between the label and the field, or the space between fields.
 

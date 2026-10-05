@@ -88,7 +88,7 @@ An avatar is either a picture or a control, and each kind fails a screen reader 
 
 ## Styling set by tokens
 
-**Never set or override the avatar's styling.** The theme sets every visual property of the avatar, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the avatar's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the avatar's styling.** The theme sets every visual property of the avatar, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the avatar's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 ## Related skills
 

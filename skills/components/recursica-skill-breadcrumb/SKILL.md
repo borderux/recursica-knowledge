@@ -90,7 +90,7 @@ A breadcrumb is a short line of links. Assistive technology recognizes a breadcr
 
 ## Styling set by tokens
 
-**Never set or override the breadcrumb's styling.** The theme sets every visual property of the breadcrumb, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the breadcrumb's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the breadcrumb's styling.** The theme sets every visual property of the breadcrumb, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the breadcrumb's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 The separator's look, wherever the separator comes from, and the focus ring are part of the breadcrumb's styling.
 

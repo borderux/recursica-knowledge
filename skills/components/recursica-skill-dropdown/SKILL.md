@@ -115,7 +115,7 @@ The dropdown already links the label to the field and shows the focus ring. The 
 
 ## Styling set by tokens
 
-**Never set or override the dropdown's styling.** The theme sets every visual property of the dropdown, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the dropdown's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the dropdown's styling.** The theme sets every visual property of the dropdown, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the dropdown's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 Do not set or override the gap between the dropdown's label and the field, or the spacing between the dropdown and the fields around the dropdown.
 

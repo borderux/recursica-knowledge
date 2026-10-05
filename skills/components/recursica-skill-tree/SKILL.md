@@ -90,7 +90,7 @@ A tree has the most specific keyboard rules of any component, and the tree's key
 
 ## Styling set by tokens
 
-**Never set or override the tree's styling.** The theme sets every visual property of the tree, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the tree's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the tree's styling.** The theme sets every visual property of the tree, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the tree's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 ## Related skills
 
