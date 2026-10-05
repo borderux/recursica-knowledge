@@ -41,7 +41,7 @@ The rules below describe each option by role, such as "the smaller size". The na
 
 - **Two sizes, a larger size and a smaller size.** In the standard UI kit, the size variant is `sizes`, with the options `large` and `small`.
 - **Two orientations, horizontal and vertical.** In the standard UI kit, the orientation variant is `orientation`, with the options `horizontal` and `vertical`.
-- **A step label and an optional step description.** Each step has a name, the step label. A step may also have a second line, the step description, for a short description. Never put a paragraph in the step description. In the standard UI kit, the step label is `label-text` and the step description is `description-text`.
+- **A step label and an optional step description.** Each step has a name, the step label. A step may also have a second line, the step description, for a short description. Never put a paragraph in the step description.
 - **A connector (the line between steps) that shows finished steps apart from upcoming steps.** The connector of a finished step and the connector of an upcoming step differ in thickness, and the stepper also uses color. A line's thickness and a color are a single visual channel (color, shape, position or text, each a separate signal). Progress must not rely on the connector's thickness and color alone. See the accessibility section and `recursica-skill-system-conventions`.
 - **Step status.** The design-system website shows done, current and upcoming steps. If the project has a step-status variant, use the project's step-status variant. Otherwise, a step's status is data the application supplies, not a variant. In both cases, state each step's status in what assistive technology reads.
 - **Error, warning, skipped and optional steps.** If the project has an error, warning, skipped or optional step state, use the project's step state. Whether or not the project has one of the four step states, the step's text must say that the step failed validation.
@@ -100,12 +100,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 ## Styling set by tokens
 
-**Do not set or override the stepper properties below.** The stepper component sets each property for every size and orientation.
-
-- `colors`, including the step indicator's color for each step status.
-- `completed-connector-size` and `upcoming-connector-size`.
-- The typography of `label-text` and `description-text`.
-- Step indicator size, spacing between steps, and the connector's placement.
+**Never set or override the stepper's styling.** The theme sets every visual property of the stepper, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the stepper's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 ## Related skills
 
@@ -151,5 +146,5 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - [ ] When the step changes, the new position and heading are announced, and focus moves to the start of the new step's content. Focus is never left on Next.
 - [ ] Steps the user can use to move between steps are real controls with names and states. Steps the user cannot use to move between steps cannot receive focus.
 - [ ] Nothing moves ahead automatically. Back restores the step with the user's values, and puts focus at the start of the step.
-- [ ] Colors, connector sizes, and type styling come from the stepper component.
+- [ ] No styling is set or overridden on the stepper, and no container or spacer is added to change the stepper's look.
 - [ ] Open questions were asked about, not decided: the smaller size, horizontal or vertical orientation, the maximum number of steps, moving between steps, a route for each step, validation across steps, optional or skipped steps, what a step with an error looks like, a number or a checkmark in the step indicator, and where the stepper sits.
