@@ -154,6 +154,7 @@ The number input component connects the label to the input and sets the keyboard
 - [ ] Typing alone can enter any valid value. Any adjustment control is only a shortcut, and is a separate tab stop.
 - [ ] The arrow keys and the scroll wheel do not change the value unexpectedly.
 - [ ] Every variant, size, and state is one the Recursica MCP server lists for the project, and no variant or option is invented. No stepper is built unless the Recursica MCP server lists a stepper for the project.
-- [ ] No styling is set or overridden on the number input, and an unfocused field looks editable.
+- [ ] No styling is set or overridden on the number input, and no container or spacer is added to change the number input's look.
+- [ ] An unfocused number input looks editable.
 - [ ] Numbers that are not editable here use the read-only field, not a disabled number input.
 - [ ] Open questions were asked about, not decided: increase and decrease controls, the `collapsed` and `expanded` states, a content variant, formatting as the user types, negative values, and choosing the unit.
