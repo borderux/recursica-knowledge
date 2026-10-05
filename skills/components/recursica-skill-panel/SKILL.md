@@ -39,7 +39,7 @@ A panel shows extra content beside the page, without blocking the page.
 
 The rules below describe each part and option by role. The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-- **Parts.** A panel has a header with a close control, a content area, and a footer with a gap between the footer buttons. Tokens set the gap between the header and the close control, and the minimum and maximum width of the panel. The standard UI kit also defines a divider size.
+- **Parts.** A panel has a header with a close control, a content area, and a footer with buttons. The standard UI kit also defines a divider.
 - **The same parts as a modal.** A panel has the same header, content area, footer, and close control as a modal. The only difference is that the page behind a panel stays usable. The difference changes the accessibility rules below.
 - **Side.** If the project has a side variant, use the project's side variant. Otherwise, the designer chooses the left or the right side for each panel. The rules below say how.
 - **Size and width.** If the project has a size or width variant, use the project's variant. Otherwise, do not set a width or a size on the panel.
@@ -129,15 +129,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 ## Styling set by tokens
 
-**Do not set or override the panel properties below.** The panel component sets each property.
-
-- `colors`.
-- `header-style` and `content-style` type treatment.
-- `header-footer-horizontal-padding`, `header-footer-vertical-padding`.
-- `header-close-gap` and `footer-button-gap`.
-- `content-horizontal-padding`, `content-vertical-padding`.
-- `border-size`, `border-radius`, `divider-size`.
-- `min-width`, `max-width`, `elevation`.
+**Never set or override the panel's styling.** The theme sets every visual property of the panel, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the panel's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 ## Related skills
 
@@ -180,7 +172,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - [ ] The tab order follows the visual order and does not jump unpredictably between the panel and the page.
 - [ ] The close control has a real accessible name, the focus ring is intact, and no control or content the user needs appears only on hover.
 - [ ] Changes the panel makes to the page are announced, not only redrawn.
-- [ ] Padding, gaps, borders, width, and elevation come from the panel component.
+- [ ] No styling is set or overridden on the panel, and no container or spacer is added to change the panel's look.
 - [ ] The panel is non-modal: focus is not trapped, and the page behind the panel stays reachable by keyboard. The behavior was checked in the running application, not assumed from the settings in the code.
 - [ ] No panel is nested inside another panel. Each stacked panel covers the first panel completely and uses the same side as the first panel.
 - [ ] The panel sits flush against the left or right edge and runs full height, and panels are open on only one side.
