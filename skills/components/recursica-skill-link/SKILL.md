@@ -38,7 +38,7 @@ The rules below describe each option by role. The names in the standard UI kit a
 
 - **A visited state.** The standard UI kit calls the visited state `visited`.
 - **Disabled state.** Never disable a link, even when the project adds a disabled state in Theme Forge. The user can always go to a related object. See the rules below.
-- **The browser and the link component set every other part of the link's look and behavior.** In the standard UI kit, the link component sets the text style, the icon size, the gap between an icon and the link's label, and the colors.
+- **The browser and the link component set every other part of the link's look and behavior.**
 - **An icon may sit before or after the link's label.** Only the design-system website shows the two icon positions.
 - **Two link behaviors appear only on the design-system website.** One link goes to a location within the product. The other is an external link, marked as leaving the product.
 
@@ -84,12 +84,7 @@ Every Recursica link already shows the underline, the color, and the focus ring.
 
 ## Styling set by tokens
 
-**Do not set or override the link properties below.** The link component sets each property.
-
-- Text styling (`text`), including the underline and the underline's behavior on hover.
-- `colors` per layer (a numbered background level, 0 to 3, that sets the colors of the components on that level) and per state, including `visited`.
-- `icon-size` and `icon-text-gap`.
-- The focus ring.
+**Never set or override the link's styling.** The theme sets every visual property of the link, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the link's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 ## Related skills
 
@@ -116,5 +111,5 @@ Every Recursica link already shows the underline, the color, and the focus ring.
 - [ ] No link appears only on hover, and the focus ring is intact.
 - [ ] After navigation, focus lands at the start of the new content.
 - [ ] Every variant and state is one the Recursica MCP server lists for the project, under the name the code uses, and no variant or option is invented.
-- [ ] The styling the link component sets comes from the link component.
+- [ ] No styling is set or overridden on the link.
 - [ ] Open questions were asked about, not decided: the icon for an external link, download links, a size or emphasis style for links, and links inside a paragraph in a table cell.
