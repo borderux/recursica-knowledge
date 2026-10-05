@@ -39,17 +39,15 @@ A table shows many records of one type. The reader compares the values in one co
 The rules below describe each part and option by role, such as "the header row". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
 - **A table has four parts:** the table frame, the header row, the body cells, and the footer row. In the standard UI kit, the four parts are `table`, `table-header`, `table-cell`, and `table-footer`.
-- **The table frame** is the outer frame around every table row. The table frame sets the outer frame, the row dividers and column dividers, the row padding, the colors, and the opacities.
+- **The table frame** is the outer frame around every table row.
 - **The header row** is the top table row. The header row holds the column headers.
 - **A body cell** holds one value of one record.
 - **The footer row** is the bottom table row. The footer row holds the totals.
 - **Disabled state.** In the standard UI kit, the header row, the body cells, and the footer row each have a disabled state. What the disabled state means is an open question.
-- **Sort indicator.** The header row shows the sort indicator, the sorted text style, and the unsorted text style. The header row also sets the gap between a column header's label and the sort icon, and the icon size. Do not add a sort indicator or a sort text style separately.
+- **Sort indicator.** The header row shows the sort indicator, the sorted text style, and the unsorted text style. Do not add a sort indicator or a sort text style separately.
 - **Currency.** Body cells and the footer row have a currency text style, separate from the normal text style. Use the `currency-style` token for currency. Follow `recursica-skill-dates-and-currency` for alignment and precision.
-- **Density.** If the project has a density variant, such as compact, comfortable, or spacious, use the project's density variant. Never invent a density variant. `recursica-skill-tables` sets this rule. Cell padding comes from the table's padding tokens, listed under "Styling set by tokens".
+- **Density.** If the project has a density variant, such as compact, comfortable, or spacious, use the project's density variant. Never invent a density variant. `recursica-skill-tables` sets this rule.
 - **Selected, hover, and expanded table rows.** If the project has a selected-row state, a row hover state, or an expanded-row state, use the project's state. Never invent one of these states. See the open questions.
-
-**Do not use the body cell's `max-width` token to fix a column that is too wide.** The `max-width` token alone limits nothing. A maximum width on a table cell is only a suggestion to the browser's automatic table layout. The automatic table layout sizes each column from the column's content and often goes past the maximum width. In one real table, a 200px maximum width measured 257px. Set a column's width by the column's data type, as `recursica-skill-tables` describes. The browser applies a width set by data type, and largely ignores `max-width`.
 
 ## Rules
 
@@ -61,9 +59,9 @@ The rules below describe each part and option by role, such as "the header row".
 
 **Currency is right-aligned, shows two decimal places on every value, and shows the currency symbol in the column header** instead of in every cell. This skill does not own the currency rules. `recursica-skill-dates-and-currency` owns the format: right alignment, a fixed precision of two decimals, and the symbol in the column header. `recursica-skill-tables` owns column alignment by data type. Read those two skills rather than this summary. Where those two skills differ from this summary, follow those two skills. This skill adds only the token for the currency format: the `currency-style` token on body cells and the footer row.
 
-**MUST NOT wrap a cell's value in a text component.** A body cell already sets the value's text style: font family, size, weight, and spacing. A text component brings a different text style. A text component inside a cell replaces the table's text style with the text component's style. The list under "Styling set by tokens" forbids that override. Put the value in the cell directly.
+**MUST NOT wrap a cell's value in a text component.** A body cell already sets the value's text style. A text component brings a different text style. A text component inside a cell replaces the table's text style with the text component's style. The rule under "Styling set by tokens" forbids that override. Put the value in the cell directly.
 
-**A text component wrapped around a cell's value is by far the most common way a table's type goes wrong.** This skill states the rule apart from the token list because, in code, the wrapper does not look like an override. A cell value inside a text component looks like careful markup, but the text component replaces the table's type. One column then shows in a different typeface from every other column in the same table, such as the brand's secondary typeface where the UI kit asked for the primary typeface. The difference is visible on screen and invisible in a code diff.
+**A text component wrapped around a cell's value is by far the most common way a table's type goes wrong.** This skill states the rule apart from the styling rule because, in code, the wrapper does not look like an override. A cell value inside a text component looks like careful markup, but the text component replaces the table's type. One column then shows in a different typeface from every other column in the same table, such as the brand's secondary typeface where the UI kit asked for the primary typeface. The difference is visible on screen and invisible in a code diff.
 
 **Check the type by comparing the columns on screen, not by reading the code.** Every column of one table shows in one typeface, one size, and one weight. If one column differs, look for a component wrapped around the values in that column.
 
@@ -78,6 +76,8 @@ The rules below describe each part and option by role, such as "the header row".
 **Do not put a card in a cell, and do not wrap the table in a card.**
 
 **A table has at most one frozen column** (a column that stays in place while the other columns scroll horizontally). `recursica-skill-tables` owns this rule.
+
+**Do not use the body cell's `max-width` token to fix a column that is too wide.** The `max-width` token alone limits nothing. A maximum width on a table cell is only a suggestion to the browser's automatic table layout. The automatic table layout sizes each column from the column's content and often goes past the maximum width. In one real table, a 200px maximum width measured 257px. Set a column's width by the column's data type, as `recursica-skill-tables` describes. The browser applies a width set by data type, and largely ignores `max-width`.
 
 ## Accessibility
 
@@ -110,17 +110,9 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 ## Styling set by tokens
 
-**Do not set or override the table properties below.** The table component sets every property in the list.
+**Never set or override the table's styling.** The theme sets every visual property of the table, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the table's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
-- Table `padding`, `row-padding`, `border-size`, `border-radius`, `colors`, `opacities`.
-- Table `row-divider-size` and `column-divider-size`, and the divider sizes of the header row and the footer row.
-- Cell `padding-horizontal`, `padding-vertical`, `max-width`, `text-style`, `currency-style`, `colors`.
-  A text component wrapped around the cell's value is the most common override of `text-style`. See the rules above.
-  The list includes `max-width` because the table component sets `max-width`, not because `max-width` limits the column.
-  The automatic table layout largely ignores `max-width`.
-- Header `label-sort-gap`, `icon-size`, `sorted-text-style`, `unsorted-text-style`, `vertical-margin`.
-- Footer `text-style`, `currency-style`, `vertical-margin`.
-- `globals.table.cell` horizontal and vertical padding.
+Never set or override the styling of the header row, the body cells or the footer row either. A text component wrapped around a cell's value is the most common override of the table's text style. See "Rules".
 
 ## Related skills
 
@@ -163,7 +155,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - [ ] Every repeated row action names the action's object, and nothing is revealed on hover.
 - [ ] Every sort, filter, and page change announces the result.
 - [ ] The table has no invented density variant, selected-row state, or hover state.
-- [ ] Padding, dividers, and type styling come from the table component.
+- [ ] No styling is set or overridden on the table, the header row, the body cells or the footer row, and no container or spacer is added to change the table's look.
 - [ ] No cell's value is wrapped in a text component. Every column of the table shows in the same typeface, size, and weight, checked by comparing the columns on screen, not by reading the markup.
 - [ ] A column that was too wide is fixed with a width set by data type, not with the cell's `max-width` token.
 - [ ] Open questions were asked about, not decided: how a selected table row looks, row hover, table rows that expand and nested detail, the meaning of the disabled state on a cell, a supported way to mark a missing value, the empty state, loading, and behavior below desktop size.
