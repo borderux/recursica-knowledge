@@ -40,15 +40,15 @@ An accordion collapses sections of content that are at the same level and of the
 
 The rules below describe each part and option by role, such as "the open look". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-- **Four parts make up one accordion.** In the standard UI kit, the four parts are `accordion`, `accordion-item`, `accordion-header` and `accordion-content`.
-- **The accordion** holds all the items. The accordion sets the gap between items, the minimum and maximum width, and the dividers.
-- **An item** is one section. The item wraps one header and that header's panel.
-- **A header** is the clickable bar inside an item. The header shows the open or closed look, a leading icon, a trailing icon, and the title text.
-- **A content panel** is the area the header shows and hides.
+- **An accordion has four parts:** the accordion, the items, the headers and the content panels. In the standard UI kit, the four parts are `accordion`, `accordion-item`, `accordion-header` and `accordion-content`.
+- **The accordion** is the outer container, a list of items. The accordion sets the gap between the items, the minimum and maximum width, and the dividers.
+- **An item** is one section that opens and closes. Each item has one header and one content panel.
+- **A header** is the clickable bar at the top of an item. The header shows the open or closed look, a leading icon, a trailing icon, and the title text.
+- **A content panel** is the area below the header. Clicking the header shows or hides the content panel.
 - **One variant, on the header only.** In the standard UI kit, only the header has a variant. The header variant has exactly two options, an open look and a closed look. The standard UI kit calls the variant `appearance`, with the options `open` and `closed`. The standard UI kit has no variant on the accordion, the item or the content panel. If the project adds a variant to one of those parts in Theme Forge, use the project's variant.
-- **No disabled option.** The standard UI kit has no disabled option for the header, so no header option shows a header that the user is prevented from opening. If the project adds a disabled option in Theme Forge, use the project's disabled option.
+- **No disabled header.** The standard UI kit has no disabled option for the header. If the project adds a disabled option in Theme Forge, use the project's disabled option.
 - **No nesting option.** The standard UI kit has no option that puts one accordion inside another accordion. Never nest an accordion, even when the project adds a nesting option. An accordion has one level only, and a real hierarchy belongs in a tree.
-- **No single-open or multi-open option.** Nothing in the standard UI kit makes opening one item close another item. If the project adds a single-open or multi-open option in Theme Forge, use the project's option. See the open questions.
+- **No single-open or multi-open option.** In the standard UI kit, opening one item never closes another item. If the project adds a single-open or multi-open option in Theme Forge, use the project's option. See the open questions.
 - **No size, density or emphasis variant.** The standard UI kit has no size, density or emphasis variant on any of the four parts, and no state variant for hover, focus or error. If the project adds one of these variants in Theme Forge, use the project's variant.
 
 ## Rules

@@ -34,6 +34,8 @@ Quoted interface copy keeps the exact interface wording, such as a button label 
 
 **Name the noun. Avoid pronouns.** Repeat the noun instead of writing "it", "they", "them", "this", "that", "these" or "those". Write "Keep the button the same size", not "Keep it the same size". A pronoun is acceptable only when the noun the pronoun replaces is in the same sentence and nothing else could match.
 
+**Introduce a part before naming the part with "the".** Say what an item is before writing "the items". Write "The accordion is a list of items. An item is one section that opens and closes.", not "The accordion holds all the items." when the reader has not met an item yet.
+
 **Make every noun specific.** A vague noun leaves the reader asking "of what?" or "where?".
 
 | Vague                           | Specific                                                 |
@@ -96,6 +98,7 @@ Name the specific component, action or result. A reader should be able to pictur
 ### 6. Short, direct sentences
 
 - **Write at a 9th-grade reading level or lower.** Use short sentences and common words. The check fails a skill or agent file with a Flesch-Kincaid grade of 10 or higher. A low score does not prove a sentence is clear. A short sentence full of jargon still fails review.
+- **Put the subject first.** Start the sentence with the noun the sentence is about, then say what is true of that noun. Write "An accordion has four parts", not "Four parts make up one accordion". Write "A radio field has three components", not "Three components make up one radio field".
 - **Cut every word and sentence that adds nothing.** Delete a sentence that repeats another, restates a rule in different words, or says that clear writing is good. Cut filler words: "really", "genuinely", "actually", "simply", "just", "already", "in practice", "it is worth noting", "on its own", "its own way". Use "quietly" only for an event that happens without notice.
 - **Write complete sentences, with a subject and a verb.** Never open a document, a paragraph or a list item with a fragment such as "How everything is written:" or "How wide a panel is." A list item that names a topic uses a noun phrase: "Panel width."
 - **Lead with the rule.** The first sentence of a paragraph says what to do. The reason follows.

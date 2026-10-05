@@ -39,7 +39,7 @@ A radio group has one group label and several options. Exactly one option may be
 
 The rules below describe each option by role, such as "the selected state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-**Three components make up one radio field. Use all three components together.**
+**A radio field has three components. Use all three components together.**
 
 - The group sets the label placement and the spacing between the items. The standard UI kit calls the group `radio-button-group`.
 - The item holds one option's label and pairs the label with one radio button. The standard UI kit calls the item `radio-button-item`.
