@@ -47,9 +47,9 @@ The rules below describe each option by role, such as "the label beside the fiel
 - **Size and width.** If the project has a size variant or a width property, use the project's variant or property. Otherwise, the form's field-size tokens set the textarea's width.
 - **Read-only value.** A read-only value uses a separate component, the read-only field, not a read-only state on the textarea. The read-only field has the same label-placement variant and no input.
 
-**Label placement is a variant.** The label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
+**Label placement is a variant.** A field's label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
 
-**Set label placement explicitly on every field.** An adapter's default may put the label above the input at every container width, which breaks the house rule. Set the label beside the input on every field, using the names the code uses for the variant and the option.
+**Set label placement explicitly on every field.** The house rule puts the label beside the input. The code library under an adapter may put the label above the input by default, at every container width. Set the label beside the input on every field, using the names the code uses for the variant and the option.
 
 **Never build a focus state or a placeholder state.** Every Recursica field already shows the focus border and the placeholder text.
 

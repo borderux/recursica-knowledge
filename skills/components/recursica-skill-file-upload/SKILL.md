@@ -38,7 +38,7 @@ A file upload is a bordered area for adding files, called the upload area. The u
 
 The rules below describe each option by role, such as "the error state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-**Label placement is a variant.** The label sits beside the control or above the control. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the control is the house default. The label above the control is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
+**Label placement is a variant.** A control's label sits beside the control or above the control. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the control is the house default. The label above the control is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
 
 - **An error state and a disabled state.** In the standard UI kit, the variant is `states`, with the options `error` and `disabled`.
 - **The bordered area and the list of added files are the only difference from a file input**, which is a single-line field. The tokens show that the file upload is the larger area. The tokens `border-style`, `border-size`, `border-radius`, and `padding` describe an area, not a line. The tokens `item-gap`, `list-spacing`, and `vertical-element-gap` describe the list of added files below the area.

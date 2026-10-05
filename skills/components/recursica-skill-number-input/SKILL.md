@@ -45,9 +45,9 @@ The rules below describe each option by role, such as "the error state". The nam
 - **Stepper.** If the project has a stepper, a collapsed or expanded state, or a content variant, use the project's version. Otherwise, do not claim that increase and decrease buttons exist. Do not build increase and decrease buttons from buttons placed beside the field. See the open questions.
 - **Read-only is a separate component, not a state.** A read-only field shows a label and text, with no input. The standard UI kit calls the read-only field `read-only-field`. A read-only field has the same label-placement variant as the number input.
 
-**Label placement is a variant.** The label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
+**Label placement is a variant.** A field's label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
 
-**Set label placement explicitly on every field.** An adapter's default may put the label above the input at every container width, which breaks the house rule. Set the label beside the input on every field, using the names the code uses for the variant and the option.
+**Set label placement explicitly on every field.** The house rule puts the label beside the input. The code library under an adapter may put the label above the input by default, at every container width. Set the label beside the input on every field, using the names the code uses for the variant and the option.
 
 **Never build a focus state or a placeholder state.** Every Recursica field already shows the focus border and the placeholder text.
 

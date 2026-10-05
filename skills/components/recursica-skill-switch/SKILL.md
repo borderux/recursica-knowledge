@@ -51,7 +51,7 @@ The rules below describe each option by role, such as "the selected state". The 
 - **Side of the label.** If the project has a variant for which side of the label the switch sits on, use the project's variant. Otherwise, see the open questions.
 - **Read-only is a separate component.** The read-only field, `read-only-field` in the standard UI kit, shows text instead of a control.
 
-**Label placement is a variant, the same variant every field has.** The group's label sits beside the switches or above the switches. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`.
+**Label placement is a variant, the same variant every field has.** A group's label sits beside the switches or above the switches. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`.
 
 ## Rules
 

@@ -42,7 +42,7 @@ Starts with:
 Passage:
 
 ```text
-**Label placement is a variant.** The label sits beside the {field|control} or above the {field|control}. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the {field|control} is the house default. The label above the {field|control} is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
+**Label placement is a variant.** A {field|control}'s label sits beside the {field|control} or above the {field|control}. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the {field|control} is the house default. The label above the {field|control} is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
 ```
 
 ## layouts-axis-group
@@ -56,7 +56,7 @@ Starts with:
 Passage:
 
 ```text
-**Label placement is a variant, the same variant every field has.** The group's label sits beside the {stack of items|stack of options|switches} or above the {stack of items|stack of options|switches}. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`.
+**Label placement is a variant, the same variant every field has.** A group's label sits beside the {stack of items|stack of options|switches} or above the {stack of items|stack of options|switches}. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`.
 ```
 
 ## label-placement-default
@@ -70,7 +70,7 @@ Starts with:
 Passage:
 
 ```text
-**Set label placement explicitly on every field.** An adapter's default may put the label above the input at every container width, which breaks the house rule. Set the label beside the input on every field, using the names the code uses for the variant and the option.
+**Set label placement explicitly on every field.** The house rule puts the label beside the input. The code library under an adapter may put the label above the input by default, at every container width. Set the label beside the input on every field, using the names the code uses for the variant and the option.
 ```
 
 ## one-placement-per-form

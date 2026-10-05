@@ -54,7 +54,7 @@ Never build a radio group in a form from radio buttons alone, without the group 
 - **Size.** If the project has a size variant, use the size variant. Otherwise, the radio button component sets the size of the circle and the icon inside the circle.
 - **Read-only is a separate component.** The read-only field, `read-only-field` in the UI kit, shows text instead of an input.
 
-**Label placement is a variant, the same variant every field has.** The group's label sits beside the stack of options or above the stack of options. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`.
+**Label placement is a variant, the same variant every field has.** A group's label sits beside the stack of options or above the stack of options. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`.
 
 **Label placement never sets the direction the options run.** The options always stack vertically. `recursica-skill-selection-controls` forbids a horizontal radio group outright. Never use the side-by-side label placement to put the radio buttons in a row.
 

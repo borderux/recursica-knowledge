@@ -47,7 +47,7 @@ The rules below describe each option by role, such as "the checked state". The n
 - **Read-only is a separate component.** The read-only field, `read-only-field` in the standard UI kit, shows text instead of inputs.
 - **Two label placements on the checkbox group.** The label of the checkbox group sits beside the checkbox items or above the checkbox items. Label placement is one decision for the whole field, so the variant belongs to the checkbox group. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`.
 
-**Label placement is a variant, the same variant every field has.** The group's label sits beside the stack of items or above the stack of items. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. **Label placement is not a variant for which way the items run.** Items are always stacked vertically — `recursica-skill-selection-controls` forbids a horizontal checkbox group outright — so `side-by-side` must never be read as "put the checkboxes in a row."
+**Label placement is a variant, the same variant every field has.** A group's label sits beside the stack of items or above the stack of items. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. **Label placement is not a variant for which way the items run.** Items are always stacked vertically — `recursica-skill-selection-controls` forbids a horizontal checkbox group outright — so `side-by-side` must never be read as "put the checkboxes in a row."
 
 ## Rules
 
