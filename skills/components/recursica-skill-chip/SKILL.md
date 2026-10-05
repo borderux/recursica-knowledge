@@ -25,7 +25,7 @@ A chip is one of several short values the user can see, select, or remove.
 | One read-only value that the system sets            | A badge. See `recursica-skill-badge`.                                                                                                            |
 | One choice that rules out every other option        | A segmented control for options laid out horizontally, or radio buttons for options stacked vertically. See `recursica-skill-segmented-control`. |
 | A status of any kind                                | A badge. See `recursica-skill-badge`. Never a chip, and never any element the user can act on.                                                   |
-| Space is tight, as in a table row                   | A badge. See `recursica-skill-badge`. A chip takes more room, with padding, an icon and a close control.                                         |
+| Space is tight, as in a table row                   | A badge. See `recursica-skill-badge`. A chip takes more room, with an icon and a close control.                                                  |
 | More options than one row of chips can hold         | A dropdown or an autocomplete. See `recursica-skill-selection-controls`.                                                                         |
 | Primary navigation, or a label on a navigation item | Links for navigation, and a badge for the label on a navigation item.                                                                            |
 
@@ -39,14 +39,11 @@ The rules below describe each option by role, such as "the selected state". The 
 
 - **Two selection states.** A chip is either unselected or selected. In the standard UI kit, the two selection states are `unselected` and `selected`.
 - **An error state that a house rule forbids.** The error state is defined in the UI kit and in both adapters (the Recursica component library for one framework, such as Mantine or Angular Material). A house rule forbids using the error state. Both facts are true, and neither fact cancels the other.
-- **Two chip setups, shown only on the design-system website.** The two setups are a selectable chip and a removable chip with a close icon. The UI kit defines a size and a color for the close icon, and a removable chip uses that size and color. The UI kit also defines a color for an optional icon before the label.
-- **A minimum width and a maximum width.** The maximum width limits how long a value in a chip can be. The width limit is one more reason to keep phrases out of a chip.
+- **Two chip setups, shown only on the design-system website.** The two setups are a selectable chip and a removable chip with a close icon. A chip can also show an optional icon before the label.
 
 **The error state combines with each selection state.** The UI kit defines the error state separately for an unselected chip and for a selected chip. Error and selection are separate variants, and the two variants combine. In the standard UI kit, the error state is called `error` and sits under each selection state. "Error-selected" is not a fourth state. "Error-selected" is the error state combined with the selected state, and that combination is the reason the error state sits under each selection state.
 
-**The error state sets seven colors for each selection state.** The seven colors are the background, border, text, icon, leading icon, selected icon and close icon. Both adapters offer an `error` setting that applies the seven colors.
-
-**Never set the error state.** `recursica-skill-badges-chips` states the rule plainly: never use a chip to show an error. A required chip group with no chip selected is a form validation error, and the chip group reports the error below the chip group. No chip changes the chip's look to report the error. An `error` setting found in code is the error state, not a typo. This skill describes the error state for that reason only, not as an option to set.
+**Never set the error state.** `recursica-skill-badges-chips` states the rule plainly: never use a chip to show an error. A required chip group with no chip selected is a form validation error, and the chip group reports the error below the chip group. No chip changes the chip's look to report the error. Both adapters offer an `error` setting that applies the error state. An `error` setting found in code is the error state, not a typo. This skill describes the error state for that reason only, not as an option to set.
 
 ## Rules
 
@@ -94,13 +91,9 @@ A chip group is a form control laid out horizontally, and a chip group must beha
 
 ## Styling set by tokens
 
-**Do not set or override the chip properties below.** The chip component sets each property.
+**Never set or override the chip's styling.** The theme sets every visual property of the chip, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the chip's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
-- `horizontal-padding`, `vertical-padding`, `border-size`, `border-radius`, `elevation`.
-- `min-width`, `max-width`, `text`, `text-size`.
-- `icon-size`, `icon-text-gap`, `leading-icon-color`.
-- `close-icon-size`, `close-icon-color`.
-- All colors for each selection state, including hover and focus.
+The chip has a maximum width, which limits how long a chip label can be. The maximum width is one more reason to keep phrases out of a chip.
 
 ## Related skills
 
@@ -132,5 +125,5 @@ A chip group is a form control laid out horizontally, and a chip group must beha
 - [ ] Every chip and every close control works from the keyboard, and nothing in the chip group depends on hover.
 - [ ] Focus moves on purpose after a chip is removed.
 - [ ] Every chip uses only the states and variants the project lists, and no chip is set to the error state.
-- [ ] Styling comes from the chip component.
+- [ ] No styling is set or overridden on the chip.
 - [ ] Open questions were asked about, not decided: whether a chip may be disabled, overflow, select-all or clear-all, and a chip that opens a menu.
