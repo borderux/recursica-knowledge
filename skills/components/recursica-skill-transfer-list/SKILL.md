@@ -9,7 +9,7 @@ metadata:
 
 # Transfer list
 
-A transfer list is two lists side by side, with move buttons that move items from one list to the other. A transfer list is also called a dual listbox, because each list is a listbox (a list the user picks one or more options from).
+A transfer list is two lists of items side by side, with move buttons that move items from one list to the other. An item is one option in a list. A transfer list is also called a dual listbox, because each list is a listbox (a list the user picks one or more options from).
 
 > **The transfer list is not built yet.** Both adapters (the Recursica component library for one framework, such as Mantine or Angular Material) ship the transfer list as a stub (an empty placeholder) that shows placeholder content. The adapters apply none of the 31 `transfer-list` tokens (named design values, such as colors or sizes, set by the design system) that the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) exports. The rules in this skill describe the intended transfer list, and the rules match the UI kit. A transfer list built today shows only a placeholder, with no error. Raise the missing transfer list with a person instead of building a workaround.
 
@@ -22,15 +22,15 @@ A transfer list is two lists side by side, with move buttons that move items fro
 
 ## When not to use a transfer list
 
-| Situation                                                                                        | Use instead                                                                                                                                                                  |
-| ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The list has only a few options                                                                  | A checkbox group. See `recursica-skill-checkbox` and `recursica-skill-selection-controls`.                                                                                   |
-| The user chooses exactly one value                                                               | A dropdown or a radio group. See `recursica-skill-dropdown`.                                                                                                                 |
-| The user chooses any number of options, including none, and the options not chosen do not matter | A multi-select dropdown. See `recursica-skill-selection-controls`.                                                                                                           |
-| The container is too narrow for two lists side by side                                           | A different component. Each list has a fixed width.                                                                                                                          |
-| The user puts items in order, instead of including or excluding items                            | A different component. The standard UI kit has no ordering variant for the transfer list. If the project adds an ordering variant in Theme Forge, use the project's variant. |
-| The items are stored records with actions                                                        | A table. See `recursica-skill-tables`.                                                                                                                                       |
-| The current user cannot change the value                                                         | A read-only field. See `recursica-skill-read-only-field`.                                                                                                                    |
+| Situation                                                                                        | Use instead                                                                                                                   |
+| ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| The list has only a few options                                                                  | A checkbox group. See `recursica-skill-checkbox` and `recursica-skill-selection-controls`.                                    |
+| The user chooses exactly one value                                                               | A dropdown or a radio group. See `recursica-skill-dropdown`.                                                                  |
+| The user chooses any number of options, including none, and the options not chosen do not matter | A multi-select dropdown. See `recursica-skill-selection-controls`.                                                            |
+| The container is too narrow for two lists side by side                                           | A different component. Each list has a fixed width.                                                                           |
+| The user puts items in order, instead of including or excluding items                            | If the project has an ordering variant for the transfer list, use the ordering variant. Otherwise, use a different component. |
+| The items are stored records with actions                                                        | A table. See `recursica-skill-tables`.                                                                                        |
+| The current user cannot change the value                                                         | A read-only field. See `recursica-skill-read-only-field`.                                                                     |
 
 **A transfer list fixes one problem in a screen's structure: a list of options too long for a checkbox group.** A transfer list is not for a short list of options. `recursica-skill-selection-controls` says that twenty checkboxes that need a select-all checkbox are the wrong control, and a transfer list replaces those checkboxes. A transfer list where nine checkboxes would do is also the wrong control.
 
@@ -41,13 +41,9 @@ A transfer list is two lists side by side, with move buttons that move items fro
 The rules below describe each option by role, such as "the error state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
 - **An error state and a disabled state.** In the standard UI kit, the variant is `states`, with the options `error` and `disabled`.
-- **A header, a filter, and two item lists, all drawn by the transfer list component.** The component also sets the spacing between the title and the filter, between the filter and the items, and between the two lists. Do not build a separate search field or heading above the transfer list.
-- **A fixed height and width.** The component sets the height and the width, and neither one is an option. Both lists are the same size, however many items each list holds.
-- **No size variant in the standard UI kit.** If the project adds a size variant in Theme Forge, use the project's size variant.
-- **No focus state in the standard UI kit.** If the project adds a focus state in Theme Forge, use the project's focus state.
-- **No loading state and no empty state in the standard UI kit.** If the project adds a loading state or an empty state in Theme Forge, use the project's state.
-- **No move-all variant, and none is wanted.** See the move-all rule under Rules.
-- **No tokens for a single item in a list.** See the open questions.
+- **A transfer list has a header with a title, a filter, and two item lists.** A filter is a search field that narrows a list to the matching items. The transfer list already shows the header, the filter and both lists. The transfer list also sets the spacing between the title and the filter, between the filter and the items, and between the two lists. Do not build a separate search field or heading above the transfer list.
+- **A fixed height and width.** The transfer list sets the height and the width, and neither one is an option. Both lists are the same size, however many items each list holds.
+- **A move-all control is not wanted.** See the move-all rule under Rules.
 
 **Label placement is a variant.** The label sits beside the control or above the control. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the control is the house default. The label above the control is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`. The label placement variant does not arrange the two lists. The two lists always sit in two columns.
 
@@ -63,7 +59,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 **Selecting an item and moving an item are two separate actions.** Selecting, or ticking, an item marks the item to be moved. Moving the item puts the item in the other list. Keep the two actions separate. Do not move an item at the moment the user selects the item. Moving many items at once is the reason a transfer list exists.
 
-**Do not build a move-all control.** `recursica-skill-selection-controls` treats a need for select-all as a sign to reconsider the control. The standard UI kit defines no tokens for a move-all control. The filter is the tool for working with a long list, and the filter stays. A list so long that a move-all control seems necessary is a sign that the screen's structure is wrong. Raise the problem with a person instead of adding a move-all control, as `recursica-skill-system-conventions` says.
+**Do not build a move-all control.** `recursica-skill-selection-controls` treats a need for select-all as a sign to reconsider the control. The filter is the tool for working with a long list, and the filter stays. A list so long that a move-all control seems necessary is a sign that the screen's structure is wrong. Raise the problem with a person instead of adding a move-all control, as `recursica-skill-system-conventions` says.
 
 **Sort both lists the same way, and keep the sort order the same after a move.** An item that appears in an unexpected place after the user moves the item back looks lost.
 
@@ -86,7 +82,7 @@ Transfer lists with arrow buttons often ship working only with a mouse. The app 
 ### Screen readers
 
 - **Give each list a separate accessible name** (the name a screen reader reads out for a control). Without an accessible name, a screen reader user hears a list of items, cannot tell which list holds the items, and cannot use the transfer list.
-- **Set the selected state in code, not by color.** To assistive technology, an item with only a tinted background is not selected. `recursica-skill-system-conventions` sets this rule.
+- **Set the selected state in code, not by color.** Assistive technology does not treat an item with only a tinted background as selected. `recursica-skill-system-conventions` sets this rule.
 - **Name each move button with what moves and where**, such as "Move selected to included" or "Remove selected from included". A name like "Right arrow" or ">" does not say what moves where. Two arrow buttons with no labels cannot be told apart.
 - **After a move, announce the result.** Announce the items that moved, and how many items each list now holds. The user cannot see two lists change at once.
 - **When the filter changes a list, announce how many items the list shows**, such as "3 of 120 shown". Without the count, a screen reader user hears a list that seems to empty for no reason.
@@ -105,7 +101,7 @@ Transfer lists with arrow buttons often ship working only with a mouse. The app 
 
 ## Styling set by tokens
 
-**Do not set or override the transfer list properties below.** The transfer list component sets each property.
+**Do not set or override the transfer list properties below.** The transfer list sets each property.
 
 - `height`, `width`, `border-size`, `border-radius`.
 - `horizontal-padding`, `vertical-padding`, and every gap: `gap`, `title-filter-gap`, `filter-items-gap`.
@@ -124,7 +120,7 @@ Transfer lists with arrow buttons often ship working only with a mouse. The app 
 ## Open questions
 
 - **Where the transfer list fits among the selection controls.** `recursica-skill-selection-controls` sends a choice of any number of options, including none, to a multi-select dropdown when the options pass the option limit. `recursica-skill-selection-controls` never mentions a transfer list. No rule says at how many options a transfer list replaces the multi-select dropdown.
-- **Checkboxes on each item.** Only the design-system website shows a checkbox on every item. The standard UI kit defines no item properties and no checkbox properties for the transfer list. Nobody has settled whether the items are rows with checkboxes or items in a selectable listbox. Ask before relying on a checkbox on each item. Ask only when the project has no checkbox option for an item.
+- **Checkboxes on each item.** Only the design-system website shows a checkbox on every item. Nobody has settled whether the items are rows with checkboxes or items in a selectable listbox. Ask before relying on a checkbox on each item. Ask only when the project has no checkbox option for an item.
 - **Overflow.** The height is fixed, so a long list must scroll inside the transfer list. `recursica-skill-system-conventions` treats a scrolling area inside a control as a failure. No rule says what a list does when the items do not fit the height.
 - **Narrow containers.** The label placement variant moves only the label, and the lists have a fixed width. An earlier house note said to avoid the transfer list on small screens, but the transfer list has no responsive behavior.
 - **Empty states.** No rule sets an empty state for either list, including the starting state where every item is in one list. Ask only when the project has no empty state.
