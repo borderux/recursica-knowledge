@@ -49,7 +49,7 @@ The rules below describe each option by role, such as "the smaller size". The na
 
 ## Rules
 
-**Make every step a stage the user recognizes.** Cutting a form into random thirds adds clicks and does not make the form any easier. If the steps do not match the stages in the user's mental model (what a person expects from the tools and work they already know), put the form on one page.
+**Make every step a stage the user recognizes.** Cutting a form into random thirds adds clicks and does not make the form any easier. If the steps do not match the stages in the user's mental model (what a person expects, based on the tools and work the person already knows), put the form on one page.
 
 **Label each step with the name of the stage.** Use the step description only for a short fragment that clarifies the step label. `recursica-skill-forms` bans sentences in microcopy. Use the shortest text that gives the information.
 

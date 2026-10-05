@@ -67,7 +67,7 @@ Mixing the two placements in one form is not a matter of looks. Mixing the place
 
 ## Single page vs. multi-step
 
-**Choose between one page and multiple steps by the user's mental model (what a person expects from the tools and work they already know), not by the number of fields alone.** Use multiple steps when **any** of the following three conditions is true:
+**Choose between one page and multiple steps by the user's mental model (what a person expects, based on the tools and work the person already knows), not by the number of fields alone.** Use multiple steps when **any** of the following three conditions is true:
 
 1. **Separate stages.** The task naturally breaks into steps that the user already thinks of as separate, and splitting the task into steps makes the task easier to take in.
 2. **Volume.** The form has so many fields that the visual noise needs to be reduced.

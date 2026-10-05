@@ -15,7 +15,7 @@ The house rules below cover type and the markup under the type. The house rules 
 
 ## The three governing principles
 
-1. **The semantic structure is the design, not a separate step under the design.** Use semantic HTML (HTML elements chosen for their role, such as a button element for a button). Choose each element for the element's meaning, not for the element's look. The markup matches what is on the screen. Never get a visual effect by using the wrong element.
+1. **The semantic structure is the design, not a separate step under the design.** Use semantic HTML (HTML elements chosen by role, such as a button element for a button). Choose each element for the element's meaning, not for the element's look. The markup matches what is on the screen. Never get a visual effect by using the wrong element.
 2. **Type styles always come from tokens.** The design system defines the type styles, and the code applies the type styles. A custom typographic value is a defect, unless no type style exists for the case.
 3. **Being understood comes before being brief.** When text can be either short or understood without extra effort, choose understood. The user should not have to hover over an item on the screen to find out what the item means.
 

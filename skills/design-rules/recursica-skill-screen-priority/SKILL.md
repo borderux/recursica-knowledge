@@ -59,7 +59,7 @@ The rules assume **complex enterprise web applications**, where people do real w
 
 **A stakeholder may still overrule the designer, even where the stakeholder's decision harms the workflow.** A stakeholder's override is a real outcome, not a failure of the rule. Good user-centered design still means arguing from the user's point of view.
 
-**Business units rarely have competing requirements. Business units have different requirements.** Treat the requirements of different business units as parts that fit together. Resolve the requirements by understanding the workflow and by matching the user's mental model (what a person expects from the tools and work they already know). Do not resolve the requirements by judging between departments.
+**Business units rarely have competing requirements. Business units have different requirements.** Treat the requirements of different business units as parts that fit together. Resolve the requirements by understanding the workflow and by matching the user's mental model (what a person expects, based on the tools and work the person already knows). Do not resolve the requirements by judging between departments.
 
 **A legal limit, a compliance limit or a hard technical limit overrides the user's mental model.** These limits cannot be worked around, and the user's mental model has to change to fit the limits. Legal, compliance and hard technical limits are the only requirements that outrank the user.
 

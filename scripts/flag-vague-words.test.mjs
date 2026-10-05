@@ -36,7 +36,7 @@ test("code, quotes and front matter are skipped", () => {
 
 test("a glossary definition is skipped, because it can only change in the glossary", () => {
   const lines = [
-    "Add a live region (an area a screen reader announces automatically when its content changes).",
+    "Add a live region (an area of the page that a screen reader announces automatically when the area's content changes).",
     "Then its label moves.",
   ].map((text, i) => ({ file: "skills/x/SKILL.md", line: i + 1, text }));
   assert.deepEqual(

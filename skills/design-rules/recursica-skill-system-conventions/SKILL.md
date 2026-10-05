@@ -30,7 +30,7 @@ Examples:
 | When a switch commits    | Immediately or on submit, but the same for every switch                  | `recursica-skill-selection-controls` |
 | Inline editing in tables | Every table supports inline editing, or no table supports inline editing | `recursica-skill-tables`             |
 
-**The convention applies generally because the user builds one mental model** (what a person expects from the tools and work they already know) of the whole application, not a separate mental model for each view. Mixed modes do more than make the mental model a little less accurate on one screen. Mixed modes take away the user's ability to predict any behavior, because the user can no longer trust the mental model.
+**The convention applies generally because the user builds one mental model** (what a person expects, based on the tools and work the person already knows) of the whole application, not a separate mental model for each view. Mixed modes do more than make the mental model a little less accurate on one screen. Mixed modes take away the user's ability to predict any behavior, because the user can no longer trust the mental model.
 
 **On a new surface, ask whether the user can see the behavior on screen.** If the user can see which mode is active, letting the mode vary by screen might be acceptable. If the user cannot see the mode, the mode belongs to the whole application. Save timing, editing on click, and committing on change are all invisible to the user.
 

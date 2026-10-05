@@ -9,7 +9,7 @@ metadata:
 
 # Live regions
 
-This skill holds the house rules for telling assistive technology that the page has changed, such as through a live region (an area a screen reader announces automatically when its content changes). The house rules are opinions, not neutral best practices. Treat each house rule as a constraint.
+This skill holds the house rules for telling assistive technology that the page has changed, such as through a live region (an area of the page that a screen reader announces automatically when the area's content changes). The house rules are opinions, not neutral best practices. Treat each house rule as a constraint.
 
 The house rules assume **complex enterprise web applications**, built on a component library that handles the accessibility of each component. The application has two tasks left. The application makes each announcement that no component makes. The application also gives each component the information the component needs to announce correctly.
 

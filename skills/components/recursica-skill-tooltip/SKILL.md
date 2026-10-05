@@ -82,7 +82,7 @@ The tooltip is the component most often used in place of a missing accessible na
 - **Never put meaning in a tooltip that appears nowhere else.** A tooltip is a single channel (color, shape, position or text, each a separate signal). `recursica-skill-system-conventions` forbids showing any meaning the user must receive in only one channel.
 - **No content inside a tooltip is announced as a control**, because a tooltip contains no controls.
 - **Text that is cut off must be available in full in the code**, not only in the tooltip. A screen reader user does not see the text being cut off, and must not hear a cut-off value either.
-- **The tooltip must not be announced as a live region** (an area a screen reader announces automatically when its content changes). A tooltip is a description, which a screen reader reads when the user reaches the control. A tooltip is not an alert that interrupts the user.
+- **The tooltip must not be announced as a live region** (an area of the page that a screen reader announces automatically when the area's content changes). A tooltip is a description, which a screen reader reads when the user reaches the control. A tooltip is not an alert that interrupts the user.
 
 ### Keyboard and non-mouse navigation
 

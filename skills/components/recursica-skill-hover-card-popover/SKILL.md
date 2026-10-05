@@ -54,7 +54,7 @@ The table compares the hover card and the popover.
 | Focus                | Never moves                                            | Moves to the first control when the popover opens, and **returns to the trigger** when the popover closes |
 | On a touch device    | Not available, because a touch screen has no hover     | The pattern that replaces a hover card                                                                    |
 
-**A popover is a non-modal dialog** (a window that leaves the rest of the page usable). A popover does not block the page, and a popover does not trap focus. The popover is the hover card's partner that opens on a click. Of the two, only the popover may hold a control the user can operate.
+**A popover is a non-modal dialog** (a window that leaves the page behind the window usable). A popover does not block the page, and a popover does not trap focus. The popover is the hover card's partner that opens on a click. Of the two, only the popover may hold a control the user can operate.
 
 ## Rules
 

@@ -95,7 +95,7 @@ Look up the name the code uses for each setting with the Recursica MCP server's 
 
 **A code library's default is not a house rule.** A drawer that blocks the page by default says nothing about what a Recursica panel should do. Never treat the drawer's modal default as a house rule. See `recursica-skill-design-router`.
 
-**A panel is non-modal (it leaves the rest of the page usable), and leaving the page usable is the purpose of a panel.** The user can still move around the application and act on the page behind the panel. `recursica-skill-panels-modals` settles this rule directly. A panel built to block the page is a modal built with the wrong component.
+**A panel is non-modal (the page behind stays usable), and leaving the page usable is the purpose of a panel.** The user can still move around the application and act on the page behind the panel. `recursica-skill-panels-modals` settles this rule directly. A panel built to block the page is a modal built with the wrong component.
 
 **NEVER put a table inside a panel.** A panel is narrow, and a table needs width. A table in a panel either scrolls horizontally, which is forbidden outright, or truncates every column. Show repeated content as groups of stacked fields instead. Put secondary material in a second tab, not below the main content. `recursica-skill-panels-modals` sets this rule.
 

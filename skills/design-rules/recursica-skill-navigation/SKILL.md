@@ -78,7 +78,7 @@ The 7 ± 2 limit makes the overflow rules possible to enforce. A horizontal navi
 
 **Use the simplest structure the content allows.** A plain list of links is a valid answer, and often the right answer. Use an accordion or a tree only when the content has a real hierarchy.
 
-**MUST use semantic HTML** (HTML elements chosen for their role, such as a button element for a button). Navigation is a list, ordered or unordered, and must be marked up as a list.
+**MUST use semantic HTML** (HTML elements chosen by role, such as a button element for a button). Navigation is a list, ordered or unordered, and must be marked up as a list.
 
 **A top-level item with no children MUST stay directly navigable.** A dashboard with no sub-navigation is a link, not an accordion header that does nothing. Navigation often mixes items the user can go to directly with groups that expand. Both kinds of item must work in the same navigation.
 

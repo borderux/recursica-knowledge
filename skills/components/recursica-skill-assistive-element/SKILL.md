@@ -73,7 +73,7 @@ The assistive element helps only when the code connects the assistive element to
 - **When an error appears, the error must be announced.** An error that is only visual fails silently. Mark the field as invalid, and connect the error message to the field. Both steps are required.
 - **The error message must make sense when read alone**, because the error message has replaced the help text. Restating the rule is not repetition. The error text is the only channel (color, shape, position or text, each a separate signal) left that states the rule.
 - **The assistive element's icon is decorative and must be silent.** The icon is the second visual signal. The words give the meaning.
-- **Do not announce the same text twice.** If the message is connected to the field, do not also repeat the message in a live region (an area a screen reader announces automatically when its content changes).
+- **Do not announce the same text twice.** If the message is connected to the field, do not also repeat the message in a live region (an area of the page that a screen reader announces automatically when the area's content changes).
 - **Use the assistive element to announce only the results of the user's own actions.** A message under a field that the user did not prompt is confusing when a screen reader reads the form in order.
 
 ### Keyboard and non-mouse navigation

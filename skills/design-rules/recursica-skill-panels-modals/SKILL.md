@@ -167,7 +167,7 @@ A panel exists to sit beside the page the panel depends on. Below the width wher
 
 **A modal traps focus.** The modal stops the Tab key from moving through the page. While the modal is open, keyboard focus always stays inside the modal.
 
-**A panel does not trap focus.** The user must be able to tab to other elements on the page, because a panel is not a modal state. A panel is non-modal (it leaves the rest of the page usable). A panel that traps focus contradicts the reason a panel exists.
+**A panel does not trap focus.** The user must be able to tab to other elements on the page, because a panel is not a modal state. A panel is non-modal (the page behind stays usable). A panel that traps focus contradicts the reason a panel exists.
 
 ## Set by the theme or the component
 

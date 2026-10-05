@@ -85,7 +85,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 ### Screen readers
 
-- **Announce the toast when the toast appears, without moving focus.** Use a live region (an area a screen reader announces automatically when its content changes) that is already in the page before the message is added. A live region created at the same moment as the message is often not announced at all.
+- **Announce the toast when the toast appears, without moving focus.** Use a live region (an area of the page that a screen reader announces automatically when the area's content changes) that is already in the page before the message is added. A live region created at the same moment as the message is often not announced at all.
 - **Announce an error toast right away, and let a success toast or a toast in the default style wait until the screen reader finishes speaking.** The urgent setting, `assertive`, interrupts what the screen reader is saying. Use `assertive` only for failures. Never let a confirmation interrupt what the user is reading or typing. Never leave a failure waiting in a queue. `recursica-skill-live-regions` owns this rule.
 - **Every toast is announced.** No toast appears silently. The announcement is the toast's text. Nothing else should repeat the toast's text.
 - **A screen reader does not announce the style.** The success style and the error style differ only in color and icon. The text must say which style the toast is, as in "Saved" versus "Could not save".
