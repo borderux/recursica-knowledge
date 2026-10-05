@@ -56,7 +56,7 @@ The rules below describe each option by role. The names in the standard UI kit a
 
 **Never disable a link.** The user can always go to a related object. If the destination should not exist for the current user, do not show the link at all. See `recursica-skill-navigation`.
 
-**Do not use a link as a primary call to action (CTA, the main button or link that prompts the user's next step).** A prominent CTA that goes to a new location is still a link. The CTA's prominence comes from the layout, not from restyling the link to look like a button.
+**A link can be the primary call to action (CTA, the main button or link that prompts the user's next step) when the CTA goes to a new location.** A prominent CTA that goes to a new location is still a link. The CTA's prominence comes from the layout, not from restyling the link to look like a button.
 
 ## Accessibility
 
