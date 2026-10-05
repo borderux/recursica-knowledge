@@ -41,13 +41,12 @@ The rules below describe each option by role, such as "the error state". The nam
 - **An error state and a disabled state.** The standard UI kit calls the state variant `states`, with the two options `error` and `disabled`.
 - **A single-line field.** The standard UI kit gives the file input the same minimum height, padding, border, corner radius, text style and placeholder style as a text field. The matching properties are the clearest sign that a file input is a single-line form field.
 - **One icon.** The icon shows that the field takes a file. The standard UI kit sets the icon size and the gap between the icon and the text.
-- **No progress state, no success state, and no error state for each file in the standard UI kit.** If the project adds a progress state, a success state, or an error state for each file in Theme Forge, use the project's state. Otherwise, see the open questions.
-- **No drop-zone variant in the standard UI kit.** If the project adds a drop-zone variant in Theme Forge, use the project's variant. Otherwise, see the open questions.
-- **No size variant in the standard UI kit.** If the project adds a size variant in Theme Forge, use the project's variant.
-- **No variant for more than one file in the standard UI kit.** If the project adds a variant for more than one file in Theme Forge, use the project's variant. Otherwise, see the open questions.
-- **No file chip, no dismiss control, and no clear control in the standard UI kit.** If the project adds a file chip, a dismiss control, or a clear control in Theme Forge, use the project's version. Otherwise, see the open questions.
+- **Upload feedback.** If the project has a progress state, a success state, or an error state for each file, use the project's state. Otherwise, see the open questions.
+- **Drop zone.** If the project has a drop-zone variant, use the drop-zone variant. Otherwise, see the open questions.
+- **More than one file.** If the project has a variant for more than one file, use that variant. Otherwise, see the open questions.
+- **File chip and clear control.** If the project has a file chip, a dismiss control, or a clear control, use the project's version. Otherwise, see the open questions.
 
-**Never build a focus state or a placeholder state.** The component draws the focus border and the placeholder text.
+**Never build a focus state or a placeholder state.** Every Recursica field already shows the focus border and the placeholder text.
 
 **Label placement is a variant.** The label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
 
@@ -75,7 +74,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
 A file input is a form field, and a file input follows the same rules as every other form field. The app must add every behavior in the two lists below. Most failures come from a control that works only with a pointer.
 
@@ -123,11 +122,11 @@ A file input is a form field, and a file input follows the same rules as every o
 
 ## Open questions
 
-- **Upload feedback.** The standard UI kit has no progress state, no success state, and no error state for each file on the file input. The user needs feedback on an upload, and the standard UI kit has no way to show the feedback. Do not invent a spinner, a progress bar, or a checkmark. Ask only when the project has no progress state, no success state, or no error state for each file.
-- **More than one file in one field.** Only the design-system website shows a "multiple files" content option. The standard UI kit has no variant for more than one file, and no tokens for each file. Whether a file input may hold more than one file, and how the file input then looks, is not settled. Do not rely on the "multiple files" option without asking. Ask only when the project has no variant for more than one file.
-- **The file chip and the clear icon.** Only the design-system website shows each file as a chip the user can dismiss, with an optional icon that clears every file. The standard UI kit defines no chip, no dismiss control, and no clear control on the file input. Do not rely on the chip or the clear icon without asking. Ask only when the project has no file chip, no dismiss control, or no clear control.
+- **Upload feedback.** The user needs feedback on an upload. Do not invent a spinner, a progress bar, or a checkmark. Ask only when the project has no progress state, no success state, or no error state for each file.
+- **More than one file in one field.** Only the design-system website shows a "multiple files" content option. Whether a file input may hold more than one file, and how the file input then looks, is not settled. Do not rely on the "multiple files" option without asking. Ask only when the project has no variant for more than one file.
+- **The file chip and the clear icon.** Only the design-system website shows each file as a chip the user can dismiss, with an optional icon that clears every file. Do not rely on the chip or the clear icon without asking. Ask only when the project has no file chip, no dismiss control, or no clear control.
 - **Retrying after the field rejects a file or an upload fails.** No rule says whether the user can retry in the same field, or what the field shows while a retry waits.
-- **A drop target on the file input.** The standard UI kit has no drop target on the file input. If the design needs drag and drop, ask. Ask only when the project has no drop-zone variant.
+- **A drop target on the file input.** If the design needs drag and drop, ask. Ask only when the project has no drop-zone variant.
 - **Truncating file names.** How much of a long file name to show, and from which end to truncate the file name, are not settled.
 
 ## Pre-flight checklist
