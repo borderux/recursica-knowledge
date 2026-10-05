@@ -42,12 +42,12 @@ A switch turns one item on or off. Each switch has a label, which names what the
 
 The rules below describe each option by role, such as "the selected state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-- **A switch field has three components:** a switch group, switch items and switches. A switch group sets the layout and the spacing between the switch items. A switch item holds the label of one switch. A switch holds the track (the bar), the thumb (the handle that slides), and the selection state. In the standard UI kit, the three components are `switch-group`, `switch-item`, and `switch`. Set each variant on the component that has the variant, never on another component. Use all three components together. Never place a bare `switch` beside a line of text instead.
+- **A switch field has three components:** a switch group, switch items and switches. A switch group holds the switch items and sets the layout. A switch item holds the label of one switch. A switch holds the track (the bar), the thumb (the handle that slides), and the selection state. In the standard UI kit, the three components are `switch-group`, `switch-item`, and `switch`. Set each variant on the component that has the variant, never on another component. Use all three components together. Never place a bare `switch` beside a line of text instead.
 - **Two selection states on the switch.** A switch is selected or unselected. In the standard UI kit, the variant is `selection-states`, with the options `selected` and `unselected`.
 - **A disabled state on each switch item.** The disabled state belongs to the switch item, so one switch can be unavailable while the switches beside the disabled switch stay usable. In the standard UI kit, the variant is `states`, with the option `disabled`. The switch item already shows the disabled look (the style of a control the user cannot use right now).
 - **Disabled combined with a selection state.** Only the design-system website shows `Enabled Selected`, `Disabled Selected`, `Enabled Unselected`, and `Disabled Unselected`. Each one combines the switch item's disabled state, on or off, with the switch's selection state. The four names are not four selection states.
 - **Label placement on the switch group.** Label placement is one decision for the whole field, so the label placement variant belongs to the switch group, not to each switch item.
-- **An icon on the thumb.** The thumb can show an icon, and the switch has a token for the icon size. The icon is a second visual sign of the state, together with the thumb's position and the track's color.
+- **An icon on the thumb.** The thumb can show an icon. The icon is a second visual sign of the state, together with the thumb's position and the track's color.
 - **Side of the label.** If the project has a variant for which side of the label the switch sits on, use the project's variant. Otherwise, see the open questions.
 - **Read-only is a separate component.** The read-only field, `read-only-field` in the standard UI kit, shows text instead of a control.
 
@@ -110,16 +110,9 @@ The three switch components already connect each switch to the item label, make 
 
 ## Styling set by tokens
 
-**Do not set or override the switch properties below.** The three switch components set each property.
+**Never set or override the switch's styling.** The theme sets every visual property of the switch, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the switch's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
-- On `switch`: `thumb-height`, `thumb-width`, `track-inner-padding`, `thumb-border-radius`, `track-border-radius`, `thumb-icon-size`, `track-width`, `thumb-elevation`, `track-elevation`.
-- On `switch-group`: `item-gap`, `padding`.
-- On `switch-item`: `label-gap`, `label-max-width`, `text`, `colors`.
-- Field colors and sizes from `globals.form.field`, and the disabled look from `globals.states.disabled`.
-- The gaps between the label and the field, and the spacing between items in a form: `globals.form.properties.label-field-gap-horizontal`, `label-field-gap-vertical`, `vertical-item-gap`.
-- The thumb's movement and any animation, the hover and active styling, and the focus ring.
-
-**Do not add margins or spacer elements between switches or around the switch group.** The components set the spacing.
+**Do not add margins or spacers between switches or around the switch group.** Do not set or override the thumb's movement, any animation, the hover and active looks, or the focus ring. The switch components already set each one.
 
 ## Related skills
 
@@ -161,5 +154,6 @@ The three switch components already connect each switch to the item label, make 
 - [ ] Clicking the item label toggles the switch.
 - [ ] Focus is never moved for the user, including when turning the switch on or off reveals fields below.
 - [ ] The disabled state is used only for switches that are unavailable for now. A value that can never be edited uses the read-only field.
-- [ ] Every variant, size, and state is one the Recursica MCP server lists for the project, and every property the switch components set comes from the components.
+- [ ] Every variant, size, and state is one the Recursica MCP server lists for the project.
+- [ ] No styling is set or overridden on the switch, and no container or spacer is added to change the switch's look.
 - [ ] Open questions were asked about, not decided: which side of the label the switch sits on, the error state, the state while a change is saving, and group size.
