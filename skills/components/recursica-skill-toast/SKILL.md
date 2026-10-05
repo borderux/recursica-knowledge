@@ -13,7 +13,7 @@ A toast reports what just happened, without interrupting the user's work.
 
 ## When to use a toast
 
-- **Confirming that an action worked**, such as saved, deleted, or sent. In the standard UI kit, the toast is the only component with a success style. For that reason, a success confirmation goes in a toast and not on a field.
+- **Confirming that an action worked**, such as saved, deleted, or sent. A success confirmation goes in a toast, never on a field.
 - **Offering an undo for the whole page.** `recursica-skill-buttons-links` sets this rule: a notification that offers an undo for the whole page is a toast.
 - **Reporting an error that belongs to no field**, such as a conflict on the server, a broken business rule, or a background job that failed.
 - **A low-priority update about a task**, when the user started the task or the task is being done for the user, and the update does not need the user's attention now.
@@ -51,7 +51,7 @@ The rules below describe each option by role, such as "the success style". The n
 
 **Put the meaning in the toast's text, and use the style only to support the text.** An error toast that reads "Something went wrong" in red tells a screen reader user nothing. In black and white, the same toast tells no user what happened. Name what happened: "Could not save — the invoice was changed by someone else." `recursica-skill-system-conventions` requires this rule.
 
-**A success confirmation belongs in a toast, not on a field.** In the standard UI kit, the toast is the only component with a success style. Do not add a green check mark to an input, or a "Saved" note to each field.
+**A success confirmation belongs in a toast, never on a field.** The rule has no exception. Never add a green check mark to an input, or a "Saved" note to each field.
 
 **Never use a toast as the save status that stays on screen.** `recursica-skill-forms` requires a status message that stays visible when each field saves separately. A toast disappears, so a toast cannot meet a requirement to stay visible. A toast each time a field saves also shows the user too many messages.
 

@@ -58,6 +58,8 @@ The rules below describe each option by role, such as "the error type". The name
 
 **Do not use the assistive element for marketing, reassurance, or filler text.** A user reads every line of help text and error text each time the user goes through the form.
 
+**Never show a success message or a success mark on a field.** A success confirmation goes in a toast. See `recursica-skill-toast`.
+
 ## Accessibility
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
@@ -99,7 +101,6 @@ The assistive element helps only when the code connects the assistive element to
 ## Open questions
 
 - **Character and word counters.** No rule says whether a character counter or a word counter belongs in the assistive element or in a different place.
-- **Confirming success on a field.** No rule says how to show a field that passed validation.
 - **Links in help text.** No rule says whether help text may contain a link, given that the assistive element must not contain a control.
 - **Several errors on one field at once.** No rule says whether the errors combine into one message, or only the first error shows.
 
@@ -117,4 +118,4 @@ The assistive element helps only when the code connects the assistive element to
 - [ ] The assistive element is not a tab stop, holds no control, and shows no text only on hover.
 - [ ] Focus does not move when an error appears.
 - [ ] Every type is one the project lists, such as the help type and the error type, and no third type is invented. Styling, margins, and width come from the assistive element.
-- [ ] Open questions were asked about, not decided: character and word counters, success on a field, links in help text, and several errors on one field.
+- [ ] Open questions were asked about, not decided: character and word counters, links in help text, and several errors on one field.
