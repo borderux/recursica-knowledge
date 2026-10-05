@@ -36,11 +36,10 @@ Pagination moves the user between pages of one list of records. Pagination is a 
 
 The rules below describe each option by role. The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-- **No variant and no state in the standard UI kit.** If the project adds a variant or a state in Theme Forge, use the project's variant or state.
-- **Three groups of controls, each styled separately.** The groups are the current page number, the other page numbers, and the previous and next controls. In the standard UI kit, the groups are `active-pages`, `inactive-pages` and `navigation-controls`. The standard UI kit also sets the colors and the gap between the controls. Never restyle the page numbers to match the previous and next controls, or the previous and next controls to match the page numbers.
+- **Pagination has three groups of controls, and each group is styled separately.** A page number is a control that goes to one page of the table. The current page number marks the page the table shows now. The previous control goes to the page before the current page, and the next control goes to the page after the current page. The three groups are the current page number, the other page numbers, and the previous and next controls. In the standard UI kit, the groups are `active-pages`, `inactive-pages` and `navigation-controls`. The standard UI kit also sets the colors and the gap between the controls. Never restyle the page numbers to match the previous and next controls, or the previous and next controls to match the page numbers.
 - **The current-page style is only a look, not a state in the code.** The current-page style makes the current page number look current. The style does not tell a screen reader that the page is current. Mark the current page as current in code as well.
-- **No rows-per-page select and no results readout in the standard UI kit.** A results readout is a line such as "Showing 1–10 of 200". If the project adds either one in Theme Forge, use the project's version. Otherwise, a required rows-per-page select or results readout is not part of the pagination component.
-- **No first-page or last-page control, no ellipsis, and no way to shorten a long list of page numbers in the standard UI kit.** Only the design-system website shows the three, as behaviors. If the project adds any of the three in Theme Forge, use the project's version. See the open questions.
+- **Rows-per-page select and results readout.** A results readout is a line such as "Showing 1–10 of 200". If the project has a rows-per-page select or a results readout, use the project's version. Otherwise, a required rows-per-page select or results readout is not part of the pagination component.
+- **First-page and last-page controls, an ellipsis, and a shortened list of page numbers.** Only the design-system website shows the three, as behaviors. If the project has a first-page or last-page control, an ellipsis, or a way to shorten a long list of page numbers, use the project's version. See the open questions.
 
 ## Rules
 
@@ -48,7 +47,7 @@ The rules below describe each option by role. The names in the standard UI kit (
 
 **The table sets the number of table rows on each page, not the pagination.** An interior table shows a fixed number of table rows, usually five or ten. Pagination never decides the number.
 
-**Never give the user a rows-per-page control, unless the project's UI kit lists a rows-per-page select.** The standard UI kit has no rows-per-page select, and no rule allows one.
+**Never give the user a rows-per-page control, unless the project's UI kit lists a rows-per-page select.** When the project has no rows-per-page select, no rule allows a rows-per-page control.
 
 **Make each page number a link with a real `href`, because a page is a location.** `recursica-skill-buttons-links` requires a link for every element on the screen that moves the user. `recursica-skill-navigation` requires every location to have a URL the user can reach, with an entry in the browser history. If a page of the table has no URL, the page number cannot have a real `href`. Fix the missing URL as a routing defect. Never build the page number as a button instead.
 
@@ -66,7 +65,7 @@ The rules below describe each option by role. The names in the standard UI kit (
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
 Pagination is a row of small controls that all look alike. Without names added in code, a screen reader announces nothing useful for any pagination control. Every accessibility failure in pagination is a failure of naming or of focus.
 
@@ -115,12 +114,12 @@ Pagination is a row of small controls that all look alike. Without names added i
 ## Open questions
 
 - **Whether the previous and next controls are missing, or present but unusable, on the first page and the last page.** The rule that the controls are never disabled links is settled, above. Which of the two other options the house wants is not settled. Ask, and apply the answer everywhere.
-- **First-page and last-page controls.** Only the design-system website shows first-page and last-page controls, and no token supports the controls. Do not assume the controls are available. The same goes for an ellipsis, and for shortening a long list of page numbers. The standard UI kit defines only `navigation-controls`. Do not build any of the controls without asking. Ask about each control, and about shortening the list, only when the project has no such control.
+- **First-page and last-page controls.** Only the design-system website shows first-page and last-page controls. Do not assume the controls are available. The same goes for an ellipsis, and for shortening a long list of page numbers. Do not build any of the controls without asking. Ask about each control, and about shortening the list, only when the project has no such control.
 - **Whether a page of a table is a real route with a history entry.** The answer decides whether a page number can be a link with an `href` at all. No rule says whether a table's pages are routes.
-- **Rows per page as the user's choice.** The standard UI kit has no rows-per-page select. No rule says whether the user may change the number of table rows on each page. Ask only when the project has no rows-per-page select.
-- **A results readout**, such as "Showing 1–10 of 200". The standard UI kit has no results readout. No rule says whether a results readout is required, or where the readout sits next to the pagination controls. Ask only when the project has no results readout.
+- **Rows per page as the user's choice.** No rule says whether the user may change the number of table rows on each page. Ask only when the project has no rows-per-page select.
+- **A results readout**, such as "Showing 1–10 of 200". No rule says whether a results readout is required, or where the readout sits next to the pagination controls. Ask only when the project has no results readout.
 - **Where pagination sits in the footer.** No rule says which side of the footer pagination takes, or how pagination fits beside the totals the footer also shows.
-- **Loading and error states between pages.** `recursica-skill-tables` lists table loading states as having no owner. The standard UI kit's loader has no determinate variant.
+- **Loading and error states between pages.** `recursica-skill-tables` lists table loading states as having no owner.
 
 ## Pre-flight checklist
 
