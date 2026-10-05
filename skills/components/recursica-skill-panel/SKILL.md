@@ -125,8 +125,7 @@ This component also follows the accessibility baseline in `recursica-skill-syste
 - **Move focus into the panel when the panel opens.** Put focus on the first meaningful element: the first field, or the panel container. Put focus on the close button only when no other element can take focus. Never leave focus on the element that opened the panel.
 - **Return focus to the element that opened the panel when the panel closes.** Teams skip this step more often than any other step. Skipping the step drops the user at the top of the document.
 - **Escape closes the panel**, and closing the panel never saves.
-- **Do not trap focus in a non-modal panel.** Tab from the last control in the panel must move on into the page, in document order. Shift-Tab must move back into the panel. The user can still reach the page behind the panel.
-- **Trap focus only in a modal panel.** In a modal panel, the page behind the panel must also be inert and must not scroll. A panel that traps focus while the page stays usable lets a mouse user leave the panel, but not a keyboard user.
+- **Never trap focus in a panel.** Tab from the last control in the panel must move on into the page, in document order. Shift-Tab must move back into the panel. The user can still reach the page behind the panel. A panel that traps focus while the page stays usable lets a mouse user leave the panel, but not a keyboard user.
 - **The tab order inside the panel follows the visual order**: the content, then the footer buttons, then the close control in the place the close control appears. The tab order must not jump between the panel and the page unpredictably.
 - **Never make closing the panel pointer-only.** Escape and the close control both close the panel, no matter what a click outside the panel does.
 
@@ -175,7 +174,7 @@ This component also follows the accessibility baseline in `recursica-skill-syste
 - [ ] Every form in the panel stacks the labels, uses a single column, and follows the application's one save mode.
 - [ ] Label placement is one decision for the whole form. Every field in the form stacks, with no mix of stacked and side-by-side labels at one breakpoint.
 - [ ] The panel footer has one primary action at the bottom right, with the alternative directly to the left of the primary action.
-- [ ] Whether the panel is modal or non-modal is decided and stated. The role, the inert content, and the focus behavior all match the decision.
+- [ ] The panel is non-modal: the panel traps no focus, and the page behind the panel stays usable and reachable by assistive technology.
 - [ ] Focus moves into the panel when the panel opens, and returns to the element that opened the panel when the panel closes.
 - [ ] Escape closes the panel without saving, and closing the panel is never pointer-only.
 - [ ] Focus is not trapped, and the page behind the panel is not made inert.
