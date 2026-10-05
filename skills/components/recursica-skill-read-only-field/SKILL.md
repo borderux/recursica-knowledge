@@ -93,20 +93,15 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 ## Styling set by tokens
 
-**Do not set or override the read-only field properties below.** The read-only field component sets each property.
+**Never set or override the read-only field's styling.** The theme sets every visual property of the read-only field, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the read-only field's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
-- `min-height`.
-- `text` styling.
-- `colors`, including the read-only background from `globals.form.field.colors.background-color-read-only`.
-- Field width and sizing from `globals.form.field.size`.
-- The label-field gaps and `vertical-item-gap` from `globals.form.properties`.
-- The label-to-value association.
+Never set or override the connection between the label and the value. The read-only field makes the connection.
 
 ## Related skills
 
 - `recursica-skill-forms` — label placement, the container-width test, one placement per form, the rule that a read-only field is a separate component rather than a styled-down input, and the rule that no form control goes inside a card.
 - `recursica-skill-dates-and-currency` — the read-only date format, right alignment, precision, durations, and the rule that the format follows focus, which gives the read-only field the display format.
-- `recursica-skill-label` — the label component, the label's placement variant, and the gap set aside for an edit icon.
+- `recursica-skill-label` — the label component, the label's placement variant, and the room a label makes for an edit icon.
 - `recursica-skill-selection-controls` — disabled versus read-only, and when a value should not be a form control at all.
 - `recursica-skill-tables` — where repeating read-only values go instead.
 - `recursica-skill-system-conventions` — the accessibility baseline every component follows.
@@ -117,7 +112,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 ## Open questions
 
-- **The editable read-only field.** Only the design-system website shows an "Is editable" behavior, with an edit icon that appears on hover and sends the user to another flow. `recursica-skill-label` sets aside an `edit-icon-gap` without saying what the gap triggers. A control that appears only on hover also conflicts with the accessibility rules above. Ask before settling the question or relying on the behavior.
+- **The editable read-only field.** Only the design-system website shows an "Is editable" behavior, with an edit icon that appears on hover and sends the user to another flow. `recursica-skill-label` makes room for an edit icon on a label without saying what the edit icon triggers. A control that appears only on hover also conflicts with the accessibility rules above. Ask before settling the question or relying on the behavior.
 - **Required and optional markers.** A source outside the UI kit describes turning on an optional label or a required asterisk on a read-only field. The description contradicts the fact that a read-only field has no input to require. Do not rely on the markers without asking.
 - **Empty and null values.** No rule says what a read-only field shows when the value is missing. `recursica-skill-tables` has a rule for null table cells, but no rule extends the table rule to a field.
 - **Long values, or values on several lines.** No rule says whether a long value wraps, scrolls or is truncated. Ask only when the project has no size variant and no `rows` option.
@@ -143,5 +138,6 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - [ ] No part of the read-only field depends on hover or focus.
 - [ ] Any edit control stays visible, is a separate tab stop, has an accessible name that names the control's object, and keeps the focus ring.
 - [ ] Every variant and option is one the Recursica MCP server lists for the project, and no variant or option is invented.
-- [ ] Styling comes from the read-only field component, and read-only fields and editable fields keep different looks.
+- [ ] No styling is set or overridden on the read-only field, and no container or spacer is added to change the read-only field's look.
+- [ ] Read-only fields and editable fields keep different looks.
 - [ ] Open questions were asked about, not decided: the edit control that appears on hover, required and optional markers, empty and null values, long values, help text, and use in a compound control.
