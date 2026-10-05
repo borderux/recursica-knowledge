@@ -41,7 +41,7 @@ The rules below describe each option by role, such as "the selected state". The 
 
 **A radio field has three components: a group, items and radio buttons. Use all three components together.**
 
-- **A group** holds the items. The group sets the label placement and the spacing between the items. The standard UI kit calls the group `radio-button-group`.
+- **A group** holds the items. The group sets the label placement. The standard UI kit calls the group `radio-button-group`.
 - **An item** holds one option's label and pairs the label with one radio button. The standard UI kit calls the item `radio-button-item`.
 - **A radio button** is the circle that shows whether the item's option is selected. The standard UI kit calls the radio button `radio-button`.
 
@@ -51,7 +51,7 @@ Never build a radio group in a form from radio buttons alone, without the group 
 - **Label placement, on the group.** Label placement is one decision for the whole field, so the variant sits on the group and not on each item.
 - **A disabled state, on the item.** In the standard UI kit, the variant is `states`, with the option `disabled`. The disabled state sits on the item, so one option can be unavailable while the user can still choose among the other options.
 - **Never use an indeterminate state.** A radio group is never partly selected.
-- **Size.** If the project has a size variant, use the size variant. Otherwise, the radio button component sets the size of the circle and the icon inside the circle.
+- **Size.** If the project has a size variant, use the size variant.
 - **Read-only is a separate component.** The read-only field, `read-only-field` in the UI kit, shows text instead of an input.
 
 **Label placement is a variant, the same variant every field has.** A group's label sits beside the stack of options or above the stack of options. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`.
@@ -111,16 +111,11 @@ The radio components pair each radio button with the item label, control where f
 
 ## Styling set by tokens
 
-**Do not set or override the radio properties below.** The radio components set each property.
+**Never set or override the radio button's styling.** The theme sets every visual property of the radio button, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the radio button's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
-- On `radio-button`: `border-radius`, `border-size`, `size`, `icon-size`.
-- On `radio-button-group`: `item-gap`, `padding`.
-- On `radio-button-item`: `label-gap`, `max-width`, `text`, `colors`.
-- Field colors and sizes from `globals.form.field`, and the disabled styling from `globals.states.disabled`.
-- The gaps between the label and the field, and the spacing between items in a form: `globals.form.properties.label-field-gap-horizontal`, `label-field-gap-vertical`, `vertical-item-gap`.
-- The selected dot, hover and active styling, the focus ring, and roving focus inside the group.
+Never set or override the styling of the radio group or the radio items either.
 
-Do not add margins or spacer elements between the options or around the radio group. The radio components set the spacing.
+**Do not add margins or spacer elements between the options or around the radio group.**
 
 ## Related skills
 
@@ -158,6 +153,7 @@ Do not add margins or spacer elements between the options or around the radio gr
 - [ ] Clicking the item label selects the option.
 - [ ] Focus is never moved for the user, including when an option reveals fields below.
 - [ ] The disabled state is used only for options that are unavailable for now. Values that can never be edited use the read-only field.
-- [ ] Every variant, size, and state is one the project's UI kit lists, and no variant or option is invented. Every property the radio components set comes from the components.
+- [ ] Every variant, size, and state is one the project's UI kit lists, and no variant or option is invented.
+- [ ] No styling is set or overridden on the radio button, the radio group or the radio items, and no container or spacer is added to change the radio button's look.
 - [ ] The radio group saves with the form, in the same save mode as every other field and control in the application.
 - [ ] Open questions were asked about, not decided: the group error state, clearing a group, and radio buttons in table rows.
