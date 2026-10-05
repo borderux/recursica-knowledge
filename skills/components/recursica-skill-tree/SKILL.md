@@ -38,9 +38,8 @@ A tree shows data arranged as parent items and child items. A tree lets the user
 The rules below describe each variant and option by role, such as "the selected option". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
 - **Selection.** A node is either selected or not selected. In the standard UI kit, the variant is `selection-states`, with the options `unselected` and `selected`.
-- **Indentation set by the tree component.** The tree component sets how far each level is indented, with the `indent` token (a named design value, such as a color or a size, set by the design system). Do not calculate indentation by hand.
-- **An expand control separate from a node's label.** The expand control opens and closes a node. The `button-node-gap` token shows that the expand control and the node label are two separate elements. Selecting a node and expanding a node are therefore different actions, with a mouse and with the keyboard.
-- **Expanded and collapsed look.** If the project has an expanded state or a collapsed state, use the project's state. Otherwise, do not invent a rotation or a second icon token to show an open node. See the open questions.
+- **An expand control separate from a node's label.** The expand control opens and closes a node. The expand control and the node label are two separate elements. Selecting a node and expanding a node are therefore different actions, with a mouse and with the keyboard.
+- **Expanded and collapsed look.** If the project has an expanded state or a collapsed state, use the project's state. Otherwise, do not invent a rotation or a second icon token (a named design value, such as a color or a size, set by the design system) to show an open node. See the open questions.
 
 ## Rules
 
@@ -55,6 +54,8 @@ The rules below describe each variant and option by role, such as "the selected 
 **Use a tree for a real hierarchy, and an accordion for showing and hiding sections at one level.** `recursica-skill-navigation` states that an accordion has one level unless the project has a nesting option, and that content with several levels uses a tree. Never nest an accordion to look like a tree, and never put a tree inside an accordion panel. If the sections are peers at one level, use an accordion instead. See `recursica-skill-accordion`. The choice between a tree and an accordion is settled, and no third case exists.
 
 **Do not put a form, a table, or a card inside a tree node.** A node is a label, not a container.
+
+**Do not calculate indentation by hand.** The theme sets how far each level of the tree is indented.
 
 **Never show depth with indentation alone.** Indentation is one visual channel (color, shape, position or text, each a separate signal). `recursica-skill-system-conventions` requires a second channel. In a tree, the second channel is each node's level, set in the code.
 
@@ -83,19 +84,13 @@ A tree has the most specific keyboard rules of any component, and the tree's key
 - **The Up Arrow and Down Arrow keys move focus between the visible nodes, across levels.** Which nodes are visible depends on which nodes are open at the moment.
 - **The Right Arrow key expands a collapsed node, then moves focus into the node. The Left Arrow key collapses an expanded node, then moves focus to the node's parent.** Users expect these arrow keys from trees in other tools. Do not change the arrow keys.
 - **Home moves focus to the first visible node, and End moves focus to the last visible node.**
-- **Enter activates the focused node.** Enter selects the node, or opens the link when the node is a link. Expanding a node and activating a node must be distinguishable, because the `button-node-gap` token makes the expand control and the node separate controls.
+- **Enter activates the focused node.** Enter selects the node, or opens the link when the node is a link. Expanding a node and activating a node must be distinguishable, because the expand control and the node are separate controls.
 - **Never move focus automatically** when a node expands. Focus stays on the node the user acted on.
 - **Never show a node's actions or the node's expand control only on hover.**
 
 ## Styling set by tokens
 
-**Do not set or override the tree properties below.** The tree component sets each property.
-
-- `indent` — how far each level is indented.
-- `item-gap`, `button-node-gap`.
-- `vertical-padding`, `horizontal-padding`.
-- `border-size`, `border-radius`, `max-width`.
-- Selected and unselected styling, including hover and focus.
+**Never set or override the tree's styling.** The theme sets every visual property of the tree, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the tree's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 ## Related skills
 
@@ -132,6 +127,7 @@ A tree has the most specific keyboard rules of any component, and the tree's key
 - [ ] The tree is a single tab stop. Up Arrow and Down Arrow move focus, Right Arrow expands, Left Arrow collapses, Home and End move to the first and last visible nodes, and Enter activates the node.
 - [ ] Focus stays on a node when the node expands. The focus ring is visible, and looks different from the selected state.
 - [ ] Nothing in the tree appears only on hover. Sub-levels open on click.
-- [ ] Indentation comes from the `indent` token, and no expanded state or icon was invented.
+- [ ] No styling is set or overridden on the tree, and no container or spacer is added to change the tree's look.
+- [ ] Indentation comes from the theme, and no expanded state or icon was invented.
 - [ ] Every variant, option, and state is one the Recursica MCP server lists for the project, and no variant or option is invented.
 - [ ] Open questions were asked about, not decided: the look of an expanded node, choosing several items, a maximum depth, selecting a parent node, loading children when a node opens, dragging to reorder or move a node, and the empty state.
