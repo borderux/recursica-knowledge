@@ -43,8 +43,8 @@ For each case below, use the component the table names instead of adapting a tex
 The rules below describe each option by role, such as "the label beside the field". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
 - **An error state and a disabled state.** In the standard UI kit, the two states are `error` and `disabled`.
-- **A fixed number of rows.** The textarea's tokens set the number of rows, and the component keeps that number fixed. Do not set the number of rows on any one textarea. Do not set a height. Do not set a row count to fit a particular answer. Do not wrap the textarea in a container to stretch the textarea. If the fixed height is wrong for a case, ask a person. See the open questions.
-- **Size and width.** If the project has a size variant or a width property, use the project's variant or property. Otherwise, the form's field-size tokens set the textarea's width.
+- **A fixed number of rows.** The theme sets the number of rows, and the textarea keeps that number fixed. Do not set the number of rows on any one textarea. Do not set a height. Do not set a row count to fit a particular answer. Do not wrap the textarea in a container to stretch the textarea. If the fixed height is wrong for a case, ask a person. See the open questions.
+- **Size and width.** If the project has a size variant or a width property, use the project's variant or property.
 - **Read-only value.** A read-only value uses a separate component, the read-only field, not a read-only state on the textarea. The read-only field has the same label-placement variant and no input.
 
 **Label placement is a variant.** A field's label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
@@ -69,7 +69,7 @@ The rules below describe each option by role, such as "the label beside the fiel
 
 **Pair the error state with a signal that is not color: an icon, or the error message.** `recursica-skill-system-conventions` requires a signal that is not color.
 
-**Do not add spacing around a textarea to make up for the textarea's height.** The components set the spacing between fields and between form sections. A textarea is the tallest field in a form, and the difference in height is expected. `recursica-skill-forms` sets this rule.
+**Do not add spacing around a textarea to make up for the textarea's height.** The theme sets the spacing between fields and between form sections. A textarea is the tallest field in a form, and the difference in height is expected. `recursica-skill-forms` sets this rule.
 
 **Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
@@ -109,15 +109,11 @@ The textarea component connects the label to the input and provides the focus ri
 
 ## Styling set by tokens
 
-**Do not set or override the textarea properties below.** The component sets each property.
+**Never set or override the textarea's styling.** The theme sets every visual property of the textarea, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the textarea's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
-- `border-radius`, `horizontal-padding`, `vertical-padding`, `border-size`.
-- `rows`, which sets the field's height. The component keeps `rows` fixed.
-- The field's width and size, from `globals.form.field.size`.
-- The `text` style and `placeholder-opacity`.
-- `colors` for each layer (a numbered background level, 0 to 3, that sets the colors of the components on that level). The colors include the focus border from `globals.form.field.colors.border-selected` and the disabled look that all components share, from `globals.states.disabled`.
-- The gaps between the label and the field, and `vertical-item-gap`, from `globals.form.properties`.
-- The connection between the label and the input, and the handling of keys inside the field.
+The textarea's height is fixed.
+
+The textarea component connects the label to the input and handles the keys inside the field. Do not set or override the label connection or the key handling.
 
 **Never style an unfocused textarea to look disabled.** An editable field must look editable when the field does not have focus.
 
@@ -135,7 +131,7 @@ The textarea component connects the label to the input and provides the focus ri
 
 ## Open questions
 
-- **Growing to fit the text.** The UI kit fixes `rows`. The design-system website shows a vertical-resize variant with the options `auto` and `custom`. The UI kit and the website disagree. A person must decide whether the field grows with the text, and whether the field has a handle the user can drag. Do not rely on a resize variant without asking. Ask only when the project has no resize variant.
+- **Growing to fit the text.** The UI kit fixes the number of rows. The design-system website shows a vertical-resize variant with the options `auto` and `custom`. The UI kit and the website disagree. A person must decide whether the field grows with the text, and whether the field has a handle the user can drag. Do not rely on a resize variant without asking. Ask only when the project has no resize variant.
 - **Text longer than the fixed number of rows.** A source outside the UI kit describes a "default fixed height before content truncation". No source says whether the extra text scrolls or is cut off. Cutting off the text a user typed would be a serious problem. Do not rely on either behavior without asking.
 - **The character counter.** The design-system website shows a character counter. Nobody has settled where a count goes or what happens at the limit. `recursica-skill-assistive-element` has the same open question. Do not rely on a counter without asking. Ask only when the project has no character counter.
 - **A rich text editor.** Ask only when the project has no rich text editor. Do not build a rich text editor out of a textarea.
@@ -156,7 +152,8 @@ The textarea component connects the label to the input and provides the focus ri
 - [ ] Tab leaves the field. Enter inserts a line break and does not submit the form. Escape does not clear the field.
 - [ ] Text that overflows the field scrolls from the keyboard, and the user never needs to resize the field to finish the text.
 - [ ] Focus never moves automatically, and no live count is announced on every keystroke.
-- [ ] `rows`, height, and spacing come from the component, with no wrapper and no custom margins.
+- [ ] No styling is set or overridden on the textarea, and no container or spacer is added to change the textarea's look.
+- [ ] No number of rows and no height is set on the textarea, and the textarea has no wrapper and no custom margins.
 - [ ] Every variant, size, and state is one the project's UI kit lists, and no variant or option is invented.
 - [ ] Text that nobody can edit uses the read-only field, not a disabled textarea.
 - [ ] Open questions were asked about, not decided: growing to fit the text, text longer than the fixed number of rows, the character counter, a rich text editor, and a minimum length.
