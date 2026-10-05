@@ -41,10 +41,9 @@ A number input records a quantity that the user types.
 The rules below describe each option by role, such as "the error state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
 - **An error state and a disabled state.** The standard UI kit calls the state variant `states`, with the two options `error` and `disabled`.
-- **No warning state and no success state in the standard UI kit.** If the project adds a warning state or a success state in Theme Forge, use the project's state.
-- **No size variant in the standard UI kit.** If the project adds a size variant in Theme Forge, use the project's size variant. Otherwise, the number input has a fixed minimum height, and the form field tokens set the field size.
-- **No stepper in the standard UI kit.** The standard UI kit has no tokens for increase and decrease buttons, no collapsed or expanded state, and no content variant. If the project adds a stepper, a collapsed or expanded state, or a content variant in Theme Forge, use the project's version. Otherwise, do not claim that increase and decrease buttons exist. Do not build increase and decrease buttons from buttons placed beside the field. See the open questions.
-- **Read-only is a separate component, not a state.** The read-only field, `read-only-field` in the standard UI kit, has the same label-placement variant and no input.
+- **Size.** If the project has a size variant, use the size variant. Otherwise, the number input has a fixed minimum height, and the form field tokens set the field size.
+- **Stepper.** If the project has a stepper, a collapsed or expanded state, or a content variant, use the project's version. Otherwise, do not claim that increase and decrease buttons exist. Do not build increase and decrease buttons from buttons placed beside the field. See the open questions.
+- **Read-only is a separate component, not a state.** A read-only field shows a label and text, with no input. The standard UI kit calls the read-only field `read-only-field`. A read-only field has the same label-placement variant as the number input.
 
 **Label placement is a variant.** The label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
 
@@ -66,7 +65,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 **A currency symbol or a unit is an affix (text attached to the start or end of the field).** The currency symbol or unit is not part of the label wording, and is not joined onto the value. The currency symbol goes before the value, and the unit goes after the value. When several amounts sit in one column, put the currency symbol in the column header instead. See `recursica-skill-dates-and-currency`.
 
-**State the minimum, the maximum, and the step in the help text**, before the user can type a value that breaks the limits. Preventing an error is better than catching the error.
+**State the minimum, the maximum, and the step between allowed values in the help text below the field**, before the user can type a value that breaks the limits. Preventing an error is better than catching the error.
 
 **Zero is a value, and an empty field is not zero.** Do not pre-fill `0` to avoid an empty field. A submitted zero states that the value is zero.
 
@@ -93,7 +92,7 @@ The number input component connects the label to the input and provides the focu
 
 - **Give the field a real label.** Never let the placeholder text be the accessible name (the name a screen reader reads out for a control). A screen reader does not announce placeholder text as a label, and the placeholder text disappears when the user types. A field with no label has no accessible name.
 - **State the unit in text**, in the label or in the help text. A screen reader may not announce a visual prefix or suffix with the value. A currency symbol in a column header is not connected to the field at all. A user who hears "1000" with no unit does not know what the number means.
-- **State the expected format, the minimum, and the maximum in the help text.** Describe in words the thousands separators, the decimal places, and whether negative numbers are allowed. A mask tells a screen reader nothing. Right alignment with two decimal places also tells a screen reader nothing.
+- **State the expected format, the minimum, and the maximum in the help text.** Describe in words the thousands separators, the decimal places, and whether negative numbers are allowed. A mask (a pattern that guides what the user types) tells a screen reader nothing. Right alignment with two decimal places also tells a screen reader nothing.
 - **Give every icon inside the field that the user can use an accessible name**, such as a clear control, or a stepper button if the project ever adds a stepper. Decorative icons must be silent. A screen reader must never announce a decorative icon as an unlabeled graphic.
 - **When the field limits the range, expose the current value, the minimum, and the maximum to assistive technology.** A screen reader user then knows the maximum.
 - **A screen reader announces the error message.** The error message replaces the help text, and a screen reader reads only the error message. The error message must state the rule and the limits.
@@ -136,9 +135,9 @@ The number input component connects the label to the input and provides the focu
 
 ## Open questions
 
-- **Increase and decrease controls.** Only the design-system website shows increase and decrease controls, with no token behind the controls. The standard UI kit defines no stepper tokens at all: no increase button, no decrease button, and no step. Do not build increase and decrease controls from buttons placed beside the field. Nothing in the design system promises a stepper. A person must decide whether the number input ever gets a stepper, and what the stepper's step would be. Do not rely on a stepper without asking. Ask only when the project has no stepper.
-- **Collapsed and expanded states.** Only the design-system website shows a `collapsed` state and an `expanded` state. Neither state is a variant in the standard UI kit. The two states seem to describe whether a stepper is visible. Do not build either state, and do not rely on either state without asking. Ask only when the project has no collapsed and expanded states.
-- **A content variant.** Only the design-system website shows a content variant, with the options `unvalued`, `unvalued with placeholder`, and `valued`, and no token behind the variant. The content variant is not a variant in the standard UI kit. No rule says whether a number input should show a placeholder at all. Do not rely on the content variant without asking. Ask only when the project has no content variant.
+- **Increase and decrease controls.** Only the design-system website shows increase and decrease controls. Do not build increase and decrease controls from buttons placed beside the field. A person must decide whether the number input ever gets a stepper, and what the stepper's step would be. Do not rely on a stepper without asking. Ask only when the project has no stepper.
+- **Collapsed and expanded states.** Only the design-system website shows a `collapsed` state and an `expanded` state. The two states seem to describe whether a stepper is visible. Do not build either state, and do not rely on either state without asking. Ask only when the project has no collapsed and expanded states.
+- **A content variant.** Only the design-system website shows a content variant, with the options `unvalued`, `unvalued with placeholder`, and `valued`. No rule says whether a number input should show a placeholder at all. Do not rely on the content variant without asking. Ask only when the project has no content variant.
 - **Formatting while the user types.** No rule says whether the field formats the value while the user types, such as adding thousands separators, or only when the field loses focus.
 - **Negative values.** No rule says whether the accounting parentheses from `recursica-skill-dates-and-currency` are ever used inside a number input, or only when a value is shown outside an input.
 - **Choosing the unit.** No pattern exists for a value whose unit the user can switch, such as kg or lb.
