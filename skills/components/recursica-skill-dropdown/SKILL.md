@@ -9,7 +9,7 @@ metadata:
 
 # Dropdown
 
-A dropdown is a form field that hides the list of options until the user opens the dropdown. The user picks one value from the list.
+A dropdown is a form field that hides the list of options until the user opens the dropdown. The user picks one value from the list. The open menu is the list of options the user sees after opening the dropdown.
 
 ## When to use a dropdown
 
@@ -41,11 +41,11 @@ A dropdown is a form field that hides the list of options until the user opens t
 The rules below describe each option by role, such as "the error state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
 - **An error state and a disabled state.** The standard UI kit calls the state variant `states`, with the two options `error` and `disabled`.
-- **The placeholder and the chosen value are not variants.** The design-system website shows the placeholder and the chosen value only as examples of content. In the UI kit, both are the same `text` property with different content, which is why no placeholder variant exists. The field's colors cover both.
-- **Never build a focus state**, even where a source outside the UI kit lists a focused state. The component draws the focus border.
-- **No size variant in the standard UI kit.** If the project adds a size variant in Theme Forge, use the project's variant. Otherwise, the dropdown has a fixed height, the same height as every other single-line field.
-- **No multi-select variant, no variant that groups options into sections, and no searchable variant in the standard UI kit.** If the project adds one of these variants in Theme Forge, use the project's variant. Otherwise, see the open questions.
-- **The standard UI kit defines the closed field only.** The icon size and the gap between the icon and the text cover a leading icon and the expand indicator. The open menu, the options in the menu, and the option rows are not in the dropdown's inventory in the standard UI kit.
+- **The placeholder and the chosen value are not variants.** The design-system website shows the placeholder and the chosen value only as examples of content. In the UI kit, both are the same `text` property with different content. The field's colors cover both.
+- **Never build a focus state**, even where a source outside the UI kit lists a focused state. The dropdown already shows the focus border.
+- **Size.** If the project has a size variant, use the project's size variant. Otherwise, the dropdown has a fixed height, the same height as every other single-line field.
+- **Multi-select, grouped options and search.** If the project has a multi-select variant, a variant that groups options into sections, or a searchable variant, use the project's variant. Otherwise, see the open questions.
+- **Icons.** The icon size and the gap between the icon and the text apply to a leading icon and to an expand indicator (the arrow at the end of the closed field).
 - **Read-only is a separate component.** The read-only field, `read-only-field` in the UI kit, shows text instead of an input.
 
 **Label placement is a variant.** The label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
@@ -71,7 +71,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 **The open menu must not be cut off by the viewport, or by any scrolling ancestor** (a container further up the page that scrolls). Check the open menu near the bottom of the page, inside a panel, and inside a modal. A menu the user cannot see in full is the failure a dropdown is most likely to have.
 
-**Put the selection rule in the assistive text**, such as "You can only select one option", a minimum, or a limit. See `recursica-skill-assistive-element`. Do not put the selection rule in a validation message, which the user sees only after breaking the rule.
+**Put the selection rule in the assistive text**, the help text below the field, such as "You can only select one option", a minimum, or a limit. See `recursica-skill-assistive-element`. Do not put the selection rule in a validation message, which the user sees only after breaking the rule.
 
 **On error, the error message replaces the assistive text.** The error message is not added to the assistive text. The error message must restate the rule the user broke. The error state must have a signal that is not color, as well as the color change.
 
@@ -90,7 +90,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
-The dropdown component connects the label to the field and provides the focus ring. The dropdown component also handles opening the list and selecting an option. The app is responsible for every item in the two lists below, including what a screen reader announces when the user opens the list and selects an option. Of all controls, a dropdown is the most likely to work with a mouse and fail with a keyboard or a screen reader.
+The dropdown already links the label to the field and shows the focus ring. The dropdown also opens the list and selects the option the user picks. The app is responsible for every item in the two lists below, including what a screen reader announces when the user opens the list and selects an option. Of all controls, a dropdown is the most likely to work with a mouse and fail with a keyboard or a screen reader.
 
 ### Screen readers
 
@@ -98,7 +98,7 @@ The dropdown component connects the label to the field and provides the focus ri
 - **A screen reader must announce the field as a control for picking a value, with the field's current value.** The user then hears the selected value without opening the list.
 - **The code must expose whether the list is expanded or collapsed.** A rotating chevron is only a visual cue. The user must hear that the list opened, and hear that the list closed.
 - **The code must expose the number of options when the list opens**, as in "5 of 40" or a similar phrase, so the user knows how long the list is. The open list is a listbox (a list the user picks one or more options from).
-- **A screen reader must announce the active option as the user moves through the list**, with the option's position in the list and whether the option is selected. A highlight that moves with no announcement makes the list unusable without sight.
+- **A screen reader must announce the active option (the highlighted option in the open list) as the user moves through the list**, with the option's position in the list and whether the option is selected. A highlight that moves with no announcement makes the list unusable without sight.
 - **The selected option must be marked in code, never shown by a checkmark or a highlight alone.** `recursica-skill-system-conventions` sets this rule.
 - **On error, the error message is the only text announced**, because the error message has replaced the assistive text. The error message must state the rule. "Invalid input" is not an error message.
 - **Give the expand indicator no separate announcement.** The expand indicator is part of the field, not a second control. A screen reader must never find the expand indicator as an unlabeled graphic or as a separate button.
@@ -109,7 +109,7 @@ The dropdown component connects the label to the field and provides the focus ri
 - **The dropdown is one tab stop (a place the Tab key lands), whether the list is open or closed.** Tab must never move through the options. While the list is open, Tab either closes the list or moves past the whole field.
 - **Enter, Space, and the Down Arrow key open the list.** The Up Arrow and Down Arrow keys move the active option. Home and End jump to the first option and the last option. Enter selects the active option and closes the list.
 - **Escape closes the list without changing the value, and focus returns to the field.** Both behaviors are required. Focus must never drop to the top of the page or to the page body.
-- **The dropdown component handles every key press inside the dropdown**, including type-ahead (typing a letter jumps to an option that starts with the letter) and any wrapping from one end of the list to the other. Do not add extra key listeners, and do not rebuild moving through the options or selecting an option.
+- **The dropdown responds to every key press inside the dropdown automatically**, including type-ahead (typing a letter jumps to an option that starts with the letter) and any wrapping from one end of the list to the other. Do not add extra code that listens for key presses, and do not rebuild moving through the options or selecting an option.
 - **Do not move focus into the list.** The field keeps focus and points to the active option. If real focus moves into a popup, focus can be lost when the popup closes, instead of returning to the field.
 - **Do not move focus for the user after a selection.** Do not move focus to the next field because the dropdown now has a value.
 - **Every part of the dropdown a mouse can reach must be reachable by keyboard.** Opening the list, moving through the options, and choosing an option must never depend on a pointer. Nothing the user needs may appear only on hover.
@@ -144,8 +144,8 @@ The dropdown component connects the label to the field and provides the focus ri
 
 ## Open questions
 
-- **Multi-select.** The standard UI kit has no multi-select dropdown. The shipped adapter (the Recursica component library for one framework, such as Mantine or Angular Material) confirms the gap: the adapter's dropdown selects a single value, with no multi-select variant. `recursica-skill-selection-controls` requires a multi-select dropdown in two places. The missing multi-select dropdown is a gap in the component inventory. The gap is no reason to build a multi-select dropdown out of other parts. Do not put a checkbox group inside a dropdown, and do not substitute a transfer list without asking. Where the user must filter by several values, a build test used separate single-value filters that AND together (a row appears only if it matches all of them) successfully as the workaround. Ask only when the project has no multi-select variant.
-- **The open menu.** The standard UI kit does not cover the option rows, the height of an option row, hover and active styling, group headers, dividers, icons or descriptions inside an option, or the maximum height of the open menu before the menu scrolls.
+- **Multi-select.** `recursica-skill-selection-controls` requires a multi-select dropdown in two places. The dropdown in the shipped adapter (the Recursica component library for one framework, such as Mantine or Angular Material) selects a single value. When the project has no multi-select variant, the missing variant is no reason to build a multi-select dropdown out of other parts. Do not put a checkbox group inside a dropdown, and do not substitute a transfer list without asking. Where the user must filter by several values, a build test used separate single-value filters that AND together (a row appears only if it matches all of them) successfully as the workaround. Ask only when the project has no multi-select variant.
+- **The open menu.** Ask about the option rows, the height of an option row, hover and active styling, group headers, dividers, icons or descriptions inside an option, and the maximum height of the open menu before the menu scrolls.
 - **The autocomplete threshold.** The dropdown's guidance says to consider a typeahead when the list is long and the user knows the options well. `recursica-skill-selection-controls` records the threshold as not set. Do not pick a number.
 - **Clearing.** No rule says whether the user may clear a dropdown back to no value after choosing a value, or whether an explicit "None" option is allowed.
 - **Grouped options and dependent dropdowns.** No rule covers options grouped into sections, or dependent dropdowns, where the value chosen in one dropdown filters the options in another dropdown. Ask about grouped options only when the project has no variant that groups options.
