@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-system-conventions
-description: Conventions that recur across all the Recursica rules, for decisions no topic skill covers — one behavior per system, the unadvertised affordance, never one channel for meaning, fixing structure not symptoms, grouping with space not boxes, one control one outcome — plus the accessibility baseline every component follows. Load it with the owning skill, which always wins.
+description: Conventions that recur across all the Recursica rules, for decisions no topic skill covers — one behavior per system, the unadvertised affordance, never one channel for meaning, fixing structure not symptoms, grouping with space not boxes, one control one outcome — plus the accessibility baseline every component follows. Load this skill with the owning skill, which always wins.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -9,165 +9,165 @@ metadata:
 
 # System conventions
 
-Six conventions come up again and again across the Recursica design rules. Each one was stated on its own, about a different surface (a region that holds content, such as a page, panel, or modal), in a different recording. That repetition is what makes them conventions rather than one-off rules.
+Six conventions come up again and again across the Recursica design rules. Each convention was stated separately, about a different surface (a region that holds content, such as a page, panel, or modal), in a different recording. The repetition across recordings makes each rule a convention, not a one-off rule.
 
-**This skill is derived, not recorded.** Each convention below lists the rules it was drawn from, along with the skill that owns each one. Those original rules are the authority; this file describes the pattern they share.
+**This skill is drawn from other skills, not recorded from the team.** Each convention below lists the rules the convention was drawn from, and the skill that owns each rule. The original rules are the authority. This skill describes the pattern the original rules share.
 
-**Two rules for using this skill:**
+**Follow two rules when using this skill:**
 
-1. **A surface-specific rule always wins.** If the owning skill says something different about the surface being designed, follow the owning skill. This file does not replace or extend it.
-2. **Its main job is new surfaces.** When a decision comes up that no topic skill covers, these conventions are the house position. Apply them, rather than inventing an answer or borrowing a convention from somewhere else.
+1. **A rule about a specific surface always wins.** When the owning skill states a different rule for the surface being designed, follow the owning skill. This skill does not replace or extend the owning skill.
+2. **This skill is mainly for new surfaces.** When a decision comes up that no topic skill covers, the six conventions are the house position. Apply the conventions instead of inventing an answer or borrowing a convention from another source.
 
 ## 1. One behavioral mode per system
 
-**A behavioral mode is chosen once for the whole application, not screen by screen.** When a behavior could work in two reasonable ways, and the user cannot tell by looking which way is active, the system picks one way and uses it everywhere.
+**Choose a behavioral mode once for the whole application, not screen by screen.** A behavior sometimes could work in two reasonable ways, and the user cannot tell by looking which way is active. For such a behavior, the application picks one way and uses the same way everywhere.
 
 Examples:
 
-| Behavior                 | The rule                                                | Owner                                |
-| ------------------------ | ------------------------------------------------------- | ------------------------------------ |
-| Saving                   | Field-level everywhere or batch everywhere, never mixed | `recursica-skill-forms`              |
-| When a switch commits    | Immediately or on submit, but the same for every switch | `recursica-skill-selection-controls` |
-| Inline editing in tables | Every table supports it, or none does                   | `recursica-skill-tables`             |
+| Behavior                 | The rule                                                                 | Owner                                |
+| ------------------------ | ------------------------------------------------------------------------ | ------------------------------------ |
+| Saving                   | Field-level everywhere or batch everywhere, never mixed                  | `recursica-skill-forms`              |
+| When a switch commits    | Immediately or on submit, but the same for every switch                  | `recursica-skill-selection-controls` |
+| Inline editing in tables | Every table supports inline editing, or no table supports inline editing | `recursica-skill-tables`             |
 
-**Why it applies generally:** the user builds one mental model (what a person expects from the tools and work they already know) of the whole application, not a separate one for each view. Mixing modes does more than make the model a little less accurate on one screen. It takes away the user's ability to predict anything, because the model can no longer be trusted.
+**The convention applies generally because the user builds one mental model** (what a person expects from the tools and work they already know) of the whole application, not a separate mental model for each view. Mixed modes do more than make the mental model a little less accurate on one screen. Mixed modes take away the user's ability to predict any behavior, because the user can no longer trust the mental model.
 
-**Applying it to a new surface:** ask whether the behavior is visible on screen. If the user can see which mode they are in, letting it vary by screen might be acceptable. If they cannot — and save timing, edit-on-click, and commit-on-change are all invisible — the mode belongs to the whole system.
+**On a new surface, ask whether the user can see the behavior on screen.** If the user can see which mode is active, letting the mode vary by screen might be acceptable. If the user cannot see the mode, the mode belongs to the whole application. Save timing, editing on click, and committing on change are all invisible to the user.
 
-**When a requirement calls for a second mode**, that is a conflict to raise with the user, not a variation to build in without telling anyone. See `recursica-skill-design-router`.
+**When a requirement calls for a second mode, raise the conflict with the user.** Do not build the second mode in as a variation without telling anyone. See `recursica-skill-design-router`.
 
 ## 2. The unadvertised affordance
 
-An affordance is a visible cue that tells the user they can act on something. **A feature that few users need, and that the house has an opinion against, is present but not promoted.** It gets a real entry point — a settings control, a gear icon, a long-press — but no callout, tour, or banner teaching people about it.
+**A feature that few users need, and that the Recursica team has an opinion against, is present but not promoted.** An affordance is a visible cue that tells users an element of the screen can be acted on. For a feature that is present but not promoted, the affordance is a real entry point, such as a settings control, a gear icon or a long-press. No callout, tour or banner teaches people about the feature.
 
 Examples:
 
-| Feature                                       | How it is offered                                                                     | Owner                        |
-| --------------------------------------------- | ------------------------------------------------------------------------------------- | ---------------------------- |
-| Dashboard configuration                       | A settings entry point that does not draw attention; the layout is kept across visits | `recursica-skill-dashboards` |
-| Showing, hiding, and reordering table columns | A gear or settings icon on the table, which opens a configuration screen              | `recursica-skill-tables`     |
-| Sorting by more than one column               | Long-press on a column header; a plain click still flips the direction                | `recursica-skill-tables`     |
+| Feature                                       | How the feature is offered                                                                               | Owner                        |
+| --------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| Dashboard configuration                       | A settings entry point that does not draw attention. The dashboard keeps the user's layout across visits | `recursica-skill-dashboards` |
+| Showing, hiding, and reordering table columns | A gear or settings icon on the table. The icon opens a configuration screen                              | `recursica-skill-tables`     |
+| Sorting by more than one column               | A long-press on a column header. A plain click on the header still flips the sort direction              | `recursica-skill-tables`     |
 
-**Why it applies generally:** users who need the feature will look for it, ask a colleague, or find it while exploring — and finding it themselves gives them a sense of ownership. Users who do not need it are not burdened with a control they will never use. See `recursica-skill-discoverability` for the research behind this, and its limits.
+**The convention applies generally because a user who needs the feature will look for the feature, ask a colleague, or find the feature while exploring.** Finding the feature themselves gives users a sense of ownership. Users who do not need the feature are not burdened with a control the users will never use. See `recursica-skill-discoverability` for the research behind this convention, and for the limits of the research.
 
-**Three conditions must all be true** before a feature is hidden this way:
+**Hide a feature this way only when all three conditions below are true:**
 
-1. **The house default is a deliberate choice.** The hidden control lets users opt out of a decision that was thought through. It is not a substitute for making the decision.
+1. **The house default is a deliberate choice.** The hidden control lets users opt out of a decision the team thought through. Hiding the control is not a substitute for making the decision.
 2. **Only a small minority of users truly need the feature.**
-3. **No task requires it.** If a user cannot finish their work without finding the control, it must be visible.
+3. **No task requires the feature.** If a user cannot finish the work without finding the control, the control must be visible.
 
-**Unadvertised does not mean inaccessible.** The control MUST stay reachable by keyboard and by assistive technology. Where the interaction is a drag or a long-press, a second way to do it MUST exist — a requirement also stated for reordering columns.
+**An unadvertised control MUST stay reachable by keyboard and by assistive technology.** Unadvertised does not mean inaccessible. Where the control works by a drag or a long-press, a second way to use the control MUST exist. Reordering table columns has the same requirement.
 
 ## 3. Never carry meaning in a single channel
 
-**Any meaning the user must receive is shown in at least two ways.** A channel is color, shape, position, or text, each a separate signal. If one channel fails — because of color vision, printing, a screen reader, or a small viewport — the meaning must not be lost with it.
+**Show any meaning the user must receive in at least two ways.** Each way is a channel (color, shape, position or text, each a separate signal). A channel can fail because of color vision, printing, a screen reader or a small viewport. When one channel fails, the meaning must not be lost with the channel.
 
 Examples:
 
-| Meaning                              | Required backup                                                                                                           | Owner                                |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| A field's error state                | A visual change **plus** a separate indicator: an icon, a flag, or a message                                              | `recursica-skill-forms`              |
-| Which series is which in a chart     | A pattern as well as a color; the chart still works when printed in black and white                                       | `recursica-skill-data-visualization` |
-| An empty value versus zero in a cell | An explicit "NA" — not an empty cell, and not a `0` that looks like a real value                                          | `recursica-skill-tables`             |
-| An object's status                   | An icon as well as a color, and an accessible name (the name a screen reader reads out for a control) as well as the icon | `recursica-skill-icon-semantics`     |
+| Meaning                                    | Required backup                                                                                                           | Owner                                |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| A field's error state                      | A visual change **plus** a separate indicator: an icon, a flag, or a message                                              | `recursica-skill-forms`              |
+| Which series is which in a chart           | A pattern as well as a color. The chart still works when printed in black and white                                       | `recursica-skill-data-visualization` |
+| An empty value versus zero in a table cell | An explicit "NA". Not an empty cell, and not a `0` that looks like a real value                                           | `recursica-skill-tables`             |
+| An object's status                         | An icon as well as a color, and an accessible name (the name a screen reader reads out for a control) as well as the icon | `recursica-skill-icon-semantics`     |
 
-**Why it applies generally:** these rules were written about unrelated surfaces, but they share one mechanism. Showing meaning through only one channel is a single point of failure for understanding. The color palette is the design system's business; which channels carry the meaning is the screen designer's decision.
+**The convention applies generally because the rules above share one cause of failure.** The rules were written about unrelated surfaces. Meaning shown in only one channel is a single point of failure for understanding. The color palette belongs to the design system. The screen designer decides which channels show the meaning.
 
-**Applying it to a new surface:** name the channel the meaning currently depends on. Then ask what a user who cannot perceive that channel would see. If the answer is "nothing," add a second channel.
+**On a new surface, name the channel the meaning depends on now.** Then ask what a user who cannot perceive that channel would see. If the user would see nothing, add a second channel.
 
 ## 4. Fix the structure, do not engineer around the symptom
 
-**When a design runs out of room or clarity, the structure is wrong. Change the structure instead of adding a workaround to cope with it.** This is the belief repeated most often across the family.
+**When a design runs out of room or clarity, the structure is wrong. Change the structure instead of adding a workaround.** Fixing the structure is the belief the Recursica skills repeat most often.
 
 Examples:
 
-| Symptom                                      | The house response                                                                             | Owner                                |
-| -------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------ |
-| Too many nav items for the space             | Change the design — switch to vertical, or shorten the labels. Never wrap, scroll, or overflow | `recursica-skill-navigation`         |
-| A table too wide for the screen              | Fewer columns, drill-down, or stacked text in the cells. Horizontal scrolling is a defeat      | `recursica-skill-tables`             |
-| A form spread across tabs                    | Use a stepper. Tabs holding forms is an invalid structure                                      | `recursica-skill-navigation`         |
-| Needing select-all across twenty checkboxes  | Reconsider the control before adding the affordance                                            | `recursica-skill-selection-controls` |
-| A chart with a large amount of missing data  | Do not visualize it                                                                            | `recursica-skill-data-visualization` |
-| Nobody can say what matters on the dashboard | Do not build a dashboard                                                                       | `recursica-skill-dashboards`         |
+| Symptom                                        | The house response                                                                                                      | Owner                                |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| Too many navigation items for the space        | Change the design. Switch to vertical navigation, or shorten the labels. Never wrap, scroll, or overflow the navigation | `recursica-skill-navigation`         |
+| A table too wide for the screen                | Fewer columns, a drill-down, or stacked text in the table cells. Horizontal scrolling means the table design failed     | `recursica-skill-tables`             |
+| A form spread across tabs                      | Use a stepper. Tabs holding forms is an invalid structure                                                               | `recursica-skill-navigation`         |
+| A need for select-all across twenty checkboxes | Reconsider the choice of control before adding select-all                                                               | `recursica-skill-selection-controls` |
+| A chart with a large amount of missing data    | Do not visualize the data                                                                                               | `recursica-skill-data-visualization` |
+| No one can say what matters on the dashboard   | Do not build a dashboard                                                                                                | `recursica-skill-dashboards`         |
 
-**Why it applies generally:** a workaround keeps the broken structure and adds more to it. Overflow menus, scroll areas inside the page, and density toggles (switches for how tightly content is packed together) all look like solutions. Each one makes the underlying problem permanent.
+**The convention applies generally because a workaround keeps the broken structure and adds to the structure.** Overflow menus, scroll areas inside the page, and density toggles (switches for how tightly content is packed together) all look like solutions. Each workaround makes the underlying problem permanent.
 
-**Applying it to a new surface:** before adding anything whose purpose is to make content fit, stop. Name what would have to change for the content to fit without it, and propose that change instead. If the limit comes from outside and cannot be moved — a client requirement, or an amount of data that cannot be reduced — say so plainly. Do not let the workaround pass as a design choice.
+**On a new surface, stop before any addition whose purpose is to make content fit.** Name what would have to change for the content to fit without the addition, and propose that change instead. When a limit comes from outside the design and cannot be moved, say so plainly. A client requirement and an amount of data that cannot be reduced are two such limits. Do not let the workaround pass as a design choice.
 
 ## 5. Group with space, not boxes
 
-**By default, show grouping with space. A drawn boundary — a card, a box, a bordered region — is only for separating repeated peer objects from each other.** A peer is one of a set of repeating objects of the same kind, such as rows in a list. Not every container needs to be visible.
+**By default, show grouping with space. Use a drawn boundary, meaning a card, a box or a bordered region, only to separate repeated peers (objects of the same kind, such as rows in a list) from each other.** Not every container needs to be visible.
 
 Examples:
 
-| Situation                                                                                            | The house response                                                                                                                                                                | Owner                                            |
-| ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| A region of a screen that needs to look like one unit                                                | White space and type hierarchy. No box                                                                                                                                            | `recursica-skill-card`                           |
-| A small, finite set of repeating objects, each with a chart or an image                              | A card for each one — the one case where a boundary is justified                                                                                                                  | `recursica-skill-card`                           |
-| High plurality (a large number of items of the same kind), or repeating objects that are purely data | A table, not cards. High plurality has no exception; sets that are purely data have an occasional, stated aesthetic one                                                           | `recursica-skill-tables`, `recursica-skill-card` |
-| How a dashboard is laid out                                                                          | A fixed layout using type hierarchy and white space, with cards placed inside it. Never a screen made of cards                                                                    | `recursica-skill-dashboards`                     |
-| Spacing between form fields and sections                                                             | Already built into the components. Do not add wrappers or spacer elements                                                                                                         | `recursica-skill-forms`                          |
-| A form, a form section, or a single form control                                                     | **Never inside a card**, with no exception. Group with headings and the components' own spacing                                                                                   | `recursica-skill-forms`, `recursica-skill-card`  |
-| A region that needs a surface but has no peers                                                       | A layer (a numbered background level, 0 to 3, that sets the colors of the components on that level), at the shallowest level that works. Never a card, and never hand-written CSS | `recursica-skill-layers`                         |
+| Situation                                                                                            | The house response                                                                                                                                                                   | Owner                                            |
+| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------ |
+| A region of a screen that needs to look like one unit                                                | White space and type hierarchy. No box                                                                                                                                               | `recursica-skill-card`                           |
+| A small, finite set of repeating objects, each with a chart or an image                              | A card for each object. A set like this one is the one case where a boundary is justified                                                                                            | `recursica-skill-card`                           |
+| High plurality (a large number of items of the same kind), or repeating objects that are purely data | A table, not cards. High plurality has no exception. A set that is purely data has an occasional, stated aesthetic exception                                                         | `recursica-skill-tables`, `recursica-skill-card` |
+| A dashboard layout                                                                                   | A fixed layout that uses type hierarchy and white space, with cards placed inside the layout. Never a screen made of cards                                                           | `recursica-skill-dashboards`                     |
+| Spacing between form fields and between form sections                                                | The form components already include the spacing. Do not add wrappers or spacer elements                                                                                              | `recursica-skill-forms`                          |
+| A form, a form section, or a single form control                                                     | **Never inside a card**, with no exception. Group with headings and the spacing built into the components                                                                            | `recursica-skill-forms`, `recursica-skill-card`  |
+| A region that needs a surface but has no peers                                                       | A layer (a numbered background level, 0 to 3, that sets the colors of the components on that level), at the shallowest level that works. Never a card, and never hand-written styles | `recursica-skill-layers`                         |
 
-**Why it applies generally:** a border tells the user that its contents belong together _and are separate from similar items beside them._ With no similar items beside it, the border tells them nothing. It is decoration, and it costs padding, width and hierarchy. A generated screen made of boxes inside boxes is the most common sign of this problem.
+**The convention applies generally because a border tells the user two facts.** A border says that the content inside the border belongs together _and is separate from similar items beside the border._ With no similar items beside the border, the border tells the user nothing. A border with no similar items beside the border is decoration. The decoration takes up padding and width, and uses up a level of hierarchy. Boxes inside boxes on a generated screen are the most common sign of borders used as decoration.
 
-**Applying it to a new surface:** before drawing a container, name the peer it separates its contents from. If there is no peer, remove the container and use spacing instead.
+**On a new surface, name the peer a container separates the content from before drawing the container.** If the container has no peer, remove the container and use spacing instead.
 
 ## 6. One control, one outcome
 
-**A single interaction does one thing.** When one control both navigates _and_ does something else — opens a surface, applies a filter, changes a mode, switches a tab — the interaction is hyperloaded (doing more than one thing at once), and it must be split.
+**One interaction has one outcome.** A control that navigates _and_ does a second action is hyperloaded (doing more than one action at once), and a hyperloaded control must be split. The second action can be opening a surface, applying a filter, changing a mode, or switching a tab.
 
 Examples:
 
-| The control                                        | What it must not also do                                                                 | Owner                                                            |
-| -------------------------------------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| A row's detail action                              | Change the tab or route as well as opening the detail. Open it where the user already is | `recursica-skill-buttons-links`, `recursica-skill-panels-modals` |
-| A figure or summary that points to a filtered list | Navigate and apply a filter in one click. Pick one                                       | `recursica-skill-navigation`, `recursica-skill-filters`          |
-| A button that opens a modal                        | Navigate. The button opens the modal; it does not also move the user                     | `recursica-skill-buttons-links`                                  |
+| The control                                          | What the control must not also do                                                                      | Owner                                                            |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
+| A row action that opens the row's details            | Change the tab or the route as well as opening the details. Open the details where the user already is | `recursica-skill-buttons-links`, `recursica-skill-panels-modals` |
+| A figure or a summary that points to a filtered list | Navigate and apply a filter in one click. Choose one of the two                                        | `recursica-skill-navigation`, `recursica-skill-filters`          |
+| A button that opens a modal                          | Navigate. The button opens the modal and does not also move the user                                   | `recursica-skill-buttons-links`                                  |
 
-**Why it applies generally:** there are three separate costs, and they add up. The user cannot predict what the control will do, because its label can only honestly describe one of the two things. They cannot undo it, because going back reverses one effect and leaves the other in place. And they cannot describe what happened to a colleague — which is what makes an application feel impossible to learn, not merely awkward.
+**The convention applies generally because a hyperloaded control causes three separate problems, and the problems add up.** The user cannot predict what the control will do, because the control's label can honestly describe only one of the two actions. The user cannot undo the control's actions, because going back reverses one action and leaves the other action in place. The user cannot describe to a colleague what happened. Not being able to describe what happened makes an application feel impossible to learn, not merely awkward.
 
-**Applying it to a new surface:** list every change of state that one use of the control causes — the route, an opened surface, a filter, a selection, a mode, the scroll position. If there is more than one, the control is hyperloaded. Either split it into two controls, or make the second effect something the user clearly asked for, rather than something bundled in.
+**On a new surface, list every change of state that one use of the control causes.** A change of state can be the route, an opened surface, a filter, a selection, a mode or the scroll position. If one use causes more than one change of state, the control is hyperloaded. Either split the control into two controls, or make the second change of state one the user clearly asked for, not one bundled in.
 
-**What this does not forbid.** A single action with necessary side effects is still one outcome. Submitting a form saves it and closes it. Deleting a row removes it and shows an undo. The test is whether the second effect is _part of_ what the user asked for, or a separate effect added to it.
+**Convention 6 allows a single action with necessary side effects.** A single action with necessary side effects is still one outcome. Submitting a form saves the form and closes the form. Deleting a row removes the row and shows an undo option. The test is whether the second effect is _part of_ what the user asked for, or a separate effect added to the request.
 
 ## Accessibility baseline for every component
 
-**These apply to every component, and no component skill repeats them.** They are not a seventh convention. They are the accessibility rules the component skills each used to state for themselves — the focus ring was in 34 of 39 — gathered here once, so they cannot drift apart. A component skill's own accessibility section adds what is specific to that component, and where it says something more specific, it wins.
+**The accessibility baseline below applies to every component, and no component skill repeats the baseline.** The accessibility baseline is not a seventh convention. Each component skill used to state these accessibility rules separately. The focus ring rule, for example, was in 34 of 39 component skills. The rules are gathered here once, so the copies cannot start to differ. The accessibility section of a component skill adds the rules specific to that component. Where the component skill's rule is more specific than the baseline, the component skill's rule wins.
 
-- **Never hide the focus ring**. Keep it on whatever has focus, and keep it looking different from the hover style, from the caret alone, and from any selected, checked, active, or on state. Focus and selection are different facts, and a user must be able to tell them apart at a glance.
-- **Nothing the user needs appears only on hover** — not a control, an action, a label, a value, or a count. A keyboard user and a touch user never hover.
+- **Never hide the focus ring.** Keep the focus ring on every element that has focus. Keep the focus ring looking different from the hover style, from the caret alone, and from any selected, checked, active or on state. Focus and selection are different facts, and a user must be able to tell focus and selection apart at a glance.
+- **Nothing the user needs appears only on hover.** The rule covers every control, action, label, value and count. A keyboard user and a touch user never hover.
 - **The tab order follows the visual order.**
-- **A form control's help, error, and rule text passes through the component** — for a group, through the group — never as a separate element placed beside it. Only the component can connect that text to the control, and text that is not connected is invisible to someone who tabs straight into the field.
-- **The required state is set in code**, not shown by an asterisk alone. The asterisk is a visual convention, not an accessible way of saying "required".
-- **Never move focus for the user**, except where a component skill says when to — opening a modal, for example.
-- **An icon that is a control has an accessible name; a decorative icon is silent.** Each component skill says which of its icons are which.
+- **A form control's help text, error text and rule text pass through the component.** For a group, the text passes through the group component. The text never appears as a separate element placed beside the control. Only the component can connect the text to the control. Text that is not connected is invisible to a user who tabs straight into the field.
+- **The required state is set in code, not shown by an asterisk alone.** An asterisk is a visual convention, not an accessible way of saying "required".
+- **Never move focus for the user**, except where a component skill says when to move focus, such as when a modal opens.
+- **An icon that is a control has an accessible name. A decorative icon is silent.** Each component skill says which icons of the component are controls and which icons are decorative.
 - **No meaning rests on color alone.** See convention 3.
 
-## When a seventh convention seems to be emerging
+## A seventh convention
 
-**Do not add one.** If a pattern seems to repeat across surfaces but is not listed here, say so, and let a person decide whether it is a convention. On a later read, a convention invented by an agent cannot be told apart from a recorded one — which is exactly what this file exists to prevent.
+**Do not add a seventh convention.** When a pattern seems to repeat across surfaces but is not listed in this skill, say so, and let a person decide whether the pattern is a convention. On a later read, nobody can tell a convention an agent invented from a recorded convention. This skill exists to prevent exactly that confusion.
 
 ## Out of scope
 
-- **Any decision an owning topic skill covers.** Load that skill; it wins.
-- **The research behind these conventions.** `recursica-skill-discoverability` and `recursica-skill-working-memory` carry the citations.
-- **The order of decisions, and which rule wins in a conflict.** Owned by `recursica-skill-design-router`.
+- **Every decision a topic skill covers.** Load the topic skill. The topic skill's rule wins.
+- **The research behind the six conventions.** `recursica-skill-discoverability` and `recursica-skill-working-memory` hold the citations.
+- **The order of decisions, and which rule wins in a conflict.** `recursica-skill-design-router` owns both.
 
 ## Pre-flight checklist
 
 - [ ] Each behavior works one way across the whole application. A requirement for a second way went to the user and was not built.
-- [ ] Settings that few users need have a real entry point that is not promoted, and all three conditions for hiding them hold: the house default is a deliberate choice, only a minority of users need the setting, and no task requires it.
-- [ ] Every hidden control can be reached by keyboard and by assistive technology. Where the gesture is a drag or a long-press, there is a second way to do it that is not a drag.
+- [ ] Every setting that few users need has a real entry point that is not promoted. All three conditions for hiding the setting hold: the house default is a deliberate choice, only a minority of users need the setting, and no task requires the setting.
+- [ ] Every hidden control can be reached by keyboard and by assistive technology. Where a hidden control works by a drag or a long-press, a second way to use the control exists, and the second way is not a drag.
 - [ ] No meaning relies on one channel alone. Each meaning has a second channel.
 - [ ] Every component meets the accessibility baseline: the focus ring is never hidden and looks different from hover and from any selected state, nothing the user needs appears only on hover, and the tab order follows the visual order.
-- [ ] A form control's help, error, and rule text passes through the component, and the required state is set in code, not by an asterisk alone.
-- [ ] Focus is never moved for the user except where a component skill says when. Icons that are controls have an accessible name, and decorative icons are silent.
-- [ ] No workaround, such as an overflow menu or an inner scroll area, hides a broken structure. Where a limit can't be changed, a reason is provided.
-- [ ] Every visible container separates its contents from a peer. Regions with no peer are grouped with space.
-- [ ] Repeating objects are a table, unless the set is small, finite and each item has a graphic, or the aesthetic exception is used and a reason is provided.
+- [ ] A form control's help text, error text and rule text pass through the component, and the required state is set in code, not by an asterisk alone.
+- [ ] Focus is never moved for the user except where a component skill says when to move focus. Icons that are controls have an accessible name, and decorative icons are silent.
+- [ ] No workaround, such as an overflow menu or a scroll area inside the page, hides a broken structure. Where a limit cannot be changed, a reason is provided.
+- [ ] Every visible container separates the container's content from a peer. A region with no peer is grouped with space.
+- [ ] Repeating objects are shown in a table, unless the set is small and finite and each object has a graphic, or the aesthetic exception is used and a reason is provided.
 - [ ] No form, form section, or form control sits inside a card.
-- [ ] Where a topic skill covers the decision, its rule is followed, not the general version here.
-- [ ] No control both navigates and does something else. Each control causes one change of state when used.
-- [ ] No new cross-surface convention was added without a person deciding it.
+- [ ] Where a topic skill covers a decision, the topic skill's rule is followed, not the general convention in this skill.
+- [ ] No control both navigates and does a second action. One use of each control causes one change of state.
+- [ ] No new cross-surface convention was added without a person's decision.
