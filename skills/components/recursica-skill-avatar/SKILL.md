@@ -41,7 +41,7 @@ The rules below describe each option by role, such as "the photo style". The nam
 - **Status and presence.** If the project has a status dot, a presence indicator, or a slot for a badge on the avatar, use that option. Otherwise, a badge stays a separate component and does not attach to the avatar.
 - **Groups and shapes.** If the project has a group, stack, overlapping-cluster, or shape variant, use that variant. Otherwise, do not build an avatar group out of several avatars.
 
-**The design-system website shows a different set of styles.** Only the website shows styles named Image, Primary, Background, and Ghost, and a Border variant that is true or false. The website also shows how to space out overlapping avatars in a group. Of the website's styles, only Ghost matches the UI kit, as the `ghost` type. The UI kit also has an `elevation` property. Read the open questions before relying on any part of the website's set.
+**The design-system website shows a different set of styles.** Only the website shows styles named Image, Primary, Background, and Ghost, and a Border variant that is true or false. The website also shows overlapping avatars in a group. Of the website's styles, only Ghost matches the UI kit, as the `ghost` type. Read the open questions before relying on any part of the website's set.
 
 ## Rules
 
@@ -88,14 +88,7 @@ An avatar is either a picture or a control, and each kind fails a screen reader 
 
 ## Styling set by tokens
 
-**Do not set or override the avatar properties below.** The avatar component sets each property for every combination of style and size.
-
-- `elevation`.
-- Diameter and every other dimension, for each size.
-- Border radius and shape.
-- Typography of the initials, and the size of the placeholder icon.
-- All colors, for every style and every layer (a numbered background level, 0 to 3, that sets the colors of the components on that level), including hover, active, and focus.
-- The focus ring on a control avatar.
+**Never set or override the avatar's styling.** The theme sets every visual property of the avatar, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the avatar's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 ## Related skills
 
@@ -111,7 +104,7 @@ An avatar is either a picture or a control, and each kind fails a screen reader 
 
 ## Open questions
 
-- **Two sets of styles that do not agree.** Only the design-system website shows styles named Image, Primary, Background, and Ghost, and a Border variant that is true or false. The UI kit defines the `text`, `icon`, and `image` styles. The UI kit gives the `text` and `icon` styles the `solid`, `outline`, and `ghost` types, and also has an `elevation` property. Nobody has settled which set of styles is the authority. Ask before relying on either set of styles.
+- **Two sets of styles that do not agree.** Only the design-system website shows styles named Image, Primary, Background, and Ghost, and a Border variant that is true or false. The UI kit defines the `text`, `icon`, and `image` styles. The UI kit gives the `text` and `icon` styles the `solid`, `outline`, and `ghost` types. Nobody has settled which set of styles is the authority. Ask before relying on either set of styles.
 - **Avatar groups.** Only the design-system website shows overlapping avatars in a group. Unless the project has a group variant, do not build an avatar group. Do not rely on the website's group without asking.
 - **Which size belongs in which layout.** No rule says where the smaller size, the default size, and the larger size each apply.
 - **How initials are chosen.** No rule says whether initials use one letter or two, or how to handle a one-word, hyphenated, or non-Latin name.
@@ -133,5 +126,5 @@ An avatar is either a picture or a control, and each kind fails a screen reader 
 - [ ] Each avatar's size follows how dense the layout around the avatar is, not how important the person is.
 - [ ] The account menu sits outside primary navigation.
 - [ ] Every style and size is one the project's UI kit lists. No avatar has an invented group, status dot, badge slot, or border variant.
-- [ ] No code overrides the styling that the avatar component sets.
+- [ ] No styling is set or overridden on the avatar.
 - [ ] Open questions were asked about, not decided: the two sets of styles, avatar groups, which size belongs in which layout, how initials are chosen, avatars for an entity that is not a person, presence and status, and when to use each type.
