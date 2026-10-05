@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-panel
-description: Rules for the Recursica panel — when a panel beside the page that leaves the page usable is right, no side or width options in the standard UI kit, no browser history entry, header, content, and footer, and focus return with no focus trap. Use for panels, drawers, side sheets, and filter panels. Not for blocking decisions — see recursica-skill-modal.
+description: Rules for the Recursica panel — when a panel beside the page that leaves the page usable is right, no browser history entry, header, content, and footer, and focus return with no focus trap. Use for panels, drawers, side sheets, and filter panels. Not for blocking decisions — see recursica-skill-modal.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -41,10 +41,8 @@ The rules below describe each part and option by role. The names in the standard
 
 - **Parts.** A panel has a header with a close control, a content area, and a footer with a gap between the footer buttons. Tokens set the gap between the header and the close control, and the minimum and maximum width of the panel. The standard UI kit also defines a divider size.
 - **The same parts as a modal.** A panel has the same header, content area, footer, and close control as a modal. The only difference is that the page behind a panel stays usable. The difference changes the accessibility rules below.
-- **No variants in the standard UI kit.** The standard UI kit has no size, side, width, or type variant on the panel, and every property of the panel is fixed. If the project adds a variant in Theme Forge, use the project's variant.
-- **No side variant in the standard UI kit.** The standard UI kit has no left, right, top, or bottom panel. If the project adds a side variant in Theme Forge, use the project's side variant. Otherwise, the designer chooses the left or the right side for each panel. The rules below say how.
-- **No size or width variant in the standard UI kit.** The standard UI kit has no narrow, wide, or full-height panel, and tokens fix the minimum and maximum width. If the project adds a size or width variant in Theme Forge, use the project's variant. Otherwise, do not set a width or a size on the panel.
-- **No type variant in the standard UI kit.** Only the design-system website shows a "Standard" panel and a "Scrollable" panel. The standard UI kit defines only a divider size. Nothing in the standard UI kit says when the divider appears, or which of the two types a given panel is. If the project adds a type variant in Theme Forge, use the project's type variant.
+- **Side.** If the project has a side variant, use the project's side variant. Otherwise, the designer chooses the left or the right side for each panel. The rules below say how.
+- **Size and width.** If the project has a size or width variant, use the project's variant. Otherwise, do not set a width or a size on the panel.
 
 ## Rules
 
@@ -62,7 +60,7 @@ The rules below describe each part and option by role. The names in the standard
 
 **A panel does not get a separate save mode.** The panel uses the application's save mode. Saving field by field requires a save status that stays on the page. Saving the whole form at once shows no status and no indicator of unsaved changes. See `recursica-skill-forms`.
 
-**Put one primary action at the bottom right of the panel footer.** Put the true alternative directly to the left of the primary action. `recursica-skill-buttons-links` sets this rule.
+**Put one primary action at the bottom right of the panel footer.** Put a true alternative directly to the left of the primary action. `recursica-skill-buttons-links` sets this rule.
 
 **Closing a panel must be possible and obvious**, with the close control in the header and with the Escape key. Do not build a panel that the user can leave only by finishing the task in the panel.
 
@@ -76,17 +74,17 @@ The rules below describe each part and option by role. The names in the standard
 
 **Scrolling up and down in a panel is the sign to move the task to a page.** Repeat on the new page the context the task needed.
 
-**A panel may open a modal.** A panel is not a mode. A modal opened from a panel therefore does not stack one mode on another mode. The confirmation for unsaved changes appears as a modal opened from the panel when the panel closes.
+**A panel may open a modal.** A panel is not a mode. A modal opened from a panel therefore does not stack one mode on another mode. A confirmation for unsaved changes appears as a modal opened from the panel when the panel closes.
 
-**A panel may be stacked on top of another panel, but stacking is not ideal.** The second panel covers the first panel completely. Closing the second panel shows the first panel again. Never nest a panel inside another panel. No hard limit caps the number of stacked panels, but more than two stacked panels need the user's approval.
+**A panel may be stacked on top of another panel, but stacking is not ideal.** The second panel covers the first panel completely. Closing the second panel shows the first panel again. Never nest a panel inside another panel. The number of stacked panels has no hard limit, but more than two stacked panels need the user's approval.
 
 **A panel closes when the route changes**, except when the navigation exists only to open another panel or a modal.
 
 **Below the tablet breakpoint, open the panel content as a page instead.** Do not use a narrower panel, or a full-screen overlay styled as a panel. At the tablet breakpoint and above, the panel stays a panel.
 
-**NEVER draw a shader, scrim, or tint behind an open panel.** The rule has no exceptions. A panel sits beside the page so the user can read and use the page, and a scrim dims the page. `recursica-skill-panels-modals` sets this rule. The four settings below enforce the rule against the default overlay.
+**NEVER draw a shader, scrim, or tint behind an open panel.** The rule has no exceptions. A panel sits beside the page so the user can read and use the page, and a scrim dims the page. `recursica-skill-panels-modals` sets this rule. The four settings below enforce the rule against an overlay drawn by default.
 
-**An adapter may make the panel modal by default, the opposite of the house rule.** An adapter (the Recursica component library for one framework, such as Mantine or Angular Material) can build the panel on a drawer from a code library. A drawer usually draws an overlay, closes on a click outside the drawer, traps focus, and locks page scrolling, all by default. A panel built with only the documented settings then blocks the page, and nobody notices. Until the adapter's defaults are fixed, turn off all four defaults explicitly:
+**An adapter may make a panel modal by default, the opposite of the house rule that a panel leaves the page usable.** An adapter (the Recursica component library for one framework, such as Mantine or Angular Material) can build the panel on a drawer from a code library. A drawer usually draws an overlay, closes on a click outside the drawer, traps focus, and locks page scrolling, all by default. A panel built with only the documented settings then blocks the page, and nobody notices. Until the adapter's defaults are fixed, turn off all four defaults explicitly:
 
 - the overlay
 - closing on a click outside the panel
@@ -105,7 +103,7 @@ Look up the name the code uses for each setting with the Recursica MCP server's 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
 **A panel is never modal, so build every part of a panel as non-modal.** Almost every accessibility failure in a panel comes from a panel built partly as a modal. A panel built partly as a modal looks as if the page stays usable. But the panel traps focus like a dialog, or hides the page from assistive technology while the page stays clickable. The page behind a panel stays usable, readable, and reachable.
 
@@ -116,7 +114,7 @@ This component also follows the accessibility baseline in `recursica-skill-syste
 - **Never mark a panel as modal while the page behind the panel stays usable.** Assistive technology stays inside a modal dialog. A mouse user can still use the page behind the panel, and a screen reader user cannot reach the page.
 - **Do not hide the page behind a non-modal panel from assistive technology.** The page behind the panel is not inert. A screen reader user must be able to read the page and get back into the panel.
 - **Place the panel content in the DOM where the panel appears on screen**, not at the end of the document. The reading order follows the visual order.
-- **Every user must be able to tell that the panel opened.** Moving focus into the panel shows that the panel opened. Do not rely on the slide-in animation to show that the panel opened.
+- **Every user must be able to tell that the panel opened.** Moving focus into the panel shows that the panel opened. Do not rely on a slide-in animation to show that the panel opened.
 - **Give the close control a real accessible name**, such as "Close filters". An icon with no label is announced as nothing.
 - **Announce every change the panel makes outside the panel**, not only redraw the page. When a filter cuts a table down to four rows, announce the result. A screen reader user inside the panel cannot see the change on the page.
 
@@ -151,17 +149,17 @@ This component also follows the accessibility baseline in `recursica-skill-syste
 
 ### Only if used on the same screen
 
-- `recursica-skill-modal` — the blocking alternative, and the rules on focus trapping and an inert page that a modal panel follows.
+- `recursica-skill-modal` — the blocking alternative, and the rules on focus trapping and an inert page that a modal follows.
 - `recursica-skill-card` — why no card wraps the panel content, and why no form goes in a card.
 - `recursica-skill-toast` — short confirmations and undo, which never belong in a panel.
 
 ## Open questions
 
-- **Opening transition.** The side of the panel is set, and how the panel attaches to the edge is settled. Whether the panel slides in or expands when the panel opens is not settled.
-- **Panel width.** Stacked panels may differ in width from each other. No rule says whether a left panel and a right panel share a width. Tokens fix the minimum and maximum width, and the standard UI kit has no size variant, so a wide panel cannot be built. Ask about a wide panel only when the project has no size variant.
+- **Opening transition.** The side of the panel is set, and how the panel attaches to the edge is settled. No rule says whether the panel slides in or expands when the panel opens.
+- **Panel width.** Stacked panels may differ in width from each other. No rule says whether a left panel and a right panel share a width. Ask about a wide panel only when the project has no size variant.
 - **Top or bottom panel design.** A top or bottom panel is allowed but has no design. Building a top or bottom panel needs approval, because no rule covers the design.
-- **Divider visibility.** No rule says when the divider appears. Only the design-system website shows the "Standard" and "Scrollable" types. No token sets either type, and the standard UI kit has no type variant and defines only the divider size. Ask before relying on either type, but only when the project has no type variant.
-- **Loading state.** The standard UI kit has no state for a panel whose content is still loading. Ask only when the project has no loading state.
+- **Divider visibility.** No rule says when the divider appears. Only the design-system website shows the "Standard" and "Scrollable" types. Ask before relying on either type, but only when the project has no type variant.
+- **Loading state.** Ask how to show a panel whose content is still loading, but only when the project has no loading state.
 
 ## Pre-flight checklist
 
