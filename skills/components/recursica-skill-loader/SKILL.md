@@ -37,7 +37,7 @@ A loader shows that work is still in progress. A loader cannot show how much of 
 
 The rules below describe each option by role, such as "the largest size". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-- **Spinner.** In the standard UI kit, a loader is an indeterminate spinner. This fact is the most important fact about the loader. An indeterminate spinner shows that work is happening, but not how much of the work is done. In the standard UI kit, the loader sets the indicator color.
+- **Spinner.** In the standard UI kit, a loader is an indeterminate spinner. This fact is the most important fact about the loader. An indeterminate spinner shows that work is happening, but not how much of the work is done.
 - **Size.** In the standard UI kit, a loader has three sizes, called `small`, `default`, and `large`. Write the names from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has), which are also names the code uses. Each of the two adapters (the Recursica component library for one framework, such as Mantine or Angular Material) also accepts `sm`, `md`, and `lg` as other names for the three sizes. The other names work today, but the design system is specified in the UI kit's names. Only the design-system website shows sizes named xs, sm, and md.
 - **Progress.** If the project has a determinate variant, use the determinate variant. Otherwise, a loader cannot show how far along the work is. Do not show progress in any other form, such as "45%". A spinner cannot show how long the work will take. Do not show an estimated time left. Raise the need for a progress indicator, and see the open questions.
 - **Label.** If the project has a slot for a label or text, use the project's label slot. Otherwise, place the words that go with the spinner as a separate element.
@@ -93,11 +93,9 @@ A spinner is only animation. A screen reader user does not know a spinner is on 
 
 ## Styling set by tokens
 
-**Do not set or override the loader properties below.** The loader already sets each property below for every size.
+**Never set or override the loader's styling.** The theme sets every visual property of the loader, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the loader's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
-- `indicator-color`.
-- Diameter, stroke weight, and every other dimension for each size.
-- The animation, including the animation's speed, easing, and direction.
+The theme also sets the spinner's animation. Never change the animation.
 
 ## Related skills
 
@@ -138,5 +136,6 @@ A spinner is only animation. A screen reader user does not know a spinner is on 
 - [ ] Content that the loader covers, or that has not arrived, is not left as hidden tab stops.
 - [ ] The text that says what is loading does not appear only on hover, and the focus ring on the controls around the loader is intact.
 - [ ] Every loader size is one the project's UI kit lists, such as `small`, `default`, or `large` in the standard UI kit. No type, label, track, skeleton screen, or determinate variant is invented.
-- [ ] Styling and animation come from the loader component.
+- [ ] No styling is set or overridden on the loader.
+- [ ] The spinner's animation is not changed.
 - [ ] Open questions were asked about, not decided: showing progress, a label on the loader, the three adapter loader types, a spinner for the whole page, loading and error states for a table, a pending state on an action other than submit, delaying the loader, and which size to use in which region that holds content.
