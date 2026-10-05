@@ -45,7 +45,7 @@ The rules below describe each option by role, such as "the success style". The n
 - **Warning.** If the project has a warning style, use the warning style. Never use the error style as a warning. The error style says that a failure happened.
 - **The styles differ only in color and icon.** A style never shows the message without the text. The style only supports what the text says.
 - **Parts.** In the standard UI kit, a toast shows an icon and text. If the project has a style for an action button or a close control, use the project's style. Check the open questions before building a timer, or an action button or a close control that the project does not define.
-- **Size and position.** If the project has a size variant or a position variant, use the project's variant. A toast's minimum width, maximum width, and minimum height are fixed.
+- **Size and position.** If the project has a size variant or a position variant, use the project's variant.
 
 ## Rules
 
@@ -107,13 +107,9 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 ## Styling set by tokens
 
-**Never set or override the toast properties below.** The toast component sets each property for every style.
+**Never set or override the toast's styling.** The theme sets every visual property of the toast, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the toast's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
-- `elevation`, `border-radius`, `border-size`.
-- `vertical-padding`, `horizontal-padding`, `spacing`.
-- `min-width`, `max-width`, `min-height`.
-- `icon`: which icon each style shows, and the icon's size.
-- `text` typography, and all colors for each style.
+The theme also sets which icon each toast style shows. Never change the icon a style shows.
 
 ## Related skills
 
@@ -157,5 +153,5 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - [ ] The toast can be reached by keyboard at a predictable point in the tab order while the toast is visible.
 - [ ] If hover pauses the toast's timer, focus pauses the timer too. Closing a toast does not depend on a pointer.
 - [ ] The toast covers no control the user needs and does not hide the focus ring. No content the user needs appears only on hover.
-- [ ] Padding, spacing, width, elevation, icon, and color come from the toast component.
+- [ ] No styling is set or overridden on the toast, and no container or spacer is added to change the toast's look. Each style shows the style's own icon.
 - [ ] Open questions were asked about, not decided: duration values, how the action button is styled, where toasts appear on screen, stacking, warnings and critical alerts, and toasts for a background job.
