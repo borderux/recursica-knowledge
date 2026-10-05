@@ -13,8 +13,8 @@ A chip is one of several short values the user can see, select, or remove.
 
 ## When to use a chip
 
-- **The chips show several values, not one.** Examples are several tags, several categories, or several applied filters on one object.
-- **The layout needs a horizontal multi-select, where the user picks several options laid out side by side.** Use selectable chips for a horizontal multi-select. Never lay out a checkbox group in a horizontal row.
+- **Chips show several values, not one.** Examples are several tags, several categories, or several applied filters on one object.
+- **A layout needs a horizontal multi-select, where the user picks several options laid out side by side.** Use selectable chips for a horizontal multi-select. Never lay out a checkbox group in a horizontal row.
 - **The user filters or narrows down the content on the screen** by turning options on and off.
 - **The user added the values**, and may remove the values again.
 
@@ -38,10 +38,9 @@ A chip is one of several short values the user can see, select, or remove.
 The rules below describe each option by role, such as "the selected state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
 - **Two selection states.** A chip is either unselected or selected. In the standard UI kit, the two selection states are `unselected` and `selected`.
-- **An error state that the house rule forbids.** The error state is defined in the UI kit and in both adapters (the Recursica component library for one framework, such as Mantine or Angular Material). The house rule forbids using the error state. Both facts are true, and neither fact cancels the other.
-- **No size variant, no style variant, and no disabled state in the standard UI kit.** The standard UI kit has no size variant, no style variant and no disabled state. If the project adds one in Theme Forge, use the project's version.
+- **An error state that a house rule forbids.** The error state is defined in the UI kit and in both adapters (the Recursica component library for one framework, such as Mantine or Angular Material). A house rule forbids using the error state. Both facts are true, and neither fact cancels the other.
 - **Two chip setups, shown only on the design-system website.** The two setups are a selectable chip and a removable chip with a close icon. The UI kit defines a size and a color for the close icon, and a removable chip uses that size and color. The UI kit also defines a color for an optional icon before the label.
-- **A minimum width and a maximum width.** The chip component limits how long a value can be. The width limit is one more reason to keep phrases out of a chip.
+- **A minimum width and a maximum width.** The maximum width limits how long a value in a chip can be. The width limit is one more reason to keep phrases out of a chip.
 
 **The error state combines with each selection state.** The UI kit defines the error state separately for an unselected chip and for a selected chip. Error and selection are separate variants, and the two variants combine. In the standard UI kit, the error state is called `error` and sits under each selection state. "Error-selected" is not a fourth state. "Error-selected" is the error state combined with the selected state, and that combination is the reason the error state sits under each selection state.
 
@@ -117,7 +116,7 @@ A chip group is a form control laid out horizontally, and a chip group must beha
 - **Whether a chip may be disabled.** No rule says whether a chip may be disabled, or what a disabled chip would mean for a filter. Ask only when the project has no disabled state.
 - **Overflow.** No rule says what a chip group does when the chip group has more chips than one row can hold. No rule says whether chips may wrap to a second row.
 - **Select-all or clear-all.** No rule says whether a chip group supports a select-all or a clear-all control, or where that control would go.
-- **A chip that opens a menu.** Other design systems document a chip that opens a menu. Recursica does not.
+- **A chip that opens a menu.** Other design systems document a chip that opens a menu. If the project has a chip that opens a menu, use that chip. Otherwise, ask.
 
 ## Pre-flight checklist
 
