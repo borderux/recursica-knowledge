@@ -9,7 +9,7 @@ metadata:
 
 # Assistive element
 
-One component, the assistive element, shows both the help text and the error text below a form field. The assistive element's type decides whether the help text or the error text shows.
+The assistive element is one component that shows both help text and error text below a form field. The assistive element has a type, and the type decides whether the help text or the error text shows.
 
 ## When to use an assistive element
 
@@ -34,9 +34,9 @@ The rules below describe each option by role, such as "the error type". The name
 
 - **A help type and an error type, in one place below the field.** The help type shows the help text. The error type shows the error text. In the standard UI kit, the variant is `types`, and the two types are `help` and `error`.
 - **The error text replaces the help text in the same place.** The error text never appears beside the help text. Switching between the two types keeps the field the same height, so the form below the field does not move.
-- **The standard UI kit has no warning type, no success type, and no info type.** If the project adds one of those types in Theme Forge, use the project's type. Do not invent a third state for a field that the project does not list.
-- **An icon is part of the component.** The component sets the icon size and the gap between the icon and the text. The icon meets the requirement that an error have a signal that is not color.
-- **The standard UI kit has no size variant.** In the standard UI kit, the space above the assistive element and the maximum width of the assistive element are fixed. If the project adds a size variant in Theme Forge, use the project's size variant.
+- **Do not invent a third state for a field that the project does not list.**
+- **The assistive element includes an icon.** The assistive element sets the icon size and the gap between the icon and the text. The icon meets the requirement that an error have a signal that is not color.
+- **If the project has a size variant, use the project's size variant.** Otherwise, the space above the assistive element and the maximum width of the assistive element are fixed.
 
 ## Rules
 
@@ -50,11 +50,11 @@ The rules below describe each option by role, such as "the error type". The name
 
 **The error text is the whole message.** The help text is hidden while the error text shows. Put every detail the user still needs in the error text.
 
-**Pair the error with a signal that is not color.** The signal is the component's icon, or the words of the message. `recursica-skill-system-conventions` requires a signal that is not color.
+**Pair the error with a signal that is not color.** The signal is the assistive element's icon, or the words of the message. `recursica-skill-system-conventions` requires a signal that is not color.
 
 **Keep the assistive element under the field the text belongs to.** An assistive element placed midway between two fields does not show which field the text belongs to.
 
-**The assistive element's position follows the field's label placement.** Every assistive element in a form uses the one label placement set for the whole form. `recursica-skill-forms` requires one label placement per form: side by side or stacked, never both at the same breakpoint. The container's width is tested once, for the whole form. The result sets the label placement for every field in the form. The standard UI kit has no placement variant for the assistive element. The position comes from where the field's label sits. Never position the assistive element separately from the label. The position of the assistive element never differs from field to field in one form. A whole form may switch label placement across breakpoints. A single section of a form never gets a separate label placement.
+**The assistive element's position follows the field's label placement.** Every assistive element in a form uses the one label placement set for the whole form. `recursica-skill-forms` requires one label placement per form: side by side or stacked, never both at the same breakpoint. The width of the form's container is tested once, for the whole form. The result sets the label placement for every field in the form. The position comes from where the field's label sits. Never position the assistive element separately from the label. The position of the assistive element never differs from field to field in one form. A whole form may switch label placement across breakpoints. A single section of a form never gets a separate label placement.
 
 **Do not use the assistive element for marketing, reassurance, or filler text.** A user reads every line of help text and error text each time the user goes through the form.
 
@@ -62,7 +62,7 @@ The rules below describe each option by role, such as "the error type". The name
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
-The assistive element helps only when the code connects the assistive element to the field. A screen reader user who tabs straight into the input never hears text that sits near the field without a connection to the field. Tabbing into the input is the usual way to move through a form.
+The assistive element helps only when the code connects the assistive element to the field. A screen reader user who tabs straight into the field's input never hears text that sits near the field without a connection to the field. Tabbing into the input is the usual way to move through a form.
 
 ### Screen readers
 
@@ -70,7 +70,7 @@ The assistive element helps only when the code connects the assistive element to
 - **The help text is announced when the user reaches the field.** Write the help text to be heard at that moment, not as a caption read afterward.
 - **When an error appears, the error must be announced.** An error that is only visual fails silently. Mark the field as invalid, and connect the error message to the field. Both steps are required.
 - **The error message must make sense when read alone**, because the error message has replaced the help text. Restating the rule is not repetition. The error text is the only channel (color, shape, position or text, each a separate signal) left that states the rule.
-- **The component's icon is decorative and must be silent.** The icon is the second visual signal. The words give the meaning.
+- **The assistive element's icon is decorative and must be silent.** The icon is the second visual signal. The words give the meaning.
 - **Do not announce the same text twice.** If the message is connected to the field, do not also repeat the message in a live region (an area a screen reader announces automatically when its content changes).
 - **Use the assistive element to announce only the results of the user's own actions.** A message under a field that the user did not prompt is confusing when a screen reader reads the form in order.
 
@@ -83,7 +83,7 @@ The assistive element helps only when the code connects the assistive element to
 
 ## Styling set by tokens
 
-**Do not set or override the assistive element properties below.** The component sets each property.
+**Do not set or override the assistive element properties below.** The assistive element sets each property.
 
 - `text` styling for each type.
 - `icon-size`, `icon-text-gap`, and the icon.
@@ -99,7 +99,7 @@ The assistive element helps only when the code connects the assistive element to
 ## Open questions
 
 - **Character and word counters.** No rule says whether a character counter or a word counter belongs in the assistive element or in a different place.
-- **Confirming success on a field.** The standard UI kit has no success type. No rule says how to show a field that passed validation.
+- **Confirming success on a field.** No rule says how to show a field that passed validation.
 - **Links in help text.** No rule says whether help text may contain a link, given that the assistive element must not contain a control.
 - **Several errors on one field at once.** No rule says whether the errors combine into one message, or only the first error shows.
 
@@ -116,5 +116,5 @@ The assistive element helps only when the code connects the assistive element to
 - [ ] The icon is silent, and the words give the meaning.
 - [ ] The assistive element is not a tab stop, holds no control, and shows no text only on hover.
 - [ ] Focus does not move when an error appears.
-- [ ] Every type is one the project lists, such as the help type and the error type, and no third type is invented. Styling, margins, and width come from the component.
+- [ ] Every type is one the project lists, such as the help type and the error type, and no third type is invented. Styling, margins, and width come from the assistive element.
 - [ ] Open questions were asked about, not decided: character and word counters, success on a field, links in help text, and several errors on one field.
