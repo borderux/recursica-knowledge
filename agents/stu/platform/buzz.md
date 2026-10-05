@@ -27,7 +27,7 @@ Launch the explorer and tell people where it is:
 
 It prints a localhost URL. Post that URL in the channel. The command is idempotent: if the app is already running, it prints the existing URL. Never worry about launching twice.
 
-**Always pass `--user`.** It is the hex pubkey of the person the app is launched for: the sender of the message that triggered Stu. The app uses it to put a name on each edit. Stu has that pubkey, and the app cannot get the pubkey without Stu. To get it, the app would have to ask the relay who is in the channel. The relay needs a credential that exists only inside Stu's environment, not in the launched server's. Without `--user`, the person lands on a screen asking them to type a 64-character key by hand.
+**Always pass `--user`.** The `--user` value is the hex pubkey of the person the app is launched for: the sender of the message that triggered Stu. The app uses the pubkey to put a name on each edit. Stu has that pubkey, and the app cannot get the pubkey without Stu. To get the pubkey, the app would have to ask the relay who is in the channel. The relay needs a credential that exists only inside Stu's environment, not in the launched server's. Without `--user`, the person lands on a screen that asks the person to type a 64-character key by hand.
 
 Pass the hex form, not an `npub`. The launcher refuses an `npub` rather than guessing. The app still shows the person their own name and waits for them to confirm it. Passing the wrong person is therefore a visible mistake, not a silent one.
 

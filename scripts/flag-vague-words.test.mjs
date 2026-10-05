@@ -33,3 +33,14 @@ test("code, quotes and front matter are skipped", () => {
     [[8, ["it"]]],
   );
 });
+
+test("a glossary definition is skipped, because it can only change in the glossary", () => {
+  const lines = [
+    "Add a live region (an area a screen reader announces automatically when its content changes).",
+    "Then its label moves.",
+  ].map((text, i) => ({ file: "skills/x/SKILL.md", line: i + 1, text }));
+  assert.deepEqual(
+    flagLines(lines).map((f) => [f.line, f.words]),
+    [[2, ["its"]]],
+  );
+});

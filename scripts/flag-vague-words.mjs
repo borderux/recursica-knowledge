@@ -24,6 +24,7 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { files, prose } from "./check-writing.mjs";
+import { GLOSSARY, parseGlossary } from "./check-glossary.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -98,7 +99,28 @@ function allLines(paths) {
   );
 }
 
-/** Flags for a set of lines: `{ file, line, words, sentence }`. Code and quotes are skipped. */
+/**
+ * A bracketed glossary definition is copied word for word from `skills/meta/GLOSSARY.md`, so a
+ * pronoun inside one can only be fixed in the glossary and every copy together. Flagging each copy
+ * would bury the flags a writer can act on. The glossary's own table is still read.
+ */
+let definitionPattern;
+function withoutDefinitions(text) {
+  if (definitionPattern === undefined) {
+    const defs = [
+      ...new Set(
+        [...parseGlossary(fs.readFileSync(GLOSSARY, "utf8")).values()].flat(),
+      ),
+    ].sort((a, b) => b.length - a.length);
+    const escape = (d) => d.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    definitionPattern = defs.length
+      ? new RegExp(`\\((?:${defs.map(escape).join("|")})[.;,:]?\\)`, "g")
+      : null;
+  }
+  return definitionPattern ? text.replace(definitionPattern, "()") : text;
+}
+
+/** Flags for a set of lines: `{ file, line, words, sentence }`. Code, quotes and glossary definitions are skipped. */
 export function flagLines(lines) {
   const out = [];
   let fenced = false;
@@ -112,7 +134,9 @@ export function flagLines(lines) {
       /^\s*(---|name:|license:|metadata:|author:|version:|<!--)/.test(text)
     )
       continue;
-    for (const sentence of prose(text).split(/(?<=[.!?])\s+/)) {
+    for (const sentence of prose(withoutDefinitions(text)).split(
+      /(?<=[.!?])\s+/,
+    )) {
       const words = flagsIn(sentence);
       if (words.length)
         out.push({ file, line, words, sentence: sentence.trim() });

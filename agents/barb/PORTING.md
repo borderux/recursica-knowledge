@@ -12,7 +12,7 @@ read-only tool set.**
 | The skills corpus | `skills/` from this repository — 62 `SKILL.md` files. She reads them; she never writes them. |
 | The manifest script | `scripts/screen-skill-manifest.mjs`, plus a Node 20+ runtime to run it. |
 | The application | A checkout of the app being reviewed, built on any Recursica adapter. |
-| The Recursica MCP server | `@recursica/mcp`, registered as `recursica-mcp` with `cwd` set to the app. Its `recursica_get_component_doc` tool gives the adapter's names for the design-system names the skills use. Without it she reads the installed adapter's API instead, which is slower and easier to get wrong. |
+| The Recursica MCP server | `@recursica/mcp`, registered as `recursica-mcp` with `cwd` set to the app. The server's `recursica_get_component_doc` tool gives the adapter's names for the design-system names the skills use. Without the server, Barb reads the installed adapter's API instead, which is slower and easier to get wrong. |
 | Subagent dispatch | `checker` and `feisty` must be registered, and the platform must support one agent spawning another. |
 | Room to fan out | Around 30–60 sub-agents in one turn, and a turn long enough to finish them (a full review of a small screen took about 17 minutes). Check the platform's per-turn caps and timeouts before anything else: every one Hermes had was below that, and each failed silently. See `runtime/hermes.md`. |
 | Somewhere to put the report | A file she can write and attach, if the chat surface limits message length. |
