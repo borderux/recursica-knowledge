@@ -58,7 +58,7 @@ Ask the questions in the table in order:
 
 **A panel that has to shade the page is the wrong choice.** If the page behind the panel must be blocked, build a page or a real modal instead. A panel is for a small task: the user opens the panel, works in the panel, and goes straight back to the page. A small task like that does not need the page blocked.
 
-**A code library may draw an overlay behind a drawer by default, and the house rule overrides that default.** A code library's default is not a house rule. See `recursica-skill-design-router` and the adapter note in `recursica-skill-panel`.
+**A code library may show an overlay behind a drawer by default, and the house rule overrides that default.** A code library's default is not a house rule. See `recursica-skill-design-router`, and the note in `recursica-skill-panel` on the defaults a code library sets.
 
 ### Terminology
 
@@ -104,7 +104,7 @@ Ask the questions in the table in order:
 
 **Prefer a design that does not need a second panel.** Stacking is allowed where the work drills down from one item into the next item. Do not stack panels by default.
 
-**No hard limit caps the number of stacked panels, but more than two stacked panels need the user's approval.** Build up to two stacked panels without asking. A third stacked panel is not forbidden, and a third panel is not a judgment call either. Stop and ask before building a third stacked panel or more. See `recursica-skill-design-router`.
+**The number of stacked panels has no hard limit, but more than two stacked panels need the user's approval.** Build up to two stacked panels without asking. A third stacked panel is not forbidden, and a third panel is not a judgment call either. Stop and ask before building a third stacked panel or more. See `recursica-skill-design-router`.
 
 **A panel may open a modal.** A panel is not a mode. A modal opened over a panel therefore does not stack one mode on another mode. A confirmation for unsaved changes is a modal opened from a panel. The confirmation appears when the user closes a panel that holds unsaved data.
 
@@ -112,7 +112,7 @@ Ask the questions in the table in order:
 
 **A panel may contain a form.** A form in a panel is a normal case, not a compromise.
 
-**Use stacked label placement for every field in a form in a panel.** A panel is narrow. A narrow container is exactly the container-width condition that makes labels stack. The whole form stacks, including the short fields that would fit side by side. A form has one label placement. `recursica-skill-forms` sets this rule.
+**Use stacked label placement for every field in a form in a panel.** A panel is narrow. In a narrow container, the container-width test stacks the labels. The whole form stacks, including the short fields that would fit side by side. A form has one label placement. `recursica-skill-forms` sets this rule.
 
 **A form long enough to make the panel scroll is not a panel form.** See the scrolling rules above.
 
@@ -132,11 +132,11 @@ Ask the questions in the table in order:
 
 **Closing a panel with unsaved changes should ask the user first.** Closing the panel is no different from leaving a page with unsaved data. Asking the user is a proper use of a confirmation modal.
 
-**Do not ask on every close.** A modal that appears every time the user closes a panel interrupts the user. The prompt fits when the user entered data into a form and never saved the data. A confirmation that the user is throwing away the changes then makes sense.
+**Do not ask on every close.** A modal that appears every time the user closes a panel interrupts the user. The confirmation modal fits when the user entered data into a form and never saved the data. A confirmation that the user is throwing away the changes then makes sense.
 
 ## Links to a panel or modal
 
-**A panel may have a separate URL that a user can link to, on purpose, the same as a modal.** Real cases exist for sending another person a URL that opens a particular view with the panel or modal already open.
+**A panel may have a separate URL that a user can link to, on purpose, the same as a modal.** Sometimes a user needs to send another person a URL that opens a particular view with the panel or modal already open.
 
 **A link to a panel or modal is a deliberate decision, not a default.** Where a panel or modal gets a link, the panel or modal gets a route and a link that opens the panel or modal, together. `recursica-skill-navigation` sets this rule, and has the same exception for modals.
 
@@ -172,7 +172,7 @@ A panel exists to sit beside the page the panel depends on. Below the width wher
 ## Set by the theme or the component
 
 - **Panel and modal styling inside the components:** padding, sizes, dividers, elevation (the shadow that makes a surface look raised), and overlay treatment.
-- **Panel width.** In the standard UI kit (the unchanged UI kit in the official Recursica release), the panel's minimum and maximum width are fixed, and the panel has no size option. If the project adds a size variant in Theme Forge, use the project's size variant. Otherwise, do not set the panel width. The designer still chooses the side each panel opens from.
+- **Panel width.** In the standard UI kit (the unchanged UI kit in the official Recursica release), the panel's minimum and maximum width are fixed. If the project has a size variant, use the size variant. Otherwise, do not set the panel width. The designer still chooses the side each panel opens from.
 - **Focus inside a component.** The design system provides focus behavior inside each component. Do not break the focus behavior.
 
 ## Out of scope
@@ -186,7 +186,7 @@ A panel exists to sit beside the page the panel depends on. Below the width wher
 
 ## Open questions
 
-- **The scrolling limit in numbers.** No number says how much content is "more than the panel holds on a normal-resolution screen." The limit was stated on purpose as a judgment about the scrolling the content causes, rather than as a pixel limit.
+- **The scrolling limit in numbers.** The skill gives no number for how much content is "more than the panel holds on a normal-resolution screen." The limit was stated on purpose as a judgment about the scrolling the content causes, rather than as a pixel limit.
 - **What a top or bottom panel looks like.** A top or bottom panel is allowed but not designed. A top or bottom panel therefore needs approval rather than a rule.
 - **Whether a panel's width may depend on the panel's side.** Stacked panels may differ in width from each other. No rule says whether a left panel and a right panel share a width.
 
