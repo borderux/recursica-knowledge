@@ -132,7 +132,7 @@ This component also follows the accessibility baseline in `recursica-skill-syste
 ## Open questions
 
 - **Alignment.** The design-system website shows timelines aligned left and aligned right, and the standard UI kit defines no alignment variant. Do not rely on an alignment without asking. Ask only when the project has no alignment variant.
-- **The connecting line.** The design-system website shows a connecting line with a highlighted state for completed events, and the standard UI kit defines no connecting line on the timeline. Whether a timeline may show progress at all is not settled. Ask about showing progress in every project. Do not rely on a connecting line without asking. Ask about the connecting line only when the project has no connecting line.
+- **The connecting line.** The design-system website shows a connecting line with a highlighted state for completed events, and the standard UI kit defines no connecting line on the timeline. A timeline never shows progress, with or without a connecting line. Do not rely on a connecting line without asking. Ask about the connecting line only when the project has no connecting line.
 - **Two-track timelines and timelines that compare two streams of events side by side.** Nothing in the standard UI kit supports either one. Ask only when the project has no two-track variant.
 - **What the selected state means in house terms.** The selected state could mark the item the user selected, or the most recent event. The standard UI kit has only the two selection states.
 - **Whether a timeline item may be selected, be a link, or have an action.** No rule says how a user interacts with a timeline item.
