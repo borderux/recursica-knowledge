@@ -16,7 +16,7 @@ A checkbox turns one specific value on or off. A checkbox group lets the user se
 - **The user may select zero, one, or many options.** The options are independent. Selecting one option never rules out another option.
 - **The user should see every option at once**, in a stacked list that is easy to scan. The user should not have to open a control to find out which options are available.
 - **The options have a parent-child relationship**, such as a parent checkbox that sums up a list of child checkboxes. The indeterminate state (the partly selected state, shown as a dash, when some but not all items are selected) exists for this case.
-- **The change saves with the form** when the user submits the form, not the moment the user checks the box.
+- **A change to a checkbox saves with the form** when the user submits the form, not the moment the user checks the checkbox.
 
 ## When not to use a checkbox
 
@@ -38,19 +38,16 @@ A checkbox turns one specific value on or off. A checkbox group lets the user se
 
 The rules below describe each option by role, such as "the checked state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-- **Three components make one checkbox field.** The checkbox group sets the layout and the spacing between the checkbox items. A checkbox item holds the label of one option and pairs the label with a box. The checkbox is the box, and holds whether the box is selected. In the standard UI kit, the three components are `checkbox-group`, `checkbox-item`, and `checkbox`. Use all three components together. Never place bare `checkbox` components in a form and call the checkboxes a group.
-- **Three selection states on the checkbox.** A checkbox is checked, unchecked, or indeterminate. In the standard UI kit, the variant is `selection-states`, with the options `checked`, `unchecked`, and `indeterminate`.
+- **A checkbox field has three components:** the checkbox, the checkbox item and the checkbox group. A checkbox is the box, and holds whether the box is selected. A checkbox item holds the label of one option and pairs the label with a box. A checkbox group sets the layout and the spacing between the checkbox items. In the standard UI kit, the three components are `checkbox-group`, `checkbox-item`, and `checkbox`. Use all three components together. Never place bare `checkbox` components in a form and call the checkboxes a group.
+- **A checkbox has three selection states.** A checkbox is checked, unchecked, or indeterminate. In the standard UI kit, the variant is `selection-states`, with the options `checked`, `unchecked`, and `indeterminate`.
 - **The indeterminate state is a state of the checkbox, not a separate component.** A select-all checkbox or a parent checkbox shows the indeterminate state when some, but not all, of the child checkboxes are checked.
 - **Two names for the same two selection states.** Only the design-system website says "Selected" and "Unselected". The standard UI kit says `checked` and `unchecked`. Both pairs of names mean the same two states.
-- **A disabled state on each checkbox item.** The disabled state belongs to the checkbox item, so one option can be unavailable while the options next to the disabled option stay usable. In the standard UI kit, the variant is `states`, with the option `disabled`. The standard UI kit has no disabled state for the whole checkbox group. If the project adds one in Theme Forge, use the project's disabled state for the group. The component draws the disabled look.
+- **A disabled state on each checkbox item.** The disabled state belongs to the checkbox item, so one option can be unavailable while the options next to the disabled option stay usable. In the standard UI kit, the variant is `states`, with the option `disabled`. The checkbox components show the disabled look automatically.
 - **Disabled combined with a selection state.** Only the design-system website shows `Selected-disabled` and `Indeterminate-disabled` as states. Each one is the disabled state of the checkbox item combined with the selection state of the checkbox, not an extra selection state.
-- **No error state in the standard UI kit.** The standard UI kit has no error state for the checkbox group, the checkbox item, or the checkbox. If the project adds one in Theme Forge, use the project's error state.
-- **No required variant in the standard UI kit.** If the project adds a required variant in Theme Forge, use the project's required variant.
-- **No size variant in the standard UI kit.** In the standard UI kit, `size` and `icon-size` are fixed properties of the checkbox. If the project adds a size variant in Theme Forge, use the project's size variant.
 - **Read-only is a separate component.** The read-only field, `read-only-field` in the standard UI kit, shows text instead of inputs.
-- **Two label placements on the checkbox group.** The group label sits beside the checkbox items or above the checkbox items. Label placement is one decision for the whole field, so the variant belongs to the checkbox group. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`.
+- **Two label placements on the checkbox group.** The label of the checkbox group sits beside the checkbox items or above the checkbox items. Label placement is one decision for the whole field, so the variant belongs to the checkbox group. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`.
 
-**Label placement is a variant, the same variant every field has.** The group's label sits beside the stack of items or above the stack of items. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. **It is not a variant for which way the items run.** Items are always stacked vertically — `recursica-skill-selection-controls` forbids a horizontal checkbox group outright — so `side-by-side` must never be read as "put the checkboxes in a row."
+**Label placement is a variant, the same variant every field has.** The group's label sits beside the stack of items or above the stack of items. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. **Label placement is not a variant for which way the items run.** Items are always stacked vertically — `recursica-skill-selection-controls` forbids a horizontal checkbox group outright — so `side-by-side` must never be read as "put the checkboxes in a row."
 
 ## Rules
 
@@ -68,9 +65,9 @@ The rules below describe each option by role, such as "the checked state". The n
 
 **Put the selection rule in assistive text**, not in a validation message that the user sees only after breaking the rule. For example, put "At least two options required" under the group. Show the selection rule with the assistive element. See `recursica-skill-assistive-element`.
 
-**A select-all control is fine to include, and the checkbox group provides the indeterminate state.** When the user selects all, then deselects one checkbox item, the select-all control changes to the indeterminate state.
+**A select-all checkbox is fine to include, and the select-all checkbox uses the indeterminate state.** When the user selects all, then deselects one checkbox item, the select-all control changes to the indeterminate state.
 
-**Treat a need for select all as a warning sign.** If checking items one at a time would tire the user, as with twenty checkboxes, the control is wrong. Fix the screen's structure before adding the select-all affordance (a visible cue that a control can be used, such as the underline on a link).
+**Treat a need for select all as a warning sign.** If checking items one at a time would tire the user, as with twenty checkboxes, a checkbox group is the wrong control. Fix the screen's structure before adding the select-all affordance (a visible cue that a control can be used, such as the underline on a link).
 
 **To select table rows, put a checkbox in the leftmost cell of each table row, and a checkbox in the table header.** The header checkbox always behaves as follows:
 
@@ -109,7 +106,7 @@ The checkbox component pairs each box with the item label and provides the focus
 - **Space toggles a checkbox.** Users expect the Space key. Do not remap Space, do not require Enter instead, and do not block Space.
 - **The adapter (the Recursica component library for one framework, such as Mantine or Angular Material) handles the keys inside the checkbox.** Do not add custom key handlers to the box, and do not rebuild the toggling. A custom key handler or rebuilt toggling breaks behavior that works.
 - **Every checkbox in a group is a separate tab stop** (a place the Tab key lands). A radio group works the opposite way. Do not add roving focus (where the arrow keys move between items that share one tab stop) inside a checkbox group. Do not repurpose Home and End. Home and End belong to the page.
-- **Clicking or tapping the item label toggles the checkbox.** A real label connected to the box provides the toggling with no extra code, and gives the user a bigger target. Do not show the label as text that is not connected to the box.
+- **Clicking or tapping the item label toggles the checkbox.** A real label connected to the box toggles the checkbox automatically, and gives the user a bigger target. Do not show the label as text that is not connected to the box.
 - **Do not move focus for the user.** When a checkbox reveals fields below, focus stays on the checkbox. The user reaches the new fields with the next Tab. Moving focus into the revealed fields takes keyboard users and screen reader users away from the checkbox they just used.
 
 ## Styling set by tokens
@@ -137,8 +134,8 @@ The checkbox component pairs each box with the item label and provides the focus
 
 ## Open questions
 
-- **How a checkbox group shows an error.** The standard UI kit gives `dropdown` and `autocomplete` an `error` state, and gives the checkbox none. A checkbox group can still have a selection rule that fails validation. No rule says how a checkbox group shows the error. Ask only when the project has no error state.
-- **The multi-select dropdown does not exist.** The UI kit and the shipped adapter now both confirm the gap. The dropdown is a single-value select, with no multi-select variant. `recursica-skill-selection-controls` requires a multi-select dropdown in two places. The missing dropdown is a gap in the list of components, not an invitation to build a multi-select dropdown from other parts. Do not put a checkbox group inside a dropdown, and do not use a transfer list instead without asking. When the user must filter by several values, one build test used separate single-value filters that AND together (a row appears only if it matches all of them), and the workaround succeeded. Ask.
+- **How a checkbox group shows an error.** A checkbox group can have a selection rule that fails validation. No rule says how a checkbox group shows the validation error. If the project has an error state for the checkbox group, the checkbox item or the checkbox, use the project's error state. Otherwise, ask.
+- **Whether the project has a multi-select dropdown.** `recursica-skill-selection-controls` requires a multi-select dropdown in two places. If the project has a multi-select dropdown, use the project's multi-select dropdown. Otherwise, ask. A project with no multi-select dropdown has a gap in the list of components, not an invitation to build a multi-select dropdown from other parts. Do not put a checkbox group inside a dropdown, and do not use a transfer list instead without asking. When the user must filter by several values, one build test used separate single-value filters that AND together (a row appears only if it matches all of them), and the workaround succeeded.
 - **Whether a select-all control is a `checkbox-item` in the group, or a separate control outside the group**, and how the select-all control relates to the group's `item-gap`.
 - **Limits on selection.** No rule says whether a user may be limited to selecting _n_ options out of many.
 - **How deep parent-child checkboxes may nest.** The indeterminate state implies a hierarchy of parent and child checkboxes. No rule says how many levels deep the hierarchy may go, or how a parent checkbox's state is worked out beyond one level.
