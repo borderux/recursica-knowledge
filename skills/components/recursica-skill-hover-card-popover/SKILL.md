@@ -38,9 +38,9 @@ A hover card or a popover shows richer content beside the element that opens the
 
 The rules below describe each part and option by role, such as "the beak". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-- **A hover card or popover has two parts:** a content area and a beak. The beak is the pointer that connects the card to the trigger. Tokens set the beak's size.
+- **A hover card or popover has two parts:** a content area and a beak. The beak is the pointer that connects the card to the trigger.
 - **Placement.** If the project has a placement option, use the project's option. Otherwise, never set a position. Never position the beak by hand. See the open questions.
-- **Width.** Tokens set a minimum width and a maximum width. If the project has a size variant, use the project's size variant. Content that does not fit inside the width limits belongs on the page.
+- **Width.** The theme sets a minimum width and a maximum width for a hover card or popover. If the project has a size variant, use the project's size variant. Content that does not fit inside the width limits belongs on the page.
 - **Content type.** If the project has a content-type variant, use the project's variant. Ask before showing custom content when the project has no custom content type. See the open questions.
 - **Hover card or popover.** If the project has a variant for the hover card or the popover, use the project's variant. The house rules treat a hover card and a popover as two different components. The behavior decides which of the two a build is, and the choice sets every accessibility requirement below.
 
@@ -83,7 +83,7 @@ A card that opens on hover and holds a control is not a third option. A card tha
 
 **Keep the primary action out of a hover card or popover.** Use one primary action per page, panel, modal, table row, or other container, in view in that container. See `recursica-skill-buttons-links`.
 
-**Choose between a tooltip and a hover card or popover by the content, not by the look.** The standard UI kit has two different components, `tooltip` and `hover-card-popover`, with almost identical tokens, so the two look almost the same. A tooltip is a short text label for a control with no visible label. A hover card or popover holds richer content. Neither component may hold content the user needs to finish a task. Neither component may be the only place a piece of information exists.
+**Choose between a tooltip and a hover card or popover by the content, not by the look.** The standard UI kit has two different components, `tooltip` and `hover-card-popover`, and the two look almost the same. A tooltip is a short text label for a control with no visible label. A hover card or popover holds richer content. Neither component may hold content the user needs to finish a task. Neither component may be the only place a piece of information exists.
 
 ## Accessibility
 
@@ -117,13 +117,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 ## Styling set by tokens
 
-**Do not set or override the properties below.** The hover card and popover tokens set each property:
-
-- `colors`, `content-text`.
-- `border-radius`, `border-size`.
-- `horizontal-padding`, `vertical-padding`.
-- `min-width`, `max-width`.
-- `beak-size`, `elevation`.
+**Never set or override the hover card or popover's styling.** The theme sets every visual property of the hover card or popover, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the hover card or popover's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 **The beak is part of the hover card or popover.** Do not draw a separate beak, and do not move the beak the hover card or popover already shows.
 
@@ -134,13 +128,12 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 ### Only if used on the same screen
 
-- `recursica-skill-tooltip` — the tooltip, for a short text label on a control with no visible label, and why a tooltip and a hover card or popover are not interchangeable despite matching tokens.
+- `recursica-skill-tooltip` — the tooltip, for a short text label on a control with no visible label, and why a tooltip and a hover card or popover are not interchangeable even though the two look almost the same.
 - `recursica-skill-menu` — where a list of actions or options goes, and the menu's rules for returning focus.
 - `recursica-skill-panel` — the panel, for content the user needs while working in the page.
 
 ## Open questions
 
-- **Whether the single set of tokens should become two sets.** The standard UI kit uses one set of tokens for both a hover card and a popover. The behavior of each is settled and written down separately. Ask before assuming a hover card and a popover can look different. Ask only when the project has no separate hover card and popover styles.
 - **Placement.** The design-system website shows four positions (top, left, right and bottom) and three beak alignments (start, middle and end). Do not rely on a position or a beak alignment without asking. Ask about a position or a beak alignment only when the project has no placement option. With or without a placement option, no rule covers what happens at the edge of the viewport.
 - **The delay before showing, the delay before hiding, and the grace period** while the pointer crosses from the trigger to the card. No rule sets any of the three.
 - **Custom content.** The design-system website shows two content types, text and custom. Do not rely on custom content without asking. Ask only when the project has no custom content type.
@@ -162,5 +155,5 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - [ ] Every image in a hover card or popover has alternative text, or is marked as decorative.
 - [ ] No content, control or action the user needs appears only on hover, and the focus ring is intact everywhere.
 - [ ] Every variant and option is one the Recursica MCP server lists for the project, and no placement, size, or content variant is invented.
-- [ ] Padding, width, color, elevation, and beak styling come from the component.
-- [ ] Open questions were asked about, not decided: whether the single set of tokens should become two sets, placement, the show and hide delays and the grace period, custom content, behavior on touch, and a popover opened from a menu, a modal, or another popover.
+- [ ] No styling is set or overridden on the hover card or popover.
+- [ ] Open questions were asked about, not decided: placement, the show and hide delays and the grace period, custom content, behavior on touch, and a popover opened from a menu, a modal, or another popover.
