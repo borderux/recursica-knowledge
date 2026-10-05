@@ -11,7 +11,7 @@ metadata:
 
 A file upload is a bordered area for adding files, called the upload area. The upload area holds an add control that opens the file picker on the user's device. A list below the upload area shows the files the user has added.
 
-> **The file upload is not built yet.** Both adapters (the Recursica component library for one framework, such as Mantine or Angular Material) ship the file upload as a declared stub (an empty placeholder) that shows placeholder content. The adapters apply none of the 32 `file-upload` tokens (named design values, such as colors or sizes, set by the design system) that the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) exports. The rules in this skill describe the intended file upload, and the rules are correct for the UI kit. A file upload built today shows only a placeholder, with no error. Report the missing component instead of building a workaround.
+> **The file upload is not built yet.** Both adapters (the Recursica component library for one framework, such as Mantine or Angular Material) ship the file upload as a declared stub (an empty placeholder) that shows placeholder content. The adapters apply none of the file upload's tokens (named design values, such as colors or sizes, set by the design system) that the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) exports. The rules in this skill describe the intended file upload, and the rules are correct for the UI kit. A file upload built today shows only a placeholder, with no error. Report the missing component instead of building a workaround.
 
 ## When to use a file upload
 
@@ -41,7 +41,7 @@ The rules below describe each option by role, such as "the error state". The nam
 **Label placement is a variant.** A control's label sits beside the control or above the control. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the control is the house default. The label above the control is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
 
 - **An error state and a disabled state.** In the standard UI kit, the variant is `states`, with the options `error` and `disabled`.
-- **The bordered area and the list of added files are the only difference from a file input**, which is a single-line field. The tokens show that the file upload is the larger area. The tokens `border-style`, `border-size`, `border-radius`, and `padding` describe an area, not a line. The tokens `item-gap`, `list-spacing`, and `vertical-element-gap` describe the list of added files below the area.
+- **The bordered area and the list of added files are the only difference from a file input**, which is a single-line field.
 - **The list of added files is part of the file upload component.** Do not build a separate list, chips, or list rows below the upload area.
 - **Upload feedback.** If the project has a progress state, a success state, or an error state for each file, use the project's state. Otherwise, see the open questions.
 - **Style, size, and one file versus several files.** If the project has a style variant, a size variant, or a variant for one file versus several files, use the project's variant. Otherwise, see the open questions.
@@ -103,12 +103,7 @@ The application must add every behavior in the two lists below. A drop zone is t
 
 ## Styling set by tokens
 
-**Do not set or override the file upload properties below.** The file upload component sets every property in the list.
-
-- `border-style`, `border-size`, `border-radius`, `padding`.
-- `item-gap`, `list-spacing`, `vertical-element-gap`.
-- `text` styling and all `colors`.
-- Field colors and sizes from `globals.form.field`, the gaps between the label and the field and `vertical-item-gap` from `globals.form.properties`, and the disabled look from `globals.states.disabled`.
+**Never set or override the file upload's styling.** The theme sets every visual property of the file upload, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the file upload's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 ## Related skills
 
@@ -124,7 +119,7 @@ The application must add every behavior in the two lists below. A drop zone is t
 ## Open questions
 
 - **Upload feedback.** The user needs feedback on each upload. The question covers three kinds of feedback: progress, success, and an error for each file. Do not invent a progress bar, a spinner, or a checkmark on each list item. For each of the three kinds of feedback, ask only when the project has no state for that kind of feedback.
-- **A button style and a drop zone style.** Only the design-system website shows the two styles. The standard UI kit has a single `border-style` token. The design system has not settled which of the two styles the standard UI kit produces. The design system has also not settled whether both styles are available. Do not rely on either style without asking. Ask only when the project has no style variant.
+- **A button style and a drop zone style.** Only the design-system website shows the two styles. The design system has not settled which of the two styles the standard UI kit produces. The design system has also not settled whether both styles are available. Do not rely on either style without asking. Ask only when the project has no style variant.
 - **One file versus several files.** Only the design-system website shows a type for one file and a type for several files. Do not rely on either type without asking. Ask only when the project has no variant for one file versus several files.
 - **Retrying.** No rule says what happens to a file that failed to upload, or whether the user can retry the upload in place.
 - **Overall limits.** No rule sets a maximum number of files, or a maximum total size for all files in the list.
@@ -149,5 +144,5 @@ The application must add every behavior in the two lists below. A drop zone is t
 - [ ] The tab order runs from the label to the add control, then down the list. The focus ring is intact, and the focus ring looks different from the highlight that shows where to drop a file.
 - [ ] The file upload sits in the form's single column, not inside a card.
 - [ ] Every variant, size, and state is one the Recursica MCP server lists for the project, and no variant or option is invented. The list of added files comes from the file upload component, with no hand-built list, chips, or list rows.
-- [ ] Borders, padding, and gaps come from the file upload component.
+- [ ] No styling is set or overridden on the file upload.
 - [ ] Open questions were asked about, not decided: progress, success, retrying, previews, and overall limits.
