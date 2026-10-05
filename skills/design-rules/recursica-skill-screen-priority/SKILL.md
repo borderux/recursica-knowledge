@@ -25,7 +25,7 @@ The rules assume **complex enterprise web applications**, where people do real w
 
 **"Primary attention" is not a useful idea for an enterprise screen.** The idea of primary attention belongs to websites, where a visitor glances at information. In an enterprise application, people are working. Asking which single element grabs attention produces the wrong screen.
 
-**No rule sets how many elements may compete for attention.** The number depends entirely on the situation and the workflow. An agent that wants a number is asking the wrong question.
+**No rule limits how many elements may compete for attention.** The number depends entirely on the situation and the workflow. An agent that wants a number is asking the wrong question.
 
 ### The overload test
 
@@ -49,7 +49,7 @@ The rules assume **complex enterprise web applications**, where people do real w
 
 **The top-left position almost always holds the client's logo, the brand of the product being built.** The logo reinforces the brand. For this reason, the top-left position is not available for content.
 
-**One variation puts the logo in the upper right and the profile information in the upper left.**
+**The logo may instead sit in the upper right, with the profile information in the upper left.**
 
 **A screen with no logo is a rare exception.** A client who does not care about reinforcing the brand may hide the logo. In nearly every case, a logo appears on the screen.
 
@@ -74,11 +74,11 @@ Density is how tightly content is packed together.
 - **A screen for reviewing information and exploring the information in detail can handle more density.** An example is a dashboard someone opens every morning.
 - **A screen for starting a flow calls for less density.** The user arrives at the screen to do a task.
 
-No threshold sets the density. The use case sets the density.
+Density depends on the use case, not on a threshold.
 
 ## The three tenets and the finished screen
 
-Apply the three tenets in order. The third tenet depends on the first two tenets being done.
+The three tenets are workflow, physicality and simplicity. Apply the three tenets in order. The third tenet depends on the first two tenets being done.
 
 1. **Workflow.** Understand what the user is trying to do. Build the screen, or the screens, so the user can do the task efficiently.
 2. **Physicality.** Create connections between elements, pages and screens, so that moving through the elements, pages and screens feels connected, not like data scattered at random.
@@ -96,7 +96,7 @@ Apply the three tenets in order. The third tenet depends on the first two tenets
 
 ### A finished screen
 
-**A screen is complete when the screen meets the user's needs and the simplifying pass is done.** Judge the user's needs against the user's workflow and mental model. The simplifying pass removes the content that is not needed. The simplifying pass also makes the phrasing and wording of labels as short as possible.
+**A screen is complete when the screen meets the user's needs and the third tenet, simplicity, is done.** Judge the user's needs against the user's workflow and mental model. The simplicity tenet removes the content that is not needed. The simplicity tenet also makes the phrasing and wording of labels as short as possible.
 
 **Simplifying is the last step.** Simplify the screen, and confirm that the screen still meets the user's needs. The screen is then finished.
 
