@@ -88,7 +88,7 @@ A value must pass two tests before the value is pre-selected.
 
 **Beyond that failure, whether to remember or reset depends on the screen and the user's task.** No single rule decides. Resetting is the right outcome for some screens.
 
-**Tab and layout state is not remembered state.** A tab that is a route is restored by its URL and the back button. Do not store it as a UI preference — see `recursica-skill-navigation`.
+**Tab and layout state is not remembered state.** A tab that is a route is restored by its URL and the back button. Do not store tab state or layout state as a UI preference. See `recursica-skill-navigation`.
 
 **Nobody has decided which remembered state should last across sessions.** Ask. See the open questions below.
 
