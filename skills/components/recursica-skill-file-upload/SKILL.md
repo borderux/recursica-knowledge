@@ -9,26 +9,26 @@ metadata:
 
 # File upload
 
-A file upload is a bordered area for adding files. A list below the area shows the files the user has added.
+A file upload is a bordered area for adding files, called the upload area. The upload area holds an add control that opens the file picker on the user's device. A list below the upload area shows the files the user has added.
 
 > **The file upload is not built yet.** Both adapters (the Recursica component library for one framework, such as Mantine or Angular Material) ship the file upload as a declared stub (an empty placeholder) that shows placeholder content. The adapters apply none of the 32 `file-upload` tokens (named design values, such as colors or sizes, set by the design system) that the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) exports. The rules in this skill describe the intended file upload, and the rules are correct for the UI kit. A file upload built today shows only a placeholder, with no error. Report the missing component instead of building a workaround.
 
 ## When to use a file upload
 
-- **Uploading files is the main task of the page, panel, modal, or part of a page that holds the file upload**, such as an attachments section, a document intake, or a submission step. Because uploading is the main task, the upload area can take a large part of the page.
+- **Uploading files is the main task of the page, panel, modal, or part of a page that holds the file upload**, such as an attachments section, a document intake, or a submission step. The upload area can take a large part of the page, because uploading is the main task.
 - **The user adds several files.** The user needs to see every added file, check the list, and remove a wrong file before saving.
 - **The list of added files must stay in place while the user keeps working.** The list is not a single value that the next file replaces.
 
 ## When not to use a file upload
 
-| Situation                                                                | Use instead                                                                                            |
-| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
-| A file is one field in a dense form                                      | A file input. See `recursica-skill-file-input`.                                                        |
-| One image is replaced, and no list of files is kept                      | A file input. See `recursica-skill-file-input`. A profile picture needs no list of files.              |
-| The file comes from Google Drive, Dropbox, or OneDrive                   | The file picker of that service. A file upload reads files only from the user's device.                |
-| The user manages files that are already stored                           | A table of the stored files. See `recursica-skill-tables`.                                             |
-| The screen reports how far a task that is already running has progressed | A loader. See `recursica-skill-loader`. The standard UI kit has no progress state for the file upload. |
-| The attached files are shown, but the user cannot change the files here  | A read-only field. See `recursica-skill-read-only-field`.                                              |
+| Situation                                                                | Use instead                                                                               |
+| ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| A file is one field in a dense form                                      | A file input. See `recursica-skill-file-input`.                                           |
+| One image is replaced, and no list of files is kept                      | A file input. See `recursica-skill-file-input`. A profile picture needs no list of files. |
+| The file comes from Google Drive, Dropbox, or OneDrive                   | The file picker of that service. A file upload reads files only from the user's device.   |
+| The user manages files that are already stored                           | A table of the stored files. See `recursica-skill-tables`.                                |
+| The screen reports how far a task that is already running has progressed | A loader. See `recursica-skill-loader`.                                                   |
+| The attached files are shown, but the user cannot change the files here  | A read-only field. See `recursica-skill-read-only-field`.                                 |
 
 **Use a file input when the file is a minor property of the object the form describes.** A large upload area inside an otherwise compact form is out of proportion.
 
@@ -43,14 +43,14 @@ The rules below describe each option by role, such as "the error state". The nam
 - **An error state and a disabled state.** In the standard UI kit, the variant is `states`, with the options `error` and `disabled`.
 - **The bordered area and the list of added files are the only difference from a file input**, which is a single-line field. The tokens show that the file upload is the larger area. The tokens `border-style`, `border-size`, `border-radius`, and `padding` describe an area, not a line. The tokens `item-gap`, `list-spacing`, and `vertical-element-gap` describe the list of added files below the area.
 - **The list of added files is part of the file upload component.** Do not build a separate list, chips, or list rows below the upload area.
-- **The standard UI kit has no progress state, no success state, and no error state for each file.** If the project adds one of these states in Theme Forge, use the project's state. Otherwise, see the open questions.
-- **The standard UI kit has no style variant, no size variant, and no variant for one file versus several files.** If the project adds one of these variants in Theme Forge, use the project's variant. Otherwise, see the open questions.
+- **Upload feedback.** If the project has a progress state, a success state, or an error state for each file, use the project's state. Otherwise, see the open questions.
+- **Style, size, and one file versus several files.** If the project has a style variant, a size variant, or a variant for one file versus several files, use the project's variant. Otherwise, see the open questions.
 
 ## Rules
 
 **Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
-**State the accepted file types and the size limit in text, before the user picks a file.** State both, up front, in help text under the file upload. For example, write "PDF or DOCX, up to 25 MB each". With the limits stated first, the user picks a file that the file upload accepts. `recursica-skill-assistive-element` sets this rule.
+**State the accepted file types and the size limit in text, before the user picks a file.** State both, up front, in help text under the file upload. For example, write "PDF or DOCX, up to 25 MB each". The user then knows the limits before picking a file, and picks a file that the file upload accepts. `recursica-skill-assistive-element` sets this rule.
 
 **Also limit the file picker to the accepted file types.** The help text tells the user which files the file upload accepts. The limit in the file picker keeps the user from selecting other file types. Do both.
 
@@ -64,7 +64,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 **Remove a file from the list immediately, with no confirmation.** The user can add the file again. `recursica-skill-forms` asks for a confirmation only when the user has no way to recover.
 
-**On error, replace the help text with the error message. Do not add the error message to the help text.** The error message restates the broken rule, as in "Each file must be under 25 MB", not "Upload failed".
+**On error, replace the help text with an error message. Do not add the error message to the help text.** The error message restates the broken rule, as in "Each file must be under 25 MB", not "Upload failed".
 
 **Pair the error state with a signal that is not color.** `recursica-skill-system-conventions` requires the second signal.
 
@@ -83,7 +83,7 @@ The application must add every behavior in the two lists below. A drop zone is t
 ### Screen readers
 
 - **Give the whole file upload a real label.** The text in the upload area, such as "Drag files here", is an instruction, not a name.
-- **The accepted file types and the size limit must be in text connected to the file upload**, set through the file upload component. The text must be available before the user picks a file, not only in a rejection message afterward.
+- **The accepted file types and the size limit must be in text connected to the file upload.** Set the text through the file upload component. The text must be available before the user picks a file, not only in a rejection message afterward.
 - **Every item in the list of added files announces the file name.** A list item that announces only "file" or "document" cannot be used in a list of eight files.
 - **The accessible name (the name a screen reader reads out for a control) of each remove control must include the file name**, as in "Remove quarterly-report.pdf", not "Remove". Nobody can tell eight identical "Remove" buttons apart.
 - **Every removal must be announced, and so must every addition and every rejection.** Each announcement names the file. A rejection announcement also says why the file was rejected.
@@ -97,7 +97,7 @@ The application must add every behavior in the two lists below. A drop zone is t
 - **A drop zone must never be the only way to add a file.** A file upload breaks this rule more often than any other rule in this skill. When the file upload accepts dropped files, the file upload also has a keyboard way to add files, and the keyboard way does the same job.
 - **Every remove control is a separate tab stop** (a place the Tab key lands), in visual order down the list, and works with Enter or Space.
 - **After a removal, move focus to a chosen element.** Move focus to the remove control of the next file, or to the add control when the list is now empty. When the focused element is removed, focus is lost with no announcement, and the keyboard user loses track of the place on the page.
-- **At any other time, do not move focus for the user.** When the file dialog closes, focus stays on the add control. The user can then add another file.
+- **At any other time, do not move focus for the user.** When the file picker closes, focus stays on the add control. The user can then add another file.
 - **The tab order follows the visual order.** The order is the label, the add control, then the list from top to bottom.
 - **Nothing the user needs may appear only on hover.** This rule covers the remove control, the file name, and the size limit. A remove button that appears only when the pointer is over a list item cannot be reached by keyboard or by touch.
 
@@ -123,9 +123,9 @@ The application must add every behavior in the two lists below. A drop zone is t
 
 ## Open questions
 
-- **Upload feedback.** The standard UI kit has no progress state, no success state, and no error state for each file. The user needs feedback on each upload, and the file upload in the standard UI kit cannot show the feedback. Do not invent a progress bar, a spinner, or a checkmark on each list item. For each of the three kinds of feedback, ask only when the project has no state for that kind of feedback.
-- **A button style and a drop zone style.** Only the design-system website shows the two styles. The standard UI kit has a single `border-style` token and no style variant. Which of the two arrangements the standard UI kit produces is not settled. Whether both arrangements are available is not settled either. Do not rely on either style without asking. Ask only when the project has no style variant.
-- **One file versus several files.** Only the design-system website shows a type for one file and a type for several files. The standard UI kit has no variant for one file versus several files. Do not rely on either type without asking. Ask only when the project has no variant for one file versus several files.
+- **Upload feedback.** The user needs feedback on each upload. The question covers three kinds of feedback: progress, success, and an error for each file. Do not invent a progress bar, a spinner, or a checkmark on each list item. For each of the three kinds of feedback, ask only when the project has no state for that kind of feedback.
+- **A button style and a drop zone style.** Only the design-system website shows the two styles. The standard UI kit has a single `border-style` token. The design system has not settled which of the two styles the standard UI kit produces. The design system has also not settled whether both styles are available. Do not rely on either style without asking. Ask only when the project has no style variant.
+- **One file versus several files.** Only the design-system website shows a type for one file and a type for several files. Do not rely on either type without asking. Ask only when the project has no variant for one file versus several files.
 - **Retrying.** No rule says what happens to a file that failed to upload, or whether the user can retry the upload in place.
 - **Overall limits.** No rule sets a maximum number of files, or a maximum total size for all files in the list.
 - **Thumbnails or previews.** No rule says whether the list shows a thumbnail or a preview of an image file.
