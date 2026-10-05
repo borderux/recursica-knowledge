@@ -38,14 +38,11 @@ A segmented control is a horizontal radio group. The user selects exactly one of
 
 The rules below describe each option by role, such as "the horizontal orientation". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-- **Two parts: the control and the segment.** The control is the whole group of options. A segment is one option in the group. In the standard UI kit, the two parts are `segmented-control` and `segmented-control-item`.
+- **A segmented control has two parts: the control and the segments.** The control is the whole group of options. A segment is one option in the group. In the standard UI kit, the two parts are `segmented-control` and `segmented-control-item`.
 - **An orientation variant on the control, with a horizontal option and a vertical option.** Always use the horizontal option. See the orientation rule below. In the standard UI kit, the variant is `orientation`, with the options `horizontal` and `vertical`.
-- **A fill-width variant on the control.** With fill width on, the control stretches to the width of the container, and the segments share the width equally. Fill width is off by default. In the standard UI kit, the variant is `fill-width`, with the options `false` and `true`.
+- **A fill-width variant on the control.** With fill width on, the control stretches to the width of the container the control sits in, and the segments share the width equally. Fill width is off by default. In the standard UI kit, the variant is `fill-width`, with the options `false` and `true`.
 - **A selection variant on each segment, with a selected option and an unselected option.** In the standard UI kit, the variant is `selection-states`, with the options `selected` and `unselected`.
-- **A leading icon on a segment.** A segment may show a leading icon. Only the design-system website shows the leading icon, as part of the segment.
-- **No size variant in the standard UI kit**, on the control or on a segment. If the project adds a size variant in Theme Forge, use the project's size variant.
-- **No style variant in the standard UI kit**, on the control or on a segment. If the project adds a style variant in Theme Forge, use the project's style variant.
-- **No disabled state in the standard UI kit**, on the control or on a segment. If the project adds a disabled state in Theme Forge, use the project's disabled state.
+- **A leading icon on a segment.** A segment may show a leading icon.
 
 ## Rules
 
