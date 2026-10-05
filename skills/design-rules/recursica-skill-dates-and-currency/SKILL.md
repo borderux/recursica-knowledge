@@ -31,7 +31,7 @@ A locale is the language and regional settings a person uses, such as date and n
 
 This date format is the single date format. The date format exists to remove confusion. A reader reads the date correctly under any regional conventions.
 
-**NEVER display a date as numbers separated by slashes or hyphens, except inside an input that has focus.** `01/07/2026` is ambiguous. A reader cannot tell the month from the day whenever both numbers could reasonably be either one. A spelled-out month removes the confusion completely. No reason remains to use the numeric form.
+**NEVER display a date as numbers separated by slashes or hyphens, except inside an input that has focus.** `01/07/2026` is ambiguous. A reader cannot tell the month from the day whenever both numbers could reasonably be either one. A spelled-out month removes the confusion completely. The numeric form then serves no purpose.
 
 **A numeric date is the single biggest pet peeve in this topic.** A screen that shows numeric dates with slashes or hyphens looks lazy, because the clear format costs nothing.
 
@@ -41,10 +41,10 @@ A serialization is a machine-readable text form of a value. A serialization is m
 
 **MUST build the displayed value with a date formatter, in the reader's locale and time zone.** In a browser, use the browser's built-in date formatter, and never pass the formatter a locale. A locale passed to the formatter names a locale the reader did not choose. The tenant's locale then wins, and the section "Whose locale wins" above forbids the tenant's locale.
 
-**NEVER make a displayed date by cutting characters out of a machine serialization.** Look for code that takes the first ten characters of a timestamp in UTC, or any variation of that cut. Cutting a date out of a timestamp breaks two separate rules at once:
+**NEVER make a displayed date by cutting characters out of a machine serialization.** Look for code that takes the first ten characters of a timestamp in UTC (the reference time zone that all other time zones are measured from), or any variation of that cut. Cutting a date out of a timestamp breaks two separate rules at once:
 
 - **The cut date is the numeric form with hyphens**, as in `2026-08-10`. This section forbids the numeric form.
-- **The cut date is in UTC, not the reader's time zone.** (UTC is the reference time zone that all other time zones are measured from.) The cut date is formatted wrong, and the cut date is also the wrong day. An entry made at 6 p.m. on the 10th, west of Greenwich, displays as the 11th. Nobody reviewing the screen sees a bug, because the screen shows a believable date.
+- **The cut date is in UTC, not the reader's time zone.** The cut date is formatted wrong, and the cut date is also the wrong day. An entry made at 6 p.m. on the 10th, west of Greenwich, displays as the 11th. Nobody reviewing the screen sees a bug, because the screen shows a believable date.
 
 **The wrong day is the dangerous problem.** The wrong day remains after the numeric form is fixed. Reformatting the same UTC string into `Aug 10, 2026` still shows the wrong day. Fix where the value comes from and how the value is formatted, together.
 
@@ -80,11 +80,11 @@ Relative time follows principle 1. An event shown at 2:23 p.m., read at 2:45 p.m
 
 **Use the platform's relative-time formatter, not hand-written strings.** In a browser, use the browser's built-in relative-time formatter, set to write `yesterday` instead of `1 day ago`. The formatter writes `yesterday` in each locale, and hand-written text cannot. A hand-written string covers only the one language the string was written in.
 
-**Keep every relative value below the cutoff.** Rounding at the top of the range shows `7 days ago` for a value 6.9 days old. A value one hour older, in the same column, shows an absolute date. Cap the largest relative value below the cutoff.
+**Keep every relative value below the cutoff.** Rounding just under the cutoff shows `7 days ago` for a value 6.9 days old. A value one hour older, in the same column, shows an absolute date. Cap the largest relative value below the cutoff.
 
 **Relative time never shows seconds.** A value under a minute old shows `now`. The rule on seconds under "Duration" allows seconds only for a set of values under a minute that the reader compares. A single timestamp is not such a set.
 
-**A relative value is calculated when the screen draws the value, and the value does not update by itself.** A screen may stay open a long time and never reload the screen's data. The relative value then goes out of date, and the reader cannot see that the value is out of date. Either refresh the relative value, or use the absolute form. Do not leave a page saying `now` an hour later.
+**A relative value is calculated when the screen shows the value, and the value does not update by itself.** A screen may stay open a long time and never reload the screen's data. The relative value then goes out of date, and the reader cannot see that the value is out of date. Either refresh the relative value, or use the absolute form. Do not leave a page saying `now` an hour later.
 
 ## Currency
 
@@ -106,7 +106,7 @@ Relative time follows principle 1. An event shown at 2:23 p.m., read at 2:45 p.m
 
 **Right-align all numbers**, currency or not, so the alignment is uniform.
 
-**MUST keep the same precision on every row in a column.** When some values in a column have a decimal, the whole numbers get a decimal too: `4.5` and `7.0`, never `4.5` and `7`. Mixed precision down a column breaks the alignment that the fixed precision exists to create.
+**MUST keep the same precision on every row in a column.** When some values in a column have a decimal, every whole number in the column gets a decimal too: `4.5` and `7.0`, never `4.5` and `7`. Mixed precision down a column breaks the alignment that the fixed precision exists to create.
 
 **The only exception is an explicit instruction from a person.**
 
@@ -120,7 +120,7 @@ Relative time follows principle 1. An event shown at 2:23 p.m., read at 2:45 p.m
 
 ## Ranges
 
-**Show the least information that keeps the range clear.** Drop the parts the two ends of the range have in common:
+**Show the least information that keeps a range clear.** Drop the parts the two ends of the range have in common:
 
 | The range                | Format                      |
 | ------------------------ | --------------------------- |
@@ -148,15 +148,13 @@ The same precision rule applies here as everywhere else: **once seconds are show
 
 ## Field format and focus
 
-A field has three states. **Focus decides the format, not whether the field can be edited:**
+A field has three states. **Focus decides the format, not whether the field can be edited.** An input mask is a pattern in the field that guides what the user types.
 
 | State                             | Format                                                                                                  |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------- |
 | **Read-only field**               | The clear format, as in `Jan 7, 2026`. Never numeric                                                    |
 | **Editable field, without focus** | The same clear format. The most readable format is correct while the user is reading                    |
 | **Editable field, with focus**    | Switch to the local masked format, as in `01/07/2026`, so the user can type quickly into the input mask |
-
-An input mask is a pattern in the field that guides what the user types.
 
 **The numeric form with slashes or hyphens exists only inside an input that has focus.** The ban on read-only numeric dates is absolute for that reason. The numeric form is an aid for typing, never a display format. When the field loses focus, the field goes back to the readable form.
 
