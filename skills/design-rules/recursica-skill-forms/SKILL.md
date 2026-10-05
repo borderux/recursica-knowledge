@@ -212,7 +212,7 @@ The design system provides accessible components. The following rules cover the 
 
 - **Tab order MUST follow the visual order, from top to bottom.** A single-column layout makes a top-to-bottom tab order easy, which is part of why the single column is mandatory.
 - **Keep every `aria-label` correct.** Most `aria-label` values come from the components. Check that nobody has overridden a component's `aria-label` with a vague label.
-- **Labels must stand alone.** Never rely on nearby content to give a label meaning. Name the object. Make verbs clear and active.
+- **Labels must stand alone.** Never rely on nearby content to give a label meaning. Name exactly what the field holds. Make verbs clear and active.
 - **Use plain language**, at the lowest reasonable reading level.
 
 ## Password fields
