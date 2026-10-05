@@ -39,16 +39,13 @@ A timeline lists events that already happened, in order. Each event has a timest
 
 The rules below describe each part and option by role, such as "the selected state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-**This skill covers the timeline and the timeline bullet.** No separate bullet skill exists. The standard UI kit calls the two components `timeline` and `timeline-bullet`.
+**This skill covers two components: the timeline and the timeline bullet.** No separate bullet skill exists. The standard UI kit calls the two components `timeline` and `timeline-bullet`.
 
-- **Three parts in each timeline item: a title, a description, and a timestamp.** Each part has a separate text style, set by a token (a named design value, such as a color or a size, set by the design system). The timestamp is part of the timeline component. The timestamp format follows `recursica-skill-dates-and-currency`, and that format is required.
-- **A selected state and an unselected state, on the timeline.** In the standard UI kit, the variant is `selection-states`, with the options `active` and `inactive`. The two options are selection states, not statuses. Never use the selected state to mean "done".
-- **Four bullet types.** A bullet is a plain mark, an icon, an alternative icon, or an avatar. In the standard UI kit, the variant is `types`, with the options `default`, `icon`, `icon-alternative`, and `avatar`. Pages shown only on the design-system website also call the alternative icon bullet "theme icon". The two names mean the same bullet type, and no rule says when to use each name.
-- **No status states in the standard UI kit.** The standard UI kit has no completed, current, upcoming, or error state on a timeline item. If the project adds a status state in Theme Forge, use the project's state.
-- **No connecting line in the standard UI kit.** The design-system website shows a line that connects the timeline items, with a highlighted state for completed events. The standard UI kit defines no such line on the timeline. If the project adds a connecting line in Theme Forge, use the project's connecting line. Never use the connecting line to show progress.
-- **No alignment variant in the standard UI kit.** The design-system website shows timelines aligned left and aligned right, and the standard UI kit defines neither. If the project adds an alignment variant in Theme Forge, use the project's variant.
-- **No orientation variant and no size variant in the standard UI kit.** If the project adds an orientation variant or a size variant in Theme Forge, use the project's variant. A token fixes the maximum width of the text.
-- **No two-track timeline in the standard UI kit.** Nothing in the standard UI kit supports two opposing tracks, or a timeline that compares two streams of events side by side. If the project adds a two-track variant in Theme Forge, use the project's variant.
+- **The timeline** is the list of timeline items. A timeline item has three parts: a title, a description, and a timestamp. Each part has a separate text style, set by a token (a named design value, such as a color or a size, set by the design system). The timestamp is part of the timeline component. The timestamp format follows `recursica-skill-dates-and-currency`, and that format is required.
+- **The timeline bullet** is a mark beside a timeline item. A bullet has four types: a plain mark, an icon, an alternative icon, or an avatar. In the standard UI kit, the variant is `types`, with the options `default`, `icon`, `icon-alternative`, and `avatar`. Pages shown only on the design-system website also call the alternative icon bullet "theme icon". The two names mean the same bullet type, and no rule says when to use each name.
+- **Selected and unselected state.** The timeline has a selected state and an unselected state. In the standard UI kit, the variant is `selection-states`, with the options `active` and `inactive`. The two options are selection states, not statuses. Never use the selected state to mean "done".
+- **Connecting line.** Never use a connecting line to show progress. A timeline never shows progress, and a process in progress uses a stepper. See `recursica-skill-stepper`.
+- **Text width.** A token sets the maximum width of the text.
 
 ## Rules
 
@@ -74,7 +71,7 @@ The rules below describe each part and option by role, such as "the selected sta
 
 **Never create or edit entries inside a timeline.** Creating or changing an entry takes a form, and the form follows the rules for forms.
 
-**The unselected state does not mean "already happened."** Every entry in a log or a history is in the past, and every entry is real. Completed events in the faded style make a record of what happened look like a plan for what will happen. Use a faded or pending style only for states in the future or states not yet reached. **When the timeline shows only a history, no entry is faded.**
+**The unselected state does not mean "already happened."** Every entry in a log or a history is in the past, and every entry is real. A faded or pending look on a completed event makes a record of what happened look like a plan for what will happen. **A timeline never shows progress or future steps, so no entry is faded or pending.**
 
 ## Accessibility
 
@@ -131,10 +128,10 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 ## Open questions
 
-- **Alignment.** The design-system website shows timelines aligned left and aligned right, and the standard UI kit defines no alignment variant. Do not rely on an alignment without asking. Ask only when the project has no alignment variant.
-- **The connecting line.** The design-system website shows a connecting line with a highlighted state for completed events, and the standard UI kit defines no connecting line on the timeline. A timeline never shows progress, with or without a connecting line. Do not rely on a connecting line without asking. Ask about the connecting line only when the project has no connecting line.
-- **Two-track timelines and timelines that compare two streams of events side by side.** Nothing in the standard UI kit supports either one. Ask only when the project has no two-track variant.
-- **What the selected state means in house terms.** The selected state could mark the item the user selected, or the most recent event. The standard UI kit has only the two selection states.
+- **Alignment.** The design-system website shows timelines aligned left and aligned right. Do not rely on an alignment without asking. Ask only when the project has no alignment variant.
+- **The connecting line.** The design-system website shows a connecting line with a highlighted state for completed events. A timeline never shows progress, with or without a connecting line. Do not rely on a connecting line without asking. Ask about the connecting line only when the project has no connecting line.
+- **Two-track timelines and timelines that compare two streams of events side by side.** Ask only when the project has no two-track variant.
+- **What the selected state means in house terms.** The selected state could mark the item the user selected, or the most recent event.
 - **Whether a timeline item may be selected, be a link, or have an action.** No rule says how a user interacts with a timeline item.
 - **The default sort direction**, newest first or oldest first.
 - **When to group a long history, by what time period, and at how many timeline items.**
