@@ -49,10 +49,8 @@ The rules below describe each option by role, such as "the error state". The nam
 **Never build a focus state or a placeholder state.** Every Recursica field already shows the focus border and the placeholder text.
 
 - **An error state and a disabled state.** In the standard UI kit, the variant is `states`, with the options `error` and `disabled`.
-- **The standard UI kit has no size variant.** The date picker component sets the field's minimum height, width, and sizing. Other design systems have size variants. If the project adds a size variant in Theme Forge, use the project's size variant. Never invent a size variant.
-- **The standard UI kit has no range variant.** No control in the standard UI kit takes a start date and an end date. Other design systems have range variants. If the project adds a range variant in Theme Forge, use the project's range variant. Otherwise, do not build a range control without asking.
-- **No read-only state.** Show a read-only date with the read-only field component, even when the project adds a read-only state. A value nobody can edit does not belong in a form control. The read-only field has the same label-placement variant and no input.
-- **The standard UI kit has no warning state and no inline calendar.** Other design systems have both. If the project adds a warning state or an inline calendar in Theme Forge, use the project's version. Never invent a warning state or an inline calendar.
+- **Date range.** A range variant takes a start date and an end date. If the project has a range variant, use the range variant. Otherwise, do not build a range control without asking.
+- **Read-only date.** Show a read-only date with the read-only field component, never with a read-only state of the date picker. A value nobody can edit does not belong in a form control. The read-only field has the same label-placement variant and no input.
 
 ## Rules
 
@@ -118,7 +116,7 @@ The date picker component connects the label to the input and provides the focus
 - `text` styling and `placeholder-opacity`.
 - `colors` per layer (a numbered background level, 0 to 3, that sets the colors of the components on that level), including the focused border from `globals.form.field.colors.border-selected` and the global disabled look from `globals.states.disabled`.
 - The gaps between the label and the field, and `vertical-item-gap`, from `globals.form.properties`.
-- The link between the label and the input, and the key handling inside the field.
+- The link between the label and the input, and what each key does inside the field.
 
 **Never style a date picker without focus to look disabled.** An editable field must look editable at rest.
 
@@ -136,11 +134,10 @@ The date picker component connects the label to the input and provides the focus
 
 ## Open questions
 
-- **Date ranges.** The standard UI kit has no range variant. Whether a date range is two date pickers or one control is not stated. How the start date and the end date are checked against each other is not stated.
-- **A read-only state.** The design-system website shows a `read-only` state on the date picker, with no token behind the state. The UI kit defines no read-only state, and treats read-only as a separate component. Ask before deciding on a read-only state, and before relying on one.
-- **What the popover contains.** The design-system website shows a month-and-year dropdown, navigation arrows, and Cancel and Confirm buttons in the popover. The UI kit defines no popover tokens. Whether a click saves the selected date, or the user must press Confirm, is not stated. Do not rely on any popover content without asking.
+- **Date ranges.** Whether a date range is two date pickers or one control is not stated. How the start date and the end date are checked against each other is not stated.
+- **What the popover contains.** The design-system website shows a month-and-year dropdown, navigation arrows, and Cancel and Confirm buttons in the popover. Whether a click saves the selected date, or the user must press Confirm, is not stated. Do not rely on any popover content without asking.
 - **Whether the calendar opens on focus**, or only when the user activates the calendar trigger.
-- **The earliest and latest dates the user can pick, and dates that are unavailable inside the calendar.** No state covers an unavailable date.
+- **The earliest and latest dates the user can pick, and dates that are unavailable inside the calendar.**
 - **Conventions for weeks, quarters, and fiscal periods.** See the same entry in `recursica-skill-dates-and-currency`.
 
 ## Pre-flight checklist
@@ -162,4 +159,4 @@ The date picker component connects the label to the input and provides the focus
 - [ ] Every variant and state is one the Recursica MCP server lists for the project. No size variant, range variant, or inline calendar is added unless the Recursica MCP server lists one for the project.
 - [ ] Styling comes from the date picker component, and every field without focus looks editable, not disabled.
 - [ ] Dates that are not editable in this place use the read-only field, not a disabled date picker.
-- [ ] Open questions were asked about, not decided: date ranges, a read-only state, what the popover contains, whether the calendar opens on focus, the earliest and latest dates and unavailable dates, and conventions for weeks, quarters, and fiscal periods.
+- [ ] Open questions were asked about, not decided: date ranges, what the popover contains, whether the calendar opens on focus, the earliest and latest dates and unavailable dates, and conventions for weeks, quarters, and fiscal periods.
