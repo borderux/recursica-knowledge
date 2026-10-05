@@ -102,13 +102,13 @@ A breakpoint is the screen width at which the layout changes. Recursica has thre
 
 **Where content does run past the edge, the layout MUST hint at the hidden content.** Show items partly cut off at the side, so the user can see more items to scroll to. The partly cut-off items are a hint, sometimes called scent, and the hint makes the horizontal scrolling discoverable. When content stops exactly at the edge, the user cannot see that more content exists.
 
-**No other case was found to need horizontal scrolling.**
+**A table may also scroll horizontally, but only as a last resort, when nothing else works.** See `recursica-skill-tables`. No other case was found to need horizontal scrolling.
 
 ## Tables
 
 **A complex data table is not shown below tablet size.** A complex data table has too much data for the space.
 
-**Horizontal scrolling never comes up for a table below tablet size, because the table is not there to scroll.** Do not solve a narrow table by making the table swipeable. Solve a narrow table by leaving the table off the screen. See `recursica-skill-tables`, which forbids sideways scrolling in a table at any width.
+**Horizontal scrolling never comes up for a table below tablet size, because the table is not there to scroll.** Do not solve a narrow table by making the table swipeable. Solve a narrow table by leaving the table off the screen. At tablet size and above, `recursica-skill-tables` allows horizontal scrolling in a table only as a last resort, when nothing else works.
 
 ## Touch and input
 
@@ -186,7 +186,7 @@ A designed narrow layout shows two good signs. A narrow layout with neither sign
 - [ ] Adaptation is based on the viewport width, never on the container width.
 - [ ] Panels open as pages below tablet size. Modals where work is done become pages, while confirmations stay modals.
 - [ ] There is no iOS or Android pattern, and no interaction pattern exists only below desktop.
-- [ ] There is no horizontal scrolling except in a carousel, and any content past the edge is hinted at with items shown partly cut off.
+- [ ] There is no horizontal scrolling except in a carousel, or in a table as a last resort when nothing else works. Any content past the edge is hinted at with items shown partly cut off.
 - [ ] No complex data table appears below tablet size.
 - [ ] One main input method applies across the whole application, and no part of the interface is reachable by hover alone.
 - [ ] Global navigation collapses into a hamburger menu that shows the icon and the text. There is no icon-only rail and no bottom navigation bar at any width.
