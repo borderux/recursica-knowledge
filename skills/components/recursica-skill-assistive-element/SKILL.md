@@ -32,7 +32,7 @@ The assistive element is one component that shows both help text and error text 
 
 The rules below describe each option by role, such as "the error type". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-- **A help type and an error type, in one place below the field.** The help type shows the help text. The error type shows the error text. In the standard UI kit, the variant is `types`, and the two types are `help` and `error`.
+- **Help text or error text, below the field.** The assistive element shows help text, such as "Use 8 or more characters", or error text, such as "Password is too short". A variant called the type decides which text shows. In the standard UI kit, the variant is `types`, with the options `help` and `error`.
 - **The error text replaces the help text in the same place.** The error text never appears beside the help text. Switching between the two types keeps the field the same height, so the form below the field does not move.
 - **Do not invent a third state for a field that the project does not list.**
 - **The assistive element includes an icon.** The assistive element sets the icon size and the gap between the icon and the text. The icon meets the requirement that an error have a signal that is not color.
