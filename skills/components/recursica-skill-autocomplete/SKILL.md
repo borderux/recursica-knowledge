@@ -37,12 +37,12 @@ An autocomplete is a text field whose value comes from a defined list of options
 The rules below describe each option by role, such as "the error state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
 - **An error state and a disabled state.** The standard UI kit calls the state variant `states`, with the two options `error` and `disabled`.
-- **The placeholder is not a variant.** `placeholder-opacity` sets the placeholder.
+- **The placeholder is not a variant.**
 - **Never build a focus state.** The autocomplete already shows the focus border.
 - **Size.** If the project has a size variant, use the project's size variant. Otherwise, the autocomplete has a fixed height, the same height as every other single-line field.
 - **Multi-select.** If the project has a multi-select variant, or chips that show the chosen values, use the project's version. Otherwise, see the open questions.
 - **Loading.** If the project has a loading state, use the project's loading state. Otherwise, see the open questions.
-- **Icons.** The icon size and the gap between the icon and the text apply to a leading icon and to a trailing indicator. A trailing indicator is the icon at the end of the field.
+- **Icons.** A trailing indicator is the icon at the end of the field.
 - **Filtered list.** If the project has styles for the filtered list, use the project's styles.
 - **Read-only is a separate component.** The read-only field, `read-only-field` in the UI kit, shows text instead of an input.
 
@@ -128,15 +128,9 @@ The autocomplete already links the label to the input and shows the focus ring. 
 
 ## Styling set by tokens
 
-**Do not set or override the autocomplete properties below.** The autocomplete component sets each property.
+**Never set or override the autocomplete's styling.** The theme sets every visual property of the autocomplete, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the autocomplete's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
-- `border-radius`, `height`, `horizontal-padding`, `vertical-padding`, `border-size`.
-- `icon-size` and `icon-text-gap`.
-- `text` styling, `placeholder-opacity`, and `colors`, per layer (a numbered background level, 0 to 3, that sets the colors of the components on that level) and per state.
-- Field width and height. `globals.form.field.size` supplies `min-width`, `max-width`, and `single-line-input-height`. `globals.form.field.size.single-line-input-height` sets the height of every single-line field. `globals.form.field` also supplies `border-radius`, the paddings, and `border-selected`. `globals.form.field.colors.border-selected` sets the focus border.
-- The disabled look, from `globals.states.disabled`.
-- The gaps between the label and the field, and the spacing between fields, from `globals.form.properties.label-field-gap-horizontal`, `label-field-gap-vertical`, and `vertical-item-gap`.
-- The connection between the label and the input, the filtering and matching behavior, hover and active styling, the focus ring, and the keyboard behavior inside the field.
+**Do not set or override the autocomplete's built-in behavior**: the connection between the label and the input, the filtering and matching, and the keyboard behavior inside the field. Do not change the space between the label and the field, or the space between fields.
 
 **Never style an unfocused field so that the field looks disabled.** An editable field must look editable when the user is not interacting with the field.
 
@@ -164,7 +158,7 @@ The autocomplete already links the label to the input and shows the focus ring. 
 - **No results.** What the field shows when no option matches the typed text, and whether the field offers a next step.
 - **Loading.** What the field shows while results are loading. If the project has a loading, pending, or failed-to-load state, use that state. Otherwise, ask.
 - **Multi-select.** If the project has a multi-select variant, or chips that show the chosen values, use the project's version. Otherwise, ask.
-- **List details.** The height of each option row in the filtered list, hover and active styling, grouping, and the maximum height of the filtered list before the list scrolls.
+- **List details.** Grouping of the options in the filtered list.
 
 ## Pre-flight checklist
 
@@ -185,6 +179,7 @@ The autocomplete already links the label to the input and shows the focus ring. 
 - [ ] Focus is never moved for the user, including when the filter narrows the list to one result.
 - [ ] Nothing the user needs requires hover or a pointer. The focus ring is intact, and looks different from the active option style and the selected option style.
 - [ ] Disabled is used only for fields that are unavailable for now. Values that can never be edited use the read-only field.
-- [ ] Every variant, size, and state is one the project's UI kit lists. Every property the component sets comes from the component. Every field without focus looks editable, not disabled.
+- [ ] Every variant, size, and state is one the project's UI kit lists. The built-in connection between the label and the input is unchanged. The space between the label and the field, and the space between fields, are unchanged. Every field without focus looks editable, not disabled.
+- [ ] No styling is set or overridden on the autocomplete.
 - [ ] The field saves with the form, in the same save mode as every other field in the system.
 - [ ] Open questions were asked about, not decided: the replacement threshold, free text, how many characters to type, match order, no results, loading, multi-select, and list details.
