@@ -54,7 +54,7 @@ The rules below describe each option by role, such as "the smaller size". The na
 
 Mixing the two placements in one form causes three problems. Side-by-side labels create one column of values that the user scans straight down, and a mix of placements breaks the column. A mix also creates two left edges, so the user cannot tell whether the next text is a label or a value. The field with the different placement also looks as if the field has a different meaning from the other fields. `recursica-skill-forms` sets this rule.
 
-**Name the object clearly.** The label must make sense without the content around the label, because a screen reader user hears the label alone. If the label has a verb, use a clear, active verb. Never use a passive verb or a linking verb (a verb such as "is" or "seems" that connects words instead of showing an action).
+**Name exactly what the field holds.** The label must make sense without the content around the label, because a screen reader user hears the label alone. If the label has a verb, use a clear, active verb. Never use a passive verb or a linking verb (a verb such as "is" or "seems" that connects words instead of showing an action).
 
 **Write the label in sentence case, with no colon at the end.** Keep the label short enough to fit on one line.
 

@@ -54,7 +54,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 ## Rules
 
-**Always give the time picker a visible label.** Name the object clearly, as in "Start time", not "Time". A screen reader user hears the label alone, without the context around the field. Use sentence case, with no colon at the end of the label.
+**Always give the time picker a visible label.** Name exactly what the field holds, as in "Start time", not "Time". A screen reader user hears the label alone, without the context around the field. Use sentence case, with no colon at the end of the label.
 
 **Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields like this one that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 

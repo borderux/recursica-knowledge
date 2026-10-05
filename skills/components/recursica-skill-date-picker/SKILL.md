@@ -54,7 +54,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 ## Rules
 
-**Always give the date picker a visible label, set in the date picker component.** Name the object clearly, as in "Start date", not "Date". A screen reader user hears the label alone, without the headings, text, or layout around the field. Use sentence case, with no colon at the end of the label.
+**Always give the date picker a visible label, set in the date picker component.** Name exactly what the field holds, as in "Start date", not "Date". A screen reader user hears the label alone, without the headings, text, or layout around the field. Use sentence case, with no colon at the end of the label.
 
 **A date and a time together are one control with one label.** A date picker, a time entry, and an AM/PM choice on one line of a form are the only case where inputs share one line. The three inputs hold one value. `recursica-skill-forms` sets this rule.
 

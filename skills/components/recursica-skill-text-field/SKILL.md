@@ -49,7 +49,7 @@ The rules below describe each option by role, such as "the label beside the fiel
 
 ## Rules
 
-**Always pass a visible label.** Name the object clearly in the label. A screen reader user hears the label without the context around the field. Write the label in sentence case, with no colon at the end. Keep the label short enough to fit on one line.
+**Always pass a visible label.** Name exactly what the field holds in the label. A screen reader user hears the label without the context around the field. Write the label in sentence case, with no colon at the end. Keep the label short enough to fit on one line.
 
 **Never put required information in the placeholder.** The placeholder disappears when the user types the first character. Use the placeholder only to show the format of the expected value.
 
