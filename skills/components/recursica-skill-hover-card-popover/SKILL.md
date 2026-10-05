@@ -149,7 +149,6 @@ The standard UI kit has no `beak-inset` token for this component.
 - **Custom content.** The design-system website shows two content types, text and custom, but the standard UI kit styles text content only. Do not rely on custom content without asking. Ask only when the project has no custom content type.
 - **Behavior on touch.** A touch screen has no hover, and no rule sets a different pattern for touch.
 - **Whether a popover may open from inside a menu, a modal, or another popover.** `recursica-skill-modal` forbids stacking modals, but no rule covers a popover.
-- **Whether clicking the page behind a popover may close the popover.** `recursica-skill-modal` also leaves the same question open for a modal.
 
 ## Pre-flight checklist
 
@@ -167,4 +166,4 @@ The standard UI kit has no `beak-inset` token for this component.
 - [ ] No content, control or action the user needs appears only on hover, and the focus ring is intact everywhere.
 - [ ] Every variant and option is one the Recursica MCP server lists for the project, and no placement, size, or content variant is invented.
 - [ ] Padding, width, color, elevation, and beak styling come from the component.
-- [ ] Open questions were asked about, not decided: whether the single set of tokens should become two sets, placement, the show and hide delays and the grace period, custom content, behavior on touch, a popover opened from a menu, a modal, or another popover, and closing a popover by clicking the page behind the popover.
+- [ ] Open questions were asked about, not decided: whether the single set of tokens should become two sets, placement, the show and hide delays and the grace period, custom content, behavior on touch, and a popover opened from a menu, a modal, or another popover.
