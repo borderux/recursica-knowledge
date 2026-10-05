@@ -98,13 +98,7 @@ The button component provides the focus ring. The button component also handles 
 
 ## Styling set by tokens
 
-**Never set or override the button properties below.** The button component sets each property for every style, size, and kind of content.
-
-- Height, horizontal and vertical padding, `border-size`, `border-radius`.
-- Icon size and the gap between the icon and the label.
-- Typography, letter case, and text alignment.
-- All colors, for every style and every layer (a numbered background level, 0 to 3, that sets the colors of the components on that level), including hover, active, focus, and disabled.
-- Elevation.
+**Never set or override the button's styling.** The theme sets every visual property of the button, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the button's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 ## Related skills
 
@@ -135,6 +129,7 @@ The button component provides the focus ring. The button component also handles 
 - [ ] A loading button shows the disabled look with an animated icon, with no spinner beside the button, no new label, and no new state. The loading button does not move or resize.
 - [ ] A loading button is marked busy, keeps the accessible name, stays in the tab order, and follows the user's reduced-motion preference.
 - [ ] Every variant, size, and state is one the project's UI kit lists, and no variant or option is invented.
-- [ ] Styling, including the focus ring, comes from the button component.
+- [ ] No styling is set or overridden on the button.
+- [ ] The focus ring comes from the button component.
 - [ ] Actions the user has no permission for are hidden, not disabled.
 - [ ] Open questions were asked about, not decided: when to use the smaller size, full-width buttons, the icon for a loading button, split buttons and button groups, and setting the disabled state.
