@@ -9,7 +9,7 @@ metadata:
 
 # Breadcrumb
 
-A breadcrumb shows where the current page sits in the page hierarchy. A breadcrumb also links back up to the pages above the current page.
+A breadcrumb shows where the current page sits in the page hierarchy. A breadcrumb is a trail of items. An item names one page in the hierarchy. A breadcrumb also links back up to the pages above the current page.
 
 ## When to use a breadcrumb
 
@@ -34,11 +34,12 @@ A breadcrumb shows where the current page sits in the page hierarchy. A breadcru
 
 **Use only the breadcrumb variants and options that the Recursica MCP server lists for the project.** A designer can add variants and options in Theme Forge, so each project can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
 
-- **No variant, state or content option in the standard UI kit** (the unchanged UI kit in the official Recursica release). Do not pass a variant, a state or a content option that the MCP server does not list for the project.
-- **In the standard UI kit, the breadcrumb has two properties: the padding and the gap between items.**
-- **No separator token in the standard UI kit.** The standard UI kit does not define the mark between items, such as a slash, a chevron or a dot. Do not invent a separator. If the project adds a separator in Theme Forge, use the project's version. The separator is an open question.
-- **No collapse, truncation or overflow behavior.** No rule says how a long trail behaves. However that rule is decided, a long trail never scrolls horizontally. `recursica-skill-navigation` forbids horizontal scrolling outright.
-- **No current-page state and no content variant.** Only the design-system website shows a clickable item and a read-only item for the current page. Only the website shows a content variant with four options: Label only, Icon + Label, Icon only, and Mixed. The standard UI kit defines neither item style and no content variant. If the project adds a content variant or item styles in Theme Forge, use the project's version. The content variant is an open question.
+Do not pass a variant, a state or a content option that the MCP server does not list for the project.
+
+- **Properties.** A breadcrumb in the standard UI kit (the unchanged UI kit in the official Recursica release) has two properties: the padding and the gap between items.
+- **Separator.** A separator is the mark between items, such as a slash, a chevron or a dot. If the project has a separator, use the project's separator. Do not invent a separator. The separator is an open question.
+- **Long trails.** No rule says how a long trail collapses, truncates or overflows. However that rule is decided, a long trail never scrolls horizontally. `recursica-skill-navigation` forbids horizontal scrolling outright.
+- **Item styles and content variant.** Only the design-system website shows a clickable item and a read-only item for the current page. Only the website shows a content variant with four options: Label only, Icon + Label, Icon only, and Mixed. If the project has a content variant or item styles, use the project's version. The content variant is an open question.
 
 ## Rules
 
@@ -58,7 +59,7 @@ A breadcrumb shows where the current page sits in the page hierarchy. A breadcru
 
 **Never point a breadcrumb item at a modal or a panel.** A control on the page opens a modal or a panel. The user does not navigate to a modal or a panel, and a modal or a panel adds no entry to the browser history. See `recursica-skill-navigation`.
 
-**Do not build a breadcrumb item that is only an icon.** The standard UI kit defines no content variant. An icon alone cannot name the destination page. Even a clear icon, such as a home icon for the top level, needs both a tooltip and an accessible name (the name a screen reader reads out for a control). `recursica-skill-buttons-links` requires both. Use text, or an icon with a label when the project adds that content variant in Theme Forge. Never use an icon alone, even when the project adds an icon-only option.
+**Do not build a breadcrumb item that is only an icon.** An icon alone cannot name the destination page. Even a clear icon, such as a home icon for the top level, needs both a tooltip and an accessible name (the name a screen reader reads out for a control). `recursica-skill-buttons-links` requires both. If the project has a content option for an icon with a label, use text or an icon with a label. Otherwise, use text. Never use an icon alone, even when the project has an icon-only option.
 
 **Never wrap the trail into a scrolling strip to make the trail fit.** A trail too long for the space means the page hierarchy is too deep. Raise the depth as a problem instead of hiding the depth with layout. See `recursica-skill-system-conventions`.
 
@@ -73,7 +74,7 @@ A breadcrumb is a short line of links. Assistive technology recognizes a breadcr
 - **Mark the breadcrumb as a navigation region named "Breadcrumb".** A page with more than one navigation region must name each region. Without names, a screen reader user cannot tell the regions apart in the landmark list (the list of labeled page regions a screen reader can jump between).
 - **Mark up the trail as a list.** The list markup tells a screen reader user how many levels the trail has and where the current page sits among the levels.
 - **The current page is the last item, and the current page must be marked as current in code.** Styling the current page to look current is not enough. The current page is not shown as a link back to the current page.
-- **Separators are decorative and must be silent.** A slash or a chevron announced between every item turns a four-level trail into eight announcements. If the separator is a text character, hide the separator from assistive technology. If the breadcrumb component creates the separator, do not add a second separator.
+- **Separators are decorative and must be silent.** A slash or a chevron announced between every item turns a four-level trail into eight announcements. If the separator is a text character, hide the separator from assistive technology. If the separator comes with the breadcrumb, do not add a second separator.
 - **Name each link after the page the link goes to.** The link name must make sense when read with no text around the link. Screen reader users open lists of links that show no surrounding text.
 - **Never rely on position alone to mark the current page.** "Last in the list" is not a state a screen reader reports.
 - **Do not add a hidden copy of the trail or the page title for screen readers.** The last breadcrumb item and the page's H1 are expected to name the same page. A third copy of the page name is noise.
@@ -111,9 +112,9 @@ A breadcrumb is a short line of links. Assistive technology recognizes a breadcr
 
 ## Open questions
 
-- **The separator.** No token in the standard UI kit defines the separator. The character, whether the separator is an icon, and the spacing around the separator are all unset. `item-gap` is the only spacing property.
-- **Long trails.** No collapse, truncation or overflow behavior exists. No one has decided whether a deep trail drops the middle levels, shortens the labels, or wraps. Horizontal scrolling is not an option.
-- **The content variant.** Only the design-system website shows a content variant with Label only, Icon + Label, Icon only and Mixed options. Only the website shows separate styles for read-only items and clickable items. No token in the standard UI kit defines the content variant or the item styles. Unless the project adds the content variant or the item styles in Theme Forge, do not rely on either one without asking.
+- **The separator.** No one has decided the character, whether the separator is an icon, or the spacing around the separator. If the project has a separator, use the project's separator. Otherwise, ask.
+- **Long trails.** No one has decided whether a deep trail drops the middle levels, shortens the labels, or wraps. Horizontal scrolling is not an option.
+- **The content variant.** Only the design-system website shows a content variant with Label only, Icon + Label, Icon only and Mixed options. Only the website shows separate styles for read-only items and clickable items. If the project has the content variant or the item styles, use the project's version. Otherwise, do not rely on either one without asking.
 - **The depth at which a breadcrumb becomes required.** `recursica-skill-navigation` says "where depth warrants it", but gives no number. `recursica-skill-navigation` also lists the maximum nesting depth as uncovered.
 - **The start of the trail.** No rule says whether the trail starts at the application's home page or at the section's landing page.
 - **A level with no landing page.** No rule says how the trail handles a level above the current page that exists in the hierarchy but has no landing page and no route to link to.
