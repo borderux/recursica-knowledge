@@ -9,96 +9,96 @@ metadata:
 
 # Dates, currency, and numbers
 
-These are the house rules for formatting dates, times, and numbers. They are opinions, not neutral best practices. Treat them as constraints.
+This skill sets the house rules for formatting dates, times, and numbers. The house rules are opinions, not neutral best practices. Treat each house rule as a constraint.
 
-These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. Type styles are handled. The decisions this skill covers are the format, the precision, the alignment, and what has to be labeled.
+The house rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The design system sets the type styles. This skill decides the format, the precision, the alignment, and which values need a label.
 
 ## Governing principles
 
-1. **Never make the reader decode or calculate.** A date the reader has to figure out, or a timestamp they have to subtract from the current time, pushes work onto them that the format should have done.
-2. **Consistency matters more than the specific choice.** Use the same alignment, the same precision, and the same format across rows, columns, states, and screens. Where a rule below says "right-aligned" and an existing screen is left-aligned throughout, keep the screen uniform, because uniformity takes priority — except for currency, which is right-aligned unless a person explicitly says otherwise.
-3. **Say when the data is not in the reader's own terms.** A different time zone, a converted currency, a rounded value — the reader must never assume they are seeing the original.
+1. **Never make the reader decode or calculate.** A date the reader has to work out, or a timestamp the reader has to subtract from the current time, gives the reader work that the format should have done.
+2. **Consistency matters more than the specific choice.** Use the same alignment, the same precision, and the same format across rows, columns, states, and screens. A rule below may say "right-aligned" where an existing screen is left-aligned throughout. Keep that screen uniform, because uniformity takes priority. Currency is the exception: currency is right-aligned unless a person explicitly says otherwise.
+3. **Say when the data is not in the reader's own terms.** A value may be in a different time zone, in a converted currency, or rounded. The reader must never assume the value shown is the original.
 
 ## Whose locale wins
 
 A locale is the language and regional settings a person uses, such as date and number formats.
 
-**Always the user's, never the tenant's** (the organization whose account the application runs under). Show time in the user's own time zone, and use a format the user will understand. There is one exception, below.
+**Always use the user's locale, never the tenant's** (the organization whose account the application runs under). Show time in the user's own time zone. Use a format the user will understand. The section "Time where an event happened" below gives the one exception.
 
 ## Date format
 
 **MUST use a three-letter month abbreviation, a day of one or two digits, and a four-digit year.** `Jan 7, 2026`. `Jun 24, 2026`.
 
-This is the single date format, and its purpose is to remove confusion: it reads correctly no matter which regional conventions the reader follows.
+This date format is the single date format. The date format exists to remove confusion. A reader reads the date correctly under any regional conventions.
 
-**NEVER display a date as numbers separated by slashes or hyphens, except inside an input that has focus.** `01/07/2026` is ambiguous — a reader cannot tell the month from the day whenever both numbers could reasonably be either one. Spelling out the month removes the confusion completely, so there is no reason to use the numeric form.
+**NEVER display a date as numbers separated by slashes or hyphens, except inside an input that has focus.** `01/07/2026` is ambiguous. A reader cannot tell the month from the day whenever both numbers could reasonably be either one. A spelled-out month removes the confusion completely. No reason remains to use the numeric form.
 
-**This is the single biggest pet peeve in this topic.** A screen showing numeric dates with slashes or hyphens looks lazy, because the clear alternative costs nothing.
+**A numeric date is the single biggest pet peeve in this topic.** A screen that shows numeric dates with slashes or hyphens looks lazy, because the clear format costs nothing.
 
-### Derive the value, never slice a serialization
+### Date formatters
 
-A serialization is a machine-readable text form of a value, meant for computers to store and exchange rather than for people to read.
+A serialization is a machine-readable text form of a value. A serialization is meant for computers to store and exchange, not for people to read.
 
-**MUST build the displayed value with a date-formatting API, in the reader's locale and time zone.** In a browser, that is `Intl.DateTimeFormat` with no locale argument. Passing a locale names one the reader did not choose — which means the tenant's locale wins, and that is forbidden above.
+**MUST build the displayed value with a date formatter, in the reader's locale and time zone.** In a browser, use the browser's built-in date formatter, and never pass the formatter a locale. A locale passed to the formatter names a locale the reader did not choose. The tenant's locale then wins, and the section "Whose locale wins" above forbids the tenant's locale.
 
-**NEVER make a displayed date by cutting characters out of a machine serialization.** `toISOString().slice(0, 10)` and its variations are the pattern to look for. That one line breaks two separate rules at once:
+**NEVER make a displayed date by cutting characters out of a machine serialization.** Look for code that takes the first ten characters of a timestamp in UTC, or any variation of that cut. Cutting a date out of a timestamp breaks two separate rules at once:
 
-- **It is the numeric form with hyphens** — `2026-08-10` — which is the format this section forbids.
-- **It is in UTC, not the reader's time zone.** (UTC is the reference time zone that all other time zones are measured from.) So it is not only formatted wrong — it is the wrong day. An entry made at 6 p.m. on the 10th, west of Greenwich, displays as the 11th. Nobody reviewing the screen sees a bug, because a believable date is showing.
+- **The cut date is the numeric form with hyphens**, as in `2026-08-10`. This section forbids the numeric form.
+- **The cut date is in UTC, not the reader's time zone.** (UTC is the reference time zone that all other time zones are measured from.) The cut date is formatted wrong, and the cut date is also the wrong day. An entry made at 6 p.m. on the 10th, west of Greenwich, displays as the 11th. Nobody reviewing the screen sees a bug, because the screen shows a believable date.
 
-**The second problem is the dangerous one**, and it survives a fix to the first. Reformatting the same UTC string into `Aug 10, 2026` still shows the wrong day. Fix where the value comes from and how it is formatted, together.
+**The wrong day is the dangerous problem.** The wrong day remains after the numeric form is fixed. Reformatting the same UTC string into `Aug 10, 2026` still shows the wrong day. Fix where the value comes from and how the value is formatted, together.
 
-**Format once, in one place.** Defining a formatter separately wherever it is used is how a screen ends up with three date formats. Building one for every row of a table is also measurably slow. Create the formatters once and export them.
+**Format once, in one place.** A formatter defined separately in every place that uses a formatter is how a screen ends up with three date formats. A new formatter for every row of a table is also measurably slow. Create each formatter once and export the formatter.
 
-**A date with no time is not a timestamp.** When the stored value has no time in it — a birth date, a due date, an accounting period — converting it to the reader's time zone moves it by a day in one direction or the other. Time-zone conversion applies only to exact moments in time. If it is not clear which kind a field holds, ask; do not pick a default.
+**A date with no time is not a timestamp.** A stored value may have no time in the value, as with a birth date, a due date, or an accounting period. Converting a date with no time to the reader's time zone moves the date by a day in one direction or the other. Convert the time zone only for an exact moment in time. When the kind of value a field holds is not clear, ask. Do not pick a default.
 
 ## Time zones
 
-**State the time zone clearly whenever the time shown is not in the user's own time zone**, as the browser reports it.
+**State the time zone clearly whenever the time shown is not in the user's own time zone.** The browser reports the user's own time zone.
 
-**If the user's time zone cannot be found, always show the time zone.**
+**When the user's time zone cannot be found, always show the time zone.**
 
-**If the user has switched to a different time zone, label it**, so they can see they are not looking at their current zone.
+**When the user has switched to a different time zone, label the time zone.** The label shows the user that the times are not in the user's current time zone.
 
-## When not to localize a time at all
+## Time where an event happened
 
-**If the reader is looking at something that happened somewhere else, and where it happened matters, show the time in the time zone where it happened — labeled — and do not convert it.**
+**Show the time of an event in the time zone where the event happened when the reader is looking at an event in another place, and the place matters.** Label the time zone, and do not convert the time.
 
-Here is the example that makes this concrete: a log of a break-in that happened at 11:00 p.m. local time. Converting that to the reader's time zone shows 8:00 p.m., and the reader draws the wrong conclusion about what time of night it happened. The local time when it happened is the information.
+For example, a log records a break-in at 11:00 p.m. local time. Converted to the reader's time zone, the log shows 8:00 p.m. The reader then draws the wrong conclusion about what time of night the break-in happened. The local time of the break-in is the information the reader needs.
 
-**Always give the reader a way to switch it to their own time.** State the time zone, do not convert by default, and let them convert it.
+**Always give the reader a way to switch the time to the reader's own time zone.** State the time zone, do not convert by default, and let the reader convert the time.
 
-## Relative vs. absolute time
+## Relative and absolute time
 
-**Use relative time for recent events** — `15 minutes ago`, `today`, `yesterday`, `this week` — wherever more detail does not help the reader.
+**Use relative time for recent events**, such as `15 minutes ago`, `today`, `yesterday`, or `this week`, wherever more detail does not help the reader.
 
-The reason is principle 1. Telling someone an event happened at 2:23 p.m. when it is now 2:45 p.m. makes them do math to learn what they wanted to know: "recently."
+Relative time follows principle 1. An event shown at 2:23 p.m., read at 2:45 p.m., makes the reader do math to learn what the reader wanted to know: "recently."
 
-**Past a certain point, switch to the absolute date.**
+**Past a cutoff, switch to the absolute date.**
 
-**That point is one week.** Within the last week, a value is shown in relative terms — `now`, `5 minutes ago`, `16 hours ago`, `yesterday`, `3 days ago`. At a week and beyond, it is shown as the absolute date, `Jun 24, 2026`. A product may change this with a stated reason. Without one, a week is the house rule, not a decision to reopen on each screen.
+**The cutoff is one week.** Within the last week, show the value in relative terms: `now`, `5 minutes ago`, `16 hours ago`, `yesterday`, `3 days ago`. At a week and beyond, show the absolute date, as in `Jun 24, 2026`. A product may change the cutoff with a stated reason. Without a stated reason, a week is the house rule, not a decision to reopen on each screen.
 
-**Use the platform's relative formatter, not hand-written strings.** In a browser, that is `Intl.RelativeTimeFormat`, and its `numeric: "auto"` setting is what produces `yesterday` instead of `1 day ago` — in each locale, which hand-written text cannot do. Hand-written strings cover only the one language they were written in.
+**Use the platform's relative-time formatter, not hand-written strings.** In a browser, use the browser's built-in relative-time formatter, set to write `yesterday` instead of `1 day ago`. The formatter writes `yesterday` in each locale, and hand-written text cannot. A hand-written string covers only the one language the string was written in.
 
-**Do not let the relative form reach the cutoff itself.** Rounding at the top of the range shows `7 days ago` for a value that is 6.9 days old, in the same column as a value an hour older that shows an absolute date. Cap the largest relative value below the cutoff.
+**Keep every relative value below the cutoff.** Rounding at the top of the range shows `7 days ago` for a value 6.9 days old. A value one hour older, in the same column, shows an absolute date. Cap the largest relative value below the cutoff.
 
-**Seconds do not appear here.** Anything under a minute shows `now`. The precision-consistency rule below allows seconds only for a set of values under a minute that are being compared, and a single timestamp is not that.
+**Relative time never shows seconds.** A value under a minute old shows `now`. The rule on seconds under "Duration" allows seconds only for a set of values under a minute that the reader compares. A single timestamp is not such a set.
 
-**A relative value is calculated when it is drawn on screen, and it does not update itself.** On a screen that stays open a long time and never reloads its data, this becomes stale in a way the reader cannot see. Either refresh it, or use the absolute form. Do not leave a page saying `now` an hour later.
+**A relative value is calculated when the screen draws the value, and the value does not update by itself.** A screen may stay open a long time and never reload the screen's data. The relative value then goes out of date, and the reader cannot see that the value is out of date. Either refresh the relative value, or use the absolute form. Do not leave a page saying `now` an hour later.
 
 ## Currency
 
-**MUST right-align currency.** The only allowed exception is an explicit instruction from a person to align it differently.
+**MUST right-align currency.** The only allowed exception is an explicit instruction from a person to align currency differently.
 
-**MUST show two decimal places, always** — `0.00`, `0.01`, `0.99`. Fixed precision is what makes right alignment work: the decimal point lands in the same place on every row.
+**MUST show two decimal places, always**: `0.00`, `0.01`, `0.99`. Fixed precision makes right alignment work. The decimal point lands in the same place on every row.
 
-**The decimal and thousands separators follow the locale** — a comma where another locale uses a period. That changes the separator, never the alignment.
+**The decimal separator and the thousands separator follow the locale.** One locale uses a comma where another locale uses a period. The locale changes the separator, never the alignment.
 
-**Put the currency symbol in the column header, not in the cells.** `Debits (USD $)` goes in the header, with plain amounts in the column. This is the accounting style, and it spares the reader from reading a symbol off the front of every value.
+**Put the currency symbol in the column header, not in the cells.** Put `Debits (USD $)` in the column header, with plain amounts in the column. This layout is the accounting style. The reader does not have to read past a symbol at the front of every value.
 
-**Label the currency in the cell when the reader is viewing a currency other than the one used in the transaction.** A transaction made in dollars and shown in Mexican pesos is not the original data, and the cell must say so.
+**Label the currency in the cell when the reader views a currency other than the currency of the transaction.** A transaction made in dollars and shown in Mexican pesos is not the original data, and the cell must say so.
 
-**Negative values may use accounting parentheses.** Where they do, pad the values so the decimal points stay lined up — a closing parenthesis must not push the number it wraps out of line.
+**Negative values may use accounting parentheses.** When negative values use accounting parentheses, pad the values so the decimal points stay lined up. A closing parenthesis must not push the number inside the parentheses out of line.
 
 **Zero is `0` or `0.00`, depending on the locale. Zero is not null.** For values that are truly missing, see the null-cell rule in `recursica-skill-tables`.
 
@@ -106,21 +106,21 @@ The reason is principle 1. Telling someone an event happened at 2:23 p.m. when i
 
 **Right-align all numbers**, currency or not, so the alignment is uniform.
 
-**MUST keep the same precision on every row in a column.** If some values have a decimal, whole numbers get one too: `4.5` and `7.0`, never `4.5` and `7`. Mixing precision down a column breaks the alignment that the precision exists to create.
+**MUST keep the same precision on every row in a column.** When some values in a column have a decimal, the whole numbers get a decimal too: `4.5` and `7.0`, never `4.5` and `7`. Mixed precision down a column breaks the alignment that the fixed precision exists to create.
 
 **The only exception is an explicit instruction from a person.**
 
-**MUST group digits once a value reaches four figures.** `2,046`, never `2046`. This applies to every quantity a reader might compare or read out loud — counts, totals, row tallies — not only to money. An ungrouped four-figure number is read one digit at a time, and two of them in a column cannot be compared at a glance — which is the whole reason the column is right-aligned.
+**MUST group digits once a value reaches four figures.** Write `2,046`, never `2046`. Group the digits of every quantity a reader might compare or read out loud, such as counts, totals, and row tallies, not only money. A reader reads an ungrouped four-figure number one digit at a time. Two ungrouped numbers in a column cannot be compared at a glance, and comparing at a glance is the whole reason the column is right-aligned.
 
-**The separator belongs to the locale, so let the platform choose it.** Use `Intl.NumberFormat` or `toLocaleString`: a comma in one locale, a period or a thin space in another. Never insert commas with a hand-written regex. It produces the wrong separator in every locale other than the one it was written for, and it is the same kind of mistake as slicing a date serialization.
+**The digit separator belongs to the locale, so let the platform choose the separator.** Use the platform's built-in number formatter. The separator is a comma in one locale, and a period or a thin space in another. Never insert commas with a hand-written regex (a search pattern written in code). A hand-written regex puts the wrong separator in every locale except the one locale the regex was written for. A hand-written regex is the same kind of mistake as cutting a date out of a machine serialization.
 
-**NEVER group an identifier.** A year, a version, a port, an account or record number, a postal code: `2026`, not `2,026`. Grouping marks a value as a quantity that can be compared. On an identifier that claim is false, and the reader believes it for a moment. If doing math on the value makes no sense, it is not a number for this purpose.
+**NEVER group an identifier.** A year, a version, a port, an account number, a record number, and a postal code are identifiers: write `2026`, not `2,026`. Grouping marks a value as a quantity the reader can compare. On an identifier, that claim is false, and the reader believes the false claim for a moment. When doing math on a value makes no sense, the value is not a number for this rule.
 
-**Rounding and abbreviating are acceptable when the goal is to shorten** — `952` below a thousand, `1.2K` above it. Do it deliberately, not by default. Grouping is the default; abbreviating is a deliberate choice.
+**Rounding and abbreviating are acceptable when the goal is to shorten a number**: `952` below a thousand, `1.2K` above a thousand. Round or abbreviate on purpose, not by default. Grouping is the default. Abbreviating is a deliberate choice.
 
 ## Ranges
 
-**Show the least information that still keeps the range clear**, and drop whatever the two ends have in common:
+**Show the least information that keeps the range clear.** Drop the parts the two ends of the range have in common:
 
 | The range                | Format                      |
 | ------------------------ | --------------------------- |
@@ -128,79 +128,79 @@ The reason is principle 1. Telling someone an event happened at 2:23 p.m. when i
 | Across months, same year | `Jan 1 – Feb 2, 2026`       |
 | Across years             | `Jan 1, 2026 – Feb 1, 2027` |
 
-**Currency and number ranges put the symbol on the first value only** — `$5–6` — and keep the same precision at both ends: `$5.25–6.00`.
+**A currency range or a number range puts the symbol on the first value only**, as in `$5–6`. Both ends keep the same precision: `$5.25–6.00`.
 
-**NEVER mix levels of rounding within a range.** `1.2K–1 million` hides how big the gap is. Where the two ends are wildly different in size, show the full values so the difference is easy to see.
+**NEVER mix levels of rounding within a range.** `1.2K–1 million` hides how big the gap is. When the two ends are wildly different in size, show the full values so the reader sees the difference easily.
 
 ## Time of day
 
-**Whether time is 12-hour or 24-hour is the user's preference**, set by their locale or by an explicit setting. It is not a design decision, and it does not change from screen to screen.
+**The choice of 12-hour or 24-hour time is the user's preference**, set by the user's locale or by an explicit setting. The choice is not a design decision, and the choice does not change from screen to screen.
 
 ## Duration
 
-**A duration is a length of time, not a clock time.** Format it with unit labels: `3h 20m`. This holds in every case until the duration passes one day. At that point, the format extends to include days.
+**A duration is a length of time, not a clock time.** Format a duration with unit labels: `3h 20m`. Use this format in every case until the duration passes one day. Past one day, the format extends to include days.
 
 **Never format a duration as a clock time.** `3:20` is a time of day, and the reader has to work out which meaning was intended.
 
-**Seconds appear only when the values shown are under a minute, across a plurality of objects** (several of them). A single duration does not need seconds, and a set of durations measured in hours does not need them either. The case for seconds is a list of items whose differences are smaller than a minute. There, dropping the seconds would make different values look the same.
+**Seconds appear only when the values shown are under a minute, across several objects.** A single duration does not need seconds. A set of durations measured in hours does not need seconds either. Seconds belong in a list of items whose differences are smaller than a minute. In that list, dropping the seconds would make different values look the same.
 
-This is the same precision-consistency rule as everywhere else: **once seconds are shown, every duration in that set shows them**, so the values can still be compared.
+The same precision rule applies here as everywhere else: **once seconds are shown, every duration in that set shows seconds**, so the reader can still compare the values.
 
-## Format follows focus, not editability
+## Field format and focus
 
-There are three states. The format depends on **focus** — not on whether the field can be edited:
+A field has three states. **Focus decides the format, not whether the field can be edited:**
 
-| State                             | Format                                                                                              |
-| --------------------------------- | --------------------------------------------------------------------------------------------------- |
-| **Read-only field**               | The clear format — `Jan 7, 2026`. Never numeric                                                     |
-| **Editable field, without focus** | The same clear format. The most readable format is correct while the user is reading                |
-| **Editable field, with focus**    | Switch to the local masked format — `01/07/2026` — so the user can type quickly into the input mask |
+| State                             | Format                                                                                                  |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **Read-only field**               | The clear format, as in `Jan 7, 2026`. Never numeric                                                    |
+| **Editable field, without focus** | The same clear format. The most readable format is correct while the user is reading                    |
+| **Editable field, with focus**    | Switch to the local masked format, as in `01/07/2026`, so the user can type quickly into the input mask |
 
 An input mask is a pattern in the field that guides what the user types.
 
-**The numeric form with slashes or hyphens exists only inside an input that has focus.** That is what makes the ban on read-only numeric dates absolute: the ambiguous form is an aid for typing, never a display format. When the field loses focus, it goes back to the readable form.
+**The numeric form with slashes or hyphens exists only inside an input that has focus.** The ban on read-only numeric dates is absolute for that reason. The numeric form is an aid for typing, never a display format. When the field loses focus, the field goes back to the readable form.
 
-**Alignment must not vary between read-only and editable values on the same screen.** A common mistake is left-aligning read-only values so they sit near their labels, while editable values are right-aligned. On one screen, that looks like two different systems. Right-aligned is the goal for numbers, and being uniform matters more than which alignment wins.
+**Alignment must not vary between read-only values and editable values on the same screen.** A common mistake is to left-align read-only values near the read-only values' labels, while editable values are right-aligned. On one screen, the two alignments look like two different systems. Right-aligned is the goal for numbers. A uniform alignment matters more than which alignment wins.
 
 ## Open questions
 
-These come up rarely enough that no house rule exists — and rarely enough that asking costs almost nothing. **Ask the person instead of choosing a format.** See the never-guess rule in `recursica-skill-design-router`.
+The topics below come up rarely enough that no house rule exists, and rarely enough that asking costs almost nothing. **Ask the person instead of choosing a format.** See the never-guess rule in `recursica-skill-design-router`.
 
 - **Conventions for weeks, quarters, and fiscal periods.** How weeks are numbered, how quarters are labeled, and whether periods follow the calendar year or a fiscal year.
 - **How the duration format extends past one day.** Passing one day changes the format, but the exact form has not been set.
 - **Whether seconds ever appear outside a set of values under a minute that are being compared.**
 
-Do not stretch a rule above to fit one of these. A wrong convention in a fiscal period or a week number is the kind of mistake a reader will not catch.
+Do not stretch a rule above to fit one of these open questions. A reader will not catch a wrong convention in a fiscal period or a week number.
 
 ## Out of scope
 
-- **Type styles, number fonts, and tabular figures.** Owned by the design system.
-- **Table structure** — columns, widths, sorting. Covered by `recursica-skill-tables`, which this skill provides cell formatting for.
-- **Null and missing values.** Covered by the null-cell rule in `recursica-skill-tables`.
-- **Abbreviating variant labels in charts.** Covered by `recursica-skill-data-visualization`.
+- **Type styles, number fonts, and tabular figures.** The design system sets type styles, number fonts, and tabular figures.
+- **Table structure**, such as columns, widths, and sorting. `recursica-skill-tables` covers table structure. This skill sets the cell formatting for `recursica-skill-tables`.
+- **Null and missing values.** The null-cell rule in `recursica-skill-tables` covers null and missing values.
+- **Abbreviating variant labels in charts.** `recursica-skill-data-visualization` covers abbreviating variant labels in charts.
 
 ## Pre-flight checklist
 
 - [ ] Dates use a three-letter month, a day of one or two digits, and a four-digit year.
 - [ ] No read-only date appears as numbers separated by slashes or hyphens.
-- [ ] Every displayed date and time is built by a formatting API, in the reader's locale and time zone. No value is cut out of a machine serialization, and no `toISOString()` slice reaches a screen.
-- [ ] Formatters are created once and shared, not separately wherever they are used or for each row.
+- [ ] Every displayed date and time is built by a formatter, in the reader's locale and time zone. No value is cut out of a machine serialization, and no date cut from a UTC timestamp reaches a screen.
+- [ ] Each formatter is created once and shared, not defined separately in each place that uses a formatter or created for each row.
 - [ ] Every date field is identified as a date with no time or an exact moment, and no time-zone conversion shifts a date with no time.
 - [ ] Times are in the user's own time zone, not the tenant's.
 - [ ] A time zone is stated whenever the value is outside the user's time zone, the user's time zone is unknown, or the user has switched time zones.
-- [ ] Times for events that happened elsewhere are shown in the time zone where they happened, labeled, with a way to convert them.
-- [ ] Recent events use relative time within one week and the absolute date after that. The relative text comes from the platform's relative formatter, no relative value reaches the cutoff, and no seconds are shown.
-- [ ] Every quantity of four figures or more has its digits grouped by a formatting API in the reader's locale — no plain `2046`, and no home-made comma regex. No identifier, year, version, or port is grouped.
+- [ ] Times for events that happened in another place are shown in the time zone where each event happened, labeled, with a way to convert the times.
+- [ ] Recent events use relative time within one week, and the absolute date after one week. The relative text comes from the platform's relative-time formatter, no relative value reaches the cutoff, and no seconds are shown.
+- [ ] Every quantity of four figures or more has grouped digits, from a formatter in the reader's locale. No plain `2046` appears, and no hand-written comma regex is used. No identifier, year, version, or port is grouped.
 - [ ] Currency is right-aligned, with two decimal places on every value.
 - [ ] The currency symbol is in the column header, not in each cell.
-- [ ] Any converted currency is labeled in its cell.
+- [ ] Any converted currency is labeled in the cell that shows the converted currency.
 - [ ] Accounting parentheses are padded so the decimal points stay lined up.
 - [ ] All numbers are right-aligned, with the same precision all the way down each column.
 - [ ] Ranges drop the parts both ends share, carry one currency symbol at the start, and keep the same precision at both ends.
-- [ ] No range mixes levels of rounding, and ranges with a large gap show the full values.
-- [ ] Read-only fields and editable fields without focus both use the clear format. Only an input with focus shows the masked numeric form, and it switches back when focus leaves.
-- [ ] 12-hour or 24-hour time follows the user's preference, and it does not change from screen to screen.
-- [ ] Durations use unit labels (`3h 20m`), never a clock format, and extend to days only when they pass one day.
-- [ ] Seconds appear only for values under a minute across a set of objects — and then on every value in that set.
-- [ ] Alignment is uniform across read-only and editable values on the same screen.
+- [ ] No range mixes levels of rounding, and a range with a large gap shows the full values.
+- [ ] Read-only fields and editable fields without focus both use the clear format. Only an input with focus shows the masked numeric form, and the input switches back when focus leaves.
+- [ ] 12-hour or 24-hour time follows the user's preference, and the choice does not change from screen to screen.
+- [ ] Durations use unit labels (`3h 20m`), never a clock format, and a duration extends to days only after the duration passes one day.
+- [ ] Seconds appear only for values under a minute across a set of objects, and then on every value in that set.
+- [ ] Alignment is uniform across read-only values and editable values on the same screen.
 - [ ] Open questions were asked about, not decided: week, quarter, or fiscal conventions, or a duration that passes one day.

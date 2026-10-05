@@ -143,6 +143,8 @@ Three components are empty placeholders in both adapters. The file input, file u
 
 The table skill warns that one adapter applies none of the 101 table variables. The evidence: the MUI adapter's `Table.module.css` refers to none of the `table`, `table-cell`, `table-header` and `table-footer` variables, and the Mantine adapter applies all of them.
 
+The dates and currency skill names no code, because the skills serve every adapter. In a browser, the rules map to these calls: format a date with `Intl.DateTimeFormat` and no locale argument; relative time with `Intl.RelativeTimeFormat` and `numeric: "auto"`; numbers and currency with `Intl.NumberFormat` or `toLocaleString`. The pattern to search for when a date shows a day off is `toISOString().slice(0, 10)`.
+
 Two smaller notes worth keeping:
 
 - **`TextField`'s events are ordinary React synthetic events.** Reading `e.currentTarget.value` lazily inside a `setState` updater callback threw and blanked the whole panel. Capture eagerly.
