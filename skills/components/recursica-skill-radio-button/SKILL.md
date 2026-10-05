@@ -90,7 +90,7 @@ Never build a radio group in a form from radio buttons alone, without the group 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
 The radio components pair each radio button with the item label, manage focus inside the radio group, and draw the focus ring. The app provides the group's accessible name (the name a screen reader reads out for a control), makes the selected state available in code, and adds the behavior in the two lists below.
 

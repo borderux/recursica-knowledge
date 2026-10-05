@@ -62,7 +62,7 @@ The rules below describe each part and option by role. The names in the standard
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
 Accessibility failures are more serious in a modal than in any other component. When focus handling is wrong, a keyboard user or a screen reader user is either trapped, or is reading a page the user cannot see. Most of the rules below are behavior to build and test, not styling.
 

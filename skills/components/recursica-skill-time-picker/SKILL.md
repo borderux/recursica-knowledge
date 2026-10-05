@@ -44,7 +44,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 **Set label placement explicitly on every field.** An adapter's default may put the label above the input at every container width, which breaks the house rule. Set the label beside the input on every field, using the names the code uses for the variant and the option.
 
-**Never build a focus state or a placeholder state.** The component draws the focus border and the placeholder text.
+**Never build a focus state or a placeholder state.** Every Recursica field already shows the focus border and the placeholder text.
 
 - **An error state and a disabled state.** In the standard UI kit, the variant is `states`, with the options `error` and `disabled`.
 - **No 12-hour or 24-hour variant.** The user's preference sets a 12-hour or a 24-hour clock. The clock format is not a variant. See the rules below.
@@ -84,7 +84,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
 The time picker component connects the label to the input and provides the focus ring. Time pickers most often fail at the clock trigger (the control that opens the clock popover), at the AM/PM control, and at the popover. The application builds the clock trigger, the AM/PM control, and the popover. Follow the rules below for all three.
 

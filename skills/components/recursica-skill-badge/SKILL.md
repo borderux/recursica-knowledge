@@ -63,7 +63,7 @@ The rules below describe each option by role, such as "the problem style" or "th
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
 A badge is text, not a control. For most components, the risk is that a user cannot reach the control. For a badge, the risk is the opposite. A screen reader can announce the badge apart from the object the badge describes, or not announce the badge at all.
 

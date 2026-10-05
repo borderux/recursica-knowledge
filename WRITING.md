@@ -64,6 +64,7 @@ Quoted interface copy keeps the exact interface wording, such as a button label 
 | Insider word                                  | What a designer says                                  |
 | --------------------------------------------- | ----------------------------------------------------- |
 | axis                                          | variant                                               |
+| the component draws the chevron               | the accordion already shows the chevron               |
 | surface                                       | page, panel, or modal                                 |
 | gray bars where text will be                  | skeleton screen                                       |
 | summary figures                               | KPI tiles                                             |

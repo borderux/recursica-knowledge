@@ -78,7 +78,7 @@ The rules below describe each part and option by role, such as "the header row".
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
 **A data table can be used without sight only when the table is built as a real table.** In a grid of `div` elements, a screen reader user has no way to know which column a value belongs to. The link between a value and the value's column is the whole content of a table.
 

@@ -88,7 +88,7 @@ A card that opens on hover and holds a control is not a third option. A card tha
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
 **Name whether the build is a hover card or a popover, then meet every requirement for that one.** The hover card and the popover have different requirements, and no build halfway between the two is safe. A build that meets half the requirements of each leaves content that only a pointer can reach.
 

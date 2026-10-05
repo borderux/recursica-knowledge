@@ -76,7 +76,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
 The application must add every behavior in the two lists below. A drop zone is the most common control in an enterprise application that works only with a mouse.
 

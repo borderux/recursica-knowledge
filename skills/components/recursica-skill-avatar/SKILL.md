@@ -63,7 +63,7 @@ The rules below describe each option by role, such as "the photo style". The nam
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
 An avatar is either a picture or a control, and each kind fails a screen reader user in a different way. A picture avatar can be announced as an unlabeled image, or as a second copy of a name the screen reader already read. A control avatar can have no accessible name at all.
 

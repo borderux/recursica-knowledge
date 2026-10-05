@@ -105,7 +105,7 @@ The rules below describe each option by role. The names in the standard UI kit (
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
 **A screen reader must announce a card set as one list of objects.** Two failures matter:
 

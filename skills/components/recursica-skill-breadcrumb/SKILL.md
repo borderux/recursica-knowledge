@@ -64,7 +64,7 @@ A breadcrumb shows where the current page sits in the page hierarchy. A breadcru
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
 A breadcrumb is a short line of links. Assistive technology recognizes a breadcrumb as a trail only when the markup identifies the breadcrumb as a trail. Three mistakes cause nearly all breadcrumb problems: a navigation region with no name, a separator read aloud between every item, and a current page that links to the current page.
 

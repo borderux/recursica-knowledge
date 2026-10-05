@@ -62,7 +62,7 @@ The rules below describe each option by role, such as "the vertical orientation"
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
 A tab set is one of the few components where a wrong role or a wrong connection in the markup makes the content unreachable, not only awkward to use. Leave all key handling to the component library.
 

@@ -95,7 +95,7 @@ The design-system website shows the autocomplete under the component's former na
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
 The autocomplete component connects the label to the input and provides the focus ring. The autocomplete component also handles filtering the list and selecting an option. The app decides what a screen reader announces during filtering and selecting. Getting the announcements right is the hardest part of any control in the design system. The filtered list changes on every keystroke, and a screen reader user hears none of the changes unless the app announces the changes.
 

@@ -60,7 +60,7 @@ The rules below describe each option by role, such as "the error type". The name
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
 The assistive element helps only when the code connects the assistive element to the field. A screen reader user who tabs straight into the input never hears text that sits near the field without a connection to the field. Tabbing into the input is the usual way to move through a form.
 

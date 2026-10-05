@@ -78,7 +78,7 @@ Neither situation conflicts with the one-save-mode rule in `recursica-skill-form
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
 The slider component provides the focus ring, the thumb, and the keyboard handling inside the track. The app must add the behavior in the two lists below. Sliders most often fail on the points in the two lists, because most builds support dragging and no other input.
 

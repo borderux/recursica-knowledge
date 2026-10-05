@@ -71,7 +71,7 @@ Neither component may hold content the user needs to complete a task. Neither co
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
 Of all components, the tooltip is the one most often used in place of a missing accessible name. A tooltip cannot replace an accessible name. Make sure the tooltip has every behavior in the two lists below.
 

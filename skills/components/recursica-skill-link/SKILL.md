@@ -62,7 +62,7 @@ The rules below describe each option by role. The names in the standard UI kit a
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
 The link component provides the underline, the color, and the focus ring. The app sets the markup. A link built from the wrong element fails every kind of assistive technology at once.
 

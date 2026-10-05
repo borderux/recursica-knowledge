@@ -89,7 +89,7 @@ The rules below describe each option by role, such as "the checked state". The n
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
 The checkbox component pairs each box with the item label and provides the focus ring. The app must give the group a name and make each checkbox's state available in code. The app must also add the behavior in the two lists below. Apps most often miss the behavior in the two lists below.
 

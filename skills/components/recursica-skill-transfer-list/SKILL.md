@@ -79,7 +79,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
 Transfer lists with arrow buttons often ship working only with a mouse. The app must add every behavior listed under "Screen readers" and "Keyboard and non-mouse navigation".
 

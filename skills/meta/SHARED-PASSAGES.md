@@ -112,7 +112,7 @@ Starts with:
 Passage:
 
 ```text
-**Never build a focus state or a placeholder state.** The component draws the focus border and the placeholder text.
+**Never build a focus state or a placeholder state.** Every Recursica field already shows the focus border and the placeholder text.
 ```
 
 ## accessibility-baseline-pointer
@@ -120,7 +120,7 @@ Passage:
 Starts with:
 
 ```text
-This component also follows the accessibility baseline
+The rules below add to the accessibility baseline
 ```
 
 Required when:
@@ -132,5 +132,5 @@ UI kit
 Passage:
 
 ```text
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`{, including the focus ring|}. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`{, including the focus ring|}, which every Recursica component follows.
 ```

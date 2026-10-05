@@ -70,7 +70,7 @@ Mixing the two placements in one form causes three problems. Side-by-side labels
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
 A screen reader user can use a field only when the field has a label. The label component exists to connect a label to a form control.
 

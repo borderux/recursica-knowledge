@@ -69,7 +69,7 @@ The rules below describe each option by role, such as "the label above the field
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
 **A read-only field must be announced as a labeled value, not as a control.** The label must still be connected to the value in code, and the user must be able to copy the value. The accessibility rules for a read-only field differ from the rules for every editable field.
 

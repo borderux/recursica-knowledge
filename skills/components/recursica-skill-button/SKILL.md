@@ -68,7 +68,7 @@ The rules below describe each option by role, such as "the primary style". The n
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
 The button component provides the focus ring. The button component also handles a press by click and by keyboard. The app must add the behavior in the two lists below.
 

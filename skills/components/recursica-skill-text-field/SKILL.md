@@ -47,7 +47,7 @@ The rules below describe each option by role, such as "the label beside the fiel
 
 **Set label placement explicitly on every field.** An adapter's default may put the label above the input at every container width, which breaks the house rule. Set the label beside the input on every field, using the names the code uses for the variant and the option.
 
-**Never build a focus state or a placeholder state.** The component draws the focus border and the placeholder text.
+**Never build a focus state or a placeholder state.** Every Recursica field already shows the focus border and the placeholder text.
 
 ## Rules
 
@@ -78,7 +78,7 @@ Never use a disabled text field to show a value.
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
 The text field component connects the label to the input, provides the focus ring, and handles the keys inside the field. The app must add the behavior in the two lists below. The two lists name the parts most often missed.
 

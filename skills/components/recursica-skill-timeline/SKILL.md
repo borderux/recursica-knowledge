@@ -78,7 +78,7 @@ The rules below describe each part and option by role, such as "the selected sta
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
 **Give each visual cue in a timeline a match in code that assistive technology can read.** Nearly all of what makes a timeline easy to read is visual. The timeline has four visual cues:
 

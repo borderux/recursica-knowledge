@@ -71,7 +71,7 @@ The rules below describe each option by role, such as "the selected state". The 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
 A chip group is a form control laid out horizontally, and a chip group must behave like every other form control. The most common failure is a group of clickable `div` elements with a colored selected state. A user who does not use a mouse cannot find or use chips built that way.
 

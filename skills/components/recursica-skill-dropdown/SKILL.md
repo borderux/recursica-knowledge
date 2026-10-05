@@ -88,7 +88,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
 The dropdown component connects the label to the field and provides the focus ring. The dropdown component also handles opening the list and selecting an option. The app is responsible for every item in the two lists below, including what a screen reader announces when the user opens the list and selects an option. Of all controls, a dropdown is the most likely to work with a mouse and fail with a keyboard or a screen reader.
 
