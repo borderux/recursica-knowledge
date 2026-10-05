@@ -36,7 +36,7 @@ The rules below describe each option by role, such as "the error type". The name
 - **The error text replaces the help text in the same place.** The error text never appears beside the help text. Switching between the two types keeps the field the same height, so the form below the field does not move.
 - **Do not invent a third state for a field that the project does not list.**
 - **The assistive element shows an icon.** The icon gives an error a signal that is not color.
-- **If the project has a size variant, use the project's size variant.** Otherwise, the space above the assistive element and the maximum width of the assistive element are fixed.
+- **If the project has a size variant, use the project's size variant.**
 
 ## Rules
 
@@ -85,12 +85,7 @@ The assistive element helps only when the code connects the assistive element to
 
 ## Styling set by tokens
 
-**Do not set or override the assistive element properties below.** The assistive element sets each property.
-
-- `text` styling for each type.
-- `icon-size`, `icon-text-gap`, and the icon.
-- `top-margin` and `max-width`.
-- Error and help colors, which come from the field's tokens.
+**Never set or override the assistive element's styling.** The theme sets every visual property of the assistive element, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the assistive element's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 ## Related skills
 
@@ -117,5 +112,6 @@ The assistive element helps only when the code connects the assistive element to
 - [ ] The icon is silent, and the words give the meaning.
 - [ ] The assistive element is not a tab stop, holds no control, and shows no text only on hover.
 - [ ] Focus does not move when an error appears.
-- [ ] Every type is one the project lists, such as the help type and the error type, and no third type is invented. Styling, margins, and width come from the assistive element.
+- [ ] Every type is one the project lists, such as the help type and the error type, and no third type is invented.
+- [ ] No styling is set or overridden on the assistive element.
 - [ ] Open questions were asked about, not decided: character and word counters, links in help text, and several errors on one field.
