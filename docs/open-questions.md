@@ -198,6 +198,20 @@ These were open when this file was first written. Each was settled by reading th
 | Whether a layer and a card are alternatives                  | No. A card sits on a layer and carries its own colour set for each of the four levels. A layer is a surface and a token scope; a card is an object boundary for repeating peers                                                                                            | `recursica-skill-layers`, `recursica-skill-card`                       |
 | Whether drawer, panel, and sidebar are different things      | Drawer and panel are synonyms — a surface that slides in. A sidebar is the permanent desktop nav. Modal and dialog are also interchangeable                                                                                                                                | `recursica-skill-panels-modals`                                        |
 
+### Decided 2026-10-05
+
+These came out of rewriting every component skill to the button model. Each was a skill that contradicted itself or another skill, and the owner decided each one.
+
+| Was open                                                                   | Resolution                                                                               |
+| -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Popover: the table allowed simple form controls, and a rule banned them    | A popover never holds a form control. Buttons and links are allowed                      |
+| Popover: whether a click on the page behind a popover closes the popover   | Yes. A click outside the popover closes the popover                                      |
+| Loader: whether a project's shimmer may be used                            | Yes, when the project adds a shimmer to the loader. Skeleton screens stay banned         |
+| Panel: "do not set a side" against "the side is set for each panel"        | Either side. The designer or the designer agent chooses the side for each panel          |
+| Panel: a modal panel was described, and the checklist asked for the choice | A panel is never modal and never traps focus                                             |
+| Switch: the description sent every value saved with a form to the checkbox | A switch in a form that saves on Save is allowed but not ideal, and acts like a checkbox |
+| Timeline: whether a timeline may show progress                             | Never. A process in progress is a different control                                      |
+
 ### Decided 2026-09-29
 
 These came out of the readability rewrite and the checks added with it — seven places where a component skill contradicted the UI kit, and ten where a skill contradicted itself or another skill. Each was decided by the owner, and the skills now say what is recorded here. The checks' `KNOWN` lists are empty.
