@@ -35,9 +35,9 @@ The rules below describe each option by role, such as "the smaller size". The na
 
 - **Two placements, the same two placements every field has.** The label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. Set the label's placement to match the field's placement. The label's placement and the field's placement are one decision, not two. The form makes that decision, not the label. See the placement rules below.
 - **Two sizes.** A label comes in a default size and a smaller size. In the standard UI kit, the variant is `sizes`, with the options `default` and `small`. When to use the smaller size is an open question.
-- **A required indicator and an optional text.** The standard UI kit has both, with gap settings for each one. The optional text also has a transparency setting. The form decides which of the two to use, not the field.
-- **A gap for an edit icon.** The standard UI kit sets a gap for an edit icon, so a label can hold an edit control. The purpose of the edit control is an open question.
-- **Disabled state.** If the project has a disabled state for the label, use the label's disabled state. Otherwise, the field's tokens set the label's color in each of the field's states.
+- **A required indicator and an optional text.** The standard UI kit has both. The form decides which of the two to use, not the field.
+- **An edit icon.** In the standard UI kit, a label can hold an edit icon, which is an edit control. The purpose of the edit control is an open question.
+- **Disabled state.** If the project has a disabled state for the label, use the label's disabled state. Otherwise, the field sets the label's color in each of the field's states.
 
 **Set label placement explicitly on every field.** The house rule puts the label beside the input. The code library under an adapter may put the label above the input by default, at every container width. Set the label beside the input on every field, using the names the code uses for the variant and the option.
 
@@ -94,12 +94,7 @@ A screen reader user can use a field only when the field has a label. The label 
 
 ## Styling set by tokens
 
-**Do not set or override the label properties below.** The label component sets each property.
-
-- `label-text` and `optional-text` type styling, and `optional-text-opacity`.
-- `required-indicator-gap`, `label-optional-text-gap`, `edit-icon-gap`.
-- `colors`, including the colors for the error and disabled states.
-- The gap between the label and the field: `globals.form.properties.label-field-gap-horizontal` and `label-field-gap-vertical`.
+**Never set or override the label's styling.** The theme sets every visual property of the label, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the label's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 ## Related skills
 
@@ -109,7 +104,7 @@ A screen reader user can use a field only when the field has a label. The label 
 
 ## Open questions
 
-- **The edit control on a label.** The standard UI kit sets a gap for an edit icon. No rule says what the edit control does, or which fields show the edit control.
+- **The edit control on a label.** In the standard UI kit, a label can hold an edit icon. No rule says what the edit control does, or which fields show the edit control.
 - **The form-wide signal for required fields.** No rule says which signal marks required fields when a form avoids asterisks. A bold label is an example, not a rule.
 - **The required indicator and the optional text in one application.** No rule says whether one application may show the required indicator on one form and the optional text on a different form.
 - **Truncating a label.** No rule says what to do when a side-by-side label is longer than the space for the label.
@@ -128,5 +123,5 @@ A screen reader user can use a field only when the field has a label. The label 
 - [ ] A compound control has one label, and no group label is used as an item label.
 - [ ] Clicking a label moves focus to the label's control.
 - [ ] Any edit icon on a label is a separate tab stop with a separate accessible name.
-- [ ] Layout, gaps, and type styling come from the label component.
+- [ ] No styling is set or overridden on the label.
 - [ ] Open questions were asked about, not decided: the edit control on a label, the form-wide signal for required fields, showing the required indicator with the optional text in one application, truncating a label, and when to use the smaller size.
