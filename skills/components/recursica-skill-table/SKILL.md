@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-table
-description: Rules for the Recursica table component — the table, cell, header, and footer, sorting, cell text and width, currency cells, no density option, empty cells, footer totals, and data-table accessibility including row selection. Use for tables and data grids. Column, width, and pagination policy lives in recursica-skill-tables.
+description: Rules for the Recursica table component — the table, cell, header, and footer, sorting, cell text and width, currency cells, density, empty cells, footer totals, and data-table accessibility including row selection. Use for tables and data grids. Column, width, and pagination policy lives in recursica-skill-tables.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -11,7 +11,7 @@ metadata:
 
 A table shows many records of one type. The reader compares the values in one column across the records.
 
-> **One adapter applies none of the 101 tokens that the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) exports for the table, the body cells, the header row, and the footer row.** Another adapter applies all 101 tokens. On the adapter that applies none of the tokens, the table renders, but no spacing, type, or color comes from the design system, and no error appears. Every rule below describes the UI kit correctly.
+> **One adapter applies none of the 101 tokens that the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) exports for the table and the table's body cells, header row, and footer row.** Another adapter applies all 101 tokens. On the adapter that applies none of the tokens, the table renders, but no spacing, type, or color comes from the design system, and no error appears. Every rule below describes the UI kit correctly.
 
 ## When to use a table
 
@@ -38,13 +38,16 @@ A table shows many records of one type. The reader compares the values in one co
 
 The rules below describe each part and option by role, such as "the header row". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-- **Four parts.** The table frame sets the outer frame, the row dividers and column dividers, the row padding, the colors, and the opacities. The header row holds the column headers. A body cell holds one value of one record. The footer row holds the totals. In the standard UI kit, the four parts are `table`, `table-header`, `table-cell`, and `table-footer`.
-- **No variant on the table frame in the standard UI kit.** If the project adds a table frame variant in Theme Forge, use the project's variant.
-- **A disabled state on the header row, body cells, and the footer row.** Disabled is the only state the standard UI kit gives these three parts. The standard UI kit has no error state on a cell. If the project adds a state in Theme Forge, use the project's state.
-- **A sort indicator built into the header row.** The header row draws the sort indicator, the sorted text style, and the unsorted text style. The header row also sets the gap between the label and the sort icon, and the icon size. Do not add a sort indicator or a sort text style separately.
-- **A currency text style on body cells and the footer row**, separate from the normal text style. Use the `currency-style` token for currency. Follow `recursica-skill-dates-and-currency` for alignment and precision.
-- **No density variant in the standard UI kit**, such as compact, comfortable, or spacious. The missing density variant matches the house rule against density variants. If the project adds a density variant in Theme Forge, use the project's variant. Cell padding comes from the table's padding tokens, listed under "Styling set by tokens".
-- **No selected-row state, no row hover state, and no expanded-row state in the standard UI kit.** If the project adds one of these states in Theme Forge, use the project's state. Otherwise, never invent one of these states. See the open questions.
+- **A table has four parts:** the table frame, the header row, the body cells, and the footer row. In the standard UI kit, the four parts are `table`, `table-header`, `table-cell`, and `table-footer`.
+- **The table frame** is the outer frame around every table row. The table frame sets the outer frame, the row dividers and column dividers, the row padding, the colors, and the opacities.
+- **The header row** is the top table row. The header row holds the column headers.
+- **A body cell** holds one value of one record.
+- **The footer row** is the bottom table row. The footer row holds the totals.
+- **Disabled state.** In the standard UI kit, the header row, the body cells, and the footer row each have a disabled state. What the disabled state means is an open question.
+- **Sort indicator.** The header row shows the sort indicator, the sorted text style, and the unsorted text style. The header row also sets the gap between a column header's label and the sort icon, and the icon size. Do not add a sort indicator or a sort text style separately.
+- **Currency.** Body cells and the footer row have a currency text style, separate from the normal text style. Use the `currency-style` token for currency. Follow `recursica-skill-dates-and-currency` for alignment and precision.
+- **Density.** If the project has a density variant, such as compact, comfortable, or spacious, use the project's density variant. Never invent a density variant. `recursica-skill-tables` sets this rule. Cell padding comes from the table's padding tokens, listed under "Styling set by tokens".
+- **Selected, hover, and expanded table rows.** If the project has a selected-row state, a row hover state, or an expanded-row state, use the project's state. Never invent one of these states. See the open questions.
 
 **Do not use the body cell's `max-width` token to fix a column that is too wide.** The `max-width` token alone limits nothing. A maximum width on a table cell is only a suggestion to the browser's automatic table layout. The automatic table layout sizes each column from the column's content and often goes past the maximum width. In one real table, a 200px maximum width measured 257px. Set a column's width by the column's data type, as `recursica-skill-tables` describes. The browser applies a width set by data type, and largely ignores `max-width`.
 
@@ -98,11 +101,11 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 - **Every control in the table can be reached in visual order**: the header sort controls, row checkboxes, links, and row actions.
 - **Sorting by more than one column with a long-press must have a keyboard equivalent.** `recursica-skill-system-conventions` requires a second way to do every drag or long-press. A keyboard cannot press and hold, so sorting by more than one column needs an explicit control or a modifier key.
-- **The column-visibility gear is an unadvertised affordance, and an unadvertised affordance must still be accessible.** The gear must be a real control that a keyboard can reach. Reordering columns must work without dragging.
+- **A column-visibility gear is an unadvertised affordance, and an unadvertised affordance must still be accessible.** A column-visibility gear is the gear icon that lets the user show or hide columns. The gear must be a real control that a keyboard can reach. Reordering columns must work without dragging.
 - **A clickable table row must be a single, real control** with an accessible name, not a click handler on a `tr` element. If a single control for the whole table row is awkward, make a link in one cell the click target instead. A link in one cell is usually the better answer.
 - **A keyboard user must be able to start and leave inline editing.** Escape abandons the edit, and focus returns to the cell.
 - **Reveal nothing on hover.** Row actions that appear on hover cannot be reached by keyboard or by touch.
-- **Give the table no horizontal scrolling area.** Besides the house rule, horizontal scrolling makes a table close to unusable for a keyboard user. A keyboard user has no way to bring an off-screen column into view except by tabbing blindly.
+- **Give the table no horizontal scrolling area.** Besides the house rule against horizontal scrolling in `recursica-skill-tables`, horizontal scrolling makes a table close to unusable for a keyboard user. A keyboard user has no way to bring an off-screen column into view except by tabbing blindly.
 - **Focus must be visible on every control in the table**, and never hidden on a focused table row or cell.
 
 ## Styling set by tokens
@@ -135,13 +138,13 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 ## Open questions
 
-- **How a selected table row looks.** The design rules require row selection, but the standard UI kit has no selected state. Ask only when the project has no selected-row state.
-- **Row hover.** The standard UI kit defines no hover state, yet a clickable table row needs a visible cue that the row can be clicked. Ask only when the project has no row hover state.
-- **Table rows that expand, and nested detail.** No rule covers an expanding table row or nested detail. The standard UI kit also has no tokens for an expanding table row. Ask about the tokens only when the project has no expanded-row state.
+- **How a selected table row looks.** The design rules require row selection. Ask only when the project has no selected-row state.
+- **Row hover.** A clickable table row needs a visible cue that the row can be clicked. Ask only when the project has no row hover state.
+- **Table rows that expand, and nested detail.** No rule covers an expanding table row or nested detail. Ask about the tokens for an expanding table row only when the project has no expanded-row state.
 - **What the disabled state means on a cell, a header, or a footer**: a value that is unavailable, a column that cannot be sorted, or a different meaning.
-- **A supported way to mark one value as missing.** The style is settled: `recursica-skill-tables` sets the literal text `NA`, in italics, in neutral 500. The UI kit offers no way to apply the style. In the standard UI kit, the disabled state is the one state a cell has, and the disabled state applies to the whole cell. A component that renders only the value cannot reach the cell around the value. Until a supported way exists, take the color from the neutral palette token. Do not use the cell's disabled color, which is a different value.
+- **A supported way to mark one value as missing.** The style is settled: `recursica-skill-tables` sets the literal text `NA`, in italics, in neutral 500. In the standard UI kit, a cell's disabled state applies to the whole cell. A component that shows only the value cannot reach the cell around the value. If the project has a way to apply the missing-value style, use that way. Otherwise, take the color from the neutral palette token. Do not use the cell's disabled color, which is a different value.
 - **The empty state**, and the difference between "no records yet" and "no results for these filters". `recursica-skill-design-router` names the empty state as having no owner.
-- **Loading.** No skeleton or determinate loader exists. See `recursica-skill-loader`.
+- **Loading.** See `recursica-skill-loader`.
 - **Behavior below desktop size.** `recursica-skill-design-router` names behavior below desktop size as having no owner.
 
 ## Pre-flight checklist
