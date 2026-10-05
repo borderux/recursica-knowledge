@@ -39,8 +39,8 @@ A file input is a single-line field where the user picks a file from the user's 
 The rules below describe each option by role, such as "the error state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
 - **An error state and a disabled state.** The standard UI kit calls the state variant `states`, with the two options `error` and `disabled`.
-- **A single-line field.** The standard UI kit gives the file input the same minimum height, padding, border, corner radius, text style and placeholder style as a text field. The matching properties are the clearest sign that a file input is a single-line form field.
-- **One icon.** The icon shows that the field takes a file. The standard UI kit sets the icon size and the gap between the icon and the text.
+- **A single-line field.** A file input is a single-line form field and looks like a text field.
+- **One icon.** The icon shows that the field takes a file.
 - **Upload feedback.** If the project has a progress state, a success state, or an error state for each file, use the project's state. Otherwise, see the open questions.
 - **Drop zone.** If the project has a drop-zone variant, use the drop-zone variant. Otherwise, see the open questions.
 - **More than one file.** If the project has a variant for more than one file, use that variant. Otherwise, see the open questions.
@@ -99,13 +99,9 @@ A file input is a form field, and a file input follows the same rules as every o
 
 ## Styling set by tokens
 
-**Do not set or override the file input properties below.** The file input component sets each property.
+**Never set or override the file input's styling.** The theme sets every visual property of the file input, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the file input's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
-- `min-height`, `horizontal-padding`, `vertical-padding`, `border-size`, `border-radius`.
-- `icon-size` and `icon-text-gap`.
-- `text` styling and `placeholder-opacity`.
-- All `colors`, per layer (a numbered background level, 0 to 3, that sets the colors of the components on that level) and per state, including the focused border.
-- Field colors and sizes from `globals.form.field`, the gaps between the label and the field and `vertical-item-gap` from `globals.form.properties`, and the disabled look from `globals.states.disabled`.
+Do not change the gap between the label and the file input, or the gap between the file input and the next item in the form.
 
 **Never style an unfocused file input so that the field looks disabled.** An editable field must look editable when the user is not using the field.
 
@@ -144,5 +140,6 @@ A file input is a form field, and a file input follows the same rules as every o
 - [ ] The field's icon is silent, and the required state is set in code.
 - [ ] Choosing a file does not start an upload. The upload starts when the user clearly asks for the upload. When the form saves every field together, the upload finishes before the form submits.
 - [ ] Every variant, size, and state is one the project's UI kit lists, and no variant or option is invented.
-- [ ] Padding, borders, and colors come from the file input component. Every file input without focus looks editable, not disabled.
+- [ ] No styling is set or overridden on the file input.
+- [ ] Every file input without focus looks editable, not disabled.
 - [ ] Open questions were asked about, not decided: progress, success, more than one file, chips, and retrying.
