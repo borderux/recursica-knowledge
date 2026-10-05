@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-accordion
-description: Rules for the Recursica accordion — when collapsing content is justified, collapsed by default, never nested, what each part owns, and expand and collapse accessibility. Use for accordions, expandable sections, and FAQ lists. Not for multi-level hierarchy — see recursica-skill-tree; not for switching views — see recursica-skill-tabs.
+description: Rules for the Recursica accordion — when collapsing content is justified, collapsed by default, nested only with a project option, what each part owns, and expand and collapse accessibility. Use for accordions, expandable sections, and FAQ lists. Not for multi-level hierarchy — see recursica-skill-tree; not for switching views — see recursica-skill-tabs.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -20,17 +20,17 @@ An accordion collapses sections of content that are at the same level and of the
 
 ## When not to use an accordion
 
-| Situation                                                                                                                        | Use instead                                                                                                            |
-| -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| The content has more than one level of nesting                                                                                   | A tree. See `recursica-skill-tree`. **Never nest an accordion inside an accordion.** See `recursica-skill-navigation`. |
-| The user needs the content often                                                                                                 | The content shown on the page. Content behind a header takes an extra click every time the user needs the content.     |
-| The page has little content before any collapsing                                                                                | No collapsing. Collapsing a short page only makes the page feel empty.                                                 |
-| The sections are parts of one whole that the user switches between                                                               | Tabs. See `recursica-skill-tabs`.                                                                                      |
-| The content is a form, or fields from one form                                                                                   | A page, or a stepper for a form with several parts. See `recursica-skill-forms`.                                       |
-| The content is on the critical path (the steps the user must take to finish the task), and the user must read the content to act | The page, with the content not collapsed.                                                                              |
-| The content is a short text label for an icon-only control                                                                       | A tooltip. See `recursica-skill-tooltip`.                                                                              |
-| The content is too complex or too deep for the available space                                                                   | A page or a panel. An accordion panel is narrow and shallow.                                                           |
-| The page has more sections than the page has room for                                                                            | Fewer sections, not smaller sections. See `recursica-skill-system-conventions`.                                        |
+| Situation                                                                                                                        | Use instead                                                                                                                             |
+| -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| The content has more than one level of nesting                                                                                   | A tree. See `recursica-skill-tree`. **Nest an accordion only when the project has a nesting option.** See `recursica-skill-navigation`. |
+| The user needs the content often                                                                                                 | The content shown on the page. Content behind a header takes an extra click every time the user needs the content.                      |
+| The page has little content before any collapsing                                                                                | No collapsing. Collapsing a short page only makes the page feel empty.                                                                  |
+| The sections are parts of one whole that the user switches between                                                               | Tabs. See `recursica-skill-tabs`.                                                                                                       |
+| The content is a form, or fields from one form                                                                                   | A page, or a stepper for a form with several parts. See `recursica-skill-forms`.                                                        |
+| The content is on the critical path (the steps the user must take to finish the task), and the user must read the content to act | The page, with the content not collapsed.                                                                                               |
+| The content is a short text label for an icon-only control                                                                       | A tooltip. See `recursica-skill-tooltip`.                                                                                               |
+| The content is too complex or too deep for the available space                                                                   | A page or a panel. An accordion panel is narrow and shallow.                                                                            |
+| The page has more sections than the page has room for                                                                            | Fewer sections, not smaller sections. See `recursica-skill-system-conventions`.                                                         |
 
 **Progressive disclosure has a limit, stated in `recursica-skill-discoverability`.** `recursica-skill-discoverability` justifies hiding rarely needed content until the user asks for the content. The same skill states that progressive disclosure does not justify hiding content the user would want to reach. Progressive disclosure also does not justify hiding content because the screen is crowded. Putting required information inside an accordion is a misuse of progressive disclosure.
 
@@ -45,17 +45,14 @@ The rules below describe each part and option by role, such as "the open look". 
 - **An item** is one section that opens and closes. Each item has one header and one content panel.
 - **A header** is the clickable bar at the top of an item. The header shows the open or closed look, a leading icon, a trailing icon, and the title text.
 - **A content panel** is the area below the header. Clicking the header shows or hides the content panel.
-- **One variant, on the header only.** In the standard UI kit, only the header has a variant. The header variant has exactly two options, an open look and a closed look. The standard UI kit calls the variant `appearance`, with the options `open` and `closed`. The standard UI kit has no variant on the accordion, the item or the content panel. If the project adds a variant to one of those parts in Theme Forge, use the project's variant.
-- **No disabled header.** The standard UI kit has no disabled option for the header. If the project adds a disabled option in Theme Forge, use the project's disabled option.
-- **No nesting option.** The standard UI kit has no option that puts one accordion inside another accordion. Never nest an accordion, even when the project adds a nesting option. An accordion has one level only, and a real hierarchy belongs in a tree.
-- **No single-open or multi-open option.** In the standard UI kit, opening one item never closes another item. If the project adds a single-open or multi-open option in Theme Forge, use the project's option. See the open questions.
-- **No size, density or emphasis variant.** The standard UI kit has no size, density or emphasis variant on any of the four parts, and no state variant for hover, focus or error. If the project adds one of these variants in Theme Forge, use the project's variant.
+- **Open and closed look.** The header shows an open look and a closed look. The standard UI kit calls the variant `appearance`, with the options `open` and `closed`.
+- **Nesting.** Nest an accordion inside another accordion only when the project has a nesting option. Otherwise, an accordion has one level, and a real hierarchy belongs in a tree.
 
 ## Rules
 
 **Every item loads collapsed.** The only exception is the group that holds the user's current page, in a navigation accordion. `recursica-skill-navigation` sets the collapsed-by-default rule.
 
-**Never nest an accordion inside an accordion.** `recursica-skill-navigation` states the rule directly: an accordion has one level only. The ban on nesting is a hard ban, not a preference.
+**Never nest an accordion inside an accordion unless the project has a nesting option.** `recursica-skill-navigation` states the rule directly: without a nesting option, an accordion has one level only.
 
 **Use a tree for a real hierarchy, and an accordion for sections at a single level.** The choice between a tree and an accordion is settled. Use a tree when an item's meaning depends on the item's parent, or when the depth varies. See `recursica-skill-tree`. Do not use an accordion for a real hierarchy, and never nest accordions inside accordions to show a hierarchy. Use an accordion when the sections are of the same kind and at one level. A tree would indent sections that have no parent. No third case exists, and no choice is left to make.
 
@@ -63,7 +60,7 @@ The rules below describe each part and option by role, such as "the open look". 
 
 **Never split a form across accordion panels.** Data entry is not content divided into sections. For the same reason, a form is never split across tabs. A form with several parts uses a stepper. See `recursica-skill-forms`.
 
-**Never collapse a panel automatically after the user opens the panel.** Do not collapse the panel when the user scrolls, when the user saves, or when the user opens a second panel, unless one-panel-at-a-time behavior was an explicit decision. A single-open option the project adds in Theme Forge counts as that decision. Closing a panel the user is reading loses the user's place on the page. If focus was inside the panel, focus is lost too.
+**Never collapse a panel automatically after the user opens the panel.** Do not collapse the panel when the user scrolls, when the user saves, or when the user opens a second panel, unless one-panel-at-a-time behavior was an explicit decision. A single-open option in the project counts as that decision. Closing a panel the user is reading loses the user's place on the page. If focus was inside the panel, focus is lost too.
 
 **Nothing on the critical path goes inside a panel.** Never collapse content the user must read to move forward.
 
@@ -125,9 +122,9 @@ The component draws the chevron, rotates the chevron, and sets the colors for th
 
 ## Open questions
 
-- **Whether opening one item closes the other items.** No variant in the standard UI kit sets the behavior, and no rule states the behavior. If the project adds a single-open or multi-open option, use the project's option.
+- **Whether opening one item closes the other items.** No rule states the behavior. If the project has a single-open or multi-open option, use that option. Otherwise, ask.
 - **Whether the divider between items can be hidden.** Only the design-system website shows a divider that "can be hidden if accordion is the last child in a list or accordion group". The UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) offers only `divider-size` on `accordion`, with no option to turn the divider off. Do not rely on hiding the divider without asking.
-- **How to show an item the user cannot open right now.** `recursica-skill-navigation` says to disable an item the user can unlock. The `accordion-header` part in the standard UI kit has no disabled look.
+- **How to show an item the user cannot open right now.** `recursica-skill-navigation` says to disable an item the user can unlock. If the project has a disabled look for the header, use the disabled look. Otherwise, ask.
 - **Animation for opening and closing.** No duration or easing is defined.
 - **Whether a panel can be linked to directly**, so that a shared URL opens a specific section.
 - **Whether an accordion may sit inside a table row**, given the single-level expand and collapse that `recursica-skill-tables` asks for.
@@ -135,7 +132,7 @@ The component draws the chevron, rotates the chevron, and sets the colors for th
 ## Pre-flight checklist
 
 - [ ] Collapsing the content is justified. The user does not need the content often, and the page is not sparse.
-- [ ] The accordion is one level deep. No accordion is nested inside another accordion, and every real hierarchy uses `recursica-skill-tree` instead.
+- [ ] The accordion is one level deep unless the project has a nesting option, and every real hierarchy uses `recursica-skill-tree` instead.
 - [ ] No form, and no part of one form, is split across panels.
 - [ ] Nothing on the critical path is inside a panel, and no content the user needs exists only inside a panel.
 - [ ] Every item loads collapsed, except the group that holds the current page in a navigation accordion.

@@ -74,7 +74,7 @@ The 7 ± 2 limit makes the overflow rules possible to enforce. A horizontal navi
 
 ## Choosing the sub-nav component
 
-**An accordion has one level only. NEVER nest an accordion inside an accordion.** If the structure has several levels, use a tree instead.
+**An accordion has one level only, unless the project has a nesting option. Without a nesting option, NEVER nest an accordion inside an accordion.** If the structure has several levels, use a tree instead.
 
 **Use the simplest structure the content allows.** A plain list of links is a valid answer, and often the right answer. Use an accordion or a tree only when the content has a real hierarchy.
 
@@ -181,7 +181,7 @@ Check every item below before treating the navigation as done.
 - [ ] Search, notifications, and the account menu are outside primary navigation.
 - [ ] Sub-navigation opens on click, not on hover.
 - [ ] Clicking a primary item that has a landing page goes to the landing page and expands the item's sub-navigation. Clicking a primary item without a landing page expands the item in place.
-- [ ] No accordion is nested inside another accordion, and structures with several levels use a tree.
+- [ ] No accordion is nested inside another accordion unless the project has a nesting option, and structures with several levels use a tree.
 - [ ] Navigation is marked up as a semantic ordered or unordered list.
 - [ ] Top-level items with no children are links the user can go to directly.
 - [ ] Collapsible groups load collapsed, except the group containing the current page.

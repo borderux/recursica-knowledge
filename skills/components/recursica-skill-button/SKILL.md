@@ -35,14 +35,14 @@ A button performs an action. A button never takes the user to a different page o
 
 The rules below describe each option by role, such as "the primary style". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-- **Three styles, from most to least prominent.** The primary style is for the main action. The secondary style is for the next most important action. The least prominent style is for every other action. In the standard UI kit, the three styles are `solid`, `outline`, and `text`. The `text` style is also called "Ghost".
-- **Two sizes.** A button comes in a default size and a smaller size. The standard UI kit calls the smaller size `small`.
-- **Three kinds of content.** A button shows a label alone, an icon with a label, or an icon alone. One variant covers an icon before the label, after the label, or both. There are no separate variants for each icon position.
-- **A disabled state for every style.** The opacity of a disabled button comes from `globals.states.disabled`. How to turn on the disabled state is an open question.
-- **No destructive style in the standard UI kit.** If the project adds a destructive style in Theme Forge, use the project's style. Never invent one. Color alone cannot mark a destructive action (an action that deletes data or cannot be undone). Name the destructive action in the label, as in "Delete invoice". Confirm any action that cannot be undone. See `recursica-skill-buttons-links`.
-- **No loading state in the standard UI kit.** If the project adds a loading state in Theme Forge, use the project's state. Otherwise, show a loading button (a button whose action is still running) in the disabled look with an animated icon, with or without a label. Never add a spinner beside the button, change the label, or invent any new state.
-- **No success state in the standard UI kit.** If the project adds a success state in Theme Forge, use the project's state. Otherwise, show any confirmation of a finished action outside the button, such as in a toast. See `recursica-skill-toast`.
-- **No full-width option in the standard UI kit.** If the project adds a full-width option in Theme Forge, use the project's option. Otherwise, never stretch a button to fill the container the button sits in.
+- **Style.** Use the primary style for the main action, the secondary style for the next most important action, and the least prominent style for every other action. In the standard UI kit, the styles are `solid`, `outline` and `text`. The `text` style is also called "Ghost".
+- **Size.** A button has a default size and a smaller size. The standard UI kit calls the smaller size `small`.
+- **Content.** A button shows a label alone, an icon with a label, or an icon alone. One variant covers an icon before the label, after the label, or both.
+- **Disabled state.** How to turn on the disabled state is an open question.
+- **Destructive action.** If the project has a destructive style, use the destructive style. Color alone cannot mark a destructive action (an action that deletes data or cannot be undone). Name the destructive action in the label, as in "Delete invoice". Confirm any action that cannot be undone. See `recursica-skill-buttons-links`.
+- **Loading.** If the project has a loading state, use the loading state. Otherwise, show a loading button (a button whose action is still running) in the disabled look with an animated icon, with or without a label. Never add a spinner beside the button, change the label, or invent a state.
+- **Success.** If the project has a success state, use the success state. Otherwise, show any confirmation of a finished action outside the button, such as in a toast. See `recursica-skill-toast`.
+- **Width.** If the project has a full-width option, use the full-width option. Otherwise, never stretch a button to fill the container the button sits in.
 
 ## Rules
 
@@ -115,10 +115,10 @@ The button component provides the focus ring. The button component also handles 
 ## Open questions
 
 - **When to use the smaller size.** No rule says which screens use the smaller size.
-- **Full-width buttons.** No variant supports a full-width button. No rule says whether a full-width button is ever allowed, or where.
+- **Full-width buttons.** When the project has no full-width option, no rule says whether a full-width button is ever allowed, or where.
 - **The icon for a loading button.** A loading button uses the disabled look with an animated icon, and that part is settled. Which icon to use is not settled. Whether the UI kit or the adapter (the Recursica component library for one framework, such as Mantine or Angular Material) defines the animation is also unknown.
-- **Split buttons and button groups.** The UI kit has neither. Do not build either one.
-- **Setting the disabled state.** The standard UI kit defines a disabled state under each style. Nobody has confirmed that the adapter exposes the disabled state as a setting. Check the button component's settings, or ask, before relying on the disabled state.
+- **Split buttons and button groups.** Use a split button or a button group only when the project has one. Never build either one from separate buttons.
+- **Setting the disabled state.** Nobody has confirmed that each adapter exposes the disabled state as a setting. Check the button's settings with the Recursica MCP server, or ask, before relying on the disabled state.
 
 ## Pre-flight checklist
 
