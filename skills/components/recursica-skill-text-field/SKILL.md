@@ -97,16 +97,11 @@ The text field component connects the label to the input and provides the focus 
 
 ## Styling set by tokens
 
-**Do not set or override the text field properties below.** The text field component sets each property.
+**Never set or override the text field's styling.** The theme sets every visual property of the text field, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the text field's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
-- `min-height`, `horizontal-padding`, `vertical-padding`, `border-size`, `border-radius`, and every gap.
-- Field width. `globals.form.field.size` sets `min-width` and `max-width`.
-- `icon-size` and `icon-text-gap`.
-- Text styling, and `placeholder-opacity`.
-- The colors for each layer (a numbered background level, 0 to 3, that sets the colors of the components on that level), the focused border, hover, and active styling.
-- The connection between the label and the input, and keyboard behavior inside the field.
+Every single-line field has the same fixed height.
 
-`min-height` is a fixed property. `globals.form.field.size.single-line-input-height` sets the height of every single-line field.
+The text field component connects the label to the input and sets the keyboard behavior inside the field. Never set or override the label connection or the keyboard behavior.
 
 **Never style an unfocused field to look disabled.** An editable field must look editable when the field does not have focus.
 
@@ -136,6 +131,7 @@ The text field component connects the label to the input and provides the focus 
 - [ ] The error state shows an icon or the message text, as well as color.
 - [ ] Every clickable icon inside the field has an accessible name, and every decorative icon is hidden from screen readers.
 - [ ] Every label placement, state and size is one the project's UI kit lists, and no variant or option is invented. No size is passed unless the project's UI kit lists a size variant.
-- [ ] Styling comes from the text field component, and every unfocused field looks editable.
+- [ ] No styling is set or overridden on the text field, and no container or spacer is added to change the text field's look.
+- [ ] Every unfocused field looks editable.
 - [ ] A value nobody can edit uses the read-only field, multi-line text uses a textarea, and a quantity uses a number input.
 - [ ] Open questions were asked about, not decided: character or word counters, a clear or reset control inside the field, and password fields.
