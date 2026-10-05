@@ -40,10 +40,9 @@ Each case in the table below needs a different component. Use the component in t
 
 The rules below describe each option by role, such as "the label above the field". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-- **No states.** The standard UI kit gives the read-only field no error state, no disabled state, no focus state and no hover state. A read-only field is not a control, so no part of a read-only field can be invalid or unusable. Do not pass a state, and do not fake a state.
-- **No placeholder and no input.** In the standard UI kit, the read-only field sets only the text style, the colors and the minimum height.
-- **No size variant and no `rows` option in the standard UI kit.** If the project adds a size variant or a `rows` option in Theme Forge, use the project's variant or option. Otherwise, no rule says how a long value is shown. See the open questions.
-- **One read-only background.** The component sets the read-only background. Do not choose another background style for a read-only field.
+- **States.** Do not pass a state, and do not fake a state. A read-only field is not a control, so a read-only field never has an error state, a disabled state, a focus state or a hover state. No part of a read-only field can be invalid or unusable.
+- **Size and long values.** If the project has a size variant or a `rows` option, use that variant or option. Otherwise, no rule says how a long value is shown. See the open questions.
+- **Background.** Keep the read-only background that the read-only field's tokens set. Do not choose another background style for a read-only field.
 
 **Label placement is a variant.** The label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`. Every field has the same label-placement variant. Set the read-only field's label placement to match the fields around the read-only field. A read-only field among stacked fields is stacked too.
 
@@ -51,7 +50,7 @@ The rules below describe each option by role, such as "the label above the field
 
 ## Rules
 
-**Always pass a visible label to the read-only field**, and let the component pair the label with the value. In the label, name the object clearly, use sentence capitalization, and leave off any colon at the end. The rules in `recursica-skill-label` apply without change.
+**Always pass a visible label to the read-only field**, and let the read-only field connect the label to the value. In the label, name the object clearly, use sentence capitalization, and leave off any colon at the end. The rules in `recursica-skill-label` apply without change.
 
 **Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form, editable or not. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
@@ -61,7 +60,7 @@ The rules below describe each option by role, such as "the label above the field
 
 **Align read-only values the same way as the editable values on the same screen.** Read-only values aligned left to sit near the labels, beside editable values aligned right, make one screen look like two different design systems.
 
-**Put the time zone and the unit in the value's text.** The read-only field has no slot for help text and no placeholder, so no other part of the read-only field can show the time zone or the unit.
+**Put the time zone and the unit in the value's text.** A user who copies the value or hears the value read aloud then gets the time zone and the unit with the value.
 
 **If the user can edit the value through another flow, open the other flow from a named control that stays visible.** Never use a control that appears on hover. See the open questions before adding an edit control.
 
@@ -76,7 +75,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 ### Screen readers
 
 - **A read-only field must not be announced as an input.** Do not build a read-only field as an `input` or a `textarea`: not a disabled `input`, not an `input` with a `readonly` attribute, and not an element with a textbox role. A user who hears "edit text" tries to type into the field.
-- **The label must still be connected to the value in code.** Pass the label to the component. A label shown as loose text beside a value is paired with the value only visually. A screen reader user moving through the page hears the value with nothing to say what the value is.
+- **The label must still be connected to the value in code.** Pass the label to the read-only field. A label shown as loose text beside a value is paired with the value only visually. A screen reader user moving through the page hears the value with nothing to say what the value is.
 - **The value must be real text in the page**, never an image, a canvas, a background image, or content that a style sheet adds. A screen reader cannot announce text inside an image, a canvas or a style sheet.
 - **Do not mark a read-only field required or optional.** A read-only field has nothing to require. A required marker on a value the user cannot enter is a false instruction.
 - **Do not apply a disabled look or `aria-disabled` to a read-only field.** A read-only field is not disabled. Announcing a read-only field as disabled tells the user that a condition could make the field editable, but the read-only state is permanent.
@@ -118,11 +117,11 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 ## Open questions
 
-- **The editable read-only field.** Only the design-system website shows an "Is editable" behavior, with an edit icon that appears on hover and sends the user to another flow. No token is behind the behavior. The UI kit defines no edit control on the read-only field, and `recursica-skill-label` sets aside an `edit-icon-gap` without saying what the gap triggers. A control that appears only on hover also conflicts with the accessibility rules above. Ask before settling the question or relying on the behavior.
+- **The editable read-only field.** Only the design-system website shows an "Is editable" behavior, with an edit icon that appears on hover and sends the user to another flow. `recursica-skill-label` sets aside an `edit-icon-gap` without saying what the gap triggers. A control that appears only on hover also conflicts with the accessibility rules above. Ask before settling the question or relying on the behavior.
 - **Required and optional markers.** A source outside the UI kit describes turning on an optional label or a required asterisk on a read-only field. The description contradicts the fact that a read-only field has no input to require. Do not rely on the markers without asking.
 - **Empty and null values.** No rule says what a read-only field shows when the value is missing. `recursica-skill-tables` has a rule for null table cells, but no rule extends the table rule to a field.
-- **Long values, or values on several lines.** The standard UI kit sets only a minimum height. No rule says whether a long value wraps, scrolls or is truncated. Ask only when the project has no size variant and no `rows` option.
-- **Help or assistive text.** The read-only field has no error state and no slot for assistive text. No rule settles whether a note may sit under a read-only field.
+- **Long values, or values on several lines.** No rule says whether a long value wraps, scrolls or is truncated. Ask only when the project has no size variant and no `rows` option.
+- **Help or assistive text.** No rule settles whether a note may sit under a read-only field.
 - **A read-only field in a compound control.** No rule says whether a read-only field can be part of a compound control, such as one half of a date-and-time row.
 
 ## Pre-flight checklist
