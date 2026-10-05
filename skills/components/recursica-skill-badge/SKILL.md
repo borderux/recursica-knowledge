@@ -15,7 +15,7 @@ A badge shows one read-only value about an object, such as a status or a count. 
 
 - **One value describes the object.** The value is a status the system owns, a count, or one short attribute.
 - **The badge sits on the object the badge describes**, such as a row in a table or a list, a heading, a tab, a navigation item, or a card. A badge never stands alone.
-- **The space is tight.** A badge is small and uses small text, which suits a dense screen.
+- **Space on the screen is tight.** A badge is small and uses small text, which suits a dense screen.
 
 ## When not to use a badge
 
@@ -25,7 +25,7 @@ A badge shows one read-only value about an object, such as a status or a count. 
 | The object has several values                                  | Chips. A badge holds one value.                                                                    |
 | The value is an error or a failure                             | An icon, or a treatment built for errors. See the rule on errors below.                            |
 | The text is long, or a phrase                                  | Plain text. A badge never holds a sentence.                                                        |
-| The text labels the page or the section                        | A heading. A badge describes an object, not a page, a section, or any other view.                  |
+| The text labels a page or a section                            | A heading. A badge describes an object, not a page, a section, or any other view.                  |
 | The text is the title of a region, a group, or a panel section | A heading. **Never a badge.** A badge gives a fact about an object. A badge never names an object. |
 
 **A user can never act on a badge.** No badge can be selected, and no badge can be dismissed. If the user must act on the value, use a chip.
@@ -37,15 +37,14 @@ A badge shows one read-only value about an object, such as a status or a count. 
 The rules below describe each option by role, such as "the problem style" or "the warning style". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
 - **One style for each intent.** An intent is the kind of meaning a style shows: positive, a warning, a problem, or neutral. The standard UI kit has four styles: `primary-color`, `warning`, `success`, and `alert`. In the standard UI kit, the problem style is `alert`, the warning style is `warning`, and the success style is `success`.
-- **Four intents in the standard UI kit.** The standard UI kit has no fifth intent. If the project adds a style in Theme Forge, use the project's style. Most projects have more statuses than styles. For example, an order process with Pending, Approved, Ordered, Shipped, Delivered, Blocked, and Canceled has seven statuses, and the standard UI kit has only four styles. So two different statuses share a style and look the same.
-- **No size variant and no content variant in the standard UI kit.** Only the design-system website shows a size variant and a content variant. If the project adds a size variant or a content variant in Theme Forge, use the project's variant. The mismatch between the website and the standard UI kit is not settled. Read the open questions before relying on a size variant or a content variant that the project does not list.
+- **Most projects have more statuses than styles.** For example, an order process with Pending, Approved, Ordered, Shipped, Delivered, Blocked, and Canceled has seven statuses, and the standard UI kit has four styles. So two different statuses share a style and look the same.
 - **Never give a badge a disabled state, an interactive state, or a hover effect**, even when the project lists one. A badge has no states, because a badge is not a control.
 
 ## Rules
 
 **The style must agree with the sentiment of the value**, meaning whether the value is good, bad, or neutral. A positive value never gets the negative style. The problem style means a problem, so an approved, complete, or successful value must never use the problem style. A badge in the wrong style contradicts the badge text, and users notice the color before users read the word. The open questions cover the exact mapping of statuses to intents, which is not decided. The settled rule is that the intent must never contradict the text.
 
-**Repeating a style is safe only because the badge text always shows the difference between statuses.** Map several statuses to one intent on purpose. Let the label name the status. Never use color to tell Ordered apart from Shipped. `recursica-skill-system-conventions` requires this rule. Do not invent a fifth intent. When the project lists no fifth style, no setting exists for a fifth intent, so making one means working around the component. A fifth color is not a missing token to report. The standard UI kit leaves out a fifth color on purpose. See `recursica-skill-design-router` on the styling escape hatch.
+**Repeating a style is safe only because the badge text always shows the difference between statuses.** Map several statuses to one intent on purpose. Let the badge text name the status. Never use color to tell Ordered apart from Shipped. `recursica-skill-system-conventions` requires this rule. Do not invent an intent that the project does not list. An intent the project does not list has no setting, so making a new intent means working around the component. A color for an unlisted intent is not a missing token to report. The standard UI kit keeps the number of styles small on purpose. See `recursica-skill-design-router` on style overrides.
 
 **Use one badge per object.** Two values side by side means the object has more than one value, and more than one value means chips.
 
@@ -101,7 +100,7 @@ A badge is text, not a control. For most components, the risk is that a user can
 
 - **The mapping of statuses to intents.** The principle is settled: the intent agrees with the sentiment of the value, and the problem style never shows a positive value. Which intent each status gets is not decided. With more statuses than intents, the mapping must be stated, not invented while building.
 - **What the warning style and the problem style are for**, given that a badge must not show an error. Until someone answers the question, use neither style.
-- **A size variant, with default and large, and a content variant, with message and counter.** Only the design-system website shows the two variants, and the standard UI kit has no token for either one. Unless the project lists the variant, do not assume either variant is available, and ask before relying on either variant.
+- **A size variant, with default and large, and a content variant, with message and counter.** Only the design-system website shows the two variants. If the project lists a size variant or a content variant, use the listed variant. Do not assume that a size variant or a content variant the project does not list is available, and ask before relying on that variant.
 - **A limit on counts.** Whether a large number is shortened, and how.
 - **An icon in a badge.** Whether a badge may show an icon beside the badge text.
 - **A count of zero.** Whether a count badge is hidden at zero, or shown.
