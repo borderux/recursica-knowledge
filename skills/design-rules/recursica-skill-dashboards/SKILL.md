@@ -9,172 +9,172 @@ metadata:
 
 # Dashboards
 
-These are the house rules for dashboards. They are opinions, and unusually strong ones: the team's position is that most dashboards in enterprise software are failures. Treat them as constraints.
+This skill holds the house rules for dashboards. The house rules are opinions, and unusually strong opinions. The team holds that most dashboards in enterprise software are failures. Treat each house rule as a constraint.
 
-These rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. Grids, gutters, breakpoints, type styles, elevation (the shadow that makes a surface look raised), and spacing all come from the system's layouts and tokens (named design values, such as colors or sizes, set by the design system). Do not change them. The decisions this skill covers are whether a dashboard is the right answer at all, what goes on it, and what the user does next.
+The house rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. Grids, gutters, breakpoints, type styles, elevation (the shadow that makes a surface look raised), and spacing all come from the design system's layouts and tokens (named design values, such as colors or sizes, set by the design system). Do not change the grids, gutters, breakpoints, type styles, elevation or spacing. This skill covers three decisions: whether a dashboard is the right answer at all, what goes on the dashboard, and what the user does next.
 
 ## Governing principles
 
-1. **A dashboard is for reading at a glance, not for doing work.** It is always laid out the same way. It shows the user what needs attention right now, then sends the user somewhere else to act.
-2. **Stability over novelty.** The data changes constantly; the layout must not. Every visit puts the same things in the same places, because a snapshot only works if the reader already knows where to look.
-3. **Take a position, or do not build one.** A dashboard is the team saying what matters. Showing data and leaving the user to work out what it means is the lazy answer, and it is what has made most modern dashboards worthless.
+1. **A dashboard is for reading at a glance, not for doing work.** A dashboard is always laid out the same way. A dashboard shows the user what needs attention right now, then sends the user away from the dashboard to act.
+2. **Choose stability over novelty.** The data changes constantly, and the layout must not change. Every visit puts the same content in the same places. A quick look at a dashboard works only when the reader already knows where to look.
+3. **Take a position, or do not build a dashboard.** A dashboard is the team's statement of what matters. Showing data and leaving the user to work out what the data means is the lazy answer. The lazy answer has made most modern dashboards worthless.
 
-## Is this a dashboard?
+## The workbench test
 
-**Apply the workbench test first.** Most requests for a dashboard are requests for something else:
+**Apply the workbench test first.** Most requests for a dashboard are requests for a different kind of screen.
 
-| What the user needs                                     | What to build                                  |
-| ------------------------------------------------------- | ---------------------------------------------- |
-| A glance at what needs attention, then a way out to act | **Dashboard**                                  |
-| Tools and data to do their work in one place            | **Workbench** — and do not call it a dashboard |
+| What the user needs                                     | What to build                                         |
+| ------------------------------------------------------- | ----------------------------------------------------- |
+| A glance at what needs attention, then a way out to act | **Dashboard**                                         |
+| Tools and data in one place, to do the user's work      | **Workbench**. Do not call the workbench a dashboard. |
 
-**If work happens there, it is a workbench.** Name it for the job it does — "Scorecard", "Queue", or whatever the job is. High-level charts sitting above a work area are fine, but that layout is not a dashboard.
+**A screen where the user does work is a workbench.** Name the workbench for the job the workbench does, such as "Scorecard" or "Queue". High-level charts above a work area are fine, but a work area with charts above the work area is not a dashboard.
 
-**Build a dashboard only for a large application.** If the product is small enough to take the user straight to the tools, do that instead. In an application with ten sections, the dashboard's job is to point to the one section that needs attention.
+**Build a dashboard only for a large application.** If the product is small enough to take the user straight to the tools, take the user straight to the tools instead. In an application with ten sections, the dashboard's job is to point to the one section that needs attention.
 
-**If the team cannot say what matters, do not build a dashboard.** Do not fall back on a table or a configurable canvas because nobody has an opinion. That fallback combines three failures and presents them as a feature. Do not clutter a screen to hide the fact that nobody knows.
+**If the team cannot say what matters, do not build a dashboard.** Do not fall back on a table or a configurable canvas because nobody has an opinion. A fallback table or canvas combines three failures, the same three as an empty dashboard, and presents the three failures as a feature. Do not clutter a screen to hide that nobody knows what matters.
 
-**A dashboard must not exist to make up for a badly organized application.** If it is being built so that users can finally find things, the real problem is the navigation and the information architecture (how the application's content is organized and labeled).
+**A dashboard must not exist to make up for a badly organized application.** If the reason for a dashboard is to let users finally find content in the application, the real problem is the navigation and the information architecture (how the application's content is organized and labeled).
 
-## What belongs on it
+## Dashboard content
 
-**Aim for one thing that needs attention, plus maybe two or three supporting items, each of which the user can act on.** "Inventory is running low — reorder these products," with a way to go do it. Not an inventory chart that the reader must interpret.
+**Aim for one item that needs attention, plus maybe two or three supporting items, each an item the user can act on.** For example, show "Inventory is running low — reorder these products," with a way to go and reorder the products. An inventory chart that the reader must interpret does not meet this aim.
 
-**MUST answer "what needs attention right now, and is everything okay."** That is the job.
+**A dashboard MUST answer "what needs attention right now, and is everything okay."** Answering that question is the dashboard's job.
 
-**Do not announce that everything is fine.** A dashboard shouting good news is noise.
+**Do not announce that nothing needs attention.** A dashboard that announces good news adds noise.
 
-**Status without a trend is close to useless.** A green light says nothing about whether the number is falling toward yellow. Where a value has a healthy range, show the threshold and which way the value is moving, so the reader can act before the state changes.
+**A status without a trend is close to useless.** A green status light says nothing about whether the number is falling toward yellow. Where a value has a healthy range, show the threshold and the direction the value is moving. The reader can then act before the status changes.
 
-**NEVER add an AI summary of the dashboard.** A widget that summarizes the screen admits that the screen failed to communicate. Fix the dashboard.
+**NEVER add an AI summary of the dashboard.** A widget that summarizes the dashboard shows that the dashboard failed to communicate. Fix the dashboard.
 
-**Do not rebuild the navigation out of cards.** If the application has navigation, let the navigation do that work.
+**Do not rebuild the navigation out of cards.** If the application has navigation, let the navigation take the user to each section.
 
-## How much
+## Amount of content
 
-**The ban on inner scrolling is not limited to dashboards — it applies to the whole application.** There is one scrollbar, sticky regions that stay in place, and no region the user must hover over to scroll. See `recursica-skill-screen-priority`.
+**The ban on inner scrolling applies to the whole application, not only to dashboards.** The application has one scrollbar, and sticky regions that stay in place. No region requires the user to hover over the region before the region scrolls. See `recursica-skill-screen-priority`.
 
-**Figures shown together must agree with each other.** Two counts side by side invite the reader to compare them, so a subset must clearly look like a subset. Picture a dashboard reporting three pending and eighteen overdue, where overdue is a subset of pending. That is not a labeling annoyance — it reports something impossible, and the reader stops trusting every number on the screen. Check the math between figures before shipping. Naming is owned by `recursica-skill-naming-terminology`, and the layout of a group of figures by `recursica-skill-screen-scaffolding`.
+**Numbers shown together must agree with each other.** Two counts side by side invite the reader to compare the two counts. A number that is a subset of another number must clearly look like a subset. For example, a dashboard reports three pending and eighteen overdue, where overdue is a subset of pending. The pair of counts is not a labeling annoyance. The pair of counts reports an impossible result, and the reader stops trusting every number on the screen. Check the math between the numbers before shipping. `recursica-skill-naming-terminology` owns naming. `recursica-skill-screen-scaffolding` owns the layout of a group of numbers.
 
-**Before putting any chart on a dashboard, confirm that the application has a charting library.** Recursica draws no charts. If none is declared, prompt the user to add one before designing the dashboard around charts that cannot be built yet. See `recursica-skill-data-visualization`.
+**Before putting any chart on a dashboard, confirm that the application has a charting library.** Recursica draws no charts. If the application declares no charting library, ask the user to add a charting library. Ask before designing the dashboard around charts that cannot be built yet. See `recursica-skill-data-visualization`.
 
-**At most four charts.** Beyond that, the reader is doing analysis, not glancing.
+**Put at most four charts on a dashboard.** With more than four charts, the reader is doing analysis, not glancing.
 
-**Four cards across the top is good; six to eight is the limit.** Order the page so the fastest things to read come first — a single number is read in a second, while a table takes real time to take in.
+**Four cards across the top of a dashboard is good. Six to eight cards is the limit.** Order the page so the content that is fastest to read comes first. A single number is read in a second. A table takes real time to take in.
 
-**Prefer a number to a chart.** If a percentage, count, or quantity carries the information, show the number and give it weight with a larger type size, instead of wrapping it in a chart. A chart that repeats a number sitting right next to it adds nothing.
+**Prefer a number to a chart.** When a percentage, a count or a quantity gives the information, show the number in a larger type size instead of in a chart. A chart that repeats a number right next to the chart adds nothing.
 
-**Fewer data points is better.** A dashboard is measured by how clear and actionable its few insights are, not by how much it shows.
+**Fewer data points are better.** Judge a dashboard by how clear and actionable the dashboard's few insights are, not by how much data the dashboard shows.
 
-**Never make the whole page out of cards.** Layouts made entirely of cards are chaotic, because a grid of equally weighted cards has no hierarchy — and a dashboard needs a clear order of importance. Use the system's layout structures, type hierarchy, and white space to build a fixed layout, and place cards inside it. A card is for repeating peer objects (objects of the same kind, such as rows in a list) — see `recursica-skill-card` and the group-with-space convention in `recursica-skill-system-conventions`.
+**Never make the whole page out of cards.** A layout made entirely of cards is chaotic. A grid of equally weighted cards has no hierarchy, and a dashboard needs a clear order of importance. Build a fixed layout from the design system's layout structures, type hierarchy and white space. Place cards inside the fixed layout. A card is for repeating peer objects (objects of the same kind, such as rows in a list). See `recursica-skill-card`, and the convention to group with space in `recursica-skill-system-conventions`.
 
-**No competing visualizations on screen at the same time.**
+**Do not show competing visualizations on the screen at the same time.**
 
 ## Structure
 
-**Order it from broad to detailed:** the summary at the top, more detail as the reader moves down.
+**Order the dashboard from broad to detailed.** Put the summary at the top, and show more detail as the reader moves down the page.
 
-**Everything below the fold (the part of the page visible only after scrolling) is optional.** The reader must never have to scroll to learn what is going on.
+**All content below the fold (the part of the page visible only after scrolling) is optional.** The reader must never have to scroll to learn what is going on.
 
-**Data tables probably do not belong on a dashboard** — a table is a drill-down (a click through to more detail). Where one cannot be avoided, show rollups: counts, percentages, and totals that the user can act on themselves, with a way to click through to the detail. Once the screen is showing a full table, it has stopped being a dashboard.
+**A data table probably does not belong on a dashboard.** A data table is a drill-down (a click through to more detail). Where a data table cannot be avoided, show rollups: counts, percentages and totals that the user can act on themselves, with a way to click through to the detail. A screen that shows a full table is no longer a dashboard.
 
 ## Interaction
 
-**One, or at most two, calls to action (CTAs — the buttons or links that prompt the user's next step) for the whole dashboard.** Everything else on the screen exists to support them.
+**Give the whole dashboard one call to action, or at most two.** A call to action (CTA) is a button or link that prompts the user's next step. Every other element on the dashboard exists to support the calls to action.
 
-**Aim for zero or one interactive element per card.**
+**Aim for zero or one element per card that the user can interact with.**
 
-**The interaction pattern is look, then click.** Once action buttons start appearing, the screen is doing too much.
+**The interaction pattern is look, then click.** When action buttons start to appear, the dashboard is doing too much.
 
-**NEVER put filtering, sorting, or view controls on a dashboard.** Doing work here is the most common way dashboards fail. The dashboard is a brief moment: a quick check, then out into the application.
+**NEVER put filtering, sorting, or view controls on a dashboard.** Doing work on the dashboard is the most common way dashboards fail. A visit to the dashboard is brief: a quick check, then out into the application.
 
-**Keep points of interaction to a minimum**, so the next step is obvious.
+**Keep the number of elements the user can interact with to a minimum**, so the next step is obvious.
 
-**It must load fast.** A dashboard that takes longer to load than it takes to go straight to the work has defeated its own purpose.
+**A dashboard must load fast.** A dashboard that takes longer to load than going straight to the work defeats the purpose of the dashboard.
 
 ## Stability and customization
 
-**MUST be stable across visits.** The same objects in the same places, every time. A snapshot can only be read quickly if the reader already knows the layout.
+**A dashboard MUST be stable across visits.** The same objects sit in the same places on every visit. A reader can read a snapshot quickly only when the reader already knows the layout.
 
-**NEVER let the dashboard rearrange its own content between visits.** Content chosen on the fly — widgets picked by AI, arrangements that change — must not be the main dashboard. Two forms are acceptable: a separate changing view that the user chooses to open, or one specific widget that behaves that way. The whole screen must not shift.
+**NEVER let a dashboard rearrange the dashboard's content between visits.** Content chosen on the fly, such as widgets picked by AI or arrangements that change, must not be the main dashboard. Content chosen on the fly is acceptable in two forms: a separate changing view that the user chooses to open, or one specific widget that changes. The whole screen must not shift.
 
-**Default: dashboards are not configurable.** Configurability is usually a technical answer to not having researched what the user needs. It also carries a real support cost — a customized dashboard makes data problems much harder to track down than a shared one.
+**By default, a dashboard is not configurable.** Configurability is usually a technical answer to not having researched what the user needs. A configurable dashboard also has a real support cost. Data problems are much harder to track down in a customized dashboard than in a shared dashboard.
 
-**Prefer a fixed dashboard for each persona** over letting users configure their own. Different personas seeing different fixed dashboards when they log in is correct.
+**Prefer a fixed dashboard for each persona over a dashboard each user configures.** Showing each persona a different fixed dashboard at login is correct.
 
-**Where customization is required anyway:**
+**Where customization is required anyway, follow two rules:**
 
-- The user's arrangement **is kept across sessions.** It is set once, not rearranged by the system.
-- **Do not advertise it.** Offer a settings or configuration entry point without drawing attention to it, and let people discover it or pass it along to colleagues. This is the unadvertised affordance convention — see `recursica-skill-system-conventions`, and `recursica-skill-discoverability` for why it works.
+- **Keep the user's arrangement across sessions.** The user sets the arrangement once, and the system does not rearrange the arrangement.
+- **Do not advertise customization.** Offer a settings or configuration entry point without drawing attention to the entry point. Let people discover the entry point, or pass the entry point along to colleagues. This approach is the unadvertised affordance convention in `recursica-skill-system-conventions`. See `recursica-skill-discoverability` for why the convention works.
 
 ## Empty and first-run states
 
-**NEVER ship an empty dashboard.** A new user does not know what the product can do, and has no basis for building their own view. An empty dashboard is the result of three failures: not knowing what matters, making it configurable to avoid deciding, and having no defaults to fill it with.
+**NEVER ship an empty dashboard.** A new user does not know what the product can do. A new user has no basis for building a personal view. An empty dashboard is the result of three failures: not knowing what matters, making the dashboard configurable to avoid deciding, and having no default content to fill the dashboard.
 
-**If there is nothing worth putting on it, there should be no dashboard.**
+**If no content is worth putting on a dashboard, there should be no dashboard.**
 
-**A first-run dashboard should include an onboarding element** that walks the user through their first tasks and explains what the product does. It must be dismissible, so the user stays in control of whether the guidance continues.
+**A first-run dashboard should include an onboarding element.** The onboarding element walks the user through the user's first tasks and explains what the product does. The onboarding element must be dismissible, so the user decides whether the guidance continues.
 
 ## Data freshness
 
-**Say how up to date the data is.** A dashboard refreshed every two days but presented as if it were live is worse than no dashboard.
+**Say how up to date the data is.** A dashboard refreshed every two days but presented as live is worse than no dashboard.
 
-**Where different components refresh on different schedules, say so for each component.** One widget updating every minute next to another rebuilt monthly, with nothing to show the difference, is a common and serious failure.
+**Where parts of the dashboard refresh on different schedules, say how up to date each part is.** For example, one widget updates every minute, and the widget next to the first widget is rebuilt monthly. Showing nothing to tell the two schedules apart is a common and serious failure.
 
-## Do not juxtapose unrelated data
+## Unrelated data side by side
 
-**Two charts side by side suggest a relationship.** Putting data on different scales, or data that does not relate, next to each other invites the reader to draw conclusions the data does not support. Placing things close together is a claim — only make it when it is true.
+**Two charts side by side suggest a relationship.** Data on different scales, or unrelated data, placed side by side invites the reader to draw conclusions the data does not support. Placing two elements close together claims that the two elements are related. Place two elements close together only when the claim is true.
 
 ## Layout constraints
 
-**MUST have a maximum width.** A dashboard stretched across a very large monitor cannot be used. Do not fill space only because it is available.
+**A dashboard MUST have a maximum width.** A dashboard stretched across a very large monitor cannot be used. Do not fill space only because the space is available.
 
-**NEVER use inner scrolling areas** — not in the dashboard, and not inside a card. The whole dashboard scrolls as one page. Ten cards, each with its own scrolling area, is clearly wrong.
+**NEVER use inner scrolling areas, in the dashboard or inside a card.** The whole dashboard scrolls as one page. Ten cards that each have a separate scrolling area are clearly wrong.
 
-**Use the design system's layouts and tokens** for grids, gutters, breakpoints, type styles, elevation, and spacing, and do not change them. Plenty of white space separates the groups.
+**Use the design system's layouts and tokens for grids, gutters, breakpoints, type styles, elevation, and spacing.** Do not change the layouts or the tokens. Plenty of white space separates the groups of content on the dashboard.
 
 ## Smaller viewports
 
-**Adapt; do not force one dashboard to stretch from phone to desktop.** Someone checking in on a phone is doing something different from someone working at a desk all day. Understand how the dashboard is used in each setting, decide what to remove, and treat the compact view as its own design.
+**Adapt the dashboard to smaller viewports. Do not force one dashboard to stretch from phone to desktop.** A person checking in on a phone has a different task than a person working at a desk all day. Learn how people use the dashboard in each setting. Decide which content to remove. Treat the compact view as a separate design.
 
 ## Open questions
 
-No house rule covers these yet. **Ask the person instead of choosing** — see the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule above to fit them.
+No house rule covers the following questions yet. **Ask the person instead of choosing.** See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit an open question.
 
-- **What fills the main position when everything is fine.** Announcing good news is forbidden, and no alternative has been set.
-- **Whether the limit of one or two CTAs still holds when several personas share one screen.**
-- **Where a dashboard sits in the navigation**, given that every location needs a route and a nav item.
-- **Loading behavior.** Fast is required, but whether the screen appears piece by piece or all at once has not been decided.
+- **The main position when nothing needs attention.** Announcing good news is forbidden, and no rule says what fills the main position instead.
+- **Calls to action for several personas.** No rule says whether the limit of one or two calls to action still holds when several personas share one screen.
+- **The dashboard's place in the navigation.** Every location in the application needs a route and a navigation item. No rule says where a dashboard sits in the navigation.
+- **Loading behavior.** A dashboard must load fast. No rule says whether the dashboard appears piece by piece or all at once.
 
 ## Out of scope
 
-- **The inside of a chart** — its type, variants, labels, and thresholds. Covered by `recursica-skill-data-visualization`.
-- **The anatomy of an individual card.** Covered by the card component skill.
-- **Grid column counts, gutters, widget shapes, and minimum sizes.** These come from the design system's layouts.
+- **The inside of a chart**, meaning the chart's type, variants, labels and thresholds. `recursica-skill-data-visualization` covers the inside of a chart.
+- **The anatomy of an individual card.** `recursica-skill-card` covers the anatomy of a card.
+- **Grid column counts, gutters, widget shapes, and minimum sizes.** The design system's layouts set the grid column counts, gutters, widget shapes and minimum sizes.
 - **Table structure.**
 
 ## Pre-flight checklist
 
-Before treating a dashboard as done, check:
+Check every item before treating a dashboard as done.
 
-- [ ] The screen passes the workbench test: if the user does their work on it, it is not called a dashboard.
+- [ ] The screen passes the workbench test. A screen where the user does work is not called a dashboard.
 - [ ] The application is large enough to justify having a dashboard at all.
-- [ ] The team can say what matters on this screen, and nothing on it is there to cover for not knowing what matters.
-- [ ] The screen answers "what needs attention right now", and does not announce that everything is fine.
-- [ ] Each status shows its threshold and its trend, not only its current state.
-- [ ] There are at most four charts. There are four cards across the top, and never more than eight.
-- [ ] Simple metrics are shown as numbers with larger type, not as charts that repeat them.
-- [ ] The layout is fixed and has a real hierarchy — it is not a wall of equally weighted cards.
-- [ ] Content runs from broad to detailed, and nothing essential sits below the fold.
-- [ ] There is no full data table; rollups with a way to click through take its place.
-- [ ] There are one or two calls to action in total, and zero or one interactive element per card.
-- [ ] There are no filtering, sorting, or view controls, and the navigation is not rebuilt out of cards.
-- [ ] There is no AI summary widget.
-- [ ] Every object sits in the same place on every visit; nothing rearranges itself.
-- [ ] It is not configurable by default. Where it is, the entry point is not advertised, and the user's arrangement is kept.
-- [ ] It is not empty on first run, and a dismissible onboarding element is present.
-- [ ] It says how up to date the data is, for each component where the refresh schedules differ.
+- [ ] The team can say what matters on the dashboard. No element on the dashboard is there to cover for not knowing what matters.
+- [ ] The dashboard answers "what needs attention right now", and does not announce that nothing needs attention.
+- [ ] Each status shows the status's threshold and trend, not only the current state.
+- [ ] The dashboard has at most four charts. The dashboard has four cards across the top, and never more than eight cards.
+- [ ] Simple metrics are shown as numbers in larger type, not as charts that repeat the numbers.
+- [ ] The layout is fixed and has a real hierarchy. The layout is not a grid made only of equally weighted cards.
+- [ ] Content runs from broad to detailed, and no essential content sits below the fold.
+- [ ] The dashboard has no full data table. Rollups with a way to click through to the detail replace the full table.
+- [ ] The dashboard has one or two calls to action in total, and each card has zero or one element the user can interact with.
+- [ ] The dashboard has no filtering, sorting, or view controls, and the navigation is not rebuilt out of cards.
+- [ ] The dashboard has no AI summary widget.
+- [ ] Every object sits in the same place on every visit. No content on the dashboard rearranges itself.
+- [ ] The dashboard is not configurable by default. Where the dashboard is configurable, the entry point is not advertised, and the user's arrangement is kept.
+- [ ] The dashboard is not empty on first run, and a dismissible onboarding element is present.
+- [ ] The dashboard says how up to date the data is, for each part of the dashboard where the refresh schedules differ.
 - [ ] No unrelated data, and no data on different scales, is placed side by side.
-- [ ] A maximum width is set, and there are no inner scrolling areas anywhere.
-- [ ] Smaller viewports get an adapted design, not a squeezed one.
-- [ ] Open questions were asked about, not decided: what fills the main position when everything is fine, CTAs for several personas, where it sits in the navigation, and loading behavior.
+- [ ] The dashboard has a maximum width, and the screen has no inner scrolling area of any kind.
+- [ ] Smaller viewports get an adapted design, not a squeezed version of the desktop design.
+- [ ] Open questions were asked about, not decided: the main position when nothing needs attention, calls to action for several personas, the dashboard's place in the navigation, and loading behavior.
