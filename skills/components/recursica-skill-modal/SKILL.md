@@ -36,11 +36,10 @@ A modal blocks the page until the user makes one decision or finishes one short 
 
 The rules below describe each part and option by role. The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-- **Parts.** The modal component provides a header, a content area, a footer, a divider that appears when the content scrolls, and a gap between the buttons in the footer.
+- **A modal has a header, a content area and a footer.** A scroll divider appears when the content scrolls. The modal also sets the gap between the buttons in the footer.
 - **Structure on the website.** Only the design-system website shows the modal's structure as a title, a content slot, a divider, and a footer.
-- **No variants in the standard UI kit.** The standard UI kit has no size, type, or severity variant on the modal, and every property of the modal is fixed. If the project adds a variant in Theme Forge, use the project's variant.
-- **No size variant in the standard UI kit.** The standard UI kit has no small, medium, large, or full-screen modal. If the project adds a size variant in Theme Forge, use the project's size variant. Otherwise, never set a size on a modal. Tokens set the minimum and maximum width and height of the modal. Content that does not fit inside the minimum and maximum width and height does not belong in a modal.
-- **No severity or destructive variant in the standard UI kit.** If the project adds a severity or destructive variant in Theme Forge, use the project's variant. Otherwise, a dangerous confirmation looks like any other modal, and the modal's text states the danger.
+- **Size.** If the project has a size variant, use the project's size variant. Otherwise, never set a size on a modal. Tokens set the minimum and maximum width and height of the modal. Content that does not fit inside the minimum and maximum width and height does not belong in a modal.
+- **Severity.** If the project has a severity or destructive variant, use the project's variant. Otherwise, a dangerous confirmation looks like any other modal, and the modal's text states the danger.
 
 ## Rules
 
@@ -48,7 +47,7 @@ The rules below describe each part and option by role. The names in the standard
 
 **In a confirmation, use the primary style for the primary action and the secondary style for cancel.** In the standard UI kit, the primary style is `solid`. Put both buttons at the bottom right of the modal. The label of the primary action says what will happen, as in "Delete project", never "Yes" or "OK".
 
-**The title states the decision, not the name of the component.** Write "Delete this project?", not "Confirm".
+**The title of a modal states the decision, not the name of the component.** Write "Delete this project?", not "Confirm".
 
 **Never open a modal from another modal.** A modal puts the user in a mode, and the user never enters a second mode inside the first mode. Stacked modals leave the user with no idea where in the task the user is, or what closing a modal will do. Two scrims must never darken the page at once.
 
@@ -72,8 +71,8 @@ Accessibility failures are more serious in a modal than in any other component. 
 - **The modal's title is the modal's accessible name** (the name a screen reader reads out for a control). Connect the title to the dialog. Do not leave the dialog without a name, and do not name the dialog "Dialog".
 - **Every element behind the modal must be inert**, so that no user can reach, read, or tab to the page behind the modal. A screen reader user who wanders into the page behind the modal has no way to know that the user has left the dialog.
 - **A screen reader must announce the content of the modal when the modal opens.** Moving focus inside the modal makes the screen reader announce the content. Do not rely on how the modal looks to show that an event happened.
-- **A destructive confirmation must say in words that the action is destructive.** Color and icons tell a screen reader nothing. `recursica-skill-system-conventions` requires a second channel (color, shape, position or text, each a separate signal). With no severity variant, the text is the only second channel.
-- **Give the close control a real name**, such as "Close", or better, the name of what the close control closes. An icon-only close button with no label is announced as nothing.
+- **A destructive confirmation must say in words that the action is destructive.** Color and icons tell a screen reader nothing. `recursica-skill-system-conventions` requires a second channel (color, shape, position or text, each a separate signal). When the project has no severity variant, the text is the only second channel.
+- **Give a close control a real name**, such as "Close", or better, the name of what the close control closes. An icon-only close button with no label is announced as nothing.
 
 ### Keyboard and non-mouse navigation
 
@@ -111,7 +110,7 @@ Accessibility failures are more serious in a modal than in any other component. 
 ## Open questions
 
 - **Whether clicking the overlay closes the modal.** No rule says either way.
-- **A loading state inside a modal**, while an action is still running. The standard UI kit has no loading state on the modal. Ask only when the project has no loading state.
+- **A loading state inside a modal**, while an action is still running. Ask only when the project has no loading state.
 - **Whether a modal that cannot be closed is ever allowed**, such as a forced acknowledgment with no cancel.
 - **Confirming inside a modal.** No rule says how to confirm a destructive action from inside a modal, given the ban on stacking modals.
 
