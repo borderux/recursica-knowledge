@@ -41,8 +41,8 @@ A transfer list is two lists of items side by side, with move buttons that move 
 The rules below describe each option by role, such as "the error state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
 - **An error state and a disabled state.** In the standard UI kit, the variant is `states`, with the options `error` and `disabled`.
-- **A transfer list has a header with a title, a filter, and two item lists.** A filter is a search field that narrows a list to the matching items. The transfer list already shows the header, the filter and both lists. The transfer list also sets the spacing between the title and the filter, between the filter and the items, and between the two lists. Do not build a separate search field or heading above the transfer list.
-- **A fixed height and width.** The transfer list sets the height and the width, and neither one is an option. Both lists are the same size, however many items each list holds.
+- **A transfer list has a header with a title, a filter, and two item lists.** A filter is a search field that narrows a list to the matching items. The transfer list already shows the header, the filter and both lists. Do not build a separate search field or heading above the transfer list.
+- **A fixed height and width.** The height and the width are fixed, and neither one is an option. Both lists are the same size, however many items each list holds.
 - **A move-all control is not wanted.** See the move-all rule under Rules.
 
 **Label placement is a variant.** A control's label sits beside the control or above the control. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the control is the house default. The label above the control is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`. The label placement variant does not arrange the two lists. The two lists always sit in two columns.
@@ -101,12 +101,7 @@ Transfer lists with arrow buttons often ship working only with a mouse. The app 
 
 ## Styling set by tokens
 
-**Do not set or override the transfer list properties below.** The transfer list sets each property.
-
-- `height`, `width`, `border-size`, `border-radius`.
-- `horizontal-padding`, `vertical-padding`, and every gap: `gap`, `title-filter-gap`, `filter-items-gap`.
-- `header-style` and all `colors`.
-- Field colors and sizes from `globals.form.field`, the gaps between the label and the field and `vertical-item-gap` from `globals.form.properties`, and the disabled look from `globals.states.disabled`.
+**Never set or override the transfer list's styling.** The theme sets every visual property of the transfer list, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the transfer list's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 ## Related skills
 
@@ -145,5 +140,5 @@ Transfer lists with arrow buttons often ship working only with a mouse. The app 
 - [ ] The tab order runs: label, filter, first list, move buttons, second list.
 - [ ] The transfer list is in the form's single column, and not inside a card.
 - [ ] Every variant, size, and state is one the project's UI kit lists, and no variant or option is invented. No header, filter, or wrapper is built by hand.
-- [ ] Sizes, padding, and gaps come from the transfer list component.
+- [ ] No styling is set or overridden on the transfer list, and no container or spacer is added to change the transfer list's look.
 - [ ] Open questions were asked about, not decided: item checkboxes, overflow, ordering.
