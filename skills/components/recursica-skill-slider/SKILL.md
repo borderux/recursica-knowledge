@@ -9,7 +9,7 @@ metadata:
 
 # Slider
 
-With a slider, the user picks a value from a range with fixed ends. The user moves a thumb (the handle the user drags) along a track (the bar the thumb moves along).
+A slider lets the user pick a value from a range with fixed ends. The user moves a thumb (the handle the user drags) along a track (the bar the thumb moves along).
 
 ## When to use a slider
 
@@ -38,12 +38,11 @@ With a slider, the user picks a value from a range with fixed ends. The user mov
 The rules below describe each option by role, such as "the error state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
 - **An error state, a disabled state, and an active state.** In the standard UI kit, the state variant is `states`, with the options `error`, `disabled`, and `active`.
-- **The active state marks the thumb while the user moves the thumb.** In the standard UI kit, only the slider has an active state. Do not build the active state. Do not use the active state to mean selected, enabled, or current.
+- **The active state marks the thumb while the user moves the thumb.** Do not build the active state. Do not use the active state to mean selected, enabled, or current.
 - **A number input for the exact value.** The slider component includes the number input, with the number input's size, text, border, and padding. The `input-` tokens under "Styling set by tokens" set the number input. Do not build a separate text field beside the track.
 - **Minimum and maximum labels.** The slider component includes a label for the minimum and a label for the maximum, `min-max-label` in the standard UI kit. Do not place separate text at the ends of the track.
 - **Step indicators** for a slider that moves in fixed steps. The `step-indicator-width` and `step-indicator-border-radius` tokens set the step indicators.
 - **A read-only value style for the number readout.** No rule says what the read-only value style means. See the open questions.
-- **No hover state, no size variant, no vertical orientation, no variant for smooth versus stepped, and no variant for a range with two thumbs in the standard UI kit.** Other design systems have all five. If the project adds one of the five in Theme Forge, use the project's variant or state.
 
 **Label placement is a variant.** The label sits beside the control or above the control. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the control is the house default. The label above the control is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
 
@@ -80,7 +79,7 @@ Neither situation conflicts with the one-save-mode rule in `recursica-skill-form
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
-The slider component provides the focus ring, the thumb, and the keyboard handling inside the track. The app must add the behavior in the two lists below. Sliders most often fail on the points in the two lists, because most builds support dragging and no other input.
+The slider component already includes the focus ring and the thumb, and already responds to the keyboard inside the track. The app must add the behavior in the two lists below. Sliders most often fail on the points in the two lists, because most builds support dragging and no other input.
 
 ### Screen readers
 
@@ -125,13 +124,13 @@ The slider component provides the focus ring, the thumb, and the keyboard handli
 
 ## Open questions
 
-- **Choosing a range with two thumbs.** Only the design-system website shows single selection and range selection. The standard UI kit defines no second thumb and no range variant. When the project has no range variant, never build a range with two thumbs from other parts, and ask before relying on a range with two thumbs.
-- **Smooth versus stepped, as documented types.** Only the design-system website shows a smooth type and a stepped type. The standard UI kit has step indicator properties but no type variant. No rule says what switches a slider between smooth and stepped. Do not rely on smooth and stepped types without asking. Ask only when the project has no type variant for smooth and stepped.
-- **A hover state.** Only the design-system website shows a hover state. The states in the standard UI kit are only `error`, `disabled`, and `active`. Do not rely on a hover state without asking. Ask only when the project has no hover state.
+- **Choosing a range with two thumbs.** Only the design-system website shows single selection and range selection. When the project has no range variant, never build a range with two thumbs from other parts, and ask before relying on a range with two thumbs.
+- **Smooth versus stepped, as documented types.** Only the design-system website shows a smooth type and a stepped type. The standard UI kit has step indicator properties, but no rule says what switches a slider between smooth and stepped. Do not rely on smooth and stepped types without asking. Ask only when the project has no type variant for smooth and stepped.
+- **A hover state.** Only the design-system website shows a hover state. Do not rely on a hover state without asking. Ask only when the project has no hover state.
 - **What `read-only-value` means.** The read-only value style could mark a number readout the user cannot edit beside a track the user can use. The style could also mark a read-only slider as a whole.
 - **Whether the number input is required or optional**, and whether the answer differs by device or by screen. The house guidance says "highly recommended", which is not a rule.
 - **Value labels other than the minimum and maximum**, including a label that moves with the thumb.
-- **Vertical orientation.** The standard UI kit has no variant for vertical orientation. Ask only when the project has no vertical orientation.
+- **Vertical orientation.** Ask about a vertical slider only when the project has no vertical orientation.
 
 ## Pre-flight checklist
 
