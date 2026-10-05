@@ -9,7 +9,7 @@ metadata:
 
 # Switch
 
-A switch turns one item on or off. The label names what the switch controls. The value of a switch is true or false.
+A switch turns one item on or off. Each switch has a label, which names what the switch controls. The value of a switch is true or false.
 
 ## When to use a switch
 
@@ -42,17 +42,13 @@ A switch turns one item on or off. The label names what the switch controls. The
 
 The rules below describe each option by role, such as "the selected state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-- **Three components make one switch field.** The switch group sets the layout and the spacing between the switch items. A switch item holds the label of one switch. The switch holds the track (the bar), the thumb (the handle that slides), and the selection state. In the standard UI kit, the three components are `switch-group`, `switch-item`, and `switch`. Each variant sits on a specific component on purpose. Use all three components together. Never place a bare `switch` beside a line of text instead.
+- **A switch field has three components:** a switch group, switch items and switches. A switch group sets the layout and the spacing between the switch items. A switch item holds the label of one switch. A switch holds the track (the bar), the thumb (the handle that slides), and the selection state. In the standard UI kit, the three components are `switch-group`, `switch-item`, and `switch`. Set each variant on the component that has the variant, never on another component. Use all three components together. Never place a bare `switch` beside a line of text instead.
 - **Two selection states on the switch.** A switch is selected or unselected. In the standard UI kit, the variant is `selection-states`, with the options `selected` and `unselected`.
-- **A disabled state on each switch item.** The disabled state belongs to the switch item, so one switch can be unavailable while the switches beside the disabled switch stay usable. In the standard UI kit, the variant is `states`, with the option `disabled`. The standard UI kit has no disabled state for the whole switch group. If the project adds one in Theme Forge, use the project's disabled state for the group. The component draws the disabled look.
+- **A disabled state on each switch item.** The disabled state belongs to the switch item, so one switch can be unavailable while the switches beside the disabled switch stay usable. In the standard UI kit, the variant is `states`, with the option `disabled`. The switch item already shows the disabled look (the style of a control the user cannot use right now).
 - **Disabled combined with a selection state.** Only the design-system website shows `Enabled Selected`, `Disabled Selected`, `Enabled Unselected`, and `Disabled Unselected`. Each one combines the switch item's disabled state, on or off, with the switch's selection state. The four names are not four selection states.
 - **Label placement on the switch group.** Label placement is one decision for the whole field, so the label placement variant belongs to the switch group, not to each switch item.
 - **An icon on the thumb.** The thumb can show an icon, and the switch has a token for the icon size. The icon is a second visual sign of the state, together with the thumb's position and the track's color.
-- **No size variant in the standard UI kit.** If the project adds a size variant in Theme Forge, use the project's size variant.
-- **No error state in the standard UI kit.** The standard UI kit has no error state for the switch group, the switch item, or the switch. If the project adds one in Theme Forge, use the project's error state.
-- **No required variant in the standard UI kit.** If the project adds a required variant in Theme Forge, use the project's required variant.
-- **No variant in the standard UI kit for which side of the label the switch sits on.** Only the design-system website shows one. If the project adds one in Theme Forge, use the project's variant. Otherwise, see the open questions.
-- **No pending, loading, or failure state in the standard UI kit.** If the project adds one in Theme Forge, use the project's state.
+- **Side of the label.** If the project has a variant for which side of the label the switch sits on, use the project's variant. Otherwise, see the open questions.
 - **Read-only is a separate component.** The read-only field, `read-only-field` in the standard UI kit, shows text instead of a control.
 
 **Label placement is a variant, the same variant every field has.** The group's label sits beside the switches or above the switches. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`.
@@ -71,7 +67,7 @@ The rules below describe each option by role, such as "the selected state". The 
 
 **Never mix instant saving with saving every field together on submit.** Either every change saves when the change happens, or every change saves on submit. The rule covers the whole system, not only one form.
 
-**Put the rule or the consequence of the switch in assistive text below the switch.** Use the assistive element. See `recursica-skill-assistive-element`. If turning the switch on or off has an effect the user cannot see on the screen, describe the effect in the assistive text.
+**Put the rule or the consequence of the switch in assistive text below the switch.** Build the assistive text with the assistive element, the component that shows help text and error text below a form field. See `recursica-skill-assistive-element`. If turning the switch on or off has an effect the user cannot see on the screen, describe the effect in the assistive text.
 
 **A switch may reveal more fields.** The revealed fields appear immediately, directly below the switch.
 
@@ -86,9 +82,9 @@ The rules below describe each option by role, such as "the selected state". The 
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
-The switch components pair each switch with the item label, make the on and off states available, and provide the focus ring. The app must provide every behavior in the two lists below. Apps get a switch wrong more often than most controls, because a switch shows the state only by the thumb's position and the track's color.
+The three switch components already connect each switch to the item label, make the on and off states available in code, and show the focus ring. The app must provide every behavior in the two lists below. Apps get a switch wrong more often than most controls, because a switch shows the state only by the thumb's position and the track's color.
 
 ### Screen readers
 
@@ -106,7 +102,7 @@ The switch components pair each switch with the item label, make the on and off 
 
 - **Space toggles a switch.** Users expect the Space key. Do not remap Space, do not require a drag, and do not block Space.
 - **A switch must never need a drag or a swipe.** The thumb slides only as a visual cue. The user operates the switch with a click or a key press.
-- **The component library handles the keys inside the switch.** Do not add custom key handlers, and do not rebuild the toggling.
+- **The switch already responds to key presses, such as Space, with no extra code.** Do not add custom key handlers, and do not rebuild the toggling.
 - **Each switch is a separate tab stop** (a place the Tab key lands). A group of switches is a group of tab stops. A radio group works the opposite way. Do not add roving focus (where the arrow keys move between items that share one tab stop) or arrow-key movement between switches. Do not repurpose Home and End.
 - **Clicking or tapping the item label toggles the switch.** A real label connected to the switch provides the toggling, and gives the user a bigger target.
 - **Do not move focus for the user.** Focus stays on the switch after the user turns the switch on or off, including when the switch reveals fields below. The user can then turn the switch straight back.
@@ -140,9 +136,9 @@ The switch components pair each switch with the item label, make the on and off 
 
 ## Open questions
 
-- **Which side of the label the switch sits on.** Only the design-system website shows a variant for the side, with the options `On Left` and `On Right`, and no token behind the variant. The standard UI kit defines no such variant on `switch`, `switch-item`, or `switch-group`. Do not build the variant, and do not rely on the website's options without asking. Ask only when the project has no variant for the side of the label.
-- **How a switch shows an error.** The standard UI kit gives `dropdown` and `autocomplete` an `error` state, and gives the switch none. Ask only when the project has no error state.
-- **What a switch does while the switch's change is still saving**, and what happens if the immediate save fails. The standard UI kit has no pending, loading, or failure state. Ask what the switch does during the save and after a failed save in every project. Ask which state to show only when the project has no pending, loading, or failure state.
+- **Which side of the label the switch sits on.** The design-system website shows a variant for the side, with the options `On Left` and `On Right`, and no token behind the variant. Do not build the variant, and do not rely on the website's options without asking. Ask only when the project has no variant for the side of the label.
+- **How a switch shows an error.** The standard UI kit gives `dropdown` and `autocomplete` an `error` state. Ask only when the project has no error state.
+- **What a switch does while the switch's change is still saving**, and what happens if the immediate save fails. Ask what the switch does during the save and after a failed save in every project. Ask which state to show only when the project has no pending, loading, or failure state.
 - **Whether a switch group may hold more than a few switches**, and whether the 7 ± 2 limit applies to switches at all. The 7 ± 2 limit is stated only for radio groups and checkbox groups.
 
 ## Pre-flight checklist
