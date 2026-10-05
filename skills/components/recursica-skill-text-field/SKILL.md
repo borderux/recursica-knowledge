@@ -123,7 +123,7 @@ The text field component connects the label to the input and provides the focus 
 
 - **Character or word counters.** No rule says whether the text field supports a character or word counter, or what happens when the user reaches the limit. Ask only when the project has no counter option.
 - **A clear or reset control inside the field.** No rule says whether the text field has a control that clears or resets the value. Ask only when the project has no clear or reset option.
-- **Password fields.** `recursica-skill-forms` forbids a toggle that shows the password. No rule says whether a password variant of the text field exists. Ask only when the project has no password variant.
+- **Password fields.** `recursica-skill-forms` allows a toggle that shows the password. No rule says whether a password variant of the text field exists. Ask only when the project has no password variant.
 
 ## Pre-flight checklist
 

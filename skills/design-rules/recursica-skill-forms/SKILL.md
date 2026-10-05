@@ -217,7 +217,7 @@ The design system provides accessible components. The following rules cover the 
 
 ## Password fields
 
-**MUST NOT include a toggle to show the password.** The show-password pattern is not wrong as a help to users, but the systems the house rules cover do not use the pattern. The rule has no exception.
+**A password field may include a toggle that shows the password.** The toggle cuts typing errors. The password shows only while the user has the toggle on. Give the toggle an accessible name (the name a screen reader reads out for a control) that says what the toggle does, such as "Show password".
 
 ## CAPTCHA
 
@@ -269,6 +269,6 @@ Check every item before treating a form as done:
 - [ ] Field-level mode shows a save status that stays on the page. Batch mode shows no status and no unsaved-changes indicator.
 - [ ] A submit button is present in either save mode.
 - [ ] Tab order matches the visual order.
-- [ ] The form has no toggle to show the password, and no challenge CAPTCHA.
+- [ ] Any toggle that shows the password has an accessible name, and the form has no challenge CAPTCHA.
 - [ ] The form has no confirmation dialog, unless the action cannot be undone and no way to recover exists.
 - [ ] Open questions were asked about, not decided: validation across steps, filter and search inputs, and error summaries.
