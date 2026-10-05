@@ -29,7 +29,7 @@ A toast reports what just happened, without interrupting the user's work.
 | A decision the user must make before continuing                                                | A modal. See `recursica-skill-modal`.                                                  |
 | Information the user will need to refer to later                                               | The page. A toast disappears.                                                          |
 | The save status that must stay on screen when each field saves separately                      | A status on the page that stays on screen. See `recursica-skill-forms`.                |
-| Progress while an action is still running                                                      | The loading look on the submit button, or a loader. See `recursica-skill-loader`.      |
+| Progress while an action is still running                                                      | The loading look on a submit button, or a loader. See `recursica-skill-loader`.        |
 
 **A toast reports an event that just happened, and that tense is the house test for a toast.** `recursica-skill-feedback-messaging` chooses between the channels (the forms a message takes: a toast, a banner or a modal) by tense. A finished event is a toast. A condition that has not happened yet is a banner. Check the tense of the message before choosing a channel.
 
@@ -41,11 +41,11 @@ A toast reports what just happened, without interrupting the user's work.
 
 The rules below describe each option by role, such as "the success style". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-- **Three styles in the standard UI kit.** The standard UI kit has a default style, a success style, and an error style, named `default`, `success`, and `error`. Only the design-system website calls the default style "Information". "Default" and "Information" are two names for one style.
-- **No warning style in the standard UI kit.** If the project adds a warning style in Theme Forge, use the project's warning style. Never use the error style as a warning. The error style says that a failure happened.
+- **Style.** In the standard UI kit, a toast has a default style, a success style, and an error style, named `default`, `success`, and `error`. Only the design-system website calls the default style "Information". "Default" and "Information" are two names for one style.
+- **Warning.** If the project has a warning style, use the warning style. Never use the error style as a warning. The error style says that a failure happened.
 - **The styles differ only in color and icon.** A style never shows the message without the text. The style only supports what the text says.
-- **An icon and text, and no other part, in the standard UI kit.** The standard UI kit has no style for an action button and no style for a close control, although only the design-system website shows both. The standard UI kit also sets no duration and no timer. If the project adds a style for an action button or a close control in Theme Forge, use the project's style. Check the open questions before building a timer, or an action button or a close control that the project does not define.
-- **No size variant and no position variant in the standard UI kit.** If the project adds a size variant or a position variant in Theme Forge, use the project's variant. The toast's minimum width, maximum width, and minimum height are fixed. The standard UI kit does not say where a toast appears on screen or how several toasts stack.
+- **Parts.** In the standard UI kit, a toast shows an icon and text. If the project has a style for an action button or a close control, use the project's style. Check the open questions before building a timer, or an action button or a close control that the project does not define.
+- **Size and position.** If the project has a size variant or a position variant, use the project's variant. A toast's minimum width, maximum width, and minimum height are fixed.
 
 ## Rules
 
@@ -73,13 +73,13 @@ The rules below describe each option by role, such as "the success style". The n
 
 **The code library also sets how long an undo stays available.** The design does not set how long an immediate undo lasts.
 
-**An undo must never exist only inside a toast, because the toast's duration cannot be made longer.** A keyboard user has to leave the field, tab to the toast, and press the undo before the code library's timer closes the toast. Put the undo in a part of the page that stays on screen, and have the toast point to that undo.
+**An undo must never exist only inside a toast, because the toast's duration cannot be made longer.** A keyboard user has to leave the current field, tab to the toast, and press the undo before the code library's timer closes the toast. Put the undo in a part of the page that stays on screen, and have the toast point to that undo.
 
 **Combine duplicate toasts.** Show a repeated message as one toast. Ten identical toasts stacked on screen report one problem ten times. See `recursica-skill-feedback-messaging`.
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
 **The toast is the riskiest component in the system.** A toast appears without the user asking. A toast disappears with no action from the user. A toast shows every message away from where the user is looking. A screen reader user never learns about a toast that is not announced. A toast that takes focus interrupts typing. A toast that closes by itself while holding an undo offers an action that no keyboard user can reach.
 
@@ -88,7 +88,7 @@ This component also follows the accessibility baseline in `recursica-skill-syste
 - **Announce the toast when the toast appears, without moving focus.** Use a live region (an area a screen reader announces automatically when its content changes) that is already in the page before the message is added. A live region created at the same moment as the message is often not announced at all.
 - **Announce an error toast right away, and let a success toast or a toast in the default style wait until the screen reader finishes speaking.** The urgent setting, `assertive`, interrupts what the screen reader is saying. Use `assertive` only for failures. Never let a confirmation interrupt what the user is reading or typing. Never leave a failure waiting in a queue. `recursica-skill-live-regions` owns this rule.
 - **Every toast is announced.** No toast appears silently. The announcement is the toast's text. Nothing else should repeat the toast's text.
-- **The screen reader does not announce the style.** The success style and the error style differ only in color and icon. The text must say which style the toast is, as in "Saved" versus "Could not save".
+- **A screen reader does not announce the style.** The success style and the error style differ only in color and icon. The text must say which style the toast is, as in "Saved" versus "Could not save".
 - **The toast's icon is decorative and must be silent.** The icon gives a screen reader user nothing useful. The icon must not be announced as an unlabeled graphic.
 - **Announcements from several toasts must not overlap.** Use one live region, with the messages lined up in order. Never use one live region per toast. Never let a second message cut off the first message in the middle of a sentence.
 - **Give an action in a toast a real accessible name (the name a screen reader reads out for a control) that includes the item the action affects**, as in "Undo delete of invoice 1043", not "Undo". By the time the user reaches the action, the context around the action is gone.
@@ -125,15 +125,15 @@ This component also follows the accessibility baseline in `recursica-skill-syste
 
 ### Only if used on the same screen
 
-- `recursica-skill-modal` — the modal blocks the page. Use a modal for a decision that cannot wait, and for the few cases that need a confirmation before the action.
+- `recursica-skill-modal` — a modal blocks the page. Use a modal for a decision that cannot wait, and for the few cases that need a confirmation before the action.
 
 ## Open questions
 
 - **Duration values.** The house rule on duration is settled, as the rules above state. No token records the default duration of any code library. Nobody can check a duration from this repository.
-- **How a toast's action button is styled.** The rules above allow one action. The standard UI kit has no token for the action button, only the `icon` and the `text`. Ask before styling the action button. Ask only when the project has no style for a toast's action button.
-- **Where toasts appear on screen.** The standard UI kit has no position variant. Only the design-system website shows toasts toward the bottom of the screen. Ask before relying on that placement. Ask only when the project has no position variant.
+- **How a toast's action button is styled.** The rules above allow one action. Ask before styling the action button. Ask only when the project has no style for a toast's action button.
+- **Where toasts appear on screen.** Only the design-system website shows toasts toward the bottom of the screen. Ask before relying on that placement. Ask only when the project has no position variant.
 - **Stacking.** No rule says how many toasts may be visible at once, in what order the toasts appear, or what happens when more toasts arrive than the limit allows.
-- **Warnings, and critical alerts.** The standard UI kit has no warning style. This system has no alert that stays on screen for serious problems yet. No component holds an alert the user must not miss. The planned banner component may cover part of this need. Until the banner ships, do not build a substitute, and do not name a component as though the component were available. Ask about a warning style only when the project has no warning style.
+- **Warnings, and critical alerts.** This system has no alert that stays on screen for serious problems yet. No component holds an alert the user must not miss. The planned banner component may cover part of this need. Until the banner ships, do not build a substitute, and do not name a component as though the component were available. Ask about a warning style only when the project has no warning style.
 - **Toasts for a background job.** Nobody has decided whether a toast is ever right for a background job that finishes long after the action that started the job.
 
 ## Pre-flight checklist
