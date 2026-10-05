@@ -11,13 +11,13 @@ metadata:
 
 This skill holds the house rules for charts in enterprise applications. The rules are opinions, not neutral best practices. Treat each rule as a constraint.
 
-The rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The Recursica components handle the color palette and the component styling. A chart design still needs five decisions: whether to show a chart at all, which chart to use, what the chart axes show, what gets a label, and what the user can interact with in the chart.
+The rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The Recursica theme sets the color palette and the styling of the Recursica components. A chart design still needs five decisions: whether to show a chart at all, which chart to use, what the chart axes show, what gets a label, and what the user can interact with in the chart.
 
 ## Charts from a charting library
 
 Read this section first.
 
-**No Recursica component draws a chart, and no chart component is planned.** Charts come from a third-party charting library. The first question for any screen that needs a chart is whether the application has a charting library at all. The question of how to build the chart comes later.
+**No Recursica component shows a chart, and no chart component is planned.** Charts come from a third-party charting library. The first question for any screen that needs a chart is whether the application has a charting library at all. The question of how to build the chart comes later.
 
 ### Steps before building a chart
 
@@ -31,9 +31,9 @@ Read this section first.
 Judge each charting library by how well the library fits the application, not by how popular the library is.
 
 - **Truly open source**, under a permissive license: MIT, Apache 2.0, or BSD.
-- **Built first for the project's framework.** The project's adapter (the Recursica component library for one framework, such as Mantine or Angular Material) sets the framework. Avoid an older library whose thin wrapper for the framework conflicts with how the framework draws the page.
+- **Built first for the project's framework.** The project's adapter (the Recursica component library for one framework, such as Mantine or Angular Material) sets the framework. Avoid an older library that connects to the framework through a wrapper (a thin layer of extra code) that conflicts with how the framework builds the page.
 - **Themeable from outside the library**, so Recursica tokens can set the series colors, the chart axes and the gridlines. A library that forces a built-in palette cannot meet the color rules below.
-- **No competing theme provider.** A library that brings separate theme settings and expects to control the color scheme is how a page ends up only half themed.
+- **No competing theme provider (code that sets a theme).** A library that brings separate theme settings and expects to control the color scheme is how a page ends up only half themed. A half-themed page follows the Recursica theme in some places and the library's theme in other places.
 - **Settings for each feature the rules in this skill require**: a zero baseline, linear scales, axis labels, and pattern or texture in addition to color. A library with decorative defaults, such as 3D effects, gradient fills and animated pie charts, will conflict with every rule below.
 - **Reasonable in size.** Enterprise data screens are dense, and people use the screens all day. Downloading a large library for one chart is a poor trade.
 - **Accessible output, or output that works alongside a data table.** The rule that requires a data table with each chart is not optional. The chart does not have to solve accessibility alone, because the data table comes with the chart. The chart still must not actively block accessibility.
@@ -137,7 +137,7 @@ Encoding is how the data becomes visual marks: position, length, color and patte
 
 **Hover aids are welcome**, such as a highlight on the hovered element, or a guide line that helps the reader find a value.
 
-**Highlight or isolate on interaction, not permanently.** Emphasis belongs to hovering, clicking or an isolate control, because emphasis is part of exploring the chart. A permanent visual difference adds clutter.
+**Highlight or isolate on interaction, not permanently.** Emphasis belongs to hovering, clicking or an isolate control (a control that singles out the selected data), because emphasis is part of exploring the chart. A permanent visual difference adds clutter.
 
 **Be careful about permanently emphasizing particular chart elements.** Random differences in lightness or color strength suggest a ranking that the data does not support. Permanent emphasis must have a stated reason.
 
@@ -192,7 +192,7 @@ Encoding is how the data becomes visual marks: position, length, color and patte
 
 - **A house-standard charting library, if any.** The selection criteria above are settled. The process is settled too: check for a declared charting library, and ask the user to add one if the project has none. No library has been chosen. Each project currently makes the choice.
 - **Connecting a chosen library's theme to Recursica tokens.** The requirement for Recursica tokens to set the chart's theme is clear. The method is not clear, and no adapter exists to connect a charting library to Recursica tokens.
-- **Category colors when the palette runs out.** In the standard UI kit (the unchanged UI kit in the official Recursica release), a badge has four colors, each with a meaning. Four colors cannot show five or more categories. In the build test, the shortage of colors forced a single, uniform fill. The rule against a single channel wanted a uniform fill anyway, but the build test got the uniform fill by accident, not by design.
+- **Category colors when the palette runs out.** In the build test, a badge in the standard UI kit (the unchanged UI kit in the official Recursica release) had four colors, each with a meaning. Four colors could not show five or more categories, and the shortage of colors forced a single, uniform fill. The rule against a single channel wanted a uniform fill anyway, but the build test got the uniform fill by accident, not by design.
 
 No house rule covers the topics below yet. **Ask the person instead of choosing.** See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule above to fit the topics below.
 
@@ -203,7 +203,7 @@ No house rule covers the topics below yet. **Ask the person instead of choosing.
 
 ## Out of scope
 
-- **Choosing the palette and styling components.** The Recursica components handle the palette and the component styling. The rules in this skill govern which channel shows the meaning, not which colors to use.
+- **Choosing the palette and styling components.** The Recursica theme sets the palette and the styling of the Recursica components. The rules in this skill govern which channel shows the meaning, not which colors to use.
 - **Dashboard layout**: what goes on a dashboard and how the dashboard is arranged. `recursica-skill-dashboards` covers dashboard layout.
 - **Data tables as the main content of a screen.** `recursica-skill-tables` covers data tables as main content. This skill only requires a data table with each chart.
 
