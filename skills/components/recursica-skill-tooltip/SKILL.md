@@ -39,10 +39,9 @@ A tooltip is a short text label for a control that has no visible label.
 The rules below describe each part and option by role. The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
 - **Parts.** A tooltip has a text area and a beak. The beak is the small pointer that connects the tooltip to the trigger (the element that shows the tooltip). Tokens (named design values, such as colors or sizes, set by the design system) set the size and the inset of the beak.
-- **No variants in the standard UI kit.** The standard UI kit has no placement, size, or content-type variant on the tooltip, and every property of the tooltip is fixed. If the project adds a variant in Theme Forge, use the project's variant.
-- **No placement variant in the standard UI kit.** The standard UI kit has no top, left, right, or bottom option, and no option to align the beak. Only the design-system website shows placement options and beak alignment options. See the open questions. If the project adds a placement variant in Theme Forge, use the project's placement variant. Otherwise, do not set a position on the tooltip. Do not position the beak by hand.
-- **No size variant in the standard UI kit.** Tokens fix the minimum width, the maximum width, and the minimum height of the tooltip. If the project adds a size variant in Theme Forge, use the project's size variant. Otherwise, content that does not fit inside the fixed width and height is not tooltip content.
-- **No custom-content variant in the standard UI kit.** In the standard UI kit, `text` is the only content property. If the project adds a custom-content variant in Theme Forge, use the project's variant. Otherwise, a tooltip holds text only.
+- **Placement.** If the project has a placement variant, use the placement variant. Otherwise, do not set a position on the tooltip. Do not position the beak by hand. Placement is an open question.
+- **Size.** Tokens fix the minimum width, the maximum width, and the minimum height of the tooltip. If the project has a size variant, use the size variant. Otherwise, content that does not fit inside the fixed width and height is not tooltip content.
+- **Content.** If the project has a custom-content variant, use the custom-content variant. Otherwise, a tooltip holds text only.
 
 **The tooltip and the hover card or popover are two different components with almost the same tokens.** The two components look almost the same, so never choose between the two by look. Choose by content:
 
@@ -73,13 +72,13 @@ Neither component may hold content the user needs to complete a task. Neither co
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
-Of all components, the tooltip is the one most often used in place of a missing accessible name. A tooltip cannot replace an accessible name. Make sure the tooltip has every behavior in the two lists below.
+The tooltip is the component most often used in place of a missing accessible name. A tooltip cannot replace an accessible name. Make sure the tooltip has every behavior in the two lists below.
 
 ### Screen readers
 
 - **Connect the tooltip to the tooltip's control**, so a screen reader announces the tooltip as the control's description. A separate element placed next to the control is announced as unrelated text, or not at all.
 - **A tooltip never stands in for the accessible name of a control with no label.** The control needs an accessible name of the control's own. An icon-only button gets both an accessible name and a tooltip. If the button has only one of the two, the button must have the accessible name, not the tooltip.
-- **The accessible name and the tooltip should say the same thing.** A user who speaks the tooltip text must be able to activate the control by voice.
+- **The accessible name should match the tooltip text.** A user who speaks the tooltip text must be able to activate the control by voice.
 - **Never put meaning in a tooltip that appears nowhere else.** A tooltip is a single channel (color, shape, position or text, each a separate signal). `recursica-skill-system-conventions` forbids showing any meaning the user must receive in only one channel.
 - **No content inside a tooltip is announced as a control**, because a tooltip contains no controls.
 - **Text that is cut off must be available in full in the code**, not only in the tooltip. A screen reader user does not see the text being cut off, and must not hear a cut-off value either.
@@ -118,12 +117,12 @@ The beak is part of the tooltip component. Do not draw a separate beak, and do n
 
 ## Open questions
 
-- **Placement.** Only the design-system website shows a position variant of top, left, right, and bottom, a beak alignment variant of start, middle, and end, and a position setting. The standard UI kit defines no placement variant at all. The standard UI kit defines only the size and the inset of the beak, as fixed properties. Do not rely on placement without asking. Ask only when the project has no placement variant.
-- **Custom content.** Only the design-system website shows the content types "text" and "custom". The standard UI kit has only `text`. Do not rely on custom content without asking. Ask only when the project has no custom-content variant.
+- **Placement.** Only the design-system website shows a position variant of top, left, right, and bottom, a beak alignment variant of start, middle, and end, and a position setting. Do not rely on placement without asking. Ask only when the project has no placement variant.
+- **Custom content.** Only the design-system website shows the content types "text" and "custom". Do not rely on custom content without asking. Ask only when the project has no custom-content variant.
 - **Show and hide delays.** No token or rule defines the delay before the tooltip shows, the delay before the tooltip hides, or any time after which the tooltip hides automatically.
 - **Touch behavior.** Hover does not exist on touch screens. No rule says how a touch-screen user reaches the content of a tooltip.
 - **Targets that cannot take focus.** No rule says whether a tooltip may attach to an element the user cannot interact with, such as a table cell with cut-off text or a chart label. A tooltip on an element that cannot take focus never appears for a keyboard user.
-- **The viewport edge.** No rule says what happens when a tooltip reaches the edge of the viewport. The standard UI kit has no placement variant to flip the tooltip to the other side.
+- **The viewport edge.** No rule says what happens when a tooltip reaches the edge of the viewport.
 
 ## Pre-flight checklist
 
