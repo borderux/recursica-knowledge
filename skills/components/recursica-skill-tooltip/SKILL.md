@@ -38,12 +38,12 @@ A tooltip is a short text label for a control that has no visible label.
 
 The rules below describe each part and option by role. The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-- **Parts.** A tooltip has a text area and a beak. The beak is the small pointer that connects the tooltip to the trigger (the element that shows the tooltip). Tokens (named design values, such as colors or sizes, set by the design system) set the size and the inset of the beak.
+- **Parts.** A tooltip has a text area and a beak. The beak is the small pointer that connects the tooltip to the trigger (the element that shows the tooltip).
 - **Placement.** If the project has a placement variant, use the placement variant. Otherwise, do not set a position on the tooltip. Do not position the beak by hand. Placement is an open question.
-- **Size.** Tokens fix the minimum width, the maximum width, and the minimum height of the tooltip. If the project has a size variant, use the size variant. Otherwise, content that does not fit inside the fixed width and height is not tooltip content.
+- **Size.** The theme limits how wide and how tall a tooltip can be. If the project has a size variant, use the size variant. Otherwise, content that does not fit inside the tooltip's size limits is not tooltip content.
 - **Content.** If the project has a custom-content variant, use the custom-content variant. Otherwise, a tooltip holds text only.
 
-**The tooltip and the hover card or popover are two different components with almost the same tokens.** The two components look almost the same, so never choose between the two by look. Choose by content:
+**The tooltip and the hover card or popover are two different components that look almost the same.** Never choose between the two by look. Choose by content:
 
 - **Tooltip.** A short text label for a control that has no visible label.
 - **Hover card or popover.** Richer content shown beside an element on the page. See `recursica-skill-hover-card-popover`.
@@ -96,12 +96,7 @@ The tooltip is the component most often used in place of a missing accessible na
 
 ## Styling set by tokens
 
-**Do not set or override the tooltip properties below.** The tooltip component sets each property.
-
-- `elevation`, `border-size`, `border-radius`, `colors`, `text`.
-- `vertical-padding`, `horizontal-padding`.
-- `min-width`, `max-width`, `min-height`.
-- `beak-size`, `beak-inset`.
+**Never set or override the tooltip's styling.** The theme sets every visual property of the tooltip, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the tooltip's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 The beak is part of the tooltip component. Do not draw a separate beak, and do not move the component's beak.
 
@@ -119,7 +114,7 @@ The beak is part of the tooltip component. Do not draw a separate beak, and do n
 
 - **Placement.** Only the design-system website shows a position variant of top, left, right, and bottom, a beak alignment variant of start, middle, and end, and a position setting. Do not rely on placement without asking. Ask only when the project has no placement variant.
 - **Custom content.** Only the design-system website shows the content types "text" and "custom". Do not rely on custom content without asking. Ask only when the project has no custom-content variant.
-- **Show and hide delays.** No token or rule defines the delay before the tooltip shows, the delay before the tooltip hides, or any time after which the tooltip hides automatically.
+- **Show and hide delays.** No token (a named design value, such as a color or a size, set by the design system) or rule defines the delay before the tooltip shows, the delay before the tooltip hides, or any time after which the tooltip hides automatically.
 - **Touch behavior.** Hover does not exist on touch screens. No rule says how a touch-screen user reaches the content of a tooltip.
 - **Targets that cannot take focus.** No rule says whether a tooltip may attach to an element the user cannot interact with, such as a table cell with cut-off text or a chart label. A tooltip on an element that cannot take focus never appears for a keyboard user.
 - **The viewport edge.** No rule says what happens when a tooltip reaches the edge of the viewport.
@@ -141,5 +136,5 @@ The beak is part of the tooltip component. Do not draw a separate beak, and do n
 - [ ] Escape closes the tooltip without moving focus, and focus never enters the tooltip.
 - [ ] The trigger can take focus, and the trigger's focus ring is not hidden.
 - [ ] Every variant and option on the tooltip is one the Recursica MCP server lists for the project. No placement, size, or content variant is set unless the project has one, and no variant or option is invented.
-- [ ] Padding, width, color, and beak styling come from the tooltip component.
+- [ ] No styling is set or overridden on the tooltip, and no container or spacer is added to change the tooltip's look.
 - [ ] Open questions were asked about, not decided: placement, custom content, show and hide delays, touch behavior, targets that cannot take focus, and the viewport edge.
