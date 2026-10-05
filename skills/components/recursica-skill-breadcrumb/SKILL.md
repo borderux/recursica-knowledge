@@ -36,7 +36,6 @@ A breadcrumb shows where the current page sits in the page hierarchy. A breadcru
 
 Do not pass a variant, a state or a content option that the MCP server does not list for the project.
 
-- **Properties.** A breadcrumb in the standard UI kit (the unchanged UI kit in the official Recursica release) has two properties: the padding and the gap between items.
 - **Separator.** A separator is the mark between items, such as a slash, a chevron or a dot. If the project has a separator, use the project's separator. Do not invent a separator. The separator is an open question.
 - **Long trails.** No rule says how a long trail collapses, truncates or overflows. However that rule is decided, a long trail never scrolls horizontally. `recursica-skill-navigation` forbids horizontal scrolling outright.
 - **Item styles and content variant.** Only the design-system website shows a clickable item and a read-only item for the current page. Only the website shows a content variant with four options: Label only, Icon + Label, Icon only, and Mixed. If the project has a content variant or item styles, use the project's version. The content variant is an open question.
@@ -91,13 +90,9 @@ A breadcrumb is a short line of links. Assistive technology recognizes a breadcr
 
 ## Styling set by tokens
 
-**Do not set or override the breadcrumb properties below.** The breadcrumb component sets each property.
+**Never set or override the breadcrumb's styling.** The theme sets every visual property of the breadcrumb, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the breadcrumb's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
-- `padding`.
-- `item-gap`, the gap between items.
-- Link text styling, colors and states, which come from the link component.
-- The look of the separator, wherever the look comes from.
-- The focus ring.
+The separator's look, wherever the separator comes from, and the focus ring are part of the breadcrumb's styling.
 
 ## Related skills
 
@@ -112,7 +107,7 @@ A breadcrumb is a short line of links. Assistive technology recognizes a breadcr
 
 ## Open questions
 
-- **The separator.** No one has decided the character, whether the separator is an icon, or the spacing around the separator. If the project has a separator, use the project's separator. Otherwise, ask.
+- **The separator.** No one has decided the character, or whether the separator is an icon. If the project has a separator, use the project's separator. Otherwise, ask.
 - **Long trails.** No one has decided whether a deep trail drops the middle levels, shortens the labels, or wraps. Horizontal scrolling is not an option.
 - **The content variant.** Only the design-system website shows a content variant with Label only, Icon + Label, Icon only and Mixed options. Only the website shows separate styles for read-only items and clickable items. If the project has the content variant or the item styles, use the project's version. Otherwise, do not rely on either one without asking.
 - **The depth at which a breadcrumb becomes required.** `recursica-skill-navigation` says "where depth warrants it", but gives no number. `recursica-skill-navigation` also lists the maximum nesting depth as uncovered.
@@ -136,5 +131,5 @@ A breadcrumb is a short line of links. Assistive technology recognizes a breadcr
 - [ ] No part of the trail depends on hover, and the modifier keys are not intercepted.
 - [ ] The trail does not scroll horizontally, wrap into a strip, or shrink to fit.
 - [ ] Every variant, state and content option is one the Recursica MCP server lists for the project, under the name the code uses, and no separator token is invented.
-- [ ] Styling comes from the breadcrumb component.
+- [ ] No styling is set or overridden on the breadcrumb.
 - [ ] Open questions were asked about, not decided: the separator, long trails, the content variant, the depth at which a breadcrumb becomes required, the start of the trail, and a level with no landing page.
