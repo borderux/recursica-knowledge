@@ -41,11 +41,10 @@ The rules below describe each part and option by role, such as "the selected sta
 
 **This skill covers two components: the timeline and the timeline bullet.** No separate bullet skill exists. The standard UI kit calls the two components `timeline` and `timeline-bullet`.
 
-- **The timeline** is the list of timeline items. A timeline item has three parts: a title, a description, and a timestamp. Each part has a separate text style, set by a token (a named design value, such as a color or a size, set by the design system). The timestamp is part of the timeline component. The timestamp format follows `recursica-skill-dates-and-currency`, and that format is required.
+- **The timeline** is the list of timeline items. A timeline item has three parts: a title, a description, and a timestamp. The timestamp is part of the timeline component. The timestamp format follows `recursica-skill-dates-and-currency`, and that format is required.
 - **The timeline bullet** is a mark beside a timeline item. A bullet has four types: a plain mark, an icon, an alternative icon, or an avatar. In the standard UI kit, the variant is `types`, with the options `default`, `icon`, `icon-alternative`, and `avatar`. Pages shown only on the design-system website also call the alternative icon bullet "theme icon". The two names mean the same bullet type, and no rule says when to use each name.
 - **Selected and unselected state.** The timeline has a selected state and an unselected state. In the standard UI kit, the variant is `selection-states`, with the options `active` and `inactive`. The two options are selection states, not statuses. Never use the selected state to mean "done".
 - **Connecting line.** Never use a connecting line to show progress. A timeline never shows progress, and a process in progress uses a stepper. See `recursica-skill-stepper`.
-- **Text width.** A token sets the maximum width of the text.
 
 ## Rules
 
@@ -61,7 +60,7 @@ The rules below describe each part and option by role, such as "the selected sta
 - **When the place of the event matters, show the time in the time zone where the event happened, with the time zone labeled.** Do not convert the time. Give the user a way to convert the time.
 - **Keep one timestamp format across the whole timeline.** All timeline items on the same side of the switchover point use the same format, relative or absolute.
 
-**The title names the event, and the description gives the detail.** Never put the timestamp in the title. The timestamp has a separate place in the timeline item and a separate text style.
+**The title names the event, and the description gives the detail.** Never put the timestamp in the title. The timestamp has a separate place in the timeline item.
 
 **The bullet is decoration.** An avatar bullet or an icon bullet can help show who or what an entry is about, but the title and the description must say who or what. `recursica-skill-system-conventions` forbids showing a meaning in only one channel (color, shape, position or text, each a separate signal). The bullet is the weakest channel in the timeline. See `recursica-skill-avatar` for the rules an avatar bullet must also follow.
 
@@ -106,13 +105,9 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 ## Styling set by tokens
 
-**Never set or override the timeline properties below.** The timeline component and the timeline bullet component set each property.
+**Never set or override the timeline's styling.** The theme sets every visual property of the timeline, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the timeline's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
-- `title-description-gap`, `description-timestamp-gap`, `bullet-content-gap`, `item-gap`.
-- `max-text-width`.
-- The text styles `title-text`, `description-text`, and `timestamp-text`.
-- The size, shape, and look of the bullet for each bullet type: `default`, `icon`, `icon-alternative`, and `avatar`.
-- All colors, including the look of the `active` and `inactive` states.
+The same applies to the timeline bullet. Never set or override the styling of the timeline bullet for any bullet type.
 
 ## Related skills
 
@@ -160,5 +155,5 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - [ ] The selected state is set in code, and never shown by color alone.
 - [ ] A timeline item that only shows information is not a tab stop. A timeline item the user can select is a real control with an accessible name, and holds no second click target.
 - [ ] Any control that loads more entries is reachable by keyboard, and does not move focus, lose focus, or change focus in any other way. The focus ring is not hidden.
-- [ ] Gaps, text width, text styles, bullet styles, and colors come from the timeline component.
+- [ ] No styling is set or overridden on the timeline or the timeline bullet, and no container or spacer is added to change the timeline's look.
 - [ ] Open questions were asked about, not decided: alignment, the connecting line, two-track or comparing timelines, what the selected state means, whether a timeline item may be selected, be a link, or have an action, the default sort direction, when and how to group a long history, the switchover point from relative time to an absolute date, whether the alternative icon bullet differs from the icon bullet, and the empty state.
