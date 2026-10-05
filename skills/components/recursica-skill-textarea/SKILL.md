@@ -27,7 +27,7 @@ For each case below, use the component the table names instead of adapting a tex
 | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | The text is short and fits on one line                | A text field. The size of the field tells the user how much to write. See `recursica-skill-text-field`.                                            |
 | The user picks the value from a known list of options | A dropdown, a radio group, or an autocomplete. See `recursica-skill-selection-controls`.                                                           |
-| The user must apply bold, italics, or lists           | A rich text editor. The UI kit has no rich text editor. See the open questions.                                                                    |
+| The user must apply bold, italics, or lists           | A rich text editor. See the open questions.                                                                                                        |
 | The value is a number, a date, or a time              | A number input, a date picker, or a time picker. See `recursica-skill-number-input`, `recursica-skill-date-picker`, `recursica-skill-time-picker`. |
 | Nobody can ever edit the value here                   | A read-only field, which shows the label and the text with no input. See `recursica-skill-read-only-field`.                                        |
 | The user only reads long text and writes nothing      | Body text on the page, not a field.                                                                                                                |
@@ -44,18 +44,14 @@ The rules below describe each option by role, such as "the label beside the fiel
 
 - **An error state and a disabled state.** In the standard UI kit, the two states are `error` and `disabled`.
 - **A fixed number of rows.** The textarea's tokens set the number of rows, and the component keeps that number fixed. Do not set the number of rows on any one textarea. Do not set a height. Do not set a row count to fit a particular answer. Do not wrap the textarea in a container to stretch the textarea. If the fixed height is wrong for a case, ask a person. See the open questions.
-- **No size variant and no width property in the standard UI kit.** If the project adds a size variant or a width property in Theme Forge, use the project's variant or property. Otherwise, the form's field-size tokens set the textarea's width.
-- **No icon property in the standard UI kit.** The standard UI kit gives the textarea no `icon-size` and no `icon-text-gap`, because the standard textarea has no icon inside the field. If the project adds an icon property in Theme Forge, use the project's property.
-- **No character counter in the standard UI kit.** No part of the standard UI kit shows a character count. If the project adds a character counter in Theme Forge, use the project's counter.
-- **No resize mode in the standard UI kit.** If the project adds a resize variant in Theme Forge, use the project's variant.
-- **No warning state in the standard UI kit.** If the project adds a warning state in Theme Forge, use the project's state.
-- **No read-only state.** A read-only value uses a separate component, the read-only field, which has the same label-placement variant and no input.
+- **Size and width.** If the project has a size variant or a width property, use the project's variant or property. Otherwise, the form's field-size tokens set the textarea's width.
+- **Read-only value.** A read-only value uses a separate component, the read-only field, not a read-only state on the textarea. The read-only field has the same label-placement variant and no input.
 
 **Label placement is a variant.** The label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
 
 **Set label placement explicitly on every field.** An adapter's default may put the label above the input at every container width, which breaks the house rule. Set the label beside the input on every field, using the names the code uses for the variant and the option.
 
-**Never build a focus state or a placeholder state.** The component draws the focus border and the placeholder text.
+**Never build a focus state or a placeholder state.** Every Recursica field already shows the focus border and the placeholder text.
 
 ## Rules
 
@@ -65,7 +61,7 @@ The rules below describe each option by role, such as "the label beside the fiel
 
 **Put the rules for the answer in the help text.** State what to include, any minimum and any maximum. The user then sees the rules before breaking one.
 
-**Never enforce a character limit the user cannot see.** If the field has a maximum, state the maximum before the user starts typing. The user must be able to tell how close the text is to the maximum. The standard UI kit has no character counter. If the project has no character counter and the design needs one, ask a person instead of building a counter.
+**Never enforce a character limit the user cannot see.** If the field has a maximum, state the maximum before the user starts typing. The user must be able to tell how close the text is to the maximum. If the project has a character counter, use the project's counter. If the project has no character counter and the design needs one, ask a person instead of building a counter.
 
 **Never cut off or delete the text the user typed.** Do not quietly drop characters past a limit. Do not clear the field when validation fails. The text belongs to the user.
 
@@ -86,7 +82,7 @@ The rules below describe each option by role, such as "the label beside the fiel
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
 The textarea component connects the label to the input and provides the focus ring. The app must add the behavior in the two lists below. The keyboard rules matter more for a textarea than for a single-line field, because Enter and Tab work differently inside a textarea.
 
@@ -95,7 +91,7 @@ The textarea component connects the label to the input and provides the focus ri
 - **Give the textarea a real label.** Never let the placeholder text be the accessible name (the name a screen reader reads out for a control). A screen reader does not announce placeholder text as a label, and the placeholder text disappears when the user types. A field with no label has no accessible name.
 - **State the limit, and what to write in the field, in the help text.** A visible character counter is not connected to the field, and a screen reader may never announce the counter. Put the maximum in words the user hears on reaching the field.
 - **Make a screen reader announce the field as multi-line.** The textarea must be a real multi-line control, not a single-line input styled to look tall. A screen reader then tells the user that line breaks are allowed.
-- **The app owns any icon placed inside the field.** The standard UI kit puts no icon inside the textarea. Give a clickable icon an accessible name. Hide a decorative icon from screen readers.
+- **The app owns any icon placed inside the field.** Give a clickable icon an accessible name. Hide a decorative icon from screen readers.
 - **A screen reader announces the error message.** The error message replaces the help text and is the only text a screen reader reads for the field. The error message must state the rule.
 - **Do not announce every keystroke.** A live count that updates on every character interrupts the screen reader at each key press. If a screen reader must announce progress toward a limit, announce the progress sparingly, and keep the limit in the help text.
 
@@ -139,10 +135,10 @@ The textarea component connects the label to the input and provides the focus ri
 
 ## Open questions
 
-- **Growing to fit the text.** The UI kit fixes `rows`. The design-system website shows a vertical-resize variant with the options `auto` and `custom`, but no token backs the variant. The UI kit and the website disagree. A person must decide whether the field grows with the text, and whether the field has a handle the user can drag. Do not rely on a resize variant without asking. Ask only when the project has no resize variant.
+- **Growing to fit the text.** The UI kit fixes `rows`. The design-system website shows a vertical-resize variant with the options `auto` and `custom`. The UI kit and the website disagree. A person must decide whether the field grows with the text, and whether the field has a handle the user can drag. Do not rely on a resize variant without asking. Ask only when the project has no resize variant.
 - **Text longer than the fixed number of rows.** A source outside the UI kit describes a "default fixed height before content truncation". No source says whether the extra text scrolls or is cut off. Cutting off the text a user typed would be a serious problem. Do not rely on either behavior without asking.
-- **The character counter.** The design-system website shows a character counter, but no token backs the counter, and the UI kit shows no counter. Nobody has settled where a count goes or what happens at the limit. `recursica-skill-assistive-element` has the same open question. Do not rely on a counter without asking. Ask only when the project has no character counter.
-- **A rich text editor.** No component in the UI kit makes formatted text. Do not build a rich text editor out of a textarea.
+- **The character counter.** The design-system website shows a character counter. Nobody has settled where a count goes or what happens at the limit. `recursica-skill-assistive-element` has the same open question. Do not rely on a counter without asking. Ask only when the project has no character counter.
+- **A rich text editor.** Ask only when the project has no rich text editor. Do not build a rich text editor out of a textarea.
 - **A minimum length.** No rule says whether a minimum length is a limit the component supports, or only a validation message.
 
 ## Pre-flight checklist
