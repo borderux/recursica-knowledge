@@ -38,11 +38,12 @@ The rules below describe each option by role, such as "the error state". The nam
 
 - **An error state and a disabled state.** The standard UI kit calls the state variant `states`, with the two options `error` and `disabled`.
 - **The placeholder is not a variant.** `placeholder-opacity` sets the placeholder.
-- **Never build a focus state.** The component draws the focus border.
-- **No size variant in the standard UI kit.** If the project adds a size variant in Theme Forge, use the project's variant. Otherwise, the autocomplete has a fixed height, the same height as every other single-line field.
-- **No multi-select variant in the standard UI kit.** The standard UI kit also has no chips or tokens that show the chosen values. If the project adds a multi-select variant or chips in Theme Forge, use the project's version. Otherwise, see the open questions.
-- **No loading state in the standard UI kit.** If the project adds a loading state in Theme Forge, use the project's state. Otherwise, see the open questions.
-- **The standard UI kit defines the closed field only.** The icon size and the gap between the icon and the text cover a leading icon and the trailing indicator. The filtered list, the option rows in the filtered list, and the content shown when no option matches are not in the autocomplete's inventory in the standard UI kit. If the project adds styles for the filtered list in Theme Forge, use the project's styles.
+- **Never build a focus state.** The autocomplete already shows the focus border.
+- **Size.** If the project has a size variant, use the project's size variant. Otherwise, the autocomplete has a fixed height, the same height as every other single-line field.
+- **Multi-select.** If the project has a multi-select variant, or chips that show the chosen values, use the project's version. Otherwise, see the open questions.
+- **Loading.** If the project has a loading state, use the project's loading state. Otherwise, see the open questions.
+- **Icons.** The icon size and the gap between the icon and the text apply to a leading icon and to a trailing indicator. A trailing indicator is the icon at the end of the field.
+- **Filtered list.** If the project has styles for the filtered list, use the project's styles.
 - **Read-only is a separate component.** The read-only field, `read-only-field` in the UI kit, shows text instead of an input.
 
 **Label placement is a variant.** The label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
@@ -56,7 +57,7 @@ The design-system website shows the autocomplete under the component's former na
 | `State`    | Default, Focused, Valued |
 | `Behavior` | Suggestions (optional)   |
 
-**The website's states are not UI kit variants and must not be set as variants.** The component sets `Focused` and `Valued` by itself, from what the user does. The website's states do show the parts of the autocomplete: a leading icon, and a clear control that appears once the field holds text. The website describes Suggestions as an optional extra, not the default.
+**The website's states are not UI kit variants and must not be set as variants.** The autocomplete shows the `Focused` and `Valued` looks automatically, in response to what the user does. The website's states do show the parts of the autocomplete: a leading icon, and a clear control that appears once the field holds text. The website describes Suggestions as an optional extra, not the default.
 
 ## Rules
 
@@ -85,9 +86,9 @@ The design-system website shows the autocomplete under the component's former na
 - **Disabled autocomplete.** A disabled autocomplete is still a field and still clearly an input, but the user cannot use the field right now. Use a disabled autocomplete when the user could make the field usable by taking a different action first.
 - **Read-only field.** A read-only field is a different component, with no input. Use a read-only field when the current user never changes the value here.
 
-**The clear control appears only when the field has a value.** Clearing empties the field and returns the filtered collection to unfiltered. Clearing never empties the text while a filter stays applied.
+**An autocomplete that filters a collection of items, instead of setting a form value, saves nothing.** An autocomplete that filters a collection of items does not use the form's save mode. See `recursica-skill-forms`.
 
-**An autocomplete that filters a collection, instead of setting a form value, saves nothing.** An autocomplete that filters a collection does not use the form's save mode. See `recursica-skill-forms`.
+**The clear control appears only when the field has a value.** Clearing empties the field and returns the filtered collection to unfiltered. Clearing never empties the text while a filter stays applied.
 
 **The placeholder names what the field searches**, as in "Search invoices". The placeholder tells the user which items the typed text narrows. The placeholder never replaces the label.
 
@@ -97,7 +98,7 @@ The design-system website shows the autocomplete under the component's former na
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
-The autocomplete component connects the label to the input and provides the focus ring. The autocomplete component also handles filtering the list and selecting an option. The app decides what a screen reader announces during filtering and selecting. Getting the announcements right is the hardest part of any control in the design system. The filtered list changes on every keystroke, and a screen reader user hears none of the changes unless the app announces the changes.
+The autocomplete already links the label to the input and shows the focus ring. The autocomplete also filters the list and selects the option the user picks. The app decides what a screen reader announces during filtering and selecting. Getting the announcements right is the hardest part of any control in the design system. The filtered list changes on every keystroke, and a screen reader user hears none of the changes unless the app announces the changes.
 
 ### Screen readers
 
@@ -106,7 +107,7 @@ The autocomplete component connects the label to the input and provides the focu
 - **The code must expose whether the filtered list is expanded or collapsed.** The user must hear that the results opened, and hear that the results closed.
 - **The app must announce the number of filtered results after each filter**, politely, without interrupting the typing: "8 results", then "2 results", then "no results". The result count is the requirement missed most often. A sighted user watches the list shrink, and a screen reader user gets no news of the change.
 - **Announce "no results" clearly.** A user cannot tell silence after typing apart from a broken field.
-- **The active option must be announced as the user moves through the list**, with the option's position in the list and whether the option is selected.
+- **The active option (the option the arrow keys point to) must be announced as the user moves through the list**, with the option's position in the list and whether the option is selected.
 - **Do not announce every keystroke.** Do not announce the list on every typed character when the count has not changed. Too many announcements make the field as unusable as silence does.
 - **The selected option must be marked in code, never shown by a highlight or a checkmark alone.** `recursica-skill-system-conventions` sets this rule.
 - **The chosen value must be readable in the field after the user selects the value**, and announced as the field's value. Never leave the chosen value only as text drawn on the screen.
@@ -120,7 +121,7 @@ The autocomplete component connects the label to the input and provides the focu
 - **The field is one tab stop, whether the list is open or closed.** Tab must never step through the results. While the list is open, Tab either closes the list or moves past the whole field.
 - **Arrow Down and Arrow Up move the active option.** Enter selects the active option. Escape closes the list without changing the value and returns focus to the input. Focus must never drop to the top of the page or to the `body` element.
 - **Home and End move the caret in the input.** Do not change Home and End to jump to the first or last result. The user is in a text field and expects Home and End to move the caret within the typed text.
-- **The autocomplete component handles the keys inside the field**, including which key opens the list, wrapping around at the ends of the list, and any inline completion. Do not attach custom key listeners, and do not rebuild the filtering or the movement through the list.
+- **The autocomplete responds to the keys inside the field automatically**, including which key opens the list, wrapping around at the ends of the list, and any inline completion (the field fills in the remaining letters of a matching option as the user types). Do not add custom code that listens for key presses, and do not rebuild the filtering or the movement through the list.
 - **Do not move focus into the list.** The input keeps focus and points to the active option. Moving real focus into the list stops the user from typing and from getting back to the input.
 - **Do not move focus for the user after a selection.** Do not jump focus to the next field because the field now has a value. Do not jump focus when the filter narrows the list to exactly one result.
 - **Every element and action a mouse can reach must also be reachable by keyboard.** Filtering, moving through results, and choosing an option must never depend on a pointer. Nothing the user needs may appear only on hover.
@@ -161,8 +162,8 @@ The autocomplete component connects the label to the input and provides the focu
 - **How many characters to type.** How many characters the user must type before results appear, and whether the full list of options shows when the field gets focus with no text typed.
 - **Match order.** How the field finds and orders matches: matching the start of the text versus any position in the text, fuzzy matching, and whether the option highlights the matched characters.
 - **No results.** What the field shows when no option matches the typed text, and whether the field offers a next step.
-- **Loading.** What the field shows while results are loading. The standard UI kit has no loading, pending, or failed-to-load state.
-- **Multi-select.** No variant in the standard UI kit supports multi-select, and the standard UI kit has no chips or tokens that show several chosen values.
+- **Loading.** What the field shows while results are loading. If the project has a loading, pending, or failed-to-load state, use that state. Otherwise, ask.
+- **Multi-select.** If the project has a multi-select variant, or chips that show the chosen values, use the project's version. Otherwise, ask.
 - **List details.** The height of each option row in the filtered list, hover and active styling, grouping, and the maximum height of the filtered list before the list scrolls.
 
 ## Pre-flight checklist
