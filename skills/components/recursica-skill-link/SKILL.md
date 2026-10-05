@@ -13,22 +13,22 @@ A link takes the user to a different location. A link never changes data.
 
 ## When to use a link
 
-- **The action changes the location.** The new location is another page, a section of the same page, an outside website, or a file to download.
+- **The link goes to a different location.** The new location is another page, a section of the same page, an outside website, or a file to download.
 - **The link sits inside a sentence**, as a link to a source, a definition, or a related object the text mentions.
 - **The link stands apart from any sentence**, as in a menu, a footer, or a "view all" link beside a heading.
 - **The user goes from a table row to a related object.** A link has less visual weight than a button, and a dense table needs less visual weight in each table row.
 
 ## When not to use a link
 
-| Situation                                                | Use instead                                                                                                                                               |
-| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The action changes data or state                         | A button. See `recursica-skill-button`.                                                                                                                   |
-| The action must have less visual weight                  | A button in the least prominent button style, such as `text` in the standard UI kit (the unchanged UI kit in the official Recursica release). Not a link. |
-| The control opens a modal on the same page               | A button. A modal is not a location.                                                                                                                      |
-| The destination is unavailable right now                 | Leave the link out, or explain in text why the destination is unavailable. Never disable the link.                                                        |
-| The user switches between parts of one whole on one page | Tabs. Tabs have separate routes. See `recursica-skill-tabs`.                                                                                              |
+| Situation                                                     | Use instead                                                                                                                                               |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A control changes data or state                               | A button. See `recursica-skill-button`.                                                                                                                   |
+| A control that changes data or state needs less visual weight | A button in the least prominent button style, such as `text` in the standard UI kit (the unchanged UI kit in the official Recursica release). Not a link. |
+| A control opens a modal on the same page                      | A button. A modal is not a location.                                                                                                                      |
+| A link's destination is unavailable right now                 | Leave the link out, or explain in text why the destination is unavailable. Never disable the link.                                                        |
+| The user switches between parts of one whole on one page      | Tabs. Tabs have separate routes. See `recursica-skill-tabs`.                                                                                              |
 
-**The misuse to watch for is a link that changes state.** Save, Delete, Close, and Apply are buttons, even when a link would look better.
+**A link that changes state is the misuse to watch for.** Save, Delete, Close, and Apply are buttons, even when a link would look better.
 
 ## Variants
 
@@ -36,13 +36,11 @@ A link takes the user to a different location. A link never changes data.
 
 The rules below describe each option by role. The names in the standard UI kit are examples only.
 
-- **A visited state.** In the standard UI kit, the only state variant is `visited`.
-- **No size variant in the standard UI kit.** If the project adds a size variant in Theme Forge, use the project's size variant.
-- **No style variant in the standard UI kit.** If the project adds a style variant in Theme Forge, use the project's style variant.
-- **No disabled state.** The standard UI kit has no disabled state for a link. Never disable a link, even when the project adds a disabled state in Theme Forge. The user can always go to a related object. See the rules below.
-- **The browser and the link component set every other part of the link's look and behavior.** In the standard UI kit, the link component sets the text style, the icon size, the gap between the icon and the label, and the colors.
-- **An icon may sit before or after the label.** Only the design-system website shows the two icon positions.
-- **Only the design-system website shows two link behaviors.** One link goes to a location within the product. The other is an external link, marked as leaving the product.
+- **A visited state.** The standard UI kit calls the visited state `visited`.
+- **Disabled state.** Never disable a link, even when the project adds a disabled state in Theme Forge. The user can always go to a related object. See the rules below.
+- **The browser and the link component set every other part of the link's look and behavior.** In the standard UI kit, the link component sets the text style, the icon size, the gap between an icon and the link's label, and the colors.
+- **An icon may sit before or after the link's label.** Only the design-system website shows the two icon positions.
+- **Two link behaviors appear only on the design-system website.** One link goes to a location within the product. The other is an external link, marked as leaving the product.
 
 ## Rules
 
@@ -64,7 +62,7 @@ The rules below describe each option by role. The names in the standard UI kit a
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
-The link component provides the underline, the color, and the focus ring. The app sets the markup. A link built from the wrong element fails every kind of assistive technology at once.
+Every Recursica link already shows the underline, the color, and the focus ring. The app's code writes the HTML markup for each link. A link built from the wrong HTML element fails every kind of assistive technology at once.
 
 ### Screen readers
 
@@ -103,7 +101,7 @@ The link component provides the underline, the color, and the focus ring. The ap
 
 - **The icon for an external link.** No rule says which icon marks an external link, or whether the icon is required or optional. `recursica-skill-icon-semantics` sets what icons mean, but names no icon for an external link.
 - **Download links.** No rule says whether a download link shows the file type and size, or where.
-- **A size or emphasis style for links.** The standard UI kit has no size variant and no emphasis style for links. No rule says whether a link may have either one. Ask about a size variant only when the project has no size variant. Ask about an emphasis style only when the project has no emphasis style.
+- **A size or emphasis style for links.** No rule says whether a link may have a size variant or an emphasis style. Ask about a size variant only when the project has no size variant. Ask about an emphasis style only when the project has no emphasis style.
 - **Links inside a paragraph in a table cell.** No rule covers a link in running text inside a dense table.
 
 ## Pre-flight checklist
