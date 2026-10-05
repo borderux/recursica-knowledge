@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-information-architecture
-description: House rules for an application's structure — which objects it is about and how they relate, the object map approved before building, which objects get a top-level navigation item, where a child object or one with several parents lives, sections that are not objects, and room to grow. Use when planning an app's sections or a multi-screen flow, or deciding where something belongs. Not for navigation patterns — see recursica-skill-navigation.
+description: House rules for an application's structure — objects and how objects relate, the object map approved before building, which objects get a top-level navigation item, where a child object or an object with several parents lives, sections that are not objects, and room to grow. Use when planning an app's sections or a multi-screen flow, or deciding where any part of an app belongs. Not for navigation patterns — see recursica-skill-navigation.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -9,118 +9,122 @@ metadata:
 
 # Information architecture
 
-These are the house rules for how an application is structured: which objects it is about, how they relate, and where each one can be reached. They are opinions, not neutral best practices — treat them as constraints.
+This skill holds the house rules for how an application is structured. The house rules say which objects the application is about, how the objects relate, and where the user can reach each object. The house rules are opinions, not neutral best practices. Treat each house rule as a constraint.
 
-These rules assume **complex enterprise web applications, designed for desktop first**, built for users who come back every day and already know their own field. This skill decides what exists and what can be reached from where. How any of it is shown on a screen belongs to other skills, named below.
+The house rules assume **complex enterprise web applications, designed for desktop first**, built for users who come back every day and know their own field. This skill decides what exists in the structure and what the user can reach from where. Other skills decide how the structure is shown on a screen. The section "Out of scope" names those skills.
 
 ## The three governing principles
 
-1. **Objects first, then screens.** An object is a kind of thing the user works with and would point at and name — an order, a customer, an invoice. Settle which objects the application is about, and how they relate, before deciding any screen. Every screen is a view of one object or of many, and the structure is only as sound as that list.
-2. **The user's objects, not the database's.** Objects and their groupings come from how the users' work is already arranged, which is their mental model (what a person expects from the tools and work they already know). That comes from three places: how the work is done outside software, the terms of the users' own field, and products they already use. **NEVER from the team's shorthand or how the database stores the data.** A table in the database is not an object because it exists, and one object can span several tables.
-3. **Decide what can be reached from where — not how it looks.** This skill says that an order's line items are reached from the order. Whether they appear in a tab, a section or a table on that page is decided by the skills that own those components.
+1. **Settle the objects first, then the screens.** An object is a kind of item the user works with and would point at and name, such as an order, a customer or an invoice. Settle which objects the application is about, and how the objects relate, before deciding any screen. Every screen is a view of one object or of many objects. A mistake in the list of objects becomes a mistake in the structure.
+2. **Use the user's objects, not the database's objects.** Take the objects and the groupings of objects from how the users' work is already arranged. That arrangement is the users' mental model (what a person expects from the tools and work they already know). The mental model comes from three places: how the work is done outside software, the terms of the users' own field, and products the users already use. **NEVER take the objects or the groupings from the team's shorthand or from how the database stores the data.** A database table is not an object merely because the table exists. One object can span several database tables.
+3. **Decide what the user can reach from where, not how the structure looks.** For example, this skill says that the user reaches an order's line items from the order. The skills that own tabs, page sections and tables decide whether the line items appear in a tab, a section or a table on the order's page.
 
 ## What counts as an object
 
-**An object has its own identity, its own properties, and more than one of it exists.** The test is whether a user would point at one and say "that one" — by its name, its number, or its title.
+**An object has its own identity and its own properties, and more than one instance of the object exists.** The test is whether a user would point at one instance and say "that one", by the instance's name, number or title.
 
-These are not objects, and must not be given a place of their own in the structure:
+Properties, filtered views and actions are not objects. A property, a filtered view or an action must not get a separate place in the structure.
 
-- **A property of an object.** A status, a date or an owner is a column on the object's table, not a section. See `recursica-skill-tables`.
-- **A filtered view of an object.** Overdue orders are orders. One object type is one table, filtered — never a second section. See `recursica-skill-tables`.
-- **An action.** Approving, exporting and importing are things done to an object. They are buttons, not places. See `recursica-skill-buttons-links`.
+- **A property of an object.** A status, a date or an owner is a column in the object's table, not a section. See `recursica-skill-tables`.
+- **A filtered view of an object.** Overdue orders are orders. Show one object type as one table with a filter, never as a second section. See `recursica-skill-tables`.
+- **An action.** Approving, exporting and importing are actions the user takes on an object. An action is a button, not a place in the structure. See `recursica-skill-buttons-links`.
 
-**Find the objects in the request and the interview** — the nouns the request keeps returning to, and the domain model from the interview. Where the users call an object something different from the request, the users' word wins; see `recursica-skill-naming-terminology`. Where it is unclear whether something is an object or a property of one, ask.
+**Find the objects in the request and the interview.** Look for the nouns the request keeps returning to, and for the domain model from the interview. When the users call an object by a different word than the request uses, the users' word wins. See `recursica-skill-naming-terminology`. When a concept might be an object or might be a property of an object, ask.
 
-**Whether a screen shows one object or many decides what the screen is.** Many of one object type is a list, and a list is a table by default — see `recursica-skill-tables`. One object is its detail view. Where that detail opens — a page of its own or a panel beside the list — is decided by the context test in `recursica-skill-panels-modals`.
+**The number of objects on a screen, one or many, decides what the screen is.** A screen that shows many objects of one type is a list. A list is a table by default. See `recursica-skill-tables`. A screen that shows one object is the object's detail view. The context test in `recursica-skill-panels-modals` decides where a detail view opens: on a separate page, or in a panel beside the list.
 
-## The object map, agreed before any code
+## The object map
 
-**Before anything is built, write an object map and get it approved with the rest of the brief.** A structure nobody agreed gets argued again on every screen, and a structure that changes after screens exist changes every one of them.
+**Before any screen or code is built, write an object map. Get the object map approved as part of the brief for the work.** When nobody agreed on the structure, the team argues about the structure again on every screen. When the structure changes after screens exist, every screen has to change.
 
-The object map says, for each object:
+For each object, the object map names:
 
-- **what it relates to** — its parent, its children, and any object it belongs to more than one of
-- **where it lives** — a top-level navigation item, or under which parent or parents
-- **where its list and its detail are reached** — each is a location, so each has a route (see `recursica-skill-navigation`)
+- **the objects the object relates to**: the object's parent, the object's children, and any object the object belongs to more than one of
+- **the place the object lives**: a top-level navigation item, or under which parent or parents
+- **the places the user reaches the object's list and the object's detail view**
 
-It also lists **the sections that are not objects** and where each came from — see below.
+The object's list is a location, and the object's detail view is a location. Every location has a route. See `recursica-skill-navigation`.
 
-A short table is enough:
+The object map also lists **every section that is not an object**, and where each section came from. See "Sections that are not objects" below.
 
-| Object    | Relates to                       | Lives                           | Reached at                                             |
-| --------- | -------------------------------- | ------------------------------- | ------------------------------------------------------ |
-| Customer  | has orders                       | top level                       | list; detail                                           |
-| Order     | belongs to a customer; has items | top level                       | list; detail                                           |
-| Line item | belongs to one order             | under Order                     | from its order's detail                                |
-| Document  | belongs to orders and customers  | under Order, and under Customer | from each parent's detail; one detail route of its own |
+A short table is enough for the object map:
 
-**The map is what the built application is checked against.** Every object on it is reachable where the map says, and nothing reachable is missing from it.
+| Object    | Relates to                       | Lives                           | Reached at                                                   |
+| --------- | -------------------------------- | ------------------------------- | ------------------------------------------------------------ |
+| Customer  | has orders                       | top level                       | list; detail                                                 |
+| Order     | belongs to a customer; has items | top level                       | list; detail                                                 |
+| Line item | belongs to one order             | under Order                     | from the order's detail                                      |
+| Document  | belongs to orders and customers  | under Order, and under Customer | from each parent's detail; one detail route for the document |
 
-## Which objects get a top-level navigation item
+**Check the built application against the object map.** Every object on the object map is reachable where the object map says. Nothing the user can reach is missing from the object map.
 
-**Only an object people look for on its own, across every parent it belongs to.** The test: would anyone ask for a list of all of them, whatever they belong to? "Show me all customers" — yes, so Customer is top level.
+## Top-level navigation items
 
-**An object that only makes sense inside another lives under that parent, and never gets a top-level item.** Nobody asks for every line item across every order; they ask for this order's line items. A top-level Line items section would be a list nobody uses, and it would take a navigation item away from a section people do use.
+**Give a top-level navigation item only to an object that people look for by itself, across every parent the object belongs to.** The test is whether anyone would ask for a list of every instance of the object, no matter which parent each instance belongs to. A user would ask "Show me all customers". Customer is therefore top level.
 
-**When a child object starts being looked for on its own, it becomes top level.** That is a change to the map, and it is agreed the same way the map was.
+**An object that only makes sense inside another object lives under that parent object, and never gets a top-level navigation item.** Nobody asks for every line item across every order. A user asks for the line items of one order. A top-level Line items section would be a list nobody uses. The Line items section would also take a navigation item away from a section that people do use.
 
-How the top-level items are arranged, how many there may be and how deep they may nest are owned by `recursica-skill-navigation`. What each is called is owned by `recursica-skill-naming-terminology`.
+**When people start to look for a child object by itself, the child object becomes top level.** Moving the child object to the top level is a change to the object map. Agree on the change the same way the object map was agreed.
+
+`recursica-skill-navigation` decides how the top-level navigation items are arranged, how many top-level items there may be, and how deep the items may nest. `recursica-skill-naming-terminology` decides the name of each item.
 
 ## An object with several parents
 
-**It is reachable from every parent it belongs to, and it is the same object everywhere.** A document attached to three orders appears under each of them, and each one leads to the same document.
+**An object with several parents is reachable from every parent the object belongs to, and is the same object under every parent.** A document attached to three orders appears under each of the three orders. Each of the three orders leads to the same document.
 
-**It has one detail route of its own**, not one per parent. No parent owns it, and a change made from any of them shows under all of them. **NEVER copy it into each parent** — two copies of one object disagree the first time one is edited, and the user cannot tell which is true.
+**An object with several parents has one detail route of its own**, not one route per parent. No parent owns the object. A change made from any parent shows under every parent. **NEVER copy the object into each parent.** Two copies of one object disagree the first time someone edits one copy, and the user cannot tell which copy is true.
 
-It still gets no top-level item unless people look for it on its own. Belonging to several parents is not the same as being looked for.
+An object with several parents still gets no top-level navigation item unless people look for the object by itself. Belonging to several parents is not the same as people looking for the object by itself.
 
 ## Sections that are not objects
 
-**These follow the request.** An approvals queue, reports, settings — where the product owner describes the work that way, it is a section. Record each one in the object map with where it came from.
+Some sections are not objects, such as an approvals queue, reports or settings.
 
-**Where the request says nothing, ask.** Do not invent a task section to organize the work, and do not force work the request describes as a task into an object's list.
+**A section that is not an object follows the request.** When the product owner describes the work as an approvals queue, reports, settings or a similar section, the work is a section. Record each section that is not an object in the object map, with where the section came from.
 
-A section like this is still named with a noun — `Approvals`, never `Approve requests`. See `recursica-skill-naming-terminology`.
+**When the request says nothing about a section, ask.** Do not invent a task section to organize the work. Do not force work that the request describes as a task into an object's list.
 
-## Room to grow
+Name a section that is not an object with a noun, as in `Approvals`, never `Approve requests`. See `recursica-skill-naming-terminology`.
 
-**Every group must have an obvious home for what will be added later.** A structure that only fits today's content is a defect, not something to revisit later. The revisit does not happen, and new additions get filed wherever there is room.
+## Future additions
 
-**Test it before the map is agreed.** Ask the product owner what is likely to be added next, and check that the map says where it would go without moving anything that is already there.
+**Every group in the structure must have an obvious place for content added later.** A structure that fits only today's content is a defect, not an item to revisit later. The revisit does not happen, and new additions get filed wherever the structure has room.
+
+**Test the structure for future additions before the object map is agreed.** Ask the product owner what is likely to be added next. Check that the object map says where each addition would go, without moving any part of the structure that is already there.
 
 ## Set by the theme or the component
 
-- **Which sections that are not objects exist.** The product owner's, through the request.
-- **What any object or section is called.** The users' words — `recursica-skill-naming-terminology`.
+- **The sections that are not objects.** The product owner decides which sections exist, through the request.
+- **The name of each object and section.** The users' words decide the names. See `recursica-skill-naming-terminology`.
 
 ## Out of scope
 
-- **How related objects appear on a detail page** — tabs, sections or tables. See `recursica-skill-tabs`, `recursica-skill-screen-scaffolding` and `recursica-skill-tables`.
-- **Whether a detail view is a page or a panel** — `recursica-skill-panels-modals`.
-- **The navigation pattern, item counts, nesting depth, overflow, breadcrumbs and routing** — `recursica-skill-navigation`.
-- **Page composition and what ranks highest on a screen** — `recursica-skill-screen-scaffolding` and `recursica-skill-screen-priority`.
-- **Search, filters and sorting within a list** — `recursica-skill-filters` and `recursica-skill-tables`.
-- **Designing the database.** The object map describes what the user works with. How it is stored is not a UI concern.
+- **The display of related objects on a detail page**, as tabs, sections or tables. See `recursica-skill-tabs`, `recursica-skill-screen-scaffolding` and `recursica-skill-tables`.
+- **The choice between a page and a panel for a detail view.** See `recursica-skill-panels-modals`.
+- **The navigation pattern, item counts, nesting depth, overflow, breadcrumbs and routing.** See `recursica-skill-navigation`.
+- **Page composition and the content that ranks highest on a screen.** See `recursica-skill-screen-scaffolding` and `recursica-skill-screen-priority`.
+- **Search, filters and sorting within a list.** See `recursica-skill-filters` and `recursica-skill-tables`.
+- **Database design.** The object map describes the objects the user works with. How the database stores the objects is not a UI concern.
 
 ## Open questions
 
-- **How a parent's related objects appear on its detail page.** No skill decides between tabs, sections and links for this yet.
-- **The order of items within a level** — by how often they are used, alphabetically, or in workflow order. Also an open question in `recursica-skill-navigation`.
-- **An object that exists only once per account** — the organization's own profile, for example. Whether it is top level, a setting, or somewhere else.
-- **How deep objects may nest** — an order's line items' adjustments — before the deepest one needs a place of its own.
-- **Whether the structure may differ by persona.** `recursica-skill-naming-terminology` covers different words for different personas; nothing covers different structures.
-- **What happens to routes when the map changes after launch** — whether old routes redirect, and what happens to a section that is removed.
+- **How a parent's related objects appear on the parent's detail page.** No skill decides yet between tabs, sections and links for the related objects.
+- **The order of items within a level.** The order could follow how often people use each item, the alphabet, or the workflow. The order of items is also an open question in `recursica-skill-navigation`.
+- **An object that exists only once per account**, such as the organization's own profile. No rule says whether such an object is top level, a setting, or in another place.
+- **How deep objects may nest**, as in the adjustments on an order's line items, before the deepest object needs a separate place.
+- **Whether the structure may differ by persona.** `recursica-skill-naming-terminology` covers different words for different personas. No skill covers different structures for different personas.
+- **What happens to routes when the object map changes after launch.** No rule says whether old routes redirect, or what happens to a section that is removed.
 
 ## Pre-flight checklist
 
-- [ ] An object map was written and approved with the brief, before any code.
-- [ ] Every object on the map has its own identity and more than one instance. No property, filtered view or action is on it as an object.
-- [ ] The objects and groupings come from the users' work — their field's terms, how the work is done outside software, products they already use — and not from the database or the team's shorthand.
-- [ ] Every object is reachable where the map says, and nothing reachable is missing from the map.
-- [ ] Only objects people look for on their own, across all their parents, have a top-level navigation item.
-- [ ] No object that only makes sense inside another has a top-level item. It is reached from its parent.
-- [ ] An object with several parents is reachable from each of them, has one detail route of its own, and is never copied per parent.
-- [ ] Every section that is not an object came from the request, and the map says so. None was invented.
-- [ ] The map says where the next likely addition would go, without moving anything already there.
-- [ ] Nothing in this skill decided how anything looks — tabs, sections, page or panel were left to their own skills.
-- [ ] Open questions were asked about, not decided: how a parent's related objects appear on its detail page, the order of items within a level, an object that exists only once per account, how deep objects may nest, whether the structure may differ by persona, and what happens to routes when the map changes.
+- [ ] An object map was written and approved with the brief, before any code was written.
+- [ ] Every object on the object map has its own identity and more than one instance. No property, filtered view or action is on the object map as an object.
+- [ ] The objects and groupings come from the users' work: the terms of the users' field, how the work is done outside software, and products the users already use. The objects and groupings do not come from the database or the team's shorthand.
+- [ ] Every object is reachable where the object map says, and nothing the user can reach is missing from the object map.
+- [ ] Only an object that people look for by itself, across all of the object's parents, has a top-level navigation item.
+- [ ] No object that only makes sense inside another object has a top-level navigation item. The user reaches each such object from the object's parent.
+- [ ] An object with several parents is reachable from each parent, has one detail route of its own, and is never copied into each parent.
+- [ ] Every section that is not an object came from the request, and the object map records where the section came from. No section that is not an object was invented.
+- [ ] The object map says where the next likely addition would go, without moving any part of the structure that is already there.
+- [ ] No decision made with this skill set how any part of the application looks. The choice of tabs, sections, page or panel was left to the skills that own each choice.
+- [ ] Open questions were asked about, not decided: how a parent's related objects appear on the parent's detail page, the order of items within a level, an object that exists only once per account, how deep objects may nest, whether the structure may differ by persona, and what happens to routes when the object map changes.
