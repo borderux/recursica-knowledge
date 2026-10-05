@@ -38,7 +38,7 @@ A checkbox turns one specific value on or off. A checkbox group lets the user se
 
 The rules below describe each option by role, such as "the checked state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-- **A checkbox field has three components:** the checkbox, the checkbox item and the checkbox group. A checkbox is the box, and holds whether the box is selected. A checkbox item holds the label of one option and pairs the label with a box. A checkbox group sets the layout and the spacing between the checkbox items. In the standard UI kit, the three components are `checkbox-group`, `checkbox-item`, and `checkbox`. Use all three components together. Never place bare `checkbox` components in a form and call the checkboxes a group.
+- **A checkbox field has three components:** the checkbox, the checkbox item and the checkbox group. A checkbox is the box, and holds whether the box is selected. A checkbox item holds the label of one option and pairs the label with a box. A checkbox group sets the layout of the checkbox items. In the standard UI kit, the three components are `checkbox-group`, `checkbox-item`, and `checkbox`. Use all three components together. Never place bare `checkbox` components in a form and call the checkboxes a group.
 - **A checkbox has three selection states.** A checkbox is checked, unchecked, or indeterminate. In the standard UI kit, the variant is `selection-states`, with the options `checked`, `unchecked`, and `indeterminate`.
 - **The indeterminate state is a state of the checkbox, not a separate component.** A select-all checkbox or a parent checkbox shows the indeterminate state when some, but not all, of the child checkboxes are checked.
 - **Two names for the same two selection states.** Only the design-system website says "Selected" and "Unselected". The standard UI kit says `checked` and `unchecked`. Both pairs of names mean the same two states.
@@ -111,16 +111,9 @@ The checkbox component pairs each box with the item label and provides the focus
 
 ## Styling set by tokens
 
-**Do not set or override the checkbox properties below.** The three checkbox components set each property.
+**Never set or override the checkbox's styling.** The theme sets every visual property of the checkbox, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the checkbox's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
-- On `checkbox`: `border-radius`, `border-size`, `size`, `icon-size`.
-- On `checkbox-group`: `item-gap`, `padding`.
-- On `checkbox-item`: `label-gap`, `max-width`, `text`, `colors`.
-- Field colors and sizes from `globals.form.field`, and the disabled look from `globals.states.disabled`.
-- The gaps between the label and the field, and the spacing between items in a form: `globals.form.properties.label-field-gap-horizontal`, `label-field-gap-vertical`, `vertical-item-gap`.
-- The check mark and the indeterminate dash, the hover and active styling, and the focus ring.
-
-**Do not add margins or spacer elements between checkbox items, or between the group and the elements next to the group.** The components set the spacing.
+**Do not add margins or spacer elements between checkbox items, between the group label and the checkbox items, or between the checkbox group and the elements next to the group.**
 
 ## Related skills
 
@@ -136,7 +129,7 @@ The checkbox component pairs each box with the item label and provides the focus
 
 - **How a checkbox group shows an error.** A checkbox group can have a selection rule that fails validation. No rule says how a checkbox group shows the validation error. If the project has an error state for the checkbox group, the checkbox item or the checkbox, use the project's error state. Otherwise, ask.
 - **Whether the project has a multi-select dropdown.** `recursica-skill-selection-controls` requires a multi-select dropdown in two places. If the project has a multi-select dropdown, use the project's multi-select dropdown. Otherwise, ask. A project with no multi-select dropdown has a gap in the list of components, not an invitation to build a multi-select dropdown from other parts. Do not put a checkbox group inside a dropdown, and do not use a transfer list instead without asking. When the user must filter by several values, one build test used separate single-value filters that AND together (a row appears only if the row matches every filter), and the workaround succeeded.
-- **Whether a select-all control is a `checkbox-item` in the group, or a separate control outside the group**, and how the select-all control relates to the group's `item-gap`.
+- **Whether a select-all control is a `checkbox-item` in the group, or a separate control outside the group.**
 - **Limits on selection.** No rule says whether a user may be limited to selecting _n_ options out of many.
 - **How deep parent-child checkboxes may nest.** The indeterminate state implies a hierarchy of parent and child checkboxes. No rule says how many levels deep the hierarchy may go, or how a parent checkbox's state is worked out beyond one level.
 
@@ -157,6 +150,7 @@ The checkbox component pairs each box with the item label and provides the focus
 - [ ] Clicking the item label toggles the box.
 - [ ] Focus is never moved for the user, including when a checkbox reveals fields below.
 - [ ] The disabled state is used only for options that are unavailable for now. A value that can never be edited uses the read-only field.
-- [ ] Every variant, size, and state is one the Recursica MCP server lists for the project, and every property the checkbox components set comes from the components.
+- [ ] Every variant, size, and state is one the Recursica MCP server lists for the project.
+- [ ] No styling is set or overridden on the checkbox.
 - [ ] The group saves with the form, in the same save mode as every other part of the system.
 - [ ] Open questions were asked about, not decided: the group error state, the multi-select dropdown, where a select-all control sits, limits on selection, and nesting depth.
