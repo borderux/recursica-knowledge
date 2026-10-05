@@ -19,13 +19,13 @@ An avatar is a small picture that stands for a person or an entity. An avatar he
 
 ## When not to use an avatar
 
-| Situation                                                                                      | Use instead                                                                                                                                      |
-| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| The name alone identifies the record, and space is tight                                       | Plain text. In a dense table, a name column works better than a picture. See `recursica-skill-tables`.                                           |
-| The screen must show status, presence, or a count                                              | A badge beside the name. See `recursica-skill-badge`. The standard UI kit has no status dot on the avatar.                                       |
-| Several people must appear as one overlapping group of avatars                                 | The project's avatar group variant, if the project adds one in Theme Forge. The standard UI kit defines no avatar group. See the open questions. |
-| The picture stands for an idea, not a person                                                   | An icon. An avatar shows identity and is not decoration.                                                                                         |
-| The avatar would be the only way to tell which person or entity a table or list row belongs to | A name in text, with the avatar beside the name.                                                                                                 |
+| Situation                                                                                      | Use instead                                                                                            |
+| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| The name alone identifies the record, and space is tight                                       | Plain text. In a dense table, a name column works better than a picture. See `recursica-skill-tables`. |
+| The screen must show status, presence, or a count                                              | A badge beside the name. See `recursica-skill-badge`.                                                  |
+| Several people must appear as one overlapping group of avatars                                 | The project's avatar group variant, if the project has one. See the open questions.                    |
+| The picture stands for an idea, not a person                                                   | An icon. An avatar shows identity and is not decoration.                                               |
+| The avatar would be the only way to tell which person or entity a table or list row belongs to | A name in text, with the avatar beside the name.                                                       |
 
 **An avatar alone identifies no one.** A picture can match more than one person, and so can a pair of initials. When a screen reader reads a picture or initials aloud, the picture or initials identify no one. The name in text identifies the person. The avatar is a shortcut to the name.
 
@@ -37,11 +37,11 @@ The rules below describe each option by role, such as "the photo style". The nam
 
 - **Three styles, one for each kind of content, ranked in order.** The photo style shows a photograph. The initials style shows initials. The icon style shows a generic person or placeholder icon. The photo style ranks first, then the initials style, then the icon style. Use the highest-ranked style that the available data supports, and fall back down the list. In the standard UI kit, the three styles are `image`, `text`, and `icon`.
 - **Three sizes.** An avatar comes in a smaller size, a default size, and a larger size. In the standard UI kit, the three sizes are `small`, `default`, and `large`.
-- **Three types, for the initials style and the icon style only.** In the standard UI kit, the three types are `solid`, `outline`, and `ghost`. In the standard UI kit, a photo avatar has no type. When to use each type is an open question.
-- **No status dot, no presence indicator, and no slot for a badge in the standard UI kit.** If the project adds one in Theme Forge, use the project's variant. In the standard UI kit, a badge is a separate component, and a badge does not attach to an avatar.
-- **No group, stack, overlapping-cluster, or shape variant in the standard UI kit.** If the project adds one in Theme Forge, use the project's variant. Otherwise, do not build an avatar group out of several avatars.
+- **Three types, for the initials style and the icon style only.** In the standard UI kit, the three types are `solid`, `outline`, and `ghost`. When to use each type is an open question.
+- **Status and presence.** If the project has a status dot, a presence indicator, or a slot for a badge on the avatar, use that option. Otherwise, a badge stays a separate component and does not attach to the avatar.
+- **Groups and shapes.** If the project has a group, stack, overlapping-cluster, or shape variant, use that variant. Otherwise, do not build an avatar group out of several avatars.
 
-**The design-system website shows a different set of styles.** Only the website shows styles named Image, Primary, Background, and Ghost, and a Border variant that is true or false. The website also shows how to space out overlapping avatars in a group. Of the website's styles, only Ghost matches the UI kit, as the `ghost` type. The other website styles, the Border variant, and the group spacing do not exist in the UI kit. The UI kit's only other property is `elevation`. Read the open questions before relying on any part of the website's set.
+**The design-system website shows a different set of styles.** Only the website shows styles named Image, Primary, Background, and Ghost, and a Border variant that is true or false. The website also shows how to space out overlapping avatars in a group. Of the website's styles, only Ghost matches the UI kit, as the `ghost` type. The UI kit also has an `elevation` property. Read the open questions before relying on any part of the website's set.
 
 ## Rules
 
@@ -76,7 +76,7 @@ An avatar is either a picture or a control, and each kind fails a screen reader 
 - **Give a control avatar a real accessible name that says what using the avatar does**, such as "Account menu", or the user's name and what the avatar opens. The picture is not the accessible name. A control with no accessible name is announced only as "button".
 - **A control avatar counts as an icon-only control.** Give a control avatar a tooltip for sighted mouse users and, separately, an accessible name. `recursica-skill-buttons-links` requires both.
 - **Never make the avatar the only way to tell whose table or list row, comment, or assignment the user sees.** An avatar alone puts meaning in a single visual channel (color, shape, position or text, each a separate signal). `recursica-skill-system-conventions` forbids meaning in a single channel.
-- **Do not add a hidden copy of the name for screen readers while the visible name stays in the reading order.** The screen reader user hears the name twice.
+- **Do not add a hidden copy of the name for screen readers while the visible name stays in the reading order (the order in which a screen reader reads the page).** The screen reader user hears the name twice.
 
 ### Keyboard and non-mouse navigation
 
@@ -107,16 +107,16 @@ An avatar is either a picture or a control, and each kind fails a screen reader 
 ### Only if used on the same screen
 
 - `recursica-skill-menu` — the menu a control avatar opens, and where focus goes when the menu opens and closes.
-- `recursica-skill-badge` — showing status and counts as read-only information beside the name, because the standard UI kit has no status dot on the avatar.
+- `recursica-skill-badge` — showing status and counts as read-only information beside the name.
 
 ## Open questions
 
-- **Two sets of styles that do not agree.** Only the design-system website shows styles named Image, Primary, Background, and Ghost, and a Border variant that is true or false. The UI kit defines the `text`, `icon`, and `image` styles. The UI kit gives the `text` and `icon` styles the `solid`, `outline`, and `ghost` types, and has `elevation` as the only other property. Which one is the authority has not been settled — ask before relying on either set of styles.
-- **Avatar groups.** Only the design-system website shows overlapping avatars in a group. The standard UI kit has no group or stack. Unless the project adds a group variant in Theme Forge, do not build an avatar group. Do not rely on the website's group without asking.
+- **Two sets of styles that do not agree.** Only the design-system website shows styles named Image, Primary, Background, and Ghost, and a Border variant that is true or false. The UI kit defines the `text`, `icon`, and `image` styles. The UI kit gives the `text` and `icon` styles the `solid`, `outline`, and `ghost` types, and also has an `elevation` property. Nobody has settled which set of styles is the authority. Ask before relying on either set of styles.
+- **Avatar groups.** Only the design-system website shows overlapping avatars in a group. Unless the project has a group variant, do not build an avatar group. Do not rely on the website's group without asking.
 - **Which size belongs in which layout.** No rule says where the smaller size, the default size, and the larger size each apply.
 - **How initials are chosen.** No rule says whether initials use one letter or two, or how to handle a one-word, hyphenated, or non-Latin name.
 - **Avatars for an entity that is not a person.** No rule says whether an avatar may stand for an entity that is not a person, such as a company, a team, or a system. No rule says which fallback such an avatar uses.
-- **Presence and status.** The standard UI kit has no status dot on the avatar, and no rule says how to show presence.
+- **Presence and status.** No rule says how to show presence.
 - **When to use each type.** The standard UI kit defines the `solid`, `outline`, and `ghost` types for initials avatars and icon avatars. No rule says when to use each type. Nobody has confirmed that the adapter (the Recursica component library for one framework, such as Mantine or Angular Material) exposes the type as a setting. Check the avatar component's settings, or ask, before relying on the type.
 
 ## Pre-flight checklist
