@@ -41,7 +41,7 @@ A menu is a temporary list of choices or actions. A trigger is the button that o
 The rules below describe each option by role, such as "the selected option". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
 - **A menu has two parts:** the menu and the menu items. In the standard UI kit, the two parts are `menu` and `menu-item`.
-- **The menu** is the container. The menu sets the width limits, the padding, the maximum height, the gap between menu items, and the dividers.
+- **The menu** is the container. The menu holds the menu items and the dividers.
 - **A menu item** is one entry in the list. A menu item has a leading icon, a trailing icon, a label, and supporting text.
 - **A selection variant on the menu item, with an unselected option and a selected option.** The selected option marks the chosen value in a list of options. Use the selection variant only for selection, never for other states. In the standard UI kit, the selection variant is `selection-states`, with the options `unselected` and `selected`.
 - **A disabled state on the menu item**, for a menu item the user can unlock. See the permissions rule below. How to turn on the disabled state is an open question. In the standard UI kit, the state variant is `states`, with the option `disabled`.
@@ -105,12 +105,9 @@ Most menu accessibility rules are about where keyboard focus goes. The list of m
 
 ## Styling set by tokens
 
-**Do not set or override the menu properties below.** The menu component and the menu item component set each property.
+**Never set or override the menu's styling.** The theme sets every visual property of the menu, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the menu's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
-- **`menu`**: `border-size`, `border-radius`, `min-width`, `max-width`, `padding`, `item-gap`, `max-height`, `elevation`, `divider-height`, `divider-opacity`, `colors`.
-- **`menu-item`**: `border-radius`, `vertical-padding`, `horizontal-padding`, `icon-text-gap`, `icon-leading-size`, `icon-trailing-size`, `text`, `supporting-text`, `text-gap`.
-
-The selection variant, `selection-states` in the standard UI kit, sets the look of the selected menu item. Do not restyle the selected menu item. Do not add wrappers or spacers to change the spacing listed above.
+The selection variant sets the look of the selected menu item. Do not restyle the selected menu item.
 
 ## Related skills
 
@@ -151,5 +148,5 @@ The selection variant, `selection-states` in the standard UI kit, sets the look 
 - [ ] Keyboard focus scrolls into view in a long menu.
 - [ ] No trigger appears only on hover, and the focus ring is intact.
 - [ ] Every variant, size, placement, and state is one the project's UI kit lists, and no variant or option is invented. No submenu is built unless the project has a submenu.
-- [ ] Padding, gaps, dividers, and the selected look come from the component.
+- [ ] No styling is set or overridden on the menu.
 - [ ] Open questions were asked about, not decided: submenus, menus with multi-select, custom content inside a menu item, how the disabled state is set, the number of items at which a menu is too long, where the menu appears relative to the trigger, right-click context menus, and whether a menu item may be a link.
