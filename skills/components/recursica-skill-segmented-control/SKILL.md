@@ -89,12 +89,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 ## Styling set by tokens
 
-**Do not set or override the segmented control properties below.** The segmented control component sets each property.
-
-- `colors`, `elevation`, `border-size`, `border-radius`.
-- `padding-horizontal`, `padding-vertical`, `item-gap`, `divider-size`.
-- Segment styling for each selection state, including hover and focus.
-- Equal-width segments when `fill-width` is `true`.
+**Never set or override the segmented control's styling.** The theme sets every visual property of the segmented control, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the segmented control's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 ## Related skills
 
@@ -124,5 +119,5 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - [ ] A screen reader user can perceive every content change that switching causes.
 - [ ] Every variant, option, and state is one the project's UI kit lists, and no variant or option is invented.
 - [ ] The orientation is horizontal, and every vertical single-select is a radio group.
-- [ ] Styling comes from the segmented control component.
+- [ ] No styling is set or overridden on the segmented control, and no container or spacer is added to change the segmented control's look.
 - [ ] Open questions were asked about, not decided: when to use fill width, a disabled segment when the project has no disabled state, a segmented control as a labeled form field, and behavior below desktop size.
