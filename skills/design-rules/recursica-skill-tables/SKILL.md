@@ -128,7 +128,7 @@ Decide between truncating and wrapping in this order:
 2. **In a cell with no secondary text, prefer wrapping onto a second line over truncating.** Truncating is a last resort.
 3. **A value that will not fit in two lines does not belong in the table.** Move the value to a detail view.
 
-**A value with no spaces does not wrap by default.** Text layout treats an identifier, a filename, a slug (a short, URL-friendly name), a URL, or any value joined by underscores or dots as one word. The value does not break at the edge of the column. The value runs straight across the next columns. The reader sees two values overlap and takes the overlap for a display bug, which the overlap is.
+**A value with no spaces does not wrap by default.** Text layout treats an identifier, a filename, a slug (a short, URL-friendly name), a URL, or any value joined by underscores or dots as one word. The value does not break at the edge of the column. The value runs straight across the next columns. The reader sees two values overlap and takes the overlap for a display bug. The overlap is a display bug.
 
 **Allow wrapping to break inside a word, and set the word break on every cell, not only in the column where the overlap was noticed.** Breaking inside a word is a behavior of the whole table, not a property of one column. The next set of data will put a long value in a different column.
 
@@ -190,11 +190,11 @@ The sort indicator is part of the column header component. See `recursica-skill-
 
 Row density is how tightly content is packed together.
 
-**The standard UI kit (the unchanged UI kit in the official Recursica release) has no row density variant**, such as high, medium and low density. If the project adds a row density variant in Theme Forge, use the project's variant. Never invent a row density variant. A row density variant is a customization. Most users do not want to change density, and packing in more data does not make a table better.
+**Never invent a row density variant**, such as high, medium and low density. A row density variant is a customization. Most users do not want to change density, and packing in more data does not make a table better.
 
 ## Clickable rows
 
-**A table row may be clickable only if no other element in the table row is interactive.** Any one of the following elements rules out a clickable table row:
+**A table row may be clickable only if no other element in the table row is interactive.** A table row is not clickable when the table row holds any one of the following elements:
 
 - A selection checkbox.
 - An ellipsis or "more" menu.
@@ -224,7 +224,7 @@ Row density is how tightly content is packed together.
 
 ## Bulk actions
 
-**`recursica-skill-buttons-links` owns how many bulk actions there are, when bulk actions appear, and how the count of selected rows appears in the button label.** Three bulk action rules belong to the table:
+**`recursica-skill-buttons-links` owns how many bulk actions there are, when bulk actions appear, and how the count of selected rows appears in the button label.** The table owns three bulk action rules:
 
 **Put bulk actions directly above the table, and never inside the filter bar.** A filter changes which data is shown. A bulk action changes the data. See `recursica-skill-filters`.
 
