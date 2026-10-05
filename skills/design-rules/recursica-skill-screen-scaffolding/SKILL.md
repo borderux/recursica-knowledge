@@ -95,7 +95,7 @@ An app shell is the header, the left rail and the footer around the page content
 
 **Form groups with a subheading break a long form** into sections that are easier to read. `recursica-skill-forms` owns this rule.
 
-**NEVER divide regions with cards.** A card is for several objects of the same kind, and for showing visual information. There is no such thing as a single card, and form fields never go inside a card — that is a hard rule with no exceptions. `recursica-skill-card` owns the card rules.
+**NEVER divide regions with cards.** A card is for several objects of the same kind, and for showing visual information. There is no such thing as a single card, and form fields never go inside a card. Both rules have no exceptions. `recursica-skill-card` owns the card rules.
 
 ## Maximum width
 
