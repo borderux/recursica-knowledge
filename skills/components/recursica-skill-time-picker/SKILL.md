@@ -108,15 +108,11 @@ The time picker component connects the label to the input and provides the focus
 
 ## Styling set by tokens
 
-**Do not set or override the time picker properties below.** The time picker component sets each property.
+**Never set or override the time picker's styling.** The theme sets every visual property of the time picker, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the time picker's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
-- `border-radius`, `horizontal-padding`, `vertical-padding`, `border-size`.
-- `width`, a fixed property, plus the field sizing from `globals.form.field.size`. The height of the single-line field comes from `globals.form.field.size.single-line-input-height`.
-- `icon-size` and `icon-text-gap`.
-- `text` styling and `placeholder-opacity`.
-- `colors` per layer (a numbered background level, 0 to 3, that sets the colors of the components on that level), including the focused border from `globals.form.field.colors.border-selected` and the global disabled look from `globals.states.disabled`.
-- The gaps between the label and the field, and `vertical-item-gap`, from `globals.form.properties`.
-- The link between the label and the input, and what each key does inside the field.
+The time picker's width is fixed.
+
+**Do not set or override the time picker's built-in behavior**: the link between the label and the input, and what each key does inside the field. The time picker component sets both.
 
 **Never style a time picker without focus to look disabled.** An editable field must look editable at rest.
 
@@ -159,6 +155,7 @@ The time picker component connects the label to the input and provides the focus
 - [ ] The popover opens from the keyboard, the arrow keys move between values, and Escape closes the popover and returns focus to the field.
 - [ ] Focus never jumps ahead automatically between hour, minute, and AM/PM, and is never moved for the user.
 - [ ] Every variant and state is one the Recursica MCP server lists for the project. No size variant, seconds variant, range variant, warning state, or inline clock is added unless the Recursica MCP server lists one for the project.
-- [ ] Styling comes from the time picker component, and every field without focus looks editable, not disabled.
+- [ ] No styling is set or overridden on the time picker, and no container or spacer is added to change the time picker's look.
+- [ ] Every field without focus looks editable, not disabled.
 - [ ] Times that cannot be edited use the read-only field, not a disabled time picker.
 - [ ] Open questions were asked about, not decided: the AM/PM control, what the popover contains, a masked format while the field has focus, seconds, time ranges, and the disabled state missing from the design-system website.
