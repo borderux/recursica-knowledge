@@ -16,7 +16,7 @@ A radio group has one group label and several options. Exactly one option may be
 - **The options rule each other out, and the user must choose exactly one option.** Radio buttons are the only correct control for a choice of exactly one option.
 - **The user should see every option at once**, stacked and easy to scan. The user should not have to open a control to find out which options exist.
 - **The options are few enough to compare on the screen**, within the limit in the rules below.
-- **The form saves the chosen option on submit**, together with the other fields.
+- **A form saves the chosen option on submit**, together with the form's other fields.
 
 ## When not to use a radio button
 
@@ -24,7 +24,7 @@ A radio group has one group label and several options. Exactly one option may be
 | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | The user may select any number of options, from zero to all             | `recursica-skill-checkbox`                                                                                   |
 | The value is binary, and the opposite of the value is known and unique  | `recursica-skill-switch`. See the binary-inverse test in `recursica-skill-selection-controls`.               |
-| The list has more options than the limit                                | `recursica-skill-dropdown`, with a single selection                                                          |
+| The choice has more options than the limit                              | `recursica-skill-dropdown`, with a single selection                                                          |
 | The user must type to find the value in a long list of familiar options | `recursica-skill-autocomplete`                                                                               |
 | The options must sit in a row                                           | `recursica-skill-segmented-control`. Never lay out a radio group's options in a row, and never use tabs.     |
 | The user does not have to choose any option                             | First check whether the field is a choice of one option at all. See `recursica-skill-selection-controls`.    |
@@ -39,22 +39,19 @@ A radio group has one group label and several options. Exactly one option may be
 
 The rules below describe each option by role, such as "the selected state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-**A radio field has three components. Use all three components together.**
+**A radio field has three components: a group, items and radio buttons. Use all three components together.**
 
-- The group sets the label placement and the spacing between the items. The standard UI kit calls the group `radio-button-group`.
-- The item holds one option's label and pairs the label with one radio button. The standard UI kit calls the item `radio-button-item`.
-- The radio button is the circle, and shows whether the option is selected. The standard UI kit calls the radio button `radio-button`.
+- **A group** holds the items. The group sets the label placement and the spacing between the items. The standard UI kit calls the group `radio-button-group`.
+- **An item** holds one option's label and pairs the label with one radio button. The standard UI kit calls the item `radio-button-item`.
+- **A radio button** is the circle that shows whether the item's option is selected. The standard UI kit calls the radio button `radio-button`.
 
 Never build a radio group in a form from radio buttons alone, without the group and the items.
 
 - **A selected state and an unselected state, on the radio button.** In the standard UI kit, the variant is `selection-states`, with the options `selected` and `unselected`.
 - **Label placement, on the group.** Label placement is one decision for the whole field, so the variant sits on the group and not on each item.
 - **A disabled state, on the item.** In the standard UI kit, the variant is `states`, with the option `disabled`. The disabled state sits on the item, so one option can be unavailable while the user can still choose among the other options.
-- **No disabled state for the group in the standard UI kit.** If the project adds a disabled state for the group in Theme Forge, use the project's state.
-- **No indeterminate state.** A radio group is never partly selected.
-- **No error state in the standard UI kit**, on any of the three components. If the project adds an error state in Theme Forge, use the project's error state.
-- **No required variant in the standard UI kit.** If the project adds a required variant in Theme Forge, use the project's variant.
-- **No size variant in the standard UI kit.** If the project adds a size variant in Theme Forge, use the project's size variant. Otherwise, the radio button component sets the size of the circle and the icon.
+- **Never use an indeterminate state.** A radio group is never partly selected.
+- **Size.** If the project has a size variant, use the size variant. Otherwise, the radio button component sets the size of the circle and the icon inside the circle.
 - **Read-only is a separate component.** The read-only field, `read-only-field` in the UI kit, shows text instead of an input.
 
 **Label placement is a variant, the same variant every field has.** The group's label sits beside the stack of options or above the stack of options. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`.
@@ -92,7 +89,7 @@ Never build a radio group in a form from radio buttons alone, without the group 
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
-The radio components pair each radio button with the item label, manage focus inside the radio group, and draw the focus ring. The app provides the group's accessible name (the name a screen reader reads out for a control), makes the selected state available in code, and adds the behavior in the two lists below.
+The radio components pair each radio button with the item label, control where focus goes inside the radio group, and show the focus ring. The app provides the group's accessible name (the name a screen reader reads out for a control), makes the selected state available in code, and adds the behavior in the two lists below.
 
 ### Screen readers
 
@@ -106,7 +103,7 @@ The radio components pair each radio button with the item label, manage focus in
 ### Keyboard and non-mouse navigation
 
 - **The whole radio group is one tab stop** (a place the Tab key lands). Tab moves focus into the radio group, and the next Tab moves focus out of the group. Tab does not step through the options. Do not make each option a separate tab stop. Each checkbox in a checkbox group is a separate tab stop, and each radio button is not.
-- **The arrow keys move between the options in the radio group, and moving to an option selects the option.** Up Arrow and Left Arrow move to the previous option. Down Arrow and Right Arrow move to the next option. The arrow keys wrap around: after the last option comes the first option, and before the first option comes the last option. Home and End move to the first and last option.
+- **The arrow keys move between the options in the radio group, and moving to an option selects the option.** Up Arrow and Left Arrow move to the previous option. Down Arrow and Right Arrow move to the next option. The arrow keys wrap around: the next option after the last option is the first option, and the previous option before the first option is the last option. Home and End move to the first and last option.
 - **Space selects the focused option** when the focused option is not selected. Do not remap Space, and do not require Enter.
 - **The radio group component handles the keys and the roving focus (where the arrow keys move between items that share one tab stop) inside the group.** Do not add custom key handling, set `tabindex` by hand, or rebuild the wrap-around. Each of those changes breaks keyboard behavior that the radio group component provides.
 - **Clicking or tapping the item label selects the label's option.** A label connected to the radio button makes the label select the option, and gives the user a bigger target. Text placed beside the radio button without a connection does not select the option.
@@ -140,7 +137,7 @@ Do not add margins or spacer elements between the options or around the radio gr
 
 ## Open questions
 
-- **The error state of a radio group.** The standard UI kit gives the dropdown and the autocomplete an error state, and gives the radio button no error state. A required radio group can still fail validation. No rule says how a radio group shows an error. Ask only when the project has no error state.
+- **The error state of a radio group.** A required radio group can still fail validation. No rule says how a radio group shows an error. If the project has an error state on any of the three radio components, use that error state. Otherwise, ask.
 - **Clearing a radio group.** The design rules treat a selected radio button as a radio button the user cannot deselect. The caution about pre-selection exists for that reason. No rule says whether a radio group may offer an explicit way to clear the selection, or a "None" option.
 - **Radio buttons inside a table row.** The design rules mention radio buttons in a table row once, as an alternative to a switch. No rule sets radio buttons in a table row as a pattern.
 
