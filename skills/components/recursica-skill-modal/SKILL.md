@@ -36,9 +36,9 @@ A modal blocks the page until the user makes one decision or finishes one short 
 
 The rules below describe each part and option by role. The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-- **A modal has a header, a content area and a footer.** A scroll divider appears when the content scrolls. The modal also sets the gap between the buttons in the footer.
+- **A modal has a header, a content area and a footer.** A scroll divider appears when the content scrolls.
 - **Structure on the website.** Only the design-system website shows the modal's structure as a title, a content slot, a divider, and a footer.
-- **Size.** If the project has a size variant, use the project's size variant. Otherwise, never set a size on a modal. Tokens set the minimum and maximum width and height of the modal. Content that does not fit inside the minimum and maximum width and height does not belong in a modal.
+- **Size.** If the project has a size variant, use the project's size variant. Otherwise, never set a size on a modal. The theme limits how small and how large a modal can be. Content that does not fit inside the modal's size limits does not belong in a modal.
 - **Severity.** If the project has a severity or destructive variant, use the project's variant. Otherwise, a dangerous confirmation looks like any other modal, and the modal's text states the danger.
 
 ## Rules
@@ -86,14 +86,9 @@ Accessibility failures are more serious in a modal than in any other component. 
 
 ## Styling set by tokens
 
-**Do not set or override the modal properties below.** The modal component sets each property.
+**Never set or override the modal's styling.** The theme sets every visual property of the modal, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the modal's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
-- `min-width`, `max-width`, `min-height`, `max-height`.
-- `header-footer-horizontal-padding`, `header-footer-vertical-padding`, `content-horizontal-padding`, `content-vertical-padding`.
-- `border-size`, `border-radius`, `elevation`, `colors`, and the overlay treatment.
-- `scroll-divider-size` and when the divider appears.
-- `button-gap` in the footer.
-- `header-style` and `content-style` type treatment.
+Never restyle the overlay behind the modal. Never change when the scroll divider appears.
 
 ## Related skills
 
@@ -128,5 +123,6 @@ Accessibility failures are more serious in a modal than in any other component. 
 - [ ] Escape closes the modal and acts as cancel, and closing the modal is never pointer-only.
 - [ ] The close control has a real accessible name, and the focus ring is intact.
 - [ ] The destructive consequence is stated in words, not shown by color.
-- [ ] Padding, size, and overlay styling come from the modal component.
+- [ ] No styling is set or overridden on the modal.
+- [ ] The overlay behind the modal is not restyled.
 - [ ] Open questions were asked about, not decided: whether clicking the overlay closes the modal, a loading state inside a modal, whether a modal that cannot be closed is allowed, and confirming inside a modal.
