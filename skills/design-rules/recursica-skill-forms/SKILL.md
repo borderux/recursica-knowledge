@@ -13,7 +13,7 @@ This skill holds the house rules for designing forms. The rules are the team's o
 
 The rules assume **complex enterprise web applications, designed for desktop first**. The rules also assume a design system whose components are accessible and correctly styled. The design system decides the visual design of each component. The rules in this skill cover how a form is put together: field order, states and wording.
 
-**The form field components set the spacing.** The spacing between fields and between form sections is built into the form field components. Do not add custom margins, padding or spacer elements between fields to adjust the vertical rhythm. Place the components one after another, and let the components set the spacing.
+**Form field components set the spacing.** The spacing between fields and between form sections is built into the form field components. Do not add custom margins, padding or spacer elements between fields to adjust the vertical rhythm. Place the components one after another, and let the components set the spacing.
 
 **NEVER place a form, a form section, or any single form control inside a card.** There is no exception. A card is for a set of repeating peer objects (objects of the same kind, such as rows in a list). A form holds the properties of one object. A card border around any part of a form separates nothing. Group fields with headings and with the spacing the components set. See `recursica-skill-card`.
 
@@ -24,7 +24,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 ## Layout
 
-**MUST: use a single column, from top to bottom.** Put one field on each row of a form, stacked vertically. The single column is not negotiable. The single column does not change with the width of the container. A wide container never justifies two fields in one row. Leave extra horizontal space unused, or limit the form's maximum width. Never spend extra horizontal space on a second column.
+**MUST: use a single column, from top to bottom.** Put one field on each row of a form, stacked vertically. The single column is not negotiable. The single column does not change with the width of the form's container. A wide container never justifies two fields in one row. Leave extra horizontal space unused, or limit the form's maximum width. Never spend extra horizontal space on a second column.
 
 **NEVER use a multi-column form layout.** Never use two columns for an address, as in `Address 1`, `Address 2`, `City`, `State` and `Zip` in two columns. Never use two columns to "save vertical space." Never use two columns for any other reason. Multi-column layouts are banned because the tab order becomes unclear. Focus could move down the left column and then down the right column. Focus could also move left to right across each row. Both orders are reasonable, and a layout with two reasonable orders is broken. A form's reading order must never move both left to right _and_ top to bottom.
 
@@ -40,7 +40,7 @@ The rule has three reasons, most important first:
 - The user checks the entries in one scan straight down the column of _values_. The user does not jump from label to value to label to value.
 - Labels beside the fields keep the form short.
 
-**The container's width affects only how labels and fields relate, never the order of the fields.** Fields always stay one per row, top to bottom. The container's width decides only whether a label sits beside the field or above the field.
+**The width of the form's container affects only how labels and fields relate, never the order of the fields.** Fields always stay one per row, top to bottom. The width of the form's container decides only whether a label sits beside the field or above the field.
 
 **Stack the label above the field only when the form's container is too narrow to fit the label and the field side by side.** The width of the form's container decides, not the viewport breakpoint (the screen width at which the whole layout changes). A form in a narrow panel, drawer or side rail on a large desktop display stacks the labels. A wide form on a tablet does not stack the labels.
 
@@ -58,7 +58,7 @@ Mixing the two placements in one form is not a matter of looks. Mixing the place
 
 **Form sections do not get a separate label placement either.** A form's sections are parts of one form. A form section that stacks while the form section above sits side by side is the same defect.
 
-**Set label placement to side by side on every field.** In the standard UI kit (the unchanged UI kit in the official Recursica release), the variant is `layouts` and the option is `side-by-side`. An adapter (the Recursica component library for one framework, such as Mantine or Angular Material) may **default the fields to `stacked`**. The `stacked` option puts the label above the input at any width and breaks the side-by-side rule. Leaving label placement unset is a defect, not a choice of default. The defect has two causes, and neither cause shows an error:
+**Set label placement to side by side on every field.** In the standard UI kit (the unchanged UI kit in the official Recursica release), the variant is `layouts` and the option is `side-by-side`. An adapter (the Recursica component library for one framework, such as Mantine or Angular Material) may **set the fields to `stacked` by default**. The `stacked` option puts the label above the input at any width and breaks the side-by-side rule. Leaving label placement unset is a defect, not a choice of default. The defect has two causes, and neither cause shows an error:
 
 - **The code may use a name other than `layouts`.** `layouts` is the name in Figma and the UI kit. Each adapter names the setting in a different way. An adapter may ignore a name the adapter does not know. Look up the name the code uses with the Recursica MCP server's `recursica_get_component_doc` tool before setting label placement.
 - **Every field needs the setting.** Label placement is set per field. One missed field mixes label placements in the form. Count the form's field components to check.
@@ -107,7 +107,7 @@ Group fields in the following order of preference:
 
 **MUST: on submit, turn the submit button itself into a loading, disabled state.** The submit button is the progress indicator. Disabling the submit button also stops the form from being submitted twice.
 
-**Build the loading state from the button's disabled look.** The standard UI kit has no loading variant for a button. If the project adds a loading variant in Theme Forge, use the project's loading variant. Otherwise, use the disabled look with an icon alone or an icon with a label, and animate the icon. See `recursica-skill-button`.
+**If the project has a loading variant for a button in Theme Forge, use the loading variant.** Otherwise, build the loading state from the button's disabled look. Use the disabled look with an icon alone or an icon with a label, and animate the icon. See `recursica-skill-button`.
 
 Keep the submit button the same size and in the same place. Keep the submit button able to receive focus, so that focus stays where the user pressed Enter. Tell assistive technology that the submit button is busy. Do not rely on the animation to show the busy state.
 
@@ -173,7 +173,7 @@ Beyond the difference between enabled and disabled, do not worry about heavy ver
 
 ## Progressive disclosure
 
-**Put the revealed content as close as possible to the control that triggered the content.** Put the revealed content right next to the control and right after the control, and show the content immediately. The user must be able to see the cause and effect between the user's choice and the revealed content. The user then feels in control of the form, rather than controlled by the form.
+**Put revealed content as close as possible to the control that triggered the content.** Put the revealed content right next to the control and right after the control, and show the content immediately. The user must be able to see the cause and effect between the user's choice and the revealed content. The user then feels in control of the form, rather than controlled by the form.
 
 If the result of a choice appears on a later step instead, **the result is not progressive disclosure**. A result on a later step is multi-step branching. Do not confuse progressive disclosure with multi-step branching.
 
