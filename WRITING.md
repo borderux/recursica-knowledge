@@ -51,7 +51,11 @@ Quoted interface copy keeps the exact interface wording, such as a button label 
 | whatever it should look like    | even when the design shows a button                      |
 | if the link must look light     | when the link needs less visual weight                   |
 
-**Quote a token path only when the reader must use the token.** A skill lists token paths under "Styling set by tokens". Elsewhere, say what the reader does: write "**Never build a focus state.** The component draws the focus border.", not "**Focused is not a state.** It comes from `globals.form.field.colors.border-selected`."
+**Mention only what changes how the component is used.** The theme sets every visual property: sizes, padding, gaps, borders, radius, elevation, colors and type styles. A designer or an agent never sets those properties, so a skill never lists them, never names their tokens, and never says which component sets them. Write "The assistive element shows an icon, so an error never relies on color alone", not "The assistive element sets the icon size and the gap between the icon and the text." Keep a fact about appearance only when the fact changes a decision, such as "A long chip label is cut off at the chip's maximum width" or "The textarea's height is fixed."
+
+**"Styling set by tokens" holds one instruction.** The section says never to set or override the component's styling, because the theme sets the styling. The section lists no properties and no token paths. A rule about appearance that changes a decision, such as "Never make an unfocused field look disabled", stays in the section or moves to "Rules".
+
+**Quote a token path only when the reader must use the token**, such as the layer padding token a full-height region subtracts. Write "**Never build a focus state.** Every Recursica field already shows the focus border.", not "**Focused is not a state.** It comes from `globals.form.field.colors.border-selected`."
 
 **Mention another component only when the reader needs that component.** Name another component when the reader should use that component instead, or when the rule depends on that component. Never compare in passing, as in "`placeholder-opacity` on this component, the same as on a text field". Write "`placeholder-opacity` sets the placeholder."
 

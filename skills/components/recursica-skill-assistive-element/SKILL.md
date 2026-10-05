@@ -35,7 +35,7 @@ The rules below describe each option by role, such as "the error type". The name
 - **Help text or error text, below the field.** The assistive element shows help text, such as "Use 8 or more characters", or error text, such as "Password is too short". A variant called the type decides which text shows. In the standard UI kit, the variant is `types`, with the options `help` and `error`.
 - **The error text replaces the help text in the same place.** The error text never appears beside the help text. Switching between the two types keeps the field the same height, so the form below the field does not move.
 - **Do not invent a third state for a field that the project does not list.**
-- **The assistive element includes an icon.** The assistive element sets the icon size and the gap between the icon and the text. The icon meets the requirement that an error have a signal that is not color.
+- **The assistive element shows an icon.** The icon gives an error a signal that is not color.
 - **If the project has a size variant, use the project's size variant.** Otherwise, the space above the assistive element and the maximum width of the assistive element are fixed.
 
 ## Rules
