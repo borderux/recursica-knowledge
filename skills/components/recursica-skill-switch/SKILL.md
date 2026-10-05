@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-switch
-description: Rules for the Recursica switch — the tests a value must pass for a switch, commit timing that follows the app's save mode, no switches in table rows or for high-stakes settings, and disabled versus read-only. Use for on/off settings and toggles. Not for values saved with a form — see recursica-skill-checkbox; control choice lives in recursica-skill-selection-controls.
+description: Rules for the Recursica switch — the tests a value must pass for a switch, commit timing that follows the app's save mode, no switches in table rows or for high-stakes settings, and disabled versus read-only. Use for on/off settings and toggles. Not for one setting that saves at a different time from the other switches — see recursica-skill-checkbox; control choice lives in recursica-skill-selection-controls.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -65,7 +65,7 @@ The rules below describe each option by role, such as "the selected state". The 
 
 **Do not use a switch where turning the switch on or off by accident could have serious consequences.** Where a setting is destructive, cannot be undone, or is high-risk, use a checkbox with a confirmation, or another safeguard, instead.
 
-**The application's single save mode sets when a switch saves.** `recursica-skill-selection-controls` allows a switch to save immediately, or to save on submit with the other fields in the form. Saving immediately feels slightly more natural for a switch. The application makes the choice once, for the whole system. A switch in a form that saves every field together on submit is correct, as long as every switch in the system also waits for Save. An application must never mix the two save modes, with some switches that save the instant the user turns the switch on or off and other switches that wait for Save. A switch that waits for Save is not, by itself, a reason to use a checkbox.
+**The application's single save mode sets when a switch saves.** `recursica-skill-selection-controls` allows a switch to save immediately, or to save on submit with the other fields in the form. Saving immediately feels slightly more natural for a switch. The application makes the choice once, for the whole system. A switch in a form that saves every field together on submit is not ideal, but is allowed, as long as every switch in the system also waits for Save. The switch then acts like a checkbox and saves with the other fields. An application must never mix the two save modes, with some switches that save the instant the user turns the switch on or off and other switches that wait for Save. A switch that waits for Save is not, by itself, a reason to use a checkbox.
 
 **If the system's switches save immediately, the page must show a save status that stays on the page.** Saving each field as the field changes requires the save status. Saving every field together on submit requires the opposite: no save status, and no sign of unsaved changes. See the save-mode table in `recursica-skill-forms`.
 
