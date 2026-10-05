@@ -27,7 +27,7 @@ Use the component in the right column instead of adapting a text field.
 | The answer is yes or no                                                            | A switch or a checkbox                                                                    |
 | The content runs to several lines                                                  | `recursica-skill-textarea`                                                                |
 | The value is a quantity the user types — a count, an amount, a rate, a measurement | `recursica-skill-number-input`. Free-form entry is wrong for a value used in calculations |
-| The current user can never edit the value                                          | The read-only field component, which shows text with no input                             |
+| The current user can never edit the value                                          | A read-only field, a separate component that shows text with no input                     |
 
 **Never use a disabled text field to show a value.** A value that nobody can ever edit where the value is shown does not belong in a form control.
 
@@ -37,10 +37,8 @@ Use the component in the right column instead of adapting a text field.
 
 The rules below describe each option by role, such as "the label beside the field". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-- **Two label placements.** The label sits beside the field or above the field. The standard UI kit calls the label-placement variant `layouts`.
+- **Two label placements.** A text field's label sits beside the field or above the field. The standard UI kit calls the label-placement variant `layouts`.
 - **Two states.** A text field has an error state and a disabled state. The standard UI kit calls the two states `error` and `disabled`.
-- **No size variant in the standard UI kit.** If the project adds a size variant in Theme Forge, use the project's size variant.
-- **No fluid style, and no warning, success or loading state, in the standard UI kit.** If the project adds a fluid style or one of the three states in Theme Forge, use the project's style or state.
 - **Read-only is a separate component**, the read-only field (`read-only-field` in the standard UI kit). The read-only field has the same label-placement variant as the text field, and shows text instead of an input.
 
 **Label placement is a variant.** The label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
@@ -80,7 +78,7 @@ Never use a disabled text field to show a value.
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
-The text field component connects the label to the input, provides the focus ring, and handles the keys inside the field. The app must add the behavior in the two lists below. The two lists name the parts most often missed.
+The text field component connects the label to the input and provides the focus ring. The text field component also responds to keys pressed inside the field automatically. The app must add the behavior in the two lists below. The two lists name the behavior apps most often miss.
 
 ### Screen readers
 
