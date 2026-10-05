@@ -84,12 +84,7 @@ A badge is text, not a control. For most components, the risk is that a user can
 
 ## Styling set by tokens
 
-**Do not set or override the badge properties below.** The badge component sets each property.
-
-- `text` styling, including size and weight.
-- `padding-horizontal`, `padding-vertical`.
-- `border-size`, `border-radius`, `elevation`.
-- All colors, for each style.
+**Never set or override the badge's styling.** The theme sets every visual property of the badge, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the badge's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 ## Related skills
 
@@ -120,5 +115,5 @@ A badge is text, not a control. For most components, the risk is that a user can
 - [ ] No badge has a `tabindex`, a click handler, or a role that suggests a user can act on the badge.
 - [ ] A status change swaps the badge with no animation, and any live update is announced politely or not at all.
 - [ ] Every badge uses a style the project lists, and no badge relies on a size variant or a content variant that the project does not list.
-- [ ] The badge's text, padding, border, elevation, and colors have no overrides.
+- [ ] No styling is set or overridden on the badge.
 - [ ] Open questions were asked about, not decided: the mapping of statuses to intents, what the warning style and the problem style are for, a size variant and a content variant, a limit on counts, an icon beside the badge text, and a count of zero.
