@@ -39,9 +39,9 @@ The rules below describe each option by role, such as "the error state". The nam
 
 - **An error state, a disabled state, and an active state.** In the standard UI kit, the state variant is `states`, with the options `error`, `disabled`, and `active`.
 - **The active state marks the thumb while the user moves the thumb.** Do not build the active state. Do not use the active state to mean selected, enabled, or current.
-- **A number input for the exact value.** The slider component includes the number input, with the number input's size, text, border, and padding. The `input-` tokens under "Styling set by tokens" set the number input. Do not build a separate text field beside the track.
+- **A number input for the exact value.** The slider component includes the number input. Do not build a separate text field beside the track.
 - **Minimum and maximum labels.** The slider component includes a label for the minimum and a label for the maximum, `min-max-label` in the standard UI kit. Do not place separate text at the ends of the track.
-- **Step indicators** for a slider that moves in fixed steps. The `step-indicator-width` and `step-indicator-border-radius` tokens set the step indicators.
+- **Step indicators** for a slider that moves in fixed steps.
 - **A read-only value style for the number readout.** No rule says what the read-only value style means. See the open questions.
 
 **Label placement is a variant.** A control's label sits beside the control or above the control. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the control is the house default. The label above the control is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
@@ -101,14 +101,7 @@ The slider component already includes the focus ring and the thumb, and already 
 
 ## Styling set by tokens
 
-**Do not set or override the slider properties below.** The slider component sets each property.
-
-- `track-height`, `track-border-radius`, `thumb-size`, `thumb-border-radius`, `thumb-elevation`.
-- `step-indicator-width`, `step-indicator-border-radius`.
-- `input-width`, `input-height`, `input-gap`, `input-border-size`, `input-border-radius`, `input-text`, `input-padding-vertical`, `input-padding-left`, `input-padding-right`.
-- `min-max-label` and `read-only-value` styling.
-- `icon-size`, and all `colors`, including the colors of the `active` state.
-- Field colors and sizes from `globals.form.field`, label-field gaps and `vertical-item-gap` from `globals.form.properties`, and the disabled look from `globals.states.disabled`.
+**Never set or override the slider's styling.** The theme sets every visual property of the slider, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the slider's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 ## Related skills
 
@@ -149,6 +142,7 @@ The slider component already includes the focus ring and the thumb, and already 
 - [ ] The thumb is the tab stop, the focus ring is on the thumb and not hidden, and the number input is a separate tab stop.
 - [ ] The tab order follows the visual order, focus is never moved for the user, and nothing needed to use the slider appears only on hover.
 - [ ] Every variant, size, and state is one the Recursica MCP server lists for the project, and no variant or option is invented. No hover state, second thumb, or vertical orientation is used unless the Recursica MCP server lists one for the project.
-- [ ] Styling comes from the slider component, and the active state marks only the thumb the user is moving.
+- [ ] No styling is set or overridden on the slider, and no container or spacer is added to change the slider's look.
+- [ ] The active state marks only the thumb the user is moving.
 - [ ] No slider is disabled to show a value.
 - [ ] Open questions were asked about, not decided: a range with two thumbs, smooth versus stepped types, a hover state, what `read-only-value` means, whether the number input is required, value labels other than the minimum and maximum, and vertical orientation.
