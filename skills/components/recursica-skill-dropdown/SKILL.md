@@ -41,11 +41,10 @@ A dropdown is a form field that hides the list of options until the user opens t
 The rules below describe each option by role, such as "the error state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
 - **An error state and a disabled state.** The standard UI kit calls the state variant `states`, with the two options `error` and `disabled`.
-- **The placeholder and the chosen value are not variants.** The design-system website shows the placeholder and the chosen value only as examples of content. In the UI kit, both are the same `text` property with different content. The field's colors cover both.
+- **The placeholder and the chosen value are not variants.** The design-system website shows the placeholder and the chosen value only as examples of content. In the UI kit, both are the same `text` property with different content.
 - **Never build a focus state**, even where a source outside the UI kit lists a focused state. The dropdown already shows the focus border.
 - **Size.** If the project has a size variant, use the project's size variant. Otherwise, the dropdown has a fixed height, the same height as every other single-line field.
 - **Multi-select, grouped options and search.** If the project has a multi-select variant, a variant that groups options into sections, or a searchable variant, use the project's variant. Otherwise, see the open questions.
-- **Icons.** The icon size and the gap between the icon and the text apply to a leading icon and to an expand indicator (the arrow at the end of the closed field).
 - **Read-only is a separate component.** The read-only field, `read-only-field` in the UI kit, shows text instead of an input.
 
 **Label placement is a variant.** A field's label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
@@ -101,7 +100,7 @@ The dropdown already links the label to the field and shows the focus ring. The 
 - **A screen reader must announce the active option (the highlighted option in the open list) as the user moves through the list**, with the option's position in the list and whether the option is selected. A highlight that moves with no announcement makes the list unusable without sight.
 - **The selected option must be marked in code, never shown by a checkmark or a highlight alone.** `recursica-skill-system-conventions` sets this rule.
 - **On error, the error message is the only text announced**, because the error message has replaced the assistive text. The error message must state the rule. "Invalid input" is not an error message.
-- **Give the expand indicator no separate announcement.** The expand indicator is part of the field, not a second control. A screen reader must never find the expand indicator as an unlabeled graphic or as a separate button.
+- **Give the expand indicator (the arrow at the end of the closed field) no separate announcement.** The expand indicator is part of the field, not a second control. A screen reader must never find the expand indicator as an unlabeled graphic or as a separate button.
 - **When choosing an option shows more fields, say so in the label or in the assistive text before the user chooses.**
 
 ### Keyboard and non-mouse navigation
@@ -116,16 +115,11 @@ The dropdown already links the label to the field and shows the focus ring. The 
 
 ## Styling set by tokens
 
-**Do not set or override the dropdown properties below.** The dropdown component sets each property.
+**Never set or override the dropdown's styling.** The theme sets every visual property of the dropdown, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the dropdown's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
-- `border-radius`, `min-height`, `horizontal-padding`, `vertical-padding`, `border-size`.
-- `icon-size` and `icon-text-gap`.
-- `text` styling and `colors`, for each layer (a numbered background level, 0 to 3, that sets the colors of the components on that level) and each state.
-- Field width and height. `globals.form.field.size` supplies `min-width`, `max-width`, and `single-line-input-height`. `globals.form.field` also supplies `border-radius`, the paddings, and `border-selected`.
-- The focus border from `globals.form.field.colors.border-selected`.
-- The disabled look from `globals.states.disabled`.
-- The gaps between the label and the field, and the spacing between fields: `globals.form.properties.label-field-gap-horizontal`, `label-field-gap-vertical`, and `vertical-item-gap`.
-- The connection between the label and the field, the expand indicator, hover and active styling, the focus ring, and the keyboard behavior for opening the list and selecting an option.
+Do not set or override the gap between the dropdown's label and the field, or the spacing between the dropdown and the fields around the dropdown.
+
+Do not set or override the parts the dropdown already provides: the connection between the label and the field, the expand indicator, the hover and active styling, the focus ring, the disabled look, and the keyboard behavior for opening the list and selecting an option.
 
 **Never style a dropdown without focus so that the dropdown looks disabled.** An editable field must look editable when the user is not using the field.
 
@@ -145,7 +139,7 @@ The dropdown already links the label to the field and shows the focus ring. The 
 ## Open questions
 
 - **Multi-select.** `recursica-skill-selection-controls` requires a multi-select dropdown in two places. The dropdown in the shipped adapter (the Recursica component library for one framework, such as Mantine or Angular Material) selects a single value. When the project has no multi-select variant, the missing variant is no reason to build a multi-select dropdown out of other parts. Do not put a checkbox group inside a dropdown, and do not substitute a transfer list without asking. Where the user must filter by several values, a build test used separate single-value filters that AND together (a row appears only if the row matches every filter) successfully as the workaround. Ask only when the project has no multi-select variant.
-- **The open menu.** Ask about the option rows, the height of an option row, hover and active styling, group headers, dividers, icons or descriptions inside an option, and the maximum height of the open menu before the menu scrolls.
+- **The open menu.** Ask about group headers, and icons or descriptions inside an option.
 - **The autocomplete threshold.** The dropdown's guidance says to consider a typeahead when the list is long and the user knows the options well. `recursica-skill-selection-controls` records the threshold as not set. Do not pick a number.
 - **Clearing.** No rule says whether the user may clear a dropdown back to no value after choosing a value, or whether an explicit "None" option is allowed.
 - **Grouped options and dependent dropdowns.** No rule covers options grouped into sections, or dependent dropdowns, where the value chosen in one dropdown filters the options in another dropdown. Ask about grouped options only when the project has no variant that groups options.
@@ -169,6 +163,7 @@ The dropdown already links the label to the field and shows the focus ring. The 
 - [ ] Focus is never moved for the user after a selection.
 - [ ] Nothing the user needs requires hover or a pointer. The focus ring is intact, and looks different from the active option style and the selected option style.
 - [ ] Disabled is used only for fields that are unavailable for now. Values that can never be edited use the read-only field.
-- [ ] Every variant, size, and state is one the project's UI kit lists. Every property the component sets comes from the component. No field without focus looks disabled.
+- [ ] Every variant, size, and state is one the project's UI kit lists. No field without focus looks disabled.
+- [ ] No styling is set or overridden on the dropdown.
 - [ ] The field saves with the form, in the same save mode as every other field in the system.
 - [ ] Open questions were asked about, not decided: multi-select, the open menu, the autocomplete threshold, clearing, grouped options, and an empty list of options.
