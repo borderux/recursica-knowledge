@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-accordion
-description: Rules for the Recursica accordion — when collapsing content is justified, collapsed by default, nested only with a project option, what each part owns, and expand and collapse accessibility. Use for accordions, expandable sections, and FAQ lists. Not for multi-level hierarchy — see recursica-skill-tree; not for switching views — see recursica-skill-tabs.
+description: Rules for the Recursica accordion — when collapsing content is justified, collapsed by default, nested only with a project option, what each part does, and expand and collapse accessibility. Use for accordions, expandable sections, and FAQ lists. Not for multi-level hierarchy — see recursica-skill-tree; not for switching views — see recursica-skill-tabs.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -41,7 +41,7 @@ An accordion collapses sections of content that are at the same level and of the
 The rules below describe each part and option by role, such as "the open look". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
 - **An accordion has four parts:** the accordion, the items, the headers and the content panels. In the standard UI kit, the four parts are `accordion`, `accordion-item`, `accordion-header` and `accordion-content`.
-- **The accordion** is the outer container, a list of items. The accordion sets the gap between the items, the minimum and maximum width, and the dividers.
+- **The accordion** is the outer container, a list of items.
 - **An item** is one section that opens and closes. Each item has one header and one content panel.
 - **A header** is the clickable bar at the top of an item. The header shows the open or closed look, a leading icon, a trailing icon, and the title text.
 - **A content panel** is the area below the header. Clicking the header shows or hides the content panel.
@@ -98,14 +98,9 @@ The accordion component already shows the header and the chevron. Two jobs belon
 
 ## Styling set by tokens
 
-**Do not set or override the accordion properties below.** The four parts set each property for both the open look and the closed look.
+**Never set or override the accordion's styling.** The theme sets every visual property of the accordion, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the accordion's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
-- **`accordion`**: `border-size`, `border-radius`, `item-gap`, `padding`, `min-width`, `max-width`, `elevation`, `divider-size`, `colors`.
-- **`accordion-item`**: `border-radius`, `border-size`, `margin`, `padding`, `elevation`, `colors`.
-- **`accordion-header`**: `horizontal-padding`, `vertical-padding`, `icon-left-size`, `icon-right-size`, `icon-gap`, `text`, `border-size`, `border-radius`, `elevation`.
-- **`accordion-content`**: `horizontal-padding`, `top-padding`, `bottom-padding`, `margin`, `border-size`, `border-radius`, `elevation`, `colors`, `text`.
-
-The accordion component shows the chevron, turns the chevron when an item opens or closes, and sets the colors of the open look and the closed look. Do not add extra containers or spacers to change the chevron, the chevron's turn, those colors, or any property in the list above.
+The accordion already shows the chevron and turns the chevron when an item opens or closes. Do not add extra containers or spacers to change the chevron or the chevron's turn.
 
 ## Related skills
 
@@ -145,5 +140,5 @@ The accordion component shows the chevron, turns the chevron when an item opens 
 - [ ] A closed item's content is removed from the accessibility tree and the tab order, not only hidden.
 - [ ] Focus never moves when an item opens or closes, nothing opens on hover, and the focus ring is intact.
 - [ ] Every variant, size, and state is one the Recursica MCP server lists for the project, and no header has an invented disabled look.
-- [ ] Padding, gaps, dividers, and colors come from the component.
+- [ ] No styling is set or overridden on the accordion.
 - [ ] Open questions were asked about, not decided: whether opening one item closes the other items, whether the divider can be hidden, an item the user cannot open, animation for opening and closing an item, linking directly to an item, and an accordion inside a table row.
