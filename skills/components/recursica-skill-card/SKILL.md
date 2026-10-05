@@ -78,14 +78,14 @@ The rule follows from the five tests. A form shows the properties of one object,
 
 The rules below describe each option by role. The names in the standard UI kit (the unchanged UI kit in the official Recursica release) and on the design-system website are examples only.
 
-- **A card can have a header, a content area, sections and a footer.** The header can hold an optional button, called the header button. A divider separates the sections. Tokens set the gap between sections, the vertical gutter and the divider size.
+- **A card can have a header, a content area, sections and a footer.** The header can hold an optional button, called the header button. A divider separates the sections.
 - **Style.** A card can have a raised style or an outlined style. The design-system website calls the two styles Elevation and Outline. Use the style choice only when the project lists the style choice. Otherwise, ask.
 - **Do not choose between the raised style and the outlined style at random.** No rule says where to use each style. See "Open questions".
 - **Graphic slot.** A graphic slot holds the graphic that test 4 requires, such as an image or a chart. The graphic slot sits above the card's content or below the card's content, or the card has no graphic slot. The website calls the three options Top, Bottom and None. Use the graphic slot choice only when the project lists the graphic slot choice. Otherwise, ask. A card with no graphic slot is the setup the aesthetic exception relies on.
-- **Size.** If the project has a size variant, use the size variant. Otherwise, keep the card's minimum width and maximum width fixed, and do not build a wide card and a narrow card as variants.
+- **Size.** If the project has a size variant, use the size variant. Otherwise, do not build a wide card and a narrow card as variants.
 - **A card is not a control.** When a card is a link or holds a link, see the rules for links under "Accessibility".
 
-**A card sits on a layer (a numbered background level, 0 to 3, that sets the colors of the components on that level). A card is not a replacement for a layer.** A card has a separate set of colors for each of the four layers, so the layer under a card changes how the card looks. A layer sets the background and the design values for an area of the screen. A card is the boundary around one object among repeating peers. See `recursica-skill-layers`.
+**A card sits on a layer (a numbered background level, 0 to 3, that sets the colors of the components on that level). A card is not a replacement for a layer.** A layer sets the background and the design values for an area of the screen. A card is the boundary around one object among repeating peers. See `recursica-skill-layers`.
 
 ## Rules
 
@@ -130,13 +130,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 ## Styling set by tokens
 
-**Do not set or override the card properties below.** The card's tokens set each property.
-
-- `padding`, `header-padding`, `footer-padding`, `section-gap`, `vertical-gutter`.
-- `borders`, `elevations`, `divider-size`, `colors`.
-- `min-width`, `max-width`.
-- `header-style` and `content-style`, the typography of the header and the content.
-- Corner radius, and any hover style or focus style.
+**Never set or override the card's styling.** The theme sets every visual property of the card, such as size, spacing, borders and colors. Do not add extra containers or spacers to change the card's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
 ## Related skills
 
@@ -169,5 +163,6 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - [ ] Every chart in a slot has a data table.
 - [ ] Every repeated control names the control's object.
 - [ ] No static card is a tab stop, and a clickable card contains no other element the user can act on.
-- [ ] Every card variant, option and state is one the project lists, no variant or option is invented, and the card's padding, border, and elevation come from the card component.
+- [ ] Every card variant, option and state is one the project lists, and no variant or option is invented.
+- [ ] No styling is set or overridden on the card.
 - [ ] Open questions were asked about, not decided: the raised style versus the outlined style, how many cards make a small finite card set, card layout across breakpoints, selectable cards, the empty state of a card set, the header button with the footer in one card.
