@@ -13,7 +13,7 @@ A stepper leads the user through one process that has several steps. The stepper
 
 ## When to use a stepper
 
-- **A form has several parts.** `recursica-skill-forms` sets the test: stages the user thinks of as separate, a very large number of fields, or an answer that makes a _later_ step clearly different.
+- **A form has several parts.** `recursica-skill-forms` sets the test for splitting a form into steps: stages the user thinks of as separate, a very large number of fields, or an answer that makes a _later_ step clearly different.
 - **A form would otherwise be split across tabs.** Splitting a form across tabs is forbidden, and the stepper replaces the tabs.
 - **A first-time setup flow or an onboarding flow** must be worked through in order.
 - **The screen shows the status of a step-by-step workflow**, such as Processing, Shipped, Delivered, where the stages are fixed and in order.
@@ -43,9 +43,9 @@ The rules below describe each option by role, such as "the smaller size". The na
 - **Two orientations, horizontal and vertical.** In the standard UI kit, the orientation variant is `orientation`, with the options `horizontal` and `vertical`.
 - **A step label and an optional step description.** Each step has a name, the step label. A step may also have a second line, the step description, for a short description. Never put a paragraph in the step description. In the standard UI kit, the step label is `label-text` and the step description is `description-text`.
 - **A connector (the line between steps) that shows finished steps apart from upcoming steps.** The connector of a finished step and the connector of an upcoming step differ in thickness, and the stepper also uses color. A line's thickness and a color are a single visual channel (color, shape, position or text, each a separate signal). Progress must not rely on the connector's thickness and color alone. See the accessibility section and `recursica-skill-system-conventions`.
-- **No step-status variant in the standard UI kit.** The design-system website shows done, current and upcoming steps, but the standard UI kit defines no state variant. If the project adds a step-status variant in Theme Forge, use the project's variant. Otherwise, a step's status is data the application supplies, not a variant. In both cases, state each step's status in what assistive technology reads.
-- **No error, warning, skipped or optional step state in the standard UI kit.** The standard UI kit cannot show that a step failed validation. If the project adds one of these step states in Theme Forge, use the project's state. In both cases, the step's text must say that the step failed validation.
-- **No step number or checkmark in the standard UI kit.** The design-system website shows a step number and a checkmark inside the step indicator, but the standard UI kit has no token for any content inside the step indicator. If the project adds a step number or a checkmark in Theme Forge, use the project's version. See the open questions.
+- **Step status.** The design-system website shows done, current and upcoming steps. If the project has a step-status variant, use the project's step-status variant. Otherwise, a step's status is data the application supplies, not a variant. In both cases, state each step's status in what assistive technology reads.
+- **Error, warning, skipped and optional steps.** If the project has an error, warning, skipped or optional step state, use the project's step state. Whether or not the project has one of the four step states, the step's text must say that the step failed validation.
+- **Step number or checkmark.** A step indicator is the mark for one step on the stepper. The design-system website shows a step number and a checkmark inside the step indicator. If the project has a step number or a checkmark inside the step indicator, use the project's version. See the open questions.
 
 ## Rules
 
@@ -73,7 +73,7 @@ The rules below describe each option by role, such as "the smaller size". The na
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only the rules specific to this component are listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
 **State in what assistive technology reads every fact a sighted user sees on the stepper at a glance.** The stepper shows the current step and the progress with the step indicator, color, and the thickness of the connector. A screen reader reads none of the indicator, the color, or the thickness. A screen reader user is most likely to lose track of the current step when the step changes.
 
@@ -86,7 +86,7 @@ This component also follows the accessibility baseline in `recursica-skill-syste
 - **Each step label must make sense without the layout around the step label.** A screen reader user hears "Payment details" with no layout around the words to explain the words.
 - **When the step changes, the new step must be perceivable.** Announce the new position and the new step's heading. A screen reader announces nothing when the screen changes, unless the change is announced on purpose.
 - **When the user can move between steps, each step is a real control, with a name and a state:** current, completed, or disabled. When the user cannot move between steps, the steps must be plain text that cannot be operated, and must not be announced as buttons.
-- **A step with an error must say so in text.** The standard UI kit has no error state. The step's content must state the failure. If the step indicator is a control, the step indicator's accessible name (the name a screen reader reads out for a control) or state must state the failure too.
+- **A step with an error must say so in text.** The step's content must state the failure. If the step indicator is a control, the step indicator's accessible name (the name a screen reader reads out for a control) or state must state the failure too.
 
 ### Keyboard and non-mouse navigation
 
@@ -128,8 +128,8 @@ This component also follows the accessibility baseline in `recursica-skill-syste
 - **Whether each step gets a route and a browser history entry.** `recursica-skill-navigation` rules on views and tabs, not on steps. No rule says what the browser's Back button does in a stepper.
 - **Validation across steps.** No rule says whether a step validates when the user leaves the step, or what going back does to the data the user entered. `recursica-skill-forms` names this question as open too.
 - **Whether a step may be optional or skipped**, and how an optional or skipped step shows in the step count.
-- **What a step with an error looks like.** The standard UI kit has no error state. Ask only when the project has no error state.
-- **Whether the step indicator shows a number or a checkmark.** The design-system website shows both, and the standard UI kit has no token for either. Do not rely on a number or a checkmark without asking. Ask only when the project has no number or checkmark in the step indicator.
+- **What a step with an error looks like.** Ask only when the project has no error state.
+- **Whether the step indicator shows a number or a checkmark.** The design-system website shows both. Do not rely on a number or a checkmark without asking. Ask only when the project has no number or checkmark in the step indicator.
 - **Where the stepper sits relative to the step's content**, and whether the stepper stays in view while the step's content scrolls.
 
 ## Pre-flight checklist
