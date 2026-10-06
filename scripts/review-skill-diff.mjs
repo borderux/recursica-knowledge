@@ -21,6 +21,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { COMPONENT_ROLES } from "./lib/skill-sections.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -49,6 +50,7 @@ const headings = (t) =>
     .map((l) => l.trimEnd());
 const section = (t, name) =>
   t.split(new RegExp(`^## ${name}\\s*$`, "m"))[1]?.split(/^## /m)[0] ?? "";
+const unheaded = (t) => t.replace(/^#{1,6} .*$/gm, "");
 const checklistItems = (t) =>
   (section(t, "Pre-flight checklist").match(/^- \[ \]/gm) ?? []).length;
 const tableRows = (t) =>
@@ -90,14 +92,44 @@ export function ruleWords(text) {
   );
 }
 
-/** `## ` sections of a skill's prose, keyed by heading. The text before the first is "(intro)". */
+/** The component-skill headings before each section's heading named its component. */
+const LEGACY = {
+  "Use it when": "use",
+  "Do not use it when": "avoid",
+  "What exists": "inventory",
+  "Rules for using it": "rules",
+  "Set by the component": "styling",
+  "Load these too": "load",
+  "Uncovered — ask, do not invent": "uncovered",
+};
+const roleOf = (title) =>
+  LEGACY[title] ?? COMPONENT_ROLES.find((r) => r.match?.(title))?.role;
+const labelOf = (role) =>
+  `## ${COMPONENT_ROLES.find((r) => r.role === role).label}`;
+
+/**
+ * `## ` sections of a skill's prose, keyed by heading. The text before the first is "(intro)".
+ *
+ * A component skill's section is keyed by its role, not its words, so "## Rules for using it"
+ * and "## Rules" are the same section. Keyed by words, renaming the headings made every rule word
+ * in every component skill look as if it had left its section.
+ */
 function sections(text) {
+  const parts = prose(text)
+    .split(/^(?=## )/m)
+    .filter((p) => p.trim())
+    .map((part) => {
+      const title = part.startsWith("## ")
+        ? part.split("\n")[0].slice(3).trim()
+        : null;
+      return { part, title, role: title ? roleOf(title) : undefined };
+    });
+  const rules = parts.findIndex((p) => p.role === "rules");
+  if (rules > 0 && !parts[rules - 1].role && parts[rules - 1].title)
+    parts[rules - 1].role = "inventory";
   const out = {};
-  for (const part of prose(text).split(/^(?=## )/m)) {
-    if (!part.trim()) continue;
-    const head = part.startsWith("## ")
-      ? part.split("\n")[0].trim()
-      : "(intro)";
+  for (const { part, title, role } of parts) {
+    const head = role ? labelOf(role) : title ? `## ${title}` : "(intro)";
     out[head] = (out[head] ?? "") + part;
   }
   return out;
@@ -151,13 +183,17 @@ export function review(before, after) {
   if (tableRows(before) !== tableRows(after))
     note("warn", `table rows ${tableRows(before)} → ${tableRows(after)}`);
 
+  // Rule words are counted in the text under the headings. A heading is not a rule, and its
+  // change is flagged above; counted, "## Do not use it when" becoming "## When not to use a
+  // button" read as a dropped "do not".
   const sa = sections(before);
   const sb = sections(after);
-  const ta = ruleWords(prose(before));
-  const tb = ruleWords(prose(after));
+  const ta = ruleWords(unheaded(prose(before)));
+  const tb = ruleWords(unheaded(prose(after)));
+  const count = (t) => ruleWords(unheaded(t));
   for (const w of RULE_WORDS) {
     const drops = Object.keys(sa)
-      .map((h) => [h, ruleWords(sa[h])[w], sb[h] ? ruleWords(sb[h])[w] : 0])
+      .map((h) => [h, count(sa[h])[w], sb[h] ? count(sb[h])[w] : 0])
       .filter(([, x, y]) => y < x);
     if (tb[w] < ta[w] || drops.length) {
       const where = drops.map(([h, x, y]) => `${h} ${x}→${y}`).join("; ");

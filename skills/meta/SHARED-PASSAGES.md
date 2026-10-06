@@ -18,11 +18,11 @@ Each passage below has three parts:
   opening listed here must then match one of the passages sharing that opening, from its first
   word. A skill may add its own sentences **after** the passage in the same paragraph, never inside
   it.
-- **Required when** — optional. A pattern tested against the skill's `## What exists` section; a
+- **Required when** — optional. A pattern tested against the skill's `## Variants` section; a
   component skill that matches must contain the passage.
 - **Passage** — the wording. `{a|b}` means either `a` or `b`, and `{a|}` means `a` or nothing.
   Those are the only permitted differences, and each one is here because the skills differ for a
-  real reason — "this field's" and "this group's", or a component that has no `formLayout` prop.
+  real reason — "this field's" and "this group's".
 
 **When a skill needs different wording**, do not add another `{…|…}` to fit it. If its situation
 is different, write its own paragraph with an opening that is not listed here — as the
@@ -31,38 +31,18 @@ label, panel, and stepper skills do for label placement. If it is not, use the p
 **When the wording should change**, change it here and in every copy in the same pull request.
 The check lists every copy.
 
-## react-prop-column
-
-Starts with:
-
-```text
-**The third column is the React prop
-```
-
-Required when:
-
-```text
-React prop
-```
-
-Passage:
-
-```text
-**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop, and React ignores it without an error if it is passed as one. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
-```
-
 ## layouts-axis
 
 Starts with:
 
 ```text
-**`layouts` is the label-placement axis
+**Label placement is a variant
 ```
 
 Passage:
 
 ```text
-**`layouts` is the label-placement axis{ (a property a component varies on, such as size or style; Figma calls it a variant property)|}{, set by the `formLayout` prop|}.** `side-by-side` — the label beside the {field|control} — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**Label placement is a variant.** A {field|control}'s label sits beside the {field|control} or above the {field|control}. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the {field|control} is the house default. The label above the {field|control} is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
 ```
 
 ## layouts-axis-group
@@ -70,33 +50,27 @@ Passage:
 Starts with:
 
 ```text
-**`layouts` is the label-placement axis
+**Label placement is a variant
 ```
 
 Passage:
 
 ```text
-**`layouts` is the label-placement axis, the same axis every field has.** `side-by-side` puts the group's label beside the {stack of items|stack of options|switches}; `stacked` puts it above.
+**Label placement is a variant, the same variant every field has.** A group's label sits beside the {stack of items|stack of options|switches} or above the {stack of items|stack of options|switches}. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`.
 ```
 
-## formlayout-default
+## label-placement-default
 
 Starts with:
 
 ```text
-**`formLayout` defaults to
-```
-
-Required when:
-
-```text
-`formLayout`
+**Set label placement explicitly on every field.**
 ```
 
 Passage:
 
 ```text
-**`formLayout` defaults to `stacked`, which puts the label above the input.** A field without the prop shows its label above the input at any container width, which breaks the house rule. `layouts` is the UI kit's name for this variant, not a prop: React ignores `layouts="side-by-side"` without an error and leaves the label above the input. Set `formLayout="side-by-side"`{ on every field|} to put the label beside the input.
+**Set label placement explicitly on every field.** The house rule puts the label beside the input. The code library under an adapter may put the label above the input by default, at every container width. Set the label beside the input on every field, using the names the code uses for the variant and the option.
 ```
 
 ## one-placement-per-form
@@ -110,7 +84,7 @@ Starts with:
 Passage:
 
 ```text
-**Label placement is one decision per form, not per field.** This {field's|group's} `layouts` value is not a separate choice — it matches every other field in the same form{, whether they can be edited or not|}. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones {like this one |}that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
+**Label placement is one decision per form, not per field.** This {field|group} uses the same label placement as every other field in the form{, editable or not|}. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields {like this one |}that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 ```
 
 ## one-placement-checklist
@@ -118,13 +92,13 @@ Passage:
 Starts with:
 
 ```text
-- [ ] `layouts` matches every other field
+- [ ] Label placement matches every other field
 ```
 
 Passage:
 
 ```text
-- [ ] `layouts` matches every other field in the same form — one placement per form at any given breakpoint, with no mixing between fields or sections
+- [ ] Label placement matches every other field in the same form, with one placement per form at each breakpoint and no mixing between fields or form sections
 ```
 
 ## focus-and-placeholder
@@ -132,13 +106,13 @@ Passage:
 Starts with:
 
 ```text
-**Focus and placeholder are not variants.**
+**Never build a focus state or a placeholder state.**
 ```
 
 Passage:
 
 ```text
-**Focus and placeholder are not variants.** The component handles them: `placeholder-opacity` here, and the focused border through `globals.form.field.colors.border-selected`. Do not build them as states.
+**Never build a focus state or a placeholder state.** Every Recursica field already shows the focus border and the placeholder text.
 ```
 
 ## accessibility-baseline-pointer
@@ -146,17 +120,17 @@ Passage:
 Starts with:
 
 ```text
-This component also follows the accessibility baseline
+The rules below add to the accessibility baseline
 ```
 
 Required when:
 
 ```text
-Taken from
+UI kit
 ```
 
 Passage:
 
 ```text
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`{, including the focus ring|}. Only what is specific to it is listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`{, including the focus ring|}, which every Recursica component follows.
 ```

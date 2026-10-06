@@ -9,7 +9,7 @@
  * A unit — a paragraph, or one list item — that begins with a passage's opening is claimed by it,
  * and has to match one of the passages sharing that opening from its first word. Text a skill adds
  * after the passage is its own. A passage with a "Required when" pattern must appear in every
- * component skill whose `## What exists` section matches it.
+ * component skill whose inventory section matches it.
  *
  *   node scripts/check-shared-passages.mjs      # exit 1 on any mismatch
  */
@@ -18,6 +18,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { listSkills } from "./check-skill-structure.mjs";
+import { sectionBody } from "./lib/skill-sections.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 export const PASSAGES = path.join(ROOT, "skills", "meta", "SHARED-PASSAGES.md");
@@ -133,8 +134,7 @@ export function checkText(text, passages, { component = false } = {}) {
     }
   }
   if (component) {
-    const exists =
-      text.split(/^## What exists\s*$/m)[1]?.split(/^## /m)[0] ?? "";
+    const exists = sectionBody(text, "inventory");
     for (const p of passages) {
       if (
         p.requiredWhen &&
@@ -143,7 +143,7 @@ export function checkText(text, passages, { component = false } = {}) {
       ) {
         problems.push({
           line: 1,
-          message: `\`## What exists\` mentions ${p.requiredWhen}, so "${p.id}" is required and missing`,
+          message: `the inventory section mentions ${p.requiredWhen}, so "${p.id}" is required and missing`,
         });
       }
     }

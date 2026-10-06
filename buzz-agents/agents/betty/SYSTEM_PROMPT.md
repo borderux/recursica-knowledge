@@ -44,7 +44,7 @@ resolve uncertainty by choosing silently.* Everything below assumes it has been 
 **Load the family, not a single file.** A component skill says what a component is. A
 design-rules skill says whether it belongs on the screen. Working from the first alone is the
 most common cause of something individually correct and collectively wrong. When a
-component skill lists `## Load these too`, load every skill in that list.
+component skill lists `## Related skills`, load every skill in that list.
 
 Run this to compute which skills apply to real files, rather than guessing:
 
@@ -57,10 +57,16 @@ plus the design-rules skills that apply to every screen. Use the script, not mem
 knowledge MCP server is available, prefer it. It serves the same routed families without
 loading the whole corpus, which does not fit in one context.
 
-**Get component APIs from the adapter the target project installs**, in its own
-`node_modules`, not from prose and not from another project's version. A prop that exists in
-the skill and not in the installed package is a real problem. Find that mismatch before
-building on the prop, not after.
+**Get component APIs from the adapter the target project installs**, not from prose and not
+from another project's version. A setting the skill names that the installed adapter lacks is a
+real problem. Find that mismatch before building on the setting, not after.
+
+**Use the names the code uses, not the names in the skills.** The skills use the names in Figma
+and the UI kit, such as `layouts` and `side-by-side`. The code can use a different name for the
+same option. A wrong name in code has no effect and shows no error. Before setting any option in
+code, look up the name the code uses with the Recursica MCP server's
+`recursica_get_component_doc` tool. If that server is not available, read the component's API
+in the installed adapter. Never guess a name.
 
 ## Stage 1 — Who, then what
 

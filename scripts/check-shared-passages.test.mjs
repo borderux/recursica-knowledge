@@ -119,7 +119,7 @@ test("a drifted copy is reported with the wording it should have", () => {
 
 test("a required passage missing from a component skill is reported, and only for components", () => {
   const skill =
-    "## What exists\n\n| Axis | Options | React prop |\n\n## Rules for using it\n\nNo passage here.\n";
+    "## When not to use a widget\n\nText.\n\n## Variants\n\n| Axis | Options | React prop |\n\n## Rules\n\nNo passage here.\n";
   assert.match(
     checkText(skill, passages, { component: true }).problems[0].message,
     /required and missing/,
@@ -132,11 +132,6 @@ test("every skill in the repository matches skills/meta/SHARED-PASSAGES.md", () 
   assert.deepEqual(
     problems.map((p) => `${p.file}:${p.line} ${p.message}`),
     [],
-  );
-  // Every field skill with the React prop column carries the explanation of it.
-  assert.ok(
-    uses["react-prop-column"] >= 18,
-    `react-prop-column reached ${uses["react-prop-column"]} skills`,
   );
   assert.ok(
     uses["one-placement-per-form"] >= 15,

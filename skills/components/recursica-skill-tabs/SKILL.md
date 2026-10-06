@@ -9,124 +9,113 @@ metadata:
 
 # Tabs
 
-Tabs switch between the parts of one whole and show one part at a time.
+Tabs switch between the sections of one subject and show one section at a time. A tab is the clickable label for one section. A tab list is the row or column of tabs. A tab panel is the area that shows one tab's section. A tab set is a group of tabs.
 
-## Use it when
+## When to use tabs
 
-- **The panels are equal parts of one subject.** Every tab is about the same object, and the user could reasonably look at any of them first.
-- **The order does not matter.** Nothing in tab three depends on tab one having been visited.
-- **The user needs to move between them in one click**, with no step in between.
+- **The tab panels are equal parts of one subject.** Every tab is about the same object, and the user could reasonably look at any tab first.
+- **The order of the tabs does not matter.** Nothing in the third tab depends on the user having visited the first tab.
+- **The user needs to move between the tab panels in one click**, with no step in between.
 
-## Do not use it when
+## When not to use tabs
 
-| Instead of tabs                                     | Use                                                                 |
-| --------------------------------------------------- | ------------------------------------------------------------------- |
-| The steps must be done in order                     | A stepper — see `recursica-skill-forms`                             |
-| A form is too long for one screen                   | A stepper. Tabs holding a form is an invalid structure              |
-| The sections are different areas of the application | Navigation — see `recursica-skill-navigation`                       |
-| The user needs to compare content across sections   | One view showing both. Tabs hide what is being compared             |
-| The sections are long reference content             | An accordion — see `recursica-skill-accordion`                      |
-| There are more sections than the space allows       | Fewer sections, or a different structure. Never scroll or wrap tabs |
+| Instead of tabs                                         | Use                                                                         |
+| ------------------------------------------------------- | --------------------------------------------------------------------------- |
+| The steps must be done in order                         | A stepper — see `recursica-skill-forms`                                     |
+| A form is too long for one screen                       | A stepper. A tab set that holds a form is an invalid structure              |
+| The sections are different areas of the app             | Navigation — see `recursica-skill-navigation`                               |
+| The user needs to compare content across sections       | One view that shows the compared content together. Tabs hide the comparison |
+| The sections are long reference content                 | An accordion — see `recursica-skill-accordion`                              |
+| There are more sections than the available space allows | Fewer sections, or a different structure. Never scroll or wrap tabs         |
 
-**Never spread a form across tabs.** The house rules name this misuse explicitly. A half-filled form behind an unselected tab hides both the work left to do and the validation errors. Use a stepper.
+**Never spread a form across tabs.** `recursica-skill-navigation` names a form across tabs as a misuse. A half-filled form behind an unselected tab hides both the work left to do and the validation errors. Use a stepper.
 
-## What exists
+## Variants
 
-Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.tabs` and `tabs-item`.
+**Use only the tab variants and options that the Recursica MCP server lists for the project.** A designer can add variants and options in Theme Forge, so each project can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
 
-**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop, and React ignores it without an error if it is passed as one. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+The rules below describe each option by role, such as "the vertical orientation". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-| Axis               | Options                       | React prop | On          |
-| ------------------ | ----------------------------- | ---------- | ----------- |
-| `styles`           | `default`, `pills`, `outline` | `variant`  | `tabs`      |
-| `orientation`      | `horizontal`, `vertical`      |            | `tabs`      |
-| `selection-states` | `active`, `inactive`          |            | `tabs-item` |
+- **A tab set has two components.** The tab set component holds every tab, and a tab item is one tab. In the standard UI kit, the two components are `tabs` and `tabs-item`.
+- **Three styles, on the tab set and on each tab item.** The same three styles exist on both components. In the standard UI kit, the variant is `styles`, with the options `default`, `pills`, and `outline`. Apply one style to the whole tab set, and do not mix styles within one tab set.
+- **Two orientations, on the tab set and on each tab item.** A tab set is horizontal or vertical. In the standard UI kit, the variant is `orientation`, with the options `horizontal` and `vertical`. Both orientations are approved, as the rule on vertical tab sets below states. How to set the orientation is an open question.
+- **Two selection states on each tab item.** A tab is active or inactive. In the standard UI kit, the variant is `selection-states`, with the options `active` and `inactive`. The selection state is not a variant to set. The tab set sets each tab to active or inactive, from which tab is selected.
+- **A leading icon and a counter on a tab item.** A tab item may have a leading icon and a counter. Only the design-system website shows the leading icon and the counter as parts of a tab item. A counter is a badge. See `recursica-skill-badges-chips`.
 
-**The same three styles exist on `tabs` and on `tabs-item`.** Apply one style to the whole set, and do not mix styles within it.
+## Rules
 
-**Orientation is horizontal or vertical**, on the tab set and on each tab. Both are approved, as the vertical rule below states. The uncovered list asks how orientation is set.
+**Give every tab a separate route.** The tab's route is a sub-path under the route of the view that holds the tab set. A tab with a separate route can be linked to, stays open after a page refresh, and works with the browser's back and forward buttons. `recursica-skill-navigation` states the preference for a route per tab directly.
 
-**`active` and `inactive` are states of each tab, not variants to set.** The component sets them from which tab is active.
+**Open the first tab in reading order by default.** `recursica-skill-defaults` owns this rule.
 
-**A tab item may have a leading icon and a counter.** Both appear as parts of the item only on the design-system website. A counter is a badge; see `recursica-skill-badges-chips`.
+**Label each tab with a noun that names the tab's content**, not a verb and not a step number. Use labels such as "Overview", "Members" and "Billing", never "Step 2".
 
-## Rules for using it
+**Keep a tab set to 7 ± 2 tabs, and prefer far fewer tabs.** See `recursica-skill-working-memory`.
 
-**Every tab gets its own route.** The route is a sub-path under the parent route. With its own route, a tab can be linked to, survives a refresh, and works with the back and forward buttons. The house rules state this preference directly.
+**Never wrap tabs onto a second line, never make tabs scroll, and never put the tabs that do not fit in a menu.** If the tabs do not fit, the screen's structure is wrong. Switch to a vertical tab set, or shorten the tab labels. `recursica-skill-navigation` owns this rule.
 
-**The first tab in reading order opens by default.** `recursica-skill-defaults` owns this rule.
+**A vertical tab set is an approved house pattern.** When a horizontal tab set does not fit, the two approved fixes are a vertical tab set and shorter labels. `recursica-skill-navigation` treats tabs that do not fit as a defect in the structure, and names a vertical tab set as the fix. Use a vertical tab set as a normal option, without asking first, instead of wrapping tabs, scrolling tabs, or hiding tabs in a menu. The arrow keys follow the orientation, as described under "Keyboard and non-mouse navigation" below.
 
-**Label each tab with a noun that names its content**, not a verb and not a step number. Use labels like "Overview", "Members" and "Billing", never "Step 2".
+**Do not add custom code that responds to key presses inside the tab set.** The tab set responds to key presses on the tabs automatically. Custom code for key presses can break the tab set's built-in keyboard behavior.
 
-**Keep the set to 7 ± 2, and prefer far fewer.** See `recursica-skill-working-memory`.
-
-**Never wrap tabs onto a second line, never make them scroll, and never put the overflow in a menu.** If the tabs do not fit, the structure is wrong. Switch to a vertical set, or shorten the labels. `recursica-skill-navigation` owns this rule.
-
-**A vertical tab set is a valid house pattern.** When a horizontal set does not fit, the two approved fixes are a vertical set and shorter labels. `recursica-skill-navigation` treats overflow as a defect in the structure, and names a vertical set as the fix. Use a vertical set as a normal option, without asking first, instead of wrapping tabs, scrolling them, or hiding them in a menu. The arrow keys follow the orientation, as the accessibility section describes.
-
-**Do not add custom key handling inside the tab set.** The underlying library handles the keys, and custom handlers can break that handling.
-
-**A counter on a tab is metadata, not a control.** It can never be clicked, and it never animates when it changes.
+**A counter on a tab is information, not a control.** The counter can never be clicked. The counter never animates when the counter changes.
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
-A tab set is one of the few components where wrong roles or connections in the markup make the content unreachable, not only awkward to use. Leave all key handling to the library.
+A tab set is one of the few components where a wrong role or a wrong connection in the markup makes the content unreachable, not only awkward to use. Leave all keyboard behavior to the tab set.
 
 ### Screen readers
 
-- **The tab list, each tab, and each panel need their real roles**, and each panel must be connected to the tab that controls it. Without that connection, a screen reader user cannot tell that the content below changed, or which tab changed it.
-- **Only the selected tab is announced as selected.** Show selection by more than color or weight, as `recursica-skill-system-conventions` requires.
-- **Each tab's accessible name (the name a screen reader reads out for a control) is its visible label.** If the label is truncated on screen, the full name must still be announced.
-- **A counter on a tab must be part of that tab's announcement**, as in "Members, 12". Never leave the number as a separate item that a screen reader reads apart from the tab, or skips.
-- **A leading icon on a tab is decorative, and must be hidden from screen readers.** The label carries the meaning.
-- **Switching tabs must not quietly replace the page.** If the panel's content is the whole view, tell the user that the panel changed, not only that a control was activated.
+- **The tab list, each tab, and each tab panel need the correct role for each part.** Each panel must be connected to the tab that controls the panel. Without the connection, a screen reader user cannot tell that the panel content changed, or which tab changed the panel content.
+- **Only the selected tab is announced as selected.** Show which tab is selected by more than color or font weight, as `recursica-skill-system-conventions` requires.
+- **Each tab's accessible name (the name a screen reader reads out for a control) is the tab's visible label.** If the label is cut off on screen, the full label must still be announced.
+- **A counter on a tab must be part of the tab's announcement**, as in "Members, 12". Never leave the number as a separate item that a screen reader reads apart from the tab, or skips.
+- **A leading icon on a tab is decorative, and must be hidden from screen readers.** The label gives the meaning.
+- **Switching tabs must not replace the page without notice.** If the panel's content fills the whole view, tell the user that the panel changed, not only that a control was activated.
 
 ### Keyboard and non-mouse navigation
 
-- **The tab list is a single tab stop** (a place the Tab key lands). Tab moves into the set, and then out of it to the panel — it does not step through every tab. The library sets this up. Do not add a tabindex to individual tabs, and do not override the library's behavior.
-- **The arrow keys move between tabs**, following the orientation: left and right for a horizontal set, up and down for a vertical one. Home and End jump to the first and last.
-- **The panel's content can be reached from the tab right away.** Tabbing off the selected tab lands in its panel, not somewhere else on the page.
-- **Never activate a tab only because it receives focus** where activating it causes a noticeable delay or navigates. The user must be able to move across the set and then choose a tab.
-- **A tab is activated with Enter or Space**, never by click only.
+- **The tab list is a single tab stop** (a place the Tab key lands). The Tab key moves focus into the tab list, and then out of the tab list to the panel. The Tab key does not step through every tab. The tab set sets up the single tab stop automatically. Do not add a `tabindex` to individual tabs, and do not override the tab set's built-in behavior.
+- **The arrow keys move between tabs**, following the orientation: left and right for a horizontal tab set, up and down for a vertical tab set. Home moves to the first tab, and End moves to the last tab.
+- **The panel's content can be reached from the selected tab right away.** Pressing Tab on the selected tab moves focus into the selected tab's panel, not to another place on the page.
+- **Never activate a tab only because the tab receives focus** when activating the tab causes a noticeable delay or navigates. The user must be able to move focus across the tabs and then choose a tab.
+- **Enter or Space activates a tab.** A tab never works by click only.
 
-## Set by the component
+## Styling set by tokens
 
-Do not set or override any of these. The component sets them:
+**Never set or override the tabs' styling.** The theme sets every visual property of the tabs, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the tabs' look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
-- Padding, gaps, the active indicator, and its animation.
-- Type styling and selected-state weight.
-- All colors per style, per layer, and per state.
-- Borders and radii for `pills` and `outline`.
-- Keyboard interaction inside the tab set.
+**Never set or override the keyboard behavior inside the tab set either.** The tab set sets the keyboard behavior.
 
-## Load these too
+## Related skills
 
-- `recursica-skill-navigation` — what tabs may contain, tab routes and history, the prohibition on overflow, active states, breadcrumbs.
-- `recursica-skill-forms` — the stepper, which is the correct alternative to a tabbed form.
-- `recursica-skill-working-memory` — the basis for the item-count ceiling.
+- `recursica-skill-navigation` — what tabs may contain, tab routes and history, the ban on tabs that do not fit, active states, and breadcrumbs.
+- `recursica-skill-forms` — the stepper, which is the correct alternative to a form split across tabs.
+- `recursica-skill-working-memory` — the reason for the 7 ± 2 limit on tabs.
 - `recursica-skill-badges-chips` — the counter on a tab.
 - `recursica-skill-system-conventions` — the accessibility baseline every component follows.
 
-## Uncovered — ask, do not invent
+## Open questions
 
-- **Whether the three styles mean different things**, or are purely a visual choice for the whole house.
-- **What a tab shows when its panel has no content**, and whether an empty tab is hidden or disabled.
-- **Whether a tab may ever be disabled**, and what would justify it.
-- **How orientation is set.** The UI kit defines `horizontal` and `vertical`. Whether the adapter exposes it as a prop has not been confirmed. Check the component's props, or ask, before relying on it.
+- **Whether the three tab styles have different meanings**, or are only a visual choice for the whole house.
+- **What a tab shows when the tab's panel has no content**, and whether an empty tab is hidden or disabled.
+- **Whether a tab may ever be disabled**, and what would justify a disabled tab.
+- **Setting the orientation.** The standard UI kit defines a horizontal and a vertical orientation. Nobody has confirmed that the adapter (the Recursica component library for one framework, such as Mantine or Angular Material) exposes the orientation as a setting. Check the tab set's settings, or ask, before relying on the orientation setting.
 
 ## Pre-flight checklist
 
-- [ ] Every panel is an equal part of one subject, and the order does not matter.
+- [ ] Every tab panel is an equal part of one subject, and the order of the tabs does not matter.
 - [ ] No form, and no process with steps in order, is split across tabs.
-- [ ] Every tab has its own sub-route, and survives a refresh, back, and forward.
-- [ ] Labels are nouns. The set is within 7 ± 2, and does not wrap, scroll, or overflow.
-- [ ] A set that did not fit is vertical or has shorter labels, chosen without asking.
-- [ ] One style is applied to the whole set. There is no mixing between items, and no invented style.
-- [ ] The tabs, the tab list, and the panels have their real roles, and each panel is connected to its tab.
+- [ ] Every tab has a separate sub-route, stays open after a refresh, and works with back and forward.
+- [ ] Tab labels are nouns. The tab set is within 7 ± 2 tabs, and the tabs do not wrap, scroll, or overflow.
+- [ ] A tab set that did not fit is vertical or has shorter labels, and the fix was chosen without asking.
+- [ ] One style applies to the whole tab set. No tab item mixes in another style, and no style is invented.
+- [ ] Every style, orientation, and state is one the Recursica MCP server lists for the project.
+- [ ] The tab list, each tab, and each tab panel have the correct role for each part, and each panel is connected to the tab that controls the panel.
 - [ ] Selection is shown by more than color, and the selected tab is announced as selected.
-- [ ] The tab list is one tab stop, the arrow keys move between tabs, and the tab set has no custom key handling.
-- [ ] Counters are announced with their tab, cannot be used as controls, and do not animate.
-- [ ] Styling comes from the component.
-- [ ] Uncovered items were asked about, not decided: whether the styles mean different things, what an empty tab shows, whether a tab may be disabled, and how orientation is set.
+- [ ] The tab list is one tab stop, the arrow keys move between tabs, and the tab set has no custom code for key presses.
+- [ ] Each counter is announced with the counter's tab, cannot be used as a control, and does not animate.
+- [ ] No styling is set or overridden on the tabs, and no container or spacer is added to change the tabs' look.
+- [ ] Open questions were asked about, not decided: whether the tab styles have different meanings, what an empty tab shows, whether a tab may be disabled, and how the orientation is set.

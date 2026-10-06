@@ -9,151 +9,140 @@ metadata:
 
 # Slider
 
-A slider picks a value from a range with fixed ends, by moving a thumb (the handle the user drags) along a track (the bar it moves along).
+A slider lets the user pick a value from a range with fixed ends. The user moves a thumb (the handle the user drags) along a track (the bar the thumb moves along).
 
-## Use it when
+## When to use a slider
 
-- **The range has fixed, known ends** — there is a real minimum and a real maximum, and both can be shown.
+- **The range has fixed, known ends.** The range has a real minimum and a real maximum, and the slider can show both ends.
 - **Precision does not matter.** The user wants "about here", not a specific number.
-- **The result is instant and visible** — volume, brightness, opacity, zoom. The user judges the value by its effect, not by reading it.
-- **The surface is touch or pen.** A long track with a large thumb is a comfortable target, where a small number field is not.
+- **The user sees the result of a change at once**, as with volume, brightness, opacity, or zoom. The user judges the value by the effect of the change, not by reading the number.
+- **The user works with touch or a pen.** A long track with a large thumb is easy to hit with a finger or a pen. A small number field is not.
 
-## Do not use it when
+## When not to use a slider
 
-| Instead of a slider                            | Use                                                                                             |
-| ---------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| The user has an exact number in mind           | `recursica-skill-number-input`                                                                  |
-| The range has no end, or an open end           | `recursica-skill-number-input` — a track needs two ends to exist                                |
-| There are only a few separate values           | `recursica-skill-segmented-control` or a radio group — see `recursica-skill-selection-controls` |
-| The value must match an outside source exactly | A typed field, so the user can enter what they were given                                       |
-| Showing how far a task has progressed          | `recursica-skill-loader` — a slider is an input, not an indicator                               |
-| This user can never edit the value             | `recursica-skill-read-only-field`                                                               |
+| Situation                                      | Use instead                                                                                      |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| The user has an exact number in mind           | `recursica-skill-number-input`                                                                   |
+| The range has no end, or an open end           | `recursica-skill-number-input`. A track needs two ends.                                          |
+| The value is one of only a few separate values | `recursica-skill-segmented-control`, or a radio group. See `recursica-skill-selection-controls`. |
+| The value must match an outside source exactly | A typed field, where the user types the exact value from the outside source                      |
+| The screen shows how far a task has progressed | `recursica-skill-loader`. A slider is an input, not an indicator.                                |
+| The current user can never edit the value      | `recursica-skill-read-only-field`                                                                |
 
-**A slider never replaces a typed value when the exact figure matters.** In that case, add the slider alongside the typed value or leave it out.
+**A slider never replaces a typed value when the exact number matters.** When the exact number matters, add the slider beside the typed value, or leave out the slider.
 
-## What exists
+## Variants
 
-Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.slider`. **Do not pass a variant, size, or state that is not listed here.**
+**Use only the slider variants and options that the Recursica MCP server lists for the project.** A designer can add variants and options in Theme Forge, so each project can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. The code can use a different name from the name in Figma and the UI kit. A wrong name in code has no effect and shows no error. Never invent a variant or an option.
 
-**The third column is the React prop that sets each axis.** An axis (a property a component varies on, such as size or style; Figma calls it a variant property) is named in the UI kit. Its name is not a prop, and React ignores it without an error if it is passed as one. A blank cell means no single prop sets that axis — it is set by CSS state or by separate props, and the rules below say which.
+The rules below describe each option by role, such as "the error state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-| Axis      | Options                       | React prop   |
-| --------- | ----------------------------- | ------------ |
-| `layouts` | `stacked`, `side-by-side`     | `formLayout` |
-| `states`  | `error`, `disabled`, `active` |              |
+- **An error state, a disabled state, and an active state.** In the standard UI kit, the state variant is `states`, with the options `error`, `disabled`, and `active`.
+- **The active state marks the thumb while the user moves the thumb.** Do not build the active state. Do not use the active state to mean selected, enabled, or current.
+- **A number input for the exact value.** The slider component includes the number input. Do not build a separate text field beside the track.
+- **Minimum and maximum labels.** The slider component includes a label for the minimum and a label for the maximum, `min-max-label` in the standard UI kit. Do not place separate text at the ends of the track.
+- **Step indicators** for a slider that moves in fixed steps.
+- **A read-only value style for the number readout.** No rule says what the read-only value style means. See the open questions.
 
-**`layouts` is the label-placement axis, set by the `formLayout` prop.** `side-by-side` — the label beside the control — is the house default. `stacked` is the fallback when the container is too narrow to fit both. What decides this is the container's width, not the viewport's. See `recursica-skill-forms`.
+**Label placement is a variant.** A control's label sits beside the control or above the control. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the control is the house default. The label above the control is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
 
-**`formLayout` defaults to `stacked`, which puts the label above the input.** A field without the prop shows its label above the input at any container width, which breaks the house rule. `layouts` is the UI kit's name for this variant, not a prop: React ignores `layouts="side-by-side"` without an error and leaves the label above the input. Set `formLayout="side-by-side"` to put the label beside the input.
+**Set label placement explicitly on every field.** The house rule puts the label beside the input. The code library under an adapter may put the label above the input by default, at every container width. Set the label beside the input on every field, using the names the code uses for the variant and the option.
 
-**Label placement is one decision per form, not per field.** This field's `layouts` value is not a separate choice — it matches every other field in the same form. The container-width test is applied once, to the whole form, and its answer governs every field in it, including short ones that would have fitted side by side. A whole form may switch placement between breakpoints, but it never mixes the two at one breakpoint, and a section never gets its own placement. Owned by `recursica-skill-forms`.
+**Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
-**`active` is found only on this component.** No other component in the UI kit has an `active` state. It marks the thumb while the user moves it. Do not build it, and do not repurpose it to mean selected, enabled, or current.
+## Rules
 
-**The number input is part of this component.** `input-width`, `input-height`, `input-text`, `input-gap`, `input-border-size`, `input-border-radius`, `input-padding-vertical`, `input-padding-left`, and `input-padding-right` all exist here. Do not build a separate text field beside the track.
+**Always show the number input with the slider.** Without the number input, the user cannot know the exact value or tell the exact value to another person. The slider component includes the number input for this reason. Leave out the number input only when the value is approximate and the user sees the effect of a change the instant the value changes.
 
-**The minimum and maximum labels are part of this component** — `min-max-label`. Do not place loose text at the ends of the track.
+**Show the minimum and maximum labels.** The user cannot tell the ends of the range from the track. Use the slider component's minimum and maximum labels, `min-max-label` in the standard UI kit. Do not put the range only in the help text.
 
-**Step indicators exist** — `step-indicator-width` and `step-indicator-border-radius` — for a slider that moves in fixed steps.
+**A slider that moves in fixed steps must show the steps.** When the value moves in fixed amounts, turn on the step indicators. A slider that jumps between values without showing the steps is worse than a slider that moves freely. The user cannot tell why the value jumped.
 
-**There is a `read-only-value` treatment** for the number readout. Its exact meaning is not stated; see the uncovered list.
+**State the unit.** A number alone is unclear, as in "40" with no unit. Put the unit in the label or the assistive text. Show the unit with the value in the number input.
 
-**There is no hover state, no size axis, no vertical orientation, no axis for smooth versus stepped, and no axis for a range with two thumbs.** Other design systems have all of these. This one does not.
+**The slider's purpose decides when a change is saved.** The two purposes below are two different situations, not a second save mode. Apply convention 1 of `recursica-skill-system-conventions`. Convention 1 tests whether the user can see which save mode applies.
 
-## Rules for using it
+- A slider whose effect is visible right away, such as volume, zoom, or brightness, is a live control. A live control saves each change, because the user sees the change.
+- A slider that stores a value in a form is a form field. The form field follows the form's one save mode, whichever save mode the form uses.
 
-**Always pair the slider with the number readout.** A slider on its own gives the user no way to know the exact value, and no way to tell it to anyone else. The component provides the input for exactly this reason. Leave it out only when the value is approximate and its effect is visible the instant it changes.
+Neither situation conflicts with the one-save-mode rule in `recursica-skill-forms`.
 
-**Show the minimum and maximum labels.** The ends of the range cannot be worked out from the track. Use `min-max-label`, instead of putting the range only in the help text.
+**Use a real label from the label component**, and put the unit, the range, and the step size in the help text from the assistive element. See `recursica-skill-label` and `recursica-skill-assistive-element`.
 
-**A slider with steps must show its steps.** If the value moves in fixed amounts, pass step indicators. A slider that snaps to values without showing why is worse than one that moves freely, because the user cannot tell why their value jumped.
+**Pair the error state with a signal that is not color**, either the assistive element's icon or the error message. `recursica-skill-system-conventions` requires a signal that is not color.
 
-**State the unit.** The number alone is unclear — 40 what? Put the unit in the label or the assistive text, and keep it with the value in the readout.
+**Never disable a slider to show a value.** A disabled slider means the user could make the slider usable by taking a different action first. When the user can never set the value here, the value is not a form control. Show the value with `recursica-skill-read-only-field`.
 
-**The slider's purpose decides when a change is saved, and this is not a second save mode.** Apply convention 1 of `recursica-skill-system-conventions`, whose test is whether the user can see which mode they are in. A slider whose effect is visible right away — volume, zoom, brightness — is a live control. It saves when it changes, because the user sees the change. A slider that stores a value in a form is a form field, and follows that form's single save mode, whatever it is. These are two different situations, not two modes of one control. Neither one conflicts with the one-save-mode rule in `recursica-skill-forms`.
-
-**Pass a real label from the shared component**, and put the rule — the unit, the range, the step size — in the assistive element as help text. See `recursica-skill-label` and `recursica-skill-assistive-element`.
-
-**Pair the error state with a signal that is not color** — the assistive element's icon, or the message itself. Required by `recursica-skill-system-conventions`.
-
-**Never disable a slider as a way to show a value.** Disabled means the user could make it usable by doing something else first. If the user can never set the value here, it is not a form control. Show it with `recursica-skill-read-only-field`.
-
-**Do not use a slider to add variety to a long form.** The type and structure of the data dictate which control is best suited.
+**Do not use a slider to add variety to a long form.** The type and structure of the data decide which control fits best.
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`. Only what is specific to it is listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
-The component provides the focus ring, the thumb, and the keyboard handling inside the track. The application must provide everything below. Sliders most often fail on these points, because most builds support dragging and nothing else.
+The slider component already includes the focus ring and the thumb, and already responds to the keyboard inside the track. The app must add the behavior in the two lists below. Sliders most often fail on the points in the two lists, because most builds support dragging and no other input.
 
 ### Screen readers
 
-- **It must be announced as a slider, with its current value, its minimum, and its maximum.** A thumb on a track with no role and no limits cannot be used — the user cannot tell how far through the range they are.
-- **The unit must be announced with the value.** Announce "forty percent", not "forty". If the unit is not part of the announced value, put it in the label.
-- **The value must be announced as it changes, once for each value the user settles on** — never once for every pixel of movement. Do not add a live region (an area a screen reader announces automatically when its content changes) on top of the value the control already announces.
-- **The minimum and maximum labels must be connected to the control in code**, not left as floating text near the ends of the track. Labels that are not connected are invisible to a screen reader user who tabs straight to the thumb.
-- **The paired number input needs its own accessible name** (the name a screen reader reads out for a control), and it must be clear that it and the track are two views of one value — not two separate fields.
-- **Never rely on the track's fill to show the value.** Position on a track is a single visual channel (color, shape, position or text, each a separate signal). The announced value and the readout are the other channels.
+- **The slider must be announced as a slider, with the slider's current value, minimum, and maximum.** A screen reader user cannot use a thumb on a track with no role and no limits. The user cannot tell how far through the range the value is.
+- **The unit must be announced with the value.** Announce "forty percent", not "forty". If the announced value does not include the unit, put the unit in the label.
+- **The value must be announced as the value changes, once for each value the user settles on.** Never announce the value for every pixel of movement. Do not add a live region (an area of the page that a screen reader announces automatically when the area's content changes) on top of the value the slider already announces.
+- **The minimum and maximum labels must be connected to the slider in code**, not left as floating text near the ends of the track. A screen reader user who tabs straight to the thumb does not hear labels that are not connected.
+- **The number input needs an accessible name** (the name a screen reader reads out for a control) **separate from the track's accessible name.** The number input and the track must clearly show one value, not two separate fields.
+- **Never rely on the track's fill to show the value.** Position on a track is a single visual channel (color, shape, position or text, each a separate signal). The announced value and the number input are the other channels.
 
 ### Keyboard and non-mouse navigation
 
-- **Dragging must never be the only way to set the value.** The arrow keys, and the paired number input where there is one, are the ways to do it without a pointer — and both must be fully built.
-- **The arrow keys move by one step. Page Up and Page Down move by a larger step. Home goes to the minimum, and End to the maximum.** Do not remap or swallow any of them.
-- **The thumb is the tab stop (a place the Tab key lands), and the focus ring goes on the thumb.** Never hide it, and never let the track's fill stand in for it.
-- **The paired number input is its own tab stop**, in visual order relative to the track.
-- **Do not move focus for the user** — not when the value reaches an end, and not when the number input is saved.
-- **Nothing needed to use the slider may appear only on hover.** The current value, the ends of the range, and the step size stay on screen at all times. Anything shown only on hover is missing for keyboard and touch users.
+- **Dragging must never be the only way to set the value.** The arrow keys set the value without a pointer, and so does the number input where the slider has one. Both the arrow keys and the number input must be fully built.
+- **The arrow keys move by one step. Page Up and Page Down move by a larger step. Home goes to the minimum, and End to the maximum.** Do not remap or block any of these keys.
+- **The thumb is the tab stop (a place the Tab key lands), and the focus ring goes on the thumb.** Never hide the focus ring, and never use the track's fill in place of the focus ring.
+- **The number input is a separate tab stop**, in visual order with the track.
+- **Do not move focus for the user.** Focus stays in place when the value reaches an end, and when the number input is saved.
+- **Nothing needed to use the slider may appear only on hover.** The current value, the ends of the range, and the step size stay on screen at all times. Content shown only on hover is missing for keyboard users and touch users.
 
-## Set by the component
+## Styling set by tokens
 
-Do not set or override any of these. The component sets them:
+**Never set or override the slider's styling.** The theme sets every visual property of the slider, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the slider's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
-- `track-height`, `track-border-radius`, `thumb-size`, `thumb-border-radius`, `thumb-elevation`.
-- `step-indicator-width`, `step-indicator-border-radius`.
-- `input-width`, `input-height`, `input-gap`, `input-border-size`, `input-border-radius`, `input-text`, `input-padding-vertical`, `input-padding-left`, `input-padding-right`.
-- `min-max-label` and `read-only-value` styling.
-- `icon-size`, and all `colors` including the `active` treatment.
-- Field colors and sizes from `globals.form.field`, label-field gaps and `vertical-item-gap` from `globals.form.properties`, and the disabled treatment from `globals.states.disabled`.
+## Related skills
 
-## Load these too
+- `recursica-skill-label` — the field's name, label placement, and the required or optional marker.
+- `recursica-skill-assistive-element` — the help text that states the unit, range, and step, and the error message.
+- `recursica-skill-forms` — single-column layout, one label placement per form and the container width that decides the placement, validation timing, save mode, and the rule against form controls in a card.
+- `recursica-skill-selection-controls` — when a control with separate options replaces a range, and disabled versus read-only.
+- `recursica-skill-system-conventions` — showing meaning in more than one channel.
 
-- `recursica-skill-label` — the field's name, placement, and the required or optional marker.
-- `recursica-skill-assistive-element` — the help text carrying unit, range, and step, and the error message.
-- `recursica-skill-forms` — single-column layout, one label placement per form and the container-width trigger for it, validation timing, save mode, and the no-form-control-in-a-card rule.
-- `recursica-skill-selection-controls` — when a discrete-option control replaces a range, and disabled versus read-only.
-- `recursica-skill-system-conventions` — never carry meaning in a single channel.
+### Only if used on the same screen
 
-### Only if the screen also uses it
+- `recursica-skill-number-input` — the control for typing an exact number.
 
-- `recursica-skill-number-input` — the control that owns exact numeric entry.
+## Open questions
 
-## Uncovered — ask, do not invent
-
-- **Choosing a range with two thumbs.** Single and range selection are shown only on the design-system website, but the UI kit defines no second thumb and no range axis. Do not build one, and do not rely on this without asking.
-- **Smooth versus stepped, as documented types.** Both are shown only on the design-system website. The UI kit has step-indicator properties but no types axis, so what switches a slider between them is not stated. Do not rely on this without asking.
-- **A hover state.** One is shown only on the design-system website, but the UI kit's states are only `error`, `disabled`, and `active`. Do not rely on this without asking.
-- **What `read-only-value` means** — a readout that cannot be edited beside a track that can be used, or a read-only slider as a whole.
-- **Whether the number input is required or optional**, and on which surfaces. The house says "highly recommended", which is not a rule.
+- **Choosing a range with two thumbs.** Only the design-system website shows single selection and range selection. When the project has no range variant, never build a range with two thumbs from other parts, and ask before relying on a range with two thumbs.
+- **Smooth versus stepped, as documented types.** Only the design-system website shows a smooth type and a stepped type. The standard UI kit has step indicator properties, but no rule says what switches a slider between smooth and stepped. Do not rely on smooth and stepped types without asking. Ask only when the project has no type variant for smooth and stepped.
+- **A hover state.** Only the design-system website shows a hover state. Do not rely on a hover state without asking. Ask only when the project has no hover state.
+- **What `read-only-value` means.** The read-only value style could mark a number readout the user cannot edit beside a track the user can use. The style could also mark a read-only slider as a whole.
+- **Whether the number input is required or optional**, and whether the answer differs by device or by screen. The house guidance says "highly recommended", which is not a rule.
 - **Value labels other than the minimum and maximum**, including a label that moves with the thumb.
-- **Vertical orientation.** No axis supports it.
+- **Vertical orientation.** Ask about a vertical slider only when the project has no vertical orientation.
 
 ## Pre-flight checklist
 
-- [ ] The range has fixed ends, and both ends are shown with `min-max-label`.
-- [ ] A number readout is paired with the track, unless the value is approximate, with an effect that is visible right away.
+- [ ] The range has fixed ends, and the slider's minimum and maximum labels (`min-max-label` in the standard UI kit) show both ends.
+- [ ] The number input is shown with the track, unless the value is approximate and the effect of a change is visible right away.
 - [ ] A slider with steps shows step indicators, and the unit is stated in the label or the assistive text.
-- [ ] A real label is passed, and its `layouts` placement matches every other field in the same form — one placement per form, as `recursica-skill-forms` requires.
-- [ ] The save timing is decided: a live control with an effect visible right away saves when it changes, and a slider in a form follows that form's single save mode.
-- [ ] Help text states the unit, range, and step, and the error message restates the rule broken.
+- [ ] A real label is used, and the label placement (`layouts` in the standard UI kit) matches every other field in the same form, with one placement per form, as `recursica-skill-forms` requires.
+- [ ] The save timing follows the slider's purpose. A live control with an effect visible right away saves each change, and a slider in a form follows the form's one save mode.
+- [ ] The help text states the unit, range, and step, and the error message restates the rule the value broke.
 - [ ] The error state has a signal that is not color.
-- [ ] The control is announced as a slider, with its current, minimum, and maximum values, and its unit.
-- [ ] The value is announced as it changes, once for each value settled on, with no duplicate live region.
-- [ ] The minimum and maximum labels and the assistive text are connected in code, not floating.
+- [ ] The slider is announced as a slider, with the current value, the minimum, the maximum, and the unit.
+- [ ] The value is announced as the value changes, once for each value the user settles on, with no duplicate live region.
+- [ ] The minimum and maximum labels and the assistive text are connected to the slider in code, not floating.
 - [ ] The arrow keys move one step, Page Up and Page Down move a larger step, and Home and End reach the ends.
 - [ ] The value can be set with no pointer at all, and dragging is never the only way.
-- [ ] The thumb is the tab stop, the focus ring is on the thumb and not hidden, and the number input is its own tab stop.
-- [ ] The tab order follows the visual order, focus is never moved for the user, and nothing needed appears only on hover.
-- [ ] Every variant, size, and state comes from the inventory above — no hover, no second thumb, and no vertical orientation.
-- [ ] Styling comes from the component, and `active` marks only the thumb being moved.
+- [ ] The thumb is the tab stop, the focus ring is on the thumb and not hidden, and the number input is a separate tab stop.
+- [ ] The tab order follows the visual order, focus is never moved for the user, and nothing needed to use the slider appears only on hover.
+- [ ] Every variant, size, and state is one the Recursica MCP server lists for the project, and no variant or option is invented. No hover state, second thumb, or vertical orientation is used unless the Recursica MCP server lists one for the project.
+- [ ] No styling is set or overridden on the slider, and no container or spacer is added to change the slider's look.
+- [ ] The active state marks only the thumb the user is moving.
 - [ ] No slider is disabled to show a value.
-- [ ] Uncovered items were asked about, not decided: a range with two thumbs, smooth versus stepped types, a hover state, what `read-only-value` means, whether the number input is required, value labels other than the minimum and maximum, and vertical orientation.
+- [ ] Open questions were asked about, not decided: a range with two thumbs, smooth versus stepped types, a hover state, what `read-only-value` means, whether the number input is required, value labels other than the minimum and maximum, and vertical orientation.

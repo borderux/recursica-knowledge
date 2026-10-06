@@ -306,7 +306,7 @@ Three things about it are deliberate:
   the whole line with one regex each way and both leaked: `\bbuzz\b`, meant for
   `buzz messages send`, matched the `.buzz` inside every absolute path in the nest, and
   `git log` anywhere exempted the rest of the line — which is the incident shape exactly.
-  The verbatim incident command hit both. Each segment is now decided on its own leading
+  The verbatim incident command hit both. Each segment is now decided by its own leading
   verb, and a `cd` into a stale tree carries to the segments after it. This is the same
   mistake the name guard above documents, arrived at independently; if you touch this file,
   keep the per-segment property and keep the absolute-path tests that catch losing it.
@@ -377,7 +377,7 @@ does.** Buzz has `sync-prompts.mjs`, CircleChat has `circlechat/sync-skills.sh`,
 has this — run it after pulling a change to an agent:
 
 ```bash
-npm run agents:install         # Betty, Barb, her checkers and Alan into ~/.claude/agents
+npm run agents:install         # Betty, Barb, her checkers, Alan, and Edie with her comparer into ~/.claude/agents
 npm run agents:install:check   # report what is out of date; change nothing
 ```
 
@@ -454,6 +454,12 @@ all, though, so that property arrives as prose and the two mechanisms that look 
 it — `agent_args`, a per-agent `CLAUDE_CODE_EXECUTABLE` — are both recorded failures. Her PORTING.md
 has the one that works, what it is worth, and what it costs.
 
+**Edie is the editor.** Edie rewrites skills, agent instructions and docs to follow
+[WRITING.md](WRITING.md) and opens a pull request. A read-only `comparer` subagent checks every
+rewrite against the old version for rules that were lost, narrowed, widened or added, and Edie
+fixes each one before the pull request opens. Edie changes wording, never rules, and never
+merges. Built for Claude Code only for now; see [agents/edie/PORTING.md](agents/edie/PORTING.md).
+
 Which skills apply to a screen is **computed, not judged**:
 
 ```bash
@@ -514,21 +520,22 @@ If you (the AI assistant) are tasked with creating, editing, or registering cust
   | `skills:structure:check` | frontmatter parses, `name` matches the folder, description ≤ 1024; component sections in order; references resolve; tables render   |
   | `skills:glossary:check`  | in-place definitions match `GLOSSARY.md`                                                                                            |
   | `skills:passages:check`  | shared paragraphs match `SHARED-PASSAGES.md`                                                                                        |
-  | `skills:uncovered:check` | every topic a checklist calls uncovered is in that skill's `## Uncovered`                                                           |
-  | `skills:kit:check`       | every `## What exists` inventory matches `recursica_ui-kit.json` in the pinned `@recursica/official-release`                        |
+  | `skills:uncovered:check` | every topic a checklist names as an open question is in that skill's `## Open questions`                                            |
   | `skills:wiring:check`    | every skill is wired to the agents: packaged, in `llms.txt`, routed to, and reachable by the reviewers — see below                  |
   | `writing:check`          | American spelling, no "you" in skills or agents, none of the vague phrases [WRITING.md](WRITING.md) lists, a reading grade below 10 |
 
-  The last two carry a short `KNOWN` list of mismatches that are logged in [`docs/open-questions.md`](docs/open-questions.md) and waiting on a decision. They print on every run, and an entry fails the check once it is fixed, so the list cannot outlive the problem. **Bumping `@recursica/official-release` is a skill change**: pin the new version exactly and run `skills:kit:check`, which is how a release that adds or removes a variant reaches the skills.
+  `skills:wiring:check` and `writing:check` carry a short `KNOWN` list of mismatches that are logged in [`docs/open-questions.md`](docs/open-questions.md) and waiting on a decision. They print on every run, and an entry fails the check once it is fixed, so the list cannot outlive the problem. Variants are not checked here: each project can define its own in its UI kit, and agents get the project's list from the Recursica MCP server.
 
-- **A new or renamed skill is not finished until the agents can use it.** A skill on disk that no agent reaches passes every other check and is never applied. `skills:wiring:check` fails until the skill is listed in `.claude-plugin/marketplace.json` and `llms.txt`, has a request in `scripts/fixtures/routing-requests.json`, and — for a design-rules skill — is named in the design router and reachable by Barb and Kev: in `ALWAYS` or `ROUTES` in `scripts/screen-skill-manifest.mjs`, or in a component skill's `## Load these too` above the "only if" heading. A psychology skill must be cited by a design-rules skill. Where a skill changes what an agent's own brief or intake should ask for — as the object map did for Betty — change that agent in `agents/` too and rebuild.
+- **A new or renamed skill is not finished until the agents can use it.** A skill on disk that no agent reaches passes every other check and is never applied. `skills:wiring:check` fails until the skill is listed in `.claude-plugin/marketplace.json` and `llms.txt`, has a request in `scripts/fixtures/routing-requests.json`, and — for a design-rules skill — is named in the design router and reachable by Barb and Kev: in `ALWAYS` or `ROUTES` in `scripts/screen-skill-manifest.mjs`, or in a component skill's `## Related skills` above the "only if" heading. A psychology skill must be cited by a design-rules skill. Where a skill changes what an agent's own brief or intake should ask for — as the object map did for Betty — change that agent in `agents/` too and rebuild.
 - **`npm run skills:review` before you ask for review of a wording change.** It compares each changed skill with `main` and lists every change that tends to move a rule rather than its wording — a dropped "must", "never" or "only" (counted per section, so a move between sections shows), a lost code span or number, a merged checklist item. It warns and does not fail, because a deliberate rule change looks the same; CI posts the warnings as annotations on the pull request. `--strict` fails on any, for a change that is meant to be wording only.
 
 ### The shape of a component skill
 
-Every skill in `skills/components/` follows one structure, and a new one must match it. Its only job is to help an agent use the component correctly — nothing goes in that does not serve that:
+Every skill in `skills/components/` follows one structure, and a new one must match it. Its only job is to help an agent use the component correctly — nothing goes in that does not serve that. Headings are short. The first two name the component, as in "When to use a button":
 
-`## Use it when` · `## Do not use it when` (a table naming the alternative) · `## What exists` (the variant and state inventory from the token file) · `## Rules for using it` · `## Accessibility` (with `### Screen readers` and `### Keyboard and non-mouse navigation`) · `## Set by the component` (properties the component sets from its tokens) · `## Load these too` (skill names, what the component needs; alternatives and neighbors under `### Only if the screen also uses it`, which loaders follow only when the screen imports that component) · `## Uncovered — ask, do not invent` · `## Pre-flight checklist`
+`## When to use <a component>` · `## When not to use <a component>` (a table naming the alternative) · `## Variants` (the variant and state inventory from the token file) · `## Rules` · `## Accessibility` (with `### Screen readers` and `### Keyboard and non-mouse navigation`) · `## Styling set by tokens` (properties the component sets from its tokens) · `## Related skills` (skill names, what the component needs; alternatives and neighbors under `### Only if used on the same screen`, which loaders follow only when the screen imports that component) · `## Open questions` · `## Pre-flight checklist`
+
+`scripts/lib/skill-sections.mjs` holds the shape of each heading, and every script reads sections through it; `tools/kev` and `nest/mcp/knowledge/server.mjs` run on their own and repeat the same shapes.
 
 Anatomy diagrams, spec imagery, external documentation links, and generic best practices belong to the website, not the skill.
 

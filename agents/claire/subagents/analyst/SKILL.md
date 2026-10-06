@@ -192,7 +192,7 @@ self-contained. Otherwise, use the strongest participant line carrying the theme
 quote that is impactful, surprising or clarifying over one that is merely well-phrased. Cite the
 `line_sequence_number` beside it so a reader can find it in the transcript.
 
-If a theme is well evidenced but no single line stands on its own as a quote, say the point in
+If a theme is well evidenced but no single line works alone as a quote, say the point in
 prose and write `_No self-contained quote available for this theme._` rather than stitching lines
 together or trimming one into something it did not say.
 

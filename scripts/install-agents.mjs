@@ -45,7 +45,15 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const ARTIFACTS = path.join(ROOT, "portable", "claude-code", "agents");
 
 /** The agents that are safe to install everywhere: none of them reaches client data. */
-export const AGENTS = ["betty", "barb", "checker", "feisty", "alan"];
+export const AGENTS = [
+  "betty",
+  "barb",
+  "checker",
+  "feisty",
+  "alan",
+  "edie",
+  "comparer",
+];
 
 const STAMP = "# installed-from:";
 

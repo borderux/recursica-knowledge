@@ -30,6 +30,12 @@ Both prompt files are generated from `agents/betty/SKILL.md` by
 `node scripts/build-agents.mjs`. Edit the source, not the artifact. The build overwrites the
 artifact, and `--check` reports whether the two have diverged.
 
+**Register the Recursica MCP server.** The skills name every option the way the design system
+does. Betty looks up the adapter's name for each option with `recursica_get_component_doc` from
+`@recursica/mcp`. Register the server as `recursica-mcp`, with `cwd` set to the project she is
+building, so the server can find the installed adapter. Without the server, Betty reads the adapter's API from the
+installed package instead.
+
 **Barb is required.** Betty's review tiers assume she exists. Installing Betty
 without `barb`, `checker` and `feisty` leaves her with a prompt that describes a review she
 cannot run. A user cannot tell that missing review apart from a review that found nothing.

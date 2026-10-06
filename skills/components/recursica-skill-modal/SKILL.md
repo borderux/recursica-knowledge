@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-modal
-description: Rules for the Recursica modal — when interrupting the user is justified, triggers and history, confirmations, footer buttons, never a modal from a modal, and focus trapping and return. Use for dialogs, confirmations, and blocking overlays. Not for a side surface — see recursica-skill-panel; not for brief feedback — see recursica-skill-toast.
+description: Rules for the Recursica modal — when interrupting the user is justified, triggers and history, confirmations, footer buttons, never a modal from a modal, and focus trapping and return. Use for dialogs, confirmations, and blocking overlays. Not for a panel, drawer or side sheet — see recursica-skill-panel; not for brief feedback — see recursica-skill-toast.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -9,125 +9,120 @@ metadata:
 
 # Modal
 
-A modal blocks the page to get one decision or one short task done, then closes.
+A modal blocks the page until the user makes one decision or finishes one short task. Then the modal closes.
 
-## Use it when
+## When to use a modal
 
-- **The task is short, self-contained, and must be finished or given up** before the user carries on.
-- **The action cannot be undone, is massively destructive, and is hard to recreate** — the only case that justifies a confirmation.
+- **The task is short and self-contained, and the user must finish or give up the task** before going on with other work.
+- **The action cannot be undone, is massively destructive, and is hard to recreate.** Only an action like this justifies a confirmation.
 - **The user must acknowledge a system event** before work can continue.
 
-## Do not use it when
+## When not to use a modal
 
-| Instead of a modal                                    | Use                                                                         |
-| ----------------------------------------------------- | --------------------------------------------------------------------------- |
-| The user needs the content underneath while working   | `recursica-skill-panel`, or editing in place on the page                    |
-| The action can be undone                              | Do it, and offer undo — see `recursica-skill-buttons-links`                 |
-| Confirming that something succeeded                   | `recursica-skill-toast`                                                     |
-| The task is long, has several steps, or is a big form | A page. A form in a modal that scrolls belongs on its own route             |
-| The destination is a location the user can link to    | A page — unless it is a modal deliberately built to be linked to, see below |
-| Another modal is already open                         | Neither. Restructure the flow                                               |
+| Situation                                                | Use instead                                                                              |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| The user needs the content under the modal while working | A panel, or editing in place on the page. See `recursica-skill-panel`.                   |
+| The action can be undone                                 | Do the action, and offer undo. See `recursica-skill-buttons-links`.                      |
+| The message confirms a success                           | A toast. See `recursica-skill-toast`.                                                    |
+| The task is long, has several steps, or is a big form    | A page. A form inside a modal that scrolls belongs on a separate route.                  |
+| The content is a location the user can link to           | A page, unless the content is a modal built on purpose for linking. See the rules below. |
+| Another modal is already open                            | No second modal and no alternative from this table. Restructure the flow.                |
 
-**Routine confirmation is the misuse to watch for.** Asking "Are you sure?" about an action that can be undone trains the user to dismiss confirmations without reading. The user then dismisses the one confirmation that guards a dangerous action.
+**Routine confirmation is the main misuse of a modal to watch for.** Asking "Are you sure?" about an action that can be undone teaches the user to dismiss confirmations without reading the confirmation. The user then dismisses the one confirmation that comes before a dangerous action.
 
-## What exists
+## Variants
 
-Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.modal`. **The modal has no variant axes (the properties a component varies on, such as size and style; Figma calls them variant properties) at all** — no sizes, no types, no severity variants. Everything is a fixed property.
+**Use only the modal variants and options that the Recursica MCP server lists for the project.** A designer can add variants and options in Theme Forge, so each project can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
 
-**What the component provides:** a header, a content area, a footer, a divider that appears when the content scrolls, and a gap between the buttons in the footer. Its `min-width`, `max-width`, `min-height`, and `max-height` are set by tokens.
+The rules below describe each part and option by role. The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-**Do not pass a size.** There is no small, medium, large, or full-screen modal. If the content does not fit inside the limits the tokens set, it is not modal content.
+- **A modal has a header, a content area and a footer.** A scroll divider appears when the content scrolls.
+- **Structure on the website.** Only the design-system website shows the modal's structure as a title, a content slot, a divider, and a footer.
+- **Size.** If the project has a size variant, use the project's size variant. Otherwise, never set a size on a modal. The theme limits how small and how large a modal can be. Content that does not fit inside the modal's size limits does not belong in a modal.
+- **Severity.** If the project has a severity or destructive variant, use the project's variant. Otherwise, a dangerous confirmation looks like any other modal, and the modal's text states the danger.
 
-**There is no severity or destructive variant.** A dangerous confirmation looks like any other modal. Its text states the danger.
+## Rules
 
-**Structure shown only on the design-system website:** a title, a content slot, a divider, and a footer.
+**Open a modal with a button.** The user never navigates to a modal, and opening a modal creates no browser history entry. The one exception is a modal built on purpose for linking, with a URL the user can share. A modal built for linking is a location, so the modal gets a route and a link that opens the modal, both on purpose. `recursica-skill-navigation` sets this rule.
 
-## Rules for using it
+**In a confirmation, use the primary style for the primary action and the secondary style for cancel.** In the standard UI kit, the primary style is `solid`. Put both buttons at the bottom right of the modal. The label of the primary action says what will happen, as in "Delete project", never "Yes" or "OK".
 
-**A button opens a modal; the user does not navigate to it, and it creates no browser history entry.** The one exception is a modal deliberately built to be linked to, with a URL that can be shared. That one gets a route and a link trigger together, on purpose, because it is a location. Owned by `recursica-skill-navigation`.
+**The title of a modal states the decision, not the name of the component.** Write "Delete this project?", not "Confirm".
 
-**In a confirmation, the primary action is the `solid` button, and cancel is the secondary**, at the bottom right. The primary action's label says what will happen — "Delete project" — never "Yes" or "OK".
+**Never open a modal from another modal.** A modal puts the user in a mode, and the user never enters a second mode inside the first mode. Stacked modals leave the user with no idea where in the task the user is, or what closing a modal will do. Two scrims must never darken the page at once.
 
-**The title states the decision**, not the name of the component. "Delete this project?" rather than "Confirm".
+**The one exception replaces the open modal instead of stacking a second modal on top.** A shared confirmation modal, used across the application, may appear after an action finishes inside another modal. The confirmation modal appears in place of the first modal, and the first modal closes as the confirmation modal appears. The confirmation modal never appears on top of the first modal. The exception is not ideal. The exception exists because secondary modals get reused. `recursica-skill-panels-modals` sets this rule.
 
-**Never open a modal from a modal.** Once the user is in a mode, they do not go into modes within it. Stacked modals leave them with no idea where they are, or what dismissing will do. Two scrims darkening the page at once must never happen.
+**Never put a form in a card inside a modal.** Do not wrap the content of the modal in a card either. The modal is the boundary of the content. See `recursica-skill-card`.
 
-**The one exception is replacing, not stacking.** A shared confirmation modal used across the application may appear after an action finishes inside another modal — but it appears in place of the first one, which goes away as the new one appears. Never on top. This is not ideal. It exists because secondary modals get reused. Owned by `recursica-skill-panels-modals`.
+**A modal that scrolls is a warning sign.** The scroll divider is for content that sometimes runs long. The scroll divider does not make a whole page acceptable inside a modal.
 
-**Never put a form in a card inside a modal**, and do not wrap the modal's own content in a card. The modal is the boundary; see `recursica-skill-card`.
-
-**A modal that scrolls is a warning sign.** The scroll divider exists for content that sometimes runs long — not as permission to put a whole page inside a dialog.
-
-**It must be possible, and obvious, to close it** — with a cancel action in the footer, and with Escape. Do not build a modal the user can only leave by finishing it, unless the state cannot be abandoned.
+**Closing a modal must be possible and obvious**, with a cancel action in the footer and with the Escape key. Do not build a modal that the user can leave only by finishing the task, unless the state in the modal cannot be abandoned.
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
-A modal is the component where accessibility failures are most serious. Get the focus handling wrong, and a keyboard or screen reader user is either trapped, or reading a page they cannot see. Most of this is behavior to build and test, not styling.
+Accessibility failures are more serious in a modal than in any other component. When focus handling is wrong, a keyboard user or a screen reader user is either trapped, or is reading a page the user cannot see. Most of the rules below are behavior to build and test, not styling.
 
 ### Screen readers
 
-- **The modal must be announced as a dialog, and marked as modal**, so assistive technology stays inside it, and does not read the page behind.
-- **The modal's accessible name (the name a screen reader reads out for a control) is its title.** Connect the two; do not leave the dialog unnamed, and do not name it "Dialog".
-- **Everything behind the modal must be inert** — impossible to reach, read, or tab to. A screen reader user who wanders into the page underneath has no way to know they have left the dialog.
-- **The content must be announced when the modal opens**, which follows from putting focus inside it. Do not rely on how it looks to show that something happened.
-- **A destructive confirmation must say in words that the action is destructive.** With no severity variant, color and icons tell a screen reader nothing — `recursica-skill-system-conventions` requires a second channel (color, shape, position or text, each a separate signal), and here the text is the only one.
-- **The close control needs a real name** — "Close", or better, what it closes. An unlabeled icon-only close button is announced as nothing.
+- **Announce the modal as a dialog, and mark the dialog as modal.** Assistive technology then stays inside the modal and does not read the page behind the modal.
+- **The modal's title is the modal's accessible name** (the name a screen reader reads out for a control). Connect the title to the dialog. Do not leave the dialog without a name, and do not name the dialog "Dialog".
+- **Every element behind the modal must be inert**, so that no user can reach, read, or tab to the page behind the modal. A screen reader user who wanders into the page behind the modal has no way to know that the user has left the dialog.
+- **A screen reader must announce the content of the modal when the modal opens.** Moving focus inside the modal makes the screen reader announce the content. Do not rely on how the modal looks to show that an event happened.
+- **A destructive confirmation must say in words that the action is destructive.** Color and icons tell a screen reader nothing. `recursica-skill-system-conventions` requires a second channel (color, shape, position or text, each a separate signal). When the project has no severity variant, the text is the only second channel.
+- **Give a close control a real name**, such as "Close", or better, the name of what the close control closes. An icon-only close button with no label is announced as nothing.
 
 ### Keyboard and non-mouse navigation
 
-- **Focus moves into the modal when it opens.** Put it on the first meaningful element — the first field, or the modal container itself. Do not put it on the close button unless nothing else can receive focus, and never leave it on the trigger behind the overlay.
-- **Focus is trapped while the modal is open** — kept inside it until it closes. Tab and Shift-Tab cycle within it, and never reach the page behind.
-- **Escape closes the modal**, and does the same thing as cancel — it never saves.
-- **Focus returns to the element that opened the modal** when it closes. This is the step most often skipped, and skipping it drops the user at the top of the document.
+- **Move focus into the modal when the modal opens.** Put focus on the first meaningful element: the first field, or the modal container. Put focus on the close button only when no other element can take focus. Never leave focus on the button or element that opened the modal, behind the overlay.
+- **Trap focus inside the modal while the modal is open.** Focus stays inside the modal until the modal closes. Tab and Shift-Tab cycle through the modal and never reach the page behind the modal.
+- **Escape closes the modal and does the same as the cancel action.** Escape never saves.
+- **Return focus to the element that opened the modal when the modal closes.** Teams skip this step more often than any other step. Skipping the step drops the user at the top of the page.
 - **Every control in the modal can be reached by keyboard, in visual order**, including the footer buttons and the close control.
-- **The page behind must not scroll**, and no element behind it may take focus.
-- **Never make closing it pointer-only.** A click on the overlay may close it, but Escape and the cancel action must both work.
+- **The page behind the modal must not scroll**, and no element behind the modal may take focus.
+- **Never make closing the modal pointer-only.** A click on the overlay may close the modal, but Escape and the cancel action must both work.
 
-## Set by the component
+## Styling set by tokens
 
-Do not set or override any of these. The component sets them:
+**Never set or override the modal's styling.** The theme sets every visual property of the modal, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the modal's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
-- `min-width`, `max-width`, `min-height`, `max-height`.
-- `header-footer-horizontal-padding`, `header-footer-vertical-padding`, `content-horizontal-padding`, `content-vertical-padding`.
-- `border-size`, `border-radius`, `elevation`, `colors`, and the overlay treatment.
-- `scroll-divider-size` and when the divider appears.
-- `button-gap` in the footer.
-- `header-style` and `content-style` type treatment.
+Never restyle the overlay behind the modal. Never change when the scroll divider appears.
 
-## Load these too
+## Related skills
 
-- `recursica-skill-panels-modals` — the owning design-rules skill: modal vs. panel vs. page, why mode is the only real difference, the prohibition on stacking, and unsaved-change protection.
-- `recursica-skill-buttons-links` — modal triggers, destructive-action confirmation, undo, footer button hierarchy.
-- `recursica-skill-navigation` — routing and browser history, including the deep-linkable modal exception.
-- `recursica-skill-forms` — save mode and validation for any form the modal contains.
+- `recursica-skill-panels-modals` — the design-rules skill that sets the modal rules: choosing a modal, a panel, or a page, why mode is the only real difference among the three, the ban on stacking modals, and protecting unsaved changes.
+- `recursica-skill-buttons-links` — the controls that open a modal, confirming destructive actions, undo, and the order of importance of footer buttons.
+- `recursica-skill-navigation` — routes and browser history, including the exception for a modal built on purpose for linking.
+- `recursica-skill-forms` — the save mode and validation of any form inside the modal.
 - `recursica-skill-system-conventions` — the accessibility baseline every component follows.
 
-### Only if the screen also uses it
+### Only if used on the same screen
 
-- `recursica-skill-card` — why the modal's content is not wrapped in a card.
+- `recursica-skill-card` — why no card wraps the content of the modal.
 
-## Uncovered — ask, do not invent
+## Open questions
 
-- **Whether clicking the overlay closes the modal.** Not stated either way.
-- **A loading state inside a modal**, while an action is in flight. There is no such state on the component.
-- **Whether a modal that cannot be closed is ever allowed** — a forced acknowledgment, with no cancel.
-- **Confirming inside a modal** — confirming a destructive action from inside a modal, given the ban on stacking.
+- **Whether clicking the overlay closes the modal.** No rule says either way.
+- **A loading state inside a modal**, while an action is still running. Ask only when the project has no loading state.
+- **Whether a modal that cannot be closed is ever allowed**, such as a forced acknowledgment with no cancel.
+- **Confirming inside a modal.** No rule says how to confirm a destructive action from inside a modal, given the ban on stacking modals.
 
 ## Pre-flight checklist
 
 - [ ] Blocking the page is justified, and the task is short and self-contained.
-- [ ] There is no confirmation on an action that can be undone. Those actions offer undo instead.
-- [ ] No size, type, or severity variant is set — none exist.
-- [ ] A button triggers it, with no history entry — unless it is a modal deliberately built to be linked to, with a route.
-- [ ] The title states the decision, and the primary action's label says what will happen.
-- [ ] No modal opens another modal on top of it, and no two scrims are ever visible at once. Any reused confirmation replaces the open modal instead of stacking on it.
-- [ ] No card wraps the content.
-- [ ] The dialog is announced as modal and named by its title, and everything behind it is inert.
-- [ ] Focus moves into the modal when it opens, is trapped while it is open, and returns to the trigger when it closes.
-- [ ] Escape closes it and acts as cancel, and closing it is never pointer-only.
+- [ ] No action that can be undone asks for confirmation. Each action that can be undone offers undo instead.
+- [ ] Every variant and option on the modal is one the Recursica MCP server lists for the project. No size, type, or severity variant is set unless the project has one, and no variant or option is invented.
+- [ ] A button opens the modal, with no browser history entry, unless the modal is built on purpose for linking and has a route.
+- [ ] The title states the decision, and the label of the primary action says what will happen.
+- [ ] No modal opens another modal on top of the first modal, and no two scrims are ever visible at once. A reused confirmation modal replaces the open modal instead of stacking on the open modal.
+- [ ] No card wraps the content of the modal.
+- [ ] The dialog is announced as modal and named by the modal's title, and every element behind the modal is inert.
+- [ ] Focus moves into the modal when the modal opens, stays trapped while the modal is open, and returns to the element that opened the modal when the modal closes.
+- [ ] Escape closes the modal and acts as cancel, and closing the modal is never pointer-only.
 - [ ] The close control has a real accessible name, and the focus ring is intact.
-- [ ] The destructive consequence is stated in words, not carried by color.
-- [ ] Padding, size, and overlay styling come from the component.
-- [ ] Uncovered items were asked about, not decided: whether clicking the overlay closes the modal, a loading state inside a modal, whether a modal that cannot be closed is allowed, and confirming inside a modal.
+- [ ] The destructive consequence is stated in words, not shown by color.
+- [ ] No styling is set or overridden on the modal, and no container or spacer is added to change the modal's look.
+- [ ] The overlay behind the modal is not restyled.
+- [ ] Open questions were asked about, not decided: whether clicking the overlay closes the modal, a loading state inside a modal, whether a modal that cannot be closed is allowed, and confirming inside a modal.

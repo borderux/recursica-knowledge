@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-screen-priority
-description: House rules for ranking what matters on a screen and turning that into layout — no cap on information, the inverted triangle, the top-left position, workflow then physicality then simplicity, the removal test, hierarchy without color, sticky regions, and no inner scrolling. Use when deciding what goes where or what to cut. Not for page structure — see recursica-skill-screen-scaffolding.
+description: House rules for ranking what matters on a screen and turning the ranking into a layout — no cap on information, the inverted triangle, the top-left position, workflow then physicality then simplicity, the removal test, hierarchy without color, sticky regions, and no inner scrolling. Use when deciding what goes where or what to cut. Not for page structure — see recursica-skill-screen-scaffolding.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -9,61 +9,61 @@ metadata:
 
 # Prioritizing a screen
 
-These are the house rules for deciding what matters most on a screen, and turning that ranking into a layout. They are opinions, not neutral best practices — treat them as constraints.
+This skill holds the house rules for ranking what matters most on a screen and for turning the ranking into a layout. The house rules are opinions, not neutral best practices. Treat every house rule as a constraint.
 
-These rules assume **complex enterprise web applications**, where people are doing real work, not glancing at information. That starting point matters more here than anywhere else in the family, and most of the rules below follow from it.
+The rules assume **complex enterprise web applications**, where people do real work instead of glancing at information. This assumption matters more in this skill than in any other Recursica skill. Most of the rules below follow from this assumption.
 
 ## The three governing principles
 
-1. **There is no attention budget to ration out.** These screens properly carry dozens or hundreds of pieces of information. Prioritizing is about order, not about how much — and any rule that starts by limiting the count has misunderstood the product.
-2. **The user's workflow outranks everything that can be changed.** Stakeholders, business units, and taste all lose to it. Legal, compliance, and hard technical limits do not.
-3. **Simplifying is the last step, never the first.** Understand the workflow, connect the pieces, and only then remove what is not needed.
+1. **A screen has no limit on how much information competes for attention.** An enterprise screen correctly holds dozens or hundreds of pieces of information. Prioritizing sets the order of the information, not the amount. Any rule that starts by limiting the number of pieces of information misunderstands the product.
+2. **The user's workflow outranks every factor that can be changed.** The user's workflow wins over stakeholders, business units and taste. Legal limits, compliance limits and hard technical limits win over the user's workflow.
+3. **Simplifying is the last step, never the first.** Understand the workflow first. Then connect the elements, pages and screens. Only then remove the content the user does not need.
 
-## There is no limit on how much a screen may hold
+## No limit on the amount of information
 
-**Do not set a limit on the number of separate pieces of information.** Dozens, or hundreds, on one screen is acceptable, and often correct.
+**Do not set a limit on the number of separate pieces of information on a screen.** Dozens or hundreds of pieces of information on one screen are acceptable, and often correct.
 
-**"Primary attention" is not a useful idea for these screens.** That idea belongs to websites, where someone glances at information. In an enterprise application, people are working, and asking which single element grabs attention produces the wrong screen.
+**"Primary attention" is not a useful idea for an enterprise screen.** The idea of primary attention belongs to websites, where a visitor glances at information. In an enterprise application, people are working. Asking which single element grabs attention produces the wrong screen.
 
-**So there is no rule for how many things may compete.** It depends entirely on the situation and the workflow, and an agent that wants a number is asking the wrong question.
+**No rule limits how many elements may compete for attention.** The number depends entirely on the situation and the workflow. An agent that wants a number is asking the wrong question.
 
-### The real overload test
+### The overload test
 
-**Does the screen support the investigations and the actions that fit what the user is trying to do?** That is the test — especially on a dashboard or a landing page.
+**Ask whether the screen supports the investigations and the actions that fit what the user is trying to do.** This question is the test for overload, especially on a dashboard or a landing page.
 
-**The weaker sign:** the user cannot tell what they should do next. That is a symptom worth noticing, though admittedly a vague one.
+**A weaker sign of overload is a user who cannot tell what to do next.** This sign is worth noticing, though the sign is vague.
 
-**There is no single rule here, and that is part of what makes enterprise layout hard.** Where the answer is unclear, ask instead of inventing a threshold — see `recursica-skill-design-router`.
+**No single rule decides when a screen is overloaded.** The lack of a single rule is part of why enterprise layout is hard. When the answer is unclear, ask instead of inventing a threshold. See `recursica-skill-design-router`.
 
 ## The inverted triangle
 
-**Broadest at the top, most specific at the bottom.**
+**Put the broadest content at the top of the page and the most specific content at the bottom.**
 
-- **The top carries what applies to every persona** arriving at the page — the broadest, most widely useful content, shown largest.
-- **Moving down, content becomes more detailed and more specific.**
-- **The bottom may be specific to one persona**, useful only to some of the people who reach the page.
+- **The top of the page holds the content that applies to every persona** arriving at the page. This content is the broadest and most widely useful, and is shown largest.
+- **Moving down the page, content becomes more detailed and more specific.**
+- **The bottom of the page may hold content specific to one persona.** This content is useful only to some of the people who reach the page.
 
-**Priority is shown by position or by size** — higher up the page, or larger. Those are the two tools.
+**Show priority by position or by size.** Higher up the page, or larger, means higher priority. Position and size are the two tools for priority.
 
-## What goes in the top left
+## The top-left position
 
-**Almost always the client's logo — the brand of the product being built.** The reason is reinforcing the brand, and it is why this position is not available for content.
+**The top-left position almost always holds the client's logo, the brand of the product being built.** The logo reinforces the brand. For this reason, the top-left position is not available for content.
 
-**There is one variation:** the logo in the upper right, with profile information in the upper left.
+**The logo may instead sit in the upper right, with the profile information in the upper left.**
 
-**The exception is rare.** A client who does not care about reinforcing the brand may hide it, but a logo appears somewhere in nearly every case.
+**A screen with no logo is a rare exception.** A client who does not care about reinforcing the brand may hide the logo. In nearly every case, a logo appears on the screen.
 
 ## Ranking competing requirements
 
-**The user's actual workflow wins over any stakeholder.** If the user needs it, it comes first.
+**The user's actual workflow wins over any stakeholder.** The user's needs come first.
 
-**A stakeholder may overrule the designer anyway**, even where it harms the workflow. That is a real outcome, not a failure of the rule — good user-centered design still means arguing from the user's point of view.
+**A stakeholder may still overrule the designer, even where the stakeholder's decision harms the workflow.** A stakeholder's override is a real outcome, not a failure of the rule. Good user-centered design still means arguing from the user's point of view.
 
-**Business units rarely have competing requirements — they have different ones.** Treat them as fitting together, and resolve them by understanding the workflow and matching the user's mental model (what a person expects from the tools and work they already know), rather than by judging between departments.
+**Business units rarely have competing requirements. Business units have different requirements.** Treat the requirements of different business units as parts that fit together. Resolve the requirements by understanding the workflow and by matching the user's mental model (what a person expects, based on the tools and work the person already knows). Do not resolve the requirements by judging between departments.
 
-**A legal, compliance, or hard technical limit overrides the user's mental model.** Some things cannot be worked around, and the mental model has to change to fit them. This is the one thing that outranks the user.
+**A legal limit, a compliance limit or a hard technical limit overrides the user's mental model.** These limits cannot be worked around, and the user's mental model has to change to fit the limits. Legal, compliance and hard technical limits are the only requirements that outrank the user.
 
-**When stakeholders want everything on the screen**, stack-rank it: put every item in strict order, from most to least important. Find what matters most, make it clear, and give it visual priority — higher up, or larger.
+**When stakeholders want every item on the screen, stack-rank the items.** Put every item in strict order, from most important to least important. Find the most important item, and make that item clear. Give that item visual priority: place the item higher up, or make the item larger.
 
 ## Density
 
@@ -71,155 +71,155 @@ Density is how tightly content is packed together.
 
 **Density is decided by what the user comes to do every day, not by a preference.**
 
-- **Reviewing information and digging into it** — a dashboard someone opens every morning — can handle more density.
-- **Starting a flow** — arriving to do a task — calls for less.
+- **A screen for reviewing information and exploring the information in detail can handle more density.** An example is a dashboard someone opens every morning.
+- **A screen for starting a flow calls for less density.** The user arrives at the screen to do a task.
 
-There is no threshold; it follows the use case.
+Density depends on the use case, not on a threshold.
 
-## The three tenets, and when a screen is finished
+## The three tenets and the finished screen
 
-Work through them in order. The third depends on the first two being done.
+The three tenets are workflow, physicality and simplicity. Apply the three tenets in order. The third tenet depends on the first two tenets being done.
 
-1. **Workflow.** Understand what the user is trying to do, and build the screen — or the screens — so they can do it efficiently.
-2. **Physicality.** Create connections between elements, pages, and screens, so that moving through them feels connected, rather than like data scattered at random.
-3. **Simplicity.** Remove what is not needed. Doing the first two well makes this both possible and necessary.
+1. **Workflow.** Understand what the user is trying to do. Build the screen, or the screens, so the user can do the task efficiently.
+2. **Physicality.** Create connections between elements, pages and screens, so that moving through the elements, pages and screens feels connected, not like data scattered at random.
+3. **Simplicity.** Remove the content that is not needed. Doing workflow and physicality well makes simplicity both possible and necessary.
 
 ### The removal test
 
-For every piece of information, ask: **is the user's workflow harmed if I remove this?**
+**For every piece of information, ask whether removing the piece of information harms the user's workflow.**
 
-- **Yes** → keep it.
-- **No** → remove it.
-- **Possibly, or maybe** → do not remove it; reduce it. Shorten it, lower its priority, or move it down the triangle.
+- **Yes** → keep the piece of information.
+- **No** → remove the piece of information.
+- **Possibly, or maybe** → do not remove the piece of information. Reduce the piece of information instead: shorten the piece of information, lower the piece of information's priority, or move the piece of information down the inverted triangle.
 
-**One stated exception: a decorative icon.** An icon that changes nothing about how the interface is used may still be kept as a visual anchor — beside a heading, on pages whose layouts are otherwise almost the same. Owned by `recursica-skill-icon-semantics`. Remove everything else that gets a "no."
+**A decorative icon is the one stated exception.** A decorative icon changes nothing about how the interface is used. A decorative icon may still be kept beside a heading, as a point for the eye to find, on pages whose layouts are otherwise almost the same. `recursica-skill-icon-semantics` owns this exception. Remove every other piece of information that gets a "no."
 
-### A screen is complete when
+### A finished screen
 
-**It meets the user's needs, judged against their workflow and mental model, and the simplifying pass is done** — content that is not needed has been removed, and the phrasing and wording of labels have been made as short as possible.
+**A screen is complete when the screen meets the user's needs and the third tenet, simplicity, is done.** Judge the user's needs against the user's workflow and mental model. The simplicity tenet removes the content that is not needed. The simplicity tenet also makes the phrasing and wording of labels as short as possible.
 
-**Simplifying is the last step.** Simplify, confirm that the user's needs are still met, and it is finished.
+**Simplifying is the last step.** Simplify the screen, and confirm that the screen still meets the user's needs. The screen is then finished.
 
 ## Hierarchy without color
 
-Do not use color to show hierarchy — meaning never depends on it alone, as `recursica-skill-system-conventions` says. What is left:
+**Do not use color to show hierarchy.** Meaning never depends on color alone, as `recursica-skill-system-conventions` says. Show hierarchy with these tools:
 
-- **Typography** — the correct heading levels and type sizes. See `recursica-skill-typography-semantics`.
+- **Typography**, meaning the correct heading levels and type sizes. See `recursica-skill-typography-semantics`.
 - **The balance of the layout.**
-- **White space**, placed on purpose so that attention lands on what matters most.
+- **White space**, placed on purpose to draw attention to the most important content.
 - **Maximum widths.**
-- **Images**, where the content supports them.
+- **Images**, where the content supports images.
 - **Position**, following the inverted triangle above.
 
-**Scan patterns inform this, but only up to a point.** The F-pattern — the way people tend to scan text in the shape of an F — applies to substantial blocks of text. It does not reliably apply to tables or to visual surfaces such as a dashboard. So do not lay out a dense data screen as though someone were reading prose.
+**Scan patterns inform hierarchy, but only up to a point.** The F-pattern is the way people tend to scan text in the shape of an F. The F-pattern applies to substantial blocks of text. The F-pattern does not reliably apply to tables or to visual areas such as a dashboard. Do not lay out a dense data screen as though someone were reading prose.
 
-**No playful or decorative content.** Cat pictures and the like will never appear in a business application here.
+**Never add playful or decorative content.** Cat pictures and similar content never appear in a Recursica business application.
 
-## Frequency decides what holds permanent space
+## Permanent space for frequent tasks
 
-**Rank by how often the reader needs something, not by how much it matters when they do.** An occasional task can be important and still not get a permanent region. Importance is an argument for making it easy to find — which is what a well-placed trigger does.
+**Rank content by how often the reader needs the content, not by how much the content matters when the reader needs the content.** An occasional task can be important and still not get a permanent region on the screen. Importance is a reason to make the task easy to find. A well-placed trigger makes the task easy to find.
 
-**A form that is rarely used MUST NOT be kept permanently on the screen.** Creating a record, importing, configuring: each is occasional, each is large, and each takes up space all the time for something that almost every visit does not need. The trigger stays visible; the form opens when asked for, in a modal or a panel — see `recursica-skill-panels-modals`.
+**A form that is rarely used MUST NOT be kept permanently on the screen.** Forms for creating a record, importing and configuring are each occasional and each large. Each of these forms takes up space all the time, for a task that almost every visit does not need. Keep the trigger for the form visible. Open the form in a modal or a panel when the user asks for the form. See `recursica-skill-panels-modals`.
 
-**The sign of this mistake is a screen where the frequent task has to share space with the rare one.** A table the reader came for, with a create form permanently beneath it, gives the rare task the same permanent space as the common one.
+**The sign of this mistake is a screen where the frequent task has to share space with a rare task.** For example, a create form sits permanently below the table the reader came for. The create form gives the rare task the same permanent space as the common task.
 
-**This is not the same as the removal test** in the tenets above, which asks whether something is needed at all. Here, it is needed — the only question is whether it is needed _now_, on arrival, every time.
+**Ranking by frequency is not the same as the removal test** in the three tenets above. The removal test asks whether a piece of information is needed at all. Here, the content is needed. The only question is whether the content is needed _now_, on arrival, every time.
 
-**Readers miss anything placed below a region of changing length.** The bottom of a table with an unknown number of rows is at an unpredictable position. A reader who does not already know something is down there has no reason to scroll to the end of a list looking for it. Put it above the region, or in a surface that opens over it. Owned together with `recursica-skill-tables`.
+**Readers miss any content placed below a region of changing length.** The bottom of a table with an unknown number of rows is at an unpredictable position. A reader who does not know that content sits below the region has no reason to scroll to the end of a list to look for the content. Put the content above the region, or in a surface (a region that holds content, such as a page, panel, or modal) that opens over the region. This skill and `recursica-skill-tables` share this rule.
 
 ## Progressive disclosure
 
-Progressive disclosure is showing only what is needed now, with the rest available on request.
+Progressive disclosure shows only the content needed now. The remaining content is available on request.
 
-**What appears right away versus what is revealed later is a real tool**, and the system has components for it: accordions, trees, tabs, steppers, and revealing features based on a choice in a form. All of these exist.
+**Choosing which content appears right away and which content appears later is a real design tool.** Recursica has components for progressive disclosure: accordions, trees, tabs, steppers, and content and controls that a choice in a form reveals. All of these components exist.
 
-**Which one to use depends on how cleanly the design comes together and how the information divides up.** Each has its own rules — see `recursica-skill-accordion`, `recursica-skill-tree`, `recursica-skill-tabs`, `recursica-skill-stepper`, and `recursica-skill-forms`.
+**The right component depends on how cleanly the design comes together and how the information divides up.** Each component has separate rules. See `recursica-skill-accordion`, `recursica-skill-tree`, `recursica-skill-tabs`, `recursica-skill-stepper`, and `recursica-skill-forms`.
 
-### A long form can beat a stepper
+### A long form versus a stepper
 
-**Branching requires a stepper.** Where an answer changes a later step, break the form up.
+**Branching requires a stepper.** When an answer changes a later step, break the form into steps.
 
-**But information that refers back and forth favors one long form.** Where filling in one section depends on remembering or checking another, a stepper becomes actively annoying. Moving forward and back to re-read is worse than scrolling up. Usability testing on a long credit-card application found that the single long form did better than the stepper for exactly this reason: the user wanted to confirm that the whole thing was correct and complete at once.
+**Information that refers back and forth favors one long form.** When filling in one form section depends on remembering or checking another form section, a stepper becomes actively annoying. Moving forward and back to re-read is worse than scrolling up. Usability testing on a long credit-card application found that the single long form did better than the stepper for exactly this reason. The user wanted to confirm at once that the whole form was correct and complete.
 
-**So the question is how much has to stay in view**, not how long the form is. Owned jointly with `recursica-skill-forms`.
+**Choose between a stepper and one long form by how much information has to stay in view, not by how long the form is.** This skill and `recursica-skill-forms` share this rule.
 
 ## Keeping information in view
 
-**Sticky regions are valid** for information that must stay visible. (A sticky region stays in place while the rest of the page scrolls.) Examples are a running total, a status, or a summary of choices made across a screen that all relate to one object.
+**Sticky regions are valid for information that must stay visible.** A sticky region stays in place while the page scrolls. Examples are a running total, a status, or a summary of choices made across a screen when all the choices relate to one object.
 
-**The limit: beyond a sticky header, a sticky footer, and a permanent left navigation rail, only one more sticky element.** Every sticky region shrinks the space that actual content can use, so keep them to a minimum.
+**Beyond a sticky header, a sticky footer and a permanent left navigation rail, add only one more sticky element.** Every sticky region shrinks the space left for content. Keep sticky regions to a minimum.
 
-### Never use inner scrolling
+### No inner scrolling
 
-**The application has one scrollbar.** The user scrolls the browser, from anywhere on the page, and the sticky regions stay in place.
+**The application has one scrollbar.** The user scrolls the browser with the pointer at any point on the page, and the sticky regions stay in place.
 
-**NEVER build an inner scrolling region.** Forcing someone to put the cursor inside a particular area before the scroll wheel does anything is the failure this prevents — see convention 4 in `recursica-skill-system-conventions`, and `recursica-skill-dashboards`, which forbids it there too.
+**NEVER build an inner scrolling region.** An inner scrolling region forces the user to put the pointer inside one area before the scroll wheel moves the content. The one-scrollbar rule prevents this failure. See convention 4 in `recursica-skill-system-conventions`. `recursica-skill-dashboards` also forbids inner scrolling on dashboards.
 
-**The one possible exception:** a table that fills the full width and height of the viewport. Even that is only a "maybe" — in general, no inner scrolling of any kind.
+**The one possible exception is a table that fills the full width and height of the viewport.** Even this table is only a "maybe." In general, build no inner scrolling of any kind.
 
-## Empty is not error
+## Empty states and error states
 
-**Always tell them apart, with different messages.**
+**Always tell an empty state apart from an error state, with different messages.**
 
-- **No rows returned** — the data loaded, and there is nothing to show. Say that clearly.
-- **The rows could not be returned** — loading the data failed. Use a different message.
+- **No rows returned.** The data loaded, and there are no rows to show. Say so clearly.
+- **The rows could not be returned.** Loading the data failed. Use a different message.
 
-Treating the two as one leaves the user unable to tell whether to change their filters or try again later.
+One message for both states leaves the user unable to tell whether to change the filters or to try again later.
 
 ## Alignment across the application
 
-**Separate sections must call the same things by the same names, and work the same way.** Areas that hold completely separate content can still be inconsistent with each other.
+**Separate sections must call the same concept by the same name, and must work the same way.** Areas that hold completely separate content can still be inconsistent with each other.
 
-**There are two breaches to look for:**
+**Look for two kinds of breach:**
 
-1. **The same thing called by two different names** in two places. See `recursica-skill-naming-terminology`.
-2. **Different workflows for the same kind of task** — a form submitted with one submit button in one section, and inline saving in another. See `recursica-skill-system-conventions` on one behavioral mode per system.
+1. **The same concept called by two different names** in two places. See `recursica-skill-naming-terminology`.
+2. **Different workflows for the same kind of task.** For example, one section submits a form with one submit button, and another section saves inline. See `recursica-skill-system-conventions` on one behavioral mode per system.
 
-**Alignment is a review pass, run after the design is otherwise complete.** It is not something to check all the time while building.
+**Alignment is a review pass, run after the design is otherwise complete.** Alignment is not a check to run all the time while building.
 
-**When a breach turns up, raise it instead of fixing it without telling the user.** Bring it to the user, let them decide which way it should go, and then apply that decision across the whole application.
+**When a breach turns up, raise the breach with the user instead of fixing the breach without telling the user.** Let the user decide which way the breach is resolved. Then apply the user's decision across the whole application.
 
 ## Set by the theme or the component
 
-- **Type styles, spacing tokens, and the layout grid.** These come from the design system.
-- **The page's structure** — header, rail, footer, title, breadcrumb. `recursica-skill-screen-scaffolding`.
-- **Whether a stakeholder's override is accepted.** Argue from the user's point of view; the decision is the stakeholder's.
+- **Type styles, spacing tokens, and the layout grid.** The design system sets the type styles, spacing tokens and layout grid.
+- **The page's structure:** the header, navigation rail, footer, title and breadcrumb. `recursica-skill-screen-scaffolding` sets the page's structure.
+- **Whether a stakeholder's override is accepted.** Argue from the user's point of view. The stakeholder makes the decision.
 
 ## Out of scope
 
-- **The page scaffold and layering** — `recursica-skill-screen-scaffolding`.
+- **The page structure and layering** — `recursica-skill-screen-scaffolding`.
 - **Which component a piece of content uses.** Each component skill decides.
-- **Limits specific to dashboards** — how many charts and cards, and the workbench distinction — `recursica-skill-dashboards`.
+- **Limits specific to dashboards**, such as how many charts and cards a dashboard holds, and the difference between a dashboard and a workbench — `recursica-skill-dashboards`.
 - **Table columns, sorting, and pinning** — `recursica-skill-tables`.
-- **Working-memory limits on how many options to show** — `recursica-skill-working-memory`. Those govern controls, not how much information a screen may show.
+- **Working-memory limits on how many options to show** — `recursica-skill-working-memory`. Working-memory limits govern controls, not how much information a screen may show.
 
-## Uncovered — ask, do not invent
+## Open questions
 
-- **How to judge "done" versus "overloaded" in terms of cognitive load**. Named as not covered. The workflow-support test above is what exists.
-- **Where the inverted triangle stops applying.** This was asked directly and passed over; no limit was given.
-- **Research on scan patterns.** Marked as belonging in the psychology skills, with citations, and not gathered yet — see `recursica-skill-working-memory` for the form it would take.
-- **Alignment as its own skill.** Named as a design rule the family still needs, possibly run by a dedicated review agent. What is here are the criteria, not the process.
-- **How empty and error states are laid out**, beyond the requirement that their messages differ. The wider topic of empty and error states still has no owner.
+- **How to judge "done" versus "overloaded" in terms of cognitive load.** This topic is named as not covered. The overload test above, which asks whether the screen supports the user's workflow, is the only test so far.
+- **Where the inverted triangle stops applying.** This question was asked directly and passed over. No limit was given.
+- **Research on scan patterns.** Research on scan patterns is marked as belonging in the psychology skills, with citations, and is not gathered yet. See `recursica-skill-working-memory` for the form a psychology skill on scan patterns would take.
+- **Alignment as a separate skill.** Alignment is named as a design rule the skill family still needs, possibly run by a dedicated review agent. This skill gives the criteria for a breach, not the review process.
+- **How empty and error states are laid out**, beyond the requirement that empty and error states have different messages. No skill owns the wider topic of empty and error states yet.
 - **What makes an image appropriate** on an enterprise screen, given that playful content is ruled out completely.
 
 ## Pre-flight checklist
 
-- [ ] No limit caps how much information the screen carries, and no "primary attention" idea shaped the layout.
+- [ ] No limit caps how much information the screen shows, and the idea of "primary attention" did not shape the layout.
 - [ ] The screen supports the investigations and actions the user came to do.
 - [ ] Content runs from broadest and largest at the top, to most specific and persona-dependent at the bottom.
 - [ ] The top-left position holds the brand, unless the client has a reason otherwise.
-- [ ] The user's workflow outranked every stakeholder request. Only a legal, compliance, or hard technical limit overrode it.
+- [ ] The user's workflow outranked every stakeholder request. Only a legal, compliance, or hard technical limit overrode the user's workflow.
 - [ ] Density matches what the user comes to do every day.
 - [ ] The three tenets were applied in order: workflow, then physicality, then simplicity.
-- [ ] Every element passed the removal test, and anything uncertain is reduced instead of cut.
+- [ ] Every element passed the removal test, and every element with an uncertain answer is reduced instead of cut.
 - [ ] Labels and phrasing are as short as possible, simplified as the final step.
-- [ ] Hierarchy is carried by typography, position, white space, and width — never by color alone.
+- [ ] Hierarchy is shown by typography, position, white space, and width, never by color alone.
 - [ ] There is no playful or decorative content.
-- [ ] Nothing rarely used holds permanent space on the screen. Occasional forms — create, import, configure — open from a visible trigger into a modal or panel, instead of sitting permanently on the page.
-- [ ] Nothing the reader must find sits below a region of changing length.
+- [ ] No rarely used element holds permanent space on the screen. Occasional forms for creating, importing and configuring open from a visible trigger into a modal or a panel, instead of staying permanently on the page.
+- [ ] No content the reader must find sits below a region of changing length.
 - [ ] Progressive disclosure uses an existing component, and a long form replaces a stepper where the information refers back and forth.
 - [ ] Beyond the header, footer, and navigation rail, there is at most one sticky element.
 - [ ] There is one scrollbar, and no inner scrolling region.
 - [ ] Empty and error states have different messages.
-- [ ] An alignment pass against the other sections is complete, and every breach went to the user to decide instead of being resolved without telling them.
-- [ ] Uncovered items were asked about, not decided: judging done versus overloaded by cognitive load, where the inverted triangle stops applying, research on scan patterns, alignment as its own skill, how empty and error states are laid out, and what makes an image appropriate.
+- [ ] An alignment pass against the other sections is complete, and every breach went to the user to decide instead of being resolved without telling the user.
+- [ ] Open questions were asked about, not decided: judging done versus overloaded by cognitive load, where the inverted triangle stops applying, research on scan patterns, alignment as a separate skill, how empty and error states are laid out, and what makes an image appropriate.

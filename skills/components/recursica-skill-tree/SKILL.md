@@ -9,137 +9,125 @@ metadata:
 
 # Tree
 
-A tree shows data arranged as parents and children, and lets the user open only the parts they need.
+A tree shows data arranged as parent items and child items. A tree lets the user open only the parts of the tree the user needs.
 
-## Use it when
+## When to use a tree
 
-- **The data is a true hierarchy.** What a node (one item in the tree) means depends on its parent — a folder inside a folder, a category inside a category.
-- **The depth varies**, and the user needs to see where an item sits in the hierarchy, not only that it exists.
-- **The user is exploring, not comparing.** A tree is for finding one thing; a table is for comparing many.
-- **Nested disclosure cannot be avoided.** Disclosure is showing and hiding content on demand. `recursica-skill-navigation` states that an accordion is never nested. When the structure has real depth, use a tree.
+- **The data is a true hierarchy.** The meaning of a node (one item in the tree) depends on the node's parent, such as a folder inside a folder or a category inside a category.
+- **The depth of the hierarchy varies**, and the user needs to see where an item sits in the hierarchy, not only that the item exists.
+- **The user is exploring, not comparing.** A tree helps the user find one item. A table helps the user compare many items.
+- **Content must show and hide at more than one level.** Showing and hiding content when the user asks is called disclosure. `recursica-skill-navigation` states that an accordion has one level unless the project has a nesting option. When the content has several levels, use a tree.
 
-## Do not use it when
+## When not to use a tree
 
-| Instead of a tree                             | Use                                                              |
-| --------------------------------------------- | ---------------------------------------------------------------- |
-| The records are flat peers                    | `recursica-skill-table`                                          |
-| Stacked sections of content at one level      | `recursica-skill-accordion` — single-level disclosure is its job |
-| Moving between areas of the application       | Navigation — see `recursica-skill-navigation`                    |
-| Choosing one value from a hierarchy in a form | A dropdown or autocomplete, unless the hierarchy is the point    |
-| The hierarchy is only two levels deep         | A grouped list, or navigation with sub-items                     |
-| Moving items between two sets                 | `recursica-skill-transfer-list`                                  |
+| Situation                                                                                                         | Use instead                                                                                        |
+| ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| The records are peers (objects of the same kind, such as rows in a list), with no parent records or child records | A table. See `recursica-skill-table`.                                                              |
+| Sections of content are stacked at one level                                                                      | An accordion. An accordion shows and hides sections at one level. See `recursica-skill-accordion`. |
+| The user moves between areas of the application                                                                   | Navigation. See `recursica-skill-navigation`.                                                      |
+| The user chooses one value from a hierarchy in a form                                                             | A dropdown or an autocomplete, unless the hierarchy itself is the point of the choice.             |
+| The hierarchy is only two levels deep                                                                             | A grouped list, or navigation with sub-items.                                                      |
+| The user moves items between two sets                                                                             | A transfer list. See `recursica-skill-transfer-list`.                                              |
 
-"Flat peers" are objects of the same kind, such as rows in a list, with no parents or children.
+**Flat data in a tree is a list with indentation that means nothing.** When no item has children, the data is not a tree.
 
-**A tree used for flat data is a list with wasted indentation.** If no item has children, the data is not a tree.
+## Variants
 
-## What exists
+**Use only the tree variants and options that the Recursica MCP server lists for the project.** A designer can add variants and options in Theme Forge, so each project can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
 
-Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.tree`.
+The rules below describe each variant and option by role, such as "the selected option". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-| Axis               | Options                  |
-| ------------------ | ------------------------ |
-| `selection-states` | `unselected`, `selected` |
+- **Selection.** A node is either selected or not selected. In the standard UI kit, the variant is `selection-states`, with the options `unselected` and `selected`.
+- **An expand control separate from a node's label.** The expand control opens and closes a node. The expand control and the node label are two separate elements. Selecting a node and expanding a node are therefore different actions, with a mouse and with the keyboard.
+- **Expanded and collapsed look.** If the project has an expanded state or a collapsed state, use the project's state. Otherwise, do not invent a rotation or a second icon token (a named design value, such as a color or a size, set by the design system) to show an open node. See the open questions.
 
-**`indent` is a token** (a named design value, such as a color or a size, set by the design system). The component sets how far each level is indented. Do not calculate indentation by hand.
+## Rules
 
-**`button-node-gap` shows that the expand control is separate from the node.** The control that opens and closes the node and the node's label are two separate elements. Selecting a node and expanding it are therefore different actions, both with a mouse and with the keyboard.
+**Show every node collapsed by default.** Open only the nodes the user needs for the current task. `recursica-skill-navigation` sets this rule for trees and accordions, for the same reason.
 
-**The UI kit has no expanded or collapsed state, only selection.** It does not define how an open node looks different from a closed one. That difference is on the uncovered list. Do not invent a rotation or a second icon token for it.
+**Keep the number of visible nodes at each level within 7 ± 2.** A tree is built for many levels. But every visible node at one level adds to the load on working memory (how much a person can hold in mind at once). See `recursica-skill-working-memory`.
 
-**There is no disabled state, no hover state, and no size axis (a property a component varies on, such as size or style; Figma calls it a variant property).**
+**Label a node with what the node is, not where the node sits.** Do not label a node "Level 2". Do not add numbers that repeat the node's place in the nesting.
 
-**There are no checkboxes in the UI kit's tree.** This component does not provide a tree with checkboxes for choosing several items.
+**A node label must be clear enough to choose the node while the node's children are hidden.** If the user has to expand a node to learn what the node holds, rewrite the label.
 
-## Rules for using it
-
-**Collapsed is the default.** Open only the nodes the user needs for the current task. The accordion follows the same rule, for the same reason. `recursica-skill-navigation` owns this rule.
-
-**Keep the number of visible items at each level within 7 ± 2.** A tree is built for depth, but every item showing at one level adds to the load on working memory (how much a person can hold in mind at once). See `recursica-skill-working-memory`.
-
-**Label a node with what it is**, not where it sits. Do not label a node "Level 2", and do not add numbers that repeat what the nesting shows.
-
-**A node label must be clear enough to choose from while its children are hidden.** If the user has to expand a node to find out what is inside, rewrite the label.
-
-**Use a tree for real hierarchy and an accordion for disclosure at one level.** `recursica-skill-navigation` states that accordions are never nested. Structures with several levels therefore use a tree. Never nest an accordion to imitate a tree, and never nest a tree inside an accordion panel. If the sections are peers at one level, use `recursica-skill-accordion` instead. This boundary is settled, and there is no third case.
+**Use a tree for a real hierarchy, and an accordion for showing and hiding sections at one level.** `recursica-skill-navigation` states that an accordion has one level unless the project has a nesting option, and that content with several levels uses a tree. Never nest an accordion to look like a tree, and never put a tree inside an accordion panel. If the sections are peers at one level, use an accordion instead. See `recursica-skill-accordion`. The choice between a tree and an accordion is settled, and no third case exists.
 
 **Do not put a form, a table, or a card inside a tree node.** A node is a label, not a container.
 
-**Never rely on indentation alone to show depth.** Indentation is a single visual channel (color, shape, position or text, each a separate signal). `recursica-skill-system-conventions` requires a second one. For a tree, the second channel is the level, set in the code.
+**Do not calculate indentation by hand.** The theme sets how far each level of the tree is indented.
 
-**If the tree is navigation, its nodes are links** with real routes, and it follows `recursica-skill-navigation` — including opening sub-levels on click, never on hover.
+**Never show depth with indentation alone.** Indentation is one visual channel (color, shape, position or text, each a separate signal). `recursica-skill-system-conventions` requires a second channel. In a tree, the second channel is each node's level, set in the code.
+
+**In a tree used for navigation, every node is a link with a real URL.** The tree follows `recursica-skill-navigation`, including the rule that a sub-level opens on click, never on hover.
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
-A tree has the most specific keyboard rules of any component, and they are the ones most often ignored. A tree built as nested `div`s with click handlers cannot be used with a keyboard or a screen reader. It has no level, no expand state, and no way to reach it with the keyboard.
+A tree has the most specific keyboard rules of any component, and the tree's keyboard rules are the ones most often ignored. A keyboard user or a screen reader user cannot use a tree built from nested `div` elements with click handlers. A tree built that way has no level, no expand state, and no keyboard access.
 
 ### Screen readers
 
-- **It must be announced as a tree, and each node as a tree item.** Nesting must be real structure in the code, not only a visual offset.
-- **Each node must report its level, and its position among the nodes at the same level** — "level 3, 2 of 7". A screen reader user cannot see indentation. Without the level and position, they cannot tell where they are in the tree.
-- **A node with children must report whether it is expanded or collapsed**, and a node with no children must not claim it can expand.
-- **The selected state must be set in code**, never shown only by the fill or color of the selected node.
-- **The expand control needs its own accessible name** (the name a screen reader reads out for a control) if it is separate from the node. That name must include the node's label: "Expand Marketing", not "Expand".
-- **Announce what changed when a node expands.** Say how many children appeared, or at least that the node is now expanded.
-- **A node's icon is decorative and must be hidden from screen readers.** The expand state tells a screen reader user that a node has children. A folder icon does not.
-- **The tree needs an accessible name** that says which hierarchy it shows.
+- **A screen reader must announce the tree as a tree, and each node as a tree item.** The nesting must be real structure in the code, not only indentation on screen.
+- **Each node must report the node's level, and the node's position among the nodes at the same level**, as in "level 3, 2 of 7". A screen reader user cannot see indentation. Without the level and the position, a screen reader user cannot tell where the current node sits in the tree.
+- **A node with children must report whether the node is expanded or collapsed.** A node with no children must not report that the node can expand.
+- **The selected state must be set in code**, never shown only by the fill or the color of the selected node.
+- **An expand control that is separate from the node needs a separate accessible name** (the name a screen reader reads out for a control). The expand control's accessible name must include the node's label, as in "Expand Marketing", not "Expand".
+- **Announce the change when a node expands.** Announce how many child nodes appeared, or at least announce that the node is now expanded.
+- **A node's icon is decorative and must be hidden from screen readers.** The expand state tells a screen reader user that a node has children. A folder icon does not tell a screen reader user that a node has children.
+- **The tree needs an accessible name** that says which hierarchy the tree shows.
 
 ### Keyboard and non-mouse navigation
 
-- **The tree is a single tab stop** (a place the Tab key lands). Tab moves into it, and then out of it. Do not make every node a tab stop, and do not add tabindex to nodes.
-- **The up and down arrows move between the nodes that are showing**, across levels, following whichever nodes are open at the moment.
-- **The right arrow expands a collapsed node, then moves into it. The left arrow collapses an expanded node, then moves to its parent.** Users expect this pattern from trees in other tools. Do not change it.
-- **Home and End jump to the first and last nodes that are showing.**
-- **Enter activates the node** — selects it, or follows it if the node is a link. Expanding and activating must be distinguishable, because `button-node-gap` makes them separate controls.
+- **The tree is a single tab stop** (a place the Tab key lands). Tab moves focus into the tree, and then out of the tree. Do not make every node a tab stop, and do not add tabindex to nodes.
+- **The Up Arrow and Down Arrow keys move focus between the visible nodes, across levels.** Which nodes are visible depends on which nodes are open at the moment.
+- **The Right Arrow key expands a collapsed node, then moves focus into the node. The Left Arrow key collapses an expanded node, then moves focus to the node's parent.** Users expect these arrow keys from trees in other tools. Do not change the arrow keys.
+- **Home moves focus to the first visible node, and End moves focus to the last visible node.**
+- **Enter activates the focused node.** Enter selects the node, or opens the link when the node is a link. Expanding a node and activating a node must be distinguishable, because the expand control and the node are separate controls.
 - **Never move focus automatically** when a node expands. Focus stays on the node the user acted on.
-- **Never require hover to show a node's actions or its expand control.**
+- **Never show a node's actions or the node's expand control only on hover.**
 
-## Set by the component
+## Styling set by tokens
 
-Do not set or override any of these. The component sets them:
+**Never set or override the tree's styling.** The theme sets every visual property of the tree, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the tree's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
-- `indent` — the depth offset for every level.
-- `item-gap`, `button-node-gap`.
-- `vertical-padding`, `horizontal-padding`.
-- `border-size`, `border-radius`, `max-width`.
-- Selected and unselected styling, including hover and focus.
+## Related skills
 
-## Load these too
+- `recursica-skill-navigation` — nodes collapsed by default, sub-levels that open on click and not on hover, the rule that an accordion has one level unless the project has a nesting option and that content with several levels uses a tree, routing when the tree is navigation, and permissions.
+- `recursica-skill-working-memory` — the reason for the limit on visible nodes at each level.
+- `recursica-skill-system-conventions` — never show meaning in only one channel.
 
-- `recursica-skill-navigation` — collapsed by default, click not hover for sub-levels, the accordion-never-nested rule that sends structures with several levels to a tree, routing if the tree is navigation, and permissions.
-- `recursica-skill-working-memory` — the basis for the breadth ceiling.
-- `recursica-skill-system-conventions` — never carry meaning in a single channel.
+### Only if used on the same screen
 
-### Only if the screen also uses it
-
-- `recursica-skill-accordion` — the single-level alternative, and the boundary between them.
+- `recursica-skill-accordion` — the alternative for sections at one level, and when to use an accordion instead of a tree.
 - `recursica-skill-table` — the alternative when the data turns out to be flat.
 
-## Uncovered — ask, do not invent
+## Open questions
 
-- **The look of an expanded node compared with a collapsed one.** The UI kit defines no state for it, and no icon token for showing it. This is the biggest gap in the component.
-- **Choosing several items in a tree**, with or without checkboxes. Neither exists in the UI kit, and the design rules do not cover choosing several items in a hierarchy.
-- **A maximum depth.** No rule states one, and depth with no limit is a real usability problem.
+- **The look of an expanded node compared with a collapsed node.** The look of an expanded node is the biggest open question about the tree. Ask only when the project has no expanded state.
+- **Choosing several items in a tree**, with or without checkboxes. The design rules do not cover choosing several items in a hierarchy. Ask only when the project has no option for choosing several items.
+- **A maximum depth.** No rule sets a maximum number of levels, and a tree with no limit on levels is a real usability problem.
 - **Selecting a parent node.** No rule says whether a parent node can be selected, or only a node with no children.
-- **Loading children only when a node opens**, and what the node shows while they load. The UI kit has no loading state.
-- **Dragging to reorder nodes or move a node to a new parent.** Under `recursica-skill-system-conventions`, dragging would also require a way to reorder and move nodes without dragging.
-- **The empty state of the tree**, and what a node with no children shows once expanded.
-- **Nothing about this component is shown only on the design-system website.** Unlike most component skills, this one has the UI kit as its only source. Treat every gap above as unanswered, not as unrecorded.
+- **Loading children only when a node opens**, and what the node shows while the children load. When the project has a loading state, ask only about loading children when a node opens.
+- **Dragging to reorder nodes or move a node to a new parent.** If dragging is allowed, `recursica-skill-system-conventions` also requires a way to reorder and move nodes without dragging.
+- **The empty state of the tree**, and what an expanded node with no children shows.
+- **The design-system website adds nothing about the tree.** Unlike most component skills, the tree skill has the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) as the only source. Treat every gap above as a question nobody has answered, not as an answer nobody wrote down.
 
 ## Pre-flight checklist
 
 - [ ] The data is a true hierarchy. No flat list is shown indented as a tree.
 - [ ] Nodes are collapsed by default, and only the nodes the user needs for the current task are open.
-- [ ] The number of visible items at each level is within 7 ± 2.
-- [ ] Node labels name what each node is, and are clear enough to choose from while collapsed.
-- [ ] Real hierarchy uses a tree, and disclosure at one level uses `recursica-skill-accordion`. No accordion is nested to imitate a tree, and no form, table, or card is inside a node.
-- [ ] The tree is announced as a tree, with a name. Each node reports its level, position, and expanded state.
-- [ ] Nodes with no children do not claim they can expand.
-- [ ] The selected state is set in code, not shown only by color. The expand control's name includes its node.
-- [ ] The tree is a single tab stop. Up and down move, right expands, left collapses, Home and End jump, and Enter activates.
-- [ ] Focus stays on the node when it expands. The focus ring is visible, and looks different from the selected state.
-- [ ] Nothing appears only on hover. Sub-levels open on click.
-- [ ] Indentation comes from the `indent` token, and no expanded state or icon was invented.
-- [ ] Uncovered items were asked about, not decided: the look of an expanded node, choosing several items, a maximum depth, selecting a parent node, loading children when a node opens, dragging to reorder or move a node, and the empty state.
+- [ ] The number of visible nodes at each level is within 7 ± 2.
+- [ ] Each node label names what the node is, and is clear enough to choose the node while the node is collapsed.
+- [ ] A real hierarchy uses a tree, and sections at one level use an accordion, as in `recursica-skill-accordion`. No accordion is nested to look like a tree, and no form, table, or card is inside a node.
+- [ ] A screen reader announces the tree as a tree, with an accessible name. Each node reports the node's level, position, and expanded state.
+- [ ] A node with no children does not report that the node can expand.
+- [ ] The selected state is set in code, not shown only by color. The expand control's accessible name includes the node's label.
+- [ ] The tree is a single tab stop. Up Arrow and Down Arrow move focus, Right Arrow expands, Left Arrow collapses, Home and End move to the first and last visible nodes, and Enter activates the node.
+- [ ] Focus stays on a node when the node expands. The focus ring is visible, and looks different from the selected state.
+- [ ] Nothing in the tree appears only on hover. Sub-levels open on click.
+- [ ] No styling is set or overridden on the tree, and no container or spacer is added to change the tree's look.
+- [ ] Indentation comes from the theme, and no expanded state or icon was invented.
+- [ ] Every variant, option, and state is one the Recursica MCP server lists for the project, and no variant or option is invented.
+- [ ] Open questions were asked about, not decided: the look of an expanded node, choosing several items, a maximum depth, selecting a parent node, loading children when a node opens, dragging to reorder or move a node, and the empty state.

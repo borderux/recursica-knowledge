@@ -8,6 +8,7 @@ import {
   phrasesFound,
   problemsIn,
   readingGrade,
+  skillWordsFound,
 } from "./check-writing.mjs";
 
 const SCRIPT = path.join(import.meta.dirname, "check-writing.mjs");
@@ -71,6 +72,29 @@ test("the reading grade rises with long sentences and long words", () => {
     ),
   );
   assert.ok(!problemsIn("AGENT.md", dense).some((p) => p.rule === "grade"));
+});
+
+test("filler and insider words are caught, and chart axes are allowed in the chart skill", () => {
+  assert.deepEqual(phrasesFound("The label must work on its own."), [
+    "\\bon its own\\b",
+  ]);
+  assert.deepEqual(
+    skillWordsFound(
+      "skills/components/recursica-skill-x/SKILL.md",
+      "Set the size axis with a React prop, whatever the design shows.",
+    ),
+    ["whatever", "axis", "React", "prop"],
+  );
+  assert.deepEqual(
+    skillWordsFound(
+      "skills/design-rules/recursica-skill-data-visualization/SKILL.md",
+      "Label both axes.",
+    ),
+    [],
+  );
+  assert.ok(
+    !problemsIn("AGENT.md", "Set the axis.").some((p) => p.rule === "words"),
+  );
 });
 
 test("every covered file passes, apart from the logged gaps", () => {

@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-breadcrumb
-description: Rules for the Recursica breadcrumb — when depth warrants a trail, what goes in it, the current page as plain text, and navigation-region accessibility. Use for breadcrumb trails and hierarchy paths. Not for the app shell — see recursica-skill-navigation; not for steps in a process — see recursica-skill-stepper.
+description: Rules for the Recursica breadcrumb — when depth warrants a trail, what goes in the trail, the current page as plain text, and navigation-region accessibility. Use for breadcrumb trails and hierarchy paths. Not for the app shell — see recursica-skill-navigation; not for steps in a process — see recursica-skill-stepper.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -9,139 +9,127 @@ metadata:
 
 # Breadcrumb
 
-A breadcrumb shows where the current page sits in the hierarchy, and gives a way back up it.
+A breadcrumb shows where the current page sits in the page hierarchy. A breadcrumb is a trail of items. An item names one page in the hierarchy. A breadcrumb also links back up to the pages above the current page.
 
-## Use it when
+## When to use a breadcrumb
 
-- **The structure is nested**, and the page sits more than one level down. `recursica-skill-navigation` calls for breadcrumbs where the depth calls for them.
-- **The page must answer "where am I?" by itself**, without the navigation being on screen. That is a requirement, and headings and breadcrumbs are what meet it.
-- **The user moves through several levels or categories**, and needs to keep their bearings across a deep path.
+- The application's pages are nested, and the current page is more than one level down. `recursica-skill-navigation` calls for breadcrumbs where the pages are nested deep enough to need breadcrumbs.
+- The page must answer "Where am I?" by itself, without the navigation on screen. The answer is a requirement, and headings and breadcrumbs meet the requirement.
+- The user moves through several levels or categories, and needs to keep track of the current page's place along a deep path.
 
-## Do not use it when
+## When not to use a breadcrumb
 
-| Instead of a breadcrumb                                | Use                                                                                          |
-| ------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| The application is only one or two levels deep         | Headings. A clear heading hierarchy already shows location — `recursica-skill-navigation`    |
-| It would be the only way back to the parent            | Real navigation — a sidebar or a top bar. A breadcrumb is extra wayfinding, not the main way |
-| Location is already clear from the heading and the nav | Nothing. A trail that repeats what is already clear is clutter                               |
-| The user moves through ordered steps in a process      | `recursica-skill-stepper`                                                                    |
-| The user switches between parts of one whole on a page | `recursica-skill-tabs` — which have their own routes                                         |
-| The trail would record where the user has been         | The hierarchy. A breadcrumb shows structure; it is not a history log                         |
+| Situation                                                      | Use instead                                                                                                      |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| The application is only one or two levels deep                 | Headings. A clear heading hierarchy shows the user's location. See `recursica-skill-navigation`.                 |
+| The breadcrumb would be the only way back to the parent page   | Real navigation: a sidebar or a top bar. A breadcrumb is an extra aid for finding the way, not the main way.     |
+| The heading and the navigation already make the location clear | No breadcrumb. A breadcrumb that repeats a location the user can already see is clutter.                         |
+| The user moves through ordered steps in a process              | A stepper. See `recursica-skill-stepper`.                                                                        |
+| The user switches between parts of one whole on a page         | Tabs. Each tab has its own route. See `recursica-skill-tabs`.                                                    |
+| The breadcrumb would record the pages the user has visited     | A trail built from the page hierarchy. A breadcrumb shows how the pages are structured, not a history of visits. |
 
-Wayfinding is the user's sense of where they are and how to get where they want to go.
+**A breadcrumb is never the primary navigation.** If removing the breadcrumb would leave a user unable to get out of a section, the navigation is the real problem. See `recursica-skill-navigation`.
 
-**A breadcrumb is never the primary navigation.** If removing it would leave a user unable to get out of a section, the navigation is the real problem — see `recursica-skill-navigation`.
+## Variants
 
-## What exists
+**Use only the breadcrumb variants and options that the Recursica MCP server lists for the project.** A designer can add variants and options in Theme Forge, so each project can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
 
-Taken from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) → `ui-kit.components.breadcrumb`. **Do not pass a variant, state, or content option — there are none.**
+Do not pass a variant, a state or a content option that the MCP server does not list for the project.
 
-| Axis       | Options                                        |
-| ---------- | ---------------------------------------------- |
-| `variants` | None. The component has no variant axis at all |
+- **Separator.** A separator is the mark between items, such as a slash, a chevron or a dot. If the project has a separator, use the project's separator. Do not invent a separator. The separator is an open question.
+- **Long trails.** No rule says how a long trail collapses, truncates or overflows. However that rule is decided, a long trail never scrolls horizontally. `recursica-skill-navigation` forbids horizontal scrolling outright.
+- **Item styles and content variant.** Only the design-system website shows a clickable item and a read-only item for the current page. Only the website shows a content variant with four options: Label only, Icon + Label, Icon only, and Mixed. If the project has a content variant or item styles, use the project's version. The content variant is an open question.
 
-**Two properties, and that is the whole component: `padding` and `item-gap`.**
+## Rules
 
-**There is no separator token.** What sits between items — a slash, a chevron, a dot — is not defined in the UI kit. Do not invent one; see the uncovered list.
+**Build the trail from the page hierarchy, not from the user's history.** Two users who reach the same page by different paths see the same trail. A breadcrumb shows how the platform is structured. A breadcrumb is not a back-stack (the list of pages the user has visited).
 
-**There is no collapse, truncation, or overflow behavior.** How a long trail behaves is not defined. Whatever the answer turns out to be, it is not horizontal scrolling — `recursica-skill-navigation` forbids that outright.
+**The last item in the trail is the current page, and the current page is not a link.** Mark the current page clearly, and leave the current page unlinked. A link to the current page does nothing when clicked, and leaves anyone who follows the link where the user started.
 
-**There is no current-page state, and no content axis (a property a component varies on, such as size or style; Figma calls it a variant property).** An interactive item and a read-only item for the current page, plus a content axis of Label only, Icon + Label, Icon only, and Mixed, are shown only on the design-system website. The UI kit defines none of it. See the uncovered list.
+**Every other item in the trail is a real link with a real `href`, to a page that exists.** See `recursica-skill-link`.
 
-## Rules for using it
+**Label each item with the name of the destination page, with no verb.** The label should match the heading on the destination page. A matching heading confirms the trail when the user arrives, instead of contradicting the trail.
 
-**The trail follows the hierarchy, not the user's history.** Two users who reach the same page from different directions see the same trail. A breadcrumb shows how the platform is structured; it is not a back-stack (the list of pages the user has visited).
+**A breadcrumb is one of three signals of the user's location, never the only signal.** `recursica-skill-navigation` requires the selected item in the navigation, a clear heading hierarchy, and breadcrumbs where the depth calls for breadcrumbs. `recursica-skill-navigation` also states that the selected navigation item alone is not enough.
 
-**The last item is the current page, and it is not a link.** Mark it clearly and leave it unlinked. A link to the current page does nothing, and it is a dead end for anyone who follows it.
+**Mark up the trail as a semantic list, ordered or unordered.** All navigation is marked up as a list.
 
-**Every other item is a real link with a real `href`**, to a page that exists. See `recursica-skill-link`.
+**Include only the levels above the current page.** Leave out sibling pages, filters, search or sort settings, and any modal the user has open.
 
-**Each label is the destination page's own name, with no verb** — and it should match the heading the user will land on, so that arriving confirms the trail instead of contradicting it.
+**Never point a breadcrumb item at a modal or a panel.** A control on the page opens a modal or a panel. The user does not navigate to a modal or a panel, and a modal or a panel adds no entry to the browser history. See `recursica-skill-navigation`.
 
-**A breadcrumb is one of three signals of location, never the only one.** `recursica-skill-navigation` requires the nav's selected state, a clear heading hierarchy, and breadcrumbs where the depth calls for them — and it states that the first one alone is not enough.
+**Do not build a breadcrumb item that is only an icon.** An icon alone cannot name the destination page. Even a clear icon, such as a home icon for the top level, needs both a tooltip and an accessible name (the name a screen reader reads out for a control). `recursica-skill-buttons-links` requires both. If the project has a content option for an icon with a label, use text or an icon with a label. Otherwise, use text. Never use an icon alone, even when the project has an icon-only option.
 
-**Mark up the trail as a semantic list**, ordered or unordered. All navigation is a list.
-
-**Include ancestors only** — the levels above the current page. No siblings, no filters, no search or sort state, and no modal the user happens to have open.
-
-**Never point a crumb at a modal or a panel.** A trigger opens those; the user does not navigate to them, and they get no history entry — `recursica-skill-navigation`.
-
-**Do not build a crumb that is only an icon.** The UI kit defines no content axis, and an icon on its own cannot name a destination. Where an icon is clear — a home icon at the root — it still needs both a tooltip and an accessible name (the name a screen reader reads out for a control), as `recursica-skill-buttons-links` requires. Until the content axis is settled, use text.
-
-**Never let the trail wrap into a scrolling strip to make it fit.** A trail too long for its space means the hierarchy is too deep. Raise the depth as a problem rather than hiding it with layout — see `recursica-skill-system-conventions`.
+**Never wrap the trail into a scrolling strip to make the trail fit.** A trail too long for the space means the page hierarchy is too deep. Raise the depth as a problem instead of hiding the depth with layout. See `recursica-skill-system-conventions`.
 
 ## Accessibility
 
-This component also follows the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring. Only what is specific to it is listed here.
+The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
-A breadcrumb is a short row of links, and assistive technology has no way to recognize it as a trail unless the markup identifies it as one. Three failures account for nearly all the problems: a navigation region with no name, a separator read aloud between every item, and a current page that links to itself.
+A breadcrumb is a short line of links. Assistive technology recognizes a breadcrumb as a trail only when the markup identifies the breadcrumb as a trail. Three mistakes cause nearly all breadcrumb problems: a navigation region with no name, a separator read aloud between every item, and a current page that links to the current page.
 
 ### Screen readers
 
-- **It is a navigation region with a name** — "Breadcrumb". A page with more than one navigation region must name each one, or they cannot be told apart in a landmark list (the list of labeled page regions a screen reader can jump between).
-- **The trail is a list, marked up as one**, so the user hears how many levels there are and where the current page sits among them.
-- **The current page is the last item, and it must be marked as current in code** — not only styled to look current, and not shown as a link back to itself.
-- **Separators are decorative and must be silent.** A slash or chevron announced between every item turns a four-level trail into eight announcements. If the separator is a text character, hide it from assistive technology. If the component creates it, do not add a second separator.
-- **Each link's name is the page it goes to**, and it must make sense when read completely out of context — screen reader users bring up lists of links with no text around them.
+- **Mark the breadcrumb as a navigation region named "Breadcrumb".** A page with more than one navigation region must name each region. Without names, a screen reader user cannot tell the regions apart in the landmark list (the list of labeled page regions a screen reader can jump between).
+- **Mark up the trail as a list.** The list markup tells a screen reader user how many levels the trail has and where the current page sits among the levels.
+- **The current page is the last item, and the current page must be marked as current in code.** Styling the current page to look current is not enough. The current page is not shown as a link back to the current page.
+- **Separators are decorative and must be silent.** A slash or a chevron announced between every item turns a four-level trail into eight announcements. If the separator is a text character, hide the separator from assistive technology. If the separator comes with the breadcrumb, do not add a second separator.
+- **Name each link after the page the link goes to.** The link name must make sense when read with no text around the link. Screen reader users open lists of links that show no surrounding text.
 - **Never rely on position alone to mark the current page.** "Last in the list" is not a state a screen reader reports.
-- **Do not add a hidden copy of the trail or the page title for screen readers.** The last crumb and the page's H1 naming the same page is expected; a third copy is noise.
-- **If an icon appears beside a label, it is decorative and silent** — the label is the name.
+- **Do not add a hidden copy of the trail or the page title for screen readers.** The last breadcrumb item and the page's H1 are expected to name the same page. A third copy of the page name is noise.
+- **An icon beside a label is decorative and silent.** The label is the link name.
 
 ### Keyboard and non-mouse navigation
 
-- **Every crumb link is a tab stop (a place the Tab key lands) because it has an `href`**, in visual order, from left to right. Do not add a tabindex to force an order.
-- **The current page cannot receive focus**, because it is not a link.
-- **The whole trail must be reachable by keyboard, and it must not be the only way back.** A user who cannot reach it, or does not, must still be able to get to the parent through the navigation.
-- **Nothing in the trail may appear only on hover** — not a crumb, and not a collapsed part of one. Levels revealed on hover cannot be reached by keyboard or by touch.
-- **Enter activates a crumb; Space does not.** That is correct browser behavior for a link. A crumb with a Space handler is a button, not a link.
-- **Do not intercept the modifier keys.** Ctrl, Cmd, Shift, and middle-click must reach the browser, so the user stays in control of where the parent page opens.
+- **Every breadcrumb link is a tab stop (a place the Tab key lands), in visual order from left to right.** Each breadcrumb link is a tab stop because the link has an `href`. Do not add a `tabindex` to force an order.
+- **The current page cannot receive focus, because the current page is not a link.**
+- **The whole trail must be reachable by keyboard, and the trail must not be the only way back.** A user who cannot reach the trail, or does not use the trail, must still be able to get to the parent page through the navigation.
+- **No part of the trail may appear only on hover, including a breadcrumb item or a collapsed part of the trail.** Keyboard users and touch users cannot reach levels that appear only on hover.
+- **Enter follows a breadcrumb link, and Space does not.** A browser link behaves this way by design. A breadcrumb item that responds to Space is a button, not a link.
+- **Do not intercept the modifier keys.** Ctrl, Cmd, Shift and middle-click must reach the browser, so the user stays in control of where the parent page opens.
 
-## Set by the component
+## Styling set by tokens
 
-Do not set or override any of these. The component sets them:
+**Never set or override the breadcrumb's styling.** The theme sets every visual property of the breadcrumb, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the breadcrumb's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
 
-- `padding`.
-- `item-gap`.
-- Link text styling, colors, and states, which come from the link component.
-- The separator's visual treatment, wherever it comes from.
-- The focus ring.
+The separator's look, wherever the separator comes from, and the focus ring are part of the breadcrumb's styling.
 
-## Load these too
+## Related skills
 
-- `recursica-skill-navigation` — what counts as a location, routing and browser history, indicating location with selected state plus headings plus breadcrumbs, semantic list markup, and the prohibition on horizontal scrolling.
-- `recursica-skill-buttons-links` — link vs. button semantics, link label copy, and the tooltip requirement for an icon-only control.
-- `recursica-skill-system-conventions` — never carry meaning in a single channel, and fix the structure rather than adding a mechanism to cope with it.
+- `recursica-skill-navigation` — what counts as a location, routing and browser history, showing location with the selected navigation item plus headings plus breadcrumbs, list markup for navigation, and the ban on horizontal scrolling.
+- `recursica-skill-buttons-links` — link versus button, link label wording, and the tooltip an icon-only control needs.
+- `recursica-skill-system-conventions` — never relying on a single channel for meaning, and fixing the structure instead of adding a workaround for a structure problem.
 
-### Only if the screen also uses it
+### Only if used on the same screen
 
-- `recursica-skill-link` — real `href`s, labels that name the destination, never disabling a link, and modifier-key behavior.
+- `recursica-skill-link` — real `href` values, labels that name the destination page, never disabling a link, and modifier-key behavior.
 - `recursica-skill-tabs` — switching between parts of one whole on a single page, which is not a trail.
 
-## Uncovered — ask, do not invent
+## Open questions
 
-- **The separator.** No token defines it. The character, whether it is an icon, and its spacing are all unset — `item-gap` is the only spacing property.
-- **Long trails.** No collapse, truncation, or overflow behavior exists. Whether a deep trail drops its middle levels, shortens its labels, or wraps has not been answered — and horizontal scrolling is not an option.
-- **A content axis — Label only, Icon + Label, Icon only, Mixed — and separate styles for read-only and interactive items are shown only on the design-system website, with no token behind any of them.** Do not rely on this without asking.
-- **The depth at which a breadcrumb becomes required.** `recursica-skill-navigation` says "where depth warrants it", but gives no number. The maximum nesting depth is listed as uncovered there too.
-- **Whether the start of the trail is the application's home, or the section's landing page.**
-- **How the trail handles a level above it that has no landing page of its own** — a level that exists in the hierarchy but has no route to link to.
+- **The separator.** No one has decided the character, or whether the separator is an icon. If the project has a separator, use the project's separator. Otherwise, ask.
+- **Long trails.** No one has decided whether a deep trail drops the middle levels, shortens the labels, or wraps. Horizontal scrolling is not an option.
+- **The content variant.** Only the design-system website shows a content variant with Label only, Icon + Label, Icon only and Mixed options. Only the website shows separate styles for read-only items and clickable items. If the project has the content variant or the item styles, use the project's version. Otherwise, do not rely on either one without asking.
+- **The depth at which a breadcrumb becomes required.** `recursica-skill-navigation` says "where depth warrants it", but gives no number. `recursica-skill-navigation` also lists the maximum nesting depth as uncovered.
+- **The start of the trail.** No rule says whether the trail starts at the application's home page or at the section's landing page.
+- **A level with no landing page.** No rule says how the trail handles a level above the current page that exists in the hierarchy but has no landing page and no route to link to.
 
 ## Pre-flight checklist
 
-- [ ] The structure is nested, and the trail is not the only way back to the parent.
-- [ ] Location is also shown by the nav's selected state and the page's heading hierarchy.
-- [ ] The trail follows the hierarchy, not the user's click history, and contains only the levels above the current page.
-- [ ] The last item is the current page. It is not a link, and it is marked as current in code.
+- [ ] The application's pages are nested, and the trail is not the only way back to the parent page.
+- [ ] The selected navigation item and the page's heading hierarchy also show the location.
+- [ ] The trail follows the page hierarchy, not the user's click history, and holds only the levels above the current page.
+- [ ] The last item is the current page. The current page is not a link, and is marked as current in code.
 - [ ] Every other item is a real link with a real `href`, to a page that exists.
-- [ ] Each label names its destination with no verb, and matches the heading the user will land on.
-- [ ] No crumb points to a modal or a panel.
+- [ ] Each label names the destination page with no verb, and matches the heading on the destination page.
+- [ ] No breadcrumb item points to a modal or a panel.
 - [ ] The trail is a named navigation region, and is marked up as a semantic list.
 - [ ] Separators are hidden from assistive technology, and no separator is announced between items.
-- [ ] No crumb is only an icon, and any decorative icon beside a label is silent.
-- [ ] There is no hidden copy of the trail or the page title for screen readers.
-- [ ] Every crumb is a tab stop, in visual order, and the current page cannot receive focus.
-- [ ] Nothing in the trail depends on hover, and the modifier keys are not intercepted.
+- [ ] No breadcrumb item is only an icon, and any decorative icon beside a label is silent.
+- [ ] No hidden copy of the trail or the page title is added for screen readers.
+- [ ] Every breadcrumb link is a tab stop, in visual order, and the current page cannot receive focus.
+- [ ] No part of the trail depends on hover, and the modifier keys are not intercepted.
 - [ ] The trail does not scroll horizontally, wrap into a strip, or shrink to fit.
-- [ ] The breadcrumb has no variant, state, content option, or separator token beyond the inventory above.
-- [ ] Styling comes from the component.
-- [ ] Uncovered items were asked about, not decided: the separator, long trails, the content axis, the depth at which a breadcrumb becomes required, the start of the trail, and a level with no landing page.
+- [ ] Every variant, state and content option is one the Recursica MCP server lists for the project, under the name the code uses, and no separator token is invented.
+- [ ] No styling is set or overridden on the breadcrumb, and no container or spacer is added to change the breadcrumb's look.
+- [ ] Open questions were asked about, not decided: the separator, long trails, the content variant, the depth at which a breadcrumb becomes required, the start of the trail, and a level with no landing page.

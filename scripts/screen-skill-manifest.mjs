@@ -3,7 +3,7 @@
  * Which skills apply to a screen — computed, not judged.
  *
  * This is the piece that makes a design review mechanical, and it exists because of a specific
- * gap in the skills family. Every component skill has a `## Load these too` section pointing
+ * gap in the skills family. Every component skill has a `## Related skills` section pointing
  * upward at the design-rules skills it depends on. No design-rules skill points back down, and
  * the router's decision table names 20 of 20 design-rules skills and **0 of 39 component
  * skills**. So descending the router never yields a component skill name — an agent has to
@@ -27,6 +27,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { IF_USED_HEADING, LOAD_HEADING } from "./lib/skill-sections.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SKILLS = path.join(ROOT, "skills");
@@ -233,9 +234,8 @@ function section(text, heading) {
   return next === -1 ? text.slice(from) : text.slice(from, next);
 }
 
-/** The `## Load these too` skill slugs a skill file names. */
-/** Heading that splits `## Load these too` into what a skill needs and what it only points at. */
-export const IF_USED_HEADING = "### Only if the screen also uses it";
+/** The heading that splits `## Related skills` into what a skill needs and what it only points at. */
+export { IF_USED_HEADING };
 
 /**
  * A skill's cross-links, split in two. `needs` is loaded with the skill, always. `ifUsed` names
@@ -248,7 +248,7 @@ export const IF_USED_HEADING = "### Only if the screen also uses it";
  * about which is which.
  */
 export function crossLinks(text) {
-  const body = section(text, "Load these too");
+  const body = section(text, LOAD_HEADING);
   if (!body) return { needs: [], ifUsed: [] };
   const [needs, ifUsed = ""] = body.split(IF_USED_HEADING);
   const slugs = (s) => [...new Set(s.match(/recursica-skill-[a-z0-9-]*[a-z0-9]/g) ?? [])];
@@ -288,7 +288,7 @@ export function localGraph(entry, seen = new Set()) {
 /**
  * The skill set for one or more source files.
  *
- * Transitively closes over `## Load these too`, because a component skill is explicit that it is
+ * Transitively closes over `## Related skills`, because a component skill is explicit that it is
  * incomplete on its own — loading `Table` without the tables design rules reliably produces
  * something individually correct and collectively wrong.
  */
@@ -307,7 +307,7 @@ export function manifest(entries) {
   const ambiguous = resolved.filter((r) => r.kind === "ambiguous")
     .map((r) => `${r.name} (could be ${r.candidates.join(" or ")})`);
 
-  // Breadth-first over `## Load these too`, so a skill reached only through another still lands.
+  // Breadth-first over `## Related skills`, so a skill reached only through another still lands.
   // An "only if used" link is followed only when the screen imports that component, which in
   // practice means it is already in the set.
   const used = new Set(resolved.flatMap((r) => r.skills));
@@ -383,7 +383,7 @@ function selfCheck() {
 
       if (category === "components") {
         const cross = loadTheseToo(path.relative(ROOT, p));
-        if (cross.needs.length === 0) problems.push(`components/${slug}: '## Load these too' has no links it needs`);
+        if (cross.needs.length === 0) problems.push(`components/${slug}: '## ${LOAD_HEADING}' has no links it needs`);
         links += cross.needs.length;
         ifUsed += cross.ifUsed.length;
       }

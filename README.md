@@ -10,19 +10,19 @@ For detailed step-by-step setup guides (using the npm package or the Claude plug
 
 ## 🤖 Using the design agents in Claude Code
 
-Betty (builds screens), Barb (reviews them, with her helpers Checker and Feisty) and Alan (maintains the rules) can be installed for every project on your machine. You need Node 20 or newer; nothing else to install.
+Betty (builds screens), Barb (reviews them, with her helpers Checker and Feisty), Alan (maintains the rules) and Edie (edits the writing, with her helper Comparer) can be installed for every project on your machine. Edie runs in Claude Code only. You need Node 20 or newer; nothing else to install.
 
 **One-time setup**
 
 1. Clone this repository into the folder where you keep your code. Betty looks for the rules, and for the projects she builds in, next to this folder.
-2. Delete any agent files you copied in by hand — `betty.md`, `barb.md`, `checker.md`, `feisty.md`, `alan.md` — from `~/.claude/agents` and from any project's `.claude/agents` folder. The installer never overwrites a file it did not write, and a project's own copy overrides the shared one.
+2. Delete any agent files you copied in by hand — `betty.md`, `barb.md`, `checker.md`, `feisty.md`, `alan.md`, `edie.md`, `comparer.md` — from `~/.claude/agents` and from any project's `.claude/agents` folder. The installer never overwrites a file it did not write, and a project's own copy overrides the shared one.
 3. In this folder, run:
 
    ```bash
    npm run agents:install
    ```
 
-   You should see five ✓ lines. If one says "a copy this script did not write", delete that file and run it again.
+   You should see seven ✓ lines. If one says "a copy this script did not write", delete that file and run it again.
 
 **Whenever the agents change**
 

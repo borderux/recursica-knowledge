@@ -11,7 +11,8 @@ read-only tool set.**
 |---|---|
 | The skills corpus | `skills/` from this repository — 62 `SKILL.md` files. She reads them; she never writes them. |
 | The manifest script | `scripts/screen-skill-manifest.mjs`, plus a Node 20+ runtime to run it. |
-| The application | A checkout of the app being reviewed, built on `@recursica/mantine-adapter`. |
+| The application | A checkout of the app being reviewed, built on any Recursica adapter. |
+| The Recursica MCP server | `@recursica/mcp`, registered as `recursica-mcp` with `cwd` set to the app. The server's `recursica_get_component_doc` tool gives the adapter's names for the design-system names the skills use. Without the server, Barb reads the installed adapter's API instead, which is slower and easier to get wrong. |
 | Subagent dispatch | `checker` and `feisty` must be registered, and the platform must support one agent spawning another. |
 | Room to fan out | Around 30–60 sub-agents in one turn, and a turn long enough to finish them (a full review of a small screen took about 17 minutes). Check the platform's per-turn caps and timeouts before anything else: every one Hermes had was below that, and each failed silently. See `runtime/hermes.md`. |
 | Somewhere to put the report | A file she can write and attach, if the chat surface limits message length. |
@@ -151,7 +152,7 @@ single file, the rules that matter most will be missing and the report will look
   to drive it; without one, those items are *unchecked*, and she must report them as such rather than
   as passed. One of these defects arrived from a token default with no code change at all.
 - **Confirm that the rule is the right rule.** She checks conformance.
-- **See what nobody has decided.** Several skills carry an `## Uncovered — ask, do not invent`
+- **See what nobody has decided.** Several skills carry an `## Open questions`
   list, and a checklist has no line for an unmade decision. Two of the defects that prompted her
   existence were sitting in one of those lists, and a screen violating them would pass her clean.
 
