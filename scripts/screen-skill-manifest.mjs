@@ -48,6 +48,17 @@ const ADAPTER_COMPONENTS = [
 ];
 
 /**
+ * Names the Angular adapter (`@recursica/adapter-angular-material`) exports that the list above
+ * does not have. `Heading` is its `Title`; the rest are the parts of a compound component, which
+ * the React adapters take as props or children. Each resolves to the skill of the component it is
+ * a part of, by `partOf` below, except `Heading`, which has a route.
+ */
+const ANGULAR_ONLY_COMPONENTS = [
+  "Heading", "RadioGroup", "TableTbody", "TableTd", "TableTh", "TableThead", "TableTr",
+  "TabsList", "TabsPanel", "TabsTab",
+];
+
+/**
  * Where a component goes when **no component skill of that name exists at all.**
  *
  * These are routing decisions, not spellings. Every entry answers "this component has no skill of
@@ -89,6 +100,8 @@ export const ROUTES = {
   // genuine ambiguity, which is what this table is for.
   Text: { kind: "design", skills: ["recursica-skill-typography-semantics"] },
   Title: { kind: "design", skills: ["recursica-skill-typography-semantics"] },
+  // The Angular adapter's name for `Title`.
+  Heading: { kind: "design", skills: ["recursica-skill-typography-semantics"] },
 
   // Form scaffolding. These carry `formLayout` and the assistive-text slot for every field, so
   // the rules that govern them are the form rules.
@@ -201,8 +214,33 @@ export function skillFor(name) {
   return { match: "none", slugs: [] };
 }
 
+/**
+ * The name the adapter's React line would use. The Angular adapter exports classes —
+ * `ButtonComponent` — so comparing the full class name matched nothing, and a review of an
+ * Angular screen got only the always-on skills. `Component` alone is left as it is.
+ */
+export function componentName(name) {
+  return name.length > "Component".length && name.endsWith("Component")
+    ? name.slice(0, -"Component".length)
+    : name;
+}
+
+/**
+ * The adapter component a compound name is a part of: `TableTd` is part of `Table`, `TabsPanel` of
+ * `Tabs`, `RadioGroup` of `Radio`. Only a name that starts with a component the adapter exports,
+ * followed by another capitalized word, counts, and the longest such parent wins. Anything else
+ * stays unmapped, so a name nobody has seen is reported rather than attached to a skill by chance.
+ */
+function partOf(name) {
+  const parents = ADAPTER_COMPONENTS
+    .filter((c) => name.length > c.length && name.startsWith(c) && /^[A-Z]/.test(name.slice(c.length)))
+    .sort((a, b) => b.length - a.length);
+  return parents[0] ?? null;
+}
+
 /** What one imported name resolves to. */
-export function resolveImport(name) {
+export function resolveImport(imported) {
+  const name = componentName(imported);
   // A route wins over a match: it is a decision somebody made, including for the ambiguous cases
   // that matching deliberately refuses to resolve.
   if (ROUTES[name]) return { name, ...ROUTES[name] };
@@ -211,6 +249,12 @@ export function resolveImport(name) {
   if (match === "exact" || match === "partial") return { name, kind: "component", skills: slugs, match };
   // Reported, never guessed at. An ambiguous name is a gap in ROUTES, and it says so.
   if (match === "ambiguous") return { name, kind: "ambiguous", skills: [], candidates: slugs };
+
+  const parent = partOf(name);
+  if (parent) {
+    const whole = resolveImport(parent);
+    if (whole.kind === "component" || whole.kind === "design") return { ...whole, name, match: "part" };
+  }
   return { name, kind: "unmapped", skills: [] };
 }
 
@@ -278,7 +322,10 @@ export function localGraph(entry, seen = new Set()) {
   const source = fs.readFileSync(abs, "utf8");
   for (const m of source.matchAll(/(?:from|import)\s*["'](\.[^"']+)["']/g)) {
     const target = path.resolve(path.dirname(abs), m[1]);
-    for (const candidate of [target, `${target}.jsx`, `${target}.js`, path.join(target, "index.jsx")]) {
+    for (const candidate of [
+      target, `${target}.jsx`, `${target}.js`, `${target}.ts`,
+      path.join(target, "index.jsx"), path.join(target, "index.ts"),
+    ]) {
       if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) { localGraph(candidate, seen); break; }
     }
   }
@@ -345,7 +392,7 @@ export function manifest(entries) {
 function selfCheck() {
   const problems = [];
 
-  for (const name of ADAPTER_COMPONENTS) {
+  for (const name of [...ADAPTER_COMPONENTS, ...ANGULAR_ONLY_COMPONENTS, ...ANGULAR_ONLY_COMPONENTS.map((n) => `${n}Component`)]) {
     const r = resolveImport(name);
     if (r.kind === "unmapped") problems.push(`${name}: no skill matched and no entry in ROUTES`);
     if (r.kind === "ambiguous") problems.push(`${name}: matches ${r.candidates.join(" and ")} — needs a ROUTES entry`);
@@ -353,7 +400,7 @@ function selfCheck() {
   }
   for (const slug of ALWAYS) if (!locate(slug)) problems.push(`ALWAYS names ${slug}, which is not on disk`);
   for (const name of Object.keys(ROUTES)) {
-    if (!ADAPTER_COMPONENTS.includes(name)) problems.push(`ROUTES has ${name}, which the adapter does not export`);
+    if (!ADAPTER_COMPONENTS.includes(name) && !ANGULAR_ONLY_COMPONENTS.includes(name)) problems.push(`ROUTES has ${name}, which the adapter does not export`);
     // A route for a component that *does* have its own skill is a route that should not exist.
     const m = skillFor(name);
     if (m.match === "exact") problems.push(`ROUTES has ${name}, but ${m.slugs[0]} matches it exactly — drop the route`);
@@ -395,7 +442,7 @@ function selfCheck() {
     for (const p of problems) console.error(`  - ${p}`);
     process.exit(2);
   }
-  console.log(`✓ ${ADAPTER_COMPONENTS.length} adapter components all resolve.`);
+  console.log(`✓ ${ADAPTER_COMPONENTS.length + ANGULAR_ONLY_COMPONENTS.length} adapter components all resolve, by name and as Angular \`<Name>Component\` classes.`);
   console.log(`✓ ${Object.keys(ROUTES).length} routes for components with no skill of their own, ${ALWAYS.length} always-on skills.`);
   console.log(`✓ ${items} pre-flight checklist items across every skill.`);
   console.log(`✓ ${links} cross-links the 39 component skills need, and ${ifUsed} loaded only if the screen uses them.`);
