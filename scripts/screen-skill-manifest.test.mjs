@@ -186,3 +186,46 @@ test("every skill in a manifest carries a resolvable path", () => {
   }
   fs.rmSync(dir, { recursive: true, force: true });
 });
+
+test("an Angular class name resolves like the component it is named for", () => {
+  // The Angular adapter exports `ButtonComponent`. Compared whole, no name matched anything, and a
+  // review of an Angular screen got only the always-on skills.
+  assert.deepEqual(resolveImport("ButtonComponent"), {
+    name: "Button", kind: "component", skills: ["recursica-skill-button"], match: "exact",
+  });
+  assert.equal(resolveImport("TextComponent").kind, "design");
+  assert.equal(resolveImport("TextFieldComponent").skills[0], "recursica-skill-text-field");
+});
+
+test("the Angular-only names resolve: Heading by route, the compound parts to their parent", () => {
+  assert.deepEqual(resolveImport("HeadingComponent").skills, ["recursica-skill-typography-semantics"]);
+  assert.deepEqual(resolveImport("RadioGroupComponent").skills, ["recursica-skill-radio-button"]);
+  for (const n of ["TableTbody", "TableTd", "TableTh", "TableThead", "TableTr"]) {
+    assert.deepEqual(resolveImport(`${n}Component`).skills, ["recursica-skill-table"], n);
+  }
+  for (const n of ["TabsList", "TabsPanel", "TabsTab"]) {
+    assert.deepEqual(resolveImport(`${n}Component`).skills, ["recursica-skill-tabs"], n);
+  }
+});
+
+test("a name that only starts like a component is still reported as unmapped", () => {
+  assert.equal(resolveImport("TableauComponent").kind, "unmapped");
+  assert.equal(resolveImport("Component").kind, "unmapped");
+});
+
+test("an Angular screen reaches its skills through .ts imports", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "barb-"));
+  fs.mkdirSync(path.join(dir, "ui"));
+  fs.writeFileSync(path.join(dir, "ui", "index.ts"),
+    `import { TabsTabComponent } from '@recursica/adapter-angular-material';\n`);
+  fs.writeFileSync(path.join(dir, "grid.ts"),
+    `import { TableTdComponent } from '@recursica/adapter-angular-material';\n`);
+  const screen = path.join(dir, "screen.ts");
+  fs.writeFileSync(screen, `import { Grid } from './grid';\nimport { Ui } from './ui';\n`);
+
+  const files = [...localGraph(screen)].map((f) => path.relative(dir, f)).sort();
+  assert.deepEqual(files, ["grid.ts", "screen.ts", path.join("ui", "index.ts")]);
+  const slugs = manifest([screen]).skills.map((s) => s.slug);
+  assert.ok(slugs.includes("recursica-skill-table") && slugs.includes("recursica-skill-tabs"));
+  fs.rmSync(dir, { recursive: true, force: true });
+});
