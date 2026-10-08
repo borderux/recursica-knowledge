@@ -23,11 +23,11 @@ An app shell is the header, the left rail and the footer around the page content
 
 **No part of the app shell is absolutely mandatory.** The application's layout decides which parts appear. The rules below describe the usual layout, not a checklist.
 
-**An application can have a header, and the header is global.** The header holds the primary navigation when the navigation runs horizontally. The header usually also holds the controls that open the user's profile and menus.
+**An application can have a header, and the header is global.** The header holds the primary navigation when the navigation runs horizontally. The header usually also holds the controls that open the persona's profile and menus.
 
 **A left rail can replace the header or appear alongside the header.** A left rail is a narrow vertical strip on the left side of the page. A left rail can sit below a header, or the application can have no header at all. In a left rail, the primary navigation goes toward the top, and the profile and settings go toward the bottom. A left rail holds the same items a header would hold, in different positions.
 
-**A footer appears on every page.** A footer can be as simple as a copyright notice, or hold more content. A footer can stay fixed at the bottom of the screen or appear when the user scrolls down, and both are acceptable.
+**A footer appears on every page.** A footer can be as simple as a copyright notice, or hold more content. A footer can stay fixed at the bottom of the screen or appear when the persona scrolls down, and both are acceptable.
 
 **Page titles, page sections and any high-level summary content sit below the header, inside the page.**
 
@@ -48,9 +48,9 @@ An app shell is the header, the left rail and the footer around the page content
 
 **The page title may repeat the navigation label.** A page title that matches the navigation label is not a defect. `recursica-skill-naming-terminology` decides how far the page title and the navigation label may differ.
 
-**A breadcrumb appears once the user is below the top level of the application's page hierarchy.** Landing pages and dashboards do not need a breadcrumb. Every sub-section reached from a landing page or a dashboard needs a breadcrumb.
+**A breadcrumb appears once the persona is below the top level of the application's page hierarchy.** Landing pages and dashboards do not need a breadcrumb. Every sub-section reached from a landing page or a dashboard needs a breadcrumb.
 
-**A breadcrumb shows the user where the user is in the application.** The breadcrumb shows where the user came from and how to get back up the page hierarchy. A breadcrumb matters most after a deep link (a link that opens a page deep inside the application). A user who follows a deep link arrives several levels below a dashboard, with no idea where the page sits in the application.
+**A breadcrumb shows the persona where the persona is in the application.** The breadcrumb shows where the persona came from and how to get back up the page hierarchy. A breadcrumb matters most after a deep link (a link that opens a page deep inside the application). A persona who follows a deep link arrives several levels below a dashboard, with no idea where the page sits in the application.
 
 ## The line under a heading
 
@@ -126,11 +126,11 @@ An app shell is the header, the left rail and the footer around the page content
 
 **A page that is loading shows nothing, and then shows the content.** A loading page shows no spinner, no placeholders, and no partly loaded layout.
 
-**NEVER use skeleton screens.** A skeleton screen, also called a skeleton loader or ghost elements, shows gray placeholder shapes where content will appear. Users have to work out what the gray shapes are, and the gray shapes tell users nothing about the content.
+**NEVER use skeleton screens.** A skeleton screen, also called a skeleton loader or ghost elements, shows gray placeholder shapes where content will appear. Personas have to work out what the gray shapes are, and the gray shapes tell personas nothing about the content.
 
-**After about three seconds of loading, a page may need a page-level spinner to show that the page is still working.** A spinner tells the user only that the page is still working. A spinner says nothing about what is slow, or how long the wait will be. `recursica-skill-feedback-messaging` sets the spinner rules.
+**After about three seconds of loading, a page may need a page-level spinner to show that the page is still working.** A spinner tells the persona only that the page is still working. A spinner says nothing about what is slow, or how long the wait will be. `recursica-skill-feedback-messaging` sets the spinner rules.
 
-**A spinner is clearly right in one place: a partly loaded page.** Most of the page may be ready right away while a few regions load later, such as dashboard widgets that load at different speeds. Show the content that is ready, and show a spinner in each slow region, instead of making the user wait for the whole page.
+**A spinner is clearly right in one place: a partly loaded page.** Most of the page may be ready right away while a few regions load later, such as dashboard widgets that load at different speeds. Show the content that is ready, and show a spinner in each slow region, instead of making the persona wait for the whole page.
 
 **For ordinary page content, load the whole page at once.**
 
@@ -247,7 +247,7 @@ The signs below are listed in order, starting with the strongest sign.
 - **The layout grid.** This skill names an eight- or twelve-column grid as the grid pages should line up to, and leaves the grid to a separate skill. Until a layout-grid skill exists, lining up elements is a stated requirement with no stated grid.
 - **Empty states where data exists but is zero.** This skill does not cover the case.
 - **Where global notifications or alerts sit in the page structure.** This skill does not cover the case. See `recursica-skill-feedback-messaging`.
-- **What may go in a footer** beyond a copyright notice, and when a footer stays fixed in place instead of appearing when the user scrolls down.
+- **What may go in a footer** beyond a copyright notice, and when a footer stays fixed in place instead of appearing when the persona scrolls down.
 - **Whether KPI tiles sit on layers or in cards.**
 
 ## Pre-flight checklist
