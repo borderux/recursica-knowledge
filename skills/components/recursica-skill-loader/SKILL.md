@@ -93,7 +93,7 @@ A screen reader user does not know a spinner is on the page unless the app annou
 
 ## Styling set by tokens
 
-**Never set or override the loader's styling.** The theme sets every visual property of the loader. Do not add extra containers or spacers to change the loader's look. If the design needs a look the theme does not give, report the missing look as a gap in the design system. See `recursica-skill-design-router`.
+**Never set or override the loader's styling.** The theme sets every visual property of the loader, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the loader's look. If the design needs a look the theme does not give, report the missing look as a gap in the design system. See `recursica-skill-design-router`.
 
 **Never change the spinner's animation.** The theme sets the spinner's animation.
 
