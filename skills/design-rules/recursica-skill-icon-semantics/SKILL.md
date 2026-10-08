@@ -15,9 +15,9 @@ The rules assume **complex enterprise web applications** built on a configured i
 
 ## The three governing principles
 
-1. **Inconsistent icons are the clearest sign of a careless screen.** Two mistakes show that a screen was not designed with care, and both mistakes are failures of consistency. The first mistake is mixed icon styles on one screen. The second mistake is one function shown with different icons. No other mistake in the icon-semantics skill is as reliable a sign.
+1. **Inconsistent icons are the clearest sign of a careless screen.** Two mistakes show that a screen was not designed with care, and both mistakes are failures of consistency. The first mistake is mixed icon styles on one screen. The second mistake is one function shown with different icons. No other mistake in the icon-semantics skill shows a careless screen as reliably.
 2. **Fix an unclear meaning with words, never with a better icon.** When an icon does not make a function's meaning obvious, add a text label or a tooltip. Searching for a cleverer symbol is the wrong fix.
-3. **An icon belongs to an action, not to a place.** A pencil means edit wherever editing happens. A consistent meaning is what lets a user understand an icon at all.
+3. **An icon belongs to an action, not to a place.** A pencil means edit wherever editing happens. A user understands an icon only when the icon keeps one meaning everywhere.
 
 ## One icon set, one style
 
@@ -25,20 +25,20 @@ The rules assume **complex enterprise web applications** built on a configured i
 
 **NEVER mix icon styles on the same screen.** An icon library offers several styles of the same icon: filled or solid, outline, thin, and versions with different corner roundness and line thickness. Mixed styles are the clearest sign that a screen was put together from parts rather than designed.
 
-**The one-style rule has no exception within a screen**, and usually no exception within the system either.
+**The one-style rule has no exception within a screen, and usually no exception within the system.**
 
-**Do not bring in an icon from outside the configured icon set** to fill a gap. Raise a missing icon as a gap, and do not patch the gap. See `recursica-skill-design-router`.
+**Do not bring in an icon from outside the configured icon set when the set has no icon for a meaning.** Raise the missing icon as a gap, and leave the gap unfilled. See `recursica-skill-design-router`.
 
 ## When an icon may stand alone
 
 **Icon-only buttons are valid and common.** An icon-only button is correct when:
 
-- **The function is not the primary action** on the screen.
-- **Many functions are available**, and labels on every function would cost much more space than the labels would add in clarity.
+- **The button's function is not the primary action** on the screen.
+- **Many functions are available**, and a label on every function would take much more space than the labels would add in clarity.
 
-**Icon-only buttons usually appear in toolbars, in table rows with several actions, and as the ellipsis or "more" button.** The "more" button shows that more functions are hidden in a menu.
+**Icon-only buttons usually appear in toolbars, in table rows with several actions, and as the ellipsis or "more" button.** The "more" button opens a menu that holds more functions.
 
-**Every icon-only button MUST have a tooltip.** When asked where the tooltip rule stops applying, the answer was "never." No context, no argument about space, and no argument about established patterns makes an exception. `recursica-skill-tooltip` owns tooltip content and behavior. `recursica-skill-buttons-links` owns whether a control needs a tooltip at all, and states the same rule from the button side.
+**Every icon-only button MUST have a tooltip.** The team said the tooltip rule never stops applying. No context, no argument about space, and no argument about established patterns makes an exception. `recursica-skill-tooltip` owns tooltip content and behavior. `recursica-skill-buttons-links` owns whether a control needs a tooltip at all, and states the same rule for buttons.
 
 ## When a text label is required
 
@@ -49,7 +49,7 @@ The rules assume **complex enterprise web applications** built on a configured i
 
 **A tooltip does not replace a label in either case.** The tooltip rule above is the minimum for icon-only controls. A tooltip does not make an unclear icon acceptable.
 
-**A specialized business concept cannot be drawn as an icon.** Common, general actions, such as edit, home and close, are easy to remember, because the same icon means the same action everywhere. An icon invented for a function that exists in only one application is very hard to remember. In enterprise software, the concepts are often too abstract for any symbol to show. Users share no understanding of what such symbols mean. For a specialized concept, the text label gives the meaning, not the icon. For the same reason, a navigation rail made only of icons fails worst in business systems. See `recursica-skill-navigation` and `recursica-skill-working-memory`.
+**A specialized business concept cannot be drawn as an icon.** Common, general actions, such as edit, home and close, are easy to remember, because the same icon means the same action everywhere. An icon invented for a function that exists in only one application is very hard to remember. In enterprise software, business concepts are often too abstract for any symbol to show. Users do not agree on what an icon for such a concept means. For a specialized concept, the text label gives the meaning, not the icon. For the same reason, a navigation rail made only of icons fails worst in business systems. See `recursica-skill-navigation` and `recursica-skill-working-memory`.
 
 ## Icons inside established components
 
@@ -57,13 +57,13 @@ The rules assume **complex enterprise web applications** built on a configured i
 
 **A close icon on a modal or panel still gets a tooltip.** The close pattern is well known, but a tooltip on the close icon does no harm.
 
-**The exemption does not allow a bare icon in any other place.** The exemption covers icons that come built into a component, not icons placed separately on a screen.
+**The exemption allows an icon with no label and no tooltip only when the icon comes built into a component.** An icon placed separately on a screen gets no exemption.
 
 **When a component's built-in indicator shows a state, such as open or closed, the state must also be available in code, not shown by the icon alone.** `recursica-skill-system-conventions` and each component skill own this rule.
 
 ## Fixed meanings
 
-**The pairings of meaning and icon in the table below must not be swapped for any other icon or meaning.**
+**Each meaning in the table below must use the icon the table names, and each icon in the table must keep the meaning the table gives the icon.**
 
 | Meaning            | Icon                                 | Note                                                                              |
 | ------------------ | ------------------------------------ | --------------------------------------------------------------------------------- |
@@ -76,11 +76,11 @@ The rules assume **complex enterprise web applications** built on a configured i
 
 ## One icon, one meaning
 
-**An icon does not have different meanings in different places.** An icon must always have the same meaning, or at least share the same basic action.
+**An icon keeps one meaning in every place.** An icon must always have the same meaning, or at least share the same basic action.
 
 **Tie each icon to the icon's action wherever possible.** An edit-form control and an edit-page control may both use a pencil. Both controls do the same action, edit. Reusing the pencil is correct, not a clash.
 
-**The opposite mistake is more common: one function shown with a different icon in two places.** Different icons for one function are one of the two main signs of a careless screen in the governing principles. The alignment review pass in `recursica-skill-screen-priority` catches the mistake.
+**The opposite mistake is more common: one function shown with a different icon in two places.** Different icons for one function are one of the two main signs of a careless screen, as the governing principles above say. The alignment review in `recursica-skill-screen-priority` catches the mistake.
 
 ## Decorative icons
 
@@ -88,11 +88,11 @@ The rules assume **complex enterprise web applications** built on a configured i
 
 **Decorative does not mean forbidden.** An icon may exist only to break up a page visually and give the eye a point to settle on.
 
-**The allowed case is a landmarking icon: an icon beside an H2 or H3 heading that helps the user recognize where the user is.** A landmarking icon helps most where several pages share an almost identical layout, and little else shows the user is in the right place. The icon makes each page look different and gives a sense of place.
+**The allowed decorative icon is a landmarking icon: an icon beside an H2 or H3 heading that helps the user recognize where the user is.** A landmarking icon helps most where several pages share an almost identical layout, and little else shows the user is in the right place. A landmarking icon makes each page look different and shows the user where the user is.
 
 **A landmarking icon is a stated exception to the general removal test** in `recursica-skill-screen-priority`. The removal test removes every element on the screen that the workflow does not need. A landmarking icon may stay even though the icon fails the removal test. No other part of the removal test changes.
 
-**A decorative icon is silent to assistive technology.** A decorative icon has no meaning, so assistive technology must not announce the icon.
+**Assistive technology must not announce a decorative icon.** A decorative icon has no meaning for assistive technology to announce.
 
 ## Status as an icon
 
@@ -108,7 +108,7 @@ The rules assume **complex enterprise web applications** built on a configured i
 
 **An icon alone in a table cell is only ever an icon-only button.**
 
-**NEVER place an icon the user cannot interact with alone in a table cell with no other information.** When asked for the limit or the exception to the rule, the answer was that no limit or exception exists. A status column pairs each status icon with the status text.
+**NEVER place an icon the user cannot interact with alone in a table cell with no other information.** The team said the rule has no limit and no exception. A status column pairs each status icon with the status text.
 
 `recursica-skill-tables` owns how icons line up in a table cell, and which columns a table has at all.
 
@@ -125,11 +125,11 @@ The rules assume **complex enterprise web applications** built on a configured i
 - **Navigation made only of icons**, which is forbidden outright — `recursica-skill-navigation`.
 - **What a status is called** — `recursica-skill-naming-terminology`.
 - **Whether a badge may hold an icon** — `recursica-skill-badges-chips`, which lists the question as open.
-- **Motion.** No skill in the family owns whether an icon may animate.
+- **Motion.** No Recursica skill decides whether an icon may animate.
 
 ## Open questions
 
-- **The icon for each meaning outside the fixed-meanings table.** Only close, delete, chip dismiss, menu, more, and edit were named. Raise the icon for every other meaning as a question, and do not choose the icon.
+- **The icon for each meaning outside the fixed-meanings table.** The team named icons only for close, delete, chip dismiss, menu, more, and edit. Raise the icon for every other meaning as a question, and do not choose the icon.
 - **Whether a system may ever have more than one icon set.** The rule was stated as "typically" one icon set, with no example of when two icon sets would be right.
 - **Which icon marks an external link**, and whether an external-link icon is required. The question is still open, as `recursica-skill-link` notes.
 - **A status icon plus color outside a table.** A table cell requires text with a status icon. No decision says whether a status may be shown as an icon alone outside a table.
@@ -146,7 +146,7 @@ The rules assume **complex enterprise web applications** built on a configured i
 - [ ] An X means close, a trash can means delete, dismissing a chip is an X, more is a horizontal ellipsis and never a vertical kebab, and edit is a pencil.
 - [ ] No icon has two different meanings, and every reused icon shares the same basic action.
 - [ ] No function is shown with two different icons in any part of the application.
-- [ ] Decorative icons are silent to assistive technology, and every icon kept after failing the removal test is a landmarking icon beside a heading.
+- [ ] Assistive technology announces no decorative icon, and every icon kept after failing the removal test is a landmarking icon beside a heading.
 - [ ] Every status shown as an icon has an accessible name, and the status never depends on color alone.
 - [ ] No icon the user cannot interact with sits alone in a table cell.
 - [ ] Open questions were asked about, not decided: icons for meanings outside the fixed-meanings table, more than one icon set, the external-link icon, status icons outside a table, how many decorative icons, and icon size.
