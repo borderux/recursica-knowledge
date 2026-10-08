@@ -9,6 +9,7 @@ import {
   problemsIn,
   readingGrade,
   skillWordsFound,
+  longSentences,
 } from "./check-writing.mjs";
 
 const SCRIPT = path.join(import.meta.dirname, "check-writing.mjs");
@@ -94,6 +95,36 @@ test("filler and insider words are caught, and chart axes are allowed in the cha
   );
   assert.ok(
     !problemsIn("AGENT.md", "Set the axis.").some((p) => p.rule === "words"),
+  );
+});
+
+test("a sentence over 20 words is caught, in prose, lists and table cells", () => {
+  const long =
+    "Use a checkbox when the persona can pick any number of options from a short list that fits on one screen without scrolling.";
+  assert.equal(longSentences(long).length, 1);
+  assert.equal(longSentences(`- ${long}`).length, 1);
+  assert.equal(longSentences(`| Checkbox | ${long} |`).length, 1);
+  assert.deepEqual(longSentences("Use a checkbox. Keep the list short."), []);
+  assert.ok(
+    problemsIn("skills/components/x/SKILL.md", long).some(
+      (p) => p.rule === "length",
+    ),
+  );
+  assert.ok(!problemsIn("AGENT.md", long).some((p) => p.rule === "length"));
+});
+
+test("glossary definitions and the open-questions line are fixed wording, so not counted", () => {
+  assert.deepEqual(
+    longSentences(
+      "Each control is a tab stop (a place the Tab key lands) in the order the persona reads the fields on the screen.",
+    ),
+    [],
+  );
+  assert.deepEqual(
+    longSentences(
+      "- [ ] Open questions were asked about, not decided: progress, success, retrying, empty states, errors, loading, paging, sorting, filtering, selection, bulk actions and export.",
+    ),
+    [],
   );
 });
 
