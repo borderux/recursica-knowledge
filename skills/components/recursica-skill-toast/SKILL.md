@@ -126,10 +126,10 @@ The theme also sets which icon each toast style shows. Never change the icon a s
 ## Open questions
 
 - **Duration values.** The house rule on duration is settled, as the rules above state. No token records the default duration of any code library. Nobody can check a duration from this repository.
-- **How a toast's action button is styled.** The rules above allow one action. Ask before styling the action button, and only when the project has no style for a toast's action button.
-- **Where toasts appear on screen.** Only the design-system website shows toasts toward the bottom of the screen. Ask before relying on that placement, and only when the project has no position variant.
+- **How a toast's action button is styled.** The rules above allow one action. Confirm with the user before styling the action button, and only when the project has no style for a toast's action button.
+- **Where toasts appear on screen.** Only the design-system website shows toasts toward the bottom of the screen. Confirm with the user before relying on that placement, and only when the project has no position variant.
 - **Stacking.** No rule says how many toasts may be visible at once, in what order the toasts appear, or what happens when more toasts arrive than the limit allows.
-- **Warnings and critical alerts.** No rule says which component holds an alert that stays on screen for a serious problem, or an alert the persona must not miss. If the project has a banner component, the banner may cover part of this need. Otherwise, do not build a substitute, and do not name a component the project does not have. Ask about a warning style only when the project has no warning style.
+- **Warnings and critical alerts.** No rule says which component holds an alert that stays on screen for a serious problem, or an alert the persona must not miss. If the project has a banner component, the banner may cover part of this need. Otherwise, do not build a substitute, and do not name a component the project does not have. Confirm a warning style with the user only when the project has no warning style.
 - **Toasts for a background job.** Nobody has decided whether a toast is ever right for a background job that finishes long after the action that started the job.
 
 ## Pre-flight checklist

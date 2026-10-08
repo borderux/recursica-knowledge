@@ -117,13 +117,13 @@ The slider component includes the focus ring and the thumb, and responds to the 
 
 ## Open questions
 
-- **Choosing a range with two thumbs.** Only the design-system website shows single selection and range selection. If the project has no range variant, never build a range with two thumbs from other parts, and ask before relying on a range with two thumbs.
-- **Smooth versus stepped, as documented types.** Only the design-system website shows a smooth type and a stepped type. The standard UI kit has step indicator properties, but no rule says what switches a slider between smooth and stepped. Do not rely on smooth and stepped types without asking. Ask only when the project has no type variant for smooth and stepped.
-- **A hover state.** Only the design-system website shows a hover state. Do not rely on a hover state without asking. Ask only when the project has no hover state.
+- **Choosing a range with two thumbs.** Only the design-system website shows single selection and range selection. If the project has no range variant, never build a range with two thumbs from other parts, and confirm with the user before relying on a range with two thumbs.
+- **Smooth versus stepped, as documented types.** Only the design-system website shows a smooth type and a stepped type. The standard UI kit has step indicator properties, but no rule says what switches a slider between smooth and stepped. Do not rely on smooth and stepped types without confirming with the user. Confirm with the user only when the project has no type variant for smooth and stepped.
+- **A hover state.** Only the design-system website shows a hover state. Do not rely on a hover state without confirming with the user. Confirm with the user only when the project has no hover state.
 - **What `read-only-value` means.** The read-only value style could mark a number readout the persona cannot edit beside a track the persona can use. The style could also mark a read-only slider as a whole.
 - **Whether the number input is required or optional**, and whether the answer differs by device or by screen. The house guidance calls the number input "highly recommended", and "highly recommended" is not a rule.
 - **Value labels other than the minimum and maximum**, including a label that moves with the thumb.
-- **Vertical orientation.** Ask about a vertical slider only when the project has no vertical orientation.
+- **Vertical orientation.** Confirm a vertical slider with the user only when the project has no vertical orientation.
 
 ## Pre-flight checklist
 

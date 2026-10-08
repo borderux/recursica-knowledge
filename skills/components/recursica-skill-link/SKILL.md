@@ -96,7 +96,7 @@ Every Recursica link already shows the underline, the color, and the focus ring.
 
 - **The icon for an external link.** No rule says which icon marks an external link, or whether the icon is required or optional. `recursica-skill-icon-semantics` sets what icons mean, but names no icon for an external link.
 - **Download links.** No rule says whether a download link shows the file type and size, or where.
-- **A size or emphasis style for links.** No rule says whether a link may have a size variant or an emphasis style. Ask about a size variant only when the project has no size variant. Ask about an emphasis style only when the project has no emphasis style.
+- **A size or emphasis style for links.** No rule says whether a link may have a size variant or an emphasis style. Confirm a size variant with the user only when the project has no size variant. Confirm an emphasis style with the user only when the project has no emphasis style.
 - **Links inside a paragraph in a table cell.** No rule covers a link inside a sentence in a cell of a dense table.
 
 ## Pre-flight checklist

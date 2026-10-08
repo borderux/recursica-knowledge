@@ -97,7 +97,7 @@ A badge is text, not a control. For most components, the accessibility risk is t
 
 - **The mapping of statuses to intents.** The principle is settled: the intent agrees with the sentiment of the value, and the problem style never shows a positive value. Which intent each status gets is not decided. When a project has more statuses than intents, the mapping must be stated, not invented while building.
 - **What the warning style and the problem style are for**, given that a badge must not show an error. Use neither style until the question has an answer.
-- **A size variant, with default and large, and a content variant, with message and counter.** Only the design-system website shows the two variants. If the project lists a size variant or a content variant, use the listed variant. If the project does not list the variant, do not assume the variant is available, and ask before relying on the variant.
+- **A size variant, with default and large, and a content variant, with message and counter.** Only the design-system website shows the two variants. If the project lists a size variant or a content variant, use the listed variant. If the project does not list the variant, do not assume the variant is available, and confirm with the user before relying on the variant.
 - **A limit on counts.** Whether a large number is shortened, and how.
 - **An icon in a badge.** Whether a badge may show an icon beside the badge text.
 - **A count of zero.** Whether a count badge is hidden at zero, or shown.

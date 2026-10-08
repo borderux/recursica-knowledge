@@ -104,10 +104,10 @@ A chip group is a form control laid out horizontally. A chip group must behave l
 
 ## Open questions
 
-- **Whether a chip may be disabled.** No rule says whether a chip may be disabled, or what a disabled chip would mean for a filter. Ask only when the project has no disabled state.
+- **Whether a chip may be disabled.** No rule says whether a chip may be disabled, or what a disabled chip would mean for a filter. Confirm with the user only when the project has no disabled state.
 - **Overflow.** No rule says what a chip group does when the chip group has more chips than one row can hold. No rule says whether chips may wrap to a second row.
 - **Select-all or clear-all.** No rule says whether a chip group supports a select-all or a clear-all control, or where that control would go.
-- **A chip that opens a menu.** Other design systems document a chip that opens a menu. If the project has a chip that opens a menu, use that chip. Otherwise, ask.
+- **A chip that opens a menu.** Other design systems document a chip that opens a menu. If the project has a chip that opens a menu, use that chip. Otherwise, confirm with the user.
 
 ## Pre-flight checklist
 

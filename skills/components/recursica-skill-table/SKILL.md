@@ -130,9 +130,9 @@ Never set or override the styling of the header row, the body cells or the foote
 
 ## Open questions
 
-- **How a selected table row looks.** The design rules require row selection. Ask only when the project has no selected-row state.
-- **Row hover.** A clickable table row needs a visible cue that the row can be clicked. Ask only when the project has no row hover state.
-- **Table rows that expand, and nested detail.** No rule covers an expanding table row or nested detail. Ask about the tokens for an expanding table row only when the project has no expanded-row state.
+- **How a selected table row looks.** The design rules require row selection. Confirm with the user only when the project has no selected-row state.
+- **Row hover.** A clickable table row needs a visible cue that the row can be clicked. Confirm with the user only when the project has no row hover state.
+- **Table rows that expand, and nested detail.** No rule covers an expanding table row or nested detail. Confirm the tokens for an expanding table row with the user only when the project has no expanded-row state.
 - **What the disabled state means on a cell, a header, or a footer**: a value that is unavailable, a column that cannot be sorted, or a different meaning.
 - **A supported way to mark one value as missing.** The missing-value style is settled: `recursica-skill-tables` sets the literal text `NA`, in italics, in neutral 500. In the standard UI kit, a cell's disabled state applies to the whole cell. A component that shows only the value cannot change the cell around the value. If the project has a way to apply the missing-value style, use that way. Otherwise, take the color from the neutral palette token. Do not use the cell's disabled color, which is a different value.
 - **The empty state**, and the difference between "no records yet" and "no results for these filters". `recursica-skill-design-router` lists the empty state as a topic that no skill owns.

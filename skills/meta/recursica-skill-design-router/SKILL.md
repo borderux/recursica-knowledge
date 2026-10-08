@@ -105,7 +105,7 @@ Stop and confirm with the user when **any** of these five cases is true:
 
 **Confirm with the user in this way:**
 
-- **Ask before building, not after.** Put the question in the plan, or ask the question directly. Do not build on an assumption and mention the assumption afterward.
+- **Confirm with the user before building, not after.** Put the question in the plan, or ask the question directly. Do not build on an assumption and mention the assumption afterward.
 - **Ask with options.** Give the two or three real choices, and the result of each choice. The user can then answer in one word instead of writing an essay.
 - **Ask once, in a batch.** Gather the open questions and ask all the questions together. Do not interrupt the user again and again.
 - **Name the conflict precisely.** Quote the rules or requirements that compete. The user can act on "Your spec asks for a status the persona can click; the house rule is that status is never interactive". The user cannot act on "This is ambiguous".
@@ -120,33 +120,33 @@ Make the decisions in the table from top to bottom. Each answer limits the decis
 
 The table uses one Recursica term. A region that holds content, such as a page, panel or modal, sits on a layer (a numbered background level, 0 to 3, that sets the colors of the components on that level). Layer 0 is the page itself.
 
-| #   | Decision                                                                                                                                         | Owner                                              |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------- |
-| 1   | The object the screen is about, and whether the screen is about one object or many                                                               | `recursica-skill-information-architecture`         |
-| 2   | Whether the content being designed is a location. A location needs a unique route, a URL, and a history entry                                    | `recursica-skill-navigation`                       |
-| 3   | Where the screen sits in the app shell: the navigation pattern, the navigation item, breadcrumbs and the page heading                            | `recursica-skill-navigation`                       |
-| 4   | The page's layout, and whether part of the page needs a separate region that holds content, such as a page, panel or modal                       | `recursica-skill-screen-scaffolding`               |
-| 5   | Which layer each region that holds content sits on, such as a page, panel or modal, starting from layer 0 on the root element                    | `recursica-skill-layers`                           |
-| 6   | What matters most on the screen, what to cut, and whether the screen is finished                                                                 | `recursica-skill-screen-priority`                  |
-| 7   | Whether the app supports any screen smaller than desktop, and at which breakpoint tier. Ask before choosing a navigation pattern                 | `recursica-skill-responsive-behavior`              |
-| 8   | The type of content. Many instances of one object go in a table. One object's properties go in a detail view or a form view                      | `recursica-skill-tables` / `recursica-skill-forms` |
-| 9   | Where the task happens: in a panel beside the page, in a modal over the page, or on a separate page                                              | `recursica-skill-panels-modals`                    |
-| 10  | Narrowing a collection: the filter bar, search and date ranges                                                                                   | `recursica-skill-filters`                          |
-| 11  | When the persona enters or edits data: the form's layout, labels, grouping, validation and save mode                                             | `recursica-skill-forms`                            |
-| 12  | The control for each field, chosen by the type and structure of the field's data                                                                 | `recursica-skill-selection-controls`               |
-| 13  | What the screen shows before the persona touches the screen: the open tab, applied filters, pre-filled and pre-selected values, remembered state | `recursica-skill-defaults`                         |
-| 14  | Status, counts, tags and metadata on objects                                                                                                     | `recursica-skill-badges-chips`                     |
-| 15  | Every element the persona can click: whether the element is an action or navigation, the element's label, and where the element sits             | `recursica-skill-buttons-links`                    |
-| 16  | For an overview or landing screen: whether the screen is a dashboard or a workbench, and what belongs on the screen                              | `recursica-skill-dashboards`                       |
-| 17  | Any chart or visual display of data                                                                                                              | `recursica-skill-data-visualization`               |
-| 18  | Any date, time, currency or numeric value on screen                                                                                              | `recursica-skill-dates-and-currency`               |
-| 19  | Any count of items, such as navigation items, options and chips                                                                                  | `recursica-skill-working-memory`                   |
-| 20  | What the application tells the persona back: success, failure, waiting, and a banner versus a toast                                              | `recursica-skill-feedback-messaging`               |
-| 21  | Announcing a change to assistive technology when content updates in place                                                                        | `recursica-skill-live-regions`                     |
-| 22  | What every object, navigation item, title and column is called                                                                                   | `recursica-skill-naming-terminology`               |
-| 23  | Which icon shows which meaning, and whether an icon may appear without a label                                                                   | `recursica-skill-icon-semantics`                   |
-| 24  | Headings, emphasis, abbreviations, and the markup under the visual hierarchy                                                                     | `recursica-skill-typography-semantics`             |
-| 25  | Empty, loading, error and partial states                                                                                                         | **No skill yet — ask**                             |
+| #   | Decision                                                                                                                                           | Owner                                              |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| 1   | The object the screen is about, and whether the screen is about one object or many                                                                 | `recursica-skill-information-architecture`         |
+| 2   | Whether the content being designed is a location. A location needs a unique route, a URL, and a history entry                                      | `recursica-skill-navigation`                       |
+| 3   | Where the screen sits in the app shell: the navigation pattern, the navigation item, breadcrumbs and the page heading                              | `recursica-skill-navigation`                       |
+| 4   | The page's layout, and whether part of the page needs a separate region that holds content, such as a page, panel or modal                         | `recursica-skill-screen-scaffolding`               |
+| 5   | Which layer each region that holds content sits on, such as a page, panel or modal, starting from layer 0 on the root element                      | `recursica-skill-layers`                           |
+| 6   | What matters most on the screen, what to cut, and whether the screen is finished                                                                   | `recursica-skill-screen-priority`                  |
+| 7   | Whether the app supports any screen smaller than desktop, and at which breakpoint tier. Confirm with the user before choosing a navigation pattern | `recursica-skill-responsive-behavior`              |
+| 8   | The type of content. Many instances of one object go in a table. One object's properties go in a detail view or a form view                        | `recursica-skill-tables` / `recursica-skill-forms` |
+| 9   | Where the task happens: in a panel beside the page, in a modal over the page, or on a separate page                                                | `recursica-skill-panels-modals`                    |
+| 10  | Narrowing a collection: the filter bar, search and date ranges                                                                                     | `recursica-skill-filters`                          |
+| 11  | When the persona enters or edits data: the form's layout, labels, grouping, validation and save mode                                               | `recursica-skill-forms`                            |
+| 12  | The control for each field, chosen by the type and structure of the field's data                                                                   | `recursica-skill-selection-controls`               |
+| 13  | What the screen shows before the persona touches the screen: the open tab, applied filters, pre-filled and pre-selected values, remembered state   | `recursica-skill-defaults`                         |
+| 14  | Status, counts, tags and metadata on objects                                                                                                       | `recursica-skill-badges-chips`                     |
+| 15  | Every element the persona can click: whether the element is an action or navigation, the element's label, and where the element sits               | `recursica-skill-buttons-links`                    |
+| 16  | For an overview or landing screen: whether the screen is a dashboard or a workbench, and what belongs on the screen                                | `recursica-skill-dashboards`                       |
+| 17  | Any chart or visual display of data                                                                                                                | `recursica-skill-data-visualization`               |
+| 18  | Any date, time, currency or numeric value on screen                                                                                                | `recursica-skill-dates-and-currency`               |
+| 19  | Any count of items, such as navigation items, options and chips                                                                                    | `recursica-skill-working-memory`                   |
+| 20  | What the application tells the persona back: success, failure, waiting, and a banner versus a toast                                                | `recursica-skill-feedback-messaging`               |
+| 21  | Announcing a change to assistive technology when content updates in place                                                                          | `recursica-skill-live-regions`                     |
+| 22  | What every object, navigation item, title and column is called                                                                                     | `recursica-skill-naming-terminology`               |
+| 23  | Which icon shows which meaning, and whether an icon may appear without a label                                                                     | `recursica-skill-icon-semantics`                   |
+| 24  | Headings, emphasis, abbreviations, and the markup under the visual hierarchy                                                                       | `recursica-skill-typography-semantics`             |
+| 25  | Empty, loading, error and partial states                                                                                                           | **No skill yet — ask**                             |
 
 **Follow two ordering rules:**
 
@@ -169,7 +169,7 @@ Apply the precedence rules below in order. The first precedence rule that settle
 4. **Within the same tier, the rule with the narrower subject wins.** A rule about one control beats a general rule about all controls. For example, a segmented control is capped at 2–5 options, even though the general limit is 7 ± 2. The segmented control's rule wins because the segmented control's rule is narrower. Rule 4 does not raise a component skill above a design rule. Rule 3 settles that case.
 5. **The skill that names a subject owns the subject.** When two skills both seem to apply, the skill whose description names the subject is in charge. The other skill is background.
 6. **A stated house rule beats an outside convention.** Common practice from outside Recursica does not override a Recursica rule, and is never a reason to loosen a Recursica rule. If the house rule looks wrong, say so and ask. Do not work around the house rule.
-7. **A later clarification beats an earlier general statement, but only on wording and scope.** If the substance of the two statements conflicts, ask instead of assuming the newer text wins.
+7. **A later clarification beats an earlier general statement, but only on wording and scope.** If the substance of the two statements conflicts, confirm with the user instead of assuming the newer text wins.
 
 **Never average two rules into a compromise.** Splitting the difference between two conflicting rules produces a design that neither rule allows.
 
@@ -188,7 +188,7 @@ Apply the precedence rules below in order. The first precedence rule that settle
 
 **Gaps come in two kinds, kept in two places.** The first kind is a gap inside a topic a skill otherwise owns, such as column types that cannot be sorted, limits on badge counts, or empty states for charts. Each topic skill lists these gaps in the skill's "Open questions" section. Check the owning skill's open questions first.
 
-**The second kind is a whole topic that no skill owns yet.** The list below names these topics. Treat both kinds of gap the same way: ask instead of inventing an answer. Both lists get shorter as answers are recorded in the skills.
+**The second kind is a whole topic that no skill owns yet.** The list below names these topics. Treat both kinds of gap the same way: confirm with the user instead of inventing an answer. Both lists get shorter as answers are recorded in the skills.
 
 - **Empty, loading, error and partial states.** Four parts are settled, and the other parts are open. A loading page shows nothing, and skeleton screens are forbidden (`recursica-skill-screen-scaffolding`). A loading table shows the loader by default (`recursica-skill-tables`). "No rows returned" and "could not fetch" get different messages (`recursica-skill-screen-priority`). A filter that returns zero results is a different state from never having had data (`recursica-skill-filters`). The layout, the wording, and whether an empty state may include an action are still open. The open parts include the difference between "no data yet" and "no results for these filters". Dashboards are the exception. `recursica-skill-dashboards` forbids an empty dashboard and requires a first-run element the persona can dismiss.
 - **Motion.** No skill owns motion beyond one rule: do not animate a badge when the badge's status changes. `recursica-skill-icon-semantics` also leaves open whether an icon may animate.
@@ -207,7 +207,7 @@ Apply the precedence rules below in order. The first precedence rule that settle
 
 **Silence is not permission either.** When the skills do not mention a topic, the topic has no rule. Having no rule does not make a choice allowed. The list of topics with no owner, and the requirement to ask, exist for this case.
 
-**Extend a rule only through the rule's reason.** When a skill gives the reason for a rule, use the reason to apply the rule to cases the text does not mention. When the skill gives no reason, do not stretch the rule. Ask instead.
+**Extend a rule only through the rule's reason.** When a skill gives the reason for a rule, use the reason to apply the rule to cases the text does not mention. When the skill gives no reason, do not stretch the rule. Confirm with the user instead.
 
 ## Pre-flight checklist
 

@@ -104,13 +104,13 @@ An avatar is either a picture or a control, and each kind fails a persona using 
 
 ## Open questions
 
-- **Two sets of styles that do not agree.** Only the design-system website shows styles named Image, Primary, Background, and Ghost, and a Border variant that is true or false. The UI kit defines the `text`, `icon`, and `image` styles. The UI kit gives the `text` and `icon` styles the `solid`, `outline`, and `ghost` types. Of the website's styles, only Ghost matches the UI kit, as the `ghost` type. Nobody has settled which set of styles is the authority. Ask before relying on either set of styles.
-- **Avatar groups.** Only the design-system website shows overlapping avatars in a group. Unless the project has a group variant, do not build an avatar group. Do not rely on the website's group without asking.
+- **Two sets of styles that do not agree.** Only the design-system website shows styles named Image, Primary, Background, and Ghost, and a Border variant that is true or false. The UI kit defines the `text`, `icon`, and `image` styles. The UI kit gives the `text` and `icon` styles the `solid`, `outline`, and `ghost` types. Of the website's styles, only Ghost matches the UI kit, as the `ghost` type. Nobody has settled which set of styles is the authority. Confirm with the user before relying on either set of styles.
+- **Avatar groups.** Only the design-system website shows overlapping avatars in a group. Unless the project has a group variant, do not build an avatar group. Do not rely on the website's group without confirming with the user.
 - **Which size belongs in which layout.** No rule says where the smaller size, the default size, and the larger size each apply.
 - **How initials are chosen.** No rule says whether initials use one letter or two, or how to handle a one-word, hyphenated, or non-Latin name.
 - **Avatars for an entity that is not a person.** No rule says whether an avatar may stand for an entity that is not a person, such as a company, a team, or a system. No rule says which fallback such an avatar uses.
 - **Presence and status.** No rule says how to show presence.
-- **When to use each type.** The standard UI kit defines the `solid`, `outline`, and `ghost` types for initials avatars and icon avatars. No rule says when to use each type. Nobody has confirmed that the adapter (the Recursica component library for one framework, such as Mantine or Angular Material) exposes the type as a setting. Check the avatar component's settings, or ask, before relying on the type.
+- **When to use each type.** The standard UI kit defines the `solid`, `outline`, and `ghost` types for initials avatars and icon avatars. No rule says when to use each type. Nobody has confirmed that the adapter (the Recursica component library for one framework, such as Mantine or Angular Material) exposes the type as a setting. Check the avatar component's settings, or confirm with the user, before relying on the type.
 
 ## Pre-flight checklist
 

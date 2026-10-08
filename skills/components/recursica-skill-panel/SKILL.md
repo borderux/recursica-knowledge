@@ -148,10 +148,10 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 ## Open questions
 
 - **Opening transition.** The side of the panel is set, and how the panel attaches to the edge is settled. No rule says whether the panel slides in or expands when the panel opens.
-- **Panel width.** Stacked panels may differ in width from each other. No rule says whether a left panel and a right panel share a width. Ask about a wide panel only when the project has no size variant.
+- **Panel width.** Stacked panels may differ in width from each other. No rule says whether a left panel and a right panel share a width. Confirm a wide panel with the user only when the project has no size variant.
 - **Top or bottom panel design.** A top or bottom panel is allowed but has no design. Building a top or bottom panel needs approval, because no rule covers the design.
-- **Divider visibility.** No rule says when the divider appears. Only the design-system website shows the "Standard" and "Scrollable" divider types. Ask before relying on either divider type, but only when the project has no type variant.
-- **Loading state.** Ask how to show a panel whose content is still loading, but only when the project has no loading state.
+- **Divider visibility.** No rule says when the divider appears. Only the design-system website shows the "Standard" and "Scrollable" divider types. Confirm with the user before relying on either divider type, but only when the project has no type variant.
+- **Loading state.** Confirm with the user how to show a panel whose content is still loading, but only when the project has no loading state.
 
 ## Pre-flight checklist
 

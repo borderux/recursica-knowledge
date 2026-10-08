@@ -104,7 +104,7 @@ Ask the questions in the table in order:
 
 **Prefer a design that does not need a second panel.** Stacking is allowed where the work drills down from one item into the next item. Do not stack panels by default.
 
-**The number of stacked panels has no hard limit, but more than two stacked panels need the user's approval.** Build up to two stacked panels without asking. A third stacked panel is not forbidden, and a third panel is not a judgment call either. Stop and ask before building a third stacked panel or more. See `recursica-skill-design-router`.
+**The number of stacked panels has no hard limit, but more than two stacked panels need the user's approval.** Build up to two stacked panels without confirming with the user. A third stacked panel is not forbidden, and a third panel is not a judgment call either. Stop and confirm with the user before building a third stacked panel or more. See `recursica-skill-design-router`.
 
 **A panel may open a modal.** A panel is not a mode. A modal opened over a panel therefore does not stack one mode on another mode. A confirmation for unsaved changes is a modal opened from a panel. The confirmation appears when the persona closes a panel that holds unsaved data.
 

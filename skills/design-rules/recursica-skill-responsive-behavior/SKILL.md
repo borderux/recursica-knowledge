@@ -17,7 +17,7 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 1. **A layout below desktop size is a decision, not a default.** Desktop is assumed. A narrower layout is either designed on purpose or openly unsupported. A narrower layout is never the accidental result of the code.
 2. **A responsive layout reflows, and an adaptive layout removes. Both are strategies, and adaptive is the strategy people forget.** To reflow is to rearrange content so the content fits the space. Most people never ask which parts of the interface could be taken out.
-3. **How the product is used decides what changes, not the number of pixels.** How the product is used means who holds the device, where the persona is, and what the persona is trying to do. The persona's workflow decides what changes. Where the workflow is not known, ask.
+3. **How the product is used decides what changes, not the number of pixels.** How the product is used means who holds the device, where the persona is, and what the persona is trying to do. The persona's workflow decides what changes. Where the workflow is not known, confirm with the user.
 
 ## Questions to ask before choosing any pattern
 
@@ -30,7 +30,7 @@ The house rules assume **complex enterprise web applications, designed for deskt
    - **The smaller size is a designed, checked experience.**
    - **Phones are actively not supported.**
 
-   Do not assume the designed, checked experience because the designed, checked experience sounds the most professional. Ask which promise applies.
+   Do not assume the designed, checked experience because the designed, checked experience sounds the most professional. Confirm with the user which promise applies.
 
 3. **What range of viewports does the business have?** A factory floor of very old desktops limited to 1024 pixels is a different problem from a guaranteed 1440 pixels. On the old desktops limited to 1024 pixels, responsive design is about getting narrower. On a guaranteed 1440 pixels, responsive design is about what happens when the viewport gets wider.
 4. **What is the main way people give input?** Mouse and keyboard is assumed. Touch is possible even on desktop, and real projects have stranger input methods than touch. Capacitive touchscreens sense a bare finger. Resistive touchscreens need pressure. Some personas wear gloves and cannot take the gloves off. On a factory floor, a joystick can stand in for a mouse. Each input method is a different interaction pattern.

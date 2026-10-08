@@ -112,10 +112,10 @@ Never set or override the connection between the label and the value. The read-o
 
 ## Open questions
 
-- **No rule settles the editable read-only field.** Only the design-system website shows an "Is editable" behavior, with an edit icon that appears on hover and sends the persona to another flow. `recursica-skill-label` makes room for an edit icon on a label without saying what the edit icon does. A control that appears only on hover also conflicts with the accessibility rules above. Ask before settling the question or relying on the behavior.
-- **A source outside the UI kit describes required and optional markers on a read-only field.** The source describes turning on an optional label or a required asterisk on a read-only field. The description contradicts the fact that a read-only field has no input to require. Do not rely on the markers without asking.
+- **No rule settles the editable read-only field.** Only the design-system website shows an "Is editable" behavior, with an edit icon that appears on hover and sends the persona to another flow. `recursica-skill-label` makes room for an edit icon on a label without saying what the edit icon does. A control that appears only on hover also conflicts with the accessibility rules above. Confirm with the user before settling the question or relying on the behavior.
+- **A source outside the UI kit describes required and optional markers on a read-only field.** The source describes turning on an optional label or a required asterisk on a read-only field. The description contradicts the fact that a read-only field has no input to require. Do not rely on the markers without confirming with the user.
 - **No rule says what a read-only field shows for an empty or null value.** `recursica-skill-tables` has a rule for null table cells, but no rule extends the table rule to a read-only field.
-- **No rule says whether a long value, or a value on several lines, wraps, scrolls or is truncated.** Ask only when the project has no size variant and no `rows` option.
+- **No rule says whether a long value, or a value on several lines, wraps, scrolls or is truncated.** Confirm with the user only when the project has no size variant and no `rows` option.
 - **No rule says whether help text or assistive text may sit under a read-only field.**
 - **No rule says whether a read-only field can be part of a compound control**, such as one half of a date-and-time row.
 

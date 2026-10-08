@@ -132,7 +132,7 @@ Never set or override the styling of the radio group or the radio items either.
 
 ## Open questions
 
-- **The error state of a radio group.** A required radio group can still fail validation. No rule says how a radio group shows an error. If the project has an error state on any of the three radio components, use that error state. Otherwise, ask.
+- **The error state of a radio group.** A required radio group can still fail validation. No rule says how a radio group shows an error. If the project has an error state on any of the three radio components, use that error state. Otherwise, confirm with the user.
 - **Clearing a radio group.** The design rules treat a selected radio button as a radio button the persona cannot deselect. The caution about pre-selection exists for that reason. No rule says whether a radio group may offer an explicit way to clear the selection, or a "None" option.
 - **Radio buttons inside a table row.** The design rules mention radio buttons in a table row once, as an alternative to a switch. No rule sets radio buttons in a table row as a pattern.
 

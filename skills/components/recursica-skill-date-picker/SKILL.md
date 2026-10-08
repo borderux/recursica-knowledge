@@ -49,7 +49,7 @@ The rules below describe each option by role, such as "the error state". The nam
 **Never build a focus state or a placeholder state.** Every Recursica field already shows the focus border and the placeholder text.
 
 - **The date picker has an error state and a disabled state.** In the standard UI kit, the variant is `states`, with the options `error` and `disabled`.
-- **If the project has a range variant, use the range variant for a date range.** A range variant takes a start date and an end date. Otherwise, do not build a range control without asking.
+- **If the project has a range variant, use the range variant for a date range.** A range variant takes a start date and an end date. Otherwise, do not build a range control without confirming with the user.
 - **Show a read-only date with the read-only field component, never with a read-only state of the date picker.** A value nobody can edit does not belong in a form control. The read-only field has the same label-placement variant as the date picker, and no input.
 
 ## Rules
@@ -129,7 +129,7 @@ The date picker component connects the label to the input and shows the focus ri
 ## Open questions
 
 - **Date ranges.** No rule says whether a date range is two date pickers or one control. No rule says how the start date and the end date are checked against each other.
-- **What the calendar popover contains.** The design-system website shows a month-and-year dropdown, navigation arrows, and Cancel and Confirm buttons in the calendar popover. No rule says whether clicking a date saves the date, or whether the persona must press Confirm. Do not rely on any content in the calendar popover without asking.
+- **What the calendar popover contains.** The design-system website shows a month-and-year dropdown, navigation arrows, and Cancel and Confirm buttons in the calendar popover. No rule says whether clicking a date saves the date, or whether the persona must press Confirm. Do not rely on any content in the calendar popover without confirming with the user.
 - **Whether the calendar opens on focus**, or only when the persona activates the calendar trigger.
 - **The earliest and latest dates the persona can pick, and dates that are unavailable inside the calendar.**
 - **Conventions for weeks, quarters, and fiscal periods.** See the same entry in `recursica-skill-dates-and-currency`.

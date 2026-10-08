@@ -139,11 +139,11 @@ Do not set or override the parts the dropdown component provides: the connection
 
 ## Open questions
 
-- **Multi-select.** `recursica-skill-selection-controls` requires a multi-select dropdown in two places. The dropdown in the shipped adapter (the Recursica component library for one framework, such as Mantine or Angular Material) selects a single value. When the project has no multi-select variant, the missing variant is no reason to build a multi-select dropdown out of other parts. Do not put a checkbox group inside a dropdown, and do not substitute a transfer list without asking. When the persona must filter by several values, one build test used separate single-value filters that AND together (a row appears only if the row matches every filter), and the workaround succeeded. Ask only when the project has no multi-select variant.
-- **The open menu.** Ask about group headers, and icons or descriptions inside an option.
+- **Multi-select.** `recursica-skill-selection-controls` requires a multi-select dropdown in two places. The dropdown in the shipped adapter (the Recursica component library for one framework, such as Mantine or Angular Material) selects a single value. When the project has no multi-select variant, the missing variant is no reason to build a multi-select dropdown out of other parts. Do not put a checkbox group inside a dropdown, and do not substitute a transfer list without confirming with the user. When the persona must filter by several values, one build test used separate single-value filters that AND together (a row appears only if the row matches every filter), and the workaround succeeded. Confirm with the user only when the project has no multi-select variant.
+- **The open menu.** Confirm with the user before showing group headers, or icons or descriptions inside an option.
 - **The autocomplete threshold.** The dropdown skill says to consider an autocomplete when the list of options is long and the persona knows the options well. `recursica-skill-selection-controls` records the threshold as not set. Do not pick a number.
 - **Clearing.** No rule says whether the persona may clear a dropdown back to no value after choosing a value, or whether an explicit "None" option is allowed.
-- **Grouped options and dependent dropdowns.** No rule covers options grouped into sections, or dependent dropdowns, where the value chosen in one dropdown filters the options in another dropdown. Ask about grouped options only when the project has no variant that groups options.
+- **Grouped options and dependent dropdowns.** No rule covers options grouped into sections, or dependent dropdowns, where the value chosen in one dropdown filters the options in another dropdown. Confirm grouped options with the user only when the project has no variant that groups options.
 - **An empty list of options.** No rule says what a dropdown with no options shows.
 
 ## Pre-flight checklist

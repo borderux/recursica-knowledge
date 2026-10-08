@@ -29,7 +29,7 @@ Properties, filtered views and actions are not objects. A property, a filtered v
 - **A filtered view of an object.** Overdue orders are orders. Show one object type as one table with a filter, never as a second section. See `recursica-skill-tables`.
 - **An action.** Approving, exporting and importing are actions the persona takes on an object. An action is a button, not a place in the structure. See `recursica-skill-buttons-links`.
 
-**Find the objects in the request and the interview.** Look for the nouns the request keeps returning to, and for the domain model (the core objects, how the objects relate, and what identifies each object) from the interview. When the personas call an object by a different word than the request uses, the personas' word wins. See `recursica-skill-naming-terminology`. When a concept might be an object or might be a property of an object, ask.
+**Find the objects in the request and the interview.** Look for the nouns the request keeps returning to, and for the domain model (the core objects, how the objects relate, and what identifies each object) from the interview. When the personas call an object by a different word than the request uses, the personas' word wins. See `recursica-skill-naming-terminology`. When a concept might be an object or might be a property of an object, confirm with the user.
 
 **The number of objects on a screen, one or many, decides the kind of screen.** A screen that shows many objects of one type is a list. A list is a table by default. See `recursica-skill-tables`. A screen that shows one object is the object's detail view. The context test in `recursica-skill-panels-modals` decides where a detail view opens: on a separate page, or in a panel beside the list.
 
@@ -82,7 +82,7 @@ Some sections are not objects, such as an approvals queue, reports or settings.
 
 **A section that is not an object follows the request.** When the product owner describes the work as an approvals queue, reports, settings or a similar section, the work is a section. Record each section that is not an object in the object map, with where the section came from.
 
-**When the request says nothing about a section, ask.** Do not invent a section built around a task to organize the work. Do not force work that the request describes as a task into an object's list.
+**When the request says nothing about a section, confirm with the user.** Do not invent a section built around a task to organize the work. Do not force work that the request describes as a task into an object's list.
 
 Name a section that is not an object with a noun, as in `Approvals`, never `Approve requests`. See `recursica-skill-naming-terminology`.
 
@@ -90,7 +90,7 @@ Name a section that is not an object with a noun, as in `Approvals`, never `Appr
 
 **Every group in the structure must have an obvious place for content added later.** A group is any set of objects or sections that the structure places together. A structure that fits only today's content is a defect, not an item to revisit later. Nobody comes back to fix the structure. New content then goes into any place in the structure that has room.
 
-**Test the structure for future additions before the object map is agreed.** Ask the product owner what is likely to be added next. Check that the object map says where each addition would go, without moving any part of the structure that is already there.
+**Test the structure for future additions before the object map is agreed.** Confirm with the user what is likely to be added next. Check that the object map says where each addition would go, without moving any part of the structure that is already there.
 
 ## Set by the theme or the component
 

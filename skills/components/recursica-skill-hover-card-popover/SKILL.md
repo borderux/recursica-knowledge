@@ -41,7 +41,7 @@ The rules below describe each part and option by role, such as "the beak". The n
 - **A hover card or popover has two parts:** a content area and a beak. The beak is the pointer that connects the hover card or popover to the trigger.
 - **If the project has a placement option, use the project's placement option.** Otherwise, never set a position for the hover card or popover. Never position the beak by hand. See the open questions.
 - **Content that does not fit inside the width limits of a hover card or popover belongs on the page.** The theme sets a minimum width and a maximum width for a hover card or popover. If the project has a size variant, use the project's size variant.
-- **If the project has a content-type variant, use the project's content-type variant.** If the project has no custom content type, ask before showing custom content. See the open questions.
+- **If the project has a content-type variant, use the project's content-type variant.** If the project has no custom content type, confirm with the user before showing custom content. See the open questions.
 - **If the project has a variant for the hover card or the popover, use the project's variant.** The house rules treat a hover card and a popover as two different components. The build's behavior decides whether the build is a hover card or a popover. That choice sets every accessibility requirement below.
 
 The table below compares the hover card and the popover.
@@ -134,9 +134,9 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 ## Open questions
 
-- **Placement.** The design-system website shows four positions (top, left, right and bottom) and three beak alignments (start, middle and end). Do not rely on a position or a beak alignment without asking. Ask about a position or a beak alignment only when the project has no placement option. With or without a placement option, no rule covers what happens at the edge of the viewport.
+- **Placement.** The design-system website shows four positions (top, left, right and bottom) and three beak alignments (start, middle and end). Do not rely on a position or a beak alignment without confirming with the user. Confirm a position or a beak alignment with the user only when the project has no placement option. With or without a placement option, no rule covers what happens at the edge of the viewport.
 - **The delay before showing, the delay before hiding, and the grace period** while the pointer crosses from the trigger to the card. No rule sets any of the three.
-- **Custom content.** The design-system website shows two content types, text and custom. Do not rely on custom content without asking. Ask only when the project has no custom content type.
+- **Custom content.** The design-system website shows two content types, text and custom. Do not rely on custom content without confirming with the user. Confirm with the user only when the project has no custom content type.
 - **Behavior on touch.** A touch screen has no hover, and no rule sets a different pattern for touch.
 - **Whether a popover may open from inside a menu, a modal, or another popover.** `recursica-skill-modal` forbids stacking modals, but no rule covers a popover.
 

@@ -110,8 +110,8 @@ The tooltip's beak is part of the tooltip component. Do not draw a separate beak
 
 ## Open questions
 
-- **Placement.** Only the design-system website shows a position variant of top, left, right, and bottom, a beak alignment variant of start, middle, and end, and a position setting. Ask before relying on placement. Ask only when the project has no placement variant.
-- **Custom content.** Only the design-system website shows the content types "text" and "custom". Ask before relying on custom content. Ask only when the project has no custom-content variant.
+- **Placement.** Only the design-system website shows a position variant of top, left, right, and bottom, a beak alignment variant of start, middle, and end, and a position setting. Confirm with the user before relying on placement. Confirm with the user only when the project has no placement variant.
+- **Custom content.** Only the design-system website shows the content types "text" and "custom". Confirm with the user before relying on custom content. Confirm with the user only when the project has no custom-content variant.
 - **Show and hide delays.** No token (a named design value, such as a color or a size, set by the design system) or rule defines the delay before the tooltip shows, the delay before the tooltip hides, or any time after which the tooltip hides automatically.
 - **Touch behavior.** A touch screen has no hover. No rule says how a persona using touch reaches the content of a tooltip.
 - **Targets that cannot take focus.** No rule says whether a tooltip may attach to an element the persona cannot interact with, such as a table cell with cut-off text or a chart label. A tooltip on an element that cannot take focus never appears for a persona using a keyboard.

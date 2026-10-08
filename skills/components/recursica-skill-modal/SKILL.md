@@ -105,7 +105,7 @@ Never restyle the overlay behind the modal. Never change when the scroll divider
 ## Open questions
 
 - **Whether clicking the overlay closes the modal.** No rule says either way.
-- **A loading state inside a modal**, while an action is still running. Ask only when the project has no loading state.
+- **A loading state inside a modal**, while an action is still running. Confirm with the user only when the project has no loading state.
 - **Whether a modal that cannot be closed is ever allowed**, such as a forced acknowledgment with no cancel.
 - **Confirming inside a modal.** No rule says how to confirm a destructive action from inside a modal, given the ban on stacking modals.
 

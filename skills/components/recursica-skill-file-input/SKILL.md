@@ -118,11 +118,11 @@ Do not change the gap between the label and the file input, or the gap between t
 
 ## Open questions
 
-- **Upload feedback.** The persona needs feedback on an upload. Do not invent a spinner, a progress bar, or a checkmark. Ask only when the project has no progress state, no success state, or no error state for each file.
-- **More than one file in one field.** Only the design-system website shows a "multiple files" content option. Whether a file input may hold more than one file, and how the file input then looks, is not settled. Do not rely on the "multiple files" option without asking. Ask only when the project has no variant for more than one file.
-- **The file chip and the clear icon.** Only the design-system website shows each file as a chip the persona can dismiss, with an optional icon that clears every file. Do not rely on the chip or the clear icon without asking. Ask only when the project has no file chip, no dismiss control, or no clear control.
+- **Upload feedback.** The persona needs feedback on an upload. Do not invent a spinner, a progress bar, or a checkmark. Confirm with the user only when the project has no progress state, no success state, or no error state for each file.
+- **More than one file in one field.** Only the design-system website shows a "multiple files" content option. Whether a file input may hold more than one file, and how the file input then looks, is not settled. Do not rely on the "multiple files" option without confirming with the user. Confirm with the user only when the project has no variant for more than one file.
+- **The file chip and the clear icon.** Only the design-system website shows each file as a chip the persona can dismiss, with an optional icon that clears every file. Do not rely on the chip or the clear icon without confirming with the user. Confirm with the user only when the project has no file chip, no dismiss control, or no clear control.
 - **Retrying after the field rejects a file or an upload fails.** No rule says whether the persona can retry in the same field, or what the field shows while a retry waits.
-- **A drop target on the file input.** If the design needs drag and drop, ask. Ask only when the project has no drop-zone variant.
+- **A drop target on the file input.** If the design needs drag and drop, confirm with the user. Confirm with the user only when the project has no drop-zone variant.
 - **Truncating file names.** How much of a long file name to show, and from which end to truncate the file name, are not settled.
 
 ## Pre-flight checklist

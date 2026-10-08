@@ -90,7 +90,7 @@ A value must pass two tests before the value is pre-selected.
 
 **Tab and layout state is not remembered state.** A tab that is a route (a tab with its own URL) comes back through that URL and the back button. Do not store tab state or layout state as a UI preference. See `recursica-skill-navigation`.
 
-**Nobody has decided which remembered state should last across sessions.** Ask. See "Open questions" below.
+**Nobody has decided which remembered state should last across sessions.** Confirm with the user. See "Open questions" below.
 
 ## No safe default
 

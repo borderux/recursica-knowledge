@@ -93,7 +93,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 **If the short form could be misread in the context where the term appears, do not shorten the term.** Whether a persona knows a short form depends on the context. The test is whether the persona recognizes the short form, not how many characters the short form saves.
 
-**A well-known acronym is fine.** When it is unclear whether an acronym is well known, ask. `recursica-skill-design-router` says how to ask. When an acronym is not well known, write the term out the first time, with the acronym in parentheses. The rule to write the term out comes from `recursica-skill-typography-semantics`.
+**A well-known acronym is fine.** When it is unclear whether an acronym is well known, confirm with the user. `recursica-skill-design-router` says how to ask. When an acronym is not well known, write the term out the first time, with the acronym in parentheses. The rule to write the term out comes from `recursica-skill-typography-semantics`.
 
 ## Names from external integrations
 

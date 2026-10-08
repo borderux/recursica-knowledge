@@ -40,7 +40,7 @@ An app shell is the header, the left rail and the footer around the page content
 - **A few navigation items → a top navigation bar.**
 - **More than about three or four navigation items → a left rail.** A left rail has room to stack the items. A desktop viewport is wider than the viewport is tall, so vertical space for navigation is the scarcer resource. A left rail gives up horizontal width to get more vertical room.
 
-**Three or four items is a default, not a hard limit.** The default can change to fit the product's needs. Where the choice is not obvious, confirm with the user whether to use a top navigation bar or a left rail, instead of picking one without asking. See `recursica-skill-design-router`.
+**Three or four items is a default, not a hard limit.** The default can change to fit the product's needs. Where the choice is not obvious, confirm with the user whether to use a top navigation bar or a left rail, instead of picking one without confirming with the user. See `recursica-skill-design-router`.
 
 ## Titles and breadcrumbs
 
@@ -198,7 +198,7 @@ An app shell is the header, the left rail and the footer around the page content
 
 **Add KPI tiles only when the tiles pass all three tests:**
 
-1. **The dataset is too large to take in at a glance.** A count belongs on the page only when the count tells the reader a fact the page content cannot. Above a table of eleven rows, the table has already given the count. The reader can see eleven rows. Ask for the realistic maximum number of records, not the theoretical maximum. If the realistic maximum is dozens, the table is enough.
+1. **The dataset is too large to take in at a glance.** A count belongs on the page only when the count tells the reader a fact the page content cannot. Above a table of eleven rows, the table has already given the count. The reader can see eleven rows. Confirm with the user the realistic maximum number of records, not the theoretical maximum. If the realistic maximum is dozens, the table is enough.
 2. **The number changes.** A KPI tile exists to be read again on the next visit and found different. A KPI tile that reports the same value every time is a label, not data.
 3. **The tile guides the next action.** After reading the tile, the reader should be able to act differently.
 

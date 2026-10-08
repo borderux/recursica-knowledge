@@ -118,9 +118,9 @@ The application must add every behavior in the two lists below. A drop zone (an 
 
 ## Open questions
 
-- **Upload feedback.** The persona needs feedback on each upload. This open question covers three kinds of feedback for each file: progress, success, and an error. Do not invent a progress bar, a spinner, or a checkmark on each list item. For each of the three kinds of feedback, ask only when the project has no state for that kind of feedback.
-- **A button style and a drop zone style.** Only the design-system website shows the two styles. The design system has not settled which of the two styles the standard UI kit produces. The design system has also not settled whether both styles are available. Do not rely on either style without asking. Ask only when the project has no style variant.
-- **One file versus several files.** Only the design-system website shows a type for one file and a type for several files. Do not rely on either type without asking. Ask only when the project has no variant for one file versus several files.
+- **Upload feedback.** The persona needs feedback on each upload. This open question covers three kinds of feedback for each file: progress, success, and an error. Do not invent a progress bar, a spinner, or a checkmark on each list item. For each of the three kinds of feedback, confirm with the user only when the project has no state for that kind of feedback.
+- **A button style and a drop zone style.** Only the design-system website shows the two styles. The design system has not settled which of the two styles the standard UI kit produces. The design system has also not settled whether both styles are available. Do not rely on either style without confirming with the user. Confirm with the user only when the project has no style variant.
+- **One file versus several files.** Only the design-system website shows a type for one file and a type for several files. Do not rely on either type without confirming with the user. Confirm with the user only when the project has no variant for one file versus several files.
 - **Retrying.** No rule says what happens to a file that failed to upload, or whether the persona can retry the upload in place.
 - **Overall limits.** No rule sets a maximum number of files, or a maximum total size for all files in the list.
 - **Thumbnails or previews.** No rule says whether the list shows a thumbnail or a preview of an image file.

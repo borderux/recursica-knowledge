@@ -54,7 +54,7 @@ The rules below describe each option by role, such as "the vertical orientation"
 
 **Never wrap tabs onto a second line, never make tabs scroll, and never put the tabs that do not fit in a menu.** Tabs that do not fit mean the screen is organized wrong. Switch to a vertical tab set, or shorten the tab labels. When a horizontal tab set does not fit, a vertical tab set and shorter tab labels are the two approved fixes. `recursica-skill-navigation` sets this rule.
 
-**A vertical tab set is an approved house pattern.** `recursica-skill-navigation` names a vertical tab set as the fix for tabs that do not fit. Use a vertical tab set as a normal option, without asking first. The arrow keys follow the orientation, as described under "Keyboard and non-mouse navigation" below.
+**A vertical tab set is an approved house pattern.** `recursica-skill-navigation` names a vertical tab set as the fix for tabs that do not fit. Use a vertical tab set as a normal option, without confirming with the user first. The arrow keys follow the orientation, as described under "Keyboard and non-mouse navigation" below.
 
 **Never set or override the keyboard behavior inside the tab set.** The tab set responds to key presses on the tabs. Do not add custom code that responds to key presses inside the tab set. Custom code for key presses can break the tab set's keyboard behavior.
 
@@ -100,7 +100,7 @@ A tab set is one of the few components where a wrong role or a wrong connection 
 - **Whether the three tab styles have different meanings**, or are only a visual choice for the whole house.
 - **What a tab shows when the tab's panel has no content**, and whether an empty tab is hidden or disabled.
 - **Whether a tab may ever be disabled**, and what would justify a disabled tab.
-- **Setting the orientation.** The standard UI kit defines a horizontal and a vertical orientation. Nobody has confirmed that the adapter (the Recursica component library for one framework, such as Mantine or Angular Material) lets the code set the orientation. Check the tab set's settings, or ask, before relying on the orientation setting.
+- **Setting the orientation.** The standard UI kit defines a horizontal and a vertical orientation. Nobody has confirmed that the adapter (the Recursica component library for one framework, such as Mantine or Angular Material) lets the code set the orientation. Check the tab set's settings, or confirm with the user, before relying on the orientation setting.
 
 ## Pre-flight checklist
 
@@ -108,7 +108,7 @@ A tab set is one of the few components where a wrong role or a wrong connection 
 - [ ] No form, and no process with steps in order, is split across tabs.
 - [ ] Every tab has a separate sub-route, stays open after a refresh, and works with back and forward.
 - [ ] Tab labels are nouns. The tab set is within 7 ± 2 tabs, and the tabs do not wrap, scroll, or overflow.
-- [ ] A tab set that did not fit is vertical or has shorter labels, and the fix was chosen without asking.
+- [ ] A tab set that did not fit is vertical or has shorter labels, and the fix was chosen without confirming with the user.
 - [ ] One style applies to the whole tab set. No tab item mixes in another style, and no style is invented.
 - [ ] Every style, orientation, and state is one the Recursica MCP server lists for the project.
 - [ ] The tab list, each tab, and each tab panel have the correct role for each part, and each panel is connected to the tab that controls the panel.

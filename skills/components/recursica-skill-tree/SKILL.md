@@ -105,11 +105,11 @@ A tree has the most specific keyboard rules of any component. The tree's keyboar
 
 ## Open questions
 
-- **The look of an expanded node compared with a collapsed node.** The look of an expanded node is the biggest open question about the tree. Ask only when the project has no expanded state.
-- **Choosing several items in a tree**, with or without checkboxes. The design rules do not cover choosing several items in a hierarchy. Ask only when the project has no option for choosing several items.
+- **The look of an expanded node compared with a collapsed node.** The look of an expanded node is the biggest open question about the tree. Confirm with the user only when the project has no expanded state.
+- **Choosing several items in a tree**, with or without checkboxes. The design rules do not cover choosing several items in a hierarchy. Confirm with the user only when the project has no option for choosing several items.
 - **A maximum depth.** No rule sets a maximum number of levels. A tree with no limit on levels is a real usability problem.
 - **Selecting a parent node.** No rule says whether a parent node can be selected, or only a node with no children.
-- **Loading children only when a node opens**, and what the node shows while the children load. When the project has a loading state, ask only about loading children when a node opens.
+- **Loading children only when a node opens**, and what the node shows while the children load. When the project has a loading state, confirm with the user only whether children load when a node opens.
 - **Dragging to reorder nodes or move a node to a new parent.** If dragging is allowed, `recursica-skill-system-conventions` also requires a way to reorder and move nodes without dragging.
 - **The empty state of the tree**, and what an expanded node with no children shows.
 - **Treat every open question above as a question nobody has answered.** Never treat an open question as a decision that someone forgot to write down. The design-system website adds nothing about the tree. Unlike most component skills, the tree skill has the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) as the only source.

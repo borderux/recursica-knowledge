@@ -127,9 +127,9 @@ The switch group, switch item and switch components already connect each switch 
 
 ## Open questions
 
-- **Which side of the label the switch sits on.** The design-system website shows a variant for the side, with the options `On Left` and `On Right`, and no token behind the variant. Do not build the variant, and do not rely on the website's options without asking. Ask only when the project has no variant for the side of the label.
-- **How a switch shows an error.** The standard UI kit gives `dropdown` and `autocomplete` an `error` state. Ask only when the project has no error state.
-- **What a switch does while the switch's change is still saving**, and what happens if the immediate save fails. Ask what the switch does during the save and after a failed save in every project. Ask which state to show only when the project has no pending, loading, or failure state.
+- **Which side of the label the switch sits on.** The design-system website shows a variant for the side, with the options `On Left` and `On Right`, and no token behind the variant. Do not build the variant, and do not rely on the website's options without confirming with the user. Confirm with the user only when the project has no variant for the side of the label.
+- **How a switch shows an error.** The standard UI kit gives `dropdown` and `autocomplete` an `error` state. Confirm with the user only when the project has no error state.
+- **What a switch does while the switch's change is still saving**, and what happens if the immediate save fails. Confirm with the user what the switch does during the save and after a failed save in every project. Confirm with the user which state to show only when the project has no pending, loading, or failure state.
 - **Whether a switch group may hold more than a few switches**, and whether the 7 ± 2 limit applies to switches at all. The 7 ± 2 limit is stated only for radio groups and checkbox groups.
 
 ## Pre-flight checklist

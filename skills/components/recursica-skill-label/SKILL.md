@@ -114,7 +114,7 @@ A persona using a screen reader can use a field only when the field has a label.
 - **The form-wide signal for required fields.** No rule says which signal marks required fields when a form avoids asterisks. A bold label is an example, not a rule.
 - **The required indicator and the optional text in one application.** No rule says whether one application may show the required indicator on one form and the optional text on a different form.
 - **Truncating a label.** No rule says what to do when a side-by-side label is longer than the space for the label.
-- **When to use the smaller size.** The standard UI kit has a default size and a smaller size. No rule says when to use the smaller size. Nobody has confirmed that the adapter (the Recursica component library for one framework, such as Mantine or Angular Material) exposes the smaller size as a setting. Check the label component's settings, or ask, before relying on the smaller size.
+- **When to use the smaller size.** The standard UI kit has a default size and a smaller size. No rule says when to use the smaller size. Nobody has confirmed that the adapter (the Recursica component library for one framework, such as Mantine or Angular Material) exposes the smaller size as a setting. Check the label component's settings, or confirm with the user, before relying on the smaller size.
 
 ## Pre-flight checklist
 

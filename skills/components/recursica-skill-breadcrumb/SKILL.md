@@ -105,9 +105,9 @@ The breadcrumb's styling includes the separator's look, wherever the separator c
 
 ## Open questions
 
-- **The separator.** No one has decided which character the separator is, or whether the separator is an icon. If the project has a separator, use the project's separator. Otherwise, ask.
+- **The separator.** No one has decided which character the separator is, or whether the separator is an icon. If the project has a separator, use the project's separator. Otherwise, confirm with the user.
 - **Long trails.** No one has decided whether a deep trail drops the middle levels, shortens the labels, or wraps. Horizontal scrolling is not an option.
-- **The content variant.** Only the design-system website shows a content variant with Label only, Icon + Label, Icon only and Mixed options. Only the website shows separate styles for read-only items and clickable items. If the project has the content variant or the item styles, use the project's version. Otherwise, do not rely on either one without asking.
+- **The content variant.** Only the design-system website shows a content variant with Label only, Icon + Label, Icon only and Mixed options. Only the website shows separate styles for read-only items and clickable items. If the project has the content variant or the item styles, use the project's version. Otherwise, do not rely on either one without confirming with the user.
 - **The depth at which a breadcrumb becomes required.** `recursica-skill-navigation` calls for breadcrumbs "where the depth of the page calls for breadcrumbs", but gives no number. `recursica-skill-navigation` also lists the maximum depth of the page hierarchy as an open question.
 - **The start of the trail.** No rule says whether the trail starts at the application's home page or at the section's landing page.
 - **A level with no landing page.** No rule says how the trail handles a level above the current page that exists in the hierarchy but has no landing page and no route to link to.

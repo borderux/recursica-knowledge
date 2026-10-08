@@ -112,7 +112,7 @@ The button component shows the focus ring. The button component also responds to
 - **Full-width buttons.** When the project has no full-width option, no rule says whether a full-width button is ever allowed, or where.
 - **The icon for a loading button.** A loading button uses the disabled look with an animated icon, and that part is settled. Which icon to use is not settled. Whether the UI kit or the adapter (the Recursica component library for one framework, such as Mantine or Angular Material) defines the animation is also unknown.
 - **Split buttons and button groups.** Use a split button or a button group only when the project has that component. Never build either one from separate buttons.
-- **Setting the disabled state.** Nobody has confirmed that each adapter offers the disabled state as a setting. Check the button's settings with the Recursica MCP server, or ask, before relying on the disabled state.
+- **Setting the disabled state.** Nobody has confirmed that each adapter offers the disabled state as a setting. Check the button's settings with the Recursica MCP server, or confirm with the user, before relying on the disabled state.
 
 ## Pre-flight checklist
 

@@ -33,7 +33,7 @@ The rules assume **complex enterprise web applications**, where people do real w
 
 **A weaker sign of overload is a persona who cannot tell what to do next.** This sign is worth noticing, though the sign is vague.
 
-**No single rule decides when a screen is overloaded.** The lack of a single rule is part of why enterprise layout is hard. When the answer is unclear, ask instead of inventing a threshold. See `recursica-skill-design-router`.
+**No single rule decides when a screen is overloaded.** The lack of a single rule is part of why enterprise layout is hard. When the answer is unclear, confirm with the user instead of inventing a threshold. See `recursica-skill-design-router`.
 
 ## The inverted triangle
 

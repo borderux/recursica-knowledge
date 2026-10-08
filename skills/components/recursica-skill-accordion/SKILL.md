@@ -114,9 +114,9 @@ The accordion shows the header and the chevron. The app that uses the accordion 
 
 ## Open questions
 
-- **Whether opening one item closes the other items.** No rule states the behavior. If the project has a single-open or multi-open option, use that option. Otherwise, ask.
-- **Whether the divider between items can be hidden.** Only the design-system website mentions hiding the divider. The website says the divider "can be hidden if accordion is the last child in a list or accordion group". If the project has an option to hide the divider, use the option. Otherwise, do not hide the divider without asking.
-- **How to show an item the persona cannot open right now.** `recursica-skill-navigation` says to disable an item the persona can unlock. If the project has a disabled look for the header, use the disabled look. Otherwise, ask.
+- **Whether opening one item closes the other items.** No rule states the behavior. If the project has a single-open or multi-open option, use that option. Otherwise, confirm with the user.
+- **Whether the divider between items can be hidden.** Only the design-system website mentions hiding the divider. The website says the divider "can be hidden if accordion is the last child in a list or accordion group". If the project has an option to hide the divider, use the option. Otherwise, do not hide the divider without confirming with the user.
+- **How to show an item the persona cannot open right now.** `recursica-skill-navigation` says to disable an item the persona can unlock. If the project has a disabled look for the header, use the disabled look. Otherwise, confirm with the user.
 - **Animation for opening and closing an item.** No duration or easing is defined.
 - **Whether an item can be linked to directly**, so that a shared URL opens a specific item.
 - **Whether an accordion may sit inside a table row**, given the single-level expand and collapse that `recursica-skill-tables` asks for.

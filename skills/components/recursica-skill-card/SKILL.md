@@ -79,9 +79,9 @@ The rule follows from the five tests. A form shows the properties of one object,
 The rules below describe each option by role. The names in the standard UI kit (the unchanged UI kit in the official Recursica release) and on the design-system website are examples only.
 
 - **A card can have a header, a content area, sections and a footer.** The header can hold an optional button, called the header button. A divider separates the sections.
-- **A card can have a raised style or an outlined style.** The design-system website calls the two styles Elevation and Outline. Use the style choice only when the project lists the style choice. Otherwise, ask.
+- **A card can have a raised style or an outlined style.** The design-system website calls the two styles Elevation and Outline. Use the style choice only when the project lists the style choice. Otherwise, confirm with the user.
 - **Do not choose between the raised style and the outlined style at random.** No rule says where to use each style. See "Open questions".
-- **A card can have a graphic slot.** A graphic slot holds the graphic that test 4 requires, such as an image or a chart. The graphic slot sits above the card's content or below the card's content, or the card has no graphic slot. The website calls the three options Top, Bottom and None. Use the graphic slot choice only when the project lists the graphic slot choice. Otherwise, ask. The aesthetic exception uses a card with no graphic slot.
+- **A card can have a graphic slot.** A graphic slot holds the graphic that test 4 requires, such as an image or a chart. The graphic slot sits above the card's content or below the card's content, or the card has no graphic slot. The website calls the three options Top, Bottom and None. Use the graphic slot choice only when the project lists the graphic slot choice. Otherwise, confirm with the user. The aesthetic exception uses a card with no graphic slot.
 - **If the project has a size variant, use the size variant.** Otherwise, do not build a wide card and a narrow card as variants.
 - **A card is not a control.** When a card is a link or holds a link, see the rules for links under "Accessibility".
 
@@ -143,10 +143,10 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 ## Open questions
 
-- **When the raised style applies, and when the outlined style applies.** The website calls the two styles Elevation and Outline. No rule says where to use either style. Ask before relying on either style.
+- **When the raised style applies, and when the outlined style applies.** The website calls the two styles Elevation and Outline. No rule says where to use either style. Confirm with the user before relying on either style.
 - **How many cards count as a "small and finite" card set.** The skill states the limit as a judgment, not a number.
 - **Card layout across breakpoints**, meaning how many cards fit across the screen, and what happens below desktop size. `recursica-skill-design-router` names card layout across breakpoints as a topic with no owner.
-- **Whether a persona may select a card** as part of a multi-select, and what the selected state looks like. Ask only when the project has no selected state.
+- **Whether a persona may select a card** as part of a multi-select, and what the selected state looks like. Confirm with the user only when the project has no selected state.
 - **The empty state of a card set**, meaning what a card set shows when the set has one card or no cards.
 - **Whether the header button and the footer may both be used** in the same card.
 

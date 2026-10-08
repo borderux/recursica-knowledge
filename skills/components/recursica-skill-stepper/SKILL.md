@@ -123,8 +123,8 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - **Whether each step gets a route and a browser history entry.** `recursica-skill-navigation` rules on views and tabs, not on steps. No rule says what the browser's Back button does in a stepper.
 - **Validation across steps.** No rule says whether a step validates when the persona leaves the step, or what going back does to the data the persona entered. `recursica-skill-forms` names this question as open too.
 - **Whether a step may be optional or skipped**, and how an optional or skipped step shows in the step count.
-- **What a step with an error looks like.** Ask only when the project has no error state.
-- **Whether the step indicator shows a number or a checkmark.** The design-system website shows both. Do not rely on a number or a checkmark without asking. Ask only when the project has no number or checkmark in the step indicator.
+- **What a step with an error looks like.** Confirm with the user only when the project has no error state.
+- **Whether the step indicator shows a number or a checkmark.** The design-system website shows both. Do not rely on a number or a checkmark without confirming with the user. Confirm with the user only when the project has no number or checkmark in the step indicator.
 - **Where the stepper sits relative to the step's content**, and whether the stepper stays in view while the step's content scrolls.
 
 ## Pre-flight checklist

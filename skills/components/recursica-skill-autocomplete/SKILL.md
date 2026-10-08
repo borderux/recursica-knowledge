@@ -156,8 +156,8 @@ The autocomplete already links the label to the input and shows the focus ring. 
 - **How many characters to type.** How many characters must the persona type before results appear? Does the full list of options show when the field gets focus with no text typed?
 - **Match order.** How does the field find and order matches? The question covers matching the start of the text versus any position in the text, fuzzy matching, and whether the option highlights the matched characters.
 - **No results.** What does the field show when no option matches the typed text? Does the field offer a next step?
-- **Loading.** What does the field show while results are loading? If the project has a loading, pending, or failed-to-load state, use that state. Otherwise, ask.
-- **Multi-select.** If the project has a multi-select variant, or chips that show the chosen values, use the project's version. Otherwise, ask.
+- **Loading.** What does the field show while results are loading? If the project has a loading, pending, or failed-to-load state, use that state. Otherwise, confirm with the user.
+- **Multi-select.** If the project has a multi-select variant, or chips that show the chosen values, use the project's version. Otherwise, confirm with the user.
 - **List details.** Are the options in the filtered list grouped, and how?
 
 ## Pre-flight checklist

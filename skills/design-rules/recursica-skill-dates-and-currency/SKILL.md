@@ -46,7 +46,7 @@ Use this one date format for every displayed date. This date format removes conf
 
 **Format once, in one place.** A separate formatter in every place that formats a value is how a screen ends up with three date formats. A new formatter for every table row also makes the screen measurably slow. Create each formatter once and export the formatter.
 
-**A date with no time is not a timestamp.** Some stored values are a date with no time, such as a birth date, a due date, or an accounting period. Converting a date with no time to the reader's time zone moves the date one day earlier or later. Convert the time zone only for an exact moment in time. When the kind of value a field holds is not clear, ask. Do not pick a default.
+**A date with no time is not a timestamp.** Some stored values are a date with no time, such as a birth date, a due date, or an accounting period. Converting a date with no time to the reader's time zone moves the date one day earlier or later. Convert the time zone only for an exact moment in time. When the kind of value a field holds is not clear, confirm with the user. Do not pick a default.
 
 ## Time zones
 
@@ -158,9 +158,9 @@ Relative time follows principle 1, "Never make the reader decode or calculate." 
 
 **Confirm with the user instead of choosing a format for the topics below.** The topics come up rarely enough that no house rule exists, and rarely enough that asking costs almost nothing. See the never-guess rule in `recursica-skill-design-router`.
 
-- **Conventions for weeks, quarters, and fiscal periods.** Ask how weeks are numbered, how quarters are labeled, and whether periods follow the calendar year or a fiscal year.
+- **Conventions for weeks, quarters, and fiscal periods.** Confirm with the user how weeks are numbered, how quarters are labeled, and whether periods follow the calendar year or a fiscal year.
 - **The duration format past one day.** A duration past one day changes format, but the exact form has not been set.
-- **Seconds outside a set of compared values.** Ask whether seconds ever appear outside a set of values under a minute that are being compared.
+- **Seconds outside a set of compared values.** Confirm with the user whether seconds ever appear outside a set of values under a minute that are being compared.
 
 Do not extend a rule above to cover one of these open questions. A reader will not catch a wrong convention in a fiscal period or a week number.
 

@@ -101,7 +101,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 ## Open questions
 
 - **When to use fill width.** No rule says where a segmented control with fill width on is used.
-- **A disabled segment.** No rule says whether a single segment may be disabled, or how a disabled segment looks. Ask only when the project has no disabled state.
+- **A disabled segment.** No rule says whether a single segment may be disabled, or how a disabled segment looks. Confirm with the user only when the project has no disabled state.
 - **A segmented control as a form field.** No rule says whether a segmented control may be a labeled form field instead of a view switcher. No rule says where the label goes if a segmented control may be a form field.
 - **Screens narrower than desktop size.** Five short labels may not fit on a narrow screen. `recursica-skill-design-router` names behavior below desktop size as a topic with no owner.
 

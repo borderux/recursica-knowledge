@@ -111,11 +111,11 @@ The theme also sets the focus ring and the area that responds to a click or a ta
 
 ## Open questions
 
-- **Whether the previous and next controls are missing, or present but unusable, on the first page and the last page.** The rule that the previous and next controls are never disabled links is settled, under "Rules". No rule says which of the two other options the house wants. Ask, and apply the answer everywhere.
-- **First-page and last-page controls.** Only the design-system website shows first-page and last-page controls. Do not assume the project has first-page and last-page controls. The same goes for an ellipsis, and for shortening a long list of page numbers. Do not build any of the controls without asking. Ask about each control, and about shortening the list, only when the project has no such control.
+- **Whether the previous and next controls are missing, or present but unusable, on the first page and the last page.** The rule that the previous and next controls are never disabled links is settled, under "Rules". No rule says which of the two other options the house wants. Confirm with the user, and apply the answer everywhere.
+- **First-page and last-page controls.** Only the design-system website shows first-page and last-page controls. Do not assume the project has first-page and last-page controls. The same goes for an ellipsis, and for shortening a long list of page numbers. Do not build any of the controls without confirming with the user. Confirm each control, and about shortening the list, with the user only when the project has no such control.
 - **Whether a page of a table is a real route with a history entry.** The answer decides whether a page number can be a link with an `href` at all. No rule says whether a table's pages are routes.
-- **Rows per page as the persona's choice.** No rule says whether the persona may change the number of table rows on each page. Ask only when the project has no rows-per-page select.
-- **A results readout**, such as "Showing 1–10 of 200". No rule says whether a results readout is required, or where the readout sits next to the pagination controls. Ask only when the project has no results readout.
+- **Rows per page as the persona's choice.** No rule says whether the persona may change the number of table rows on each page. Confirm with the user only when the project has no rows-per-page select.
+- **A results readout**, such as "Showing 1–10 of 200". No rule says whether a results readout is required, or where the readout sits next to the pagination controls. Confirm with the user only when the project has no results readout.
 - **Where pagination sits in the footer.** No rule says which side of the footer pagination takes, or how pagination fits beside the totals the footer also shows.
 - **Loading and error states between pages.** `recursica-skill-tables` says no skill owns table loading states yet.
 

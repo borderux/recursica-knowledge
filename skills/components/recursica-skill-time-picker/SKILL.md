@@ -49,7 +49,7 @@ The rules below describe each option by role, such as "the error state". The nam
 - **The time picker has an error state and a disabled state.** In the standard UI kit, the state variant is `states`, with the options `error` and `disabled`.
 - **The clock format is not a variant.** The persona's preference sets a 12-hour or a 24-hour clock. See the rules below.
 - **If the project has a seconds variant, use the seconds variant.** Otherwise, never add a seconds variant.
-- **A time range is one control that takes a start time and an end time.** If the project has a range variant, use the range variant. Otherwise, do not build a range control without asking.
+- **A time range is one control that takes a start time and an end time.** If the project has a range variant, use the range variant. Otherwise, do not build a range control without confirming with the user.
 - **Show a read-only time with the read-only field component, never with a read-only state of the time picker.** A value nobody can edit does not belong in a form control. The read-only field has the same label-placement variant as the time picker, and no input.
 
 ## Rules
@@ -131,11 +131,11 @@ The time picker's width is fixed.
 
 ## Open questions
 
-- **The AM/PM control.** Only the design-system website shows an AM or PM selector inside the field, hidden when the clock is 24-hour. Whether the AM/PM selector is part of the time picker, or a separate select on the same line, is not stated. Do not rely on the AM/PM selector without asking.
-- **What the popover contains.** Only the design-system website shows a "dial or input picker" that a dropdown indicator opens. The step between times in the popover, such as every minute, every five minutes, or every fifteen minutes, is not stated. Do not rely on any popover content without asking.
+- **The AM/PM control.** Only the design-system website shows an AM or PM selector inside the field, hidden when the clock is 24-hour. Whether the AM/PM selector is part of the time picker, or a separate select on the same line, is not stated. Do not rely on the AM/PM selector without confirming with the user.
+- **What the popover contains.** Only the design-system website shows a "dial or input picker" that a dropdown indicator opens. The step between times in the popover, such as every minute, every five minutes, or every fifteen minutes, is not stated. Do not rely on any popover content without confirming with the user.
 - **Whether a time has a masked format while the field has focus**, as a date does. The rule in `recursica-skill-dates-and-currency` that focus decides the format gives only a date example.
-- **Seconds.** Whether the field can accept seconds at all is unknown. Ask only when the project has no seconds variant.
-- **Time ranges.** How a start time and an end time are checked against each other is not stated. Ask only when the project has no range variant.
+- **Seconds.** Whether the field can accept seconds at all is unknown. Confirm with the user only when the project has no seconds variant.
+- **Time ranges.** How a start time and an end time are checked against each other is not stated. Confirm with the user only when the project has no range variant.
 - **The UI kit defines a disabled state, but the design-system website does not show one.** Treat the list of states that the Recursica MCP server gives for the project as the authority, and flag the missing disabled state on the website.
 
 ## Pre-flight checklist

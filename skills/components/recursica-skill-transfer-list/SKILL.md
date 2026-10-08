@@ -115,12 +115,12 @@ A transfer list with arrow buttons often works only with a mouse. The app must a
 ## Open questions
 
 - **Where the transfer list fits among the selection controls.** `recursica-skill-selection-controls` sends a choice of any number of options, including none, to a multi-select dropdown when the options pass the option limit. `recursica-skill-selection-controls` never mentions a transfer list. No rule says at how many options a transfer list replaces the multi-select dropdown.
-- **Checkboxes on each item.** Only the design-system website shows a checkbox on every item. Nobody has settled whether the items are rows with checkboxes or items in a selectable listbox. Ask before relying on a checkbox on each item. Ask only when the project has no checkbox option for an item.
+- **Checkboxes on each item.** Only the design-system website shows a checkbox on every item. Nobody has settled whether the items are rows with checkboxes or items in a selectable listbox. Confirm with the user before relying on a checkbox on each item. Confirm with the user only when the project has no checkbox option for an item.
 - **Overflow.** The height is fixed, so a long list must scroll inside the transfer list. `recursica-skill-system-conventions` treats a scrolling area inside a control as a failure. No rule says what a list does when the items do not fit the height.
 - **Narrow containers.** The label placement variant moves only the label, and the lists have a fixed width. An earlier house note said to avoid the transfer list on small screens, but the transfer list has no responsive behavior.
-- **Empty states.** No rule sets an empty state for either list, including the starting state where every item is in one list. Ask only when the project has no empty state.
+- **Empty states.** No rule sets an empty state for either list, including the starting state where every item is in one list. Confirm with the user only when the project has no empty state.
 - **Ordering.** No rule says whether items are sorted alphabetically, keep the original order, or can be reordered by the persona.
-- **Disabled items.** No rule says whether a single item can be disabled, locked in one list while the other items move. Ask only when the project has no disabled state for a single item.
+- **Disabled items.** No rule says whether a single item can be disabled, locked in one list while the other items move. Confirm with the user only when the project has no disabled state for a single item.
 
 ## Pre-flight checklist
 

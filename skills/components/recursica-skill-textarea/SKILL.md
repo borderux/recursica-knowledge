@@ -129,10 +129,10 @@ The textarea component connects the label to the input and handles the keys insi
 
 ## Open questions
 
-- **Growing to fit the text.** The UI kit fixes the number of rows. The design-system website shows a vertical-resize variant with the options `auto` and `custom`. The UI kit and the website disagree. The user must decide whether the field grows with the text, and whether the field has a handle the persona can drag. Do not rely on a resize variant without asking. Ask only when the project has no resize variant.
-- **Text longer than the fixed number of rows.** A source outside the UI kit describes a "default fixed height before content truncation". No source says whether the extra text scrolls or is cut off. Cutting off the text a persona typed would be a serious problem. Do not rely on either behavior without asking.
-- **The character counter.** The design-system website shows a character counter. Nobody has settled where a count goes or what happens at the limit. `recursica-skill-assistive-element` has the same open question. Do not rely on a counter without asking. Ask only when the project has no character counter.
-- **A rich text editor.** Ask only when the project has no rich text editor. Do not build a rich text editor out of a textarea.
+- **Growing to fit the text.** The UI kit fixes the number of rows. The design-system website shows a vertical-resize variant with the options `auto` and `custom`. The UI kit and the website disagree. The user must decide whether the field grows with the text, and whether the field has a handle the persona can drag. Do not rely on a resize variant without confirming with the user. Confirm with the user only when the project has no resize variant.
+- **Text longer than the fixed number of rows.** A source outside the UI kit describes a "default fixed height before content truncation". No source says whether the extra text scrolls or is cut off. Cutting off the text a persona typed would be a serious problem. Do not rely on either behavior without confirming with the user.
+- **The character counter.** The design-system website shows a character counter. Nobody has settled where a count goes or what happens at the limit. `recursica-skill-assistive-element` has the same open question. Do not rely on a counter without confirming with the user. Confirm with the user only when the project has no character counter.
+- **A rich text editor.** Confirm with the user only when the project has no rich text editor. Do not build a rich text editor out of a textarea.
 - **A minimum length.** No rule says whether a minimum length is a limit the component supports, or only a validation message.
 
 ## Pre-flight checklist

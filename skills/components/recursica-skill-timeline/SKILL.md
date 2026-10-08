@@ -123,9 +123,9 @@ Every rule in this section also applies to the timeline bullet. Never set or ove
 
 ## Open questions
 
-- **Alignment.** The design-system website shows timelines aligned left and aligned right. Do not rely on an alignment without asking. Ask only when the project has no alignment variant.
-- **The connecting line.** The design-system website shows a connecting line with a highlighted state for completed events. A timeline never shows progress, with or without a connecting line. Do not rely on a connecting line without asking. Ask about the connecting line only when the project has no connecting line.
-- **Two-track timelines and timelines that compare two streams of events side by side.** Ask only when the project has no two-track variant.
+- **Alignment.** The design-system website shows timelines aligned left and aligned right. Do not rely on an alignment without confirming with the user. Confirm with the user only when the project has no alignment variant.
+- **The connecting line.** The design-system website shows a connecting line with a highlighted state for completed events. A timeline never shows progress, with or without a connecting line. Do not rely on a connecting line without confirming with the user. Confirm the connecting line with the user only when the project has no connecting line.
+- **Two-track timelines and timelines that compare two streams of events side by side.** Confirm with the user only when the project has no two-track variant.
 - **What the selected state means in house terms.** The selected state could mark the item the persona selected, or the most recent event.
 - **Whether a timeline item may be selected, be a link, or have an action.** No rule says how a persona interacts with a timeline item.
 - **The default sort direction**, newest first or oldest first.
