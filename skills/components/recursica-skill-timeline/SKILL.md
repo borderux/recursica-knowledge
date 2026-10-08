@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-timeline
-description: Rules for the Recursica timeline — when a record of past events is right, the timeline and its decorative bullet, timestamp formatting, and list accessibility. Use for activity feeds, audit trails, and history views. Not for a process in progress — see recursica-skill-stepper; not for sortable records — see recursica-skill-tables.
+description: Rules for the Recursica timeline — when a timeline fits a record of past events, the timeline and the timeline's decorative bullet, timestamp formatting, and list accessibility. Use for activity feeds, audit trails, and history views. Not for a process in progress — see recursica-skill-stepper; not for sortable records — see recursica-skill-tables.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -14,7 +14,7 @@ A timeline lists events that already happened, in order. Each event has a timest
 ## When to use a timeline
 
 - **The reader must read a record over time as a sequence of events**, such as an audit trail, an incident log, the activity on one object, or a release history.
-- **The order and the date of each event matter more than detail.** Each timeline entry is a short title, one line of description, and a time.
+- **The order and the date of each event matter more than the event's details.** Each timeline entry is a short title, one line of description, and a time.
 - **The screen reports milestones already reached.** The reader wants to know what happened and when.
 
 ## When not to use a timeline
@@ -26,7 +26,7 @@ A timeline lists events that already happened, in order. Each event has a timest
 | A large number of records, or records the user will sort, filter, or compare                     | A table. See `recursica-skill-tables`.                                                             |
 | Tabular data only, with the same fields in every entry                                           | A table. See `recursica-skill-tables`.                                                             |
 | Entries arrive in a stream that updates fast, such as chat messages or live logs                 | A table or an activity view built for a large number of entries, not a timeline.                   |
-| Each entry needs long text, media, or controls of the entry's own                                | An accordion, or a page for each entry. See `recursica-skill-accordion`.                           |
+| Each entry needs long text, media, or controls that belong to the entry                          | An accordion, or a page for each entry. See `recursica-skill-accordion`.                           |
 | The events branch, or the events depend on one another                                           | No linear component. A timeline shows only one sequence of events.                                 |
 | The dates are unknown or approximate                                                             | A grouped list. A grouped list makes no claim about the order of events.                           |
 | The design needs to separate repeating objects of the same kind visually, such as rows in a list | A card, if the objects pass the tests in `recursica-skill-card`, or a table.                       |
@@ -41,10 +41,10 @@ The rules below describe each part and option by role, such as "the selected sta
 
 **This skill covers two components: the timeline and the timeline bullet.** No separate bullet skill exists. The standard UI kit calls the two components `timeline` and `timeline-bullet`.
 
-- **The timeline** is the list of timeline items. A timeline item has three parts: a title, a description, and a timestamp. The timestamp is part of the timeline component. The timestamp format follows `recursica-skill-dates-and-currency`, and that format is required.
-- **The timeline bullet** is a mark beside a timeline item. A bullet has four types: a plain mark, an icon, an alternative icon, or an avatar. In the standard UI kit, the variant is `types`, with the options `default`, `icon`, `icon-alternative`, and `avatar`. Pages shown only on the design-system website also call the alternative icon bullet "theme icon". The two names mean the same bullet type, and no rule says when to use each name.
-- **Selected and unselected state.** The timeline has a selected state and an unselected state. In the standard UI kit, the variant is `selection-states`, with the options `active` and `inactive`. The two options are selection states, not statuses. Never use the selected state to mean "done".
-- **Connecting line.** Never use a connecting line to show progress. A timeline never shows progress, and a process in progress uses a stepper. See `recursica-skill-stepper`.
+- **The timeline** is the list of timeline items. A timeline item has three parts: a title, a description, and a timestamp. The timestamp is part of the timeline component. Every timestamp must use the format in `recursica-skill-dates-and-currency`.
+- **The timeline bullet** is a mark beside a timeline item. A bullet has four types: a plain mark, an icon, an alternative icon, or an avatar. In the standard UI kit, the variant is `types`, with the options `default`, `icon`, `icon-alternative`, and `avatar`. Pages shown only on the design-system website also call the alternative icon bullet "theme icon". "Alternative icon" and "theme icon" mean the same bullet type, and no rule says when to use each name.
+- **The timeline has a selected state and an unselected state.** In the standard UI kit, the variant is `selection-states`, with the options `active` and `inactive`. The two options are selection states, not statuses. Never use the selected state to mean "done".
+- **Never use a connecting line to show progress.** A timeline never shows progress, and a process in progress uses a stepper. See `recursica-skill-stepper`.
 
 ## Rules
 
@@ -60,7 +60,7 @@ The rules below describe each part and option by role, such as "the selected sta
 - **When the place of the event matters, show the time in the time zone where the event happened, with the time zone labeled.** Do not convert the time. Give the user a way to convert the time.
 - **Keep one timestamp format across the whole timeline.** All timeline items on the same side of the switchover point use the same format, relative or absolute.
 
-**The title names the event, and the description gives the detail.** Never put the timestamp in the title. The timestamp has a separate place in the timeline item.
+**The title names the event, and the description gives the event's details.** Never put the timestamp in the title. The timestamp has a separate place in the timeline item.
 
 **The bullet is decoration.** An avatar bullet or an icon bullet can help show who or what an entry is about, but the title and the description must say who or what. `recursica-skill-system-conventions` forbids showing a meaning in only one channel (color, shape, position or text, each a separate signal). The bullet is the weakest channel in the timeline. See `recursica-skill-avatar` for the rules an avatar bullet must also follow.
 
@@ -70,7 +70,7 @@ The rules below describe each part and option by role, such as "the selected sta
 
 **Never create or edit entries inside a timeline.** Creating or changing an entry takes a form, and the form follows the rules for forms.
 
-**The unselected state does not mean "already happened."** Every entry in a log or a history is in the past, and every entry is real. A faded or pending look on a completed event makes a record of what happened look like a plan for what will happen. **A timeline never shows progress or future steps, so no entry is faded or pending.**
+**A timeline never shows progress or future steps, so no entry is faded or pending.** The unselected state does not mean "already happened." Every entry in a log or a history is in the past, and every entry is real. A faded or pending look on a completed event makes a record of what happened look like a plan for what will happen.
 
 ## Accessibility
 
@@ -98,16 +98,16 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 - **A timeline item that only shows information is not a tab stop** (a place the Tab key lands). Give the timeline item no `tabindex` and no click handler.
 - **When the user can select timeline items, make each timeline item a real control.** Each control has an accessible name (the name a screen reader reads out for a control) and a selected state, and sits in the tab order in the visual order.
-- **When a timeline item holds a link or a button, the timeline item itself must not also be clickable.** A keyboard user cannot tell what Enter will do when one click target sits inside another. `recursica-skill-card` and `recursica-skill-tables` apply the same reason to clickable cards and clickable table rows.
+- **When a timeline item holds a link or a button, the timeline item itself must not also be clickable.** A keyboard user cannot tell what Enter will do when one click target sits inside another click target. `recursica-skill-card` and `recursica-skill-tables` apply the same reason to clickable cards and clickable table rows.
 - **Never show the absolute date only in a tooltip on hover.** A relative time with the real timestamp shown only on hover is the most common accessibility failure in a timeline. A keyboard user and a touch user cannot reach a tooltip that appears only on hover.
-- **Never show an entry's detail or an entry's actions only on hover.** The same applies to any other information the user needs.
-- **When a long timeline splits into pages or loads more entries, the control that does so is a real button a keyboard user can reach.** Adding entries must not move focus or lose focus.
+- **Never show an entry's details, an entry's actions, or any other information the user needs only on hover.**
+- **When a long timeline splits into pages or loads more entries, the control that changes the page or loads more entries is a real button a keyboard user can reach.** Adding entries must not move focus or lose focus.
 
 ## Styling set by tokens
 
-**Never set or override the timeline's styling.** The theme sets every visual property of the timeline, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the timeline's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the timeline's styling.** The theme sets every visual property of the timeline, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the timeline's look. If the design needs a look the theme does not give, report the missing look as a gap in the design system. See `recursica-skill-design-router`.
 
-The same applies to the timeline bullet. Never set or override the styling of the timeline bullet for any bullet type.
+Every rule in this section also applies to the timeline bullet. Never set or override the timeline bullet's styling, for any bullet type.
 
 ## Related skills
 
@@ -145,13 +145,13 @@ The same applies to the timeline bullet. Never set or override the styling of th
 - [ ] The timeline items are in time order, in one stated direction, and events that happened close together are grouped.
 - [ ] Every timestamp uses the clear format: relative time for recent events, and no dates in numbers with slashes or hyphens.
 - [ ] The time zone is stated wherever the time is not in the user's time zone. An event whose place matters shows the time unconverted, with the time zone labeled.
-- [ ] One timestamp format is used across the whole timeline. The timestamp is in the timestamp's own place, not in the title.
+- [ ] One timestamp format is used across the whole timeline. The timestamp sits in the timestamp's place in the timeline item, not in the title.
 - [ ] The title and the description say who and what. No meaning depends on the bullet alone.
 - [ ] One bullet type is used in the whole timeline. No timeline sits in a card or holds a form control.
 - [ ] The events are announced as a list with the number of events, in visual order, and the sort direction is stated in text.
 - [ ] Each timeline item's title, description, and timestamp are grouped in code as one item.
 - [ ] Every relative timestamp has the absolute date and time in what the screen reader reads, not only in a tooltip on hover.
-- [ ] Every bullet is silent, except an avatar bullet, which may be named instead. The person's name also appears in the text of the timeline item.
+- [ ] A screen reader announces nothing for every bullet, except an avatar bullet, which may have alternative text that names the person instead. The person's name also appears in the text of the timeline item.
 - [ ] The selected state is set in code, and never shown by color alone.
 - [ ] A timeline item that only shows information is not a tab stop. A timeline item the user can select is a real control with an accessible name, and holds no second click target.
 - [ ] Any control that loads more entries is reachable by keyboard, and does not move focus, lose focus, or change focus in any other way. The focus ring is not hidden.
