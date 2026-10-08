@@ -1,6 +1,6 @@
 <!--
-Platform fragment for Edie's comparer on a plain session surface. The comparer is built for
-Claude Code only, like Edie.
+Platform fragment for Edie's comparer on Claude Code. The comparer is built for Claude Code only,
+like Edie.
 -->
 
 ## role-line
