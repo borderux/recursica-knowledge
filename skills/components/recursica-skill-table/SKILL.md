@@ -18,7 +18,7 @@ A table shows many records of one type. The reader compares the values in one co
 - **The number of items is high, has no fixed end, or is growing.** A table is the default for repeating records, with no exception.
 - **The content is only data**: text, numbers, dates, currency, or status.
 - **The reader compares values across records.** A table column lets the reader compare values. Cards do not.
-- **Sorting, filtering, or selecting table rows is part of the user's task.**
+- **Sorting, filtering, or selecting table rows is part of the persona's task.**
 
 ## When not to use a table
 
@@ -53,9 +53,9 @@ The rules below describe each part and option by role, such as "the header row".
 
 **Show `NA` for a null value, never an empty cell and never `0`.** An empty cell looks like a forgotten value, and a zero looks like a real value. `recursica-skill-tables` owns this rule and sets the text, the italics, and the neutral-500 color. `recursica-skill-system-conventions` extends the rule to every region that holds content, such as a page, panel, or modal. This skill repeats the rule only because the rule affects accessibility. Read `recursica-skill-tables` for the rule itself. Where `recursica-skill-tables` differs from this paragraph, follow `recursica-skill-tables`.
 
-**Every table has a default sort, and the sorted column always shows the sort indicator**, even when the user cannot change the sort. The header row has the sorted text style and the sort icon. Make sure one column shows both. When the reader cannot see the order of the table rows, the reader has to guess the order. `recursica-skill-tables` owns this rule.
+**Every table has a default sort, and the sorted column always shows the sort indicator**, even when the persona cannot change the sort. The header row has the sorted text style and the sort icon. Make sure one column shows both. When the reader cannot see the order of the table rows, the reader has to guess the order. `recursica-skill-tables` owns this rule.
 
-**Clicking a column header reverses the sort direction.** The user sorts by more than one column with a long-press. The long-press is an unadvertised affordance (a control that works but is not shown in the main interface, such as a keyboard shortcut). Sorting by more than one column also needs a keyboard equivalent, described under "Keyboard and non-mouse navigation".
+**Clicking a column header reverses the sort direction.** The persona sorts by more than one column with a long-press. The long-press is an unadvertised affordance (a control that works but is not shown in the main interface, such as a keyboard shortcut). Sorting by more than one column also needs a keyboard equivalent, described under "Keyboard and non-mouse navigation".
 
 **Currency is right-aligned, shows two decimal places on every value, and shows the currency symbol in the column header** instead of in every cell. `recursica-skill-dates-and-currency` owns this currency format, including the fixed precision of two decimals. `recursica-skill-tables` owns column alignment by data type. Read those two skills rather than this summary. Where those two skills differ from this summary, follow those two skills. This skill adds only the token for the currency format: the `currency-style` token on body cells and the footer row.
 
@@ -83,29 +83,29 @@ The rules below describe each part and option by role, such as "the header row".
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
-**A data table can be used without sight only when the table is built as a real table.** In a grid of `div` elements, a screen reader user has no way to know which column a value belongs to. A table's meaning is the link between each value and the value's column.
+**A data table can be used without sight only when the table is built as a real table.** In a grid of `div` elements, a persona using a screen reader has no way to know which column a value belongs to. A table's meaning is the link between each value and the value's column.
 
 ### Screen readers
 
 - **The table must be a real table, with real header cells**, each header cell connected to the header cell's column. A cell's meaning is the cell's column header. Without the connection between a header cell and the header cell's column, a value is a number with no name.
 - **The table needs an accessible name** (the name a screen reader reads out for a control) that says what the table's records are. A page with three tables and no table names cannot be navigated.
-- **The sort state must be announced on the column header**: which column is sorted, in which direction, and that the column header is the control that changes the sort. The sorted text style shows the sort state only to a user who can see the table.
+- **The sort state must be announced on the column header**: which column is sorted, in which direction, and that the column header is the control that changes the sort. The sorted text style shows the sort state only to a persona who can see the table.
 - **Each table row's selection checkbox needs a name that identifies the checkbox's table row**, such as "Select invoice 1043", not five identical "Select" controls. The select-all checkbox in the header row needs a separate name. The select-all checkbox's indeterminate state (the partly selected state, shown as a dash, when some but not all items are selected) must be available to assistive technology.
 - **`NA` must be real text in the cell.** The `NA` rule has an accessibility reason as well as a visual reason. A screen reader announces an empty cell as nothing.
 - **Every repeated row action must name the object the action acts on**, or the table row must give the object as context in code.
 - **A fixed header must still be the table's header row**, not a separate visual element placed above a table with no header row.
 - **Never let a cell's meaning depend on color or an icon alone.** A status cell needs text.
-- **Announce the result of a sort, a filter, or a page change**: how many table rows there are now, or that the order changed. When the table updates with no announcement, the user believes nothing happened.
+- **Announce the result of a sort, a filter, or a page change**: how many table rows there are now, or that the order changed. When the table updates with no announcement, the persona believes nothing happened.
 
 ### Keyboard and non-mouse navigation
 
 - **Every control in the table can be reached in visual order**: the header sort controls, row checkboxes, links, and row actions.
 - **Sorting by more than one column with a long-press must have a keyboard equivalent.** `recursica-skill-system-conventions` requires a second way to do every drag or long-press. A keyboard cannot press and hold. Sorting by more than one column needs an explicit control or a modifier key.
-- **A column-visibility gear must be a real control that a keyboard can reach.** A column-visibility gear is a gear icon that lets the user show or hide columns. The gear is an unadvertised affordance, and an unadvertised affordance must still be accessible. Reordering columns must work without dragging.
+- **A column-visibility gear must be a real control that a keyboard can reach.** A column-visibility gear is a gear icon that lets the persona show or hide columns. The gear is an unadvertised affordance, and an unadvertised affordance must still be accessible. Reordering columns must work without dragging.
 - **A clickable table row must be a single, real control** with an accessible name, not a click handler on a `tr` element. If a single control for the whole table row is awkward, make a link in one cell the click target instead. A link in one cell is usually the better choice.
-- **A keyboard user must be able to start and leave inline editing.** Escape abandons the edit, and focus returns to the cell.
+- **A persona using a keyboard must be able to start and leave inline editing.** Escape abandons the edit, and focus returns to the cell.
 - **Reveal nothing on hover.** Row actions that appear on hover cannot be reached by keyboard or by touch.
-- **Give the table no horizontal scrolling area.** `recursica-skill-tables` has a house rule against horizontal scrolling. Horizontal scrolling also makes a table close to unusable for a keyboard user. A keyboard user has no way to bring an off-screen column into view except by tabbing blindly.
+- **Give the table no horizontal scrolling area.** `recursica-skill-tables` has a house rule against horizontal scrolling. Horizontal scrolling also makes a table close to unusable for a persona using a keyboard. A persona using a keyboard has no way to bring an off-screen column into view except by tabbing blindly.
 - **Focus must be visible on every control in the table**, and never hidden on a focused table row or cell.
 
 ## Styling set by tokens
