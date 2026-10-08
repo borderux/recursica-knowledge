@@ -15,38 +15,38 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 ## The three governing principles
 
-1. **Mode is the only real difference between a panel and a modal.** A modal covers the page and stops the user from using any other part of the application. The user is in a mode, which is what the word "modal" means. A panel is never modal. With a panel open, the user can still move around and work in the application. Every other rule in the skill follows from the difference in mode.
+1. **Mode is the only real difference between a panel and a modal.** A modal covers the page and stops the persona from using any other part of the application. The persona is in a mode, which is what the word "modal" means. A panel is never modal. With a panel open, the persona can still move around and work in the application. Every other rule in the skill follows from the difference in mode.
 2. **Choose by how much the task depends on the page, not by how hard the task is.** Ask whether the task needs the page beside the task. Size and complexity come second. Cognitive load is not the test at all.
-3. **Never stack a mode on a mode, and never nest a panel inside a panel or a modal inside a modal.** Two modals must never be open at once. Once the user is in a mode, a second mode leaves the user with no idea where the user is or what closing will do. A panel is not a mode. A panel may therefore open over another panel, but a panel must never contain another panel.
+3. **Never stack a mode on a mode, and never nest a panel inside a panel or a modal inside a modal.** Two modals must never be open at once. Once the persona is in a mode, a second mode leaves the persona with no idea where the persona is or what closing will do. A panel is not a mode. A panel may therefore open over another panel, but a panel must never contain another panel.
 
 ## Page, panel, or modal
 
 Ask the questions in the table in order:
 
-| Question                                                                                             | If yes                                                                                                       |
-| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Must the user interact with the task, or make a decision in the task, before doing any other action? | A **modal**                                                                                                  |
-| Does the task add to or edit a collection on the page, such as a table or a list?                    | A **modal** or a **panel**, never inline on the page. See "Forms that change a collection on the page" below |
-| Does the task need information from the page, or does the page need the task done beside the page?   | A **panel**                                                                                                  |
-| Can the user do all of the task without the page's context?                                          | A **page**. A page is simpler and has room                                                                   |
-| Does the content cause scrolling inside the panel?                                                   | A **page**, even if the task needs the page's context. See "Scrolling" below                                 |
-| Is the viewport at a smaller breakpoint?                                                             | A **page**. Panels become pages at smaller breakpoints                                                       |
+| Question                                                                                                | If yes                                                                                                       |
+| ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Must the persona interact with the task, or make a decision in the task, before doing any other action? | A **modal**                                                                                                  |
+| Does the task add to or edit a collection on the page, such as a table or a list?                       | A **modal** or a **panel**, never inline on the page. See "Forms that change a collection on the page" below |
+| Does the task need information from the page, or does the page need the task done beside the page?      | A **panel**                                                                                                  |
+| Can the persona do all of the task without the page's context?                                          | A **page**. A page is simpler and has room                                                                   |
+| Does the content cause scrolling inside the panel?                                                      | A **page**, even if the task needs the page's context. See "Scrolling" below                                 |
+| Is the viewport at a smaller breakpoint?                                                                | A **page**. Panels become pages at smaller breakpoints                                                       |
 
 ## The context test
 
-**A panel is for work done beside the work on the page.** The context test asks whether the work in the panel and the work on the page depend on each other. The two depend on each other when the user needs information on the page to work in the panel, or when the page needs the work done in the panel. Working in a panel helps the user keep track of the work on the page.
+**A panel is for work done beside the work on the page.** The context test asks whether the work in the panel and the work on the page depend on each other. The two depend on each other when the persona needs information on the page to work in the panel, or when the page needs the work done in the panel. Working in a panel helps the persona keep track of the work on the page.
 
-**When a task does not need the page's context, a separate page is simpler.** If the user can do all the work without information from the page behind the panel, putting the work in a narrow panel gains nothing.
+**When a task does not need the page's context, a separate page is simpler.** If the persona can do all the work without information from the page behind the panel, putting the work in a narrow panel gains nothing.
 
-**Use a modal only when the user needs to interact or decide inside the modal.** While a modal is open, the user cannot see or use any other part of the page.
+**Use a modal only when the persona needs to interact or decide inside the modal.** While a modal is open, the persona cannot see or use any other part of the page.
 
 ### Forms that change a collection on the page
 
 **A form that adds to or edits a collection on the page, such as a table or a list, goes in a modal or a panel.** Never put the form inline on the page beside the collection. Creating a row in a table and editing a record in a list both go in a modal or a panel.
 
-**The form goes in a modal or a panel because of what happens when the form saves, not because of the form's size.** The collection has to change visibly when the save succeeds. Closing the modal or panel tells the user the work is done, and the user looks up and sees the added or edited row in the list. An inline form leaves the user looking at a form and a list at the same time. Nothing shows whether the form saved or whether the list changed. The only answer to "did that save?" is to read the list again.
+**The form goes in a modal or a panel because of what happens when the form saves, not because of the form's size.** The collection has to change visibly when the save succeeds. Closing the modal or panel tells the persona the work is done, and the persona looks up and sees the added or edited row in the list. An inline form leaves the persona looking at a form and a list at the same time. Nothing shows whether the form saved or whether the list changed. The only answer to "did that save?" is to read the list again.
 
-**Choose between a modal and a panel with the context test above.** A form that creates a record usually needs nothing from the page. By the context test alone, a create form would go on a page. But a create form is small and used now and then, and the user wants to get back to exactly the same place on the page. Modals and panels exist for that kind of task. When the user needs to read the list on the page while the form is open, the form and the page depend on each other, and the form goes in a panel. Picking rows in a table or a list to combine is one example. Comparing a new record with the existing records is another.
+**Choose between a modal and a panel with the context test above.** A form that creates a record usually needs nothing from the page. By the context test alone, a create form would go on a page. But a create form is small and used now and then, and the persona wants to get back to exactly the same place on the page. Modals and panels exist for that kind of task. When the persona needs to read the list on the page while the form is open, the form and the page depend on each other, and the form goes in a panel. Picking rows in a table or a list to combine is one example. Comparing a new record with the existing records is another.
 
 **The control that opens the form sits in the table header, on the right.** `recursica-skill-tables` sets the rule for that control, not the panels-and-modals skill. `recursica-skill-screen-priority` explains why a form used now and then gets no permanent space on the page.
 
@@ -54,9 +54,9 @@ Ask the questions in the table in order:
 
 **A panel is never modal.** While a panel is open, every other part of the page stays readable and reachable.
 
-**NEVER draw a shader, scrim, tint, or overlay behind an open panel.** Hiding the page content does not help the user. A panel exists so the user can see and work with the page behind the panel. Dimming the page removes the only reason for the panel. The ban on shading behind a panel is not negotiable, and the ban is a core Recursica rule.
+**NEVER draw a shader, scrim, tint, or overlay behind an open panel.** Hiding the page content does not help the persona. A panel exists so the persona can see and work with the page behind the panel. Dimming the page removes the only reason for the panel. The ban on shading behind a panel is not negotiable, and the ban is a core Recursica rule.
 
-**A panel that has to shade the page is the wrong choice.** If the page behind the panel must be blocked, build a page or a real modal instead. A panel is for a small task: the user opens the panel, works in the panel, and goes straight back to the page. A small task like that does not need the page blocked.
+**A panel that has to shade the page is the wrong choice.** If the page behind the panel must be blocked, build a page or a real modal instead. A panel is for a small task: the persona opens the panel, works in the panel, and goes straight back to the page. A small task like that does not need the page blocked.
 
 **A code library may show an overlay behind a drawer by default, and the ban on shading overrides that default.** A code library's default is not a house rule. See `recursica-skill-design-router`, and the note in `recursica-skill-panel` on the defaults a code library sets.
 
@@ -70,11 +70,11 @@ Ask the questions in the table in order:
 
 **A panel MUST NEVER scroll horizontally.** The rule has no exception, for any content. A horizontal scrollbar inside a panel means the content does not belong in a panel. The scrollbar does not mean the content needs a scrolling area.
 
-**Scrolling up and down in a panel is the sign that the work belongs on a page.** Content that makes the user scroll down shows that the panel holds too much. When the panel's content is more than the panel holds on a normal-resolution screen, move the content to a page.
+**Scrolling up and down in a panel is the sign that the work belongs on a page.** Content that makes the persona scroll down shows that the panel holds too much. When the panel's content is more than the panel holds on a normal-resolution screen, move the content to a page.
 
 **Cognitive load is not the test.** A hard task can properly go in a panel. A task with a high mental load may _need_ the information on the page beside the panel. The need for the page's information matters more than how hard the task is. Do not move a task to a page because the task is hard. Move a task to a page because the task does not fit in the panel.
 
-**When a task moves to a page, repeat the context on the new page.** Show on the new page the information the user needed from the previous page. Repeating the context is better than forcing the work into a panel that is too small for the work.
+**When a task moves to a page, repeat the context on the new page.** Show on the new page the information the persona needed from the previous page. Repeating the context is better than forcing the work into a panel that is too small for the work.
 
 ## Panel position and side
 
@@ -86,13 +86,13 @@ Ask the questions in the table in order:
 
 **NEVER open panels on both sides at the same time.** Use only one side at a time.
 
-**Panels stacked on top of each other must all use the same side.** A second panel that opens from the opposite edge breaks the picture of the screen layout that the user has built up.
+**Panels stacked on top of each other must all use the same side.** A second panel that opens from the opposite edge breaks the picture of the screen layout that the persona has built up.
 
 **Stacked panels may be different widths.** The second panel does not have to match the width of the first panel.
 
 ## Stacked modals and panels
 
-**NEVER open a modal from another modal.** A user in a mode does not enter a second mode inside the first mode.
+**NEVER open a modal from another modal.** A persona in a mode does not enter a second mode inside the first mode.
 
 **A modal must never sit on top of another modal, each with a scrim over the page content.** Two scrims dimming the page are the most reliable sign that nobody designed the flow.
 
@@ -106,7 +106,7 @@ Ask the questions in the table in order:
 
 **The number of stacked panels has no hard limit, but more than two stacked panels need the user's approval.** Build up to two stacked panels without asking. A third stacked panel is not forbidden, and a third panel is not a judgment call either. Stop and ask before building a third stacked panel or more. See `recursica-skill-design-router`.
 
-**A panel may open a modal.** A panel is not a mode. A modal opened over a panel therefore does not stack one mode on another mode. A confirmation for unsaved changes is a modal opened from a panel. The confirmation appears when the user closes a panel that holds unsaved data.
+**A panel may open a modal.** A panel is not a mode. A modal opened over a panel therefore does not stack one mode on another mode. A confirmation for unsaved changes is a modal opened from a panel. The confirmation appears when the persona closes a panel that holds unsaved data.
 
 ## Forms in a panel
 
@@ -122,7 +122,7 @@ Ask the questions in the table in order:
 
 **Show repeated content inside a panel as groups of stacked fields.** Use one group for each repeated item. Put each field on a separate line, under the field's label. A narrow panel has room for one field per line.
 
-**Put secondary information in a second tab, not further down the same panel.** A panel may hold both the content the user came for and supporting material, such as a history, an audit log or related records. Placing the supporting material after the main content makes the panel long and buries the main content. Tabs inside the panel separate the main content from the supporting material. The tab with the main content is open when the panel opens.
+**Put secondary information in a second tab, not further down the same panel.** A panel may hold both the content the persona came for and supporting material, such as a history, an audit log or related records. Placing the supporting material after the main content makes the panel long and buries the main content. Tabs inside the panel separate the main content from the supporting material. The tab with the main content is open when the panel opens.
 
 **Where a panel shows a history, never show an entry in a pending, upcoming, or toned-down style.** A history is not a future state. Every entry in a history has already happened. A dimmed entry looks scheduled rather than done. See `recursica-skill-timeline`.
 
@@ -130,13 +130,13 @@ Ask the questions in the table in order:
 
 **A panel and a modal close the same way.** Each closes with a close control in the header, and with an action button in the footer.
 
-**Before a panel with unsaved changes closes, the application should ask the user.** Closing the panel is no different from leaving a page with unsaved data. Asking the user is a proper use of a confirmation modal.
+**Before a panel with unsaved changes closes, the application should ask the persona.** Closing the panel is no different from leaving a page with unsaved data. Asking the persona is a proper use of a confirmation modal.
 
-**Do not ask every time a panel closes.** A modal that appears every time the user closes a panel interrupts the user. The confirmation modal fits when the user entered data into a form and never saved the data. In that case, the confirmation makes sense, because the user is throwing away the changes.
+**Do not ask every time a panel closes.** A modal that appears every time the persona closes a panel interrupts the persona. The confirmation modal fits when the persona entered data into a form and never saved the data. In that case, the confirmation makes sense, because the persona is throwing away the changes.
 
 ## Links to a panel or modal
 
-**A panel may have a separate URL that a user can link to, on purpose, the same as a modal.** Sometimes a user needs to send another person a URL that opens a particular view with the panel or modal already open.
+**A panel may have a separate URL that a persona can link to, on purpose, the same as a modal.** Sometimes a persona needs to send another person a URL that opens a particular view with the panel or modal already open.
 
 **A link to a panel or modal is a deliberate decision, not a default.** A panel or modal built for linking gets a route and a link that opens the panel or modal, together. `recursica-skill-navigation` sets this rule, and the navigation skill makes the same exception for modals.
 
@@ -154,20 +154,20 @@ Ask the questions in the table in order:
 
 A panel exists to sit beside the page the panel depends on. Below the width where a panel and the page fit side by side, the panel cannot sit beside the page. Below that width, the panel has no purpose.
 
-**Below the tablet breakpoint, a modal where the user does work also becomes a page, and a confirmation modal does not.** The test is whether the user does work in the modal:
+**Below the tablet breakpoint, a modal where the persona does work also becomes a page, and a confirmation modal does not.** The test is whether the persona does work in the modal:
 
 - **A small workflow, a form, or editing details in a modal becomes a page** below the tablet breakpoint.
 - **A confirmation modal stays a modal** at every width. "Are you sure you want to delete this?" is not work.
 
-**MUST NOT replace a page, panel or modal with a pattern native to one platform.** The iOS sheet (a panel that slides up from the bottom on iPhones) is the most likely substitute, and the iOS sheet is forbidden. Android does not use the iOS sheet, and a user who does not use iOS finds the sheet confusing rather than familiar. Keep the interaction patterns the desktop application already uses. See `recursica-skill-responsive-behavior`.
+**MUST NOT replace a page, panel or modal with a pattern native to one platform.** The iOS sheet (a panel that slides up from the bottom on iPhones) is the most likely substitute, and the iOS sheet is forbidden. Android does not use the iOS sheet, and a persona who does not use iOS finds the sheet confusing rather than familiar. Keep the interaction patterns the desktop application already uses. See `recursica-skill-responsive-behavior`.
 
 ## Focus and navigation priority
 
-**A modal or a panel comes first in navigation, ahead of the page beneath the modal or panel.** A user must reach the modal or panel without moving through the whole page first.
+**A modal or a panel comes first in navigation, ahead of the page beneath the modal or panel.** A persona must reach the modal or panel without moving through the whole page first.
 
 **A modal traps focus.** The modal stops the Tab key from moving through the page. While the modal is open, keyboard focus always stays inside the modal.
 
-**A panel does not trap focus.** The user must be able to reach other elements on the page with the Tab key, because a panel is not a modal state. A panel is non-modal (the page behind stays usable). A panel that traps focus contradicts the reason a panel exists.
+**A panel does not trap focus.** The persona must be able to reach other elements on the page with the Tab key, because a panel is not a modal state. A panel is non-modal (the page behind stays usable). A panel that traps focus contradicts the reason a panel exists.
 
 ## Set by the theme or the component
 
@@ -193,7 +193,7 @@ A panel exists to sit beside the page the panel depends on. Below the width wher
 ## Pre-flight checklist
 
 - [ ] The choice of page, panel, or modal for each task follows from mode and context, not from how hard or how big the task is.
-- [ ] Every modal exists because the user must interact or decide in the modal before continuing.
+- [ ] Every modal exists because the persona must interact or decide in the modal before continuing.
 - [ ] The work in every panel depends on the page beside the panel, or the page depends on the panel's work.
 - [ ] No form that adds to or edits a collection on the page sits inline beside the collection. Each such form opens in a modal or panel, so that closing the modal or panel confirms the list changed.
 - [ ] No panel scrolls horizontally, under any circumstances.
@@ -211,11 +211,11 @@ A panel exists to sit beside the page the panel depends on. Below the width wher
 - [ ] No panel holds a table. Repeated content in a panel is shown as groups of stacked fields.
 - [ ] Secondary material sits in a second tab, not below the main content.
 - [ ] Nothing that has already happened is shown in a pending or toned-down style.
-- [ ] Closing a panel with unsaved form data asks before throwing the data away. Closing a panel the user has not touched does not ask.
+- [ ] Closing a panel with unsaved form data asks before throwing the data away. Closing a panel the persona has not touched does not ask.
 - [ ] Every panel or modal that a URL can link to was built for linking by deliberate decision, with a route and a link that opens the panel or modal.
 - [ ] Panels close on a route change, except where the navigation exists only to open another panel or modal.
 - [ ] Below the tablet breakpoint, every panel opens as a page, not as a narrower panel or a full-screen overlay styled as a panel.
-- [ ] Modals where the user does work become pages below the tablet breakpoint, and confirmation modals stay modals.
+- [ ] Modals where the persona does work become pages below the tablet breakpoint, and confirmation modals stay modals.
 - [ ] No pattern native to iOS or Android, such as a sheet, takes the place of a panel or modal below desktop size.
 - [ ] No shader, scrim, or tint is drawn behind any open panel, and the code library's default overlay is overridden.
 - [ ] Every drawer is treated as a panel, and no permanent sidebar is called a drawer.
