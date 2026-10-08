@@ -11,34 +11,34 @@ metadata:
 
 This skill holds the house rules for dashboards. The house rules are opinions, and unusually strong opinions. The team holds that most dashboards in enterprise software are failures. Treat each house rule as a constraint.
 
-The house rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. This skill covers three decisions: whether a dashboard is the right answer at all, what goes on the dashboard, and what the user does next.
+The house rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. This skill covers three decisions: whether a dashboard is the right answer at all, what goes on the dashboard, and what the persona does next.
 
 ## Governing principles
 
-1. **A dashboard is for reading at a glance, not for doing work.** A dashboard is always laid out the same way. A dashboard shows the user what needs attention right now, then sends the user away from the dashboard to act.
+1. **A dashboard is for reading at a glance, not for doing work.** A dashboard is always laid out the same way. A dashboard shows the persona what needs attention right now, then sends the persona away from the dashboard to act.
 2. **Choose stability over novelty.** The data changes constantly, and the layout must not change. Every visit puts the same content in the same places. A quick look at a dashboard works only when the reader already knows where to look.
-3. **Decide what matters, or do not build a dashboard.** A dashboard is the team's statement of what matters. Showing data and leaving the user to work out what the data means is the lazy answer. The lazy answer has made most modern dashboards worthless.
+3. **Decide what matters, or do not build a dashboard.** A dashboard is the team's statement of what matters. Showing data and leaving the persona to work out what the data means is the lazy answer. The lazy answer has made most modern dashboards worthless.
 
 ## The workbench test
 
 **Apply the workbench test first.** Most requests for a dashboard are requests for a different kind of screen.
 
-| What the user needs                                     | What to build                                         |
+| What the persona needs                                  | What to build                                         |
 | ------------------------------------------------------- | ----------------------------------------------------- |
 | A glance at what needs attention, then a way out to act | **Dashboard**                                         |
-| Tools and data in one place, to do the user's work      | **Workbench**. Do not call the workbench a dashboard. |
+| Tools and data in one place, to do the persona's work   | **Workbench**. Do not call the workbench a dashboard. |
 
-**A screen where the user does work is a workbench.** Name the workbench for the job the workbench does, such as "Scorecard" or "Queue". High-level charts may sit above a work area. A work area with charts above the work area is still not a dashboard.
+**A screen where the persona does work is a workbench.** Name the workbench for the job the workbench does, such as "Scorecard" or "Queue". High-level charts may sit above a work area. A work area with charts above the work area is still not a dashboard.
 
 **Build a dashboard only for a large application.** If the product is small enough to open straight on the tools, open the product on the tools instead of on a dashboard. In an application with ten sections, the dashboard's job is to point to the one section that needs attention.
 
 **If the team cannot say what matters, do not build a dashboard.** Do not fall back on a table or a configurable canvas because nobody has an opinion. A fallback table or canvas combines the same three failures as an empty dashboard: not knowing what matters, making the screen configurable to avoid deciding, and having no default content. The fallback presents the three failures as a feature. Do not clutter a screen to hide that nobody knows what matters.
 
-**A dashboard must not exist to make up for a badly organized application.** If the reason for a dashboard is to let users finally find content in the application, the real problem is the navigation and the information architecture (how the application's content is organized and labeled).
+**A dashboard must not exist to make up for a badly organized application.** If the reason for a dashboard is to let personas finally find content in the application, the real problem is the navigation and the information architecture (how the application's content is organized and labeled).
 
 ## Dashboard content
 
-**Aim for one item that needs attention, plus maybe two or three supporting items, each an item the user can act on.** For example, show "Inventory is running low — reorder these products," with a way to go and reorder the products. An inventory chart that the reader must interpret does not meet this aim.
+**Aim for one item that needs attention, plus maybe two or three supporting items, each an item the persona can act on.** For example, show "Inventory is running low — reorder these products," with a way to go and reorder the products. An inventory chart that the reader must interpret does not meet this aim.
 
 **A dashboard MUST answer "what needs attention right now, and is everything okay."**
 
@@ -48,11 +48,11 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 **NEVER add an AI summary of the dashboard.** A widget that summarizes the dashboard shows that the dashboard failed to communicate. Fix the dashboard.
 
-**Do not rebuild the navigation out of cards.** If the application has navigation, let the navigation take the user to each section.
+**Do not rebuild the navigation out of cards.** If the application has navigation, let the navigation take the persona to each section.
 
 ## Amount of content
 
-**Never use inner scrolling (a region that scrolls separately from the page) on any screen in the application, not only on dashboards.** The application has one scrollbar, plus sticky regions that stay in place. No region requires the user to hover over the region before the region scrolls. See `recursica-skill-screen-priority`.
+**Never use inner scrolling (a region that scrolls separately from the page) on any screen in the application, not only on dashboards.** The application has one scrollbar, plus sticky regions that stay in place. No region requires the persona to hover over the region before the region scrolls. See `recursica-skill-screen-priority`.
 
 **Numbers shown together must agree with each other.** Two counts side by side invite the reader to compare the two counts. A number that is a subset of another number must clearly look like a subset. For example, a dashboard reports three pending and eighteen overdue, where overdue is a subset of pending. The pair of counts reports an impossible result, not a labeling problem. The reader then stops trusting every number on the screen. Check the math between the numbers before shipping. `recursica-skill-naming-terminology` owns naming. `recursica-skill-screen-scaffolding` owns the layout of a group of numbers.
 
@@ -76,19 +76,19 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 **All content below the fold (the part of the page visible only after scrolling) is optional.** The reader must never have to scroll to learn what is going on.
 
-**A data table probably does not belong on a dashboard.** A data table is a drill-down (a click through to more detail). Where a data table cannot be avoided, show rollups: counts, percentages and totals that the user can act on themselves, with a way to click through to the detail. A screen that shows a full table is no longer a dashboard.
+**A data table probably does not belong on a dashboard.** A data table is a drill-down (a click through to more detail). Where a data table cannot be avoided, show rollups: counts, percentages and totals that the persona can act on themselves, with a way to click through to the detail. A screen that shows a full table is no longer a dashboard.
 
 ## Interaction
 
-**Give the whole dashboard one call to action, or at most two.** A call to action (CTA) is a button or link that prompts the user's next step. Every other element on the dashboard exists to support the calls to action.
+**Give the whole dashboard one call to action, or at most two.** A call to action (CTA) is a button or link that prompts the persona's next step. Every other element on the dashboard exists to support the calls to action.
 
-**Aim for zero or one element per card that the user can interact with.**
+**Aim for zero or one element per card that the persona can interact with.**
 
 **The interaction pattern is look, then click.** When action buttons start to appear, the dashboard is doing too much.
 
 **NEVER put filtering, sorting, or view controls on a dashboard.** Doing work on the dashboard is the most common way dashboards fail. A visit to the dashboard is brief: a quick check, then out into the application.
 
-**Keep the number of elements the user can interact with to a minimum**, so the next step is obvious.
+**Keep the number of elements the persona can interact with to a minimum**, so the next step is obvious.
 
 **A dashboard must load fast.** A dashboard that takes longer to load than going straight to the work defeats the purpose of the dashboard.
 
@@ -96,24 +96,24 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 **A dashboard MUST be stable across visits.** The same objects sit in the same places on every visit. A reader can read a snapshot quickly only when the reader already knows the layout.
 
-**NEVER let a dashboard rearrange the dashboard's content between visits.** Content chosen on the fly, such as widgets picked by AI or arrangements that change, must not be the main dashboard. Content chosen on the fly is acceptable in two forms: a separate changing view that the user chooses to open, or one specific widget that changes. The whole screen must not shift.
+**NEVER let a dashboard rearrange the dashboard's content between visits.** Content chosen on the fly, such as widgets picked by AI or arrangements that change, must not be the main dashboard. Content chosen on the fly is acceptable in two forms: a separate changing view that the persona chooses to open, or one specific widget that changes. The whole screen must not shift.
 
-**By default, a dashboard is not configurable.** Configurability is usually a technical answer to not having researched what the user needs. A configurable dashboard is also harder to support. Data problems are much harder to track down in a customized dashboard than in a shared dashboard.
+**By default, a dashboard is not configurable.** Configurability is usually a technical answer to not having researched what the persona needs. A configurable dashboard is also harder to support. Data problems are much harder to track down in a customized dashboard than in a shared dashboard.
 
-**Prefer a fixed dashboard for each persona over a dashboard each user configures.** Showing each persona a different fixed dashboard at login is correct.
+**Prefer a fixed dashboard for each persona over a dashboard that each persona configures individually.** Showing each persona a different fixed dashboard at login is correct.
 
 **Where customization is required anyway, follow two rules:**
 
-- **Keep the user's arrangement across sessions.** The user sets the arrangement once, and the system does not rearrange the arrangement.
+- **Keep each persona's individual arrangement across sessions.** The persona sets the arrangement once, and the system does not rearrange the arrangement.
 - **Do not advertise customization.** Offer a settings or configuration entry point without drawing attention to the entry point. Let people find the entry point, or learn about the entry point from colleagues. An unadvertised entry point follows the unadvertised affordance convention in `recursica-skill-system-conventions`. See `recursica-skill-discoverability` for why the convention works.
 
 ## Empty and first-run states
 
-**NEVER ship an empty dashboard.** A new user does not know what the product can do. A new user has no basis for building a personal view. An empty dashboard is the result of three failures: not knowing what matters, making the dashboard configurable to avoid deciding, and having no default content to fill the dashboard.
+**NEVER ship an empty dashboard.** A persona new to the product does not know what the product can do. A persona new to the product has no basis for building a personal view. An empty dashboard is the result of three failures: not knowing what matters, making the dashboard configurable to avoid deciding, and having no default content to fill the dashboard.
 
 **If no content is worth putting on a dashboard, the application should have no dashboard.**
 
-**A first-run dashboard should include an onboarding element.** The onboarding element walks the user through the user's first tasks and explains what the product does. The onboarding element must be dismissible, so the user decides whether the guidance continues.
+**A first-run dashboard should include an onboarding element.** The onboarding element walks the persona through the persona's first tasks and explains what the product does. The onboarding element must be dismissible, so the persona decides whether the guidance continues.
 
 ## Data freshness
 
@@ -139,7 +139,7 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 ## Open questions
 
-No house rule covers the following questions yet. **Ask the person instead of choosing.** See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit an open question.
+No house rule covers the following questions yet. **Ask the user instead of choosing.** See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit an open question.
 
 - **The main position when nothing needs attention.** Announcing good news is forbidden, and no rule says what fills the main position instead.
 - **Calls to action for several personas.** No rule says whether the limit of one or two calls to action still holds when several personas share one screen.
@@ -157,7 +157,7 @@ No house rule covers the following questions yet. **Ask the person instead of ch
 
 Check every item before treating a dashboard as done.
 
-- [ ] The screen passes the workbench test. A screen where the user does work is not called a dashboard.
+- [ ] The screen passes the workbench test. A screen where the persona does work is not called a dashboard.
 - [ ] The application is large enough to justify having a dashboard at all.
 - [ ] The team can say what matters on the dashboard. No element on the dashboard is there to cover for not knowing what matters.
 - [ ] The dashboard answers "what needs attention right now", and does not announce that nothing needs attention.
@@ -167,11 +167,11 @@ Check every item before treating a dashboard as done.
 - [ ] The layout is fixed and has a real hierarchy. The layout is not a grid made only of equally weighted cards.
 - [ ] Content runs from broad to detailed, and no essential content sits below the fold.
 - [ ] The dashboard has no full data table. Rollups with a way to click through to the detail replace the full table.
-- [ ] The dashboard has one or two calls to action in total, and each card has zero or one element the user can interact with.
+- [ ] The dashboard has one or two calls to action in total, and each card has zero or one element the persona can interact with.
 - [ ] The dashboard has no filtering, sorting, or view controls, and the navigation is not rebuilt out of cards.
 - [ ] The dashboard has no AI summary widget.
 - [ ] Every object sits in the same place on every visit. No content on the dashboard rearranges itself.
-- [ ] The dashboard is not configurable by default. Where the dashboard is configurable, the entry point is not advertised, and the user's arrangement is kept.
+- [ ] The dashboard is not configurable by default. Where the dashboard is configurable, the entry point is not advertised, and each persona's individual arrangement is kept.
 - [ ] The dashboard is not empty on first run, and a dismissible onboarding element is present.
 - [ ] The dashboard says how up to date the data is, for each part of the dashboard where the refresh schedules differ.
 - [ ] No unrelated data, and no data on different scales, is placed side by side.
