@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-information-architecture
-description: House rules for an application's structure — objects and how objects relate, the object map approved before building, which objects get a top-level navigation item, where a child object or an object with several parents lives, sections that are not objects, and room to grow. Use when planning an app's sections or a multi-screen flow, or deciding where any part of an app belongs. Not for navigation patterns — see recursica-skill-navigation.
+description: House rules for an application's structure — objects and how objects relate, the object map approved before building, which objects get a top-level navigation item, where a child object or an object with several parents lives, sections that are not objects, and future additions. Use when planning an app's sections or a multi-screen flow, or deciding where any part of an app belongs. Not for navigation patterns — see recursica-skill-navigation.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -31,7 +31,7 @@ Properties, filtered views and actions are not objects. A property, a filtered v
 
 **Find the objects in the request and the interview.** Look for the nouns the request keeps returning to, and for the domain model from the interview. When the users call an object by a different word than the request uses, the users' word wins. See `recursica-skill-naming-terminology`. When a concept might be an object or might be a property of an object, ask.
 
-**The number of objects on a screen, one or many, decides what the screen is.** A screen that shows many objects of one type is a list. A list is a table by default. See `recursica-skill-tables`. A screen that shows one object is the object's detail view. The context test in `recursica-skill-panels-modals` decides where a detail view opens: on a separate page, or in a panel beside the list.
+**The number of objects on a screen, one or many, decides the kind of screen.** A screen that shows many objects of one type is a list. A list is a table by default. See `recursica-skill-tables`. A screen that shows one object is the object's detail view. The context test in `recursica-skill-panels-modals` decides where a detail view opens: on a separate page, or in a panel beside the list.
 
 ## The object map
 
@@ -39,7 +39,7 @@ Properties, filtered views and actions are not objects. A property, a filtered v
 
 For each object, the object map names:
 
-- **the objects the object relates to**: the object's parent, the object's children, and any object the object belongs to more than one of
+- **the objects the object relates to**: the object's parent, or each parent when the object has several parents, and the object's children
 - **the place the object lives**: a top-level navigation item, or under which parent or parents
 - **the places the user reaches the object's list and the object's detail view**
 
@@ -88,7 +88,7 @@ Name a section that is not an object with a noun, as in `Approvals`, never `Appr
 
 ## Future additions
 
-**Every group in the structure must have an obvious place for content added later.** A structure that fits only today's content is a defect, not an item to revisit later. The revisit does not happen, and new additions get filed wherever the structure has room.
+**Every group in the structure must have an obvious place for content added later.** A structure that fits only today's content is a defect, not an item to revisit later. Nobody comes back to fix the structure. New content then goes into any place in the structure that has room.
 
 **Test the structure for future additions before the object map is agreed.** Ask the product owner what is likely to be added next. Check that the object map says where each addition would go, without moving any part of the structure that is already there.
 
