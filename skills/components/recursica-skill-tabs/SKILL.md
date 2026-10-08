@@ -19,14 +19,14 @@ Tabs split one subject into sections and show one section at a time. A tab is th
 
 ## When not to use tabs
 
-| Instead of tabs                                        | Use                                                                                                                                         |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| The steps must be done in order                        | A stepper — see `recursica-skill-forms`                                                                                                     |
-| A form is too long for one screen                      | A stepper. A tab set that holds a form is an invalid structure                                                                              |
-| The sections are different areas of the app            | Navigation — see `recursica-skill-navigation`                                                                                               |
-| The persona needs to compare content across sections   | One view that shows the compared content together. Tabs show one section at a time, so the persona cannot see the compared content together |
-| The sections are long reference content                | An accordion — see `recursica-skill-accordion`                                                                                              |
-| There are more sections than the tab list has room for | Fewer sections, or a different structure. Never scroll or wrap tabs                                                                         |
+| Instead of tabs                                        | Use                                                                                                                                                        |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The steps must be done in order                        | A stepper — see `recursica-skill-forms`                                                                                                                    |
+| A form is too long for one screen                      | A stepper. A tab set never holds a form                                                                                                                    |
+| The sections are different areas of the app            | Navigation — see `recursica-skill-navigation`                                                                                                              |
+| The persona needs to compare content across sections   | One view that shows the compared content together. Tabs show one section at a time, so the persona cannot see the compared content together                |
+| The sections are long reference content                | An accordion — see `recursica-skill-accordion`                                                                                                             |
+| There are more sections than the tab list has room for | Fewer sections, or a different structure. Confirm a different structure with the user. A vertical tab set needs no confirmation. Never scroll or wrap tabs |
 
 **Never spread a form across tabs.** `recursica-skill-navigation` lists a form split across tabs as a misuse of tabs. A half-filled form behind a tab that is not selected hides both the work left to do and the validation errors. Use a stepper.
 
