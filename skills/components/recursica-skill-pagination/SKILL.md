@@ -9,26 +9,26 @@ metadata:
 
 # Pagination
 
-Pagination moves the user between pages of one list of records. Pagination is a control in a table's footer, not a way to move around the application.
+Pagination moves the persona between pages of one list of records. Pagination is a control in a table's footer, not a way to move around the application.
 
 ## When to use pagination
 
 - **An interior table holds more records than the table's fixed number of table rows.** An interior table is a smaller table set inside a container, beside other elements. `recursica-skill-tables` gives an interior table a fixed five or ten table rows. An interior table with more records than those table rows paginates.
 - **The interior table must not scroll**, in either direction. Every table row is visible without scrolling. Pagination shows the records that do not fit in the visible table rows.
-- **The user needs to come back later to a specific place in an ordered list of records.** Continuous scrolling does not keep the user's place.
+- **The persona needs to come back later to a specific place in an ordered list of records.** Continuous scrolling does not keep the persona's place.
 
 ## When not to use pagination
 
-| Situation                                                             | Use instead                                                                                                                             |
-| --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| A full-size table fills the width and height of the table's container | Infinite scroll. `recursica-skill-tables` prefers infinite scroll, because pagination makes the user click through records page by page |
-| A feed built for continuous browsing                                  | Infinite scroll, chosen once for the whole system                                                                                       |
-| Every record fits on one page                                         | No pagination. Never show pagination controls for a single page                                                                         |
-| One continuous document runs long                                     | A different structure. Never paginate running text                                                                                      |
-| The user needs to know the current location in the app                | `recursica-skill-breadcrumb`                                                                                                            |
-| A process moves through ordered steps                                 | `recursica-skill-stepper`                                                                                                               |
+| Situation                                                             | Use instead                                                                                                                                |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| A full-size table fills the width and height of the table's container | Infinite scroll. `recursica-skill-tables` prefers infinite scroll, because pagination makes the persona click through records page by page |
+| A feed built for continuous browsing                                  | Infinite scroll, chosen once for the whole system                                                                                          |
+| Every record fits on one page                                         | No pagination. Never show pagination controls for a single page                                                                            |
+| One continuous document runs long                                     | A different structure. Never paginate running text                                                                                         |
+| The persona needs to know the current location in the app             | `recursica-skill-breadcrumb`                                                                                                               |
+| A process moves through ordered steps                                 | `recursica-skill-stepper`                                                                                                                  |
 
-**Choose pagination or infinite scroll once for the whole system, not for each screen.** `recursica-skill-system-conventions` requires one behavior for the whole application. Full-size tables scroll, and interior tables paginate, on every screen. When tables mix the two behaviors, the user cannot predict how any table behaves.
+**Choose pagination or infinite scroll once for the whole system, not for each screen.** `recursica-skill-system-conventions` requires one behavior for the whole application. Full-size tables scroll, and interior tables paginate, on every screen. When tables mix the two behaviors, the persona cannot predict how any table behaves.
 
 ## Variants
 
@@ -47,11 +47,11 @@ The rules below describe each option by role. The names in the standard UI kit (
 
 **The table sets the number of table rows on each page, not the pagination.** An interior table shows a fixed number of table rows, usually five or ten. Pagination never decides the number of table rows.
 
-**Never give the user a rows-per-page control, unless the project has a rows-per-page select.** Never build a rows-per-page control from other components.
+**Never give the persona a rows-per-page control, unless the project has a rows-per-page select.** Never build a rows-per-page control from other components.
 
-**Make each page number a link with a real `href`, because a page is a location.** `recursica-skill-buttons-links` requires a link for every element on the screen that moves the user. `recursica-skill-navigation` requires every location to have a URL the user can reach, with an entry in the browser history. If a page of the table has no URL, the page number cannot have a real `href`. Fix the missing URL as a routing defect. Never build the page number as a button instead.
+**Make each page number a link with a real `href`, because a page is a location.** `recursica-skill-buttons-links` requires a link for every element on the screen that moves the persona. `recursica-skill-navigation` requires every location to have a URL the persona can reach, with an entry in the browser history. If a page of the table has no URL, the page number cannot have a real `href`. Fix the missing URL as a routing defect. Never build the page number as a button instead.
 
-**The current page must stay the same after a reload and after the browser's back button.** A user who goes to page 7, opens a record, and comes back must land on page 7.
+**The current page must stay the same after a reload and after the browser's back button.** A persona who goes to page 7, opens a record, and comes back must land on page 7.
 
 **Show only the page numbers and the previous and next controls, unless the project's UI kit lists more controls.** Never build a first-page control, a last-page control, a jump-to-page control, or an ellipsis that shortens the list of page numbers from other components.
 
@@ -61,7 +61,7 @@ No rule yet says whether the house prefers a missing control or a control that c
 
 **Keep the table's default sort when the page changes.** The default sort belongs to the table. `recursica-skill-tables` sets the default sort on the primary content column. Changing pages never re-sorts the table.
 
-**If a paginated table shows totals, the footer labels must say what each total covers**: the current page, or every record in the table. Users confuse a total for the current page with a total for every record. `recursica-skill-tables` prefers infinite scroll for full-size tables for that reason.
+**If a paginated table shows totals, the footer labels must say what each total covers**: the current page, or every record in the table. Personas confuse a total for the current page with a total for every record. `recursica-skill-tables` prefers infinite scroll for full-size tables for that reason.
 
 **Never shrink the pagination controls or make the controls scroll to fit the footer.** When the list of page numbers is too long for the footer, fix the structure instead. See `recursica-skill-system-conventions`.
 
@@ -73,20 +73,20 @@ Pagination is a row of small controls that all look alike. Without names added i
 
 ### Screen readers
 
-- **Make the pagination controls a navigation region with a name**, such as "Pagination", or "Invoice pages" when the page has more than one navigation region. A page with several navigation regions must name each navigation region. Otherwise, a screen reader user cannot tell the navigation regions apart in a landmark list (the list of labeled page regions a screen reader can jump between).
+- **Make the pagination controls a navigation region with a name**, such as "Pagination", or "Invoice pages" when the page has more than one navigation region. A page with several navigation regions must name each navigation region. Otherwise, a persona using a screen reader cannot tell the navigation regions apart in a landmark list (the list of labeled page regions a screen reader can jump between).
 - **The current page must be announced as current.** On screen, color shows which page is current. Color is a single visual channel (color, shape, position or text, each a separate signal), and `recursica-skill-system-conventions` forbids color as the only way to show meaning. Mark the current page as current in code as well.
 - **Give every control a name that says where the control goes**, such as "Page 3", "Next page" or "Previous page". A bare "3" is not a name. A bare chevron has no name at all.
-- **The previous and next controls are icon-only. Each one needs a tooltip and an accessible name** (the name a screen reader reads out for a control). The tooltip is for sighted mouse users. `recursica-skill-buttons-links` requires both.
-- **After a page change, announce that new table rows arrived**, as in "Page 3 of 20, 10 invoices". The change on the screen is out of the user's sight. Without the announcement, nothing tells the user that the control worked.
-- **The announcement must be polite.** The announcement must not play on every click while the user pages quickly.
-- **The user must be able to tell when the previous or next control cannot be used.** When the previous control cannot be used on the first page, the code must say that the previous control cannot be used. A lighter gray alone is not enough.
-- **Mark up the pagination controls as a list**, as `recursica-skill-navigation` requires for all navigation. The list markup lets the user hear how many pages there are.
+- **The previous and next controls are icon-only. Each one needs a tooltip and an accessible name** (the name a screen reader reads out for a control). The tooltip is for sighted personas using a mouse. `recursica-skill-buttons-links` requires both.
+- **After a page change, announce that new table rows arrived**, as in "Page 3 of 20, 10 invoices". The change on the screen is out of the persona's sight. Without the announcement, nothing tells the persona that the control worked.
+- **The announcement must be polite.** The announcement must not play on every click while the persona pages quickly.
+- **The persona must be able to tell when the previous or next control cannot be used.** When the previous control cannot be used on the first page, the code must say that the previous control cannot be used. A lighter gray alone is not enough.
+- **Mark up the pagination controls as a list**, as `recursica-skill-navigation` requires for all navigation. The list markup lets the persona hear how many pages there are.
 - **If the project ever has a truncation indicator, such as an ellipsis between page numbers, the truncation indicator is decorative and hidden from screen readers.** An ellipsis read aloud between page numbers adds nothing.
 
 ### Keyboard and non-mouse navigation
 
 - **Every control is a tab stop (a place the Tab key lands), in the order the controls appear on screen**: the previous control, then the page numbers in order, then the next control.
-- **After a page change, choose where focus goes.** Keep focus on the control the user activated, if that control still exists, such as the page number the user clicked or the next control. The user can then page again right away. Never move focus to the top of the document. Never let focus fall to the page body because the table rows that held focus were replaced.
+- **After a page change, choose where focus goes.** Keep focus on the control the persona activated, if that control still exists, such as the page number the persona clicked or the next control. The persona can then page again right away. Never move focus to the top of the document. Never let focus fall to the page body because the table rows that held focus were replaced.
 - **If focus was in a table row, move focus into the new table rows**, onto the table or the first table row. Never move focus past the whole page.
 - **The previous and next controls are never disabled links on the first page and the last page.** "Rules" above says how to handle the previous and next controls on the first page and the last page.
 - **Never add custom key handling inside the pagination component.** The component library the code uses handles keyboard behavior inside each component. See `recursica-skill-navigation`.
@@ -114,7 +114,7 @@ The theme also sets the focus ring and the area that responds to a click or a ta
 - **Whether the previous and next controls are missing, or present but unusable, on the first page and the last page.** The rule that the previous and next controls are never disabled links is settled, under "Rules". No rule says which of the two other options the house wants. Ask, and apply the answer everywhere.
 - **First-page and last-page controls.** Only the design-system website shows first-page and last-page controls. Do not assume the project has first-page and last-page controls. The same goes for an ellipsis, and for shortening a long list of page numbers. Do not build any of the controls without asking. Ask about each control, and about shortening the list, only when the project has no such control.
 - **Whether a page of a table is a real route with a history entry.** The answer decides whether a page number can be a link with an `href` at all. No rule says whether a table's pages are routes.
-- **Rows per page as the user's choice.** No rule says whether the user may change the number of table rows on each page. Ask only when the project has no rows-per-page select.
+- **Rows per page as the persona's choice.** No rule says whether the persona may change the number of table rows on each page. Ask only when the project has no rows-per-page select.
 - **A results readout**, such as "Showing 1–10 of 200". No rule says whether a results readout is required, or where the readout sits next to the pagination controls. Ask only when the project has no results readout.
 - **Where pagination sits in the footer.** No rule says which side of the footer pagination takes, or how pagination fits beside the totals the footer also shows.
 - **Loading and error states between pages.** `recursica-skill-tables` says no skill owns table loading states yet.
