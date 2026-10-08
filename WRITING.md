@@ -65,16 +65,19 @@ Quoted interface copy keeps the exact interface wording, such as a button label 
 
 **Write the term a designer would say.** Look the term up when unsure.
 
-| Insider word                                  | What a designer says                                  |
-| --------------------------------------------- | ----------------------------------------------------- |
-| axis                                          | variant                                               |
-| the component draws the chevron               | the accordion already shows the chevron               |
-| surface                                       | page, panel, or modal                                 |
-| gray bars where text will be                  | skeleton screen                                       |
-| summary figures                               | KPI tiles                                             |
-| interactive                                   | clickable                                             |
-| design-system names                           | the names in Figma and the UI kit                     |
-| a bad component alias or a bad semantic alias | the wrong color, set in the component or in the theme |
+| Insider word                                  | What a designer says                                                        |
+| --------------------------------------------- | --------------------------------------------------------------------------- |
+| axis                                          | variant                                                                     |
+| the component draws the chevron               | the accordion already shows the chevron                                     |
+| surface                                       | the specific component, such as a page, panel, modal, card, menu or popover |
+| gray bars where text will be                  | skeleton screen                                                             |
+| summary figures                               | KPI tiles                                                                   |
+| design-system names                           | the names in Figma and the UI kit                                           |
+| a bad component alias or a bad semantic alias | the wrong color, set in the component or in the theme                       |
+
+**"The persona" uses the software, and "the user" talks to the agent.** Write "the persona" for any person using the software being designed: "the persona clicks the trigger", "a persona using a screen reader". Write "the user" only for the person interacting with the agent: the person who asks for a design, answers the agent's questions and approves decisions, as in "confirm with the user". The agent talks only to the user, so a rule never says "ask a person", "a person must decide" or "ask the designer". Write "confirm with the user" and "the user decides". Never write "ask the user". Keep fixed terms such as "user interface" and "the paradox of the active user". Write "a role" for a type of persona, such as an admin or a first-time buyer: "a fixed dashboard for each role". A persona is one person, and a role is a group of personas.
+
+**"Clickable" and "interactive" mean different things.** Write "clickable" for an element the user clicks to trigger one action, such as a button, a link or a table row that opens a record. Write "interactive" for any element the user can operate in any way, such as clicking, typing into a field or using the keyboard. Never swap one word for the other, because "interactive" covers more elements than "clickable".
 
 **Say what the reader sees and does, not what the code does.** Write "Clicking goes to a different page", not "the user ends up somewhere else". Write "the name the code uses", not "the adapter's name for the axis".
 
@@ -83,6 +86,8 @@ Quoted interface copy keeps the exact interface wording, such as a button label 
 **Standard HTML and ARIA names are allowed in accessibility rules**, such as `button`, `div`, `span`, `href` and `aria-label`. HTML and ARIA are web standards, not a library, and a reviewer can check a rule that names the element.
 
 **Skills never state a project's variants or options as fixed facts.** A designer can add, rename or remove variants and options in Theme Forge, so each project can differ. Describe an option by role, such as "the primary style" or "the smaller size", and give the standard UI kit name only as an example. Tell the agent to get the project's list from the Recursica MCP server.
+
+**Never say that a component from another design system does not exist.** Recursica has one name for each component, and another system's name maps to a Recursica component. Write the Recursica component to use: "Build every pill as a chip or a badge", not "Recursica has no pill component". The design router holds the table of other systems' names.
 
 **Never say what a component lacks.** A designer can add a variant, an option or a state in Theme Forge at any time, so "The standard UI kit has no size variant" goes stale the day a size is added. The UI kit holds tokens, so the UI kit also says nothing about behavior, such as whether opening one accordion item closes another. Leave out every variant, option and state a component does not have. The opening instruction to use only what the Recursica MCP server lists already covers the absence. Where a rule depends on an option, write the condition: "If the project has a loading state, use the loading state. Otherwise, show the disabled look with an animated icon." Keep a ban only where a design reason forbids the option outright, such as an error state on a badge, and give the reason.
 
