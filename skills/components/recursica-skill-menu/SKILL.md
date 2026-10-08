@@ -13,7 +13,7 @@ A menu is a temporary list of choices or actions. A trigger is the button that o
 
 ## When to use a menu
 
-- **Use a menu when one object has several actions.** An example is the ellipsis or "more" menu. `recursica-skill-buttons-links` requires an ellipsis menu once a row, such as a table row or a list row, has more than one action that every row shares.
+- **Use a menu when one object has several actions.** An example is the ellipsis or "more" menu. `recursica-skill-buttons-links` requires an ellipsis menu when every row of a table, a list or another set of rows shares more than one action.
 - **Use a menu when a control needs a list of options.** A dropdown or an autocomplete opens a menu. The field holds the chosen value, and the menu holds the list of options.
 - **Use a menu for a settings control that the screen deliberately keeps less prominent.** An example is the gear button on a table that opens the column-visibility menu, as `recursica-skill-tables` describes.
 - **Use a menu for a list of actions that is available on every page.** An example is the account menu. `recursica-skill-navigation` keeps the account menu out of primary navigation.
@@ -54,7 +54,7 @@ The rules below describe each option by role, such as "the selected option". The
 
 ## Rules
 
-**A menu never opens on hover.** A menu opens when the persona clicks the trigger, activates the trigger, or presses a key. `recursica-skill-navigation` sets this house rule. Personas clearly struggle to steer a pointer across a menu that appears on hover. A hover menu is also much harder to make accessible. The keyboard rules under "Accessibility" also forbid opening a menu on hover, for accessibility.
+**A menu never opens on hover.** A menu opens when the persona clicks the trigger, activates the trigger, or presses a key, such as Enter or Space on the trigger. `recursica-skill-navigation` sets this house rule. Personas clearly struggle to steer a pointer across a menu that appears on hover. A hover menu is also much harder to make accessible. The keyboard rules under "Accessibility" also forbid opening a menu on hover, for accessibility.
 
 **Build the trigger as a button, not a link.** Opening a menu does not go to a different page or URL, and opening a menu adds no entry to the browser history. See `recursica-skill-buttons-links`.
 
