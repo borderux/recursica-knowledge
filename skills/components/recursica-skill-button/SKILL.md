@@ -27,7 +27,7 @@ A button performs an action. A button never takes the user to a different page o
 | The user turns a setting on or off, such as email alerts            | A switch or a checkbox. See `recursica-skill-selection-controls`.                                                  |
 | A table row has more action buttons than the table row has room for | Fewer actions in the table row, not smaller buttons. See `recursica-skill-tables`.                                 |
 
-**Never use a button to go to a different page or URL.** Using a button to go to a different page is the most common misuse of buttons. If clicking a control changes the URL, build the control as a link, even when the design shows a button. A link already has less visual weight than a button. When a page change must look light, use a link, never a button in the text style.
+**Never use a button to go to a different page or URL.** Using a button to go to a different page is the most common misuse of buttons. If clicking a control changes the URL, build the control as a link, even when the design shows a button. A link has less visual weight than a button. When a control that goes to a different page needs less visual weight, use a link, never a button in the text style.
 
 ## Variants
 
@@ -37,7 +37,7 @@ The rules below describe each option by role, such as "the primary style". The n
 
 - **Style.** Use the primary style for the main action, the secondary style for the next most important action, and the least prominent style for every other action. In the standard UI kit, the styles are `solid`, `outline` and `text`. The `text` style is also called "Ghost".
 - **Size.** A button has a default size and a smaller size. The standard UI kit calls the smaller size `small`.
-- **Content.** A button shows a label alone, an icon with a label, or an icon alone. One variant covers an icon before the label, after the label, or both.
+- **Content.** A button shows a label alone, an icon with a label, or an icon alone. The same variant puts an icon before the label, after the label, or on both sides of the label.
 - **Disabled state.** How to turn on the disabled state is an open question.
 - **Destructive action.** If the project has a destructive style, use the destructive style. Color alone cannot mark a destructive action (an action that deletes data or cannot be undone). Name the destructive action in the label, as in "Delete invoice". Confirm any action that cannot be undone. See `recursica-skill-buttons-links`.
 - **Loading.** If the project has a loading state, use the loading state. Otherwise, show a loading button (a button whose action is still running) in the disabled look with an animated icon, with or without a label. Never add a spinner beside the button, change the label, or invent a state.
@@ -62,7 +62,7 @@ The rules below describe each option by role, such as "the primary style". The n
 
 **While a submit action runs, show the submit button in the disabled look with an animated icon.** `recursica-skill-forms` requires a disabled, loading look on the submit button. Build the look from the variants above: the disabled state and an icon, with or without a label. Animate the icon. Keep the button the same size and in the same place. A button that moves or resizes is no longer under the user's pointer.
 
-**Never use the smaller size to fit more buttons side by side**, in a toolbar, a footer, or a table row. Too many buttons side by side means the screen offers too many actions. Fix the structure instead. See `recursica-skill-system-conventions`.
+**Never use the smaller size to fit more buttons side by side**, in a toolbar, a footer, or a table row. Too many buttons side by side means the screen offers too many actions. Change the screen's structure instead of shrinking the buttons. See `recursica-skill-system-conventions`.
 
 **Hide a button the user has no permission to use.** Never show the button disabled instead. See `recursica-skill-navigation`.
 
@@ -70,7 +70,7 @@ The rules below describe each option by role, such as "the primary style". The n
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
-The button component provides the focus ring. The button component also handles a press by click and by keyboard. The app must add the behavior in the two lists below.
+The button component shows the focus ring. The button component also responds to a press by click and by keyboard. The application must add the behavior in the two lists below.
 
 ### Screen readers
 
@@ -81,7 +81,7 @@ The button component provides the focus ring. The button component also handles 
 - **Spell out the count in the accessible name.** The label shows `Apply status (102)`, and the screen reader says "Apply status to 102 items." A bare number after the label, as in "Apply status 102", is unclear when heard. The number could be a quantity, an ID, or part of the name.
 - **The count is the one approved case where the accessible name and the label differ.** The count still follows the rule that the accessible name must contain the label, because the accessible name contains the label. A voice-control user can still say "Apply status".
 - **Update the accessible name as the count changes.** With no item selected, the accessible name is `Apply status`, with no count. Do not announce every increase in the count while the user selects items. The accessible name must be correct by the time the user reaches the button.
-- **Use a real `button` element**, never a `div` or a `span` with a click handler. Only a real button element is announced as a button and responds to Enter and Space without extra code.
+- **Use a real `button` element**, never a `div` or a `span` with a click handler. A screen reader announces only a real `button` element as a button. Only a real `button` element responds to Enter and Space by default.
 - **Put the meaning in the accessible name, not only in the icon.** A screen reader announces the accessible name of an icon-only button and nothing about the icon. `recursica-skill-system-conventions` requires every meaning to be shown in more than one way.
 - **Mark a loading button as busy, and hide the animated icon from screen readers.** The animation is visual only. Without the busy state, a screen reader user hears nothing and presses the button again.
 - **Keep the accessible name while the button is busy**, or change the accessible name to another useful name, such as "Saving". Never leave the accessible name empty.
@@ -111,8 +111,8 @@ The button component provides the focus ring. The button component also handles 
 - **When to use the smaller size.** No rule says which screens use the smaller size.
 - **Full-width buttons.** When the project has no full-width option, no rule says whether a full-width button is ever allowed, or where.
 - **The icon for a loading button.** A loading button uses the disabled look with an animated icon, and that part is settled. Which icon to use is not settled. Whether the UI kit or the adapter (the Recursica component library for one framework, such as Mantine or Angular Material) defines the animation is also unknown.
-- **Split buttons and button groups.** Use a split button or a button group only when the project has one. Never build either one from separate buttons.
-- **Setting the disabled state.** Nobody has confirmed that each adapter exposes the disabled state as a setting. Check the button's settings with the Recursica MCP server, or ask, before relying on the disabled state.
+- **Split buttons and button groups.** Use a split button or a button group only when the project has that component. Never build either one from separate buttons.
+- **Setting the disabled state.** Nobody has confirmed that each adapter offers the disabled state as a setting. Check the button's settings with the Recursica MCP server, or ask, before relying on the disabled state.
 
 ## Pre-flight checklist
 
