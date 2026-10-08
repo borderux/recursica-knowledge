@@ -13,7 +13,7 @@ A panel shows extra content beside the page, without blocking the page.
 
 ## When to use a panel
 
-- **The user needs the page underneath the panel while working in the panel**, as with filters, settings, a details view, or editing one item that is on screen. A modal cannot serve this case.
+- **The persona needs the page underneath the panel while working in the panel**, as with filters, settings, a details view, or editing one item that is on screen. A modal cannot serve this case.
 - **Secondary settings or details would clutter the main view**, but must not cover the main view.
 - **The content belongs to the current view**, not to a different page or location in the application.
 
@@ -21,17 +21,17 @@ A panel shows extra content beside the page, without blocking the page.
 
 | Situation                                                            | Use instead                                                                                      |
 | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| The task must be finished or given up before the user continues      | `recursica-skill-modal`                                                                          |
+| The task must be finished or given up before the persona continues   | `recursica-skill-modal`                                                                          |
 | The action cannot be undone, and needs a confirmation                | `recursica-skill-modal`                                                                          |
 | Confirming that an action succeeded, or offering undo                | `recursica-skill-toast`                                                                          |
 | A brief alert, or a simple acknowledgment                            | `recursica-skill-toast`                                                                          |
 | The content is a long form, a form with several parts, or a big form | A page, with `recursica-skill-stepper` when the form has several parts                           |
-| The destination is a location the user can link to                   | A page with a route. See `recursica-skill-navigation`.                                           |
-| The feature is critical, and the user must find the feature          | The page itself. The content of a panel does not exist until someone opens the panel.            |
+| The destination is a location the persona can link to                | A page with a route. See `recursica-skill-navigation`.                                           |
+| The feature is critical, and the persona must find the feature       | The page itself. The content of a panel does not exist until someone opens the panel.            |
 | Primary or secondary navigation for the application                  | The application's navigation. `recursica-skill-navigation` sets the rules for hiding navigation. |
 | Separating repeated items of one type, or wrapping a form in a box   | Nothing. A panel is not a card, and a panel never contains a card. See `recursica-skill-card`.   |
 
-**Do not hide critical content in a panel.** A panel saves space on the page, but the panel content stays out of sight until someone opens the panel. Hidden content suits filters. Hidden content does not suit any part of the panel content that the user must act on to finish the user's work.
+**Do not hide critical content in a panel.** A panel saves space on the page, but the panel content stays out of sight until someone opens the panel. Hidden content suits filters. Hidden content does not suit any part of the panel content that the persona must act on to finish the persona's work.
 
 ## Variants
 
@@ -46,7 +46,7 @@ The rules below describe each part and option by role. The names in the standard
 
 ## Rules
 
-**A button opens a panel.** The user does not navigate to a panel, and opening a panel creates no browser history entry. `recursica-skill-navigation` sets this rule for modals and panels together. A region that a control opens, such as a panel or modal, is not a location.
+**A button opens a panel.** The persona does not navigate to a panel, and opening a panel creates no browser history entry. `recursica-skill-navigation` sets this rule for modals and panels together. A region that a control opens, such as a panel or modal, is not a location.
 
 **The one exception is a panel built on purpose for linking.** A panel built for linking gets a route and a link that opens the panel, together, exactly as a modal may. Building a panel for linking is an explicit decision, not a default. See `recursica-skill-navigation`.
 
@@ -62,7 +62,7 @@ The rules below describe each part and option by role. The names in the standard
 
 **Put one primary action at the bottom right of the panel footer.** Put a true alternative directly to the left of the primary action. `recursica-skill-buttons-links` sets this rule.
 
-**Closing a panel must be possible and obvious.** The close control in the header closes the panel, and so does the Escape key. Do not build a panel that the user can leave only by finishing the task in the panel.
+**Closing a panel must be possible and obvious.** The close control in the header closes the panel, and so does the Escape key. Do not build a panel that the persona can leave only by finishing the task in the panel.
 
 **Build a page, not a panel, for a task that needs a stepper or that scrolls a long way.** A process with several steps, and a task with a lot of data entry, belong on a separate page with a separate route.
 
@@ -82,7 +82,7 @@ The rules below describe each part and option by role. The names in the standard
 
 **Below the tablet breakpoint, open the panel content as a page instead.** Do not use a narrower panel, or a full-screen overlay styled as a panel. At the tablet breakpoint and above, the panel stays a panel.
 
-**NEVER draw a shader, scrim, or tint behind an open panel.** The rule has no exceptions. A panel sits beside the page so the user can read and use the page, and a scrim dims the page. `recursica-skill-panels-modals` sets this rule. The four settings below keep this rule when an adapter draws an overlay by default.
+**NEVER draw a shader, scrim, or tint behind an open panel.** The rule has no exceptions. A panel sits beside the page so the persona can read and use the page, and a scrim dims the page. `recursica-skill-panels-modals` sets this rule. The four settings below keep this rule when an adapter draws an overlay by default.
 
 **An adapter (the Recursica component library for one framework, such as Mantine or Angular Material) may make a panel modal by default.** A modal panel is the opposite of the house rule that a panel leaves the page usable. An adapter can build the panel on a drawer from a code library. A drawer from a code library usually draws an overlay, closes on a click outside the drawer, traps focus, and locks page scrolling, all by default. A panel built with only the settings in the adapter's documentation then blocks the page, and nobody notices. Until the adapter's defaults are fixed, turn off all four defaults explicitly:
 
@@ -95,11 +95,11 @@ Look up the name the code uses for each setting with the Recursica MCP server's 
 
 **A code library's default is not a house rule.** A drawer that blocks the page by default says nothing about what a Recursica panel should do. Never treat the drawer's modal default as a house rule. See `recursica-skill-design-router`.
 
-**A panel is non-modal (the page behind stays usable), and leaving the page usable is the purpose of a panel.** The user can still move around the application and act on the page behind the panel. `recursica-skill-panels-modals` sets this rule directly. A panel built to block the page is a modal built with the wrong component.
+**A panel is non-modal (the page behind stays usable), and leaving the page usable is the purpose of a panel.** The persona can still move around the application and act on the page behind the panel. `recursica-skill-panels-modals` sets this rule directly. A panel built to block the page is a modal built with the wrong component.
 
 **NEVER put a table inside a panel.** A panel is narrow, and a table needs width. A table in a panel either scrolls horizontally, which is forbidden outright, or truncates every column. Show repeated content as groups of stacked fields instead. Put secondary material in a second tab, not below the main content. `recursica-skill-panels-modals` sets this rule.
 
-**When a panel holds unsaved form data, closing the panel asks the user before throwing the data away.** Leaving a page with unsaved changes asks the same way. Do not ask on every close. Ask only about data the user entered and never saved.
+**When a panel holds unsaved form data, closing the panel asks the persona before throwing the data away.** Leaving a page with unsaved changes asks the same way. Do not ask on every close. Ask only about data the persona entered and never saved.
 
 ## Accessibility
 
@@ -110,20 +110,20 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 ### Screen readers
 
 - **The panel header is the panel's accessible name.** Connect the header to the panel. A panel with no accessible name is announced as a region with no name. "Panel" is not a name.
-- **Give the panel the role of a named region the user can browse into and out of**, not the role of a modal dialog. When every element on the page behind a panel must be inert (impossible to reach or read), build a modal instead. See `recursica-skill-modal`.
-- **Never mark a panel as modal while the page behind the panel stays usable.** Assistive technology stays inside a modal dialog. A mouse user can still use the page behind the panel, and a screen reader user cannot reach the page.
-- **Do not hide the page behind a non-modal panel from assistive technology.** The page behind the panel is not inert. A screen reader user must be able to read the page and get back into the panel.
+- **Give the panel the role of a named region the persona can browse into and out of**, not the role of a modal dialog. When every element on the page behind a panel must be inert (impossible to reach or read), build a modal instead. See `recursica-skill-modal`.
+- **Never mark a panel as modal while the page behind the panel stays usable.** Assistive technology stays inside a modal dialog. A persona using a mouse can still use the page behind the panel, and a persona using a screen reader cannot reach the page.
+- **Do not hide the page behind a non-modal panel from assistive technology.** The page behind the panel is not inert. A persona using a screen reader must be able to read the page and get back into the panel.
 - **Place the panel content in the document at the point where the panel appears on screen**, not at the end of the document. The reading order follows the visual order.
-- **Every user must be able to tell that the panel opened.** Moving focus into the panel shows that the panel opened. Do not rely on a slide-in animation to show that the panel opened.
+- **Every persona using the panel must be able to tell that the panel opened.** Moving focus into the panel shows that the panel opened. Do not rely on a slide-in animation to show that the panel opened.
 - **Give the close control a real accessible name**, such as "Close filters". An icon with no label is announced as nothing.
-- **Announce every change the panel makes outside the panel.** Redrawing the page is not enough. When a filter cuts a table down to four rows, announce the result. A screen reader user inside the panel cannot see the change on the page.
+- **Announce every change the panel makes outside the panel.** Redrawing the page is not enough. When a filter cuts a table down to four rows, announce the result. A persona using a screen reader inside the panel cannot see the change on the page.
 
 ### Keyboard and non-mouse navigation
 
 - **Move focus into the panel when the panel opens.** Put focus on the first meaningful element: the first field, or the panel container. Put focus on the close button only when no other element can take focus. Never leave focus on the element that opened the panel.
-- **Return focus to the element that opened the panel when the panel closes.** Teams skip this step more often than any other step. Skipping the step drops the user at the top of the document.
+- **Return focus to the element that opened the panel when the panel closes.** Teams skip this step more often than any other step. Skipping the step drops the persona at the top of the document.
 - **Escape closes the panel**, and closing the panel never saves.
-- **Never trap focus in a panel.** Pressing Tab on the last control in the panel must move focus on into the page, in document order. Pressing Shift-Tab must move focus back into the panel. The user can still reach the page behind the panel. A panel that traps focus while the page stays usable lets a mouse user leave the panel, but not a keyboard user.
+- **Never trap focus in a panel.** Pressing Tab on the last control in the panel must move focus on into the page, in document order. Pressing Shift-Tab must move focus back into the panel. The persona can still reach the page behind the panel. A panel that traps focus while the page stays usable lets a persona using a mouse leave the panel, but not a persona using a keyboard.
 - **The tab order inside the panel follows the visual order**: the content, then the footer buttons, then the close control in the place the close control appears. The tab order must not jump between the panel and the page unpredictably.
 - **Never make closing the panel pointer-only.** Escape and the close control both close the panel, no matter what a click outside the panel does.
 
@@ -170,7 +170,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - [ ] Focus is not trapped, and the page behind the panel is not made inert.
 - [ ] The page behind a non-modal panel stays readable and reachable by assistive technology.
 - [ ] The tab order follows the visual order and does not jump unpredictably between the panel and the page.
-- [ ] The close control has a real accessible name, the focus ring is intact, and no control or content the user needs appears only on hover.
+- [ ] The close control has a real accessible name, the focus ring is intact, and no control or content the persona needs appears only on hover.
 - [ ] Changes the panel makes to the page are announced, not only redrawn.
 - [ ] No styling is set or overridden on the panel, and no container or spacer is added to change the panel's look.
 - [ ] The panel is non-modal: focus is not trapped, and the page behind the panel stays reachable by keyboard. The behavior was checked in the running application, not assumed from the settings in the code.
@@ -180,5 +180,5 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - [ ] The panel closes on a route change, unless the navigation only opens another panel or a modal.
 - [ ] Below the tablet breakpoint, the panel opens as a page. More than two stacked panels, and any top or bottom panel, were approved before being built.
 - [ ] Every form in the panel uses stacked label placement for every field. No table is inside the panel, and secondary material is in a separate tab.
-- [ ] Closing a panel with unsaved form data asks first. Closing a panel the user has not changed does not ask.
+- [ ] Closing a panel with unsaved form data asks first. Closing a panel the persona has not changed does not ask.
 - [ ] Open questions were asked about, not decided: the opening transition, panel width, top or bottom panel design, divider visibility, and a loading state.
