@@ -48,7 +48,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 **Label placement is a variant.** A field's label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
 
-**Set label placement explicitly on every field.** The house rule puts the label beside the input. The code library under an adapter may put the label above the input by default, at every container width. Set the label beside the input on every field, using the names the code uses for the variant and the option.
+**Set label placement explicitly on every field.** The house rule puts the label beside the input. The code library under an adapter may put the label above the input by default, at every container width. Set the label beside the input on every field. Use the names the code uses for the variant and the option.
 
 The design-system website shows the autocomplete under the component's former name, "Search", with the two sections below. The `State` and `Behavior` sections appear only on the website.
 
@@ -71,7 +71,7 @@ The design-system website shows the autocomplete under the component's former na
 
 **Set a default value only when the default is correct for nearly everyone.** Never pre-fill a value the persona would have to think about, look up, or check. A default the persona cannot check gets submitted without being checked.
 
-**Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
+**Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form. Short fields that would fit side by side follow the result too. A form may change placement at a breakpoint. A form never mixes placements at one breakpoint. A form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
 **On error, the error message replaces the assistive text.** The error message is not added to the assistive text. The error message must restate the rule the persona broke. The error state must show a signal other than color, in addition to the color change.
 
@@ -167,7 +167,7 @@ The autocomplete already links the label to the input and shows the focus ring. 
 - [ ] The submitted value matches an option in the list, and typed text that matches no option is not accepted as a value.
 - [ ] The field has a real label that makes sense without the text around the field, and the placeholder is not used as the label.
 - [ ] Label placement is side by side, unless the container is too narrow.
-- [ ] Label placement matches every other field in the same form, with one placement per form at each breakpoint and no mixing between fields or form sections.
+- [ ] Label placement matches every other field in the same form. Each form has one placement at each breakpoint, with no mixing between fields or form sections.
 - [ ] No required information is in the placeholder. The field's rules are in the assistive text.
 - [ ] Any default is correct for nearly everyone.
 - [ ] On error, an error message that restates the rule replaces the assistive text, with a signal that is not color.

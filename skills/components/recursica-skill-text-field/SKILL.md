@@ -42,7 +42,7 @@ The rules below describe each option by role, such as "the label beside the fiel
 
 **Label placement is a variant.** A field's label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
 
-**Set label placement explicitly on every field.** The house rule puts the label beside the input. The code library under an adapter may put the label above the input by default, at every container width. Set the label beside the input on every field, using the names the code uses for the variant and the option.
+**Set label placement explicitly on every field.** The house rule puts the label beside the input. The code library under an adapter may put the label above the input by default, at every container width. Set the label beside the input on every field. Use the names the code uses for the variant and the option.
 
 **Never build a focus state or a placeholder state.** Every Recursica field already shows the focus border and the placeholder text.
 
@@ -54,7 +54,7 @@ The rules below describe each option by role, such as "the label beside the fiel
 
 **Put the rule for the field's value in the assistive text** (the help text below the field). The rule can be a format, a character requirement or a minimum. The persona then sees the rule before entering a value that breaks the rule.
 
-**Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
+**Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form. Short fields that would fit side by side follow the result too. A form may change placement at a breakpoint. A form never mixes placements at one breakpoint. A form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
 **On error, replace the assistive text with the error message.** Do not add the error message to the assistive text. Replacing the assistive text keeps the field the same height, and the form below the field does not move. The error message must restate the rule that the value broke. "Invalid input" is not an error message.
 

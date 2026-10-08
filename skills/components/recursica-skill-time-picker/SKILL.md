@@ -42,7 +42,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 **Label placement is a variant.** A field's label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
 
-**Set label placement explicitly on every field.** The house rule puts the label beside the input. The code library under an adapter may put the label above the input by default, at every container width. Set the label beside the input on every field, using the names the code uses for the variant and the option.
+**Set label placement explicitly on every field.** The house rule puts the label beside the input. The code library under an adapter may put the label above the input by default, at every container width. Set the label beside the input on every field. Use the names the code uses for the variant and the option.
 
 **Never build a focus state or a placeholder state.** Every Recursica field already shows the focus border and the placeholder text.
 
@@ -56,7 +56,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 **Always give the time picker a visible label.** Name exactly what the field holds, as in "Start time", not "Time". A persona using a screen reader hears the label alone, without the context around the field. Use sentence case, with no colon at the end of the label.
 
-**Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields like this one that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
+**Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form. Short fields like this one that would fit side by side follow the result too. A form may change placement at a breakpoint. A form never mixes placements at one breakpoint. A form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
 **The persona's preference sets a 12-hour or a 24-hour clock.** The persona's locale or an explicit setting for the persona decides the clock format. The clock format is not a design decision, and the clock format stays the same on every screen.
 
@@ -143,7 +143,7 @@ The time picker's width is fixed.
 - [ ] The value is a time of day, not an offset, a duration, or one of a few set times.
 - [ ] Every time picker has a visible label that makes sense without the context around the field. A date and a time on one line are one control with one label.
 - [ ] Label placement is side by side, unless the container is too narrow.
-- [ ] Label placement matches every other field in the same form, with one placement per form at each breakpoint and no mixing between fields or form sections.
+- [ ] Label placement matches every other field in the same form. Each form has one placement at each breakpoint, with no mixing between fields or form sections.
 - [ ] A 12-hour or 24-hour clock follows the persona's preference, and stays the same on every screen.
 - [ ] The time is in the persona's time zone, or the time zone is stated. A time from an event in a different place is shown in the time zone of that place, labeled, with a way to convert the time.
 - [ ] Seconds appear only when values under a minute are compared across several objects, and then on every value in the compared group.

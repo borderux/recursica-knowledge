@@ -73,7 +73,7 @@ The rules below describe each option by role, such as "the selected state". The 
 
 **Stack switches vertically in a switch group, one switch per line**, like every other form field.
 
-**Label placement is one decision per form, not per field.** This group uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
+**Label placement is one decision per form, not per field.** This group uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form. Short fields that would fit side by side follow the result too. A form may change placement at a breakpoint. A form never mixes placements at one breakpoint. A form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
 **A disabled switch item and a read-only field are different components, not two styles of one component.**
 
@@ -143,7 +143,7 @@ The switch group, switch item and switch components already connect each switch 
 - [ ] Every switch saves at the same point as every other switch in the system. When switches save immediately, the page shows a save status that stays on the page.
 - [ ] The system never mixes switches that save immediately with switches that wait for Save.
 - [ ] `switch`, `switch-item`, and `switch-group` are used together, and the switches in each group are stacked vertically.
-- [ ] Label placement matches every other field in the same form, with one placement per form at each breakpoint and no mixing between fields or form sections.
+- [ ] Label placement matches every other field in the same form. Each form has one placement at each breakpoint, with no mixing between fields or form sections.
 - [ ] The rule that governs each switch, or the consequence of turning each switch on or off, is in assistive text below the switch, built with the assistive element.
 - [ ] The on and off state is available in code, never shown only by the thumb's position or the track's color, and the thumb icon is hidden from screen readers.
 - [ ] A group of switches has a group label, announced when focus enters the group.

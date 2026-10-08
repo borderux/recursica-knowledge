@@ -59,7 +59,7 @@ The rules below describe each option by role, such as "the checked state". The n
 
 **Stack checkbox items vertically. Never lay out checkbox items horizontally.** In a horizontal row of checkboxes, the persona cannot easily tell which box belongs to which label. If the layout needs the options in a row, use selectable chips instead of a checkbox group.
 
-**Label placement is one decision per form, not per field.** This group uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
+**Label placement is one decision per form, not per field.** This group uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form. Short fields that would fit side by side follow the result too. A form may change placement at a breakpoint. A form never mixes placements at one breakpoint. A form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
 **Pre-select any number of options in a checkbox group.** A checkbox group may start with no options, some options, or all options checked. No house rule limits pre-selection in a checkbox group. The radio group rule is the opposite.
 
@@ -138,7 +138,7 @@ The checkbox component pairs each box with the item label and provides the focus
 - [ ] Selecting one option never rules out another option, and no single-choice question is built as checkboxes.
 - [ ] The group holds at least two items, within 7 ± 2, and fewer where the options are hard to tell apart.
 - [ ] Checkbox items are stacked vertically. There is no horizontal group, and `side-by-side` is used only for label placement.
-- [ ] Label placement matches every other field in the same form, with one placement per form at each breakpoint and no mixing between fields or form sections.
+- [ ] Label placement matches every other field in the same form. Each form has one placement at each breakpoint, with no mixing between fields or form sections.
 - [ ] `checkbox`, `checkbox-item`, and `checkbox-group` are used together. No form holds a bare `checkbox` without the item and the group.
 - [ ] The group has a real label, and every item has a real label. The group label never does an item label's job, and an item label never does the group label's job.
 - [ ] The group label is announced when focus enters the group.

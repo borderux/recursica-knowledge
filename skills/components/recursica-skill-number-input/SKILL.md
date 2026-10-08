@@ -47,7 +47,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 **Label placement is a variant.** A field's label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
 
-**Set label placement explicitly on every field.** The house rule puts the label beside the input. The code library under an adapter may put the label above the input by default, at every container width. Set the label beside the input on every field, using the names the code uses for the variant and the option.
+**Set label placement explicitly on every field.** The house rule puts the label beside the input. The code library under an adapter may put the label above the input by default, at every container width. Set the label beside the input on every field. Use the names the code uses for the variant and the option.
 
 **Never build a focus state or a placeholder state.** Every Recursica field already shows the focus border and the placeholder text.
 
@@ -55,7 +55,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 **Always give the number input a visible label.** The label names the object. When the object does not make the unit obvious, the label also names the unit: "Weight (kg)", not "Weight". A persona using a screen reader hears the label without the text around the field.
 
-**Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields like this one that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
+**Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form. Short fields like this one that would fit side by side follow the result too. A form may change placement at a breakpoint. A form never mixes placements at one breakpoint. A form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
 **Right-align the value.** Right-align every number, currency or not. Every number then lines up the same way. Use a different alignment only when the user explicitly asks for a different alignment.
 
@@ -142,7 +142,7 @@ The number input component connects the label to the input and sets what each ke
 - [ ] The field has a visible label. The label names the object, and names the unit when the object does not make the unit obvious.
 - [ ] Label placement is side by side, unless the container is too narrow.
 - [ ] Label placement is set explicitly on every field, to side by side unless the form's container is too narrow, with the names the code uses, not `layouts`. A field with no setting gets the label above the field (`stacked`), not the house rule.
-- [ ] Label placement matches every other field in the same form, with one placement per form at each breakpoint and no mixing between fields or form sections.
+- [ ] Label placement matches every other field in the same form. Each form has one placement at each breakpoint, with no mixing between fields or form sections.
 - [ ] The value is right-aligned, and the alignment matches the read-only values on the same screen.
 - [ ] Precision is fixed, and the same across every value shown together. Currency has two decimal places.
 - [ ] Any currency symbol or unit is an affix, and the label or the help text also states the currency or the unit.

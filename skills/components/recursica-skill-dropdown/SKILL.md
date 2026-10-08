@@ -50,7 +50,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 **Label placement is a variant.** A field's label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
 
-**Set label placement explicitly on every field.** The house rule puts the label beside the input. The code library under an adapter may put the label above the input by default, at every container width. Set the label beside the input on every field, using the names the code uses for the variant and the option.
+**Set label placement explicitly on every field.** The house rule puts the label beside the input. The code library under an adapter may put the label above the input by default, at every container width. Set the label beside the input on every field. Use the names the code uses for the variant and the option.
 
 ## Rules
 
@@ -67,7 +67,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 **When no sensible default exists, the dropdown shows placeholder text.** The placeholder never holds required information, and never replaces the label.
 
-**Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
+**Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form. Short fields that would fit side by side follow the result too. A form may change placement at a breakpoint. A form never mixes placements at one breakpoint. A form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
 **The open menu must not be cut off by the viewport, or by any scrolling ancestor** (a container further up the page that scrolls). Check the open menu near the bottom of the page, inside a panel, and inside a modal. An open menu the persona cannot see in full is the failure a dropdown is most likely to have.
 
@@ -155,7 +155,7 @@ Do not set or override the parts the dropdown component provides: the connection
 - [ ] Where no default exists, the dropdown shows placeholder text, and the placeholder holds no required information.
 - [ ] The dropdown has a real label that makes sense without the text around the dropdown, and the placeholder is not used as the label.
 - [ ] Label placement is side by side, unless the form's container is too narrow.
-- [ ] Label placement matches every other field in the same form, with one placement per form at each breakpoint and no mixing between fields or form sections. Label placement is set explicitly on the field, to `side-by-side` unless the form's container is too narrow. A field with no label placement set shows the label above the field (`stacked`), which breaks the house rule. The name of the label placement setting in code is not `layouts`.
+- [ ] Label placement matches every other field in the same form. Each form has one placement at each breakpoint, with no mixing between fields or form sections. Label placement is set explicitly on the field, to `side-by-side` unless the form's container is too narrow. A field with no label placement set shows the label above the field (`stacked`), which breaks the house rule. The name of the label placement setting in code is not `layouts`.
 - [ ] The open menu is not cut off by the viewport, a panel, a modal, or any scrolling ancestor.
 - [ ] Selection rules are in the assistive text. On error, an error message that restates the rule replaces the assistive text, with a signal that is not color.
 - [ ] A screen reader announces the expanded state, the number of options, the active option, and the selected value.

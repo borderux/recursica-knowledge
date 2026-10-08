@@ -52,7 +52,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 ## Rules
 
-**Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
+**Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form. Short fields that would fit side by side follow the result too. A form may change placement at a breakpoint. A form never mixes placements at one breakpoint. A form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
 **State both the accepted file types and the size limit in help text, before the persona picks a file.** For example, the help text under the field reads "PDF or PNG, up to 10 MB". When the help text states the file types and the size limit first, the persona picks a file the field accepts. `recursica-skill-assistive-element` sets the rules for help text.
 

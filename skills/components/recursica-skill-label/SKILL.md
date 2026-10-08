@@ -39,7 +39,7 @@ The rules below describe each option by role, such as "the smaller size". The na
 - **In the standard UI kit, a label can hold an edit icon.** The edit icon is an edit control. No rule says what the edit control is for. The question is listed under "Open questions".
 - **If the project has a disabled state for the label, use the label's disabled state.** Otherwise, the field sets the label's color in each of the field's states.
 
-**Set label placement explicitly on every field.** The house rule puts the label beside the input. The code library under an adapter may put the label above the input by default, at every container width. Set the label beside the input on every field, using the names the code uses for the variant and the option.
+**Set label placement explicitly on every field.** The house rule puts the label beside the input. The code library under an adapter may put the label above the input by default, at every container width. Set the label beside the input on every field. Use the names the code uses for the variant and the option.
 
 ## Rules
 

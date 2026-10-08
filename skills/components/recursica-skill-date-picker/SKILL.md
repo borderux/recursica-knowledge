@@ -44,7 +44,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 **Label placement is a variant.** A field's label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
 
-**Set label placement explicitly on every field.** The house rule puts the label beside the input. The code library under an adapter may put the label above the input by default, at every container width. Set the label beside the input on every field, using the names the code uses for the variant and the option.
+**Set label placement explicitly on every field.** The house rule puts the label beside the input. The code library under an adapter may put the label above the input by default, at every container width. Set the label beside the input on every field. Use the names the code uses for the variant and the option.
 
 **Never build a focus state or a placeholder state.** Every Recursica field already shows the focus border and the placeholder text.
 
@@ -58,7 +58,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 **A date and a time together are one control with one label.** A date picker, a time entry, and an AM/PM choice on one line of a form are the only case where inputs share one line. The three inputs hold one value. `recursica-skill-forms` sets this rule.
 
-**Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields like this one that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
+**Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form. Short fields like this one that would fit side by side follow the result too. A form may change placement at a breakpoint. A form never mixes placements at one breakpoint. A form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
 **A date picker without focus shows the readable format: `Jan 7, 2026`.** The readable format is a three-letter month, a day of one or two digits, and a four-digit year. The readable format is the only display format.
 
@@ -140,7 +140,7 @@ The date picker component connects the label to the input and shows the focus ri
 - [ ] Dates the persona knows by heart, or dates far in the past, use a text field instead.
 - [ ] Every date picker has a visible label, set in the date picker component, that makes sense without the headings, text, or layout around the field. A date and a time on one line are one control with one label.
 - [ ] Label placement is side by side, unless the container is too narrow.
-- [ ] Label placement matches every other field in the same form, with one placement per form at each breakpoint and no mixing between fields or form sections.
+- [ ] Label placement matches every other field in the same form. Each form has one placement at each breakpoint, with no mixing between fields or form sections.
 - [ ] Each date picker without focus shows the readable format, as in `Jan 7, 2026`. The numeric format appears only while the date picker has focus, and the readable format returns when focus leaves.
 - [ ] The expected format is stated in help text, and the time zone is stated wherever the time zone matters.
 - [ ] Typing works without ever opening the calendar.

@@ -49,7 +49,7 @@ The rules below describe each option by role, such as "the label beside the fiel
 
 **Label placement is a variant.** A field's label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
 
-**Set label placement explicitly on every field.** The house rule puts the label beside the input. The code library under an adapter may put the label above the input by default, at every container width. Set the label beside the input on every field, using the names the code uses for the variant and the option.
+**Set label placement explicitly on every field.** The house rule puts the label beside the input. The code library under an adapter may put the label above the input by default, at every container width. Set the label beside the input on every field. Use the names the code uses for the variant and the option.
 
 **Never build a focus state or a placeholder state.** Every Recursica field already shows the focus border and the placeholder text.
 
@@ -71,7 +71,7 @@ The rules below describe each option by role, such as "the label beside the fiel
 
 **Do not add spacing around a textarea to make up for the textarea's height.** The theme sets the spacing between fields and between form sections. A textarea is the tallest field in a form, and the difference in height is expected. `recursica-skill-forms` sets this rule.
 
-**Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
+**Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form. Short fields that would fit side by side follow the result too. A form may change placement at a breakpoint. A form never mixes placements at one breakpoint. A form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
 **Never stack the label of one textarea because the textarea is tall.** A stacked label often looks better on a textarea. A tall field beside a one-line label looks unbalanced in a narrow container. The width of the form's container decides label placement, not the height of the field. If the form's labels are side by side, the textarea's label is side by side too.
 
@@ -141,7 +141,7 @@ The textarea component connects the label to the input and handles the keys insi
 - [ ] No field with a label that promises prose (`Description`, `Notes`, `Comments`, `Justification`, `Reason`, `Summary`, `Details`) is built as a single-line text field.
 - [ ] The textarea has a visible label, and the label makes sense without the text around the field.
 - [ ] Label placement is side by side, unless the form's container is too narrow.
-- [ ] Label placement matches every other field in the same form, with one placement per form at each breakpoint and no mixing between fields or form sections. The textarea's label is stacked only when the whole form is stacked.
+- [ ] Label placement matches every other field in the same form. Each form has one placement at each breakpoint, with no mixing between fields or form sections. The textarea's label is stacked only when the whole form is stacked.
 - [ ] No required information is in the placeholder text.
 - [ ] The help text says what to include and any limit. On error, an error message that restates the rule replaces the help text.
 - [ ] The error state has a signal that is not color.

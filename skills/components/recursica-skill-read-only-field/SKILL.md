@@ -46,13 +46,13 @@ The rules below describe each option by role, such as "the label above the field
 
 **Label placement is a variant.** A field's label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`. Every field has the same label-placement variant. Set the read-only field's label placement to match the fields around the read-only field. A read-only field among stacked fields is stacked too.
 
-**Set label placement explicitly on every field.** The house rule puts the label beside the input. The code library under an adapter may put the label above the input by default, at every container width. Set the label beside the input on every field, using the names the code uses for the variant and the option.
+**Set label placement explicitly on every field.** The house rule puts the label beside the input. The code library under an adapter may put the label above the input by default, at every container width. Set the label beside the input on every field. Use the names the code uses for the variant and the option.
 
 ## Rules
 
 **Always give the read-only field a visible label**, and let the read-only field connect the label to the value. In the label, name the object clearly, use sentence capitalization, and leave off any colon at the end. The rules in `recursica-skill-label` apply without change to the read-only field's label.
 
-**Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form, editable or not. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
+**Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form, editable or not. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form. Short fields that would fit side by side follow the result too. A form may change placement at a breakpoint. A form never mixes placements at one breakpoint. A form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
 **Make a read-only field look clearly different from an input.** A persona must see at a glance whether a field is read-only, disabled or editable. The most common mistake is a light gray background on editable fields. The light gray background makes a whole form look read-only. Keep the look that the read-only field's tokens set. Do not restyle read-only fields or editable fields to look like each other.
 
@@ -124,7 +124,7 @@ Never set or override the connection between the label and the value. The read-o
 - [ ] The value cannot be edited on this screen, and the value is shown with a read-only field, not a disabled input.
 - [ ] Data that nobody ever edits, outside a form, is plain text instead of a read-only field.
 - [ ] A visible label is given to the read-only field, and the label makes sense when read alone.
-- [ ] Label placement matches every other field in the same form, with one placement per form at each breakpoint and no mixing between fields or form sections — and is side by side unless the form's container is too narrow.
+- [ ] Label placement matches every other field in the same form. Each form has one placement at each breakpoint, with no mixing between fields or form sections — and is side by side unless the form's container is too narrow.
 - [ ] No state is set or faked on the read-only field: no error, no disabled and no focus styling.
 - [ ] The value uses the display format: dates with a spelled-out month, a fixed number of decimal places, and unit labels for durations.
 - [ ] The read-only values are aligned the same way as the editable values on the same screen.

@@ -72,7 +72,7 @@ Never build a radio group in a form from radio buttons alone, without the group 
 
 **Stack the options vertically, never horizontally.** `recursica-skill-selection-controls` forbids a horizontal radio group outright. In a row of radio buttons, the persona cannot easily tell which circle belongs to which label. If the layout needs the options in a row, use a segmented control instead. A segmented control is limited to 2–5 options. Never use tabs instead.
 
-**Label placement is one decision per form, not per field.** This group uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
+**Label placement is one decision per form, not per field.** This group uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form. Short fields that would fit side by side follow the result too. A form may change placement at a breakpoint. A form never mixes placements at one breakpoint. A form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
 **Put the rule for choosing an option in the assistive text**, not in a validation message that the persona sees only after a failed submit. Show the rule for choosing with the assistive element. See `recursica-skill-assistive-element`.
 
@@ -141,7 +141,7 @@ Never set or override the styling of the radio group or the radio items either.
 - [ ] The options rule each other out, and no choice of one option is built from checkboxes.
 - [ ] The radio group holds at least two options, within 7 ± 2, and fewer for options that are hard to tell apart.
 - [ ] The options are stacked vertically. No radio group runs in a row, and the side-by-side option is used only for label placement.
-- [ ] Label placement matches every other field in the same form, with one placement per form at each breakpoint and no mixing between fields or form sections.
+- [ ] Label placement matches every other field in the same form. Each form has one placement at each breakpoint, with no mixing between fields or form sections.
 - [ ] The group, item, and radio button components are used together.
 - [ ] No option is selected in advance unless the option is right for nearly everyone.
 - [ ] The radio group has a real label that states the question, and every option has a real label that states the option's value.
