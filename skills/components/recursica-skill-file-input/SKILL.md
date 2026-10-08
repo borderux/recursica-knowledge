@@ -11,7 +11,7 @@ metadata:
 
 A file input is a single-line field where the persona picks a file from the persona's device. A file input looks and behaves like a text field.
 
-> **The file input is not built yet.** Both Recursica component libraries ship the file input as a stub (an empty placeholder) that shows a placeholder. Neither component library applies any of the 40 `file-input` variables that the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) exports. The rules below describe the file input as intended, and the rules are correct about what the UI kit defines. A screen built on the file input today shows a placeholder, with no error. Until the file input is built, use `recursica-skill-text-field` and a real `<input type="file">`. Report that the file input is missing. Do not work around the missing file input.
+> **The file input is not built yet.** Both Recursica component libraries ship the file input as a stub (an empty placeholder) that shows a placeholder. Neither component library applies any of the 40 `file-input` variables that the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) exports. The rules below describe the file input as intended, and the rules are correct about what the UI kit defines. A screen built on the file input today shows a placeholder, with no error. Until the file input is built, use `recursica-skill-text-field` and a native `<input type="file">`. Report that the file input is missing. Do not work around the missing file input.
 
 ## When to use a file input
 
@@ -81,7 +81,7 @@ A file input is a form field. A file input follows the same rules as every other
 ### Screen readers
 
 - **Give the file input a real label.** The field's icon does not name the field. A placeholder is not a label. A field with no label has no accessible name (the name a screen reader reads out for a control).
-- **The accepted file types and the size limit must be in text connected to the field.** Set the accepted file types and the size limit as the file input's help text. Do not show the accepted file types and the size limit in separate text beside the field. Do not show the accepted file types and the size limit only in an error message, after the persona picks a file the field rejects.
+- **The accepted file types and the size limit must be in text linked to the field in code.** Set the accepted file types and the size limit as the file input's help text. Do not show the accepted file types and the size limit in separate text beside the field. Do not show the accepted file types and the size limit only in an error message, after the persona picks a file the field rejects.
 - **A screen reader must announce the name of the picked file as the field's value.** When the visible file name is truncated, the full file name must still be available.
 - **Give any clear or remove control an accessible name that includes the file name**, as in "Remove quarterly-report.pdf", not "Clear".
 - **The app must announce a removed file.** The app must also announce a rejected file and the reason the field rejected the file.
@@ -90,7 +90,7 @@ A file input is a form field. A file input follows the same rules as every other
 
 ### Keyboard and non-mouse navigation
 
-- **Use a real file input, which the Tab key reaches and Enter or Space activates.** Never use a `div` with a click handler that opens a hidden input. Only a real file input works with Enter and Space and gets the right screen reader announcement, with no extra code.
+- **Use a native file input (an `<input type="file">` element), which the Tab key reaches and Enter or Space activates.** Never use a `div` with a click handler that opens a hidden input. Only a native file input works with Enter and Space and gets the right screen reader announcement, with no extra code.
 - **A drop zone must never be the only way to add a file.** When the file input supports drag and drop, drag and drop is an extra way to add a file. Drag and drop never replaces the file input, which the keyboard can reach.
 - **Each clear or remove control is a separate tab stop** (a place the Tab key lands), in the order the controls appear on screen. Each clear or remove control works with Enter or Space.
 - **When the persona removes a file, move focus on purpose, back to the file input.** Focus must not jump to the top of the page.
@@ -133,7 +133,7 @@ Do not change the gap between the label and the file input, or the gap between t
 - [ ] The placeholder holds no field rule.
 - [ ] The name of the picked file shows as the field's value. The full file name is available even when the visible name is truncated.
 - [ ] On error, an error message that restates the broken rule replaces the help text, with a signal that is not color.
-- [ ] The control is a real file input, in the tab order, and Enter or Space activates the control.
+- [ ] The control is a native file input (an `<input type="file">` element), in the tab order, and Enter or Space activates the control.
 - [ ] A drop zone is never the only way to add a file. Any drag and drop is an extra way to add a file.
 - [ ] Each clear or remove control is a tab stop, with an accessible name that includes the file name.
 - [ ] Removed files and rejected files are announced. After a removal, focus is moved on purpose.
