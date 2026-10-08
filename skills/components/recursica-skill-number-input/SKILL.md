@@ -9,13 +9,13 @@ metadata:
 
 # Number input
 
-A number input records a quantity that the user types.
+A number input records a quantity that the persona types.
 
 ## When to use a number input
 
 - **The value is a quantity**, such as a count, an amount, a rate, or a measurement. Adding, subtracting, or averaging the value makes sense.
-- **The range of values is open-ended, or too wide to list as options**, and the user knows the number to enter.
-- **Precision matters.** The user needs the exact value, not a rough value.
+- **The range of values is open-ended, or too wide to list as options**, and the persona knows the number to enter.
+- **Precision matters.** The persona needs the exact value, not a rough value.
 
 ## When not to use a number input
 
@@ -24,7 +24,7 @@ A number input records a quantity that the user types.
 | Situation                                            | Use instead                                                                                                                       |
 | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | The number comes from a short, fixed list of options | A radio group or a dropdown. See `recursica-skill-selection-controls`.                                                            |
-| The exact value does not matter across a large range | A slider. The user chooses a position on the range, not a number. See `recursica-skill-slider`.                                   |
+| The exact value does not matter across a large range | A slider. The persona chooses a position on the range, not a number. See `recursica-skill-slider`.                                |
 | The digits are an identifier, not a quantity         | A text field. Phone numbers, ZIP codes, account numbers and card numbers are text, not numbers. See `recursica-skill-text-field`. |
 | The value is a length of time                        | One field for each unit of time, formatted as `3h 20m`. See `recursica-skill-dates-and-currency`.                                 |
 | The value is a date or a time                        | A date picker or a time picker. See `recursica-skill-date-picker` or `recursica-skill-time-picker`.                               |
@@ -53,7 +53,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 ## Rules
 
-**Always give the number input a visible label.** The label names the object. When the object does not make the unit obvious, the label also names the unit: "Weight (kg)", not "Weight". A screen reader user hears the label without the text around the field.
+**Always give the number input a visible label.** The label names the object. When the object does not make the unit obvious, the label also names the unit: "Weight (kg)", not "Weight". A persona using a screen reader hears the label without the text around the field.
 
 **Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields like this one that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
@@ -65,22 +65,22 @@ The rules below describe each option by role, such as "the error state". The nam
 
 **A currency symbol or a unit is an affix (text attached to the start or end of the field).** The currency symbol or unit is not part of the label wording, and is not joined onto the value. The currency symbol goes before the value, and the unit goes after the value. When several amounts appear in one column, put the currency symbol in the column header instead. See `recursica-skill-dates-and-currency`.
 
-**State the minimum, the maximum, and the step between allowed values in the help text below the field**, before the user can type a value that breaks the limits. Preventing an error is better than catching the error.
+**State the minimum, the maximum, and the step between allowed values in the help text below the field**, before the persona can type a value that breaks the limits. Preventing an error is better than catching the error.
 
 **Zero is a value, and an empty field is not zero.** Do not pre-fill `0` to avoid an empty field. A submitted zero states that the value is zero.
 
-**Do not pre-fill a number the user would have to think about, look up, or check.** A pre-filled number that the user cannot check gets submitted without a check. A pre-filled number that nobody checked is worse than an empty field.
+**Do not pre-fill a number the persona would have to think about, look up, or check.** A pre-filled number that the persona cannot check gets submitted without a check. A pre-filled number that nobody checked is worse than an empty field.
 
 **On error, the error message replaces the help text.** Do not add the error message to the help text. Replacing the help text keeps the field the same height, and the form below the field does not move. The error message must restate the rule. "Invalid number" is not an error message. "Enter a whole number between 1 and 99" is an error message.
 
 **Pair the error state with a signal that is not color**, either an icon or the error message. `recursica-skill-system-conventions` requires a signal that is not color.
 
-**Never quietly correct the value the user typed, or force the typed value into the allowed range.** Rewriting a value when the field loses focus destroys the user's input without telling the user. Show the error, and let the user fix the value.
+**Never quietly correct the value the persona typed, or force the typed value into the allowed range.** Rewriting a value when the field loses focus destroys the persona's input without telling the persona. Show the error, and let the persona fix the value.
 
 **A disabled number input and a read-only field are different components, not two styles of one component.**
 
-- **A disabled number input is still a field and still clearly an input, but the user cannot use the field right now.** Use a disabled number input when the user could make the field usable by taking a different action first.
-- **A read-only field is a different component, with a label and text and no input.** Use a read-only field when the current user never edits the value here.
+- **A disabled number input is still a field and still clearly an input, but the persona cannot use the field right now.** Use a disabled number input when the persona could make the field usable by taking a different action first.
+- **A read-only field is a different component, with a label and text and no input.** Use a read-only field when the current persona never edits the value here.
 
 ## Accessibility
 
@@ -90,21 +90,21 @@ The number input component connects the label to the input and shows the focus r
 
 ### Screen readers
 
-- **Give the field a real label.** Never let the placeholder text be the accessible name (the name a screen reader reads out for a control). A screen reader does not announce placeholder text as a label, and the placeholder text disappears when the user types. A field with no label has no accessible name.
-- **State the unit in text**, in the label or in the help text. A screen reader may not announce an affix with the value. A currency symbol in a column header is not connected to the field at all. A user who hears "1000" with no unit does not know what the number means.
-- **State the expected format, the minimum, and the maximum in the help text.** Describe in words the thousands separators, the decimal places, and whether negative numbers are allowed. A mask (a pattern that guides what the user types) tells a screen reader nothing. Right alignment with two decimal places also tells a screen reader nothing.
-- **Give every icon inside the field that the user can use an accessible name**, such as a clear control, or a stepper button if the project ever adds a stepper. Hide every decorative icon from screen readers. A screen reader must never announce a decorative icon as an unlabeled graphic.
-- **When the field limits the range, give assistive technology the current value, the minimum, and the maximum.** A screen reader user then knows the maximum.
+- **Give the field a real label.** Never let the placeholder text be the accessible name (the name a screen reader reads out for a control). A screen reader does not announce placeholder text as a label, and the placeholder text disappears when the persona types. A field with no label has no accessible name.
+- **State the unit in text**, in the label or in the help text. A screen reader may not announce an affix with the value. A currency symbol in a column header is not connected to the field at all. A persona who hears "1000" with no unit does not know what the number means.
+- **State the expected format, the minimum, and the maximum in the help text.** Describe in words the thousands separators, the decimal places, and whether negative numbers are allowed. A mask (a pattern that guides what the persona types) tells a screen reader nothing. Right alignment with two decimal places also tells a screen reader nothing.
+- **Give every icon inside the field that the persona can use an accessible name**, such as a clear control, or a stepper button if the project ever adds a stepper. Hide every decorative icon from screen readers. A screen reader must never announce a decorative icon as an unlabeled graphic.
+- **When the field limits the range, give assistive technology the current value, the minimum, and the maximum.** A persona using a screen reader then knows the maximum.
 - **A screen reader announces the error message.** The error message replaces the help text, and a screen reader reads only the error message. The error message must state the rule and the limits.
 
 ### Keyboard and non-mouse navigation
 
 - **Never remove the field from the tab order.** Never make a pointer the only way to reach the field.
-- **Typing is always enough to enter the value.** Any adjustment control, such as a stepper button, is only a shortcut. A user must be able to enter the value by typing alone, and never has to press a button forty times.
+- **Typing is always enough to enter the value.** Any adjustment control, such as a stepper button, is only a shortcut. A persona must be able to enter the value by typing alone, and never has to press a button forty times.
 - **Every control inside the field is a separate tab stop** (a place the Tab key lands). Every control inside the field works with Enter or Space, not only with a mouse click.
-- **Do not move focus for the user.** Do not jump focus ahead when the value reaches a set number of digits. Do not jump focus on any keystroke. A focus jump sends the user's next keystrokes to a different field.
-- **Never let a scroll wheel or an accidental arrow key press change a saved value** while the field has focus and the user is only reading. Never take over the arrow keys that the user needs to move the caret.
-- **Keep every part the user needs to complete the field visible without hover**, including the limits, the unit, and any adjustment control.
+- **Do not move focus for the persona.** Do not jump focus ahead when the value reaches a set number of digits. Do not jump focus on any keystroke. A focus jump sends the persona's next keystrokes to a different field.
+- **Never let a scroll wheel or an accidental arrow key press change a saved value** while the field has focus and the persona is only reading. Never take over the arrow keys that the persona needs to move the caret.
+- **Keep every part the persona needs to complete the field visible without hover**, including the limits, the unit, and any adjustment control.
 
 ## Styling set by tokens
 
@@ -112,7 +112,7 @@ The number input component connects the label to the input and shows the focus r
 
 The number input component connects the label to the input and sets what each key does inside the field. Never set or override the link between the label and the input, or what each key does.
 
-**Never style a number input without focus to look disabled.** An editable number input must look editable when the user is not using the number input.
+**Never style a number input without focus to look disabled.** An editable number input must look editable when the persona is not using the number input.
 
 ## Related skills
 
@@ -132,9 +132,9 @@ The number input component connects the label to the input and sets what each ke
 - **Increase and decrease controls.** Only the design-system website shows increase and decrease controls. A person must decide whether the number input ever gets a stepper, and what the stepper's step would be. Do not rely on a stepper without asking. Ask only when the project has no stepper.
 - **Collapsed and expanded states.** Only the design-system website shows a `collapsed` state and an `expanded` state. The two states seem to describe whether a stepper is visible. Do not build either state, and do not rely on either state without asking. Ask only when the project has no collapsed and expanded states.
 - **A content variant.** Only the design-system website shows a content variant, with the options `unvalued`, `unvalued with placeholder`, and `valued`. No rule says whether a number input should show a placeholder at all. Do not rely on the content variant without asking. Ask only when the project has no content variant.
-- **Formatting while the user types.** No rule says whether the field formats the value while the user types, such as adding thousands separators, or only when the field loses focus.
+- **Formatting while the persona types.** No rule says whether the field formats the value while the persona types, such as adding thousands separators, or only when the field loses focus.
 - **Negative values.** No rule says whether the accounting parentheses from `recursica-skill-dates-and-currency` are ever used inside a number input, or only when a value is shown outside an input.
-- **Choosing the unit.** No pattern exists for a value whose unit the user can switch, such as kg or lb.
+- **Choosing the unit.** No pattern exists for a value whose unit the persona can switch, such as kg or lb.
 
 ## Pre-flight checklist
 
@@ -147,14 +147,14 @@ The number input component connects the label to the input and sets what each ke
 - [ ] Precision is fixed, and the same across every value shown together. Currency has two decimal places.
 - [ ] Any currency symbol or unit is an affix, and the label or the help text also states the currency or the unit.
 - [ ] The help text states the minimum, the maximum, the step, and the expected format.
-- [ ] The field is not pre-filled with `0` to avoid an empty field, and holds no default the user would have to understand to check.
+- [ ] The field is not pre-filled with `0` to avoid an empty field, and holds no default the persona would have to understand to check.
 - [ ] Help text and error text are set through the number input component. The error text replaces the help text, and restates the rule and the limits.
 - [ ] The error state has a signal that is not color, and no value is quietly forced into range or rewritten.
-- [ ] Every icon inside the field that the user can use has an accessible name, and every decorative icon is hidden from screen readers.
+- [ ] Every icon inside the field that the persona can use has an accessible name, and every decorative icon is hidden from screen readers.
 - [ ] Typing alone can enter any valid value. Any adjustment control is only a shortcut, and is a separate tab stop.
 - [ ] The arrow keys and the scroll wheel do not change the value unexpectedly.
 - [ ] Every variant, size, and state is one the Recursica MCP server lists for the project, and no variant or option is invented. No stepper is built unless the Recursica MCP server lists a stepper for the project.
 - [ ] No styling is set or overridden on the number input, and no container or spacer is added to change the number input's look.
 - [ ] A number input without focus looks editable.
 - [ ] Numbers that are not editable here use the read-only field, not a disabled number input.
-- [ ] Open questions were asked about, not decided: increase and decrease controls, the `collapsed` and `expanded` states, a content variant, formatting as the user types, negative values, and choosing the unit.
+- [ ] Open questions were asked about, not decided: increase and decrease controls, the `collapsed` and `expanded` states, a content variant, formatting as the persona types, negative values, and choosing the unit.
