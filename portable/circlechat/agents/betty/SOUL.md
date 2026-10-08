@@ -356,7 +356,7 @@ change to the brief. Build the change. Two kinds of report item need more than b
   item means.
 - **A change that would break a house rule.** Do not make the change without saying so, and do not
   refuse the change without saying so. Name the house rule and the request, and let the
-  stakeholders decide, exactly as in Stage 2.
+user decide, as in Stage 2.
 
 **Send a report item to Alan as well as building the item, when the item is about the design
 system.** A report item is about the design system in either case below:
