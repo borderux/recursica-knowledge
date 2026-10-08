@@ -11,13 +11,13 @@ metadata:
 
 This skill sets the house rules for data in tables. The house rules are opinions, not neutral best practices. Treat each house rule as a constraint.
 
-The house rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. This skill decides which columns exist, how the data is arranged and aligned, and what the user can do to a table row.
+The house rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. This skill decides which columns exist, how the data is arranged and aligned, and what the persona can do to a table row.
 
 ## Governing principles
 
-1. **A table is a high-level view that leads into each record, not a spreadsheet.** Clients often ask for a table because the client used a spreadsheet outside the application and wants to recreate the spreadsheet. Recreating the spreadsheet is the wrong goal. Show enough data for the user to understand the records and act on the records. Put the remaining data behind an expansion, a panel, or a detail page.
+1. **A table is a high-level view that leads into each record, not a spreadsheet.** Clients often ask for a table because the client used a spreadsheet outside the application and wants to recreate the spreadsheet. Recreating the spreadsheet is the wrong goal. Show enough data for the persona to understand the records and act on the records. Put the remaining data behind an expansion, a panel, or a detail page.
 2. **Fit the table on the screen.** Every decision about column width, stacking two values in a cell, and cutting text short exists to keep the table inside the main desktop screen sizes. Horizontal scrolling is a failure, not a layout option.
-3. **Each table row has one way to interact, and the whole application uses the same way.** A table row can be clicked only when no other element in the table row can be clicked. Inline editing is either on for every table or for none, because the user cannot see which mode a cell is in.
+3. **Each table row has one way to interact, and the whole application uses the same way.** A table row can be clicked only when no other element in the table row can be clicked. Inline editing is either on for every table or for none, because the persona cannot see which mode a cell is in.
 4. **Put one object type in one table.** Status is a column. A screen with a separate section for each status shows a filter as page sections.
 
 ## Table or cards
@@ -50,7 +50,7 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 ## Which fields get a column
 
-**Choose columns from what the user is doing: acting on the records, or understanding the records at a high level.** A field that serves neither task does not need a column.
+**Choose columns from what the persona is doing: acting on the records, or understanding the records at a high level.** A field that serves neither task does not need a column.
 
 **Leave out a column that most table rows have no value for.** Check the real data, not the database fields. If only a few table rows have a value, the column is mostly `NA`, and the column takes width away from the columns people need.
 
@@ -66,13 +66,13 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 **Use a filter to find exceptions.** A reader who wants the four flagged table rows wants to see those four table rows, not a column to scan.
 
-**Put data that does not fit in the table in a different place**: an expandable area inside the table, a side panel, or a drill-down page (one the user clicks through to for more detail).
+**Put data that does not fit in the table in a different place**: an expandable area inside the table, a side panel, or a drill-down page (one the persona clicks through to for more detail).
 
 **A table does not hold paragraphs.** If a value cannot be read in a cell, put the full text on a detail page.
 
 ## Horizontal scrolling
 
-**Avoid horizontal scrolling.** Horizontal scrolling is unusual in an application and awkward with a mouse. Horizontal scrolling also has almost no affordance (a visible cue that a control can be used, such as the underline on a link). A user may never find out that the table has more columns to the right.
+**Avoid horizontal scrolling.** Horizontal scrolling is unusual in an application and awkward with a mouse. Horizontal scrolling also has almost no affordance (a visible cue that a control can be used, such as the underline on a link). A persona may never find out that the table has more columns to the right.
 
 Horizontal scrolling is sometimes unavoidable, for example when a client insists that every field gets a separate column and will not accept splitting the table into more than one view. When horizontal scrolling is unavoidable, say that horizontal scrolling is unavoidable. Treat horizontal scrolling as a last resort, not a pattern.
 
@@ -164,7 +164,7 @@ Decide between truncating and wrapping in this order:
 
 ## Default sort
 
-**Every table MUST be sorted, and the sorted column MUST always be clearly marked.** A table with no visible sort indicator leaves the reader to work out the order from the data, and the reader will usually get the order wrong. The rule holds even when the user cannot change the sort. A fixed order is still an order. The reader has a right to know which column sets the order, and in which direction.
+**Every table MUST be sorted, and the sorted column MUST always be clearly marked.** A table with no visible sort indicator leaves the reader to work out the order from the data, and the reader will usually get the order wrong. The rule holds even when the persona cannot change the sort. A fixed order is still an order. The reader has a right to know which column sets the order, and in which direction.
 
 The sort indicator is part of the column header component. See `recursica-skill-table`. Make sure one column shows the sort indicator.
 
@@ -182,7 +182,7 @@ The sort indicator is part of the column header component. See `recursica-skill-
 
 **Sorting by more than one column is allowed, behind a hidden control.** A plain click on a column header switches that column between ascending and descending. A long-press, with a mouse or by touch, opens multi-sort. One click cannot both switch the sort direction and open multi-sort.
 
-**The number of sorted columns has no limit.** The user sets the order of the sorted columns: first, second, third.
+**The number of sorted columns has no limit.** The persona sets the order of the sorted columns: first, second, third.
 
 **Not every column can be sorted.** Do not make a column sortable when the column's data type has no logical order to sort by.
 
@@ -190,7 +190,7 @@ The sort indicator is part of the column header component. See `recursica-skill-
 
 Row density is how tightly the table content is packed together.
 
-**Never invent a row density variant**, such as high, medium and low density. A row density variant is a customization. Most users do not want to change density, and packing in more data does not make a table better.
+**Never invent a row density variant**, such as high, medium and low density. A row density variant is a customization. Most personas do not want to change density, and packing in more data does not make a table better.
 
 ## Clickable rows
 
@@ -200,7 +200,7 @@ Row density is how tightly the table content is packed together.
 - An ellipsis or "more" menu.
 - A link to another page.
 
-**The rule has no exceptions.** Two click targets in one table row leave the user unable to predict what a click will do.
+**The rule has no exceptions.** Two click targets in one table row leave the persona unable to predict what a click will do.
 
 ## Opening a record
 
@@ -218,7 +218,7 @@ Row density is how tightly the table content is packed together.
 
 **A table has an unknown number of table rows. The position below a table is unpredictable.** The area under the last table row can be one screen down on a short table, or twenty screens down on a long table. A reader who does not know about the add control has no reason to scroll to the end of a list to look for the add control. Content below a list of changing length may never be seen at all. The table header is the one part of a table whose position is fixed, and the eye already starts at the table header.
 
-**A form that changes the table rows MUST NOT sit inline on the page.** Open the form in a modal or a panel, as `recursica-skill-panels-modals` says. The reason is what happens when the user saves the form. The table has to change visibly when the form saves successfully. An inline form leaves the reader looking at a form and a table at once, with no idea which state the form or the table is in. Closing the modal or panel tells the reader the work is done, and the changed table behind the modal or panel is the confirmation.
+**A form that changes the table rows MUST NOT sit inline on the page.** Open the form in a modal or a panel, as `recursica-skill-panels-modals` says. The reason is what happens when the persona saves the form. The table has to change visibly when the form saves successfully. An inline form leaves the reader looking at a form and a table at once, with no idea which state the form or the table is in. Closing the modal or panel tells the reader the work is done, and the changed table behind the modal or panel is the confirmation.
 
 **A rarely used action does not get permanent space on the screen.** Creating a record happens now and then. The table is why the reader came. A create form that stays on screen uses the most valuable part of the screen for the least frequent task. See `recursica-skill-screen-priority`.
 
@@ -236,9 +236,9 @@ Row density is how tightly the table content is packed together.
 
 **Prefer editing the whole record on a page over editing cells in place.** Inline editing is a form problem. When a lot of data is saved at once, editing cell by cell is the wrong tool.
 
-**The main problem with inline editing is the affordance.** A cell shows no cue that tells the user whether clicking the cell will edit, navigate, or select.
+**The main problem with inline editing is the affordance.** A cell shows no cue that tells the persona whether clicking the cell will edit, navigate, or select.
 
-**Inline editing MUST be consistent across the application.** Either every table supports inline editing, or no table does. A mix of tables with and without inline editing leaves users unable to predict what a click will do.
+**Inline editing MUST be consistent across the application.** Either every table supports inline editing, or no table does. A mix of tables with and without inline editing leaves personas unable to predict what a click will do.
 
 ## Totals and the footer
 
@@ -270,7 +270,7 @@ A frozen column stays in place while the other columns scroll horizontally.
 
 ## Open questions
 
-**Ask the person instead of choosing.** No house rule covers the topics below yet. See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule above to fit an open question.
+**Ask the user instead of choosing.** No house rule covers the topics below yet. See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule above to fit an open question.
 
 - **Which data types cannot be sorted.** The sorting rule leaves out data types with no logical order, but nobody has listed the data types with no logical order.
 - **Error states for a table.** No rule covers error states for a table, including partial failure.
@@ -289,7 +289,7 @@ A frozen column stays in place while the other columns scroll horizontally.
 
 Check every item before treating a table as done.
 
-- [ ] The sorted column is clearly marked, including on a table whose sort the user cannot change.
+- [ ] The sorted column is clearly marked, including on a table whose sort the persona cannot change.
 - [ ] A loading table shows the loader (a spinner) by default, or plain text or another custom component in place of the loader. A loading table never shows skeleton rows.
 - [ ] One object type is in one table. No section heading on the page names a status, a state, or a filter value. Each status, state and filter value is a column value instead.
 - [ ] A table row waiting for a decision shows the proposed result with a pending status. The table row shows what went into the result through one expansion, panel, or modal. The same expansion, panel or modal stays after approval, with undo inside.
