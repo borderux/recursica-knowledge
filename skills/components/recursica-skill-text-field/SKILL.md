@@ -29,7 +29,7 @@ Use the component in the right column instead of adapting a text field.
 | The value is a quantity the persona types — a count, an amount, a rate, a measurement | `recursica-skill-number-input`. Free-form entry is wrong for a value used in calculations |
 | The persona viewing the field can never edit the value                                | A read-only field, a separate component that shows text with no input                     |
 
-**Never use a disabled text field to show a value.** A value does not belong in a form control when nobody can ever edit the value in this field.
+**Never use a disabled text field to show a value.** A value does not belong in a form control when nobody can ever edit the value where the value is shown.
 
 ## Variants
 
@@ -65,7 +65,7 @@ The rules below describe each option by role, such as "the label beside the fiel
 **A disabled text field and a read-only field are different components, not two styles of one component.**
 
 - **A disabled text field** still looks like an input, but the persona cannot use the field at the moment. Use a disabled text field when the persona can make the field usable by first taking another action. A disabled field cannot be edited, but a disabled field is not a read-only field.
-- **A read-only field** is a separate component. A read-only field shows a label and text, with no input. Use a read-only field when the persona viewing the field never edits the value.
+- **A read-only field** is a separate component. A read-only field shows a label and text, with no input. Use a read-only field when the persona viewing the field never edits the value where the value is shown.
 
 Never use a disabled text field to show a value.
 

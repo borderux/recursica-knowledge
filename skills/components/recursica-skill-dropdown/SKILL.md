@@ -32,7 +32,7 @@ A dropdown is a form field that hides the list of options until the persona open
 | The value has two options, and each option is the known opposite of the other     | A switch. See `recursica-skill-switch`.                                                                                              |
 | The persona viewing the field can never edit the value                            | A read-only field, which shows the label and the text with no input. See `recursica-skill-read-only-field`.                          |
 
-**Never use a disabled dropdown to show a value.** A value that nobody can ever change in this field does not belong in a form control.
+**Never use a disabled dropdown to show a value.** A value that nobody can ever change where the value is shown does not belong in a form control.
 
 ## Variants
 
@@ -84,7 +84,7 @@ The rules below describe each option by role, such as "the error state". The nam
 **A disabled dropdown and a read-only field are different components, not two styles of one component.**
 
 - **Use a disabled dropdown when the persona could make the dropdown usable by taking a different action first.** A disabled dropdown is still a field and still clearly an input, but the persona cannot use the dropdown right now.
-- **Use a read-only field when the persona viewing the field never changes the value.** A read-only field is a different component, with no input.
+- **Use a read-only field when the persona viewing the field never changes the value where the value is shown.** A read-only field is a different component, with no input.
 
 ## Accessibility
 

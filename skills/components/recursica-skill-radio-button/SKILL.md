@@ -83,7 +83,7 @@ Never build a radio group in a form from radio buttons alone, without the group 
 **A disabled item and a read-only field are different components, not two styles of one component.**
 
 - **A disabled item** is still a radio button and still looks like a control, but the persona cannot select the disabled item right now. Use a disabled item when the persona could make the option selectable by taking a different action first.
-- **A read-only field** is a different component, with no input. Use a read-only field when the persona viewing the field never changes the value.
+- **A read-only field** is a different component, with no input. Use a read-only field when the persona viewing the field never changes the value where the value is shown.
 
 ## Accessibility
 

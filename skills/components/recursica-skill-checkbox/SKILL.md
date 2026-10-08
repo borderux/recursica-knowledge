@@ -30,7 +30,7 @@ A checkbox turns one specific value on or off. A checkbox group lets the persona
 | The persona chooses an action, not a value                                          | A button. See `recursica-skill-button`.                                                                                 |
 | The persona viewing the field can never edit the value                              | A read-only field, which shows the label and the value as text, with no input. See `recursica-skill-read-only-field`.   |
 
-**Do not use a disabled checkbox to show a value.** A value that nobody can ever change in this field does not belong in a form control.
+**Do not use a disabled checkbox to show a value.** A value that nobody can ever change where the value is shown does not belong in a form control.
 
 ## Variants
 
@@ -82,7 +82,7 @@ The rules below describe each option by role, such as "the checked state". The n
 **A disabled checkbox item and a read-only field are different components, not two styles of one component.**
 
 - **Use a disabled checkbox item when the persona could make the item usable by first taking a different action.** A disabled item is still a checkbox and still clearly a control, but the persona cannot use the item right now.
-- **Use a read-only field when the persona viewing the field never changes the value.** A read-only field, `read-only-field` in the standard UI kit, is a different component. A read-only field shows text, with no input at all.
+- **Use a read-only field when the persona viewing the field never changes the value where the value is shown.** A read-only field, `read-only-field` in the standard UI kit, is a different component. A read-only field shows text, with no input at all.
 
 ## Accessibility
 

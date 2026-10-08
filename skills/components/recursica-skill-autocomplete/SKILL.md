@@ -28,7 +28,7 @@ An autocomplete is a text field whose value comes from a defined list of options
 | The value has two options, and each option is the known opposite of the other | A switch. See `recursica-skill-switch`.                                                                                              |
 | The persona viewing the field can never edit the value                        | A read-only field, which shows the label and the text with no input. See `recursica-skill-read-only-field`.                          |
 
-**Do not use a disabled autocomplete to show a value.** When nobody can ever change the value in this field, a disabled autocomplete is not a form control.
+**Do not use a disabled autocomplete to show a value.** When nobody can ever change the value where the value is shown, a disabled autocomplete is not a form control.
 
 ## Variants
 
@@ -84,7 +84,7 @@ The design-system website shows the autocomplete under the component's former na
 **A disabled autocomplete and a read-only field are different components, not two styles of one component.**
 
 - **Disabled autocomplete.** A disabled autocomplete is still a field and still clearly an input, but the persona cannot use the field right now. Use a disabled autocomplete when the persona could make the field usable by taking a different action first.
-- **Read-only field.** A read-only field is a different component, with no input. Use a read-only field when the persona viewing the field never changes the value.
+- **Read-only field.** A read-only field is a different component, with no input. Use a read-only field when the persona viewing the field never changes the value where the value is shown.
 
 **An autocomplete that filters a collection of items, instead of setting a form value, saves nothing.** An autocomplete that filters a collection of items does not use the form's save mode. See `recursica-skill-forms`.
 
