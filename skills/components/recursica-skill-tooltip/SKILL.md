@@ -15,7 +15,7 @@ A tooltip is a short text label for a control that has no visible label.
 
 - **A control shows only an icon.** `recursica-skill-buttons-links` requires a tooltip on every icon-only button, with no exceptions.
 - **Visible text is cut off with an ellipsis (…).** A tooltip shows the full text.
-- **An unusual function needs one short phrase of explanation**, because a persona who is new to the software may not understand the function from the label alone. Add a tooltip only when the label is clear without the tooltip. Never use a tooltip to make up for a weak label.
+- **An unusual function needs one short phrase of explanation.** A persona new to the software may not understand the function from the label alone. Add a tooltip only when the label is clear without the tooltip. Never use a tooltip to make up for a weak label.
 
 ## When not to use a tooltip
 
@@ -38,10 +38,10 @@ The rules below describe each part and option by role. The names in the standard
 
 - **Parts.** A tooltip has two parts: the text and a beak. A beak is the small pointer from the tooltip to the trigger (the element that shows the tooltip).
 - **Placement.** If the project has a placement variant, use the placement variant. Otherwise, do not set a position on the tooltip. Do not position the beak by hand. Placement is an open question.
-- **Size.** The theme limits how wide and how tall a tooltip can be. If the project has a size variant, use the size variant. Otherwise, content that does not fit inside the tooltip's size limits does not belong in a tooltip.
-- **Content.** If the project has a custom-content variant, use the custom-content variant. Otherwise, a tooltip holds text only.
+- **Size.** The theme limits how wide and how tall a tooltip can be. If the project has a size variant, use the size variant. Otherwise, keep content out of a tooltip when the content does not fit inside the tooltip's size limits.
+- **Content.** If the project has a custom-content variant, use the custom-content variant. Otherwise, put only text in a tooltip.
 
-**A tooltip and a hover card or popover are two different components that look almost the same.** Choose between the two by the content, never by the look.
+**Choose between a tooltip and a hover card or popover by the content, never by the look.** A tooltip and a hover card or popover are two different components that look almost the same.
 
 - **Tooltip.** A tooltip holds a short text label for a control that has no visible label.
 - **Hover card or popover.** A hover card or popover holds richer content, shown beside an element on the page. See `recursica-skill-hover-card-popover`.
@@ -54,23 +54,23 @@ Neither component may hold content the persona needs to complete a task. Neither
 
 **Never make a tooltip the only place a piece of information appears.** A touch device has no hover, so a persona using touch may never see the tooltip. Put information that matters on the page, in the accessible name, or in assistive text as well.
 
-**Never put a control or a link inside a tooltip.** To click a control inside a tooltip, the persona must move the pointer from the trigger onto the tooltip before the tooltip closes. Put a control or a link in a popover instead.
+**Never put a control or a link inside a tooltip.** To click a control in a tooltip, the persona moves the pointer from the trigger onto the tooltip. The pointer must reach the tooltip before the tooltip closes. Put a control or a link in a popover instead.
 
 **Do not use a tooltip as the label of a form field.** A form field gets a visible label and assistive text that stays on screen. See `recursica-skill-text-field`.
 
-**A button with both an icon and a label rarely needs a tooltip.** `recursica-skill-buttons-links` makes a tooltip optional on a button with an icon and a label, and only for extra information about an unusual function.
+**A button with both an icon and a label rarely needs a tooltip.** `recursica-skill-buttons-links` makes a tooltip optional on a button with an icon and a label. That tooltip is only for extra information about an unusual function.
 
 **Do not use a tooltip to show a validation message or an error.** An error must stay on screen and be connected to the field the error is about. See `recursica-skill-forms`.
 
-**A tooltip does not fix a column that is too narrow.** When text is cut off again and again, change the column widths or the layout, instead of cutting the text off and adding a tooltip. See `recursica-skill-tables` and `recursica-skill-system-conventions`.
+**When text is cut off again and again, change the column widths or the layout.** Do not cut the text off and add a tooltip in place of the new widths or layout. A tooltip does not fix a column that is too narrow. See `recursica-skill-tables` and `recursica-skill-system-conventions`.
 
-**Do not use the browser's `title` attribute as a tooltip.** Text in the `title` attribute does not appear on keyboard focus, cannot be dismissed, and is not reliably read by screen readers. Use the tooltip component.
+**Do not use the browser's `title` attribute as a tooltip.** Text in the `title` attribute does not appear on keyboard focus and cannot be dismissed. Screen readers do not reliably read the `title` attribute. Use the tooltip component.
 
 ## Accessibility
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
-A tooltip is the component most often used in place of a missing accessible name. A tooltip cannot replace an accessible name. Make sure every tooltip has every behavior in the two lists below.
+Give every tooltip every behavior in the two lists below. A tooltip is the component most often used in place of a missing accessible name. A tooltip cannot replace an accessible name.
 
 ### Screen readers
 
@@ -79,13 +79,13 @@ A tooltip is the component most often used in place of a missing accessible name
 - **The accessible name should match the tooltip text.** A persona who controls the screen by voice must be able to activate the control by saying the tooltip text.
 - **Never put a meaning only in a tooltip.** A tooltip is a single channel (color, shape, position or text, each a separate signal). `recursica-skill-system-conventions` forbids showing any meaning the persona must receive in only one channel.
 - **No content inside a tooltip is announced as a control**, because a tooltip contains no controls.
-- **Text that is cut off must be available in full in the code**, not only in the tooltip. A persona using a screen reader does not see the text being cut off, and must not hear a cut-off value either.
+- **Text that is cut off must be available in full in the code**, not only in the tooltip. A persona using a screen reader does not see the text being cut off. The persona must not hear a cut-off value either.
 - **The tooltip must not be announced as a live region** (an area of the page that a screen reader announces automatically when the area's content changes). A tooltip is a description, which a screen reader reads when the persona reaches the control. A tooltip is not an alert that interrupts the persona.
 
 ### Keyboard and non-mouse navigation
 
 - **A tooltip must appear on keyboard focus as well as on hover.** A tooltip that appears only on hover is invisible to every persona using a keyboard. An icon-only button with a hover-only tooltip then has no label for a persona using a keyboard.
-- **A tooltip must stay visible long enough to read.** The tooltip must not disappear while the pointer is still on the control, or while focus is still on the control. The tooltip must never hide automatically while the persona is reading the tooltip.
+- **A tooltip must stay visible long enough to read.** The tooltip must not disappear while the pointer or focus is still on the control. The tooltip must never hide automatically while the persona is reading the tooltip.
 - **A tooltip must close with Escape without moving focus.** A tooltip can cover the content under the tooltip, and Escape lets the persona close the tooltip. Focus stays on the control after the tooltip closes.
 - **A tooltip must not contain a control or a link.** A tooltip has no controls, so a tooltip needs no Tab key behavior inside. If the content needs a tab stop (a place the Tab key lands), build a popover instead of a tooltip.
 - **Never move focus into a tooltip.** A tooltip cannot take focus, and a tooltip is never a tab stop.
@@ -94,27 +94,32 @@ A tooltip is the component most often used in place of a missing accessible name
 
 ## Styling set by tokens
 
-**Never set or override the tooltip's styling.** The theme sets every visual property of the tooltip, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the tooltip's look. If the design needs a look the theme does not give, report the missing look as a gap in the design system. See `recursica-skill-design-router`.
+**Never set or override the tooltip's styling.** The theme sets every visual property of the tooltip, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the tooltip's look. If the design needs a look the theme does not give, report the missing look as a design-system gap. See `recursica-skill-design-router`.
 
 The tooltip's beak is part of the tooltip component. Do not draw a separate beak, and do not move the tooltip's beak.
 
 ## Related skills
 
-- `recursica-skill-buttons-links` — which controls must have a tooltip, which controls may have a tooltip, and the rule that a tooltip never makes up for a weak label.
-- `recursica-skill-system-conventions` — never showing a meaning in only one channel, and changing the screen's structure instead of cutting text off and adding a tooltip.
+- `recursica-skill-buttons-links` — the button rules for tooltips:
+  - which controls must have a tooltip
+  - which controls may have a tooltip
+  - the rule that a tooltip never makes up for a weak label
+- `recursica-skill-system-conventions` — the screen-wide rules for tooltips:
+  - never showing a meaning in only one channel
+  - changing the screen's structure instead of cutting text off and adding a tooltip
 
 ### Only if used on the same screen
 
-- `recursica-skill-hover-card-popover` — the related component for richer content, or for content the persona can interact with, and the rule against showing needed content only on hover, which the hover card and the popover must also follow.
+- `recursica-skill-hover-card-popover` — the related component for richer content, or for content the persona can interact with. The skill also holds the rule against showing needed content only on hover. The hover card and the popover must also follow that rule.
 - `recursica-skill-text-field` — visible labels, assistive text, and error text. All three stay on screen, and none of the three is a tooltip.
 
 ## Open questions
 
-- **Placement.** Only the design-system website shows a position variant of top, left, right, and bottom, a beak alignment variant of start, middle, and end, and a position setting. Confirm with the user before relying on placement. Confirm with the user only when the project has no placement variant.
+- **Placement.** Only the design-system website shows a position variant of top, left, right, and bottom. Only the design-system website shows a beak alignment variant of start, middle, and end, and a position setting. Confirm with the user before relying on placement. Confirm with the user only when the project has no placement variant.
 - **Custom content.** Only the design-system website shows the content types "text" and "custom". Confirm with the user before relying on custom content. Confirm with the user only when the project has no custom-content variant.
-- **Show and hide delays.** No token (a named design value, such as a color or a size, set by the design system) or rule defines the delay before the tooltip shows, the delay before the tooltip hides, or any time after which the tooltip hides automatically.
+- **Show and hide delays.** No token (a named design value, such as a color or a size, set by the design system) or rule defines the delay before the tooltip shows or the delay before the tooltip hides. No token or rule defines any time after which the tooltip hides automatically.
 - **Touch behavior.** A touch screen has no hover. No rule says how a persona using touch reaches the content of a tooltip.
-- **Targets that cannot take focus.** No rule says whether a tooltip may attach to an element the persona cannot interact with, such as a table cell with cut-off text or a chart label. A tooltip on an element that cannot take focus never appears for a persona using a keyboard.
+- **Targets that cannot take focus.** No rule says whether a tooltip may attach to an element the persona cannot interact with. Examples include a table cell with cut-off text and a chart label. A tooltip on an element that cannot take focus never appears for a persona using a keyboard.
 - **The viewport edge.** No rule says what happens when a tooltip reaches the edge of the viewport.
 
 ## Pre-flight checklist
@@ -134,5 +139,6 @@ The tooltip's beak is part of the tooltip component. Do not draw a separate beak
 - [ ] Escape closes the tooltip without moving focus, and focus never enters the tooltip.
 - [ ] The trigger can take focus, and the trigger's focus ring is not hidden.
 - [ ] Every variant and option on the tooltip is one the Recursica MCP server lists for the project. No placement, size, or content variant is set unless the project has one, and no variant or option is invented.
-- [ ] No styling is set or overridden on the tooltip, and no container or spacer is added to change the tooltip's look.
+- [ ] No styling is set or overridden on the tooltip.
+- [ ] No container or spacer is added to change the tooltip's look.
 - [ ] Open questions were asked about, not decided: placement, custom content, show and hide delays, touch behavior, targets that cannot take focus, and the viewport edge.
