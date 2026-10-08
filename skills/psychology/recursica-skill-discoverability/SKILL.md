@@ -30,7 +30,7 @@ Read this skill before adding a configuration feature. Cite this skill when some
 
 **The paradox also explains why teaching configuration up front fails.** A persona new to the product has no basis for arranging a workspace in a product the persona has not used yet. A tour that explains configuration arrives before the persona has any preference to set. For that reason, `recursica-skill-dashboards` requires a first-run element that the persona can dismiss and that focuses on _initial tasks_, not on customization.
 
-**Progressive disclosure is the second research finding behind the house rules.** Nielsen defines progressive disclosure as showing the few options most people need, and moving the other options to a second screen that fewer people will go to. Moving a feature back is the standard approach for a feature that only a small number of people want. Hiding such a feature is not unusual. Hiding such a feature is the documented practice.
+**Progressive disclosure is the second research finding behind the house rules.** Nielsen defines progressive disclosure as showing the few options most people need, and moving the other options to a second screen that fewer people will go to. Moving a feature out of the main view is the standard approach for a feature that only a small number of people want. Hiding such a feature is not unusual. Hiding such a feature is the documented practice.
 
 **The entry point should be easy to recognize.** A persona who does go looking should be able to _recognize_ the control on sight, such as a gear or settings icon in a sensible place. The persona should not have to remember a gesture. See `recursica-skill-working-memory` on recognizing versus remembering. "Not advertised" means not promoted. "Not advertised" does not mean unlabeled.
 
@@ -43,8 +43,8 @@ Read this skill before adding a configuration feature. Cite this skill when some
 **Hiding is not safe in three cases.** The house rule states three conditions because of the three cases below:
 
 1. **When a task cannot be finished without the control.** A control that a task needs is core function, not configuration. The control must be visible. The paradox predicts that personas will fail rather than search for the control.
-2. **When hiding stands in for research.** Some teams offer configuration because nobody found out what personas need. `recursica-skill-dashboards` calls that choice three failures that build on each other. This skill justifies _not promoting_ a well-thought-out way out of the default. This skill never justifies skipping the decision.
-3. **When hidden means impossible to reach.** A control that only a long-press or a drag can reach, with no other option, shuts out personas using a keyboard and personas using assistive technology. Moving a feature back is a decision about how prominent the feature looks. Moving a feature back is never a decision about whether the feature is accessible.
+2. **When hiding stands in for research.** Some teams offer configuration because nobody found out what personas need. `recursica-skill-dashboards` calls that choice three failures that build on each other. This skill justifies _not promoting_ a well-thought-out option for the persona to override the default. This skill never justifies skipping the decision.
+3. **When hidden means impossible to reach.** A control that only a long-press or a drag can reach, with no other option, shuts out personas using a keyboard and personas using assistive technology. Moving a feature out of the main view is a decision about how prominent the feature looks. Moving a feature out of the main view is never a decision about whether the feature is accessible.
 
 ## Common misapplications
 
@@ -58,7 +58,7 @@ Read this skill before adding a configuration feature. Cite this skill when some
 
 ## References
 
-- Carroll, J. M., & Rosson, M. B. (1987). "Paradox of the Active User." In J. M. Carroll (Ed.), _Interfacing Thought: Cognitive Aspects of Human-Computer Interaction_. MIT Press. — Users persist with known-but-suboptimal methods rather than investing in learning better ones.
+- Carroll, J. M., & Rosson, M. B. (1987). "Paradox of the Active User." In J. M. Carroll (Ed.), _Interfacing Thought: Cognitive Aspects of Human-Computer Interaction_. MIT Press. — Personas keep using a method the personas know, even a worse method, instead of spending effort to learn a better method.
 - Nielsen, J. (2006). "Progressive Disclosure." Nielsen Norman Group. <https://www.nngroup.com/articles/progressive-disclosure/> — Show the common few, defer the rest to a secondary surface.
 
 ## Out of scope
@@ -71,7 +71,7 @@ Read this skill before adding a configuration feature. Cite this skill when some
 
 Check each item below when a decision about configuration or customization comes up.
 
-- [ ] A well-thought-out default exists. The hidden control is a way out of the default, not a replacement for deciding.
+- [ ] A well-thought-out default exists. The hidden control is an option for the persona to override the default, not a replacement for deciding.
 - [ ] No task requires finding the hidden control in order to finish the task.
 - [ ] The entry point is easy to recognize when the persona comes across the entry point: a settings or gear control in a sensible place, not a gesture the persona must remember.
 - [ ] The hidden control can be reached by keyboard and by assistive technology, with another option for any drag or long-press.
