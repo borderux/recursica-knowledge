@@ -14,7 +14,7 @@ A toast reports what just happened, without interrupting the user's work.
 ## When to use a toast
 
 - **Confirming that an action worked**, such as saved, deleted, or sent. A success confirmation goes in a toast, never on a field.
-- **Offering an undo for the whole page.** `recursica-skill-buttons-links` sets this rule: a notification that offers an undo for the whole page is a toast.
+- **Offering an undo for the whole page.** `recursica-skill-buttons-links` sets the rule that a notification offering an undo for the whole page is a toast.
 - **Reporting an error that belongs to no field**, such as a conflict on the server, a broken business rule, or a background job that failed.
 - **A low-priority update about a task**, when the user started the task or the task is being done for the user, and the update does not need the user's attention now.
 
@@ -31,9 +31,9 @@ A toast reports what just happened, without interrupting the user's work.
 | The save status that must stay on screen when each field saves separately                      | A status on the page that stays on screen. See `recursica-skill-forms`.                |
 | Progress while an action is still running                                                      | The loading look on a submit button, or a loader. See `recursica-skill-loader`.        |
 
-**A toast reports an event that just happened, and that tense is the house test for a toast.** `recursica-skill-feedback-messaging` chooses between the channels (the forms a message takes: a toast, a banner or a modal) by tense. A finished event is a toast. A condition that has not happened yet is a banner. Check the tense of the message before choosing a channel.
+**A toast reports an event that just happened.** The house rule decides by the tense of the message. `recursica-skill-feedback-messaging` chooses between the channels (the forms a message takes: a toast, a banner or a modal) by tense. A finished event is a toast. A condition that has not happened yet is a banner. Check the tense of the message before choosing a channel.
 
-**A toast is the wrong place for a message the user must not miss.** A toast appears away from where the user is looking, and the toast closes by itself. A critical alert that needs action right away is not a toast. No component in this system holds a critical alert yet. The banner component that the tense rule calls for is planned, but the banner is not in the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has). Do not use a toast for a critical alert. Do not build a custom alert that stays on screen. Do not point the reader to a component that does not exist. Raise the critical alert with the user, as the open questions describe.
+**A toast is the wrong place for a message the user must not miss.** A toast appears away from where the user is looking, and the toast closes by itself. A critical alert that needs action right away is not a toast. No component in this system holds a critical alert yet. The tense rule calls for a banner component. The banner is planned, but the banner is not in the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has). Do not use a toast for a critical alert. Do not build a custom alert that stays on screen. Do not point the reader to a component that does not exist. Raise the critical alert with the user, as the open questions describe.
 
 ## Variants
 
@@ -43,8 +43,8 @@ The rules below describe each option by role, such as "the success style". The n
 
 - **Style.** In the standard UI kit, a toast has a default style, a success style, and an error style, named `default`, `success`, and `error`. Only the design-system website calls the default style "Information". "Default" and "Information" are two names for one style.
 - **Warning.** If the project has a warning style, use the warning style. Never use the error style as a warning. The error style says that a failure happened.
-- **The styles differ only in color and icon.** A style never shows the message without the text. The style only supports what the text says.
-- **Parts.** In the standard UI kit, a toast shows an icon and text. If the project has a style for an action button or a close control, use the project's style. Check the open questions before building a timer, or an action button or a close control that the project does not define.
+- **Color and icon.** The toast styles differ only in color and icon. The style only supports what the toast's text says.
+- **Parts.** In the standard UI kit, a toast shows an icon and text. If the project has a style for an action button or a close control, use the project's style. Check the open questions before building a timer, an action button or a close control that the project does not define.
 - **Size and position.** If the project has a size variant or a position variant, use the project's variant.
 
 ## Rules
@@ -53,17 +53,17 @@ The rules below describe each option by role, such as "the success style". The n
 
 **A success confirmation belongs in a toast, never on a field.** The rule has no exception. Never add a green check mark to an input, or a "Saved" note to each field.
 
-**Never use a toast as the save status that stays on screen.** `recursica-skill-forms` requires a status message that stays visible when each field saves separately. A toast disappears, so a toast cannot meet a requirement to stay visible. A toast each time a field saves also shows the user too many messages.
+**Never use a toast as the save status that stays on screen.** `recursica-skill-forms` requires a status message that stays visible when each field saves separately. A toast disappears, and the status message must stay visible. A toast each time a field saves also shows the user too many messages.
 
 **When a form saves all changes at once on submit, confirm success with a toast and nothing else.** Show no marker for unsaved changes and no status line. `recursica-skill-forms` states that the enabled submit button is the only other signal to the user.
 
 **Show one toast per event.** Do not show a toast for each record in a bulk action. Report the whole bulk action once, with the number of records.
 
-**Write the shortest toast text that gives the information.** Do not write full sentences or paragraphs. The short text in forms follows the same rule.
+**Write the shortest toast text that gives the information.** Do not write full sentences or paragraphs. The short text in a form follows the same rule.
 
 **Put at most one action in a toast**, and make the action a single follow-up, such as Undo. Two actions in a toast that disappears ask the user to make a decision. A decision belongs in a modal.
 
-**A toast's action must not be the only way to reach that action.** See the keyboard rules below. An undo that disappears with the toast is gone before a keyboard user can reach the undo.
+**A toast's action must not be the only way to reach that action.** An undo that disappears with the toast is gone before a keyboard user can reach the undo. See the keyboard rules below.
 
 **Never use a toast as the only record of a destructive action** (an action that deletes data or cannot be undone). Once the toast is gone, the user has no way back to the record.
 
@@ -87,7 +87,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 - **Announce the toast when the toast appears, without moving focus.** Use a live region (an area of the page that a screen reader announces automatically when the area's content changes) that is already in the page before the message is added. A live region created at the same moment as the message is often not announced at all.
 - **Announce an error toast right away, and let a success toast or a toast in the default style wait until the screen reader finishes speaking.** The urgent setting, `assertive`, interrupts what the screen reader is saying. Use `assertive` only for failures. Never let a confirmation interrupt what the user is reading or typing. Never leave a failure waiting in a queue. `recursica-skill-live-regions` owns this rule.
-- **Every toast is announced.** No toast appears silently. The announcement is the toast's text. Nothing else should repeat the toast's text.
+- **Every toast is announced.** The announcement is the toast's text. Nothing else should repeat the toast's text.
 - **A screen reader does not announce the style.** The success style and the error style differ only in color and icon. The text must say which style the toast is, as in "Saved" versus "Could not save".
 - **The toast's icon is decorative and must be silent.** The icon gives a screen reader user nothing useful. The icon must not be announced as an unlabeled graphic.
 - **Announcements from several toasts must not overlap.** Use one live region, with the messages lined up in order. Never use one live region per toast. Never let a second message cut off the first message in the middle of a sentence.
@@ -107,7 +107,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 ## Styling set by tokens
 
-**Never set or override the toast's styling.** The theme sets every visual property of the toast, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the toast's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the toast's styling.** The theme sets every visual property of the toast, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the toast's look. If the design needs a look the theme does not give, report the missing look as a gap in the design system. See `recursica-skill-design-router`.
 
 The theme also sets which icon each toast style shows. Never change the icon a style shows.
 
@@ -126,10 +126,10 @@ The theme also sets which icon each toast style shows. Never change the icon a s
 ## Open questions
 
 - **Duration values.** The house rule on duration is settled, as the rules above state. No token records the default duration of any code library. Nobody can check a duration from this repository.
-- **How a toast's action button is styled.** The rules above allow one action. Ask before styling the action button. Ask only when the project has no style for a toast's action button.
-- **Where toasts appear on screen.** Only the design-system website shows toasts toward the bottom of the screen. Ask before relying on that placement. Ask only when the project has no position variant.
+- **How a toast's action button is styled.** The rules above allow one action. Ask before styling the action button, and only when the project has no style for a toast's action button.
+- **Where toasts appear on screen.** Only the design-system website shows toasts toward the bottom of the screen. Ask before relying on that placement, and only when the project has no position variant.
 - **Stacking.** No rule says how many toasts may be visible at once, in what order the toasts appear, or what happens when more toasts arrive than the limit allows.
-- **Warnings, and critical alerts.** This system has no alert that stays on screen for serious problems yet. No component holds an alert the user must not miss. The planned banner component may cover part of this need. Until the banner ships, do not build a substitute, and do not name a component as though the component were available. Ask about a warning style only when the project has no warning style.
+- **Warnings and critical alerts.** No component yet holds an alert that stays on screen for a serious problem, or an alert the user must not miss. The planned banner component may cover part of this need. Until the banner ships, do not build a substitute, and do not name a component as though the component were available. Ask about a warning style only when the project has no warning style.
 - **Toasts for a background job.** Nobody has decided whether a toast is ever right for a background job that finishes long after the action that started the job.
 
 ## Pre-flight checklist
@@ -153,5 +153,5 @@ The theme also sets which icon each toast style shows. Never change the icon a s
 - [ ] The toast can be reached by keyboard at a predictable point in the tab order while the toast is visible.
 - [ ] If hover pauses the toast's timer, focus pauses the timer too. Closing a toast does not depend on a pointer.
 - [ ] The toast covers no control the user needs and does not hide the focus ring. No content the user needs appears only on hover.
-- [ ] No styling is set or overridden on the toast, and no container or spacer is added to change the toast's look. Each style shows the style's own icon.
+- [ ] No styling is set or overridden on the toast, and no container or spacer is added to change the toast's look. Each toast style shows the icon the theme sets for that style.
 - [ ] Open questions were asked about, not decided: duration values, how the action button is styled, where toasts appear on screen, stacking, warnings and critical alerts, and toasts for a background job.
