@@ -21,9 +21,9 @@ A timeline lists events that already happened, in order. Each event has a timest
 
 | Situation                                                                                        | Use instead                                                                                        |
 | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| The screen guides the user through a process the user is doing now                               | A stepper. See `recursica-skill-stepper`.                                                          |
+| The screen guides the persona through a process the persona is doing now                         | A stepper. See `recursica-skill-stepper`.                                                          |
 | The order of the entries does not matter                                                         | A list. A timeline shows an order of events, and an order that does not exist misleads the reader. |
-| A large number of records, or records the user will sort, filter, or compare                     | A table. See `recursica-skill-tables`.                                                             |
+| A large number of records, or records the persona will sort, filter, or compare                  | A table. See `recursica-skill-tables`.                                                             |
 | Tabular data only, with the same fields in every entry                                           | A table. See `recursica-skill-tables`.                                                             |
 | Entries arrive in a stream that updates fast, such as chat messages or live logs                 | A table or an activity view built for a large number of entries, not a timeline.                   |
 | Each entry needs long text, media, or controls that belong to the entry                          | An accordion, or a page for each entry. See `recursica-skill-accordion`.                           |
@@ -56,8 +56,8 @@ The rules below describe each part and option by role, such as "the selected sta
 
 - **Use relative time for recent events**, such as `15 minutes ago` or `yesterday`. Relative time saves the reader from working out how long ago the event happened.
 - **After the switchover point (the point where relative time switches to an absolute date), show the absolute date**, such as `Jan 7, 2026`. Never use a date in numbers with slashes or hyphens. The numeric form appears only inside an input that has focus.
-- **State the time zone whenever the time is not in the user's time zone**, or when the user's time zone is unknown.
-- **When the place of the event matters, show the time in the time zone where the event happened, with the time zone labeled.** Do not convert the time. Give the user a way to convert the time.
+- **State the time zone whenever the time is not in the persona's time zone**, or when the persona's time zone is unknown.
+- **When the place of the event matters, show the time in the time zone where the event happened, with the time zone labeled.** Do not convert the time. Give the persona a way to convert the time.
 - **Keep one timestamp format across the whole timeline.** All timeline items on the same side of the switchover point use the same format, relative or absolute.
 
 **The title names the event, and the description gives the event's details.** Never put the timestamp in the title. The timestamp has a separate place in the timeline item.
@@ -85,23 +85,23 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 ### Screen readers
 
-- **Announce the events as a list, with the number of events.** Text with no list structure gives the user no sense of how many events there are, or which event the user is on.
-- **Group each timeline item's title, description, and timestamp together as one item.** Without the grouping, a screen reader announces three events as nine unrelated lines. The user cannot tell which time belongs to which title.
-- **Start each timeline item with the title.** When the titles are headings, use the same heading level for every title. The user can then jump from event to event instead of hearing every line.
+- **Announce the events as a list, with the number of events.** Text with no list structure gives the persona no sense of how many events there are, or which event the persona is on.
+- **Group each timeline item's title, description, and timestamp together as one item.** Without the grouping, a screen reader announces three events as nine unrelated lines. The persona cannot tell which time belongs to which title.
+- **Start each timeline item with the title.** When the titles are headings, use the same heading level for every title. The persona can then jump from event to event instead of hearing every line.
 - **The reading order must match the visual order.** The sequence must come from the order of the list. A screen reader announces nothing about the connecting line.
 - **State the sort direction, such as "Newest first", in text above the timeline.** A list read aloud does not reveal the sort direction.
-- **Every relative timestamp must also have the absolute date and time available.** "2 hours ago" is useless to a user who later works out the sequence of events. Put the full, clear date and time in what the screen reader reads, beside the relative time.
+- **Every relative timestamp must also have the absolute date and time available.** "2 hours ago" is useless to a persona who later works out the sequence of events. Put the full, clear date and time in what the screen reader reads, beside the relative time.
 - **Keep the bullet silent, because the bullet is decoration.** A screen reader announces nothing for an icon bullet. An avatar bullet either has alternative text that names the person, or is marked as decoration, with the person's name in the text of the timeline item. Never let an avatar or an icon be the only part of the entry that says who or what the entry is about.
 - **Set the selected state in code**, as a current or selected state on the timeline item. **Never show the selected state by color alone.**
 
 ### Keyboard and non-mouse navigation
 
 - **A timeline item that only shows information is not a tab stop** (a place the Tab key lands). Give the timeline item no `tabindex` and no click handler.
-- **When the user can select timeline items, make each timeline item a real control.** Each control has an accessible name (the name a screen reader reads out for a control) and a selected state, and sits in the tab order in the visual order.
-- **When a timeline item holds a link or a button, the timeline item itself must not also be clickable.** A keyboard user cannot tell what Enter will do when one click target sits inside another click target. `recursica-skill-card` and `recursica-skill-tables` apply the same reason to clickable cards and clickable table rows.
-- **Never show the absolute date only in a tooltip on hover.** A relative time with the real timestamp shown only on hover is the most common accessibility failure in a timeline. A keyboard user and a touch user cannot reach a tooltip that appears only on hover.
-- **Never show an entry's details, an entry's actions, or any other information the user needs only on hover.**
-- **When a long timeline splits into pages or loads more entries, the control that changes the page or loads more entries is a real button a keyboard user can reach.** Adding entries must not move focus or lose focus.
+- **When the persona can select timeline items, make each timeline item a real control.** Each control has an accessible name (the name a screen reader reads out for a control) and a selected state, and sits in the tab order in the visual order.
+- **When a timeline item holds a link or a button, the timeline item itself must not also be clickable.** A persona using a keyboard cannot tell what Enter will do when one click target sits inside another click target. `recursica-skill-card` and `recursica-skill-tables` apply the same reason to clickable cards and clickable table rows.
+- **Never show the absolute date only in a tooltip on hover.** A relative time with the real timestamp shown only on hover is the most common accessibility failure in a timeline. A persona using a keyboard and a persona using touch cannot reach a tooltip that appears only on hover.
+- **Never show an entry's details, an entry's actions, or any other information the persona needs only on hover.**
+- **When a long timeline splits into pages or loads more entries, the control that changes the page or loads more entries is a real button a persona using a keyboard can reach.** Adding entries must not move focus or lose focus.
 
 ## Styling set by tokens
 
@@ -112,13 +112,13 @@ Every rule in this section also applies to the timeline bullet. Never set or ove
 ## Related skills
 
 - `recursica-skill-dates-and-currency` — the clear date format, relative time versus absolute dates and the switchover point, time zones, and the format of a duration, for every timestamp in the timeline.
-- `recursica-skill-tables` — the table to use instead of a timeline when the number of records is large, or when the user must sort, filter, or compare the records.
+- `recursica-skill-tables` — the table to use instead of a timeline when the number of records is large, or when the persona must sort, filter, or compare the records.
 - `recursica-skill-avatar` — the rules an avatar bullet must also follow.
 - `recursica-skill-system-conventions` — never showing a meaning in only one channel, and fixing the structure of the screen instead of showing a history with no limit on length.
 
 ### Only if used on the same screen
 
-- `recursica-skill-stepper` — a process the user is going through now, instead of a record of what happened.
+- `recursica-skill-stepper` — a process the persona is going through now, instead of a record of what happened.
 - `recursica-skill-card` — why the timeline never sits in a card and never holds a form.
 
 ## Open questions
@@ -126,8 +126,8 @@ Every rule in this section also applies to the timeline bullet. Never set or ove
 - **Alignment.** The design-system website shows timelines aligned left and aligned right. Do not rely on an alignment without asking. Ask only when the project has no alignment variant.
 - **The connecting line.** The design-system website shows a connecting line with a highlighted state for completed events. A timeline never shows progress, with or without a connecting line. Do not rely on a connecting line without asking. Ask about the connecting line only when the project has no connecting line.
 - **Two-track timelines and timelines that compare two streams of events side by side.** Ask only when the project has no two-track variant.
-- **What the selected state means in house terms.** The selected state could mark the item the user selected, or the most recent event.
-- **Whether a timeline item may be selected, be a link, or have an action.** No rule says how a user interacts with a timeline item.
+- **What the selected state means in house terms.** The selected state could mark the item the persona selected, or the most recent event.
+- **Whether a timeline item may be selected, be a link, or have an action.** No rule says how a persona interacts with a timeline item.
 - **The default sort direction**, newest first or oldest first.
 - **When to group a long history, by what time period, and at how many timeline items.**
 - **The switchover point, where relative time switches to an absolute date.** `recursica-skill-dates-and-currency` calls the switchover point a product decision.
@@ -144,7 +144,7 @@ Every rule in this section also applies to the timeline bullet. Never set or ove
 - [ ] No alignment, orientation, size, or connecting line variant is used unless the project's UI kit lists one.
 - [ ] The timeline items are in time order, in one stated direction, and events that happened close together are grouped.
 - [ ] Every timestamp uses the clear format: relative time for recent events, and no dates in numbers with slashes or hyphens.
-- [ ] The time zone is stated wherever the time is not in the user's time zone. An event whose place matters shows the time unconverted, with the time zone labeled.
+- [ ] The time zone is stated wherever the time is not in the persona's time zone. An event whose place matters shows the time unconverted, with the time zone labeled.
 - [ ] One timestamp format is used across the whole timeline. The timestamp sits in the timestamp's place in the timeline item, not in the title.
 - [ ] The title and the description say who and what. No meaning depends on the bullet alone.
 - [ ] One bullet type is used in the whole timeline. No timeline sits in a card or holds a form control.
@@ -153,7 +153,7 @@ Every rule in this section also applies to the timeline bullet. Never set or ove
 - [ ] Every relative timestamp has the absolute date and time in what the screen reader reads, not only in a tooltip on hover.
 - [ ] A screen reader announces nothing for every bullet, except an avatar bullet, which may have alternative text that names the person instead. The person's name also appears in the text of the timeline item.
 - [ ] The selected state is set in code, and never shown by color alone.
-- [ ] A timeline item that only shows information is not a tab stop. A timeline item the user can select is a real control with an accessible name, and holds no second click target.
+- [ ] A timeline item that only shows information is not a tab stop. A timeline item the persona can select is a real control with an accessible name, and holds no second click target.
 - [ ] Any control that loads more entries is reachable by keyboard, and does not move focus, lose focus, or change focus in any other way. The focus ring is not hidden.
 - [ ] No styling is set or overridden on the timeline or the timeline bullet, and no container or spacer is added to change the timeline's look.
 - [ ] Open questions were asked about, not decided: alignment, the connecting line, two-track or comparing timelines, what the selected state means, whether a timeline item may be selected, be a link, or have an action, the default sort direction, when and how to group a long history, the switchover point from relative time to an absolute date, whether the alternative icon bullet differs from the icon bullet, and the empty state.
