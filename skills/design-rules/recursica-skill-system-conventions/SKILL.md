@@ -139,10 +139,10 @@ Examples:
 - **Never hide the focus ring.** Keep the focus ring on every element that has focus. Keep the focus ring looking different from the hover style, from the caret alone, and from any selected, checked, active or on state. Focus and selection are different facts, and a persona must be able to tell focus and selection apart at a glance.
 - **Nothing the persona needs appears only on hover.** The rule covers every control, action, label, value and count. A persona using a keyboard and a persona using touch never hover.
 - **The tab order follows the visual order.**
-- **A form control's help text, error text and rule text pass through the component.** For a group, the text passes through the group component. The text never appears as a separate element placed beside the control. Only the component can connect the text to the control. Text that is not connected is invisible to a persona who tabs straight into the field.
+- **Set a form control's help text, error text and rule text on the control's component.** For a group, set the text on the group component. The text never appears as a separate element placed beside the control. Only the component can connect the text to the control. Text that is not connected is invisible to a persona who tabs straight into the field.
 - **Set the required state in code. Never show the required state with an asterisk alone.** An asterisk is a visual convention, not an accessible way of saying "required".
 - **Never move focus for the persona**, except where a component skill says when to move focus, such as when a modal opens.
-- **An icon that is a control has an accessible name. A decorative icon is silent.** Each component skill says which icons of the component are controls and which icons are decorative.
+- **An icon that is a control has an accessible name. A decorative icon is hidden from screen readers.** Each component skill says which icons of the component are controls and which icons are decorative.
 - **No meaning is shown by color alone.** See convention 3.
 
 ## A seventh convention
@@ -162,8 +162,8 @@ Examples:
 - [ ] Every hidden control can be reached by keyboard and by assistive technology. Where a hidden control works by a drag or a long-press, a second way to use the control exists, and the second way is not a drag.
 - [ ] No meaning relies on one channel alone. Each meaning has a second channel.
 - [ ] Every component meets the accessibility baseline: the focus ring is never hidden and looks different from hover and from any selected state, nothing the persona needs appears only on hover, and the tab order follows the visual order.
-- [ ] A form control's help text, error text and rule text pass through the component, and the required state is set in code, not by an asterisk alone.
-- [ ] Focus is never moved for the persona except where a component skill says when to move focus. Icons that are controls have an accessible name, and decorative icons are silent.
+- [ ] A form control's help text, error text and rule text are set on the control's component, and the required state is set in code, not by an asterisk alone.
+- [ ] Focus is never moved for the persona except where a component skill says when to move focus. Icons that are controls have an accessible name, and decorative icons are hidden from screen readers.
 - [ ] No workaround, such as an overflow menu or a scroll area inside the page, hides a broken structure. Where a limit cannot be changed, a reason is provided.
 - [ ] Every visible container separates the container's content from a peer. A region with no peer is grouped with space.
 - [ ] Repeating objects are shown in a table, unless the repeating objects are a small, finite set and each object has a graphic, or the aesthetic exception is used and a reason is provided.
