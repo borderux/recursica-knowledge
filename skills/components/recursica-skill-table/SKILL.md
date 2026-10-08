@@ -105,7 +105,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - **A clickable table row must be a single, real control** with an accessible name, not a click handler on a `tr` element. If a single control for the whole table row is awkward, make a link in one cell the click target instead. A link in one cell is usually the better choice.
 - **A persona using a keyboard must be able to start and leave inline editing.** Escape abandons the edit, and focus returns to the cell.
 - **Reveal nothing on hover.** Row actions that appear on hover cannot be reached by keyboard or by touch.
-- **Give the table no horizontal scrolling area.** `recursica-skill-tables` has a house rule against horizontal scrolling. Horizontal scrolling also makes a table close to unusable for a persona using a keyboard. A persona using a keyboard has no way to bring an off-screen column into view except by tabbing blindly.
+- **Avoid a horizontal scrolling area, and use one only as a last resort.** `recursica-skill-tables` allows horizontal scrolling only when nothing else fits the table. Horizontal scrolling makes a table close to unusable for a persona using a keyboard. A persona using a keyboard has no way to bring an off-screen column into view except by tabbing blindly.
 - **Focus must be visible on every control in the table**, and never hidden on a focused table row or cell.
 
 ## Styling set by tokens
@@ -143,7 +143,7 @@ Never set or override the styling of the header row, the body cells or the foote
 
 - [ ] The records are table data, not a few items where each item has a graphic, such as a chart or an image.
 - [ ] The table is a real table with real header cells connected to the header cells' columns, and the table has an accessible name.
-- [ ] The table has no horizontal scrolling area. Columns were cut to make the table fit.
+- [ ] The table has no horizontal scrolling area, unless fewer columns, a drill-down and stacked text all failed to fit the table.
 - [ ] Null cells show `NA` in the style `recursica-skill-tables` sets: italics, neutral 500, and the same text in every column. No cell is empty, and no zero stands in for a missing value.
 - [ ] A deliberate default sort is set. The sorted column shows the sort indicator even when the sort is fixed, and the sort state is announced on the column header, not only styled.
 - [ ] Sorting by more than one column has a keyboard equivalent. The column-visibility gear can be reached by keyboard, and columns can be reordered without dragging.
