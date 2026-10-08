@@ -49,6 +49,29 @@ In a skill's "Related skills" list, the links under "Only if used on the same sc
 
 When loading the skills from the Recursica knowledge server, `skill_family` returns the full text by default. `skill_family` with `detail: "contract"` returns the shorter form, without the Accessibility sections. `skill_section` returns any one section.
 
+## Names from other design systems
+
+**Recursica has one name for each component.** Other design systems use other names for the same components. A request, a design file or a stakeholder may use another system's name. Translate the name to the Recursica component, and build the Recursica component. Never treat another system's name as a component Recursica lacks.
+
+| Name in another design system     | Recursica component                               |
+| --------------------------------- | ------------------------------------------------- |
+| pill, tag, lozenge                | chip or badge: see `recursica-skill-badges-chips` |
+| snackbar                          | toast                                             |
+| drawer, side sheet                | panel                                             |
+| dialog                            | modal                                             |
+| select                            | dropdown                                          |
+| combobox, typeahead               | autocomplete                                      |
+| spinner                           | loader                                            |
+| toggle                            | switch                                            |
+| checklist                         | checkbox group                                    |
+| button group, toggle button group | segmented control                                 |
+| wizard                            | stepper                                           |
+| data grid                         | table                                             |
+| dual list box                     | transfer list                                     |
+| drop zone                         | file upload                                       |
+
+When a name is not in the table, find the Recursica component whose skill describes the same use. If no component fits, ask the user.
+
 ## Style overrides
 
 **A style override is a gap to report, not a permission.** A style override is the way an adapter (the Recursica component library for one framework, such as Mantine or Angular Material) offers for code to override a component's styles directly. A style override is also called the styling escape hatch. The name "escape hatch" makes a style override sound like an allowed way to change styles. Treat a style override as a warning sign instead. Before overriding a style, ask one question:
@@ -186,6 +209,7 @@ Check every item before starting, and again before declaring the work done.
 
 - [ ] The design router was loaded first, before any other Recursica skill.
 - [ ] Every source is a `SKILL.md`. No `DOCS.md` was used, and no convention came from another design system.
+- [ ] Every name from another design system was translated to the Recursica component.
 - [ ] Every component on the screen has both of the component's skills loaded: the component skill and the design-rules skill.
 - [ ] The screen's object was named before any component was chosen.
 - [ ] Routing was decided before layout.

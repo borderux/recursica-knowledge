@@ -85,6 +85,8 @@ Quoted interface copy keeps the exact interface wording, such as a button label 
 
 **Skills never state a project's variants or options as fixed facts.** A designer can add, rename or remove variants and options in Theme Forge, so each project can differ. Describe an option by role, such as "the primary style" or "the smaller size", and give the standard UI kit name only as an example. Tell the agent to get the project's list from the Recursica MCP server.
 
+**Never say that a component from another design system does not exist.** Recursica has one name for each component, and another system's name maps to a Recursica component. Write the Recursica component to use: "Build every pill as a chip or a badge", not "Recursica has no pill component". The design router holds the table of other systems' names.
+
 **Never say what a component lacks.** A designer can add a variant, an option or a state in Theme Forge at any time, so "The standard UI kit has no size variant" goes stale the day a size is added. The UI kit holds tokens, so the UI kit also says nothing about behavior, such as whether opening one accordion item closes another. Leave out every variant, option and state a component does not have. The opening instruction to use only what the Recursica MCP server lists already covers the absence. Where a rule depends on an option, write the condition: "If the project has a loading state, use the loading state. Otherwise, show the disabled look with an animated icon." Keep a ban only where a design reason forbids the option outright, such as an error state on a badge, and give the reason.
 
 ### 5. Concrete words instead of metaphors

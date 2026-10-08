@@ -162,7 +162,7 @@ An app shell is the header, the left rail and the footer around the page content
 
 **Layers 0 and 1 cover nearly every region.** Layer 2 needs a stated reason. Layer 3 is almost always a sign that the page structure is wrong.
 
-**How the adapter (the Recursica component library for one framework, such as Mantine or Angular Material) offers a layer is still not confirmed.** The theme defines tokens for every layer, and the layer attribute, `data-recursica-layer`, is the confirmed way to declare a layer. The component documentation mentions a layer component, but the adapter does not provide a layer component. Do not paint the background of the page, or of any region of the page, with style variables used directly, or with the tokens of the code library under the adapter. Raise the missing layer component with the user instead. See `recursica-skill-design-router`.
+**A layer is a style applied to a container, not a component.** Declare a layer with the layer attribute, `data-recursica-layer`, on the container. The theme defines the tokens for every layer. Do not paint the background of the page, or of any region of the page, with style variables used directly, or with the tokens of the code library under the adapter (the Recursica component library for one framework, such as Mantine or Angular Material). See `recursica-skill-layers`.
 
 ## Application chrome
 
@@ -266,7 +266,7 @@ The signs below are listed in order, starting with the strongest sign.
 - [ ] No region is sized to a bare viewport height inside a declared layer. Every full-height region subtracts the layer padding by reading the layer's padding token. A page with little content does not scroll at all when measured.
 - [ ] A loading page shows nothing, with no skeleton screen. A spinner appears only past about three seconds, or for slow regions of an otherwise loaded page.
 - [ ] Layer 0 is declared once, on the root element, and never declared again. Every region uses space first. A separate background appears only where regions could not be told apart. A region without peers has a layer instead of a card.
-- [ ] No background of the page, or of any region of the page, is painted with stylesheet rules written by hand, or with the tokens of the code library under the adapter. Any missing layer component was raised with the user.
+- [ ] No background of the page, or of any region of the page, is painted with stylesheet rules written by hand, or with the tokens of the code library under the adapter. Every layer is declared with the layer attribute.
 - [ ] Application chrome sits in the header or the rail, never in the content area.
 - [ ] Every KPI tile passed all three tests: the dataset is too large to take in at a glance, the number changes, and the tile guides an action. No KPI tile is always zero by nature, and no KPI tile only repeats the row count of a table below the tile. Where no KPI tile passed, the page has no row of KPI tiles.
 - [ ] The KPI tiles share one treatment, are named as noun phrases, and agree with each other.

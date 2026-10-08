@@ -114,6 +114,8 @@ The layer tokens come in two groups, `properties_*` and `elements_*`.
 
 The page's markup uses two Recursica attributes: the layer attribute, `data-recursica-layer`, and the theme attribute, `data-recursica-theme`.
 
+**A layer is a style applied to a container, not a component.** Declare a layer on any container with the layer attribute. Never wrap content in a component to make a layer.
+
 **Declare a layer with the layer attribute, set to a level from 0 to 3**, alongside the theme attribute, set to `light` or `dark`.
 
 **A layer's scope covers the element that carries the layer attribute, and every element inside that element.** A layer is a scope rather than a style, because every nested element takes colors from the nearest declared layer.
@@ -179,7 +181,6 @@ In the table, plurality (the number of items) means how many layers or cards app
 
 ## Open questions
 
-- **How the adapter offers a layer.** The layer tokens and the layer attribute are confirmed from the theme. No source confirms whether each adapter (the Recursica component library for one framework, such as Mantine or Angular Material) ships a layer component, offers a setting, or expects the layer attribute directly. `recursica-skill-screen-scaffolding` records that the component documentation mentions a layer component, but the adapter does not provide a layer component. Confirm before building, and do not hand-build a substitute.
 - **Which regions that hold content sit at which level by default.** No source states the layer of a panel, a modal, a table or a dashboard widget. The available sources state only that each of those components has colors for each layer.
 - **Whether a modal or panel opens a new layer scope**, or takes on the layer beneath the modal or panel.
 - **Whether KPI tiles sit on layers or in cards.** Still open in `recursica-skill-screen-scaffolding`.
@@ -204,4 +205,4 @@ In the table, plurality (the number of items) means how many layers or cards app
 - [ ] No layer level stands for rank, status, importance, or any other meaning.
 - [ ] No layer divides a page into regions, and no card has been swapped for a layer, or a layer for a card.
 - [ ] The contents of every newly opened layer have been checked, not only the container.
-- [ ] Open questions were asked about, not decided: how the adapter offers a layer, which regions that hold content sit at which level by default, whether a modal or panel opens a new layer scope, whether KPI tiles sit on layers or in cards, and what a layer does below the tablet breakpoint.
+- [ ] Open questions were asked about, not decided: which regions that hold content sit at which level by default, whether a modal or panel opens a new layer scope, whether KPI tiles sit on layers or in cards, and what a layer does below the tablet breakpoint.

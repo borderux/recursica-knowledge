@@ -62,7 +62,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 ## Pills
 
-**Recursica has no pill component.** Recursica has chips and badges. Other design systems use the word "pill" for either a chip or a badge. Translate the word. When "pill" means a chip, use a chip. When "pill" means a badge, use a badge. Every rule in this skill applies to the chip or the badge without change.
+**Build every pill as a chip or a badge.** Other design systems use the word "pill" for either a chip or a badge, and Recursica uses the words chip and badge. Translate the word. When "pill" means a chip, use a chip. When "pill" means a badge, use a badge. Every rule in this skill applies to the chip or the badge without change.
 
 ## Status and selection
 
