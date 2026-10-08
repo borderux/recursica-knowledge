@@ -13,9 +13,9 @@ A loader shows that work is still in progress. A loader cannot show how much of 
 
 ## When to use a loader
 
-- The user waits for an operation of unknown length, such as loading data, a submit action, or a recalculation.
+- The persona waits for an operation of unknown length, such as loading data, a submit action, or a recalculation.
 - One region is still loading on a page that has otherwise loaded. A spinner is most useful for a single region that is still loading. Show the content that has arrived, and put a spinner in each region that is still loading, instead of hiding the whole page until every region loads. The most common example is a dashboard whose widgets load at different speeds.
-- The wait is long enough for the user to notice. Show a loading indicator when the operation will take more than about 3 seconds. `recursica-skill-feedback-messaging` sets the 3-second threshold. For a shorter wait, a spinner flashes on and off and looks like a glitch.
+- The wait is long enough for the persona to notice. Show a loading indicator when the operation will take more than about 3 seconds. `recursica-skill-feedback-messaging` sets the 3-second threshold. For a shorter wait, a spinner flashes on and off and looks like a glitch.
 - One region is loading, such as a card, a panel, or a modal, and the loader can cover only that region instead of the whole screen.
 
 ## When not to use a loader
@@ -23,13 +23,13 @@ A loader shows that work is still in progress. A loader cannot show how much of 
 | Situation                                              | Use instead                                                                                                                                                                                                   |
 | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | The amount of work or the percentage done is known     | If the project has a determinate variant (one that shows how much is done), use the determinate variant. Otherwise, use nothing instead. Raise the need for a progress indicator, and see the open questions. |
-| The operation finishes in well under a second          | Show no loading indicator. A spinner that flashes on and off distracts the user more than the wait does.                                                                                                      |
+| The operation finishes in well under a second          | Show no loading indicator. A spinner that flashes on and off distracts the persona more than the wait does.                                                                                                   |
 | The wait is over, and the screen must state the result | Text in the place where the result appears, or a toast for a global result. See `recursica-skill-toast`.                                                                                                      |
 | No data exists, and no data ever existed               | An empty state that is filled in, not left blank, and never an empty state on a dashboard. See `recursica-skill-dashboards`.                                                                                  |
 | A skeleton screen shown before the content             | **Nothing. Skeleton screens and ghost text are forbidden outright.** See "Variants" below.                                                                                                                    |
 | The operation failed                                   | An error message. Stop the spinner and say what happened.                                                                                                                                                     |
 
-**A loader is not an empty state, and not an error state.** A spinner that keeps turning after a request failed tells the user the system is still trying, when the system has stopped trying.
+**A loader is not an empty state, and not an error state.** A spinner that keeps turning after a request failed tells the persona the system is still trying, when the system has stopped trying.
 
 ## Variants
 
@@ -41,24 +41,24 @@ The rules below describe each option by role, such as "the largest size". The na
 - **In the standard UI kit, a loader has three sizes, called `small`, `default`, and `large`.** Write the size names from the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has). The UI kit's size names are also names the code uses. Each of the two adapters (the Recursica component library for one framework, such as Mantine or Angular Material) also accepts `sm`, `md`, and `lg` as other names for the three sizes. `sm`, `md`, and `lg` work today, but the design system is specified in the UI kit's names. Only the design-system website shows sizes named xs, sm, and md.
 - **If the project has a determinate variant, use the determinate variant to show progress.** Otherwise, a loader cannot show how far along the work is. Do not show progress in any other form, such as "45%". A spinner cannot show how long the work will take. Do not show an estimated time left. Raise the need for a progress indicator, and see the open questions.
 - **If the project has a slot for a label or text, use the project's label slot.** Otherwise, place the text that goes with the spinner as a separate element.
-- **Never use a skeleton screen.** Skeleton screens are forbidden outright, even when the project lists a skeleton screen. A skeleton screen shows gray placeholder shapes where content will appear. A skeleton screen is also called a skeleton loader or ghost elements. A skeleton screen is a loading indicator, like a spinner. Users have to work out what the gray shapes are, and the gray shapes tell the user nothing about the content. `recursica-skill-screen-scaffolding` sets the rule: a loading page shows nothing until the page shows content.
+- **Never use a skeleton screen.** Skeleton screens are forbidden outright, even when the project lists a skeleton screen. A skeleton screen shows gray placeholder shapes where content will appear. A skeleton screen is also called a skeleton loader or ghost elements. A skeleton screen is a loading indicator, like a spinner. Personas have to work out what the gray shapes are, and the gray shapes tell the persona nothing about the content. `recursica-skill-screen-scaffolding` sets the rule: a loading page shows nothing until the page shows content.
 - **If the project has a shimmer variant, a progress bar variant or a type variant for the loader, use the project's loader variant.** A loader variant is not a separate progress component.
 - **Both adapters offer three loader types: Oval, Bars, and Dots.** Each adapter has a type setting for the three types, and each adapter styles each type. All three types are available. Get the name of the type setting in code from the Recursica MCP server. A type's look comes from the adapter, not the UI kit, and the look may differ between the two adapters. Oval is the default type in both adapters. Use the default type unless a reason calls for a different type. Do not use the choice of type to signal any meaning.
 - **Only the design-system website shows a track for total progress and an indicator for the percentage done.** See the open questions.
 
 ## Rules
 
-**Always show text with the loader, and make the text say what is happening.** Write "Loading invoices", not "Loading". If the project has no label slot, place the text beside the loader or below the loader. The text tells the user what the wait is for. The spinner only shows that a wait is underway.
+**Always show text with the loader, and make the text say what is happening.** Write "Loading invoices", not "Loading". If the project has no label slot, place the text beside the loader or below the loader. The text tells the persona what the wait is for. The spinner only shows that a wait is underway.
 
 **Show the loader only over the region that is loading.** Do not cover the whole screen while one card loads. Use a loader across the whole screen only for a wait that affects the whole screen.
 
-**Do not show a loader for a wait under about 3 seconds.** Delay the loader, or leave the loader out. A spinner that appears and disappears at once distracts the user. The spinner also makes a fast operation feel slower than the operation was. `recursica-skill-feedback-messaging` sets the 3-second threshold. An earlier version of this skill gave 300ms. The 300ms figure was never a recorded house rule, and the 300ms figure has been corrected.
+**Do not show a loader for a wait under about 3 seconds.** Delay the loader, or leave the loader out. A spinner that appears and disappears at once distracts the persona. The spinner also makes a fast operation feel slower than the operation was. `recursica-skill-feedback-messaging` sets the 3-second threshold. An earlier version of this skill gave 300ms. The 300ms figure was never a recorded house rule, and the 300ms figure has been corrected.
 
-**Never let the spinning motion be the only signal.** `recursica-skill-system-conventions` forbids showing meaning in a single channel (color, shape, position or text, each a separate signal). Animation is the channel the user loses most easily. A screen reader cannot report the animation, the animation disappears when motion is reduced, and a screenshot cannot show the animation. The text with the loader is the second channel.
+**Never let the spinning motion be the only signal.** `recursica-skill-system-conventions` forbids showing meaning in a single channel (color, shape, position or text, each a separate signal). Animation is the channel the persona loses most easily. A screen reader cannot report the animation, the animation disappears when motion is reduced, and a screenshot cannot show the animation. The text with the loader is the second channel.
 
-**Follow the operating system's reduced-motion setting** (a setting that asks for less animation). When motion is reduced or removed, the text with the loader and the screen reader announcement must still tell the user about the wait, without the animation.
+**Follow the operating system's reduced-motion setting** (a setting that asks for less animation). When motion is reduced or removed, the text with the loader and the screen reader announcement must still tell the persona about the wait, without the animation.
 
-**Keep the space the content will fill.** A loader smaller than the content the loader stands in for makes the layout jump when the content arrives. The user then loses the reading position in the text.
+**Keep the space the content will fill.** A loader smaller than the content the loader stands in for makes the layout jump when the content arrives. The persona then loses the reading position in the text.
 
 **Show one loader per loading region.** Do not nest loaders or stack loaders. Do not show a loader for a region inside a loader for the page.
 
@@ -70,26 +70,26 @@ The rules below describe each option by role, such as "the largest size". The na
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
-A screen reader user does not know a spinner is on the page unless the app announces the spinner, because a spinner is only animation. The most common failure is a wait that starts and ends with no announcement, not a control the user cannot reach. The screen reader user then never learns that a wait started or ended.
+A persona using a screen reader does not know a spinner is on the page unless the app announces the spinner, because a spinner is only animation. The most common failure is a wait that starts and ends with no announcement, not a control the persona cannot reach. The persona using a screen reader then never learns that a wait started or ended.
 
 ### Screen readers
 
-- **Announce that loading has started, and announce that the content has arrived.** Both announcements are required. Apps most often skip the announcement that the content has arrived. When a spinner appears and disappears with no announcement, the user never learns there was a wait or a result.
+- **Announce that loading has started, and announce that the content has arrived.** Both announcements are required. Apps most often skip the announcement that the content has arrived. When a spinner appears and disappears with no announcement, the persona never learns there was a wait or a result.
 - **Say what is loading, and what arrived.** Announce "Loading invoices", then "24 invoices loaded". Do not announce only "Loading" or "Loader".
-- **The announcement must be polite, never assertive.** A polite announcement waits for a pause instead of interrupting. The user does not need to know at once that a wait started or finished. The announcement must not interrupt what the user is reading or typing. See `recursica-skill-live-regions`.
+- **The announcement must be polite, never assertive.** A polite announcement waits for a pause instead of interrupting. The persona does not need to know at once that a wait started or finished. The announcement must not interrupt what the persona is reading or typing. See `recursica-skill-live-regions`.
 - **The live region (an area of the page that a screen reader announces automatically when the area's content changes) that makes the announcement must already be on the page before the loader appears.** A screen reader often never announces a live region that is added at the same moment as the live region's message.
 - **Never announce progress that is not known.** Without a determinate variant, the app has no percentage, no step count, and no time estimate to report. Do not make up a percentage, a step count, or a time estimate.
 - **The spinning motion tells assistive technology nothing.** The motion is a single visual channel. `recursica-skill-system-conventions` requires a second channel, which for a loader is the text and the announcement.
-- **Do not announce every check, retry, or refresh.** A region that reloads on a schedule must not announce each reload. Announce only the changes the user needs to know about.
+- **Do not announce every check, retry, or refresh.** A region that reloads on a schedule must not announce each reload. Announce only the changes the persona needs to know about.
 - **If a load fails, announce the failure.** A spinner that disappears with no message sounds like success.
 
 ### Keyboard and non-mouse navigation
 
-- **Never put focus on a loader.** A loader is not a control. Give the loader no `tabindex`, no click action, and no code that moves focus to the loader. When an element with focus disappears, the user's place on the page is lost.
-- **Never leave focus on a control that has disappeared behind the loader.** When the control the user activated is removed or covered, focus falls to the page body, and the user's place on the page is lost entirely. Before the control is removed or covered, move focus to an element that stays on the page.
-- **When a region's content is replaced, keep the user's place.** When the content arrives, if focus was inside the region, move focus to the region's heading or to the first element in the region that the user can interact with. Never move focus to the top of the page.
-- **Do not trap the keyboard behind a loader.** Content under the loader, and content that has not arrived yet, must not stay behind the spinner as tab stops (places the Tab key lands) that the user can neither see nor hear.
-- **Never show content the user needs only on hover.** Above all, the text that says what is loading must stay visible.
+- **Never put focus on a loader.** A loader is not a control. Give the loader no `tabindex`, no click action, and no code that moves focus to the loader. When an element with focus disappears, the persona's place on the page is lost.
+- **Never leave focus on a control that has disappeared behind the loader.** When the control the persona activated is removed or covered, focus falls to the page body, and the persona's place on the page is lost entirely. Before the control is removed or covered, move focus to an element that stays on the page.
+- **When a region's content is replaced, keep the persona's place.** When the content arrives, if focus was inside the region, move focus to the region's heading or to the first element in the region that the persona can interact with. Never move focus to the top of the page.
+- **Do not trap the keyboard behind a loader.** Content under the loader, and content that has not arrived yet, must not stay behind the spinner as tab stops (places the Tab key lands) that the persona can neither see nor hear.
+- **Never show content the persona needs only on hover.** Above all, the text that says what is loading must stay visible.
 
 ## Styling set by tokens
 
@@ -122,7 +122,7 @@ A screen reader user does not know a spinner is on the page unless the app annou
 
 ## Pre-flight checklist
 
-- [ ] The user waits for an operation of unknown length that takes longer than about 3 seconds. No shorter wait shows a loader.
+- [ ] The persona waits for an operation of unknown length that takes longer than about 3 seconds. No shorter wait shows a loader.
 - [ ] The loader covers only the region that is loading, and the region has only one loader.
 - [ ] Text beside the loader says what is happening, and names what is loading.
 - [ ] The app claims no time estimate. The app claims no progress or percentage, unless the project's determinate variant shows the progress.
