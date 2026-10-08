@@ -9,25 +9,25 @@ metadata:
 
 # Navigation and tabs
 
-This skill holds the house rules for application navigation: primary and secondary navigation, showing sub-levels, showing the user's location, overflow, routing and tabs. The rules are opinions, not neutral best practices. Treat each rule as a constraint.
+This skill holds the house rules for application navigation: primary and secondary navigation, showing sub-levels, showing the persona's location, overflow, routing and tabs. The rules are opinions, not neutral best practices. Treat each rule as a constraint.
 
 The rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The design system decides the visual design of each component, including selected states, hover styling, spacing and color. This skill decides the structure, the interaction, and how routes behave.
 
-**A control never moves the user to a new location and also does a second action in the same click.** Moving the user, applying a filter, opening a region that holds content, and switching a tab are separate outcomes. A page, a panel and a modal are examples of a region that holds content. When one click bundles two outcomes, the control's label can honestly describe only one of the outcomes. Where a destination must open already filtered, the filtered view is a different destination with a separate route. A link to the filtered view goes to that route, and the link itself applies no filter. See convention 6 in `recursica-skill-system-conventions`.
+**A control never moves the persona to a new location and also does a second action in the same click.** Moving the persona, applying a filter, opening a region that holds content, and switching a tab are separate outcomes. A page, a panel and a modal are examples of a region that holds content. When one click bundles two outcomes, the control's label can honestly describe only one of the outcomes. Where a destination must open already filtered, the filtered view is a different destination with a separate route. A link to the filtered view goes to that route, and the link itself applies no filter. See convention 6 in `recursica-skill-system-conventions`.
 
 **Navigation labels name objects, not actions.** Write `Forms`, never `View forms`. `recursica-skill-naming-terminology` decides what each item is called, whether a name is singular or plural, and how much a term may be shortened.
 
 ## Governing principles
 
-1. **A location is a route.** A place the user navigates to has its own URL and an entry in the browser history. A modal, a panel, or any other element that a trigger opens has neither a URL nor a history entry. The rule that a location is a route is the most important rule in this skill, because designs break that rule most often.
+1. **A location is a route.** A place the persona navigates to has its own URL and an entry in the browser history. A modal, a panel, or any other element that a trigger opens has neither a URL nor a history entry. The rule that a location is a route is the most important rule in this skill, because designs break that rule most often.
 2. **Fix the information architecture instead of working around the information architecture.** Information architecture is how the application's content is organized and labeled. `recursica-skill-information-architecture` sets the rules for information architecture. Navigation that overflows, wraps or scrolls is a symptom of a mistake in the information architecture. Forms spread across tabs are a symptom of the same kind of mistake. Change the information architecture. Do not add a workaround to cope with the mistake.
-3. **The page itself must show where the user is**, not only the navigation. A selected state alone is not enough. Headings, breadcrumbs, or both show the location.
+3. **The page itself must show where the persona is**, not only the navigation. A selected state alone is not enough. Headings, breadcrumbs, or both show the location.
 
 ## Routing and browser history
 
-**MUST give every view the user can navigate to its own route, reachable by the view's URL.** Moving between views MUST add an entry to the browser history, so that the back and forward buttons work correctly. Designs break the route and history rule constantly. A missing route or history entry is a serious failure, not a finishing touch.
+**MUST give every view the persona can navigate to its own route, reachable by the view's URL.** Moving between views MUST add an entry to the browser history, so that the back and forward buttons work correctly. Designs break the route and history rule constantly. A missing route or history entry is a serious failure, not a finishing touch.
 
-**MUST NOT create history entries for modals or panels.** A trigger opens a modal or a panel. The user does not navigate to a modal or a panel. A history entry for a modal or a panel erases the difference between "a place in the application" and "a temporary state". The browser history should record exactly that difference.
+**MUST NOT create history entries for modals or panels.** A trigger opens a modal or a panel. The persona does not navigate to a modal or a panel. A history entry for a modal or a panel erases the difference between "a place in the application" and "a temporary state". The browser history should record exactly that difference.
 
 **A modal or panel deliberately built to be linked to is the only exception.** A person can copy the URL of a linked modal or panel and share the URL, and another person can reopen the URL. A modal or panel built this way is a location. The modal or panel gets a route and a link that opens the modal or panel, together and on purpose. Real cases exist for sending a person a URL that opens a view with the modal or panel already open. A linked modal or panel is rare, and must be an explicit decision. The default stays the same: modals and panels have no route, and a button opens each modal or panel. See `recursica-skill-panels-modals`.
 
@@ -63,7 +63,7 @@ See `recursica-skill-working-memory` for the reasoning, the research, and the li
 
 The 7 ± 2 limit makes the overflow rules possible to enforce. A horizontal navigation that runs out of room has almost always gone past 7 ± 2 items first. Treat the item count as the real defect, and the overflow as the symptom.
 
-**When permissions hide navigation items, each user sees a different item count.** Check the actual number of items for each role, not only the full list.
+**When permissions hide navigation items, each persona sees a different item count.** Check the actual number of items for each role, not only the full list.
 
 ## Exposing sub-levels
 
@@ -72,7 +72,7 @@ The 7 ± 2 limit makes the overflow rules possible to enforce. A horizontal navi
 - **No landing page:** the navigation expands in place to show the item's sub-navigation, like an accordion.
 - **Has a landing page:** the click goes to the landing page, and the item's sub-navigation also expands.
 
-**Avoid navigation that opens on hover in complex navigation.** Users struggle to steer a mouse across menus that appear on hover. Sub-navigation that opens on hover is also much harder to make accessible. Hover is sometimes unavoidable, because a large number of items may force a mega menu (a large panel that shows many links at once). Treat hover in that case as a failure of the item count, not as a design option. Prefer sub-navigation that opens on a click and updates the screen.
+**Avoid navigation that opens on hover in complex navigation.** Personas struggle to steer a mouse across menus that appear on hover. Sub-navigation that opens on hover is also much harder to make accessible. Hover is sometimes unavoidable, because a large number of items may force a mega menu (a large panel that shows many links at once). Treat hover in that case as a failure of the item count, not as a design option. Prefer sub-navigation that opens on a click and updates the screen.
 
 ## Choosing the sub-nav component
 
@@ -82,19 +82,19 @@ The 7 ± 2 limit makes the overflow rules possible to enforce. A horizontal navi
 
 **MUST use semantic HTML** (HTML elements chosen by role, such as a button element for a button). Navigation is a list, ordered or unordered, and must be marked up as a list.
 
-**A top-level item with no children MUST stay directly navigable.** For example, a Dashboard item with no sub-navigation is a link, not an accordion header that does nothing. Navigation often mixes items the user can go to directly with groups that expand. Both kinds of item must work in the same navigation.
+**A top-level item with no children MUST stay directly navigable.** For example, a Dashboard item with no sub-navigation is a link, not an accordion header that does nothing. Navigation often mixes items the persona can go to directly with groups that expand. Both kinds of item must work in the same navigation.
 
 ## Default state of collapsible groups
 
-**Every collapsible group MUST start collapsed when the page first loads.** The only group that starts expanded is the group that contains the user's current page.
+**Every collapsible group MUST start collapsed when the page first loads.** The only group that starts expanded is the group that contains the persona's current page.
 
 Expanding every group adds no value, because the top-level labels then have no reason to exist.
 
-**Group labels must be clear enough that the user knows which group to expand without opening the group.** Groups that start collapsed depend on clear group labels. If the group labels are not clear enough, fix the labels instead of expanding the group.
+**Group labels must be clear enough that the persona knows which group to expand without opening the group.** Groups that start collapsed depend on clear group labels. If the group labels are not clear enough, fix the labels instead of expanding the group.
 
 ## Indicating location
 
-A screen can show the user's location in three ways. A screen needs more than the first way.
+A screen can show the persona's location in three ways. A screen needs more than the first way.
 
 1. **A selected state** on the active item. Tree and navigation components provide a selected state. Use the component's selected state. Do not invent a custom selected state.
 2. **Clear page titles that show the hierarchy** through heading levels (H1, H2, and so on).
@@ -104,13 +104,13 @@ A screen can show the user's location in three ways. A screen needs more than th
 
 ## Hiding navigation
 
-**Hiding navigation entirely, behind a hamburger menu or a similar control, is acceptable when the user uses the navigation rarely and the screen space is needed.** Hidden navigation is not a compromise. For navigation the user rarely touches, hiding the navigation is correct.
+**Hiding navigation entirely, behind a hamburger menu or a similar control, is acceptable when the persona uses the navigation rarely and the screen space is needed.** Hidden navigation is not a compromise. For navigation the persona rarely touches, hiding the navigation is correct.
 
-**If the user moves back and forth between sections, keep the navigation visible at all times.** How often the user uses the navigation decides whether to hide the navigation, not the size of the screen.
+**If the persona moves back and forth between sections, keep the navigation visible at all times.** How often the persona uses the navigation decides whether to hide the navigation, not the size of the screen.
 
-**NEVER collapse a vertical navigation into a rail of icons only** (a narrow strip showing icons without labels). A rail of icons has no real benefit. When space is needed, hide the navigation behind a hamburger menu that opens with the text labels still in place. A fully hidden navigation that opens with clear labels is better than an always-visible navigation that the user has to decode.
+**NEVER collapse a vertical navigation into a rail of icons only** (a narrow strip showing icons without labels). A rail of icons has no real benefit. When space is needed, hide the navigation behind a hamburger menu that opens with the text labels still in place. A fully hidden navigation that opens with clear labels is better than an always-visible navigation that the persona has to decode.
 
-**NEVER use icon-only primary navigation**, in any form. A narrow viewport is not an exception. The ban on icon-only navigation holds at every width, and a rail of icons is not an alternative for mobile or tablet. Beyond a handful of icons, nobody remembers what each icon means. Without a hover state, an icon also has no affordance (a visible cue that a control can be used, such as the underline on a link). One published design system shows the real-world extreme: a rail of fifteen icons. The rail's collapsed state shrinks the icons down to bare dots, and the user must hover over each dot to identify the dot. See `recursica-skill-responsive-behavior` and `recursica-skill-icon-semantics`.
+**NEVER use icon-only primary navigation**, in any form. A narrow viewport is not an exception. The ban on icon-only navigation holds at every width, and a rail of icons is not an alternative for mobile or tablet. Beyond a handful of icons, nobody remembers what each icon means. Without a hover state, an icon also has no affordance (a visible cue that a control can be used, such as the underline on a link). One published design system shows the real-world extreme: a rail of fifteen icons. The rail's collapsed state shrinks the icons down to bare dots, and the persona must hover over each dot to identify the dot. See `recursica-skill-responsive-behavior` and `recursica-skill-icon-semantics`.
 
 **Below desktop size, global navigation collapses into a hamburger menu.** The menu that slides in shows both the icon and the text of each navigation item.
 
@@ -135,29 +135,29 @@ Navigation has the following hard bans:
 - **NEVER scroll navigation horizontally.** Horizontal navigation must be fully visible at all times. Avoid horizontal scrolling in any part of an enterprise application at almost any cost. In navigation, horizontal scrolling has no valid reason at all.
 - **NEVER put navigation in a separate scrolling area.** Vertical navigation that scrolls _with the page_ is fine. A separate scrolling `div` only for the navigation is not allowed.
 
-**A navigation the user customizes is the only exception.** An ellipsis or "more" control that hides top-level items is acceptable only when the user can customize the navigation, and the user chose what to hide. Without that explicit choice by the user, no overflow state is acceptable in a horizontal navigation.
+**A navigation the persona customizes is the only exception.** An ellipsis or "more" control that hides top-level items is acceptable only when the persona can customize the navigation, and the persona chose what to hide. Without that explicit choice by the persona, no overflow state is acceptable in a horizontal navigation.
 
 ## Permissions and unavailable items
 
-**MUST hide any navigation item the user does not have permission to use.** No permission means no entry in the navigation. Do not show the item disabled. Do not show the item and then fail when the user clicks the item.
+**MUST hide any navigation item the persona does not have permission to use.** No permission means no entry in the navigation. Do not show the item disabled. Do not show the item and then fail when the persona clicks the item.
 
-**Disable a navigation item, rather than hide the item, when the user can make the item work themselves.** An item may be unavailable because of a condition the user is able to change, such as a setup step not done yet, or a missing prerequisite the user controls. Show that item disabled, and enable the item once the user makes the change. The test is whether the user has the power to fix the cause. Hide an item the user can never reach, and disable an item the user can unlock.
+**Disable a navigation item, rather than hide the item, when the persona can make the item work themselves.** An item may be unavailable because of a condition the persona is able to change, such as a setup step not done yet, or a missing prerequisite the persona controls. Show that item disabled, and enable the item once the persona makes the change. The test is whether the persona has the power to fix the cause. Hide an item the persona can never reach, and disable an item the persona can unlock.
 
 ## Tabs
 
-**Use tabs only when the content is parts of one whole.** The user switches between tabs while looking at the same material.
+**Use tabs only when the content is parts of one whole.** The persona switches between tabs while looking at the same material.
 
 **The first tab in reading order opens by default.** In a locale that reads left to right, the first tab is the leftmost tab, because the eye starts there. `recursica-skill-defaults` sets this rule.
 
-**MUST NOT spread a form across tabs.** Tabs divide content into sections. Tabs never break up data entry. A form with several parts uses a stepper component (which walks the user through numbered steps), not tabs. Do not put several forms, or the fields of one form, on separate tabs.
+**MUST NOT spread a form across tabs.** Tabs divide content into sections. Tabs never break up data entry. A form with several parts uses a stepper component (which walks the persona through numbered steps), not tabs. Do not put several forms, or the fields of one form, on separate tabs.
 
 **The code library under the Recursica tab component decides keyboard interaction inside a set of tabs.** That code library decides whether the arrow keys or the Tab key move focus between tabs. Use the tab component and keep the tab component's behavior. Do not add custom key handling.
 
-**If forms on several tabs cannot be avoided, the screen MUST ask the user about unsaved changes**, most likely with a modal when the user clicks a tab. The unsaved-changes prompt combines choosing a tab and handling unsaved changes into one interaction. That combination is the clearest sign that tabs were the wrong container. Treat the prompt as a last resort, not as a supported pattern.
+**If forms on several tabs cannot be avoided, the screen MUST ask the persona about unsaved changes**, most likely with a modal when the persona clicks a tab. The unsaved-changes prompt combines choosing a tab and handling unsaved changes into one interaction. That combination is the clearest sign that tabs were the wrong container. Treat the prompt as a last resort, not as a supported pattern.
 
 ## Open questions
 
-No house rule covers the topics below yet. **Ask the person instead of choosing.** See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit these topics.
+No house rule covers the topics below yet. **Ask the user instead of choosing.** See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit these topics.
 
 - **The order of items within a level.** No rule says whether to order items by how often the items are used, alphabetically, or by workflow order.
 - **Maximum depth.** The 7 ± 2 rule governs the number of items in each level, not how many levels are acceptable.
@@ -169,14 +169,14 @@ No house rule covers the topics below yet. **Ask the person instead of choosing.
 - **Keyboard interaction inside a component**: tab sets, trees and menus. The code library under each Recursica component decides the keyboard interaction.
 - **Where global tools go and how global tools behave.** The global tools are search, notifications and the account menu. This skill rules only that global tools stay out of primary navigation.
 - **Form layout, validation, saving, and steppers.** `recursica-skill-forms` covers these topics. This skill decides _that_ a form with several parts uses a stepper. `recursica-skill-forms` decides how the stepper behaves.
-- **Storing navigation state as a user preference.** Routing covers the navigation state that needs restoring. Any approach beyond routing is a question of how the code is built.
+- **Storing navigation state as a preference saved for the persona.** Routing covers the navigation state that needs restoring. Any approach beyond routing is a question of how the code is built.
 
 ## Pre-flight checklist
 
 Check every item below before treating the navigation as done.
 
 - [ ] The application uses a drawer or a sidebar for navigation, not both at once, and has no option to pin the drawer open.
-- [ ] Every view the user can navigate to has its own route, reachable by URL.
+- [ ] Every view the persona can navigate to has its own route, reachable by URL.
 - [ ] Navigation adds entries to the browser history, and back and forward work correctly.
 - [ ] No modal or panel creates a history entry, except a modal or panel deliberately built to be linked to, with a URL that can be shared.
 - [ ] No tab state is kept as remembered UI state in place of a route.
@@ -188,17 +188,17 @@ Check every item below before treating the navigation as done.
 - [ ] Clicking a primary item that has a landing page goes to the landing page and expands the item's sub-navigation. Clicking a primary item without a landing page expands the item in place.
 - [ ] No accordion is nested inside another accordion unless the project has a nesting option, and structures with several levels use a tree.
 - [ ] Navigation is marked up as a semantic ordered or unordered list.
-- [ ] Top-level items with no children are links the user can go to directly.
+- [ ] Top-level items with no children are links the persona can go to directly.
 - [ ] Collapsible groups load collapsed, except the group containing the current page.
 - [ ] Group labels are specific enough to choose between while the groups are collapsed.
 - [ ] The active item uses the component's selected state.
 - [ ] The page itself shows the location through the page's heading hierarchy, breadcrumbs, or both.
-- [ ] Navigation is hidden only where the navigation is used rarely, and stays visible where users move between sections.
+- [ ] Navigation is hidden only where the navigation is used rarely, and stays visible where personas move between sections.
 - [ ] The navigation has no icon-only rail and no icon-only primary navigation. Hidden navigation opens with text labels.
-- [ ] Items the user has no permission for are missing, not disabled.
-- [ ] Items blocked by a condition the user controls are disabled, and become enabled once the condition is fixed.
+- [ ] Items the persona has no permission for are missing, not disabled.
+- [ ] Items blocked by a condition the persona controls are disabled, and become enabled once the condition is fixed.
 - [ ] Horizontal navigation does not wrap, does not scroll, and does not sit in a separate scrolling area.
-- [ ] There is no overflow control, unless the user can customize the navigation and chose to hide items.
+- [ ] There is no overflow control, unless the persona can customize the navigation and chose to hide items.
 - [ ] Tabs hold parts of one whole, with no form fields and no forms spread across tabs.
 - [ ] Tab sets have no custom keyboard handling.
 - [ ] Forms with several parts use a stepper.
