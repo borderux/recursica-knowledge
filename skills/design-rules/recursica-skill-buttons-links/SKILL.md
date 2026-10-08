@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-buttons-links
-description: House rules for clickable triggers — button versus link, table row actions, icon-only buttons and their tooltips, disabled states, bulk actions, primary and secondary hierarchy, labels, destructive-action confirmation, undo, and toolbar overflow. Use when placing, labeling, or reviewing any button or link. Not for the form submit flow — see recursica-skill-forms.
+description: House rules for clickable controls — button versus link, table row actions, icon-only buttons and their tooltips, disabled states, bulk actions, primary and secondary hierarchy, labels, destructive-action confirmation, undo, and toolbar overflow. Use when placing, labeling, or reviewing any button or link. Not for the form submit flow — see recursica-skill-forms.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -9,36 +9,36 @@ metadata:
 
 # Buttons and links
 
-This skill holds the house rules for clickable controls. The rules decide whether a control is a button or a link, how to label the control, and how several controls on one page, panel, modal, or other region that holds content rank against each other. The house rules are opinions, not neutral best practices. Treat the house rules as constraints.
+This skill holds the house rules for clickable controls. The house rules decide whether a control is a button or a link, how to label the control, and how several controls on one page, panel, modal, or other region that holds content rank against each other. The house rules are opinions, not neutral best practices. Treat the house rules as constraints.
 
-The rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The Recursica components handle the look of buttons and links, the focus states of buttons and links, the style of the icon that marks an external link, and the HTML that makes a link styled as a button accessible. This skill decides which component to use, what the label says, and which action ranks first.
+The rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. This skill decides which component to use, what the label says, and which action ranks first.
 
-**A button label is a verb plus an object, as in `Save form`. A navigation label is the object alone, as in `Forms`.** This split is the whole difference in wording between the two labels. `recursica-skill-naming-terminology` owns the naming side of this split.
+**A button label is a verb plus an object, as in `Save form`. A navigation label is the object alone, as in `Forms`.** The verb is the whole difference in wording between a button label and a navigation label. `recursica-skill-naming-terminology` owns the naming side of the split between button labels and navigation labels.
 
 **A control's label must name what happens.** A control labeled `View` that opens editable content is mislabeled. The label promised reading, and the control gave the user editing. If the content the control opens can change data, the label must say so, as in `Edit` or `Manage`. To check a label, open the content the control opens, and confirm that the label describes the content.
 
-**A button opens a panel or a modal. A link does not open a panel or a modal.** Opening a panel or a modal is an action, and an action takes a button, even where a link would look lighter. A link is for going to a different location, such as another page, another object, or a different URL.
+**A button opens a panel or a modal. A link does not open a panel or a modal.** Opening a panel or a modal is an action. An action uses a button, even where a link would look lighter. A link is for going to a different location, such as another page, another object, or a different URL.
 
 **One control has one outcome.** A control that opens a panel, a modal, or another region that holds content does not also switch a tab, change the route, or change a filter. See convention 6 in `recursica-skill-system-conventions`.
 
 ## Governing principles
 
-1. **Choose the component by what the component does, not by how the component looks.** A link goes to a different location, such as another page, another object, or a different URL. A button performs an action on an object. When an action must not look heavy, use a button in the least prominent style, such as `text` in the standard UI kit (the unchanged UI kit in the official Recursica release), never a link. The look of a control can be adjusted. The meaning of a control cannot.
-2. **Use one primary action per page, panel, modal, or other region that holds content.** The primary action is the main action the region asks the user to take. In a row, a panel, a page, or a dialog, choose a single primary action. Move every other action into a menu of secondary actions. A region with no single primary action is trying to do too much.
-3. **Leave the browser under the user's control.** Give every link a real `href`, never open a new tab automatically, and never disable a link. The user decides how to move around, and the link component keeps the browser features that let the user decide.
+1. **Choose the component by what the component does, not by how the component looks.** A link goes to a different location, such as another page, another object, or a different URL. A button performs an action on an object. When an action needs less visual weight, use a button in the least prominent style, such as `text` in the standard UI kit (the unchanged UI kit in the official Recursica release), never a link. The look of a control can be adjusted. The meaning of a control cannot.
+2. **Use one primary action per page, panel, modal, or other region that holds content.** The primary action is the main action the region asks the user to take. In a row, a panel, a page, or a dialog, choose a single primary action. Move every other action into a menu of secondary actions. A region with no single primary action holds too many tasks.
+3. **Leave the browser under the user's control.** Give every link a real `href`, never open a new tab automatically, and never disable a link. The user decides how to move around. The link component keeps the browser features that let the user decide.
 
 ## Button or link
 
 **A link is navigation. A button is a function performed on an object.**
 
 - **Use a link to move to another page or object.** Always use a link when the user is navigating.
-- **Use a button to act on an object.** A button acts on the current page. A button does not move the user.
+- **Use a button to act on an object.** A button acts on the current page. A button does not take the user to a different location.
 
 **MUST NOT use a button to navigate.**
 
-**When a page change must look light, use a link, never a button in the least prominent style, such as `text` in the standard UI kit.**
+**When a page change needs less visual weight, use a link, never a button in the least prominent style, such as `text` in the standard UI kit.**
 
-**MUST NOT use a link to trigger a server-side action.** A link that triggers a server-side action breaks what a link means. This rule is not a judgment call. A link component that triggers a server-side action should have been a button. When an action must not look like a button, use a button in the least prominent style, such as `text` in the standard UI kit. The least prominent style exists for that case.
+**MUST NOT use a link to trigger a server-side action.** A link that triggers a server-side action breaks what a link means. This rule is not a judgment call. A link that triggers a server-side action should have been a button. When an action must not look like a button, use a button in the least prominent style, such as `text` in the standard UI kit. The least prominent style exists for an action that must not look like a button.
 
 **Every link MUST render a real `href` in the HTML.** A real `href` keeps the browser's features working: the right-click menu, opening the link in a new tab, and copying the link address. A control that navigates without an `href` takes those browser features away from the user.
 
@@ -48,22 +48,22 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 Let the user choose to open a new tab by right-clicking, by using the context menu, or by using the keyboard. Deciding for the user is the mistake to avoid.
 
-A link may show an icon that marks the destination as external or as opening in a new window. The design system sets how the icon looks.
+A link may show an icon that marks the destination as external or as opening in a new window.
 
 ## Labels
 
-**Write a button label as a verb plus an object**, as in "Save page", "Copy element" or "Duplicate form". Aim for this two-word pair whenever the button performs an action.
+**Write a button label as a verb plus an object**, as in "Save page", "Copy element" or "Duplicate form". Aim for a two-word label, a verb and an object, whenever the button performs an action.
 
-- **Drop the object only in a very narrow context**, where the button can only possibly mean one action. In that context, "Save" alone is acceptable.
+- **Drop the object only in a very narrow context**, where the button can only possibly mean one action. In that context, a label of "Save" alone is acceptable.
 
 **Write a link label as the object alone, with no verb.** The link opens the object, and the user decides what to do next. An action word in a link label promises an action the link does not perform.
 
 ### Tooltips
 
-- **Every icon-only button MUST have a tooltip.** The rule has no exceptions. When asked where the rule stops applying, the answer was "never". See `recursica-skill-icon-semantics`.
-- **A control with an icon and a label needs a label that is clear without a tooltip.** A tooltip on that control is optional. Add the tooltip only for extra information about an unusual function that new users might not recognize. Never use a tooltip to make up for a weak label.
+- **Every icon-only button MUST have a tooltip.** The rule has no exceptions. The team answered "never" when asked where the rule stops applying. See `recursica-skill-icon-semantics`.
+- **A control with an icon and a label needs a label that is clear without a tooltip.** A tooltip on a control with an icon and a label is optional. Add a tooltip only for extra information about an unusual function that new users might not recognize. Never use a tooltip to make up for a weak label.
 
-**A generic icon on a specific function gets a label, not a tooltip.** When an icon could have different meanings for different people, give the control an icon and a label, or a label with no icon. `recursica-skill-icon-semantics` owns this rule. The icon-semantics skill also sets which icon stands for which meaning: an X for close, a trash can for delete, and a horizontal ellipsis, not a vertical kebab, for "more".
+**A generic icon on a specific function gets a label, not a tooltip.** When an icon could have different meanings for different people, give the control an icon and a label, or a label with no icon. `recursica-skill-icon-semantics` owns the rule for generic icons. The icon-semantics skill also sets which icon stands for which meaning: an X for close, a trash can for delete, and a horizontal ellipsis, not a vertical kebab, for "more".
 
 ## Button hierarchy
 
@@ -71,7 +71,7 @@ A link may show an icon that marks the destination as external or as opening in 
 
 **Aim for exactly one primary action per page, panel, modal, or other region that holds content.**
 
-**When several actions are close in importance, rank the actions through the action labels.** This rule applies when every one of the actions would otherwise get the primary style. Give the slightly more important action a text label, and make the other actions icon-only.
+**When several actions are close in importance, rank the actions by which action gets a text label.** Give the slightly more important action a text label, and make the other actions icon-only. This rule applies when every one of the actions would otherwise get the primary style.
 
 **Never use the smaller button size to fit more buttons side by side.**
 
@@ -79,11 +79,11 @@ A link may show an icon that marks the destination as external or as opening in 
 
 **Put affirmative actions (save, submit, confirm) at the bottom right.**
 
-**Put a true alternative to the primary action right beside the primary action.** Cancel is the model case. Cancel and save are two outcomes of one decision. Keep cancel and save close together.
+**Put a true alternative to the primary action right beside the primary action.** Cancel is the main example of a true alternative. Cancel and save are two outcomes of one decision. Keep cancel and save close together.
 
 **Put a rarely used extra function at the bottom left**, far from the primary action on purpose. The distance keeps users from mistaking the extra function for an alternative. Give the extra function a button in a less prominent style, such as `outline` or `text` in the standard UI kit.
 
-To place a second control, decide whether the second control is a real alternative to the primary action, or only sits near the primary action. Keep alternatives together. Keep extra functions apart.
+To place a second control, decide whether the second control is a true alternative to the primary action, or an extra function that only sits near the primary action. Keep a true alternative beside the primary action. Keep an extra function apart from the primary action.
 
 ## Table rows
 
@@ -91,7 +91,7 @@ To place a second control, decide whether the second control is a real alternati
 
 **MUST NOT disable a link in a table row.** Going to a related object is always possible. Only actions get disabled.
 
-**Show an unavailable action as a plain disabled button.** When the object's current state makes an action unavailable, disable the button. A plain disabled button is enough.
+**Show an unavailable action as a plain disabled button.** When the current state of the table row's object makes an action unavailable, disable the button. A plain disabled button is enough.
 
 **Give each table row one primary action.** Put every other action for the table row in a menu of secondary actions. If a table row holds any interactive element, the table row itself cannot be clickable. See `recursica-skill-tables`. Do not crowd many actions onto a table row, especially actions that change from one object to the next.
 
@@ -110,15 +110,15 @@ Choose between an icon-only button and a text button by whether the button label
 **Show bulk actions according to how many bulk actions the screen has.**
 
 - **One bulk action:** show the bulk action once the user selects at least one row. A single disabled control that is always visible teaches almost nothing, and the disabled control permanently takes up part of the layout.
-- **Several bulk actions:** show every bulk action all the time, disabled until the user selects at least one row. With several bulk actions, the affordance (a visible cue that a control can be used, such as the underline on a link) is useful. The user learns which actions work in bulk before selecting any row.
+- **Several bulk actions:** show every bulk action all the time, disabled until the user selects at least one row. With several bulk actions, the visible disabled bulk actions are a useful affordance (a visible cue that a control can be used, such as the underline on a link). The user learns which actions work in bulk before selecting any row.
 
-**Before adding either kind, ask whether the screen needs bulk actions at all.** Build bulk actions where users do the work in batches. Where users handle records one at a time, a bulk control is a guess about how the user works. The guess costs layout space and the user's attention on every visit. Do not build a bulk control without naming the batch task the bulk control serves. See `recursica-skill-design-router`.
+**Before adding bulk actions, ask whether the screen needs bulk actions at all.** Build bulk actions where users do the work in batches. Where users handle records one at a time, a bulk control is a guess about how the user works. The guess costs layout space and the user's attention on every visit. Do not build a bulk control without naming the batch task the bulk control serves. See `recursica-skill-design-router`.
 
-**A bulk action's label shows the number of selected items in parentheses**, as in `Apply status`, then `Apply status (1)`, then `Apply status (102)`. The label shows no number until the user selects at least one row. The label words never change. Only the number in parentheses appears and disappears. A label such as `Apply to 0 selected` is unnecessary. The count belongs in the button, not in a phrase built around the count. Put the spelled-out phrase in the accessible name (the name a screen reader reads out for a control) instead. A screen reader announces "Apply status to 102 items" while the button shows `Apply status (102)`. See `recursica-skill-button`.
+**A bulk action's label shows the number of selected items in parentheses**, as in `Apply status`, then `Apply status (1)`, then `Apply status (102)`. The label shows no number until the user selects at least one row. The label words never change. Only the number in parentheses appears and disappears. A label such as `Apply to 0 selected` is unnecessary. Show the count in parentheses on the button, not in a phrase built around the count. Put the spelled-out phrase in the accessible name (the name a screen reader reads out for a control) instead. A screen reader announces "Apply status to 102 items" while the button shows `Apply status (102)`. See `recursica-skill-button`.
 
 **Never put bulk controls inside a filter bar.** Bulk controls act on the data, not on which data is shown. See `recursica-skill-filters`.
 
-**A bulk action area holds controls and nothing else.** The bulk action area is the place on the screen where the bulk actions sit.
+**A bulk action area holds controls and nothing else.** A bulk action area is the place on the screen where the bulk actions sit.
 
 **NEVER repeat the selection inside the bulk action area.** The checkboxes in the selected rows show which rows are selected. The number in parentheses shows how many rows are selected. A list of the selected records' names repeats the selection a third time, in the weakest of the three forms. A list of names also makes the height of the bulk action area change with the selection. The table then slides down the page while the user works, and the rows the user selects from move during the selection.
 
@@ -156,7 +156,7 @@ A destructive action deletes an object, a value, or any other data, or cannot ea
 
 **Label a toggle with the positive state the toggle reaches, not with the negative action.** After the click, "Follow" becomes "Following" or "Followed", not "Unfollow".
 
-A label of "Unfollow" puts a negative action in front of the user and invites the user to take the action. A label that names the state the user reached reinforces the user's choice. The positive label hides the way to turn the toggle off behind a second click. Hiding the way back is intentional, and the house admits the positive label is slightly a dark pattern. Apply the positive label as a deliberate house preference, not as a neutral best practice.
+A label of "Unfollow" puts a negative action in front of the user and invites the user to take the action. A label that names the state the user reached reinforces the user's choice. The positive label hides the way to turn the toggle off behind a second click. Hiding the way to turn the toggle off is intentional. The house rule admits the positive label is slightly a dark pattern. Apply the positive label as a deliberate house preference, not as a neutral best practice.
 
 ## Toolbars
 
@@ -168,7 +168,7 @@ A label of "Unfollow" puts a negative action in front of the user and invites th
 
 **A control that opens a modal is a button** in the vast majority of cases. The user opens the modal and does not navigate to the modal.
 
-**A modal designed on purpose to be linked to is the only exception.** Such a modal has a URL of the modal's own. A user can copy the URL from the browser and send the URL to another person, and the modal opens for that person. A link may open that modal. This case is rare and designed on purpose. The modal gets a route and a link that opens the modal together, both on purpose. Without a real URL that can be shared, the modal has no route, and the control that opens the modal is a button.
+**A modal designed on purpose to be linked to is the only exception.** A modal designed to be linked to has a URL of the modal's own. A user can copy the URL from the browser and send the URL to another person, and the modal opens for that person. A link may open that modal. A linked modal is rare. The modal gets a route and a link that opens the modal together, both on purpose. Without a real URL that can be shared, the modal has no route, and the control that opens the modal is a button.
 
 ## Open questions
 
@@ -181,7 +181,7 @@ A label of "Unfollow" puts a negative action in front of the user and invites th
 
 ## Out of scope
 
-- **All color, visual design, and styling**, including focus states for buttons and links, how the external-link icon looks, and the HTML that makes a link styled as a button work for assistive technology. The Recursica components handle color, visual design, and styling.
+- **All color, visual design, and styling**, including focus states for buttons and links, how the external-link icon looks, and the HTML that makes a link styled as a button work for assistive technology. The Recursica components set color, visual design, and styling.
 - **The order of steps in submitting a form, and when validation happens.** `recursica-skill-forms` covers the order of steps and the timing of validation. This skill decides what a control _is_ and how the control is labeled. The forms skill decides when a form may be submitted.
 - **Navigation structure, tabs, and route design.** `recursica-skill-navigation` covers navigation structure, tabs, and route design.
 
@@ -191,10 +191,10 @@ Before treating a set of buttons and links as done, check each item:
 
 - [ ] Every control that navigates is a link, and every control that performs an action is a button.
 - [ ] No button navigates, and no link triggers a server-side action.
-- [ ] Actions that must look light use a button in the least prominent style, such as `text` in the standard UI kit, not a link.
-- [ ] Page changes that must look light use a link, not a button in the least prominent style.
+- [ ] Actions that need less visual weight use a button in the least prominent style, such as `text` in the standard UI kit, not a link.
+- [ ] Page changes that need less visual weight use a link, not a button in the least prominent style.
 - [ ] Every link renders a real `href` in the HTML.
-- [ ] Nothing opens in a new tab automatically, unless opening a new tab is clearly the only result the control could have.
+- [ ] No control opens a new tab automatically, unless opening a new tab is clearly the only result the control could have.
 - [ ] Every button label is a verb plus an object. A button label is shortened to the verb alone only where the meaning is completely clear.
 - [ ] Every link label names the object, with no verb.
 - [ ] Every icon-only button has a tooltip, and no tooltip makes up for a weak label.
