@@ -37,7 +37,7 @@ The routing and history rules apply equally to moving through primary navigation
 
 **Routing restores a layout, not a remembered preference.** Do not build "remember which tab was open" as stored UI state. When each tab is a route, going back to a tab's URL restores the tab, and the back button works. Any approach beyond routing is a question of how the code is built, not a design decision.
 
-**Navigation sits on layer 0 beside the main content, unless the navigation or the main content needs containing.** A layer is a numbered background level, 0 to 3, that sets the colors of the components on that level. Layer 0 is the page itself. Where containment is wanted, raise either the navigation or the main content to layer 1, not both. Keep the same choice across the whole application. `recursica-skill-layers` sets the layer rules.
+**Navigation sits on layer 0 beside the main content, unless the navigation or the main content needs containing.** A layer is a numbered background level, 0 to 3, that sets the colors of the components on that level. Layer 0 is the page itself. Confirm with the user whether the navigation or the main content needs containing. Where containment is wanted, raise either the navigation or the main content to layer 1, not both. Keep the same choice across the whole application. `recursica-skill-layers` sets the layer rules.
 
 ## Horizontal top bar vs. vertical sidebar
 
@@ -120,7 +120,7 @@ A screen can show the persona's location in three ways. A screen needs more than
 
 **An application uses a drawer or a sidebar for the application's navigation, never both at the same time.** A drawer and a sidebar are both valid choices. Do not add an option to pin the drawer open as a sidebar. Show the navigation or hide the navigation, and keep the choice that simple.
 
-**Ask whether the application will be used on a tablet or a phone before choosing the navigation pattern.** Do not add room for tablet or phone use to the navigation afterward. `recursica-skill-responsive-behavior` sets this rule.
+**Ask whether the application will be used on a tablet or a phone before choosing the navigation pattern.** Do not add room for tablet or phone use to the navigation after the navigation pattern is chosen. `recursica-skill-responsive-behavior` sets this rule.
 
 ## Overflow
 
