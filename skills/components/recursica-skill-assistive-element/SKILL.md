@@ -13,8 +13,8 @@ The assistive element is one component that shows both help text and error text 
 
 ## When to use an assistive element
 
-- **A field has a rule the user needs to know before typing**, such as a format, a minimum, or a character requirement.
-- **A field has failed validation**, and the user needs to know what to fix.
+- **A field has a rule the persona needs to know before typing**, such as a format, a minimum, or a character requirement.
+- **A field has failed validation**, and the persona needs to know what to fix.
 
 ## When not to use an assistive element
 
@@ -40,15 +40,15 @@ The rules below describe each option by role, such as "the error type". The name
 
 ## Rules
 
-**State the field's rule in the help text, before the user breaks the rule.** Put formats, minimums, and character requirements in the help text. A user who knows the rule before typing does not break the rule. Preventing an error is better than catching an error.
+**State the field's rule in the help text, before the persona breaks the rule.** Put formats, minimums, and character requirements in the help text. A persona who knows the rule before typing does not break the rule. Preventing an error is better than catching an error.
 
-**Split a constraint that has several rules.** A password constraint with a minimum length and a special-character requirement is one example. Write the rules as short fragments separated by commas, or as bullets. The user then finds each rule at a glance. Never write a constraint with several rules as a paragraph.
+**Split a constraint that has several rules.** A password constraint with a minimum length and a special-character requirement is one example. Write the rules as short fragments separated by commas, or as bullets. The persona then finds each rule at a glance. Never write a constraint with several rules as a paragraph.
 
 **Restate the broken rule in the error text.** "Invalid input" is not an error message. "Enter a date in the past" is an error message.
 
 **Never show the help text and the error text at the same time.** The assistive element shows one type at a time. The help text is hidden while the error text shows.
 
-**The error text is the whole message.** Put every detail the user still needs in the error text. If the user still needs the rule from the help text, put the rule in the error text.
+**The error text is the whole message.** Put every detail the persona still needs in the error text. If the persona still needs the rule from the help text, put the rule in the error text.
 
 **Pair the error with a signal that is not color.** The signal is the assistive element's icon, or the words of the error message. `recursica-skill-system-conventions` requires a signal that is not color.
 
@@ -56,7 +56,7 @@ The rules below describe each option by role, such as "the error type". The name
 
 **The assistive element's position follows the field's label placement.** Never position the assistive element separately from the label. `recursica-skill-forms` requires one label placement per form: side by side or stacked, never both at the same breakpoint. The width of the form's container is tested once, for the whole form. The result of that test sets the label placement for every field in the form. Every assistive element in a form follows that one label placement. The position of the assistive element never differs from field to field in one form. A whole form may switch label placement across breakpoints. A single section of a form never gets a separate label placement.
 
-**Do not use the assistive element for marketing, reassurance, or filler text.** A user reads every line of help text and error text each time the user goes through the form.
+**Do not use the assistive element for marketing, reassurance, or filler text.** A persona reads every line of help text and error text each time the persona goes through the form.
 
 **Never show a success message or a success mark on a field.** A success confirmation goes in a toast. See `recursica-skill-toast`.
 
@@ -64,23 +64,23 @@ The rules below describe each option by role, such as "the error type". The name
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
-The assistive element helps only when the code connects the assistive element to the field. A screen reader user who tabs straight into the field's input never hears text that is near the field but not connected to the field. Tabbing from input to input is the usual way to move through a form.
+The assistive element helps only when the code connects the assistive element to the field. When a persona using a screen reader tabs straight into the field's input, the persona never hears text that is near the field but not connected to the field. Tabbing from input to input is the usual way to move through a form.
 
 ### Screen readers
 
 - **Set the help text and the error text on the field component**, never as a separate element beside or below the field. Only the field component can connect the help text and the error text to the input.
-- **The help text is announced when the user reaches the field.** Write the help text to be heard as the user reaches the field, not as a caption read after the field.
+- **The help text is announced when the persona reaches the field.** Write the help text to be heard as the persona reaches the field, not as a caption read after the field.
 - **When an error appears, the error must be announced.** An error that is only visual is never announced. Mark the field as invalid, and connect the error message to the field. Both steps are required.
 - **The error message must make sense when read alone**, because the error message has replaced the help text. Restating the rule in the error text is not repetition. The error text is the only channel (color, shape, position or text, each a separate signal) left that states the rule.
 - **The assistive element's icon is decorative, and a screen reader must not announce the icon.** The icon is a second visual signal, after color. The words of the message give the meaning.
 - **Do not announce the same text twice.** If the assistive element's message is connected to the field, do not also repeat that message in a live region (an area of the page that a screen reader announces automatically when the area's content changes).
-- **Use the assistive element to announce only the results of the user's own actions.** A message under a field that no action of the user caused is confusing when a screen reader reads the form in order.
+- **Use the assistive element to announce only the results of the persona's own actions.** A message under a field that no action of the persona caused is confusing when a screen reader reads the form in order.
 
 ### Keyboard and non-mouse navigation
 
 - **The assistive element is not a tab stop** (a place the Tab key lands), and must not contain a control. The assistive element holds text only.
-- **Never require hover or focus to show the assistive element.** Help text stays on screen. A user who reads the form before filling in the form cannot read a rule that appears only on focus. A tooltip does not replace help text.
-- **Do not move focus when an error appears.** The user is in the middle of typing, and moving focus to the error message loses the user's place. `recursica-skill-forms` sets how focus moves on submit.
+- **Never require hover or focus to show the assistive element.** Help text stays on screen. A persona who reads the form before filling in the form cannot read a rule that appears only on focus. A tooltip does not replace help text.
+- **Do not move focus when an error appears.** The persona is in the middle of typing, and moving focus to the error message loses the persona's place. `recursica-skill-forms` sets how focus moves on submit.
 - **A field with an error must stay in the same position and stay reachable.** Never reorder fields to group the errors together.
 
 ## Styling set by tokens
@@ -101,7 +101,7 @@ The assistive element helps only when the code connects the assistive element to
 
 ## Pre-flight checklist
 
-- [ ] The help text states every rule the user needs, before the user can break the rule.
+- [ ] The help text states every rule the persona needs, before the persona can break the rule.
 - [ ] A constraint with several rules is split into fragments or bullets, not written as a paragraph.
 - [ ] The error text restates the broken rule. No error text says "Invalid input".
 - [ ] The error text replaces the help text. The help text and the error text never show together.
