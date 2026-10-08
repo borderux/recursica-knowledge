@@ -38,7 +38,7 @@ The rules below describe each option by role. The names in the standard UI kit (
 
 - **Pagination has three groups of controls, and each group has a separate look.** A page number is a control that goes to one page of the table. The current page number marks the page the table shows now. The previous control goes to the page before the current page, and the next control goes to the page after the current page. The three groups are the current page number, the other page numbers, and the previous and next controls. In the standard UI kit, the groups are `active-pages`, `inactive-pages` and `navigation-controls`. Never restyle the page numbers to match the previous and next controls, or the previous and next controls to match the page numbers.
 - **The current-page style changes only the look of the current page number, not a state in the code.** The current-page style does not tell a screen reader which page is current. Mark the current page as current in code as well, as "Screen readers" below says.
-- **If the project has a rows-per-page select or a results readout, use the project's version.** A results readout is a line such as "Showing 1–10 of 200". Otherwise, the pagination component does not supply a rows-per-page select or a results readout, even when one is required. Both questions are listed under "Open questions".
+- **If the project has a rows-per-page select or a results readout, use the project's version.** A results readout is a line such as "Showing 1–10 of 200". A project adds either one as an extension of the pagination, outside the build. Never build either one. When the requirements call for one and the project has none, flag the gap as an opportunity to extend the pagination. Both questions are listed under "Open questions".
 - **If the project has a first-page control, a last-page control, an ellipsis, or a way to shorten a long list of page numbers, use the project's version.** The design-system website is the only source that shows first-page and last-page controls, an ellipsis, and a shortened list of page numbers. The website shows each one as a behavior. The questions are listed under "Open questions".
 
 ## Rules
@@ -47,7 +47,7 @@ The rules below describe each option by role. The names in the standard UI kit (
 
 **The table sets the number of table rows on each page, not the pagination.** An interior table shows a fixed number of table rows, usually five or ten. Pagination never decides the number of table rows.
 
-**Never give the user a rows-per-page control, unless the project's UI kit lists a rows-per-page select.** No rule allows a rows-per-page control in a project with no rows-per-page select.
+**Never give the user a rows-per-page control, unless the project has a rows-per-page select.** Never build a rows-per-page control from other components.
 
 **Make each page number a link with a real `href`, because a page is a location.** `recursica-skill-buttons-links` requires a link for every element on the screen that moves the user. `recursica-skill-navigation` requires every location to have a URL the user can reach, with an entry in the browser history. If a page of the table has no URL, the page number cannot have a real `href`. Fix the missing URL as a routing defect. Never build the page number as a button instead.
 
@@ -125,7 +125,7 @@ The theme also sets the focus ring and the area that responds to a click or a ta
 - [ ] The choice between scrolling and paginating matches every other screen in the application.
 - [ ] The pagination controls sit in the table's fixed footer, and the table does not scroll.
 - [ ] The table sets the number of table rows, five or ten, not the pagination.
-- [ ] The footer has no rows-per-page select and no invented results readout, unless the project's UI kit lists the control.
+- [ ] The footer has no rows-per-page select and no results readout, unless the project has the control. A requirement for either one was flagged as a gap.
 - [ ] No pagination controls are shown when the table has only one page.
 - [ ] Every page number is a link with a real `href`, and the current page stays the same after a reload and after the back button.
 - [ ] The pagination controls are a named navigation region, marked up as a list.

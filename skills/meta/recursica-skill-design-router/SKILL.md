@@ -85,6 +85,12 @@ When a name is not in the table, find the Recursica component whose skill descri
 
 **Never use a style override to make a component that does not exist.** A badge forced to a fixed width to act as a bar in a chart does not fill in a missing setting. The fixed-width badge fakes a missing component, the chart bar, with a different component. See `recursica-skill-data-visualization`.
 
+## Extending components
+
+**Never build an extension of a component.** A project extends a component outside the build, such as a new variant in Theme Forge or a component the project's team adds. Use an extension only when the project already has the extension. Never assemble a missing capability from other components.
+
+**Flag every gap between the requirements and the components.** When a requirement needs a capability that no component in the project has, name the requirement, the component and the missing capability. Present the gap as an opportunity to extend the component.
+
 ## Asking instead of guessing
 
 **NEVER settle uncertainty by picking an answer without saying so.** The ban on silent guesses is the most important rule in the skill family. The next person to read the work cannot tell a silent guess from a real house rule.
@@ -210,6 +216,7 @@ Check every item before starting, and again before declaring the work done.
 - [ ] The design router was loaded first, before any other Recursica skill.
 - [ ] Every source is a `SKILL.md`. No `DOCS.md` was used, and no convention came from another design system.
 - [ ] Every name from another design system was translated to the Recursica component.
+- [ ] No component was extended in the build. Each requirement that the project's components cannot meet was flagged as an opportunity to extend a component.
 - [ ] Every component on the screen has both of the component's skills loaded: the component skill and the design-rules skill.
 - [ ] The screen's object was named before any component was chosen.
 - [ ] Routing was decided before layout.
