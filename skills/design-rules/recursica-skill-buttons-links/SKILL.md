@@ -15,7 +15,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 **A button label is a verb plus an object, as in `Save form`. A navigation label is the object alone, as in `Forms`.** The verb is the whole difference in wording between a button label and a navigation label. `recursica-skill-naming-terminology` owns the naming side of the split between button labels and navigation labels.
 
-**A control's label must name what happens.** A control labeled `View` that opens editable content is mislabeled. The label promised reading, and the control gave the user editing. If the content the control opens can change data, the label must say so, as in `Edit` or `Manage`. To check a label, open the content the control opens, and confirm that the label describes the content.
+**A control's label must name what happens.** A control labeled `View` that opens editable content is mislabeled. The label promised reading, and the control gave the persona editing. If the content the control opens can change data, the label must say so, as in `Edit` or `Manage`. To check a label, open the content the control opens, and confirm that the label describes the content.
 
 **A button opens a panel or a modal. A link does not open a panel or a modal.** Opening a panel or a modal is an action. An action uses a button, even where a link would look lighter. A link is for going to a different location, such as another page, another object, or a different URL.
 
@@ -24,15 +24,15 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 ## Governing principles
 
 1. **Choose the component by what the component does, not by how the component looks.** A link goes to a different location, such as another page, another object, or a different URL. A button performs an action on an object. When an action needs less visual weight, use a button in the least prominent style, such as `text` in the standard UI kit (the unchanged UI kit in the official Recursica release), never a link. The look of a control can be adjusted. The meaning of a control cannot.
-2. **Use one primary action per page, panel, modal, or other region that holds content.** The primary action is the main action the region asks the user to take. In a row, a panel, a page, or a dialog, choose a single primary action. Move every other action into a menu of secondary actions. A region with no single primary action holds too many tasks.
-3. **Leave the browser under the user's control.** Give every link a real `href`, never open a new tab automatically, and never disable a link. The user decides how to move around. The link component keeps the browser features that let the user decide.
+2. **Use one primary action per page, panel, modal, or other region that holds content.** The primary action is the main action the region asks the persona to take. In a row, a panel, a page, or a dialog, choose a single primary action. Move every other action into a menu of secondary actions. A region with no single primary action holds too many tasks.
+3. **Leave the browser under the persona's control.** Give every link a real `href`, never open a new tab automatically, and never disable a link. The persona decides how to move around. The link component keeps the browser features that let the persona decide.
 
 ## Button or link
 
 **A link is navigation. A button is a function performed on an object.**
 
-- **Use a link to move to another page or object.** Always use a link when the user is navigating.
-- **Use a button to act on an object.** A button acts on the current page. A button does not take the user to a different location.
+- **Use a link to move to another page or object.** Always use a link when the persona is navigating.
+- **Use a button to act on an object.** A button acts on the current page. A button does not take the persona to a different location.
 
 **MUST NOT use a button to navigate.**
 
@@ -40,13 +40,13 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 **MUST NOT use a link to trigger a server-side action.** A link that triggers a server-side action breaks what a link means. This rule is not a judgment call. A link that triggers a server-side action should have been a button. When an action must not look like a button, use a button in the least prominent style, such as `text` in the standard UI kit. The least prominent style exists for an action that must not look like a button.
 
-**Every link MUST render a real `href` in the HTML.** A real `href` keeps the browser's features working: the right-click menu, opening the link in a new tab, and copying the link address. A control that navigates without an `href` takes those browser features away from the user.
+**Every link MUST render a real `href` in the HTML.** A real `href` keeps the browser's features working: the right-click menu, opening the link in a new tab, and copying the link address. A control that navigates without an `href` takes those browser features away from the persona.
 
 ## New tabs
 
 **MUST NOT open a link in a new tab automatically.** A control may open a new tab automatically only when opening a new tab is very clearly the only and main result the control could possibly have.
 
-Let the user choose to open a new tab by right-clicking, by using the context menu, or by using the keyboard. Deciding for the user is the mistake to avoid.
+Let the persona choose to open a new tab by right-clicking, by using the context menu, or by using the keyboard. Deciding for the persona is the mistake to avoid.
 
 A link may show an icon that marks the destination as external or as opening in a new window.
 
@@ -56,12 +56,12 @@ A link may show an icon that marks the destination as external or as opening in 
 
 - **Drop the object only in a very narrow context**, where the button can only possibly mean one action. In that context, a label of "Save" alone is acceptable.
 
-**Write a link label as the object alone, with no verb.** The link opens the object, and the user decides what to do next. An action word in a link label promises an action the link does not perform.
+**Write a link label as the object alone, with no verb.** The link opens the object, and the persona decides what to do next. An action word in a link label promises an action the link does not perform.
 
 ### Tooltips
 
 - **Every icon-only button MUST have a tooltip.** The rule has no exceptions. The team answered "never" when asked where the rule stops applying. See `recursica-skill-icon-semantics`.
-- **A control with an icon and a label needs a label that is clear without a tooltip.** A tooltip on a control with an icon and a label is optional. Add a tooltip only for extra information about an unusual function that new users might not recognize. Never use a tooltip to make up for a weak label.
+- **A control with an icon and a label needs a label that is clear without a tooltip.** A tooltip on a control with an icon and a label is optional. Add a tooltip only for extra information about an unusual function that a new persona might not recognize. Never use a tooltip to make up for a weak label.
 
 **A generic icon on a specific function gets a label, not a tooltip.** When an icon could have different meanings for different people, give the control an icon and a label, or a label with no icon. `recursica-skill-icon-semantics` owns the rule for generic icons. The icon-semantics skill also sets which icon stands for which meaning: an X for close, a trash can for delete, and a horizontal ellipsis, not a vertical kebab, for "more".
 
@@ -81,7 +81,7 @@ A link may show an icon that marks the destination as external or as opening in 
 
 **Put a true alternative to the primary action right beside the primary action.** Cancel is the main example of a true alternative. Cancel and save are two outcomes of one decision. Keep cancel and save close together.
 
-**Put a rarely used extra function at the bottom left**, far from the primary action on purpose. The distance keeps users from mistaking the extra function for an alternative. Give the extra function a button in a less prominent style, such as `outline` or `text` in the standard UI kit.
+**Put a rarely used extra function at the bottom left**, far from the primary action on purpose. The distance keeps personas from mistaking the extra function for an alternative. Give the extra function a button in a less prominent style, such as `outline` or `text` in the standard UI kit.
 
 To place a second control, decide whether the second control is a true alternative to the primary action, or an extra function that only sits near the primary action. Keep a true alternative beside the primary action. Keep an extra function apart from the primary action.
 
@@ -109,22 +109,22 @@ Choose between an icon-only button and a text button by whether the button label
 
 **Show bulk actions according to how many bulk actions the screen has.**
 
-- **One bulk action:** show the bulk action once the user selects at least one row. A single disabled control that is always visible teaches almost nothing, and the disabled control permanently takes up part of the layout.
-- **Several bulk actions:** show every bulk action all the time, disabled until the user selects at least one row. With several bulk actions, the visible disabled bulk actions are a useful affordance (a visible cue that a control can be used, such as the underline on a link). The user learns which actions work in bulk before selecting any row.
+- **One bulk action:** show the bulk action once the persona selects at least one row. A single disabled control that is always visible teaches almost nothing, and the disabled control permanently takes up part of the layout.
+- **Several bulk actions:** show every bulk action all the time, disabled until the persona selects at least one row. With several bulk actions, the visible disabled bulk actions are a useful affordance (a visible cue that a control can be used, such as the underline on a link). The persona learns which actions work in bulk before selecting any row.
 
-**Before adding bulk actions, ask whether the screen needs bulk actions at all.** Build bulk actions where users do the work in batches. Where users handle records one at a time, a bulk control is a guess about how the user works. The guess costs layout space and the user's attention on every visit. Do not build a bulk control without naming the batch task the bulk control serves. See `recursica-skill-design-router`.
+**Before adding bulk actions, ask whether the screen needs bulk actions at all.** Build bulk actions where personas do the work in batches. Where personas handle records one at a time, a bulk control is a guess about how the persona works. The guess costs layout space and the persona's attention on every visit. Do not build a bulk control without naming the batch task the bulk control serves. See `recursica-skill-design-router`.
 
-**A bulk action's label shows the number of selected items in parentheses**, as in `Apply status`, then `Apply status (1)`, then `Apply status (102)`. The label shows no number until the user selects at least one row. The label words never change. Only the number in parentheses appears and disappears. A label such as `Apply to 0 selected` is unnecessary. Show the count in parentheses on the button, not in a phrase built around the count. Put the spelled-out phrase in the accessible name (the name a screen reader reads out for a control) instead. A screen reader announces "Apply status to 102 items" while the button shows `Apply status (102)`. See `recursica-skill-button`.
+**A bulk action's label shows the number of selected items in parentheses**, as in `Apply status`, then `Apply status (1)`, then `Apply status (102)`. The label shows no number until the persona selects at least one row. The label words never change. Only the number in parentheses appears and disappears. A label such as `Apply to 0 selected` is unnecessary. Show the count in parentheses on the button, not in a phrase built around the count. Put the spelled-out phrase in the accessible name (the name a screen reader reads out for a control) instead. A screen reader announces "Apply status to 102 items" while the button shows `Apply status (102)`. See `recursica-skill-button`.
 
 **Never put bulk controls inside a filter bar.** Bulk controls act on the data, not on which data is shown. See `recursica-skill-filters`.
 
 **A bulk action area holds controls and nothing else.** A bulk action area is the place on the screen where the bulk actions sit.
 
-**NEVER repeat the selection inside the bulk action area.** The checkboxes in the selected rows show which rows are selected. The number in parentheses shows how many rows are selected. A list of the selected records' names repeats the selection a third time, in the weakest of the three forms. A list of names also makes the height of the bulk action area change with the selection. The table then slides down the page while the user works, and the rows the user selects from move during the selection.
+**NEVER repeat the selection inside the bulk action area.** The checkboxes in the selected rows show which rows are selected. The number in parentheses shows how many rows are selected. A list of the selected records' names repeats the selection a third time, in the weakest of the three forms. A list of names also makes the height of the bulk action area change with the selection. The table then slides down the page while the persona works, and the rows the persona selects from move during the selection.
 
 **Do not add a clear or deselect-all control.** The checkbox in the table header clears the selection, as `recursica-skill-selection-controls` says. A second control for the same job, in a different place, is one more control to read and a second way to do one task.
 
-**Do not add a "nothing selected" placeholder.** An empty bulk action area is the right way to show an empty selection. With one bulk action, the bulk action area stays empty until the user selects a row. With several bulk actions, the bulk actions are visible and disabled. A sentence saying no item is selected takes the space the bulk controls will need, and repeats what the row checkboxes show.
+**Do not add a "nothing selected" placeholder.** An empty bulk action area is the right way to show an empty selection. With one bulk action, the bulk action area stays empty until the persona selects a row. With several bulk actions, the bulk actions are visible and disabled. A sentence saying no item is selected takes the space the bulk controls will need, and repeats what the row checkboxes show.
 
 **Never put an action on a single record in the bulk action area.** Selecting rows only sets which rows a bulk action acts on. Start editing one record from the record itself. See `recursica-skill-tables`.
 
@@ -136,7 +136,7 @@ A destructive action deletes an object, a value, or any other data, or cannot ea
 
 **Confirm only when the action is massively destructive, hard to recreate, and cannot be undone.** For that action, show a confirmation modal after the click.
 
-**Do not confirm an action that can easily be undone.** Perform the action immediately. A fast action that costs the user little is the right experience.
+**Do not confirm an action that can easily be undone.** Perform the action immediately. A fast action that costs the persona little is the right experience.
 
 **The control for a destructive action is still a button**, with or without a confirmation. Being destructive does not change the component.
 
@@ -144,9 +144,9 @@ A destructive action deletes an object, a value, or any other data, or cannot ea
 
 ## Undo
 
-**When the user deletes one row item, or one of many objects, replace the delete control with an undo button in the same place.** The undo button appears where the delete control was.
+**When the persona deletes one row item, or one of many objects, replace the delete control with an undo button in the same place.** The undo button appears where the delete control was.
 
-**When the user destroys a whole object, use a confirmation modal instead.** A whole object is destroyed when the user saves over the whole object, deletes the whole object, or destroys a whole form of data. An undo is no longer useful after a loss that large. Ask for confirmation before the action.
+**When the persona destroys a whole object, use a confirmation modal instead.** A whole object is destroyed when the persona saves over the whole object, deletes the whole object, or destroys a whole form of data. An undo is no longer useful after a loss that large. Ask for confirmation before the action.
 
 **Show a global undo notification as a toast.**
 
@@ -156,23 +156,23 @@ A destructive action deletes an object, a value, or any other data, or cannot ea
 
 **Label a toggle with the positive state the toggle reaches, not with the negative action.** After the click, "Follow" becomes "Following" or "Followed", not "Unfollow".
 
-A label of "Unfollow" puts a negative action in front of the user and invites the user to take the action. A label that names the state the user reached reinforces the user's choice. The positive label hides the way to turn the toggle off behind a second click. Hiding the way to turn the toggle off is intentional. The house rule admits the positive label is slightly a dark pattern. Apply the positive label as a deliberate house preference, not as a neutral best practice.
+A label of "Unfollow" puts a negative action in front of the persona and invites the persona to take the action. A label that names the state the persona reached reinforces the persona's choice. The positive label hides the way to turn the toggle off behind a second click. Hiding the way to turn the toggle off is intentional. The house rule admits the positive label is slightly a dark pattern. Apply the positive label as a deliberate house preference, not as a neutral best practice.
 
 ## Toolbars
 
-**Show a toolbar function directly or put the function in an overflow menu, depending on how often users use the function.** Put a function that must exist but is rarely used in an ellipsis or "more" menu.
+**Show a toolbar function directly or put the function in an overflow menu, depending on how often personas use the function.** Put a function that must exist but is rarely used in an ellipsis or "more" menu.
 
 **Follow established conventions for standard sets of functions.** A text formatting toolbar has expected contents: bold, italic, underline and alignment. Use the standard set of functions instead of inventing a new set.
 
 ## Modal triggers
 
-**A control that opens a modal is a button** in the vast majority of cases. The user opens the modal and does not navigate to the modal.
+**A control that opens a modal is a button** in the vast majority of cases. The persona opens the modal and does not navigate to the modal.
 
-**A modal designed on purpose to be linked to is the only exception.** A modal designed to be linked to has a URL of the modal's own. A user can copy the URL from the browser and send the URL to another person, and the modal opens for that person. A link may open that modal. A linked modal is rare. The modal gets a route and a link that opens the modal together, both on purpose. Without a real URL that can be shared, the modal has no route, and the control that opens the modal is a button.
+**A modal designed on purpose to be linked to is the only exception.** A modal designed to be linked to has a URL of the modal's own. A persona can copy the URL from the browser and send the URL to another person, and the modal opens for that person. A link may open that modal. A linked modal is rare. The modal gets a route and a link that opens the modal together, both on purpose. Without a real URL that can be shared, the modal has no route, and the control that opens the modal is a button.
 
 ## Open questions
 
-**Ask the person instead of choosing.** No house rule covers the topics below yet. See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit one of the topics.
+**Ask the user instead of choosing.** No house rule covers the topics below yet. See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit one of the topics.
 
 - **Split buttons.** No rule says whether split buttons are allowed at all.
 - **Loading and pending states on actions other than submit.** `recursica-skill-forms` covers the submit button. No skill owns the loading state for `Export` and `Recalculate`.
