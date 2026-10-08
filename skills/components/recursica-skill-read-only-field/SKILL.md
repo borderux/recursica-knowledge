@@ -50,7 +50,7 @@ The rules below describe each option by role, such as "the label above the field
 
 ## Rules
 
-**Always pass a visible label to the read-only field**, and let the read-only field connect the label to the value. In the label, name the object clearly, use sentence capitalization, and leave off any colon at the end. The rules in `recursica-skill-label` apply without change.
+**Always give the read-only field a visible label**, and let the read-only field connect the label to the value. In the label, name the object clearly, use sentence capitalization, and leave off any colon at the end. The rules in `recursica-skill-label` apply without change to the read-only field's label.
 
 **Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form, editable or not. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
@@ -75,7 +75,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 ### Screen readers
 
 - **A read-only field must not be announced as an input.** Do not build a read-only field as an `input` or a `textarea`: not a disabled `input`, not an `input` with a `readonly` attribute, and not an element with a textbox role. A persona who hears "edit text" tries to type into the field.
-- **The label must still be connected to the value in code.** Pass the label to the read-only field. A label shown as separate text beside a value is paired with the value only visually. A persona using a screen reader and moving through the page hears the value with nothing to say what the value is.
+- **The label must still be connected to the value in code.** Give the label to the read-only field. A label shown as separate text beside a value is paired with the value only visually. A persona using a screen reader and moving through the page hears the value with nothing to say what the value is.
 - **The value must be real text in the page**, never an image, a canvas, a background image, or content that a style sheet adds. A screen reader cannot announce text inside an image, a canvas or a style sheet.
 - **Do not mark a read-only field required or optional.** A read-only field has nothing to require. A required marker on a value the persona cannot enter is a false instruction.
 - **Do not apply a disabled look or `aria-disabled` to a read-only field.** A read-only field is not disabled. Announcing a read-only field as disabled tells the persona that a condition could make the field editable, but the read-only state is permanent.
@@ -123,7 +123,7 @@ Never set or override the connection between the label and the value. The read-o
 
 - [ ] The value cannot be edited on this screen, and the value is shown with a read-only field, not a disabled input.
 - [ ] Data that nobody ever edits, outside a form, is plain text instead of a read-only field.
-- [ ] A visible label is passed to the read-only field, and the label makes sense when read alone.
+- [ ] A visible label is given to the read-only field, and the label makes sense when read alone.
 - [ ] Label placement matches every other field in the same form, with one placement per form at each breakpoint and no mixing between fields or form sections — and is side by side unless the form's container is too narrow.
 - [ ] No state is set or faked on the read-only field: no error, no disabled and no focus styling.
 - [ ] The value uses the display format: dates with a spelled-out month, a fixed number of decimal places, and unit labels for durations.
