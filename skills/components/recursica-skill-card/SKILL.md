@@ -40,7 +40,7 @@ The aesthetic exception has three limits.
 ## When to use a card
 
 - **The screen shows several repeating objects of the same type, and each object has the same kinds of information.** Examples are several products, several records or several search results.
-- **Peer objects would otherwise be hard to tell apart.** A user could misread where one object ends and the next object begins.
+- **Peer objects would otherwise be hard to tell apart.** A persona could misread where one object ends and the next object begins.
 - **Each item has a chart or an image that a table row could not show clearly.**
 
 ## When not to use a card
@@ -108,24 +108,24 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 **A screen reader must announce a card set as one list of objects.** Two failures matter:
 
 - A screen reader announces the card set as one long run of text, with no boundary between cards.
-- A keyboard user cannot activate a clickable card, or the click area of a clickable card blocks the controls inside the card.
+- A persona using a keyboard cannot activate a clickable card, or the click area of a clickable card blocks the controls inside the card.
 
 ### Screen readers
 
-- **Announce a card set as a list, with the number of cards.** The cards in a card set are peers. A screen reader user needs to know how many cards the list holds, such as six, and which card the user is on.
-- **Start every card with a heading**, at the same heading level in every card of the card set. The headings let the user jump from card to card instead of reading every word.
+- **Announce a card set as a list, with the number of cards.** The cards in a card set are peers. A persona using a screen reader needs to know how many cards the list holds, such as six, and which card the persona is on.
+- **Start every card with a heading**, at the same heading level in every card of the card set. The headings let the persona jump from card to card instead of reading every word.
 - **The reading order must match the visual order.** If the graphic slot is at the top of the card, the graphic slot also comes first in the reading order.
-- **Give an image in the graphic slot alternative text, or mark the image clearly as decorative.** A screen reader announces an unlabeled image as "graphic" in every card, and the word tells the user nothing. A meaningful image with no alternative text loses information.
+- **Give an image in the graphic slot alternative text, or mark the image clearly as decorative.** A screen reader announces an unlabeled image as "graphic" in every card, and the word tells the persona nothing. A meaningful image with no alternative text loses information.
 - **A chart in the graphic slot is not accessible alone.** `recursica-skill-data-visualization` requires a data table with every chart, and the data table makes a chart card usable.
 - **Do not rely on the card's border or elevation to show where a card ends.** The border or the elevation separates the objects visually. In code, the list structure and the headings must separate the objects.
 - **Name the object in every repeated control.** An "Edit" control in each of five cards gives five identical announcements. The control's name must say which item, or the card must give the item as context in code.
 
 ### Keyboard and non-mouse navigation
 
-- **A card the user cannot act on is not a tab stop** (a place the Tab key lands). Do not give a static card a `tabindex` or a click handler.
-- **If the whole card is a link, the link must be the only element in the card the user can act on.** A button inside a clickable card gives the keyboard user two overlapping targets, and the user cannot tell what a press activates. `recursica-skill-tables` applies the same reasoning to clickable table rows.
+- **A card the persona cannot act on is not a tab stop** (a place the Tab key lands). Do not give a static card a `tabindex` or a click handler.
+- **If the whole card is a link, the link must be the only element in the card the persona can act on.** A button inside a clickable card gives a persona using a keyboard two overlapping targets, and the persona cannot tell what a press activates. `recursica-skill-tables` applies the same reasoning to clickable table rows.
 - **Prefer making the card's heading the link, instead of the whole card.** The heading gives the link a real name. A link the size of the card is announced with every word in the card.
-- **Never make any element appear on hover.** Keyboard users and touch users cannot reach an action that appears only when the pointer is over a card. Keep every card action visible, or put the action in a menu the user can reach.
+- **Never make any element appear on hover.** Personas using a keyboard and personas on a touch device cannot reach an action that appears only when the pointer is over a card. Keep every card action visible, or put the action in a menu the persona can reach.
 - **The tab order moves card by card**, in the visual order, not column by column against the layout.
 
 ## Styling set by tokens
@@ -146,7 +146,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - **When the raised style applies, and when the outlined style applies.** The website calls the two styles Elevation and Outline. No rule says where to use either style. Ask before relying on either style.
 - **How many cards count as a "small and finite" card set.** The skill states the limit as a judgment, not a number.
 - **Card layout across breakpoints**, meaning how many cards fit across the screen, and what happens below desktop size. `recursica-skill-design-router` names card layout across breakpoints as a topic with no owner.
-- **Whether a user may select a card** as part of a multi-select, and what the selected state looks like. Ask only when the project has no selected state.
+- **Whether a persona may select a card** as part of a multi-select, and what the selected state looks like. Ask only when the project has no selected state.
 - **The empty state of a card set**, meaning what a card set shows when the set has one card or no cards.
 - **Whether the header button and the footer may both be used** in the same card.
 
@@ -162,7 +162,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - [ ] The reading order matches the visual order, and every image in a slot has alternative text or is marked decorative.
 - [ ] Every chart in a slot has a data table.
 - [ ] Every repeated control names the control's object.
-- [ ] No static card is a tab stop, and a clickable card contains no other element the user can act on.
+- [ ] No static card is a tab stop, and a clickable card contains no other element the persona can act on.
 - [ ] Every card variant, option and state is one the project lists, and no variant or option is invented.
 - [ ] No styling is set or overridden on the card, and no container or spacer is added to change the card's look.
 - [ ] Open questions were asked about, not decided: the raised style versus the outlined style, how many cards make a small finite card set, card layout across breakpoints, selectable cards, the empty state of a card set, the header button with the footer in one card.
