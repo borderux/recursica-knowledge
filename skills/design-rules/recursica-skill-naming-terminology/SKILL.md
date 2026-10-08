@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-naming-terminology
-description: House rules for names and terms — whose vocabulary wins, how navigation labels, page titles, and column headers relate, singular or plural, object labels in navigation, shortening and acronyms, and matching an integration's names. Use when choosing any name or term, or when one thing has different names in different places. Not for capitalization — see recursica-skill-typography-semantics.
+description: House rules for names and terms — whose vocabulary wins, how navigation labels, page titles, and column headers relate, singular or plural, object labels in navigation, shortening and acronyms, and matching an integration's names. Use when choosing any name or term, or when different places use different names for the same meaning. Not for capitalization — see recursica-skill-typography-semantics.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -38,7 +38,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 **A label may get longer as the persona goes deeper.** A persona on a deeper page has clicked through the shorter labels to get there. The persona understood the higher navigation levels well enough to go further. A deeper page can use the extra words that make the full idea clear.
 
-**Stop lengthening a label when extra words no longer add accuracy or keep the label concise.** Concision matters most, and accuracy comes a close second. Leave out a word that adds neither accuracy nor concision.
+**Stop lengthening a label when the extra words neither add accuracy nor keep the label concise.** Concision matters most, and accuracy comes a close second. Leave out a word that neither makes the label more accurate nor keeps the label concise.
 
 **NEVER let an object lose its name as the persona moves through the application.** Watch for a navigation item that names an object with one term when the screen the navigation item leads to never mentions the object. A lost object name is the first naming defect that shows up in a review. A lost name almost always means nobody agrees on what the object is called.
 
@@ -127,7 +127,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 ## Pre-flight checklist
 
-- [ ] Every label is a noun, with the noun present. There are no verbs outside buttons, and no adjectives standing alone.
+- [ ] Every label is a noun, with the noun present. No label other than a button label holds a verb. No label is an adjective standing alone.
 - [ ] No label holds a filler word. Every word in a label makes the label more accurate.
 - [ ] Every label and table header is a noun phrase of two or three words, with one qualifier at most. No label or table header holds a relative clause or a sentence. No label or table header holds `Your`, `you` or `my`, unless the same screen shows another party's items and names the other party.
 - [ ] Where the reader would otherwise subtract one column from another, the two columns are combined into one column with the math done, not left as two columns with longer headings.
