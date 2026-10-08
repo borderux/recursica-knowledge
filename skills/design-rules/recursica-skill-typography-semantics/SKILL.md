@@ -17,7 +17,7 @@ The house rules below cover type and the HTML markup that holds the text. The ho
 
 1. **The semantic structure is the design itself, not a separate step under the design.** Use semantic HTML (HTML elements chosen by role, such as a button element for a button). Choose each element for the element's meaning, not for the element's look. The markup matches what is on the screen. Never get a visual effect by using the wrong element.
 2. **Type styles always come from tokens.** The design system defines the type styles, and the code applies the type styles. A custom typographic value is a defect, unless no type style exists for the case.
-3. **Being understood comes before being brief.** When text cannot be both short and easy to understand, make the text easy to understand. The user should not have to hover over an item on the screen to find out what the item means.
+3. **Being understood comes before being brief.** When text cannot be both short and easy to understand, make the text easy to understand. The persona should not have to hover over an item on the screen to find out what the item means.
 
 ## Real HTML elements
 
@@ -70,11 +70,11 @@ The house rules below cover type and the HTML markup that holds the text. The ho
 **Hide a heading from sight only when both of the following conditions are true:**
 
 1. Showing the heading breaks up the layout, **and**
-2. The heading adds nothing to what the user understands from the screen.
+2. The heading adds nothing to what the persona understands from the screen.
 
 **When both conditions are true, hide the heading visually and keep the heading available to screen readers.** The heading stays in the page structure. Only the visible text goes away.
 
-**When the heading adds to what the user understands, show the heading.** Hiding meaningful content from sighted users to keep a layout tidy is the wrong choice.
+**When the heading adds to what the persona understands, show the heading.** Hiding meaningful content from sighted personas to keep a layout tidy is the wrong choice.
 
 ## Eyebrow text
 
@@ -88,7 +88,7 @@ Eyebrow text is a small label that sits above a heading.
 
 **Put the abbreviation in parentheses after the first full use.** The reader then learns what the short form will look like.
 
-**A tooltip or an `aria-label` alone is not enough.** Not every user knows to hover over an abbreviation to find out what the abbreviation means.
+**A tooltip or an `aria-label` alone is not enough.** Not every persona knows to hover over an abbreviation to find out what the abbreviation means.
 
 **Exception: abbreviate at first use when the term is common knowledge and the context cannot be misread.** The exception applies only where everyone understands the term and the context allows no other meaning. MPG on a fuel-economy dashboard is fine. Spelling out MPG on a fuel-economy dashboard would look strange.
 
