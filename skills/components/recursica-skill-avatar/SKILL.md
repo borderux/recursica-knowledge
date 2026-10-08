@@ -9,13 +9,13 @@ metadata:
 
 # Avatar
 
-An avatar is a small picture that stands for a person or an entity. An avatar helps users tell people apart.
+An avatar is a small picture that stands for a person or an entity. An avatar helps personas tell people apart.
 
 ## When to use an avatar
 
 - **A name already shows in text near the avatar, and a face makes a list faster to scan.** Examples are a comment author, the assignee in a table row or a list row, and a team directory.
 - **An avatar is the button that opens the account menu (also called the user menu).** Opening the account menu is the only case where an avatar is a control.
-- **A photograph helps users recognize a person**, such as the collaborators on a document, or the people active on a page right now.
+- **A photograph helps personas recognize a person**, such as the collaborators on a document, or the people active on a page right now.
 
 ## When not to use an avatar
 
@@ -27,7 +27,7 @@ An avatar is a small picture that stands for a person or an entity. An avatar he
 | The picture stands for an idea, not a person                                                   | An icon. An avatar shows identity. An avatar is not an ornament.                                       |
 | The avatar would be the only way to tell which person or entity a table or list row belongs to | A name in text, with the avatar beside the name.                                                       |
 
-**An avatar alone identifies no one.** A picture can match more than one person, and so can a pair of initials. A screen reader user learns nobody's identity from a picture or from initials. The name in text identifies the person. The avatar helps a user find the name faster.
+**An avatar alone identifies no one.** A picture can match more than one person, and so can a pair of initials. A persona using a screen reader learns nobody's identity from a picture or from initials. The name in text identifies the person. The avatar helps a persona find the name faster.
 
 ## Variants
 
@@ -51,7 +51,7 @@ The rules below describe each option by role, such as "the photo style". The nam
 
 **Initials are not a name.** Two people can share the initials "AM". An initials avatar is a visual aid added to a name already on the screen. An initials avatar never replaces the name.
 
-**The icon style shows no identity.** An icon avatar means "a person", without saying which person. Use the icon style for a party who is unknown or unnamed, or as the last fallback. Never use the icon style as the usual picture for a known user.
+**The icon style shows no identity.** An icon avatar means "a person", without saying which person. Use the icon style for a party who is unknown or unnamed, or as the last fallback. Never use the icon style as the usual picture for a known persona.
 
 **Decide once whether each avatar is a control or decoration.** An avatar that opens the account menu is a real button, with a real accessible name (the name a screen reader reads out for a control) and a tab stop (a place the Tab key lands). Every other avatar is decoration, with no click handler, no tabindex, and no element or ARIA role that makes the avatar a control. No avatar is partly a control and partly decoration.
 
@@ -65,26 +65,26 @@ The rules below describe each option by role, such as "the photo style". The nam
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
-An avatar is either a picture or a control, and each kind fails a screen reader user in a different way. A picture avatar can be announced as an unlabeled image, or as a second copy of a name the screen reader already read. A control avatar can have no accessible name at all.
+An avatar is either a picture or a control, and each kind fails a persona using a screen reader in a different way. A picture avatar can be announced as an unlabeled image, or as a second copy of a name the screen reader already read. A control avatar can have no accessible name at all.
 
 ### Screen readers
 
 - **Give a photo avatar alternative text that names who or what the avatar stands for, whenever the avatar is the only place the name appears.** Write the name, such as "Person A", not "avatar" and not "profile photo".
 - **When the name is already in text next to the avatar, the avatar is decorative and must be silent.** Give the avatar empty alternative text. Hearing "Person A, image, Person A" is worse than hearing nothing, and the repeat happens in every row of a list.
-- **A screen reader must never announce the initials in an initials avatar as a person's identity.** "AM" tells a screen reader user nothing. The initials are decorative. The screen reader reads the name in text.
+- **A screen reader must never announce the initials in an initials avatar as a person's identity.** "AM" tells a persona using a screen reader nothing. The initials are decorative. The screen reader reads the name in text.
 - **An icon avatar must be silent.** An icon avatar shows no identity, so a screen reader has nothing to announce. A screen reader must not announce an icon avatar as "image" or "graphic".
-- **Give a control avatar a real accessible name that says what using the avatar does**, such as "Account menu", or the user's name and what the avatar opens. The picture is not the accessible name. A control with no accessible name is announced only as "button".
-- **A control avatar counts as an icon-only control.** Give a control avatar a tooltip for sighted mouse users and, separately, an accessible name. `recursica-skill-buttons-links` requires both.
-- **Never make the avatar the only way to tell whose table or list row, comment, or assignment the user sees.** An avatar alone puts meaning in a single visual channel (color, shape, position or text, each a separate signal). `recursica-skill-system-conventions` forbids meaning in a single channel.
-- **Do not add a hidden copy of the name for screen readers while the visible name stays in the reading order (the order in which a screen reader reads the page).** The screen reader user hears the name twice.
+- **Give a control avatar a real accessible name that says what using the avatar does**, such as "Account menu", or the persona's name and what the avatar opens. The picture is not the accessible name. A control with no accessible name is announced only as "button".
+- **A control avatar counts as an icon-only control.** Give a control avatar a tooltip for sighted personas using a mouse and, separately, an accessible name. `recursica-skill-buttons-links` requires both.
+- **Never make the avatar the only way to tell whose table or list row, comment, or assignment the persona sees.** An avatar alone puts meaning in a single visual channel (color, shape, position or text, each a separate signal). `recursica-skill-system-conventions` forbids meaning in a single channel.
+- **Do not add a hidden copy of the name for screen readers while the visible name stays in the reading order (the order in which a screen reader reads the page).** A persona using a screen reader hears the name twice.
 
 ### Keyboard and non-mouse navigation
 
 - **A decorative avatar never receives focus and is skipped in the tab order.** A decorative avatar has no tabindex, no click handler, and no role that suggests the avatar can be used.
 - **A control avatar is a real button or link, is a tab stop, and works from the keyboard.** The control avatar's place in the tab order matches the avatar's place on screen, among the elements around the avatar.
 - **When a control avatar opens a menu, focus moves into the menu.** Focus returns to the avatar when the menu closes. See `recursica-skill-menu`.
-- **An avatar inside an element the user can click or select, such as a link in a table or list row, or a list item, is part of that element's name.** The avatar is not a separate tab stop inside the element.
-- **Nothing about the avatar may depend on hover.** Keyboard users and touch users cannot reach a name that appears only in a hover tooltip. The name in text identifies the person, not a hover tooltip.
+- **An avatar inside an element the persona can click or select, such as a link in a table or list row, or a list item, is part of that element's name.** The avatar is not a separate tab stop inside the element.
+- **Nothing about the avatar may depend on hover.** Personas using a keyboard and personas on a touch device cannot reach a name that appears only in a hover tooltip. The name in text identifies the person, not a hover tooltip.
 
 ## Styling set by tokens
 
@@ -92,7 +92,7 @@ An avatar is either a picture or a control, and each kind fails a screen reader 
 
 ## Related skills
 
-- `recursica-skill-navigation` — keeping the account menu out of primary navigation, what counts as a location, and how the page shows where the user is.
+- `recursica-skill-navigation` — keeping the account menu out of primary navigation, what counts as a location, and how the page shows where the persona is.
 - `recursica-skill-buttons-links` — the tooltip and accessible name an icon-only control needs, and when to use a button or a link.
 - `recursica-skill-tables` — whether a person column in a dense table shows a picture, and which fields get a column.
 - `recursica-skill-system-conventions` — never showing a meaning in a single channel.
@@ -117,7 +117,7 @@ An avatar is either a picture or a control, and each kind fails a screen reader 
 - [ ] Every avatar sits beside the name in text. No avatar is the only way to identify a person or record.
 - [ ] Each avatar's style matches the available data, falling back from the photo style to the initials style to the icon style.
 - [ ] A photo that fails to load falls back to initials or the placeholder icon, never to an empty circle.
-- [ ] Initials are decoration, never a name, and no known user gets the icon style.
+- [ ] Initials are decoration, never a name, and no known persona gets the icon style.
 - [ ] Each avatar is either a control, with a real accessible name and a tab stop, or decoration, with no tabindex, event handler, or element or ARIA role that makes the avatar a control.
 - [ ] A control avatar has a tooltip and an accessible name. Focus returns to the control avatar when the menu the avatar opened closes.
 - [ ] A photo avatar has alternative text naming the person, or is silent because the name is already in text next to the avatar.
