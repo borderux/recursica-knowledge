@@ -19,7 +19,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 ## The two governing principles
 
-1. **Remove ambiguity.** Every layout decision should have exactly one correct reading order, one correct tab order (the order the Tab key moves through the fields), and one obvious next action. A design is wrong if the design forces the user to guess, such as what to fill in, where to go next, or whether the user's work was saved.
+1. **Remove ambiguity.** Every layout decision should have exactly one correct reading order, one correct tab order (the order the Tab key moves through the fields), and one obvious next action. A design is wrong if the design forces the persona to guess, such as what to fill in, where to go next, or whether the persona's work was saved.
 2. **Prevent errors before catching errors.** Good labels, help text, placeholders and small form sections do more than any validation system can. Validation is the backup for errors the form did not prevent.
 
 ## Layout
@@ -36,23 +36,23 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 The side-by-side rule has three reasons, most important first:
 
-- The eye travels only a short distance from label to field. A left-justified label in a wide column can leave a wide gap. The user's eye can drift across the gap to the wrong field, and the user fills in the wrong field.
-- The user checks the entries in one scan straight down the column of _values_. The user does not jump from label to value to label to value.
+- The eye travels only a short distance from label to field. A left-justified label in a wide column can leave a wide gap. The persona's eye can drift across the gap to the wrong field, and the persona fills in the wrong field.
+- The persona checks the entries in one scan straight down the column of _values_. The persona does not jump from label to value to label to value.
 - Labels beside the fields keep the form short.
 
 **The width of the form's container decides only whether a label sits beside the field or above the field, never the order of the fields.** Fields always stay one per row, top to bottom.
 
 **Stack the label above the field only when the form's container is too narrow to fit the label and the field side by side.** The width of the form's container decides, not the viewport breakpoint (the screen width at which the whole layout changes). A form in a narrow panel, drawer or side rail on a large desktop display stacks the labels. A wide form on a tablet does not stack the labels.
 
-**Stacking is a fallback, never a preference.** Stacked labels make forms long. Stacked labels also force the user to switch back and forth between label and field while scanning. Stacked labels are worse still because fields have different heights. A textarea (a multi-line text field) is tall, and a radio group has one row for each option. A stacked form therefore has an uneven vertical rhythm.
+**Stacking is a fallback, never a preference.** Stacked labels make forms long. Stacked labels also force the persona to switch back and forth between label and field while scanning. Stacked labels are worse still because fields have different heights. A textarea (a multi-line text field) is tall, and a radio group has one row for each option. A stacked form therefore has an uneven vertical rhythm.
 
 **MUST: use one label placement per form. Use side by side or stacked, never both at the same breakpoint.** Apply the container-width test once, to the whole form. The result sets the label placement of every field in the form. If the form's container cannot fit a label and a field side by side, every field in the form stacks. The short fields that would have fit side by side stack too.
 
 Mixing the two placements in one form causes three problems, and none of the three is about looks:
 
 - **Mixing breaks the single vertical scan.** The side-by-side rule exists so that checking the entries is one pass down a column of values. A stacked field in the middle of the column of values breaks the column.
-- **Mixing creates two competing left edges.** The user cannot tell whether the next text to read is a label or a value.
-- **Mixing makes one field look different for a reason that does not exist.** A field laid out differently from the nearby fields looks like a different kind of field. The user searches for a reason that does not exist.
+- **Mixing creates two competing left edges.** The persona cannot tell whether the next text to read is a label or a value.
+- **Mixing makes one field look different for a reason that does not exist.** A field laid out differently from the nearby fields looks like a different kind of field. The persona searches for a reason that does not exist.
 
 **A whole form may switch label placement between breakpoints**, such as side by side in a wide container and stacked in a narrow drawer. A form that switches still uses one placement for every field, decided per breakpoint. Mixing placements within a single breakpoint is forbidden.
 
@@ -63,17 +63,17 @@ Mixing the two placements in one form causes three problems, and none of the thr
 - **The code may use a name other than `layouts`.** `layouts` is the name in Figma and the UI kit. Each adapter names the setting in a different way. An adapter may ignore a name the adapter does not know. Look up the name the code uses with the Recursica MCP server's `recursica_get_component_doc` tool before setting label placement.
 - **Every field needs the setting.** Label placement is set per field. One missed field mixes label placements in the form. Count the form's field components to check that every field has the setting.
 
-**Always name the object clearly in a label.** Name exactly what the field holds. A label must never rely on the content around the label for meaning or context. A screen reader user hears the label alone. When a label uses a verb, make the verb clear and active. Never use a passive verb or a linking verb in a label.
+**Always name the object clearly in a label.** Name exactly what the field holds. A label must never rely on the content around the label for meaning or context. A persona using a screen reader hears the label alone. When a label uses a verb, make the verb clear and active. Never use a passive verb or a linking verb in a label.
 
 ## Single page vs. multi-step
 
-**Choose between one page and multiple steps by the user's mental model (what a person expects, based on the tools and work the person already knows), not by the number of fields alone.** Use multiple steps when **any** of the following three conditions is true:
+**Choose between one page and multiple steps by the persona's mental model (what a person expects, based on the tools and work the person already knows), not by the number of fields alone.** Use multiple steps when **any** of the following three conditions is true:
 
-1. **Separate stages.** The task naturally breaks into steps that the user already thinks of as separate, and splitting the task into steps makes the task easier to take in.
+1. **Separate stages.** The task naturally breaks into steps that the persona already thinks of as separate, and splitting the task into steps makes the task easier to take in.
 2. **Volume.** The form has so many fields that the visual noise needs to be reduced.
 3. **Later branching.** An answer makes a _later_ step significantly different.
 
-**Information that refers back and forth across a form favors one long form.** When completing one form section depends on checking or remembering another form section, a stepper is actively worse than a long form. Moving forward and back to re-read costs more than scrolling does. In usability testing of a long credit-card application, the single form did better than the stepper because the user wanted to confirm that the whole application was correct and complete at once. The deciding question is how much of the form has to stay in view, not how many fields the form has. See `recursica-skill-screen-priority`.
+**Information that refers back and forth across a form favors one long form.** When completing one form section depends on checking or remembering another form section, a stepper is actively worse than a long form. Moving forward and back to re-read costs more than scrolling does. In usability testing of a long credit-card application, the single form did better than the stepper because the persona wanted to confirm that the whole application was correct and complete at once. The deciding question is how much of the form has to stay in view, not how many fields the form has. See `recursica-skill-screen-priority`.
 
 **Use progressive disclosure for a small, local change.** If an answer causes a _small, local_ change, such as a field or a form section right below the answer, use progressive disclosure and stay on one page. If an answer causes a _clearly different later step_, use multiple steps. Do not use multiple steps to handle small conditional fields.
 
@@ -82,13 +82,13 @@ Mixing the two placements in one form causes three problems, and none of the thr
 Group fields in the following order of preference:
 
 1. **By parent object.** If ten fields are properties of one object, group the ten fields under a single heading for that object. Grouping by parent object is the best structure available.
-2. **By step, or by the logical order** in which the user fills in the information.
+2. **By step, or by the logical order** in which the persona fills in the information.
 
 **Put repeating objects in a table.** Repeating objects are many copies of the same object with the same properties. Do not use a stack of form groups or a group of cards for repeating objects. In the table, table rows are objects, and table columns are fields. See `recursica-skill-tables`.
 
 ## Required vs. optional
 
-**A field is required only at the workflow stage that needs the field.** When a field becomes mandatory at a later stage of a workflow, the field is not required before that stage. The field must not show a required error while the record the form edits is still in a state that does not need the field. An error that demands a value the record's current state does not need is a validation bug. The user can do nothing about the error, and the error teaches the user to ignore errors.
+**A field is required only at the workflow stage that needs the field.** When a field becomes mandatory at a later stage of a workflow, the field is not required before that stage. The field must not show a required error while the record the form edits is still in a state that does not need the field. An error that demands a value the record's current state does not need is a validation bug. The persona can do nothing about the error, and the error teaches the persona to ignore errors.
 
 **State the condition, not only the requirement.** Where a field will be required later, the field's assistive text states the condition. The assistive text explains at what point the value will be needed, instead of claiming the value is missing now.
 
@@ -99,7 +99,7 @@ Group fields in the following order of preference:
 
 **Avoid cluttering the form with asterisks.** When nearly all fields are required, do not put asterisks across the form. Use one signal that applies across the whole form instead, and state what the signal means once. For example, a bold label means required, and a label in regular weight means optional. The form-wide signal adds less visual noise and is equally clear.
 
-**Mark a whole form section as optional** wherever the entire form section may not apply to a user. If a user may not have the knowledge for a whole form section, the _form section_ is optional. Mark the form section optional at the heading of the form section, rather than on every field.
+**Mark a whole form section as optional** wherever the entire form section may not apply to a persona. If a persona may not have the knowledge for a whole form section, the _form section_ is optional. Mark the form section optional at the heading of the form section, rather than on every field.
 
 ## Buttons and submit
 
@@ -109,21 +109,21 @@ Group fields in the following order of preference:
 
 **If the project has a loading variant for a button in Theme Forge, use the loading variant.** Otherwise, build the loading state from the button's disabled look. Use the disabled look with an icon alone or an icon with a label, and animate the icon. See `recursica-skill-button`.
 
-Keep the submit button the same size and in the same place. Keep the submit button able to receive focus, so that focus stays where the user pressed Enter. Tell assistive technology that the submit button is busy. Do not rely on the animation to show the busy state.
+Keep the submit button the same size and in the same place. Keep the submit button able to receive focus, so that focus stays where the persona pressed Enter. Tell assistive technology that the submit button is busy. Do not rely on the animation to show the busy state.
 
-**NEVER show a blocking spinner or overlay on submit.** Do not gray out the form, do not show a spinner in a modal, and do not lock the viewport. The loading state inside the submit button is enough. Without an overlay, the user's entries stay visible.
+**NEVER show a blocking spinner or overlay on submit.** Do not gray out the form, do not show a spinner in a modal, and do not lock the viewport. The loading state inside the submit button is enough. Without an overlay, the persona's entries stay visible.
 
 ## Validation
 
 **Handle errors in the following order.**
 
 1. **Prevent errors.** Use clear labels, help text, placeholder text, and form sections that are small enough. Placeholder text guides what goes in a text field or textarea. Help text below a field states the field's rules, such as the character requirements for a password.
-2. **Validate inline, on blur**, which means when the user leaves a field. When the user focuses a field, then leaves the field, and the field's value is invalid, mark the field right away with a non-blocking indicator on that field. Do not show a modal, do not show an alert, and do not stop the user from moving on to another field.
+2. **Validate inline, on blur**, which means when the persona leaves a field. When the persona focuses a field, then leaves the field, and the field's value is invalid, mark the field right away with a non-blocking indicator on that field. Do not show a modal, do not show an alert, and do not stop the persona from moving on to another field.
 3. **MUST keep the submit button disabled until every required field is complete and valid.**
 
-**NEVER ship an enabled submit button that shows every validation error at once when clicked.** An enabled submit button that shows every error at once is the single worst validation pattern. The user learns nothing about what the form needs until the user has already failed to submit. The user is left guessing what to complete. An enabled submit button means the form is ready to submit.
+**NEVER ship an enabled submit button that shows every validation error at once when clicked.** An enabled submit button that shows every error at once is the single worst validation pattern. The persona learns nothing about what the form needs until the persona has already failed to submit. The persona is left guessing what to complete. An enabled submit button means the form is ready to submit.
 
-**Errors the user could not have known about in advance are the only exception to validating inline first.** Examples are a conflict on the server, a broken business rule, or a clash with another record's unique value. The form shows such an error after submit, because no earlier moment exists to catch the error.
+**Errors the persona could not have known about in advance are the only exception to validating inline first.** Examples are a conflict on the server, a broken business rule, or a clash with another record's unique value. The form shows such an error after submit, because no earlier moment exists to catch the error.
 
 ## Error presentation
 
@@ -134,7 +134,7 @@ Show every error with both of the following cues:
 - A visual change to the field: the field's background color, border color, or line weight.
 - **Plus** a separate indicator: an icon, a flag, or a message.
 
-**Turn a field's help text into the field's error message where the change makes sense.** The error message should still state the rule the user broke, not a bare "Invalid input." The user needs the rule in view to fix the problem.
+**Turn a field's help text into the field's error message where the change makes sense.** The error message should still state the rule the persona broke, not a bare "Invalid input." The persona needs the rule in view to fix the problem.
 
 **Show errors at the field level.** In a dense form, flags that sit over the page and are pinned to the fields with errors are a good way to make every error's location impossible to miss.
 
@@ -142,10 +142,10 @@ Show every error with both of the following cues:
 
 Microcopy is the short text in an interface: labels, hints and messages.
 
-**Do not write sentences in microcopy.** Microcopy is not prose. The most effective microcopy is the shortest string of text that gives all the information the user needs.
+**Do not write sentences in microcopy.** Microcopy is not prose. The most effective microcopy is the shortest string of text that gives all the information the persona needs.
 
-- **Break apart a constraint that has several rules.** For example, a password constraint with a minimum length and a special-character requirement becomes short fragments separated by commas, or bullets. The user scans each rule separately, instead of working through a paragraph.
-- **Assume the user will not read the microcopy.** Most users skip microcopy. Skipped microcopy is a reason to keep microcopy short, not a reason to add more words to make up for the skipping.
+- **Break apart a constraint that has several rules.** For example, a password constraint with a minimum length and a special-character requirement becomes short fragments separated by commas, or bullets. The persona scans each rule separately, instead of working through a paragraph.
+- **Assume the persona will not read the microcopy.** Most personas skip microcopy. Skipped microcopy is a reason to keep microcopy short, not a reason to add more words to make up for the skipping.
 - **Use plain language.** Use the lowest reasonable reading level. Use no jargon, no elaborate phrasing, and no hedging.
 
 ## Field states
@@ -160,28 +160,28 @@ Beyond the difference between enabled and disabled, leave the choice of heavy or
 
 ## Pre-fill and defaults
 
-**Decide each pre-filled value separately**, by the **risk of the user misunderstanding** the value.
+**Decide each pre-filled value separately**, by the **risk of the persona misunderstanding** the value.
 
 **Pre-fill when the value is low-risk and obvious:**
 
 - Today's date, when today's date is what the form records.
-- The current user's name, when the system knows who the user is.
+- The name of the persona filling in the form, when the system knows who the persona is.
 
-**NEVER pre-fill a value the user has to understand before the user can check the value.** Such values include values the user would have to think about, look up, or compare against another source to know whether the default is right. A default the user cannot check is worse than an empty field, because the default gets submitted without being checked.
+**NEVER pre-fill a value the persona has to understand before the persona can check the value.** Such values include values the persona would have to think about, look up, or compare against another source to know whether the default is right. A default the persona cannot check is worse than an empty field, because the default gets submitted without being checked.
 
-**A form that edits an existing object is a separate case, and the form always opens filled in** with the object's current values. The user is editing the object, not starting over. The rule for edit forms always applies. `recursica-skill-defaults` sets the rule for edit forms. `recursica-skill-defaults` also sets the 90 percent threshold for pre-selecting an option, and the rule against pre-selecting any choice with later consequences.
+**A form that edits an existing object is a separate case, and the form always opens filled in** with the object's current values. The persona is editing the object, not starting over. The rule for edit forms always applies. `recursica-skill-defaults` sets the rule for edit forms. `recursica-skill-defaults` also sets the 90 percent threshold for pre-selecting an option, and the rule against pre-selecting any choice with later consequences.
 
 ## Progressive disclosure
 
-**Put content that a control reveals as close as possible to that control.** Put the revealed content right next to the control and right after the control, and show the content immediately. The user must be able to see the cause and effect between the user's choice and the revealed content. The user then feels in control of the form, rather than controlled by the form.
+**Put content that a control reveals as close as possible to that control.** Put the revealed content right next to the control and right after the control, and show the content immediately. The persona must be able to see the cause and effect between the persona's choice and the revealed content. The persona then feels in control of the form, rather than controlled by the form.
 
 **A result that appears on a later step is not progressive disclosure.** A result on a later step is multi-step branching. Do not confuse progressive disclosure with multi-step branching.
 
-**Avoid hiding form sections based on the type of user.** In enterprise application design, fields should rarely be invisible to some users. Prefer marking the whole form section optional at the form section's heading. Before hiding large parts of a form, question the requirement.
+**Avoid hiding form sections based on the type of persona.** In enterprise application design, fields should rarely be invisible to some personas. Prefer marking the whole form section optional at the form section's heading. Before hiding large parts of a form, question the requirement.
 
 ## Confirmation
 
-**By default, submitting takes effect immediately.** Do not ask "Are you sure?" Users expect most forms in web applications to submit right away. The user can see and edit the results afterward.
+**By default, submitting takes effect immediately.** Do not ask "Are you sure?" Personas expect most forms in web applications to submit right away. The persona can see and edit the results afterward.
 
 **Confirm only when both of the following are true:** the action cannot be undone, and no other way to recover exists. A legally binding submission with no way back is the clearest valid case.
 
@@ -196,13 +196,13 @@ Beyond the difference between enabled and disabled, leave the choice of heavy or
 | **Field-level / instant** | On each field change, immediately, to the server | **Required.** Show a status that stays on the page and says the change was saved as a draft, and when |
 | **Batch save**            | On submit, all at once                           | **None.** Show no status message and no indicator of unsaved changes                                  |
 
-**MUST NOT mix the two modes.** Within a system, either every change saves field by field, or every change saves on submit. Mixing the two modes is a serious failure. The user can no longer tell when the user's work is saved.
+**MUST NOT mix the two modes.** Within a system, either every change saves field by field, or every change saves on submit. Mixing the two modes is a serious failure. The persona can no longer tell when the persona's work is saved.
 
-**Batch save is the default.** `recursica-skill-selection-controls` gives the full reasoning. The user must be able to change a decision. Saving once also produces one clean log entry instead of a stream of writes, one per field.
+**Batch save is the default.** `recursica-skill-selection-controls` gives the full reasoning. The persona must be able to change a decision. Saving once also produces one clean log entry instead of a stream of writes, one per field.
 
-**In batch mode, do not show an unsaved or dirty state** (a sign that changes are not yet saved). The only signal the user needs is the submit button becoming enabled once every editable control is valid.
+**In batch mode, do not show an unsaved or dirty state** (a sign that changes are not yet saved). The only signal the persona needs is the submit button becoming enabled once every editable control is valid.
 
-**If the product's technology can save drafts automatically, always save drafts.** Entered data should survive a refresh and a return visit automatically, with no action from the user. Saving drafts is a field-level behavior. Draft saving therefore needs the status message that field-level mode requires.
+**If the product's technology can save drafts automatically, always save drafts.** Entered data should survive a refresh and a return visit automatically, with no action from the persona. Saving drafts is a field-level behavior. Draft saving therefore needs the status message that field-level mode requires.
 
 **Always keep a submit button**, even with autosave. A form with no submit button is confusing, even when autosave makes the submit button technically unnecessary.
 
@@ -217,22 +217,22 @@ The design system provides accessible components. The following rules cover the 
 
 ## Password fields
 
-**A password field may include a toggle that shows the password.** The toggle cuts typing errors. The password shows only while the user has the toggle on. Give the toggle an accessible name (the name a screen reader reads out for a control) that says what the toggle does, such as "Show password".
+**A password field may include a toggle that shows the password.** The toggle cuts typing errors. The password shows only while the persona has the toggle on. Give the toggle an accessible name (the name a screen reader reads out for a control) that says what the toggle does, such as "Show password".
 
 ## CAPTCHA
 
-A CAPTCHA is a test that checks the user is a person and not a program.
+A CAPTCHA is a test that tells a person apart from a program.
 
-**Prefer a CAPTCHA that is invisible and built in.** A modern CAPTCHA should run in the background, with no action from the user.
+**Prefer a CAPTCHA that is invisible and built in.** A modern CAPTCHA should run in the background, with no action from the persona.
 
 - A check that is fully invisible and automatic is acceptable. A single checkbox that runs a test in the background is also acceptable.
-- **NEVER use challenge CAPTCHAs** that make the user pick images, solve puzzles, or make other human judgments. People fail challenge CAPTCHAs regularly, which is infuriating. The small gain in security does not justify a challenge CAPTCHA.
+- **NEVER use challenge CAPTCHAs** that make the persona pick images, solve puzzles, or make other human judgments. People fail challenge CAPTCHAs regularly, which is infuriating. The small gain in security does not justify a challenge CAPTCHA.
 
 ## Open questions
 
-No house rule covers the following questions yet. **Ask the person instead of choosing.** See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit an open question.
+No house rule covers the following questions yet. **Ask the user instead of choosing.** See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit an open question.
 
-- **Validation across the steps of a multi-step flow.** No rule says whether a step validates when the user leaves the step. No rule says what going back to an earlier step does to the data the user entered.
+- **Validation across the steps of a multi-step flow.** No rule says whether a step validates when the persona leaves the step. No rule says what going back to an earlier step does to the data the persona entered.
 - **Search and filter inputs.** No rule says whether search and filter inputs follow the form rules, or are a different kind of region that holds content, such as a page, panel, or modal.
 - **Error summaries for the whole form.** Validation on each field is specified. A summary of errors at the top of the form is not specified.
 
@@ -256,14 +256,14 @@ Check every item before treating a form as done:
 - [ ] Only the exception is marked: required _or_ optional, never both. The form has no clutter of asterisks.
 - [ ] No field shows a required error in a state that does not require the field. Each conditional requirement states the condition.
 - [ ] Help text and placeholders state the rules up front.
-- [ ] Validation runs inline, when the user leaves a field, and validation does not block the user.
+- [ ] Validation runs inline, when the persona leaves a field, and validation does not block the persona.
 - [ ] The submit button stays disabled until the form is valid and complete.
 - [ ] The primary submit button is at the bottom right, with the secondary cancel button to the left of the submit button.
 - [ ] On submit, the submit button shows a loading, disabled state inside the button, with no blocking spinner or overlay.
 - [ ] Error states use a visual change **plus** an indicator that is not color, and error messages restate the rule.
 - [ ] Microcopy has no sentences. Rules with several parts are bulleted or separated by commas.
 - [ ] Enabled fields look enabled, and disabled fields look clearly different.
-- [ ] Pre-filled values are only values the user does not have to understand to check.
+- [ ] Pre-filled values are only values the persona does not have to understand to check.
 - [ ] Revealed content sits directly below, and right next to, the control that triggers the content.
 - [ ] The form is in exactly one save mode: field-level everywhere, or batch everywhere.
 - [ ] Field-level mode shows a save status that stays on the page. Batch mode shows no status and no unsaved-changes indicator.
