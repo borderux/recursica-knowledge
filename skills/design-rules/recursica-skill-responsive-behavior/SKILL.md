@@ -17,7 +17,7 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 1. **A layout below desktop size is a decision, not a default.** Desktop is assumed. A narrower layout is either designed on purpose or openly unsupported. A narrower layout is never the accidental result of the code.
 2. **A responsive layout reflows, and an adaptive layout removes. Both are strategies, and adaptive is the strategy people forget.** To reflow is to rearrange content so the content fits the space. Most people never ask which parts of the interface could be taken out.
-3. **How the product is used decides what changes, not the number of pixels.** How the product is used means who holds the device, where the person is, and what the person is trying to do. The user's workflow decides what changes. Where the workflow is not known, ask.
+3. **How the product is used decides what changes, not the number of pixels.** How the product is used means who holds the device, where the persona is, and what the persona is trying to do. The persona's workflow decides what changes. Where the workflow is not known, ask.
 
 ## Questions to ask before choosing any pattern
 
@@ -33,7 +33,7 @@ The house rules assume **complex enterprise web applications, designed for deskt
    Do not assume the designed, checked experience because the designed, checked experience sounds the most professional. Ask which promise applies.
 
 3. **What range of viewports does the business have?** A factory floor of very old desktops limited to 1024 pixels is a different problem from a guaranteed 1440 pixels. On the old desktops limited to 1024 pixels, responsive design is about getting narrower. On a guaranteed 1440 pixels, responsive design is about what happens when the viewport gets wider.
-4. **What is the main way people give input?** Mouse and keyboard is assumed. Touch is possible even on desktop, and real projects have stranger input methods than touch. Capacitive touchscreens sense a bare finger. Resistive touchscreens need pressure. Some users wear gloves and cannot take the gloves off. On a factory floor, a joystick can stand in for a mouse. Each input method is a different interaction pattern.
+4. **What is the main way people give input?** Mouse and keyboard is assumed. Touch is possible even on desktop, and real projects have stranger input methods than touch. Capacitive touchscreens sense a bare finger. Resistive touchscreens need pressure. Some personas wear gloves and cannot take the gloves off. On a factory floor, a joystick can stand in for a mouse. Each input method is a different interaction pattern.
 
 ## Breakpoints
 
@@ -77,9 +77,9 @@ A breakpoint is the screen width at which the layout changes. Recursica has thre
 
 ## Panels and modals that become pages
 
-**A panel becomes a page below tablet size.** A panel is an overlay that keeps the page in view. A panel exists so the user can work beside the page the user came from. A small device has no room to lay a panel over the page. On a small device, a panel loses that purpose. `recursica-skill-panels-modals` owns the panel rule.
+**A panel becomes a page below tablet size.** A panel is an overlay that keeps the page in view. A panel exists so the persona can work beside the page the persona came from. A small device has no room to lay a panel over the page. On a small device, a panel loses that purpose. `recursica-skill-panels-modals` owns the panel rule.
 
-**A modal becomes a page below tablet size only when the user does work in the modal.** The test is whether the user is doing work:
+**A modal becomes a page below tablet size only when the persona does work in the modal.** The test is whether the persona is doing work:
 
 - **A small workflow, a form, or editing details in a modal becomes a page.**
 - **A confirmation stays a modal.** "Are you sure you want to delete this?" is not work. A confirmation can show at any size with no problem.
@@ -98,9 +98,9 @@ A breakpoint is the screen width at which the layout changes. Recursica has thre
 
 **Avoid horizontal scrolling wherever possible**, at every width.
 
-**The one component with a valid reason to scroll horizontally is a carousel** (a row of items the user swipes or clicks through horizontally). Carousels are used far more on mobile than on desktop.
+**The one component with a valid reason to scroll horizontally is a carousel** (a row of items the persona swipes or clicks through horizontally). Carousels are used far more on mobile than on desktop.
 
-**Where content does run past the edge, the layout MUST hint at the hidden content.** Show items partly cut off at the side, so the user can see more items to scroll to. The partly cut-off items are a hint, sometimes called scent. The hint shows the user that the content scrolls sideways. When content stops exactly at the edge, the user cannot see that more content exists.
+**Where content does run past the edge, the layout MUST hint at the hidden content.** Show items partly cut off at the side, so the persona can see more items to scroll to. The partly cut-off items are a hint, sometimes called scent. The hint shows the persona that the content scrolls sideways. When content stops exactly at the edge, the persona cannot see that more content exists.
 
 **A table may also scroll horizontally, but only as a last resort, when nothing else works.** See `recursica-skill-tables`. No other case was found to need horizontal scrolling.
 
@@ -145,7 +145,7 @@ A designed narrow layout shows two good signs. A narrow layout with neither sign
 1. **Content areas reflow.** The classic check is whether cards stack when the viewport gets narrower.
 2. **The way content is shown changes between tiers.** Cards on desktop that become a carousel on mobile are the clearest sign that someone designed the narrow layout. The carousel shows that someone decided to show the content differently on mobile, instead of shrinking the same component to fit.
 
-**A fixed-width layout that does not reflow at all was named the worst anti-pattern of all.** The user gets a zoomed-out page with tiny text and lines far too long. The user has to zoom in and scroll around to read the page.
+**A fixed-width layout that does not reflow at all was named the worst anti-pattern of all.** The persona gets a zoomed-out page with tiny text and lines far too long. The persona has to zoom in and scroll around to read the page.
 
 ## Set by the theme or the component
 
