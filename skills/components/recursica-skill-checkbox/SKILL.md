@@ -30,7 +30,7 @@ A checkbox turns one specific value on or off. A checkbox group lets the persona
 | The persona chooses an action, not a value                                          | A button. See `recursica-skill-button`.                                                                                 |
 | The persona viewing the field can never edit the value                              | A read-only field, which shows the label and the value as text, with no input. See `recursica-skill-read-only-field`.   |
 
-**Do not use a disabled checkbox to show a value.** A value that nobody can ever change here does not belong in a form control.
+**Do not use a disabled checkbox to show a value.** A value that nobody can ever change in this field does not belong in a form control.
 
 ## Variants
 
@@ -82,7 +82,7 @@ The rules below describe each option by role, such as "the checked state". The n
 **A disabled checkbox item and a read-only field are different components, not two styles of one component.**
 
 - **Use a disabled checkbox item when the persona could make the item usable by first taking a different action.** A disabled item is still a checkbox and still clearly a control, but the persona cannot use the item right now.
-- **Use a read-only field when the persona viewing the field never changes the value here.** A read-only field, `read-only-field` in the standard UI kit, is a different component. A read-only field shows text, with no input at all.
+- **Use a read-only field when the persona viewing the field never changes the value.** A read-only field, `read-only-field` in the standard UI kit, is a different component. A read-only field shows text, with no input at all.
 
 ## Accessibility
 
@@ -152,5 +152,5 @@ The checkbox component pairs each box with the item label and provides the focus
 - [ ] The disabled state is used only for options that are unavailable for now. A value that can never be edited uses the read-only field.
 - [ ] Every variant, size, and state is one the Recursica MCP server lists for the project.
 - [ ] No styling is set or overridden on the checkbox, and no container or spacer is added to change the checkbox's look.
-- [ ] The group saves with the form, in the same save mode as every other part of the system.
+- [ ] The group saves with the form, in the same save mode as every other part of the application.
 - [ ] Open questions were asked about, not decided: the group error state, the multi-select dropdown, where a select-all control sits, limits on selection, and nesting depth.
