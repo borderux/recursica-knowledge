@@ -18,9 +18,9 @@ A card separates one repeating object from the object's peers (objects of the sa
 **Use a card only when all five tests below pass.**
 
 1. **Plurality.** The screen shows more than one object of the same kind. Each object is one item. A single object is never a card.
-2. **Finite and small.** The items form a list with a fixed end, and the list is short. A high plurality (a large number of items of the same kind) is a table.
+2. **Finite and small.** The items form a list with a fixed end, and the list is short. Show a high plurality (a large number of items of the same kind) in a table.
 3. **Repetition.** Every item has the same kinds of information, in the same arrangement.
-4. **A graphic.** Each item contains a graphic, such as a chart, an image or a photograph. Data that is only text and numbers is a table.
+4. **A graphic.** Each item contains a graphic, such as a chart, an image or a photograph. Show data that is only text and numbers in a table.
 5. **Separate, but together.** The items need to look clearly separate from each other. The items also need to look like one group of the same kind of object.
 
 **If any test fails, do not use a card.** Use a table or spacing instead, depending on which test failed.
@@ -29,19 +29,19 @@ A card separates one repeating object from the object's peers (objects of the sa
 
 ## The aesthetic exception
 
-**Now and then, a small, finite list of repeating items looks better as cards, even with no graphic.** Looks are a valid reason in that case. The aesthetic exception is the only exception for looks in this skill.
+**A small, finite list of repeating items sometimes looks better as cards, even with no graphic.** The aesthetic exception makes looks a valid reason to show that list as cards. The aesthetic exception is the only exception for looks in this skill.
 
-The aesthetic exception is narrow:
+The aesthetic exception has three limits.
 
 - **The aesthetic exception waives test 4 only.** A high plurality is still a table. A single object is still not a card. A form is still never a card.
-- **The aesthetic exception is occasional.** If most of the card sets in an application use the aesthetic exception, the exception has become the rule, and the reasoning has gone wrong.
-- **State when a card set uses the aesthetic exception.** Say that the card set is a choice made for looks, not the default. Saying so keeps the choice visible and rare.
+- **The aesthetic exception is occasional.** If most of the card sets in an application use the aesthetic exception, the exception has become the normal case, and the reasoning about cards has gone wrong.
+- **State when a card set uses the aesthetic exception.** Say that the card set is a choice made for looks, not the default. The statement keeps the choice visible and rare.
 
 ## When to use a card
 
-- **Several repeating objects of the same type, each with the same kinds of information**, such as several products, several records or several search results.
-- **Peer objects that would otherwise be hard to tell apart**, where a user could misread where one object ends and the next object begins.
-- **Items that each have a chart or an image** that a table row could not show clearly.
+- **The screen shows several repeating objects of the same type, and each object has the same kinds of information.** Examples are several products, several records or several search results.
+- **Peer objects would otherwise be hard to tell apart.** A user could misread where one object ends and the next object begins.
+- **Each item has a chart or an image that a table row could not show clearly.**
 
 ## When not to use a card
 
@@ -60,9 +60,9 @@ The aesthetic exception is narrow:
 
 ## Forms in cards
 
-**A form, a form section, or any single form control MUST NOT be placed inside a card. The rule has no exception.**
+**A card MUST NOT hold a form, a form section, or any single form control. The rule has no exception.**
 
-The rule follows from the five tests. A form shows the properties of one object, not a list of repeating peers. A card boundary around a form has no other object to separate the form from. `recursica-skill-forms` sets the form layout, and the field components include the spacing the form layout calls for.
+The rule follows from the five tests. A form shows the properties of one object, not a list of repeating peers. A card boundary around a form has no other object to separate the form from. `recursica-skill-forms` sets the form layout. The field components include the spacing that the form layout calls for.
 
 ## Spacing instead of cards
 
@@ -79,10 +79,10 @@ The rule follows from the five tests. A form shows the properties of one object,
 The rules below describe each option by role. The names in the standard UI kit (the unchanged UI kit in the official Recursica release) and on the design-system website are examples only.
 
 - **A card can have a header, a content area, sections and a footer.** The header can hold an optional button, called the header button. A divider separates the sections.
-- **Style.** A card can have a raised style or an outlined style. The design-system website calls the two styles Elevation and Outline. Use the style choice only when the project lists the style choice. Otherwise, ask.
+- **A card can have a raised style or an outlined style.** The design-system website calls the two styles Elevation and Outline. Use the style choice only when the project lists the style choice. Otherwise, ask.
 - **Do not choose between the raised style and the outlined style at random.** No rule says where to use each style. See "Open questions".
-- **Graphic slot.** A graphic slot holds the graphic that test 4 requires, such as an image or a chart. The graphic slot sits above the card's content or below the card's content, or the card has no graphic slot. The website calls the three options Top, Bottom and None. Use the graphic slot choice only when the project lists the graphic slot choice. Otherwise, ask. A card with no graphic slot is the setup the aesthetic exception relies on.
-- **Size.** If the project has a size variant, use the size variant. Otherwise, do not build a wide card and a narrow card as variants.
+- **A card can have a graphic slot.** A graphic slot holds the graphic that test 4 requires, such as an image or a chart. The graphic slot sits above the card's content or below the card's content, or the card has no graphic slot. The website calls the three options Top, Bottom and None. Use the graphic slot choice only when the project lists the graphic slot choice. Otherwise, ask. The aesthetic exception uses a card with no graphic slot.
+- **If the project has a size variant, use the size variant.** Otherwise, do not build a wide card and a narrow card as variants.
 - **A card is not a control.** When a card is a link or holds a link, see the rules for links under "Accessibility".
 
 **A card sits on a layer (a numbered background level, 0 to 3, that sets the colors of the components on that level). A card is not a replacement for a layer.** A layer sets the background and the design values for an area of the screen. A card is the boundary around one object among repeating peers. See `recursica-skill-layers`.
@@ -115,10 +115,10 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - **Announce a card set as a list, with the number of cards.** The cards in a card set are peers. A screen reader user needs to know how many cards the list holds, such as six, and which card the user is on.
 - **Start every card with a heading**, at the same heading level in every card of the card set. The headings let the user jump from card to card instead of reading every word.
 - **The reading order must match the visual order.** If the graphic slot is at the top of the card, the graphic slot also comes first in the reading order.
-- **Give an image in the graphic slot alternative text, or mark the image clearly as decorative.** An unlabeled image announced as "graphic" in every card is noise. A meaningful image with no alternative text loses information.
+- **Give an image in the graphic slot alternative text, or mark the image clearly as decorative.** A screen reader announces an unlabeled image as "graphic" in every card, and the word tells the user nothing. A meaningful image with no alternative text loses information.
 - **A chart in the graphic slot is not accessible alone.** `recursica-skill-data-visualization` requires a data table with every chart, and the data table makes a chart card usable.
 - **Do not rely on the card's border or elevation to show where a card ends.** The border or the elevation separates the objects visually. In code, the list structure and the headings must separate the objects.
-- **Name the object in every repeated control.** "Edit" in every card is five identical announcements. The control's name must say which item, or the card must give the item as context in code.
+- **Name the object in every repeated control.** An "Edit" control in each of five cards gives five identical announcements. The control's name must say which item, or the card must give the item as context in code.
 
 ### Keyboard and non-mouse navigation
 
@@ -130,7 +130,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 ## Styling set by tokens
 
-**Never set or override the card's styling.** The theme sets every visual property of the card, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the card's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the card's styling.** The theme sets every visual property of the card, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the card's look. If the design needs a look the theme does not give, report the missing look as a gap. See `recursica-skill-design-router`.
 
 ## Related skills
 
@@ -139,7 +139,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - `recursica-skill-dashboards` — why a grid of equally weighted cards has no hierarchy, and what to build instead.
 - `recursica-skill-forms` — form layout, and the spacing the field components include.
 - `recursica-skill-badges-chips` — where a badge or a chip goes on a card.
-- `recursica-skill-data-visualization` — the chart in the slot, and the data table every chart requires.
+- `recursica-skill-data-visualization` — the chart in the graphic slot, and the data table every chart requires.
 
 ## Open questions
 
@@ -147,7 +147,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - **How many cards count as a "small and finite" card set.** The skill states the limit as a judgment, not a number.
 - **Card layout across breakpoints**, meaning how many cards fit across the screen, and what happens below desktop size. `recursica-skill-design-router` names card layout across breakpoints as a topic with no owner.
 - **Whether a user may select a card** as part of a multi-select, and what the selected state looks like. Ask only when the project has no selected state.
-- **The empty state of a card set.** What a card set shows when the set has one card or no cards.
+- **The empty state of a card set**, meaning what a card set shows when the set has one card or no cards.
 - **Whether the header button and the footer may both be used** in the same card.
 
 ## Pre-flight checklist
