@@ -9,27 +9,27 @@ metadata:
 
 # Stepper
 
-A stepper leads the user through one process that has several steps. The stepper shows which step of the process the user is on.
+A stepper leads the persona through one process that has several steps. The stepper shows which step of the process the persona is on.
 
 ## When to use a stepper
 
-- **A form has several parts.** `recursica-skill-forms` sets the test for splitting a form into steps: stages the user thinks of as separate, a very large number of fields, or an answer that makes a _later_ step clearly different.
+- **A form has several parts.** `recursica-skill-forms` sets the test for splitting a form into steps: stages the persona thinks of as separate, a very large number of fields, or an answer that makes a _later_ step clearly different.
 - **A form would otherwise be split across tabs.** Splitting a form across tabs is forbidden, and the stepper replaces the tabs.
 - **A first-time setup flow or an onboarding flow must be worked through in order.**
 - **The screen shows the status of a step-by-step workflow**, such as Processing, Shipped, Delivered, where the stages are fixed and in order.
 
 ## When not to use a stepper
 
-| Situation                                                           | Use instead                                                                                     |
-| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| The steps can be done in any order                                  | One page. When the user marks tasks done, use a checkbox group. See `recursica-skill-checkbox`. |
-| A short form that fits on one page                                  | One page, in a single column. See `recursica-skill-forms`.                                      |
-| An answer changes only the field right below the answer             | Progressive disclosure on one page. See `recursica-skill-forms`.                                |
-| Sections of one whole that the user switches between                | Tabs, each tab with its own route. See `recursica-skill-tabs`.                                  |
-| Primary or secondary navigation for the application                 | Navigation. A stepper is not navigation. See `recursica-skill-navigation`.                      |
-| A record of events that already happened, with timestamps           | A timeline. See `recursica-skill-timeline`.                                                     |
-| Progress of a single operation, with no known end                   | A loader, or the submit button's loading look. See `recursica-skill-loader`.                    |
-| Splitting a long form into steps only to make the form feel shorter | Nothing. Fix the form. See `recursica-skill-system-conventions`.                                |
+| Situation                                                           | Use instead                                                                                        |
+| ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| The steps can be done in any order                                  | One page. When the persona marks tasks done, use a checkbox group. See `recursica-skill-checkbox`. |
+| A short form that fits on one page                                  | One page, in a single column. See `recursica-skill-forms`.                                         |
+| An answer changes only the field right below the answer             | Progressive disclosure on one page. See `recursica-skill-forms`.                                   |
+| Sections of one whole that the persona switches between             | Tabs, each tab with its own route. See `recursica-skill-tabs`.                                     |
+| Primary or secondary navigation for the application                 | Navigation. A stepper is not navigation. See `recursica-skill-navigation`.                         |
+| A record of events that already happened, with timestamps           | A timeline. See `recursica-skill-timeline`.                                                        |
+| Progress of a single operation, with no known end                   | A loader, or the submit button's loading look. See `recursica-skill-loader`.                       |
+| Splitting a long form into steps only to make the form feel shorter | Nothing. Fix the form. See `recursica-skill-system-conventions`.                                   |
 
 **Never spread a form across tabs.** The stepper exists because of the ban on forms in tabs. `recursica-skill-navigation` sets the ban, and names the stepper as the replacement. When form fields would go in tabs, use a stepper instead.
 
@@ -49,7 +49,7 @@ The rules below describe each option by role, such as "the smaller size". The na
 
 ## Rules
 
-**Make every step a stage the user recognizes.** Cutting a form into random thirds adds clicks and does not make the form any easier. If the steps do not match the stages in the user's mental model (what a person expects, based on the tools and work the person already knows), put the form on one page.
+**Make every step a stage the persona recognizes.** Cutting a form into random thirds adds clicks and does not make the form any easier. If the steps do not match the stages in the persona's mental model (what a person expects, based on the tools and work the person already knows), put the form on one page.
 
 **Label each step with the name of the stage.** Use the step description only for a short fragment that clarifies the step label. `recursica-skill-forms` bans sentences in microcopy. Use the shortest text that gives the information.
 
@@ -59,7 +59,7 @@ The rules below describe each option by role, such as "the smaller size". The na
 
 **Keep each step's primary action disabled until the step is complete and valid.** `recursica-skill-forms` forbids an enabled button that shows validation errors when clicked. The forms rule applies to each step.
 
-**The stepper does not add a second save mode.** The application either saves field by field everywhere in the application, or saves all fields together everywhere in the application. Saving all fields together is the default. In the default mode, nothing is saved until the final submit. In the default mode, show no status message and no indicator of unsaved changes. The only signal to the user is the primary button becoming enabled. If the application saves field by field instead, show a save status that stays on the page. Never mix the two save modes across steps.
+**The stepper does not add a second save mode.** The application either saves field by field everywhere in the application, or saves all fields together everywhere in the application. Saving all fields together is the default. In the default mode, nothing is saved until the final submit. In the default mode, show no status message and no indicator of unsaved changes. The only signal to the persona is the primary button becoming enabled. If the application saves field by field instead, show a save status that stays on the page. Never mix the two save modes across steps.
 
 **Lay out each step's content by the form rules, with no exceptions.** Use a single column, one field per line, and no custom spacing.
 
@@ -69,34 +69,34 @@ The rules below describe each option by role, such as "the smaller size". The na
 
 **If a horizontal stepper does not fit, use fewer steps or switch to the vertical orientation.** Do not switch to the smaller size to fit more steps. Do not make the stepper scroll horizontally. `recursica-skill-system-conventions` forbids working around a structural problem with a smaller size or a horizontal scroll.
 
-**Keep the step count in the label text accurate.** "Step 3 of 5" must be true. When an answer adds or removes steps partway through the process, tell the user the step count changed.
+**Keep the step count in the label text accurate.** "Step 3 of 5" must be true. When an answer adds or removes steps partway through the process, tell the persona the step count changed.
 
 ## Accessibility
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
-**Put every fact a sighted user sees on the stepper at a glance into what assistive technology reads.** The stepper shows the current step and the progress with the step indicator, color, and the thickness of the connector. A screen reader reads none of the indicator, the color, or the thickness. A screen reader user is most likely to lose track of the current step when the step changes.
+**Put every fact a sighted persona sees on the stepper at a glance into what assistive technology reads.** The stepper shows the current step and the progress with the step indicator, color, and the thickness of the connector. A screen reader reads none of the indicator, the color, or the thickness. A persona using a screen reader is most likely to lose track of the current step when the step changes.
 
 ### Screen readers
 
-- **"Step 2 of 5" must be in what assistive technology reads.** Provide the current step's position and the total number of steps, as text or as a value set on the stepper in code. With only a visual indicator, a screen reader user cannot tell how many steps remain.
-- **Announce each step's status in words: complete, current, or upcoming.** Never let the connector or a color be the only sign that a step is complete. The difference in connector thickness is one channel. Screen reader users most need the step's status, and cannot perceive the connector's thickness.
-- **Each step is an item in an ordered list of steps**, announced in order. The user hears every step in the process, in sequence.
+- **"Step 2 of 5" must be in what assistive technology reads.** Provide the current step's position and the total number of steps, as text or as a value set on the stepper in code. With only a visual indicator, a persona using a screen reader cannot tell how many steps remain.
+- **Announce each step's status in words: complete, current, or upcoming.** Never let the connector or a color be the only sign that a step is complete. The difference in connector thickness is one channel. Personas using a screen reader most need the step's status, and cannot perceive the connector's thickness.
+- **Each step is an item in an ordered list of steps**, announced in order. The persona hears every step in the process, in sequence.
 - **Connect each step description to the step in code.** Never show the step description as a separate, unconnected line beside the step. A screen reader announces an unconnected step description out of context, or not at all.
-- **Each step label must make sense without the layout around the step label.** A screen reader user hears "Payment details" with no layout around the words to explain the words.
+- **Each step label must make sense without the layout around the step label.** A persona using a screen reader hears "Payment details" with no layout around the words to explain the words.
 - **When the step changes, the new step must be perceivable.** Announce the new position and the new step's heading. A screen reader announces nothing when the screen changes, unless the change is announced on purpose.
-- **When the user can move between steps, each step is a real control, with a name and a state:** current, completed, or disabled. When the user cannot move between steps, the steps must be plain text that cannot be operated, and must not be announced as buttons.
+- **When the persona can move between steps, each step is a real control, with a name and a state:** current, completed, or disabled. When the persona cannot move between steps, the steps must be plain text that cannot be operated, and must not be announced as buttons.
 - **A step with an error must state the error in text.** The step's content must state the failure. If the step indicator is a control, the step indicator's accessible name (the name a screen reader reads out for a control) or state must state the failure too.
 
 ### Keyboard and non-mouse navigation
 
-- **When the step changes, move focus on purpose to the start of the new step's content**, either the new step's heading or the new step's first field. Do not leave focus on the Next button. If focus stays on Next, the keyboard user's next Tab lands in an unexpected place, and the screen reader user cannot tell the page changed.
-- **Never move ahead automatically.** Finishing the last field of a step does not move the user to the next step. The user presses Next. `recursica-skill-forms` forbids moving focus for the user.
-- **A step indicator the user cannot use to move between steps is not a tab stop** (a place the Tab key lands). The step indicator has no `tabindex`, no click handler, and no styling that makes the step indicator look focusable.
-- **A step indicator the user can use to move between steps is a real button**, reachable by Tab in visual order and pressed with Enter and Space. Do not add a custom roving tabindex (where the arrow keys move between items that share one tab stop) to the step indicators.
+- **When the step changes, move focus on purpose to the start of the new step's content**, either the new step's heading or the new step's first field. Do not leave focus on the Next button. If focus stays on Next, the next Tab from a persona using a keyboard lands in an unexpected place, and a persona using a screen reader cannot tell the page changed.
+- **Never move ahead automatically.** Finishing the last field of a step does not move the persona to the next step. The persona presses Next. `recursica-skill-forms` forbids moving focus for the persona.
+- **A step indicator the persona cannot use to move between steps is not a tab stop** (a place the Tab key lands). The step indicator has no `tabindex`, no click handler, and no styling that makes the step indicator look focusable.
+- **A step indicator the persona can use to move between steps is a real button**, reachable by Tab in visual order and pressed with Enter and Space. Do not add a custom roving tabindex (where the arrow keys move between items that share one tab stop) to the step indicators.
 - **The tab order within a step follows the visual order:** the step's fields from top to bottom, then Back and Next in the footer. The single-column form layout keeps the tab order and the visual order the same.
-- **Back must not lose the user's place.** Going back to a step puts focus at the start of the step's content, with the values the user entered still in the fields.
-- **No content or control the user needs may appear only on hover**, including a step's description.
+- **Back must not lose the persona's place.** Going back to a step puts focus at the start of the step's content, with the values the persona entered still in the fields.
+- **No content or control the persona needs may appear only on hover**, including a step's description.
 
 ## Styling set by tokens
 
@@ -119,9 +119,9 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - **When to use the smaller size**, and which pages, panels, modals or other regions use the smaller size. No rule says.
 - **When to use horizontal, and when vertical.** Both orientations exist. No rule says which orientation to use where, or whether the orientation may change with the container's width.
 - **The maximum number of steps.** No number is stated.
-- **Whether the user can move between steps at all.** No rule says whether a user may click back to a finished step, or whether the user can ever reach an upcoming step directly.
+- **Whether the persona can move between steps at all.** No rule says whether a persona may click back to a finished step, or whether the persona can ever reach an upcoming step directly.
 - **Whether each step gets a route and a browser history entry.** `recursica-skill-navigation` rules on views and tabs, not on steps. No rule says what the browser's Back button does in a stepper.
-- **Validation across steps.** No rule says whether a step validates when the user leaves the step, or what going back does to the data the user entered. `recursica-skill-forms` names this question as open too.
+- **Validation across steps.** No rule says whether a step validates when the persona leaves the step, or what going back does to the data the persona entered. `recursica-skill-forms` names this question as open too.
 - **Whether a step may be optional or skipped**, and how an optional or skipped step shows in the step count.
 - **What a step with an error looks like.** Ask only when the project has no error state.
 - **Whether the step indicator shows a number or a checkmark.** The design-system website shows both. Do not rely on a number or a checkmark without asking. Ask only when the project has no number or checkmark in the step indicator.
@@ -144,7 +144,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - [ ] Each step's status is announced in words, and completion is never shown by the connector or color alone.
 - [ ] Each step description is connected to the step, and each step label makes sense without the layout around the step label.
 - [ ] When the step changes, the new position and heading are announced, and focus moves to the start of the new step's content. Focus is never left on Next.
-- [ ] Steps the user can use to move between steps are real controls with names and states. Steps the user cannot use to move between steps cannot receive focus.
-- [ ] Nothing moves ahead automatically. Back restores the step with the user's values, and puts focus at the start of the step.
+- [ ] Steps the persona can use to move between steps are real controls with names and states. Steps the persona cannot use to move between steps cannot receive focus.
+- [ ] Nothing moves ahead automatically. Back restores the step with the persona's values, and puts focus at the start of the step.
 - [ ] No styling is set or overridden on the stepper, and no container or spacer is added to change the stepper's look.
 - [ ] Open questions were asked about, not decided: the smaller size, horizontal or vertical orientation, the maximum number of steps, moving between steps, a route for each step, validation across steps, optional or skipped steps, what a step with an error looks like, a number or a checkmark in the step indicator, and where the stepper sits.
