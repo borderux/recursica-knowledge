@@ -15,7 +15,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 ## Governing principles
 
-1. **Choose between a badge and a chip by whether the user can act on the component.** A badge is only displayed. The user acts on a chip. A status is a fact the system reports, and a selection is a choice the user makes. A status the user can click is the wrong component for a status, not a design variation.
+1. **Choose between a badge and a chip by whether the persona can act on the component.** A badge is only displayed. The persona acts on a chip. A status is a fact the system reports, and a selection is a choice the persona makes. A status the persona can click is the wrong component for a status, not a design variation.
 2. **A badge holds one value, and chips hold several values.** One object carries at most one badge. When an object has more than one value, use chips.
 3. **Position shows which object each badge or chip belongs to.** Put the object first and the object's status right after the object, on the same line. Place the object and the status close enough that the reader reads the object and the status together, like a sentence.
 4. **A badge draws a lot of attention, and a badge is not the default.** Prefer an icon. Use a badge only where the information needs that much attention. Decide between an icon and a badge first, before deciding between a badge and a chip.
@@ -25,13 +25,13 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 **A badge shows status and metadata.**
 
 - A badge shows a status, a count, or a short label.
-- **A badge MUST NOT be interactive.** A badge is never selectable and never dismissible. A badge is text for the user to read, for information only.
-- The system updates a badge when the object the badge describes changes. The user never changes the badge to change the status.
+- **A badge MUST NOT be interactive.** A badge is never selectable and never dismissible. A badge is text for the persona to read, for information only.
+- The system updates a badge when the object the badge describes changes. The persona never changes the badge to change the status.
 
-**A chip is larger than a badge. The user can act on some chips and not on others.**
+**A chip is larger than a badge. The persona can act on some chips and not on others.**
 
 - A selectable chip takes the place of a checkbox. Use selectable chips for filters, for variables, and for turning options on and off, usually several at once.
-- A static chip, which the user cannot act on, is also valid. Tags are chips.
+- A static chip, which the persona cannot act on, is also valid. Tags are chips.
 
 **Count the values on the object. The count is the fastest test.**
 
@@ -42,7 +42,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 **MUST NOT place more than one badge on one object.** An account's status is the single badge on the account's row. Several metadata values on a card are chips.
 
-**When a badge and a chip would both be static and unselectable, the choice between a badge and a chip is a matter of style.** A static badge and a static chip differ only in how each one looks. The rules above apply whenever the user can act on the component or the number of values matters.
+**When a badge and a chip would both be static and unselectable, the choice between a badge and a chip is a matter of style.** A static badge and a static chip differ only in how each one looks. The rules above apply whenever the persona can act on the component or the number of values matters.
 
 ## Icon or badge
 
@@ -66,16 +66,16 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 ## Status and selection
 
-**A status chip that the user can act on is a wrong use of a chip.** The user never turns a status on or off. A status changes through an action in a different place. The badge then shows the new status.
+**A status chip that the persona can act on is a wrong use of a chip.** The persona never turns a status on or off. A status changes through an action in a different place. The badge then shows the new status.
 
 **Selectable chips are for choices, not for reporting a state.** Use selectable chips to choose filters, to pick variables, and to turn several options on and off.
 
 ## Dismissible chips
 
-**A chip can be dismissed only when the user added the chip.** Chips the user can act on follow two patterns. Neither pattern applies to badges.
+**A chip can be dismissed only when the persona added the chip.** Chips the persona can act on follow two patterns. Neither pattern applies to badges.
 
-1. **Added chip.** The user searches, usually with an autocomplete, and picks an item. A chip appears that was not on the screen before. Clicking the chip's close icon removes the chip from the screen.
-2. **Toggled chip.** The chip is on the screen before the user acts. The user turns the chip on or off, exactly like checking a checkbox.
+1. **Added chip.** The persona searches, usually with an autocomplete, and picks an item. A chip appears that was not on the screen before. Clicking the chip's close icon removes the chip from the screen.
+2. **Toggled chip.** The chip is on the screen before the persona acts. The persona turns the chip on or off, exactly like checking a checkbox.
 
 **NEVER make a badge dismissible.**
 
@@ -111,7 +111,7 @@ The status must sit where a reader sees at once which object the status belongs 
 
 ## Sidebar navigation
 
-**Use a badge to label a navigation item.** A badge on a navigation item shows read-only metadata, such as "Active". Almost never use a chip in sidebar navigation. The user does not select items in sidebar navigation the way a user selects a chip.
+**Use a badge to label a navigation item.** A badge on a navigation item shows read-only metadata, such as "Active". Almost never use a chip in sidebar navigation. The persona does not select items in sidebar navigation the way a persona selects a chip.
 
 ## How many chips
 
@@ -139,16 +139,16 @@ Density is how tightly content is packed together.
 
 The Recursica badge and chip components behave as follows with the keyboard. Both components include the hover and focus states.
 
-- **A static badge cannot receive focus and cannot be reached with the keyboard.** A static badge is not a tab stop (a place the Tab key lands). A static badge is text for the user to read.
-- **A chip the user can act on can receive focus** and can be toggled on and off. When the chip has a dismiss control, the user reaches the dismiss control as a separate step.
+- **A static badge cannot receive focus and cannot be reached with the keyboard.** A static badge is not a tab stop (a place the Tab key lands). A static badge is text for the persona to read.
+- **A chip the persona can act on can receive focus** and can be toggled on and off. When the chip has a dismiss control, the persona reaches the dismiss control as a separate step.
 
 ## Status updates
 
-**Swap the badge to the new value when a status changes.** Use no transition and no animation. Animating a small status badge is excessive. Nobody watches a status badge that closely, and a user who caused the change expects the change.
+**Swap the badge to the new value when a status changes.** Use no transition and no animation. Animating a small status badge is excessive. Nobody watches a status badge that closely, and a persona who caused the change expects the change.
 
 ## Open questions
 
-No house rule covers the following questions yet. **Ask the person instead of choosing.** See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit an open question.
+No house rule covers the following questions yet. **Ask the user instead of choosing.** See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit an open question.
 
 - **How counts are written inside a badge.** No rule says whether counts stop at a maximum, such as `99+`, or at what number.
 - **Whether a badge may hold an icon.** If a badge gets an icon, `recursica-skill-icon-semantics` decides which symbol the badge may use. `recursica-skill-icon-semantics` also sets a chip's dismiss control as an X, never a trash can, because a trash can cannot be understood at chip size.
@@ -168,10 +168,10 @@ Check every item below before treating status and metadata as done.
 - [ ] Every icon that replaces a badge sits beside the value that identifies the object. No such icon is alone in a cell or in a column that is empty for most rows.
 - [ ] No badge is interactive, selectable, or dismissible.
 - [ ] Each object carries at most one badge. When an object has more than one value, the values are chips.
-- [ ] No status is shown as a chip the user can act on.
+- [ ] No status is shown as a chip the persona can act on.
 - [ ] Tags are chips, not badges.
 - [ ] Every "pill" in the spec is built as a chip or a badge.
-- [ ] Only chips the user added can be dismissed, and toggled chips behave like checkboxes.
+- [ ] Only chips the persona added can be dismissed, and toggled chips behave like checkboxes.
 - [ ] A status column exists only where most table rows have a status. In a table, the status column is the second or third column, beside the information that identifies the object. The first column is left for bulk selection.
 - [ ] Each badge sits right after the badge's object, on the same line. No badge is stacked, except where space is too tight to fit the badge beside the object.
 - [ ] No object has competing status elements above and below the object.
@@ -180,6 +180,6 @@ Check every item below before treating status and metadata as done.
 - [ ] Chip groups hold 7 ± 2 chips, adjusted for cognitive load.
 - [ ] No chip shows an error state. No badge shows an error state without an explicit exception.
 - [ ] Dense data views use badges, not chips.
-- [ ] Badges cannot receive focus. Chips the user can act on can receive focus.
+- [ ] Badges cannot receive focus. Chips the persona can act on can receive focus.
 - [ ] When a status updates, the badge is swapped with no animation.
 - [ ] Open questions were asked about, not decided: count limits, icons in badges, and a filter bar with more than 7 ± 2 items.
