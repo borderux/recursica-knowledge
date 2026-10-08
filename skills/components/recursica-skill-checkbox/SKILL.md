@@ -15,7 +15,7 @@ A checkbox turns one specific value on or off. A checkbox group lets the user se
 
 - **The user may select zero, one, or many options.** The options are independent. Selecting one option never rules out another option.
 - **The user should see every option at once**, in a stacked list that is easy to scan. The user should not have to open a control to find out which options are available.
-- **The options have a parent-child relationship**, such as a parent checkbox that sums up a list of child checkboxes. The indeterminate state (the partly selected state, shown as a dash, when some but not all items are selected) exists for this case.
+- **The options have a parent-child relationship**, such as a parent checkbox that sums up a list of child checkboxes. The indeterminate state (the partly selected state, shown as a dash, when some but not all items are selected) exists for parent and child checkboxes.
 - **A change to a checkbox saves with the form** when the user submits the form, not the moment the user checks the checkbox.
 
 ## When not to use a checkbox
@@ -25,7 +25,7 @@ A checkbox turns one specific value on or off. A checkbox group lets the user se
 | Selecting one option rules out the other options, and the user picks exactly one | A radio group. See `recursica-skill-radio-button`. Never use checkboxes when the user picks exactly one option.         |
 | The change must take effect the moment the user turns the setting on or off      | A switch. See `recursica-skill-switch`.                                                                                 |
 | There is one lone yes-or-no field, with no others beside the field               | Usually a switch, in the form. See `recursica-skill-switch`.                                                            |
-| The group has more options than the option limit in the rules below              | A multi-select dropdown. See `recursica-skill-dropdown`. A multi-select dropdown is a checkbox group inside a dropdown. |
+| A checkbox group needs more options than the 7 ± 2 limit in the rules below      | A multi-select dropdown. See `recursica-skill-dropdown`. A multi-select dropdown is a checkbox group inside a dropdown. |
 | The options must sit side by side in a horizontal row                            | Selectable chips. See `recursica-skill-chip`. Never lay out a checkbox group in a horizontal row.                       |
 | The user chooses an action, not a value                                          | A button. See `recursica-skill-button`.                                                                                 |
 | The current user can never edit the value                                        | A read-only field, which shows the label and the value as text, with no input. See `recursica-skill-read-only-field`.   |
@@ -41,54 +41,54 @@ The rules below describe each option by role, such as "the checked state". The n
 - **A checkbox field has three components:** the checkbox, the checkbox item and the checkbox group. A checkbox is the box, and holds whether the box is selected. A checkbox item holds the label of one option and pairs the label with a box. A checkbox group sets the layout of the checkbox items. In the standard UI kit, the three components are `checkbox-group`, `checkbox-item`, and `checkbox`. Use all three components together. Never place bare `checkbox` components in a form and call the checkboxes a group.
 - **A checkbox has three selection states.** A checkbox is checked, unchecked, or indeterminate. In the standard UI kit, the variant is `selection-states`, with the options `checked`, `unchecked`, and `indeterminate`.
 - **The indeterminate state is a state of the checkbox, not a separate component.** A select-all checkbox or a parent checkbox shows the indeterminate state when some, but not all, of the child checkboxes are checked.
-- **Two names for the same two selection states.** Only the design-system website says "Selected" and "Unselected". The standard UI kit says `checked` and `unchecked`. Both pairs of names mean the same two states.
-- **A disabled state on each checkbox item.** The disabled state belongs to the checkbox item, so one option can be unavailable while the options next to the disabled option stay usable. In the standard UI kit, the variant is `states`, with the option `disabled`. The checkbox components show the disabled look automatically.
-- **Disabled combined with a selection state.** Only the design-system website shows `Selected-disabled` and `Indeterminate-disabled` as states. Each one is the disabled state of the checkbox item combined with the selection state of the checkbox, not an extra selection state.
-- **Read-only is a separate component.** The read-only field, `read-only-field` in the standard UI kit, shows text instead of inputs.
-- **Two label placements on the checkbox group.** The label of the checkbox group sits beside the checkbox items or above the checkbox items. Label placement is one decision for the whole field, so the variant belongs to the checkbox group. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`.
+- **The website and the UI kit use different names for two selection states.** Only the design-system website says "Selected" and "Unselected". The standard UI kit says `checked` and `unchecked`. Both pairs of names mean the same two states.
+- **The disabled state belongs to each checkbox item.** One option can then be unavailable while the options next to the disabled option stay usable. In the standard UI kit, the variant is `states`, with the option `disabled`. The checkbox components show the disabled look automatically.
+- **A disabled checkbox item still has a selection state.** Only the design-system website shows `Selected-disabled` and `Indeterminate-disabled` as states. `Selected-disabled` and `Indeterminate-disabled` are each the disabled state of the checkbox item combined with the selection state of the checkbox, not an extra selection state.
 
-**Label placement is a variant, the same variant every field has.** A group's label sits beside the stack of items or above the stack of items. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. **Label placement is not a variant for which way the items run.** Items are always stacked vertically — `recursica-skill-selection-controls` forbids a horizontal checkbox group outright — so `side-by-side` must never be read as "put the checkboxes in a row."
+**Label placement is a variant, the same variant every field has.** A group's label sits beside the stack of items or above the stack of items. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label placement variant belongs to the checkbox group, because label placement is one decision for the whole field.
+
+**Never read `side-by-side` as "put the checkboxes in a row."** Label placement sets where the group label sits, not which way the checkbox items run. Checkbox items are always stacked vertically. `recursica-skill-selection-controls` forbids a horizontal checkbox group outright.
 
 ## Rules
 
 **A checkbox group holds at least two checkbox items.** One checkbox alone is not a group. For a single yes-or-no field, consider a switch instead.
 
-**Keep a checkbox group to 7 ± 2 options.** Lean toward fewer options when the options differ from each other, are hard to understand, or need specialist knowledge. With more options than the limit, switch to a multi-select dropdown. `recursica-skill-working-memory` gives the reason for the limit.
+**Keep a checkbox group to 7 ± 2 options.** Lean toward fewer options when the options differ from each other, are hard to understand, or need specialist knowledge. When a checkbox group needs more options than the limit, use a multi-select dropdown instead. `recursica-skill-working-memory` gives the reason for the limit.
 
 **A long form is a valid reason to replace a checkbox group with a multi-select dropdown**, even below the limit. Six options that are easy to read are normally checkboxes. A multi-select dropdown can still be the right choice when the dropdown saves a lot of scrolling down the page.
 
-**Stack checkbox items vertically. Never lay out checkbox items horizontally.** In a horizontal row of checkboxes, the user cannot easily tell which box belongs to which label. If the layout needs the options in a row, change the control to selectable chips.
+**Stack checkbox items vertically. Never lay out checkbox items horizontally.** In a horizontal row of checkboxes, the user cannot easily tell which box belongs to which label. If the layout needs the options in a row, use selectable chips instead of a checkbox group.
 
 **Label placement is one decision per form, not per field.** This group uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
-**Pre-select freely.** A checkbox group may start with no options, some options, or all options checked. No house rule limits pre-selection in a checkbox group. The radio group rule is the opposite.
+**Pre-select any number of options in a checkbox group.** A checkbox group may start with no options, some options, or all options checked. No house rule limits pre-selection in a checkbox group. The radio group rule is the opposite.
 
-**Put the selection rule in assistive text**, not in a validation message that the user sees only after breaking the rule. For example, put "At least two options required" under the group. Show the selection rule with the assistive element. See `recursica-skill-assistive-element`.
+**Put a selection rule in assistive text**, not in a validation message that the user sees only after breaking the selection rule. For example, put "At least two options required" under the group. Show the assistive text with the assistive element. See `recursica-skill-assistive-element`.
 
-**A select-all checkbox is fine to include, and the select-all checkbox uses the indeterminate state.** When the user selects all, then deselects one checkbox item, the select-all control changes to the indeterminate state.
+**A select-all checkbox is allowed, and the select-all checkbox uses the indeterminate state.** When the user selects all, then deselects one checkbox item, the select-all control changes to the indeterminate state.
 
-**Treat a need for select all as a warning sign.** If checking items one at a time would tire the user, as with twenty checkboxes, a checkbox group is the wrong control. Fix the screen's structure before adding the select-all affordance (a visible cue that a control can be used, such as the underline on a link).
+**Treat a need for select all as a warning sign.** If checking checkbox items one at a time would tire the user, as with twenty checkboxes, a checkbox group is the wrong control. Fix the screen's structure before adding the select-all affordance (a visible cue that a control can be used, such as the underline on a link).
 
-**To select table rows, put a checkbox in the leftmost cell of each table row, and a checkbox in the table header.** The header checkbox always behaves as follows:
+**To select table rows, put a checkbox in the leftmost cell of each table row, and a checkbox in the table header.** The header checkbox always follows three rules:
 
 - A click on an indeterminate header checkbox **always makes the header checkbox fully checked.** The click never makes the header checkbox unchecked.
 - A click on a fully checked header checkbox makes the header checkbox fully unchecked. A click on a fully unchecked header checkbox makes the header checkbox fully checked.
 - The header checkbox becomes indeterminate **only** when the user selects or deselects individual table rows. A click on the header checkbox never makes the header checkbox indeterminate.
 
-**A checkbox may reveal more fields, and the form still saves the same way.** For example, checking "Car" may reveal a group of car details directly below the checkbox. The whole form still submits together. Keep the revealed content right next to the checkbox that revealed the content.
+**A checkbox may reveal more fields, and the whole form still submits together.** For example, checking "Car" may reveal a group of car details directly below the checkbox. Keep the revealed content right next to the checkbox that revealed the content.
 
 **Never mix instant saving with saving the whole form together.** A checkbox group in a form that submits with a button must not save when the selection changes.
 
 **A disabled checkbox item and a read-only field are different components, not two styles of one component.**
 
-- **Disabled checkbox item.** A disabled item is still a checkbox and still clearly a control, but the user cannot use the item right now. Use a disabled item when the user could make the item usable by first taking a different action.
-- **Read-only field.** A read-only field is a different component, with no input at all. Use a read-only field when the current user never changes the value here.
+- **Use a disabled checkbox item when the user could make the item usable by first taking a different action.** A disabled item is still a checkbox and still clearly a control, but the user cannot use the item right now.
+- **Use a read-only field when the current user never changes the value here.** A read-only field, `read-only-field` in the standard UI kit, is a different component. A read-only field shows text, with no input at all.
 
 ## Accessibility
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
-The checkbox component pairs each box with the item label and provides the focus ring. The app must give the group a name and make each checkbox's state available in code. The app must also add the behavior in the two lists below. Apps most often miss the behavior in the two lists below.
+The checkbox component pairs each box with the item label and provides the focus ring. Each app must give the group a name and make each checkbox's state available in code. Each app must also add the behavior in the two lists below, the behavior that apps most often miss.
 
 ### Screen readers
 
@@ -96,10 +96,10 @@ The checkbox component pairs each box with the item label and provides the focus
 - **Set a separate label on the checkbox group (`checkbox-group`).** A screen reader must announce the group label when focus enters the group. A group label that only sits above the group in the reading order is not enough. Without the group label, the user hears a list of options with no question.
 - **The group label and the item labels do different jobs.** Never use the group label to do an item label's job, or an item label to do the group label's job. See `recursica-skill-label`.
 - **Make the checked state available in code.** Never show the checked state only by a fill color or a check mark. A user who cannot see the box must still hear "checked" or "not checked". The rule comes from `recursica-skill-system-conventions`.
-- **Make the indeterminate state available in code as a mixed state**, not as a dash that exists only on screen. "Partially checked" gives the user information, and a horizontal bar gives none.
+- **Make the indeterminate state available in code as a mixed state**, not as a dash that exists only on screen. A screen reader user hears "partially checked" from a mixed state, and hears nothing from a dash.
 - **A select-all control must name what the control selects**, as in "Select all rows". Never use a bare "Select all" in a table header.
-- **In a table, each row checkbox must name the table row.** Thirteen announcements of "checkbox, unchecked" tell the user nothing. Put the object in the checkbox's accessible name, or let the table row supply the object in code.
-- **When a checkbox reveals more fields, tell the user before the user checks the box.** Put the notice in the item label or in the group's assistive text. Fields that appear below without an announcement are easy to miss when the page is read in order.
+- **In a table, each row checkbox must name the table row.** Thirteen announcements of "checkbox, unchecked" tell the user nothing. Put the name of the table row's item in the checkbox's accessible name, or let the table row supply the item's name in code.
+- **When a checkbox reveals more fields, tell the user before the user checks the box.** Say that more fields will appear, in the item label or in the group's assistive text. Fields that appear below without an announcement are easy to miss when the page is read in order.
 
 ### Keyboard and non-mouse navigation
 
@@ -107,11 +107,11 @@ The checkbox component pairs each box with the item label and provides the focus
 - **The adapter (the Recursica component library for one framework, such as Mantine or Angular Material) handles the keys inside the checkbox.** Do not add custom key handlers to the box, and do not rebuild the toggling. A custom key handler or rebuilt toggling breaks behavior that works.
 - **Every checkbox in a group is a separate tab stop** (a place the Tab key lands). A radio group works the opposite way. Do not add roving focus (where the arrow keys move between items that share one tab stop) inside a checkbox group. Do not repurpose Home and End. Home and End belong to the page.
 - **Clicking or tapping the item label toggles the checkbox.** A real label connected to the box toggles the checkbox automatically, and gives the user a bigger target. Do not show the label as text that is not connected to the box.
-- **Do not move focus for the user.** When a checkbox reveals fields below, focus stays on the checkbox. The user reaches the new fields with the next Tab. Moving focus into the revealed fields takes keyboard users and screen reader users away from the checkbox they just used.
+- **Do not move focus for the user.** When a checkbox reveals fields below, focus stays on the checkbox. The user reaches the new fields with the next Tab. Moving focus into the revealed fields takes a keyboard user or a screen reader user away from the checkbox the user just used.
 
 ## Styling set by tokens
 
-**Never set or override the checkbox's styling.** The theme sets every visual property of the checkbox, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the checkbox's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the checkbox's styling.** The theme sets every visual property of the checkbox. Do not add extra containers or spacers to change the checkbox's look. If the design needs a look the theme does not give, report the missing look as a gap in the design system. See `recursica-skill-design-router`.
 
 **Do not add margins or spacer elements between checkbox items, between the group label and the checkbox items, or between the checkbox group and the elements next to the group.**
 
@@ -128,7 +128,7 @@ The checkbox component pairs each box with the item label and provides the focus
 ## Open questions
 
 - **How a checkbox group shows an error.** A checkbox group can have a selection rule that fails validation. No rule says how a checkbox group shows the validation error. If the project has an error state for the checkbox group, the checkbox item or the checkbox, use the project's error state. Otherwise, ask.
-- **Whether the project has a multi-select dropdown.** `recursica-skill-selection-controls` requires a multi-select dropdown in two places. If the project has a multi-select dropdown, use the project's multi-select dropdown. Otherwise, ask. A project with no multi-select dropdown has a gap in the list of components, not an invitation to build a multi-select dropdown from other parts. Do not put a checkbox group inside a dropdown, and do not use a transfer list instead without asking. When the user must filter by several values, one build test used separate single-value filters that AND together (a row appears only if the row matches every filter), and the workaround succeeded.
+- **Whether the project has a multi-select dropdown.** `recursica-skill-selection-controls` requires a multi-select dropdown in two places. If the project has a multi-select dropdown, use the project's multi-select dropdown. Otherwise, ask. A project with no multi-select dropdown has a gap in the list of components, not permission to build a multi-select dropdown from other parts. Do not put a checkbox group inside a dropdown, and do not use a transfer list instead without asking. When the user must filter by several values, one build test used separate single-value filters that AND together (a row appears only if the row matches every filter), and the workaround succeeded.
 - **Whether a select-all control is a `checkbox-item` in the group, or a separate control outside the group.**
 - **Limits on selection.** No rule says whether a user may be limited to selecting _n_ options out of many.
 - **How deep parent-child checkboxes may nest.** The indeterminate state implies a hierarchy of parent and child checkboxes. No rule says how many levels deep the hierarchy may go, or how a parent checkbox's state is worked out beyond one level.
@@ -137,7 +137,7 @@ The checkbox component pairs each box with the item label and provides the focus
 
 - [ ] Selecting one option never rules out another option, and no single-choice question is built as checkboxes.
 - [ ] The group holds at least two items, within 7 ± 2, and fewer where the options are hard to tell apart.
-- [ ] Items are stacked vertically. There is no horizontal group, and `side-by-side` is used only for label placement.
+- [ ] Checkbox items are stacked vertically. There is no horizontal group, and `side-by-side` is used only for label placement.
 - [ ] Label placement matches every other field in the same form, with one placement per form at each breakpoint and no mixing between fields or form sections.
 - [ ] `checkbox`, `checkbox-item`, and `checkbox-group` are used together. No form holds a bare `checkbox` without the item and the group.
 - [ ] The group has a real label, and every item has a real label. The group label never does an item label's job, and an item label never does the group label's job.
