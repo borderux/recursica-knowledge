@@ -118,7 +118,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - **Give an image in the graphic slot alternative text, or mark the image clearly as decorative.** A screen reader announces an unlabeled image as "graphic" in every card, and the word tells the persona nothing. A meaningful image with no alternative text loses information.
 - **A chart in the graphic slot is not accessible alone.** `recursica-skill-data-visualization` requires a data table with every chart, and the data table makes a chart card usable.
 - **Do not rely on the card's border or elevation to show where a card ends.** The border or the elevation separates the objects visually. In code, the list structure and the headings must separate the objects.
-- **Name the object in every repeated control.** An "Edit" control in each of five cards gives five identical announcements. The control's name must say which item, or the card must give the item as context in code.
+- **Name the object in every repeated control.** An "Edit" control in each of five cards gives five identical announcements. The control's name must say which item, or the card's code must give the item as context, such as an `aria-describedby` on the control that points to the card's heading.
 
 ### Keyboard and non-mouse navigation
 
