@@ -112,7 +112,7 @@ Name a section that is not an object with a noun, as in `Approvals`, never `Appr
 - **The order of items within a level.** The order could follow how often people use each item, the alphabet, or the workflow. The order of items is also an open question in `recursica-skill-navigation`.
 - **An object that exists only once per account**, such as the organization's own profile. No rule says whether such an object is top level, a setting, or in another place.
 - **How deep objects may nest**, as in the adjustments on an order's line items, before the deepest object needs a separate place.
-- **Whether the structure may differ by persona.** `recursica-skill-naming-terminology` covers different words for different personas. No skill covers different structures for different personas.
+- **Whether the structure may differ by role.** `recursica-skill-naming-terminology` covers different words for different roles. No skill covers different structures for different roles.
 - **What happens to routes when the object map changes after launch.** No rule says whether old routes redirect, or what happens to a section that is removed.
 
 ## Pre-flight checklist
@@ -127,4 +127,4 @@ Name a section that is not an object with a noun, as in `Approvals`, never `Appr
 - [ ] Every section that is not an object came from the request, and the object map records where the section came from. No section that is not an object was invented.
 - [ ] The object map says where the next likely addition would go, without moving any part of the structure that is already there.
 - [ ] No decision made with this skill set how any part of the application looks. The choice of tabs, sections, page or panel was left to the skills that own each choice.
-- [ ] Open questions were asked about, not decided: how a parent's related objects appear on the parent's detail page, the order of items within a level, an object that exists only once per account, how deep objects may nest, whether the structure may differ by persona, and what happens to routes when the object map changes.
+- [ ] Open questions were asked about, not decided: how a parent's related objects appear on the parent's detail page, the order of items within a level, an object that exists only once per account, how deep objects may nest, whether the structure may differ by role, and what happens to routes when the object map changes.

@@ -100,7 +100,7 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 **By default, a dashboard is not configurable.** Configurability is usually a technical answer to not having researched what the persona needs. A configurable dashboard is also harder to support. Data problems are much harder to track down in a customized dashboard than in a shared dashboard.
 
-**Prefer a fixed dashboard for each persona over a dashboard that each persona configures individually.** Showing each persona a different fixed dashboard at login is correct.
+**Prefer a fixed dashboard for each role over a dashboard that each persona configures.** Showing each role a different fixed dashboard at login is correct.
 
 **Where customization is required anyway, follow two rules:**
 
@@ -142,7 +142,7 @@ The house rules assume **complex enterprise web applications, designed for deskt
 No house rule covers the following questions yet. **Ask the user instead of choosing.** See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit an open question.
 
 - **The main position when nothing needs attention.** Announcing good news is forbidden, and no rule says what fills the main position instead.
-- **Calls to action for several personas.** No rule says whether the limit of one or two calls to action still holds when several personas share one screen.
+- **Calls to action for several roles.** No rule says whether the limit of one or two calls to action still holds when several roles share one screen.
 - **The dashboard's place in the navigation.** Every location in the application needs a route and a navigation item. No rule says where a dashboard sits in the navigation.
 - **Loading behavior.** A dashboard must load fast. No rule says whether the dashboard appears piece by piece or all at once.
 
@@ -177,4 +177,4 @@ Check every item before treating a dashboard as done.
 - [ ] No unrelated data, and no data on different scales, is placed side by side.
 - [ ] The dashboard has a maximum width, and the screen has no inner scrolling area of any kind.
 - [ ] Smaller viewports get an adapted design, not a squeezed version of the desktop design.
-- [ ] Open questions were asked about, not decided: the main position when nothing needs attention, calls to action for several personas, the dashboard's place in the navigation, and loading behavior.
+- [ ] Open questions were asked about, not decided: the main position when nothing needs attention, calls to action for several roles, the dashboard's place in the navigation, and loading behavior.

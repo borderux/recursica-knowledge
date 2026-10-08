@@ -41,7 +41,7 @@ The rules assume **complex enterprise web applications**, where people do real w
 
 - **The top of the page holds the content that applies to every persona** arriving at the page. This content is the broadest and most widely useful, and is shown largest.
 - **Moving down the page, content becomes more detailed and more specific.**
-- **The bottom of the page may hold content specific to one persona.** This content is useful only to some of the people who reach the page.
+- **The bottom of the page may hold content specific to one role.** This content is useful only to some of the people who reach the page.
 
 **Show priority by position or by size.** Higher up the page, or larger, means higher priority. Position and size are the two tools for priority.
 
@@ -206,7 +206,7 @@ One message for both states leaves the persona unable to tell whether to change 
 
 - [ ] No limit caps how much information the screen shows, and the idea of "primary attention" did not shape the layout.
 - [ ] The screen supports the investigations and actions the persona came to do.
-- [ ] Content runs from broadest and largest at the top, to most specific and persona-dependent at the bottom.
+- [ ] Content runs from broadest and largest at the top, to most specific and role-dependent at the bottom.
 - [ ] The top-left position holds the brand, unless the client has a reason otherwise.
 - [ ] The persona's workflow outranked every stakeholder request. Only a legal, compliance, or hard technical limit overrode the persona's workflow.
 - [ ] Density matches what the persona comes to do every day.

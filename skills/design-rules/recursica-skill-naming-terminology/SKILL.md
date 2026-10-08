@@ -27,10 +27,10 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 **When a client insists on a term the designer believes is wrong, use the client's term, and then test the term with usability testing.** The designer can do little else. The test turns the disagreement into evidence instead of opinion.
 
-**When two personas use different words for the same object, first ask whether the two personas share a screen.**
+**When two roles use different words for the same object, first ask whether the two roles share a screen.**
 
-- **Different screens.** Each group of personas can keep the group's own word.
-- **The same screen.** Choose one term, and teach the other group the more common name. Two personas who share a screen and use different words for one object are rare. When two personas on one screen do use different words, treat the conflict as a real finding, not as a routine trade-off.
+- **Different screens.** Each role can keep the role's own word.
+- **The same screen.** Choose one term, and teach the other role the more common name. Two roles that share a screen and use different words for one object are rare. When two roles on one screen do use different words, treat the conflict as a real finding, not as a routine trade-off.
 
 ## Consistency across navigation, titles, and headers
 
@@ -135,7 +135,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 - [ ] Every object is named in the personas' vocabulary, not the business's or the data model's.
 - [ ] The data model's term appears only where the persona does not already know the concept from everyday use.
 - [ ] Any term the client insisted on is used as the client asked and flagged for usability testing, not corrected without notice.
-- [ ] Where two personas share a screen, one term is chosen. Where two personas do not share a screen, each persona keeps its own term.
+- [ ] Where two roles share a screen, one term is chosen. Where two roles do not share a screen, each role keeps its own term.
 - [ ] The navigation label, the page title, and the column header can be recognized as the same object. A label gets longer on deeper pages only while the extra words add accuracy.
 - [ ] No object loses its name on the screen that the object's label leads to.
 - [ ] Singular or plural matches what the destination holds.
