@@ -15,7 +15,7 @@ A stepper leads the user through one process that has several steps. The stepper
 
 - **A form has several parts.** `recursica-skill-forms` sets the test for splitting a form into steps: stages the user thinks of as separate, a very large number of fields, or an answer that makes a _later_ step clearly different.
 - **A form would otherwise be split across tabs.** Splitting a form across tabs is forbidden, and the stepper replaces the tabs.
-- **A first-time setup flow or an onboarding flow** must be worked through in order.
+- **A first-time setup flow or an onboarding flow must be worked through in order.**
 - **The screen shows the status of a step-by-step workflow**, such as Processing, Shipped, Delivered, where the stages are fixed and in order.
 
 ## When not to use a stepper
@@ -31,7 +31,7 @@ A stepper leads the user through one process that has several steps. The stepper
 | Progress of a single operation, with no known end                   | A loader, or the submit button's loading look. See `recursica-skill-loader`.                                             |
 | Splitting a long form into steps only to make the form feel shorter | Nothing. Fix the form. See `recursica-skill-system-conventions`.                                                         |
 
-**Never spread a form across tabs.** The stepper exists because a form must never be spread across tabs. `recursica-skill-navigation` sets the ban, and names the stepper as the replacement. When form fields would go in tabs, use a stepper instead.
+**Never spread a form across tabs.** The stepper exists because of the ban on forms in tabs. `recursica-skill-navigation` sets the ban, and names the stepper as the replacement. When form fields would go in tabs, use a stepper instead.
 
 ## Variants
 
@@ -39,13 +39,13 @@ A stepper leads the user through one process that has several steps. The stepper
 
 The rules below describe each option by role, such as "the smaller size". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-- **Two sizes, a larger size and a smaller size.** In the standard UI kit, the size variant is `sizes`, with the options `large` and `small`.
-- **Two orientations, horizontal and vertical.** In the standard UI kit, the orientation variant is `orientation`, with the options `horizontal` and `vertical`.
-- **A step label and an optional step description.** Each step has a name, the step label. A step may also have a second line, the step description, for a short description. Never put a paragraph in the step description.
-- **A connector (the line between steps) that shows finished steps apart from upcoming steps.** The connector of a finished step and the connector of an upcoming step differ in thickness, and the stepper also uses color. A line's thickness and a color are a single visual channel (color, shape, position or text, each a separate signal). Progress must not rely on the connector's thickness and color alone. See the accessibility section and `recursica-skill-system-conventions`.
-- **Step status.** The design-system website shows done, current and upcoming steps. If the project has a step-status variant, use the project's step-status variant. Otherwise, a step's status is data the application supplies, not a variant. In both cases, state each step's status in what assistive technology reads.
-- **Error, warning, skipped and optional steps.** If the project has an error, warning, skipped or optional step state, use the project's step state. Whether or not the project has one of the four step states, the step's text must say that the step failed validation.
-- **Step number or checkmark.** A step indicator is the mark for one step on the stepper. The design-system website shows a step number and a checkmark inside the step indicator. If the project has a step number or a checkmark inside the step indicator, use the project's version. See the open questions.
+- **The stepper has two sizes, a larger size and a smaller size.** In the standard UI kit, the size variant is `sizes`, with the options `large` and `small`.
+- **The stepper has two orientations, horizontal and vertical.** In the standard UI kit, the orientation variant is `orientation`, with the options `horizontal` and `vertical`.
+- **Each step has a step label, and may have a step description.** The step label is the step's name. The step description is a second line of short text. Never put a paragraph in the step description.
+- **A connector (the line between steps) shows finished steps apart from upcoming steps.** A finished step's connector and an upcoming step's connector differ in thickness, and the stepper also uses color. A line's thickness and a color are a single visual channel (color, shape, position or text, each a separate signal). Progress must not rely on the connector's thickness and color alone. See the accessibility section and `recursica-skill-system-conventions`.
+- **The design-system website shows three step statuses: done, current and upcoming.** If the project has a step-status variant, use the project's step-status variant. Otherwise, a step's status is data the application supplies, not a variant. In both cases, state each step's status in what assistive technology reads.
+- **If the project has an error, warning, skipped or optional step state, use the project's step state.** Whether or not the project has one of the four step states, the step's text must say that the step failed validation.
+- **A step indicator is the mark for one step on the stepper.** The design-system website shows a step number and a checkmark inside the step indicator. If the project has a step number or a checkmark inside the step indicator, use the project's version. See the open questions.
 
 ## Rules
 
@@ -55,11 +55,11 @@ The rules below describe each option by role, such as "the smaller size". The na
 
 **Next and Back are buttons, not links.** Next and Back act on the process, not on a page or URL. `recursica-skill-buttons-links` and `recursica-skill-button` both state this rule. A Back button that changes the URL is navigation, not a step.
 
-**Next is the primary button at the bottom right, with Back in the secondary style directly to the left of Next.** The primary button uses the primary style, `solid` in the standard UI kit. On the last step, the primary action is the submit. The submit button changes to the disabled look with an animated icon, as `recursica-skill-button` describes. The submit button never changes to a blocking spinner or a blocking overlay.
+**Next is the primary button at the bottom right, with Back in the secondary style directly to the left of Next.** The primary button uses the primary style, `solid` in the standard UI kit. On the last step, the primary button is the submit button. The submit button changes to the disabled look with an animated icon, as `recursica-skill-button` describes. The submit button never changes to a blocking spinner or a blocking overlay.
 
 **Keep each step's primary action disabled until the step is complete and valid.** `recursica-skill-forms` forbids an enabled button that shows validation errors when clicked. The forms rule applies to each step.
 
-**The stepper does not add a second save mode.** The application either saves field by field everywhere in the application, or saves all fields together everywhere in the application. Saving all fields together is the default. In the default mode, nothing is saved until the final submit. In the default mode, show no status message and no indicator of unsaved changes. The enabled primary button is the only signal to the user. If the system saves field by field instead, show a save status that stays on the page. Never mix the two save modes across steps.
+**The stepper does not add a second save mode.** The application either saves field by field everywhere in the application, or saves all fields together everywhere in the application. Saving all fields together is the default. In the default mode, nothing is saved until the final submit. In the default mode, show no status message and no indicator of unsaved changes. The only signal to the user is the primary button becoming enabled. If the application saves field by field instead, show a save status that stays on the page. Never mix the two save modes across steps.
 
 **Lay out each step's content by the form rules, with no exceptions.** Use a single column, one field per line, and no custom spacing.
 
@@ -75,7 +75,7 @@ The rules below describe each option by role, such as "the smaller size". The na
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
-**State in what assistive technology reads every fact a sighted user sees on the stepper at a glance.** The stepper shows the current step and the progress with the step indicator, color, and the thickness of the connector. A screen reader reads none of the indicator, the color, or the thickness. A screen reader user is most likely to lose track of the current step when the step changes.
+**Put every fact a sighted user sees on the stepper at a glance into what assistive technology reads.** The stepper shows the current step and the progress with the step indicator, color, and the thickness of the connector. A screen reader reads none of the indicator, the color, or the thickness. A screen reader user is most likely to lose track of the current step when the step changes.
 
 ### Screen readers
 
@@ -86,7 +86,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - **Each step label must make sense without the layout around the step label.** A screen reader user hears "Payment details" with no layout around the words to explain the words.
 - **When the step changes, the new step must be perceivable.** Announce the new position and the new step's heading. A screen reader announces nothing when the screen changes, unless the change is announced on purpose.
 - **When the user can move between steps, each step is a real control, with a name and a state:** current, completed, or disabled. When the user cannot move between steps, the steps must be plain text that cannot be operated, and must not be announced as buttons.
-- **A step with an error must say so in text.** The step's content must state the failure. If the step indicator is a control, the step indicator's accessible name (the name a screen reader reads out for a control) or state must state the failure too.
+- **A step with an error must state the error in text.** The step's content must state the failure. If the step indicator is a control, the step indicator's accessible name (the name a screen reader reads out for a control) or state must state the failure too.
 
 ### Keyboard and non-mouse navigation
 
@@ -100,7 +100,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 ## Styling set by tokens
 
-**Never set or override the stepper's styling.** The theme sets every visual property of the stepper, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the stepper's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the stepper's styling.** The theme sets every visual property of the stepper, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the stepper's look. If the design needs a look the theme does not give, report the missing look as a gap in the design system. See `recursica-skill-design-router`.
 
 ## Related skills
 
