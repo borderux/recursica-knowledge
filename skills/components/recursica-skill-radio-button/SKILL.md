@@ -64,7 +64,7 @@ Never build a radio group in a form from radio buttons alone, without the group 
 
 **Keep a radio group to 7 ± 2 options.** `recursica-skill-working-memory` and `recursica-skill-selection-controls` state the same limit. Use fewer options when the options are different from each other, are hard to grasp, or need specialist knowledge. Above the limit, use a dropdown.
 
-**Be very careful about selecting an option in advance.** Most personas do not know how to deselect a radio button. A radio button also cannot be deselected once the radio button is selected. A pre-selected option therefore becomes the persona's answer without the persona choosing the option. Pre-select an option only when the option is correct for nearly everyone. `recursica-skill-selection-controls` sets this rule, and the rule in that skill governs here. No house rule says to select the top option.
+**Be very careful about selecting an option in advance.** Most personas do not know how to deselect a radio button. A radio button also cannot be deselected once the radio button is selected. A pre-selected option therefore becomes the persona's answer without the persona choosing the option. Pre-select an option only when the option is correct for nearly everyone. `recursica-skill-selection-controls` sets this rule, and the rule in that skill governs a radio group. No house rule says to select the top option.
 
 **Traditionally, a radio group requires an answer.** The persona cannot move on until the persona selects one option. A radio group with no option selected, and no requirement to select an option, is unusual and confusing. When a design has a radio group with no option selected that needs no answer, check whether the field is a choice of one option at all.
 
@@ -83,7 +83,7 @@ Never build a radio group in a form from radio buttons alone, without the group 
 **A disabled item and a read-only field are different components, not two styles of one component.**
 
 - **A disabled item** is still a radio button and still looks like a control, but the persona cannot select the disabled item right now. Use a disabled item when the persona could make the option selectable by taking a different action first.
-- **A read-only field** is a different component, with no input. Use a read-only field when the persona viewing the field never changes the value in this place.
+- **A read-only field** is a different component, with no input. Use a read-only field when the persona viewing the field never changes the value.
 
 ## Accessibility
 
