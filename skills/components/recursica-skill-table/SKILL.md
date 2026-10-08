@@ -92,7 +92,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - **The sort state must be announced on the column header**: which column is sorted, in which direction, and that the column header is the control that changes the sort. The sorted text style shows the sort state only to a persona who can see the table.
 - **Each table row's selection checkbox needs a name that identifies the checkbox's table row**, such as "Select invoice 1043", not five identical "Select" controls. The select-all checkbox in the header row needs a separate name. The select-all checkbox's indeterminate state (the partly selected state, shown as a dash, when some but not all items are selected) must be available to assistive technology.
 - **`NA` must be real text in the cell.** The `NA` rule has an accessibility reason as well as a visual reason. A screen reader announces an empty cell as nothing.
-- **Every repeated row action must name the object the action acts on**, or the table row must give the object as context in code.
+- **Every repeated row action must name the record or other item the action acts on**, or the table row must give the record or item to the action as context in code. For example, mark the cell that names the record as the row header, or point the action's `aria-describedby` at the cell that names the record.
 - **A fixed header must still be the table's header row**, not a separate visual element placed above a table with no header row.
 - **Never let a cell's meaning depend on color or an icon alone.** A status cell needs text.
 - **Announce the result of a sort, a filter, or a page change**: how many table rows there are now, or that the order changed. When the table updates with no announcement, the persona believes nothing happened.
@@ -152,7 +152,7 @@ Never set or override the styling of the header row, the body cells or the foote
 - [ ] Totals sit in the footer row.
 - [ ] A clickable table row is a single real control, and the only control in that table row.
 - [ ] Inline editing can be started and left from the keyboard, and inline editing is on everywhere in the application or nowhere.
-- [ ] Every repeated row action names the object the action acts on, and nothing is revealed on hover.
+- [ ] Every repeated row action names the record or other item the action acts on, and nothing is revealed on hover.
 - [ ] Every sort, filter, and page change announces the result.
 - [ ] The table has no invented density variant, selected-row state, or hover state.
 - [ ] No styling is set or overridden on the table, the header row, the body cells or the footer row, and no container or spacer is added to change the table's look.
