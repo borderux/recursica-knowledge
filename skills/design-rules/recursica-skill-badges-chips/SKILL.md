@@ -11,13 +11,13 @@ metadata:
 
 This skill holds the house rules for badges and chips on an object. The rules decide whether a status or a value on an object is a badge or a chip, how many badges and chips one object may carry, and where each badge and chip sits. The rules are the team's opinions, not neutral best practices. Treat each rule as a constraint.
 
-The rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The badge and chip components handle the styling, the sizing, and the hover and focus states. The rules in this skill decide which component to use, how many to use, and where each one goes.
+The rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The badge and chip components handle the styling, the sizing, and the hover and focus states. The rules in this skill decide which component to use, how many badges and chips to use, and where each badge and chip goes.
 
 ## Governing principles
 
-1. **Whether the user can interact with the component decides between a badge and a chip.** A badge is only displayed. The user operates a chip. A status is a fact the system reports, and a selection is a choice the user makes. A status the user can click is the wrong component for a status, not a design variation.
+1. **Choose between a badge and a chip by whether the user can act on the component.** A badge is only displayed. The user acts on a chip. A status is a fact the system reports, and a selection is a choice the user makes. A status the user can click is the wrong component for a status, not a design variation.
 2. **A badge holds one value, and chips hold several values.** One object carries at most one badge. When an object has more than one value, use chips.
-3. **Position shows which object each badge or chip belongs to.** Put the object first and the object's status right after the object, on the same line. Place the object and the status close enough that the reader reads the two together, like a sentence.
+3. **Position shows which object each badge or chip belongs to.** Put the object first and the object's status right after the object, on the same line. Place the object and the status close enough that the reader reads the object and the status together, like a sentence.
 4. **A badge draws a lot of attention, and a badge is not the default.** Prefer an icon. Use a badge only where the information needs that much attention. Decide between an icon and a badge first, before deciding between a badge and a chip.
 
 ## Badge or chip
@@ -28,21 +28,21 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 - **A badge MUST NOT be interactive.** A badge is never selectable and never dismissible. A badge is text for the user to read, for information only.
 - The system updates a badge when the object the badge describes changes. The user never changes the badge to change the status.
 
-**A chip is a larger component, and a chip may or may not be interactive.**
+**A chip is larger than a badge. The user can act on some chips and not on others.**
 
 - A selectable chip takes the place of a checkbox. Use selectable chips for filters, for variables, and for turning options on and off, usually several at once.
-- A static chip is also valid. **Tags are chips.**
+- A static chip, which the user cannot act on, is also valid. Tags are chips.
 
-**The number of values on the object is the fastest test.**
+**Count the values on the object. The count is the fastest test.**
 
 | Values on the object | Component |
 | -------------------- | --------- |
 | One                  | Badge     |
 | More than one        | Chips     |
 
-**MUST NOT place more than one badge on one object.** An account's status is the single badge on the account's row. Several metadata values on a card are a set of chips.
+**MUST NOT place more than one badge on one object.** An account's status is the single badge on the account's row. Several metadata values on a card are chips.
 
-**When a badge and a chip would both be static and unselectable, the choice between the two is a matter of style.** The only difference between the two is how each one looks. The rules above apply whenever interaction or the number of values is involved.
+**When a badge and a chip would both be static and unselectable, the choice between a badge and a chip is a matter of style.** A static badge and a static chip differ only in how each one looks. The rules above apply whenever the user can act on the component or the number of values matters.
 
 ## Icon or badge
 
@@ -50,7 +50,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 **A badge demands a lot of attention.** A badge is a filled, bordered, colored box with a word in the box, sized to be noticed. A badge is right for one important fact, and wrong for eight. Each badge on a screen takes some of the reader's attention, and the data the reader came for gets less attention. A badge stands out only when few other badges are on the screen.
 
-**Use an icon by default.** An icon shows the same fact and draws far less attention. Using icons by default keeps badges for the facts the reader must notice. `recursica-skill-icon-semantics` owns the icon and the icon's meaning.
+**Use an icon by default.** An icon shows the same fact and draws far less attention. Using icons by default keeps badges for the facts the reader must notice. `recursica-skill-icon-semantics` sets the rules for the icon and the icon's meaning.
 
 **Use a badge for the object's one main status**, when the reader's next decision depends on the status, and when a word rather than a symbol makes the status clear. Use one badge per object, as principle 2 requires.
 
@@ -62,33 +62,33 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 ## Pills
 
-**Recursica has no pill component.** Recursica has chips and badges. Other design systems use the word "pill" for either a chip or a badge, so translate the word. When "pill" means a chip, use a chip. When "pill" means a badge, use a badge. Every rule in this skill applies to the chip or the badge without change.
+**Recursica has no pill component.** Recursica has chips and badges. Other design systems use the word "pill" for either a chip or a badge. Translate the word. When "pill" means a chip, use a chip. When "pill" means a badge, use a badge. Every rule in this skill applies to the chip or the badge without change.
 
 ## Status and selection
 
-**A status chip that the user can act on is a wrong use of a chip.** The user never toggles a status. A change to a status comes from an action in a different place, and the badge then shows the new status.
+**A status chip that the user can act on is a wrong use of a chip.** The user never turns a status on or off. A status changes through an action in a different place. The badge then shows the new status.
 
 **Selectable chips are for choices, not for reporting a state.** Use selectable chips to choose filters, to pick variables, and to turn several options on and off.
 
 ## Dismissible chips
 
-**A chip can be dismissed only when the user added the chip.** Interactive chips follow two patterns, and neither pattern applies to badges:
+**A chip can be dismissed only when the user added the chip.** Chips the user can act on follow two patterns. Neither pattern applies to badges.
 
-1. **Added chip.** The user searches, usually with an autocomplete, and picks an item. A chip appears that was not on the screen before. Clicking the chip's close icon removes the chip from the view.
+1. **Added chip.** The user searches, usually with an autocomplete, and picks an item. A chip appears that was not on the screen before. Clicking the chip's close icon removes the chip from the screen.
 2. **Toggled chip.** The chip is on the screen before the user acts. The user turns the chip on or off, exactly like checking a checkbox.
 
 **NEVER make a badge dismissible.**
 
 ## Placement in table rows
 
-**A status gets a separate column only when most table rows have a status.** Check the share of table rows first. `recursica-skill-tables` rejects a column that is empty for most table rows, so a rare exception never gets a column. Show a rare exception as an icon beside the object's identifying value, inside the identifying value's table cell. The rules below in this section apply to a status that the whole table carries.
+**A status gets a separate column only when most table rows have a status.** Before adding a status column, check how many table rows have a status. `recursica-skill-tables` rejects a column that is empty for most table rows. A rare exception therefore never gets a column. Show a rare exception as an icon beside the object's identifying value, inside the identifying value's table cell. The rules below in this section apply to a status that the whole table carries.
 
-**Put the status near the left edge of the table.** People read left to right, so the eye lands first on the left edge when scanning a table. The status therefore goes in the second or third column.
+**Put the status near the left edge of the table.** People read left to right. A reader scanning a table looks at the left edge first. The status therefore goes in the second or third column.
 
 - **Keep the first column for the bulk-selection checkbox**, where the table has one.
 - Place the status **right before or right after the information that identifies the object.** If the identifying information is in the first column, the status goes in the second column. If the identifying information is in the second column, the status can come first.
 
-The status must sit where a reader sees at once which object the status belongs to. `recursica-skill-tables` owns column order and column widths.
+The status must sit where a reader sees at once which object the status belongs to. `recursica-skill-tables` sets the rules for column order and column widths.
 
 ## Placement beside the object
 
@@ -97,7 +97,7 @@ The status must sit where a reader sees at once which object the status belongs 
 - On a tab, put the badge after the tab label.
 - On a heading, put the badge right after the H1 or H2 text.
 
-**Show the object first, then the object's status.** Name the object, then report the object's status. The object and the badge must sit close together, side by side, so the pair forms a sentence: _the heading has the status of `<badge>`_.
+**Show the object first, then the object's status.** The object and the badge must sit close together, side by side, so the pair forms a sentence: _the heading has the status of `<badge>`_.
 
 **NEVER stack a badge above or below the badge's object.** A stacked badge makes the eye scan in a different pattern, and the reader can no longer tell which object the badge belongs to. The only acceptable reason to stack a badge is a real lack of space, as on mobile or in a similarly compact layout.
 
@@ -105,42 +105,42 @@ The status must sit where a reader sees at once which object the status belongs 
 
 ## Placement in cards
 
-**The card component places the badge in the upper-right corner of the card**, on the opposite side of the card from the heading. Do not invent a different position for the badge.
+**The card component places a badge in the upper-right corner of the card**, on the opposite side of the card from the heading. Do not invent a different position for the badge.
 
-**Chips belong in the card's content area.**
+**Put chips on a card in the card's content area.**
 
 ## Sidebar navigation
 
-**Use a badge to label a navigation item.** The badge is read-only metadata attached to a menu option, such as "Active". Almost never use a chip in sidebar navigation. The user does not select items in sidebar navigation the way a user selects a chip.
+**Use a badge to label a navigation item.** A badge on a navigation item shows read-only metadata, such as "Active". Almost never use a chip in sidebar navigation. The user does not select items in sidebar navigation the way a user selects a chip.
 
 ## How many chips
 
-**A chip group follows the same limit as a checkbox group: 7 ± 2**, adjusted for cognitive load. Allow up to nine chips when the chips are similar and easy to understand. Allow as few as five when the chips differ from each other or are hard to grasp. A filter bar is a chip group.
+**A chip group holds 7 ± 2 chips, the same limit as a checkbox group.** Adjust the limit for cognitive load. Allow up to nine chips when the chips are similar and easy to understand. Allow as few as five when the chips differ from each other or are hard to grasp. A filter bar is a chip group.
 
 `recursica-skill-working-memory` gives the reasoning for the limit and says where the limit stops applying.
 
 ## Error states
 
-**Do not use a chip to show an error, ever.**
+**Never use a chip to show an error.**
 
 **A badge for an error is an exception at best.** Badges show extra metadata, not negative conditions. A reader easily mistakes a badge that says "Error" for a positive marker.
 
-**Prefer a stronger treatment designed to show an error**, such as an icon or another visual treatment that draws attention. If a design needs an error state on an object, design the error state instead of reaching for a badge.
+**Prefer a stronger treatment designed to show an error**, such as an icon or another visual treatment that draws attention. If a design needs an error state on an object, design the error state instead of using a badge.
 
 ## Data density
 
 Density is how tightly content is packed together.
 
-**In tight views, prefer the badge.** A badge is deliberately small, with very small type, and is designed as a compact status marker.
+**In dense views, prefer the badge.** A badge is deliberately small, with very small type, and is designed as a compact status marker.
 
 **Chips work poorly in dense data views.** A chip is larger than a badge and needs real padding and spacing. A chip may also hold an icon or a dismiss button. The padding, the spacing, the icon and the dismiss button do not shrink well.
 
 ## Keyboard behavior
 
-The badge and chip components handle both cases below, and the hover and focus states are built in. Expect the following behavior.
+The Recursica badge and chip components behave as follows with the keyboard. Both components include the hover and focus states.
 
 - **A static badge cannot receive focus and cannot be reached with the keyboard.** A static badge is not a tab stop (a place the Tab key lands). A static badge is text for the user to read.
-- **An interactive chip can receive focus** and can be toggled on and off. When an interactive chip has a dismiss control, the chip offers the dismiss control as a separate step.
+- **A chip the user can act on can receive focus** and can be toggled on and off. When the chip has a dismiss control, the user reaches the dismiss control as a separate step.
 
 ## Status updates
 
@@ -177,9 +177,9 @@ Check every item below before treating status and metadata as done.
 - [ ] No object has competing status elements above and below the object.
 - [ ] Each badge on a card uses the card component's upper-right position, and chips on a card sit in the card's content area.
 - [ ] Labels on sidebar navigation items are badges, not chips.
-- [ ] Chip groups hold 7 ± 2 items, adjusted for cognitive load.
+- [ ] Chip groups hold 7 ± 2 chips, adjusted for cognitive load.
 - [ ] No chip shows an error state. No badge shows an error state without an explicit exception.
 - [ ] Dense data views use badges, not chips.
-- [ ] Badges cannot receive focus. Interactive chips can receive focus.
+- [ ] Badges cannot receive focus. Chips the user can act on can receive focus.
 - [ ] When a status updates, the badge is swapped with no animation.
 - [ ] Open questions were asked about, not decided: count limits, icons in badges, and a filter bar with more than 7 ± 2 items.
