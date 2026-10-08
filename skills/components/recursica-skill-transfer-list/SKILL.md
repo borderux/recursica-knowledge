@@ -16,21 +16,21 @@ A transfer list shows two lists of options side by side. An item is one option i
 ## When to use a transfer list
 
 - **The list of options is long, well past the 7 ± 2 limit where a checkbox group stops working.** See `recursica-skill-working-memory`.
-- **The items not chosen matter as much as the items chosen.** Examples are assigning people to a group, picking the columns of a report, and choosing which options a setup includes. The user needs to see the items left out, not only the items chosen.
+- **The items not chosen matter as much as the items chosen.** Examples are assigning people to a group, picking the columns of a report, and choosing which options a setup includes. The persona needs to see the items left out, not only the items chosen.
 - **Each item is either included or excluded.** Two lists show at a glance which items are included. Checkmarks spread through one long checkbox group do not show the included items at a glance.
-- **The user works in bulk.** The user selects several items, then moves the selected items in one action.
+- **The persona works in bulk.** The persona selects several items, then moves the selected items in one action.
 
 ## When not to use a transfer list
 
-| Situation                                                                                        | Use instead                                                                                                                   |
-| ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| The list has only a few options                                                                  | A checkbox group. See `recursica-skill-checkbox` and `recursica-skill-selection-controls`.                                    |
-| The user chooses exactly one value                                                               | A dropdown or a radio group. See `recursica-skill-dropdown`.                                                                  |
-| The user chooses any number of options, including none, and the options not chosen do not matter | A multi-select dropdown. See `recursica-skill-selection-controls`.                                                            |
-| The container is too narrow for two lists side by side                                           | A different component. Each list has a fixed width.                                                                           |
-| The user puts items in order, instead of including or excluding items                            | If the project has an ordering variant for the transfer list, use the ordering variant. Otherwise, use a different component. |
-| The items are stored records with actions                                                        | A table. See `recursica-skill-tables`.                                                                                        |
-| The current user cannot change which items are included                                          | A read-only field. See `recursica-skill-read-only-field`.                                                                     |
+| Situation                                                                                           | Use instead                                                                                                                   |
+| --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| The list has only a few options                                                                     | A checkbox group. See `recursica-skill-checkbox` and `recursica-skill-selection-controls`.                                    |
+| The persona chooses exactly one value                                                               | A dropdown or a radio group. See `recursica-skill-dropdown`.                                                                  |
+| The persona chooses any number of options, including none, and the options not chosen do not matter | A multi-select dropdown. See `recursica-skill-selection-controls`.                                                            |
+| The container is too narrow for two lists side by side                                              | A different component. Each list has a fixed width.                                                                           |
+| The persona puts items in order, instead of including or excluding items                            | If the project has an ordering variant for the transfer list, use the ordering variant. Otherwise, use a different component. |
+| The items are stored records with actions                                                           | A table. See `recursica-skill-tables`.                                                                                        |
+| The persona viewing the screen cannot change which items are included                               | A read-only field. See `recursica-skill-read-only-field`.                                                                     |
 
 **A transfer list solves one problem in a screen's structure: a list of options too long for a checkbox group.** `recursica-skill-selection-controls` says that twenty checkboxes that need a select-all checkbox are the wrong control, and a transfer list replaces those checkboxes. A transfer list where nine checkboxes would do is also the wrong control.
 
@@ -53,25 +53,25 @@ The rules below describe each option by role, such as "the error state". The nam
 
 ## Rules
 
-**Give each list a name that tells the two lists apart.** Use the product's words, such as "Available" and "Selected", or "Excluded" and "Included". Without names, the user cannot tell which list holds the chosen items.
+**Give each list a name that tells the two lists apart.** Use the product's words, such as "Available" and "Selected", or "Excluded" and "Included". Without names, the persona cannot tell which list holds the chosen items.
 
-**The filter is required, and the filter's label names the list the filter searches.** A list long enough for a transfer list is too long for the user to read every item.
+**The filter is required, and the filter's label names the list the filter searches.** A list long enough for a transfer list is too long for the persona to read every item.
 
-**Keep selecting an item and moving an item as two separate actions.** Selecting, or checking, an item marks the item to be moved. Moving the item puts the item in the other list. Do not move an item at the moment the user selects the item. Moving many items at once is the reason a transfer list exists.
+**Keep selecting an item and moving an item as two separate actions.** Selecting, or checking, an item marks the item to be moved. Moving the item puts the item in the other list. Do not move an item at the moment the persona selects the item. Moving many items at once is the reason a transfer list exists.
 
 **Do not build a move-all control.** `recursica-skill-selection-controls` treats a need for select-all as a sign to reconsider the control. The filter is the tool for working with a long list. Keep the filter. A list so long that a move-all control seems necessary is a sign that the screen's structure is wrong. Raise the problem with a person instead of adding a move-all control, as `recursica-skill-system-conventions` says.
 
-**Sort both lists the same way, and keep the sort order the same after a move.** An item that appears in an unexpected place after the user moves the item back looks lost.
+**Sort both lists the same way, and keep the sort order the same after a move.** An item that appears in an unexpected place after the persona moves the item back looks lost.
 
 **Put the transfer list in the form's single column, and never inside a card.** A transfer list is a form control. `recursica-skill-forms` sets this rule.
 
-**Give the transfer list a real label, and put the selection rules in assistive text** (help text shown with the control). The selection rules are the minimum, the maximum, and what the two lists mean. Put a rule such as "At least two must be included" under the transfer list, not in a validation message after the user makes a mistake. See `recursica-skill-label` and `recursica-skill-assistive-element`.
+**Give the transfer list a real label, and put the selection rules in assistive text** (help text shown with the control). The selection rules are the minimum, the maximum, and what the two lists mean. Put a rule such as "At least two must be included" under the transfer list, not in a validation message after the persona makes a mistake. See `recursica-skill-label` and `recursica-skill-assistive-element`.
 
 **Pair the error state with a signal that is not color.** `recursica-skill-system-conventions` requires the second signal.
 
 **When a list needs long scrolling inside the fixed height, the screen's structure is the problem.** A scrolling area inside the transfer list works around the problem and does not fix the problem. See `recursica-skill-system-conventions` and the open questions.
 
-**Never disable a transfer list to show which items are included.** When the user cannot change the included items in the current context, show the included items as read-only content.
+**Never disable a transfer list to show which items are included.** When the persona cannot change the included items in the current context, show the included items as read-only content.
 
 ## Accessibility
 
@@ -81,12 +81,12 @@ A transfer list with arrow buttons often works only with a mouse. The app must a
 
 ### Screen readers
 
-- **Give each list a separate accessible name** (the name a screen reader reads out for a control). Without an accessible name, a screen reader user hears a list of items, cannot tell which list holds the items, and cannot use the transfer list.
+- **Give each list a separate accessible name** (the name a screen reader reads out for a control). Without an accessible name, a persona using a screen reader hears a list of items, cannot tell which list holds the items, and cannot use the transfer list.
 - **Set the selected state in code, not by color.** Assistive technology does not treat an item with only a tinted background as selected. `recursica-skill-system-conventions` sets this rule.
 - **Name each move button with what moves and where**, such as "Move selected to included" or "Remove selected from included". A name like "Right arrow" or ">" does not say what moves where. Two arrow buttons with no labels cannot be told apart.
-- **After a move, announce the result.** Announce the items that moved, and how many items each list now holds. The user cannot see both lists change at once.
-- **When the filter changes a list, announce how many items the list shows**, such as "3 of 120 shown". Without the count, a screen reader user hears a list that seems to empty for no reason.
-- **Each list's item count should be available**, so the user does not have to go through every item to count the items.
+- **After a move, announce the result.** Announce the items that moved, and how many items each list now holds. The persona cannot see both lists change at once.
+- **When the filter changes a list, announce how many items the list shows**, such as "3 of 120 shown". Without the count, a persona using a screen reader hears a list that seems to empty for no reason.
+- **Each list's item count should be available**, so the persona does not have to go through every item to count the items.
 - **Do not announce the same event twice.** When the result of a move is announced, do not also announce every item again as focus lands on each item.
 
 ### Keyboard and non-mouse navigation
@@ -96,8 +96,8 @@ A transfer list with arrow buttons often works only with a mouse. The app must a
 - **Each move button is a real button, pressed with Enter and Space.** The move buttons are tab stops (places the Tab key lands), in visual order, between the two lists.
 - **Disable a move button when the move button has no item to move.**
 - **The tab order follows the visual order**: label, filter, first list, move buttons, second list.
-- **Do not move focus for the user**, except to put focus in a chosen place after a move. Typing in the filter must not move focus into the list the filter searches.
-- **No control, label, count or other content the user needs may appear only on hover.** This rule covers the move buttons, a remove control on each item, and the item counts.
+- **Do not move focus for the persona**, except to put focus in a chosen place after a move. Typing in the filter must not move focus into the list the filter searches.
+- **No control, label, count or other content the persona needs may appear only on hover.** This rule covers the move buttons, a remove control on each item, and the item counts.
 
 ## Styling set by tokens
 
@@ -106,7 +106,7 @@ A transfer list with arrow buttons often works only with a mouse. The app must a
 ## Related skills
 
 - `recursica-skill-selection-controls` — which selection control to choose, the most options each selection control can hold, select-all as a sign that the screen's structure is wrong, disabled versus read-only, and when a selection is saved.
-- `recursica-skill-working-memory` — the research behind the 7 ± 2 limit, and why a list the user scans to recognize an item may be long while a set of items the user compares may not.
+- `recursica-skill-working-memory` — the research behind the 7 ± 2 limit, and why a list the persona scans to recognize an item may be long while a set of items the persona compares may not.
 - `recursica-skill-forms` — the single-column layout, one label placement per form and the container width that sets the label placement, validation, save mode, and the rule against a form control inside a card.
 - `recursica-skill-label` — the transfer list's label, and the label for a group of fields.
 - `recursica-skill-assistive-element` — the help text for the selection rules, and the error message.
@@ -119,12 +119,12 @@ A transfer list with arrow buttons often works only with a mouse. The app must a
 - **Overflow.** The height is fixed, so a long list must scroll inside the transfer list. `recursica-skill-system-conventions` treats a scrolling area inside a control as a failure. No rule says what a list does when the items do not fit the height.
 - **Narrow containers.** The label placement variant moves only the label, and the lists have a fixed width. An earlier house note said to avoid the transfer list on small screens, but the transfer list has no responsive behavior.
 - **Empty states.** No rule sets an empty state for either list, including the starting state where every item is in one list. Ask only when the project has no empty state.
-- **Ordering.** No rule says whether items are sorted alphabetically, keep the original order, or can be reordered by the user.
+- **Ordering.** No rule says whether items are sorted alphabetically, keep the original order, or can be reordered by the persona.
 - **Disabled items.** No rule says whether a single item can be disabled, locked in one list while the other items move. Ask only when the project has no disabled state for a single item.
 
 ## Pre-flight checklist
 
-- [ ] The list of options is long, and the user needs to see the excluded items. A checkbox group and a dropdown were ruled out for those reasons.
+- [ ] The list of options is long, and the persona needs to see the excluded items. A checkbox group and a dropdown were ruled out for those reasons.
 - [ ] Both lists have visible names that tell the two lists apart, and each list has an accessible name.
 - [ ] A filter is present, and the filter announces how many items a filtered list shows.
 - [ ] Selecting an item does not move the item. Items move through the move buttons.
