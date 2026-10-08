@@ -59,7 +59,7 @@ The rules below describe each option by role, such as "the success style". The n
 
 **Show one toast per event.** Do not show a toast for each record in a bulk action. Report the whole bulk action once, with the number of records.
 
-**Write the shortest toast text that gives the information.** Do not write full sentences or paragraphs. The short text in a form follows the same rule.
+**Write the shortest toast text that gives the information.** Do not write full sentences or paragraphs. The short text in a form, such as labels, hints and messages, follows the same rule.
 
 **Put at most one action in a toast**, and make the action a single follow-up, such as Undo. Two actions in a toast that disappears ask the persona to make a decision. A decision belongs in a modal.
 
@@ -73,7 +73,7 @@ The rules below describe each option by role, such as "the success style". The n
 
 **The code library also sets how long an undo stays available.** The design does not set how long an immediate undo lasts.
 
-**An undo must never exist only inside a toast, because the toast's duration cannot be made longer.** A persona using a keyboard has to leave the current field, tab to the toast, and press the undo before the code library's timer closes the toast. Put the undo in a part of the page that stays on screen, and have the toast point to that undo.
+**An undo must never exist only inside a toast, because the toast's duration cannot be made longer.** A persona using a keyboard has to leave the current field, tab to the toast, and press the undo before the code library's timer closes the toast. Put the toast's undo action in a part of the page that stays on screen, and have the toast point to the undo action on the page.
 
 **Combine duplicate toasts.** Show a repeated message as one toast. Ten identical toasts stacked on screen report one problem ten times. See `recursica-skill-feedback-messaging`.
 
@@ -98,7 +98,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 ### Keyboard and non-mouse navigation
 
 - **Never move focus to the toast when the toast appears.** A focus move pulls the text cursor out of a field in the middle of a word. A focus move also puts the persona in a place the persona did not ask to go.
-- **A toast with an action cannot close by itself while a persona is trying to reach the action.** Reaching an undo by keyboard means leaving the current field, tabbing to the toast, and pressing the undo. A timer running during those steps makes the action impossible to reach. The code library sets the duration, and the duration is not changed. The toast therefore cannot stay on screen longer. The undo must also be in a part of the page that stays on screen, with the toast pointing to that undo. Never ship a timed toast whose action is the only way to undo.
+- **A toast with an action cannot close by itself while a persona is trying to reach the action.** Reaching an undo by keyboard means leaving the current field, tabbing to the toast, and pressing the undo. A timer running during those steps makes the action impossible to reach. The code library sets the duration, and the duration is not changed. The toast therefore cannot stay on screen longer. The toast's undo action must also be in a part of the page that stays on screen, with the toast pointing to the undo action on the page. Never ship a timed toast whose action is the only way to undo.
 - **The toast must be in the tab order while the toast is visible**, at a predictable point, not after every other element on the page.
 - **If the toast's timer pauses on hover, the timer must also pause on focus.** Otherwise the pause helps only personas using a mouse.
 - **Closing a toast must work from the keyboard, not only with a pointer.** Every toast has a dismiss control, and the dismiss control works from the keyboard.
