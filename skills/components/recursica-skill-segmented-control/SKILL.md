@@ -9,22 +9,22 @@ metadata:
 
 # Segmented control
 
-A segmented control is a horizontal radio group. The user selects exactly one of 2 to 5 options, and every option is visible at once.
+A segmented control is a horizontal radio group. The persona selects exactly one of 2 to 5 options, and every option is visible at once.
 
 ## When to use a segmented control
 
-- **The layout needs a horizontal single-select, where the user selects exactly one option.** A segmented control is the house component for a horizontal single-select. Never lay out radio buttons in a horizontal row.
+- **The layout needs a horizontal single-select, where the persona selects exactly one option.** A segmented control is the house component for a horizontal single-select. Never lay out radio buttons in a horizontal row.
 - **The screen needs a toggle outside a form.** A switch belongs only in a form. Every two-state control in application chrome (the header, navigation and footer around the content), a filter bar, or a toolbar is a segmented control. In application chrome, the segmented control shows icons instead of text labels. A control that switches between a light theme and a dark theme is the standard example. See `recursica-skill-screen-scaffolding` for where application chrome sits.
 - **The choice has 2 to 5 options**, with short labels.
 - **The choice switches a view or a mode**, such as list or grid, or daily or weekly. The options are closely tied to the content on screen.
-- **The user filters the content where the content is shown**, and a dropdown or a modal would be more than the filter needs.
+- **The persona filters the content where the content is shown**, and a dropdown or a modal would be more than the filter needs.
 
 ## When not to use a segmented control
 
 | Instead of a segmented control                                         | Use                                                                                       |
 | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | More than five options                                                 | A vertical radio group. Use a dropdown for more than 7 ± 2 options.                       |
-| The user may choose more than one option                               | Selectable chips for a horizontal layout, or a checkbox group for a vertical layout.      |
+| The persona may choose more than one option                            | Selectable chips for a horizontal layout, or a checkbox group for a vertical layout.      |
 | The labels are long or complex                                         | A vertical radio group. Long labels do not fit the compact layout of a segmented control. |
 | The options are parts of one whole, and each part has separate content | Tabs, which have routes. See `recursica-skill-tabs`.                                      |
 | Switching to another option causes a heavy reload or changes data      | A control with an explicit submit action, and feedback.                                   |
@@ -68,23 +68,23 @@ The rules below describe each option by role, such as "the horizontal orientatio
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
-**Build a segmented control as a radio group.** The most common mistake is a row of buttons where only color marks the selected button. A screen reader does not announce the color, and a keyboard user has to tab through every segment.
+**Build a segmented control as a radio group.** The most common mistake is a row of buttons where only color marks the selected button. A screen reader does not announce the color, and a persona using a keyboard has to tab through every segment.
 
 ### Screen readers
 
 - **A screen reader must announce the segmented control as a group of radio options with exactly one option selected**, not as a group of buttons.
-- **Give the group an accessible name** (the name a screen reader reads out for a control) that says what the user is choosing, such as "View" or "Date range". Without the accessible name, a screen reader user hears the options but not what the options are for.
+- **Give the group an accessible name** (the name a screen reader reads out for a control) that says what the persona is choosing, such as "View" or "Date range". Without the accessible name, a persona using a screen reader hears the options but not what the options are for.
 - **A screen reader announces each segment's label, and whether the segment is selected.** The selected state must be available in code. `recursica-skill-system-conventions` forbids showing the selected state by color alone.
 - **An icon-only segment must have an explicit accessible name.** A screen reader does not announce the icon.
 - **A screen reader must not announce a leading icon beside a label.** The leading icon is decorative.
-- **When a change of selection changes the content on screen, a screen reader user must be able to perceive the content change.** A screen reader user who selects a segment and hears nothing cannot know that the view changed.
+- **When a change of selection changes the content on screen, a persona using a screen reader must be able to perceive the content change.** When a persona using a screen reader selects a segment and hears nothing, the persona cannot know that the view changed.
 
 ### Keyboard and non-mouse navigation
 
 - **The group is a single tab stop** (a place the Tab key lands). The Tab key moves focus into the segmented control and then out of the segmented control. The Tab key does not step through every segment. Do not add a tabindex to any single segment.
 - **The arrow keys move the selection within the group, in the direction of the orientation.** The Left and Right arrow keys move the selection in a horizontal control. The Up and Down arrow keys move the selection in a vertical control. The Home key moves to the first segment, and the End key moves to the last segment.
-- **Keep each change of selection quick and not destructive.** The arrow keys select every segment on the way to the segment the user wants. Because of the arrow keys, use a different control for a slow or destructive switch.
-- **When the user tabs into the group, focus lands on the selected segment**, not on the first segment.
+- **Keep each change of selection quick and not destructive.** The arrow keys select every segment on the way to the segment the persona wants. Because of the arrow keys, use a different control for a slow or destructive switch.
+- **When the persona tabs into the group, focus lands on the selected segment**, not on the first segment.
 - **Focus and selection must look different.** Focus can be on one segment of the group while a different segment is selected. Both the focus and the selection must be visible.
 
 ## Styling set by tokens
@@ -115,8 +115,8 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - [ ] A screen reader announces the group as a radio group with an accessible name and one option selected.
 - [ ] The selected state is available in code and is not shown by color alone, and every icon-only segment has an explicit accessible name.
 - [ ] The group is one tab stop. The arrow keys move the selection, and no single segment has a tabindex.
-- [ ] Focus lands on the selected segment when the user tabs in.
-- [ ] A screen reader user can perceive every content change that switching causes.
+- [ ] Focus lands on the selected segment when the persona tabs in.
+- [ ] A persona using a screen reader can perceive every content change that switching causes.
 - [ ] Every variant, option, and state is one the project's UI kit lists, and no variant or option is invented.
 - [ ] The orientation is horizontal, and every vertical single-select is a radio group.
 - [ ] No styling is set or overridden on the segmented control, and no container or spacer is added to change the segmented control's look.
