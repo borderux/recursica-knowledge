@@ -20,16 +20,16 @@ A stepper leads the persona through one process that has several steps. The step
 
 ## When not to use a stepper
 
-| Situation                                                           | Use instead                                                                                        |
-| ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| The steps can be done in any order                                  | One page. When the persona marks tasks done, use a checkbox group. See `recursica-skill-checkbox`. |
-| A short form that fits on one page                                  | One page, in a single column. See `recursica-skill-forms`.                                         |
-| An answer changes only the field right below the answer             | Progressive disclosure on one page. See `recursica-skill-forms`.                                   |
-| Sections of one whole that the persona switches between             | Tabs, each tab with its own route. See `recursica-skill-tabs`.                                     |
-| Primary or secondary navigation for the application                 | Navigation. A stepper is not navigation. See `recursica-skill-navigation`.                         |
-| A record of events that already happened, with timestamps           | A timeline. See `recursica-skill-timeline`.                                                        |
-| Progress of a single operation, with no known end                   | A loader, or the submit button's loading look. See `recursica-skill-loader`.                       |
-| Splitting a long form into steps only to make the form feel shorter | Nothing. Fix the form. See `recursica-skill-system-conventions`.                                   |
+| Situation                                                           | Use instead                                                                                         |
+| ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| The steps can be done in any order                                  | One page. When the persona marks tasks done, use a checkbox group. See `recursica-skill-checkbox`.  |
+| A short form that fits on one page                                  | One page, in a single column. See `recursica-skill-forms`.                                          |
+| An answer changes only the field right below the answer             | Progressive disclosure on one page. See `recursica-skill-forms`.                                    |
+| Sections of one whole that the persona switches between             | Tabs, each tab with its own route. See `recursica-skill-tabs`.                                      |
+| Primary or secondary navigation for the application                 | Navigation. A stepper is not navigation. See `recursica-skill-navigation`.                          |
+| A record of events that already happened, with timestamps           | A timeline. See `recursica-skill-timeline`.                                                         |
+| Progress of a single operation, with no known end                   | A loader, or the submit button's loading look. See `recursica-skill-loader`.                        |
+| Splitting a long form into steps only to make the form feel shorter | Nothing. Fix the form, and confirm the fix with the user. See `recursica-skill-system-conventions`. |
 
 **Never spread a form across tabs.** The stepper exists because of the ban on forms in tabs. `recursica-skill-navigation` sets the ban, and names the stepper as the replacement. When form fields would go in tabs, use a stepper instead.
 
