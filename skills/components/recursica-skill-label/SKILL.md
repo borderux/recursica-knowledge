@@ -23,9 +23,9 @@ A label names a form field. A label is a Recursica component, not plain text pla
 | A section or a page needs a title                | A heading. A label belongs to a form control.                                            |
 | Text explains the rule for a field               | `recursica-skill-assistive-element`, with the help type (`help` in the standard UI kit). |
 | Text shows what a field's value should look like | The field's placeholder.                                                                 |
-| The screen shows a value the user cannot edit    | `recursica-skill-read-only-field`. A read-only field includes a label.                   |
+| The screen shows a value the persona cannot edit | `recursica-skill-read-only-field`. A read-only field includes a label.                   |
 
-**A placeholder is never a label.** A screen reader does not announce a placeholder as a label. The placeholder disappears when the user types the first character.
+**A placeholder is never a label.** A screen reader does not announce a placeholder as a label. The placeholder disappears when the persona types the first character.
 
 ## Variants
 
@@ -54,13 +54,13 @@ The rules below describe each option by role, such as "the smaller size". The na
 
 Mixing the two placements in one form causes three problems:
 
-- Side-by-side labels line up the field values in one column that the user scans straight down. A mix of placements breaks the column.
-- A mix of placements creates two left edges. The user cannot tell whether the next text is a label or a value.
+- Side-by-side labels line up the field values in one column that the persona scans straight down. A mix of placements breaks the column.
+- A mix of placements creates two left edges. The persona cannot tell whether the next text is a label or a value.
 - A field with a different placement looks as if the field has a different meaning from the other fields.
 
 `recursica-skill-forms` sets the one-placement rule.
 
-**Name exactly what the field holds.** The label must make sense without the content around the label, because a screen reader user hears the label alone. If the label has a verb, use a clear, active verb. Never use a passive verb or a linking verb (a verb such as "is" or "seems" that connects words instead of showing an action).
+**Name exactly what the field holds.** The label must make sense without the content around the label, because a persona using a screen reader hears the label alone. If the label has a verb, use a clear, active verb. Never use a passive verb or a linking verb (a verb such as "is" or "seems" that connects words instead of showing an action).
 
 **Write the label in sentence case, with no colon at the end.** Keep the label short enough to fit on one line.
 
@@ -78,23 +78,23 @@ Mixing the two placements in one form causes three problems:
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
-A screen reader user can use a field only when the field has a label. The label component connects a label to a form control.
+A persona using a screen reader can use a field only when the field has a label. The label component connects a label to a form control.
 
 ### Screen readers
 
 - **The label must be connected in code to the form control the label names.** Each Recursica field component makes the connection. Give each field component the field's label, so the field component has a label to connect. A field with no label has no accessible name (the name a screen reader reads out for a control).
 - **Never replace a label with text that is only visual.** Text placed next to an input is not a label. If the field component takes a label, use the field component's label.
-- **The label must make sense when read alone**, out of order and out of context. A screen reader user can hear a label with no text around the label. The rule to name exactly what the field holds exists for that reason.
+- **The label must make sense when read alone**, out of order and out of context. A persona using a screen reader can hear a label with no text around the label. The rule to name exactly what the field holds exists for that reason.
 - **The required state must be available in code, not only shown by an indicator.** The asterisk or the bold weight is the visual channel (color, shape, position or text, each a separate signal). The field must also mark in code that the field is required. `recursica-skill-system-conventions` forbids relying on a single channel.
 - **An optional marker must also be available in code.** When a word marks a field as optional, the word must be part of the label the screen reader announces, not a separate fragment of text.
-- **Do not hide the label visually.** Sighted keyboard users and voice-control users need the visible label too. A visible label is a house requirement.
-- **A group label must be announced when focus enters the group.** Placing the group label before the group in the reading order is not enough. Without the announcement, the user hears the options without the question the options answer.
-- **Do not cram instructions into the label.** Put the rules for a field in an assistive element (`recursica-skill-assistive-element`). A screen reader announces a long label in full every time the user reaches the field.
+- **Do not hide the label visually.** Sighted personas using a keyboard and personas using voice control need the visible label too. A visible label is a house requirement.
+- **A group label must be announced when focus enters the group.** Placing the group label before the group in the reading order is not enough. Without the announcement, the persona hears the options without the question the options answer.
+- **Do not cram instructions into the label.** Put the rules for a field in an assistive element (`recursica-skill-assistive-element`). A screen reader announces a long label in full every time the persona reaches the field.
 
 ### Keyboard and non-mouse navigation
 
 - **The label is not a tab stop** (a place the Tab key lands). The label cannot receive focus by itself.
-- **Clicking or tapping the label must move focus to the label's control.** A label connected in code moves focus to the control and gives the user a bigger area to click or tap. Do not show the label as text that is not connected to the control. Text that is not connected does not move focus and gives no bigger area to click or tap.
+- **Clicking or tapping the label must move focus to the label's control.** A label connected in code moves focus to the control and gives the persona a bigger area to click or tap. Do not show the label as text that is not connected to the control. Text that is not connected does not move focus and gives no bigger area to click or tap.
 - **An edit icon on a label is a control.** The edit icon must be a separate tab stop with a separate accessible name.
 - **A stacked label must not change the tab order.** Label placement changes only the look. The order is the label, then the field, for both placements.
 
