@@ -29,12 +29,12 @@ In each situation below, use the alternative in the right column. Never adapt a 
 | The persona already knows the date by heart                 | A text field, with the format stated in help text. See `recursica-skill-text-field`.                        |
 | The date is far in the past, such as a birth date           | A text field. Never make the persona page a calendar back through decades.                                  |
 | The value is a relative or rough time, such as "in 30 days" | No date at all. Record the relative time as a number plus a unit.                                           |
-| The value can never be edited in this place                 | A read-only field, which shows the label and the text with no input. See `recursica-skill-read-only-field`. |
+| The value can never be edited where the value is shown      | A read-only field, which shows the label and the text with no input. See `recursica-skill-read-only-field`. |
 | A date is only shown, in a table or a detail view           | Formatted text. See `recursica-skill-dates-and-currency`.                                                   |
 
 **Use separate inputs, not a date picker, for a complex or partial date.** A month and year, a quarter, a fiscal period, or a date the persona builds from parts needs separate inputs with the format stated. Never use a calendar for a complex or partial date.
 
-**Never use a disabled date picker to show a date.** A date that nobody can ever edit in this place needs no form control.
+**Never use a disabled date picker to show a date.** A date that nobody can ever edit where the date is shown needs no form control.
 
 ## Variants
 
@@ -81,7 +81,7 @@ The rules below describe each option by role, such as "the error state". The nam
 **A disabled date picker and a read-only field are different components, not two styles of one component.**
 
 - **A disabled date picker is still a field and still looks like an input, but the persona cannot use the field yet.** Use a disabled date picker when the persona can make the field usable by taking a different action first.
-- **A read-only field is a different component, with a label and text and no input.** Use a read-only field when the persona viewing the field never edits the value in this place.
+- **A read-only field is a different component, with a label and text and no input.** Use a read-only field when the persona viewing the field never edits the value where the value is shown.
 
 ## Accessibility
 
@@ -153,5 +153,5 @@ The date picker component connects the label to the input and shows the focus ri
 - [ ] Every variant and state is one the Recursica MCP server lists for the project. No size variant, range variant, or inline calendar is added unless the Recursica MCP server lists one for the project.
 - [ ] No styling is set or overridden on the date picker, and no container or spacer is added to change the date picker's look.
 - [ ] Every field without focus looks editable, not disabled.
-- [ ] Dates that are not editable in this place use the read-only field, not a disabled date picker.
+- [ ] Dates that are not editable where the dates are shown use the read-only field, not a disabled date picker.
 - [ ] Open questions were asked about, not decided: date ranges, what the calendar popover contains, whether the calendar opens on focus, the earliest and latest dates and unavailable dates, and conventions for weeks, quarters, and fiscal periods.
