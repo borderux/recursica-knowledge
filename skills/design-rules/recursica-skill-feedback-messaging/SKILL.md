@@ -15,9 +15,9 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 ## The three governing principles
 
-1. **A normal success shows no message.** A normal successful action needs no confirmation at all. Keep messages for the exceptional cases: a failure, a change of context, or a wait. Each message takes the user's attention, on a screen the user visits every day.
-2. **Never change the height of the page to show a message.** This rule is the stated reason the house avoids inline messages. An inline message is a brief status or success message placed in the flow of the page. The rule also applies more widely than inline messages. A message that shifts the layout moves the control the user was about to click.
-3. **The code library behind the components sets the timing, not the design.** The code library sets how long a message stays, whether the message persists, and how long an undo lasts. Choose the channel and combine the message content. Do not set any duration in milliseconds.
+1. **A normal successful action shows no message and needs no confirmation.** Keep messages for the exceptional cases: a failure, a change of context, or a wait. Each message takes the user's attention, on a screen the user visits every day.
+2. **Never change the height of the page to show a message.** A message that shifts the page layout moves the control the user was about to click. This rule is the stated reason the house rules avoid inline messages. An inline message is a brief status or success message placed in the page layout. The rule also covers messages other than inline messages.
+3. **The code library behind the components sets the message timing. The design does not set the timing.** The code library sets how long a message stays, whether the message persists, and how long an undo lasts. Choose the channel and combine the message content. Do not set any duration in milliseconds.
 
 ## Choosing the channel
 
@@ -49,12 +49,12 @@ A toast is a short message that appears briefly and then disappears. A modal is 
 
 **Avoid inline messages. The house does not use inline messages at all.** An inline success or status message inserted into the page changes the height of the page. The change in height moves all the content below the message while the user is reading that content or about to click that content.
 
-The ban on inline messages covers brief status and success messages placed in the flow of the page. The ban does **not** override two rules:
+The ban on inline messages covers brief status and success messages placed in the page layout. The ban does **not** override two rules:
 
-- **Field validation.** The field's assistive element shows a field's error. The error replaces the help text instead of adding to the help text, so the height of the field does not change. `recursica-skill-forms` owns this rule.
+- **Field validation.** The field's assistive element shows the field's error. The error replaces the help text instead of adding to the help text. Because the error replaces the help text, the height of the field does not change. `recursica-skill-forms` owns this rule.
 - **A persistent save status.** A form that saves each field as the field changes requires a save status that stays on the page. The key word is persistent. An element that is always on the page does not change the height of any part of the page when the element updates. `recursica-skill-forms` owns this rule.
 
-**Inline messages are most tempting on a field that saves to the server immediately.** On that field, use the persistent save status that the forms rules require, or a toast. Do not insert and remove a message next to the field.
+**On a field that saves to the server immediately, use the persistent save status that the forms rules require, or a toast.** Do not insert and remove a message next to the field. An inline message is most tempting on a field that saves immediately.
 
 ## Toasts
 
@@ -63,14 +63,14 @@ The ban on inline messages covers brief status and success messages placed in th
 **Use a toast when:**
 
 - **The action moved the user away from the place where the user acted.** The previous page no longer has a place on screen to show a message.
-- **Saving happens bit by bit as the user works, and a message that interrupts the form would cost the user more than the reassurance is worth.**
+- **Saving happens bit by bit as the user works, and a message in the form would interrupt the user more than the message would reassure the user.**
 - **The system failed.** Report a save that did not go through in a toast.
 
 **The code library behind the toast component sets the duration (how long the toast stays on screen).** Use the duration the code library sets. Do not change the duration, and do not build a separate timing scheme for each message.
 
-**Every toast has a dismiss control.** The toast component has a dismiss control built in. The user can always remove the toast from the screen. Never ship a toast the user cannot dismiss.
+**Every toast has a dismiss control.** The toast component has a dismiss control built in. Never ship a toast the user cannot dismiss.
 
-**The code library also sets how long an undo lasts.** The code library decides how long an immediate undo stays available. The design does not set how long an undo lasts.
+**The code library also sets how long an undo lasts, including how long an immediate undo stays available.** The design does not set how long an undo lasts.
 
 **A toast's duration cannot be made longer to keep the toast's action within reach.** Where an undo matters, the undo must also exist in a place that stays on the screen. The toast points to that undo, and the toast is not the only way to reach the undo. See `recursica-skill-toast`.
 
@@ -80,11 +80,11 @@ The ban on inline messages covers brief status and success messages placed in th
 
 The interface therefore has no "3 of 5 records saved" message to design, and no list of results for each item to show. If an operation produces partial results, the cause is a problem with how the backend groups the operation's changes, not a messaging problem. **Raise the partial results as a backend problem instead of building an interface to report the partial results.**
 
-The channel table above has no row for a partial success for this reason. A partial success should not reach the interface.
+The channel table above has no row for a partial success, because a partial success should not reach the interface.
 
 ## Duplicate messages
 
-**Never stack duplicate messages. Combine repeats of the same message into one message.** Ten or twelve toasts piled up because the same error fired again and again show a failure to handle the problem, not a notification strategy.
+**Never stack duplicate messages. Combine repeats of the same message into one message.** Ten or twelve identical toasts piled up from one repeating error show that the application failed to handle the underlying problem. A stack of identical toasts is not a notification strategy.
 
 **Never show many messages at the same time.** A screen with several messages at once leaves the user with no idea which message to read, which message to act on, or where to start. If one operation produces many errors, show one message about that operation, not many messages.
 
@@ -98,7 +98,7 @@ The channel table above has no row for a partial success for this reason. A part
 
 **Never put a blocking spinner or overlay over the page on submit.** `recursica-skill-forms` owns this rule.
 
-**When an operation runs longer than normal, show no extra message by default, and let the operation finish.** A "this is taking longer than usual" toast is allowed, but the toast is not standard practice here. If a "taking longer than usual" toast is used, the toast belongs at about 10 seconds. More often, the right answer is to show no extra message.
+**When an operation runs longer than normal, show no extra message by default, and let the operation finish.** A "this is taking longer than usual" toast is allowed, but the toast is not standard practice in the house rules. If a "taking longer than usual" toast is used, show the toast at about 10 seconds. More often, show no extra message.
 
 ## Set by the theme or the component
 
@@ -114,16 +114,16 @@ The channel table above has no row for a partial success for this reason. A part
 - **Undo policy, meaning when an action gets an undo instead of a confirmation**: `recursica-skill-buttons-links`.
 - **The toast component's variants, states and accessibility details**: `recursica-skill-toast`.
 - **Loader variants, and what a spinner can and cannot tell the user**: `recursica-skill-loader`.
-- **Error logging, retry policy, and how the backend classifies a failure.** These topics are not UI concerns.
+- **Error logging, retry policy, and how the backend classifies a failure.** These topics are not interface decisions.
 - **Transaction boundaries, meaning which changes the backend saves together.** Whether an operation saves all at once is a backend requirement, not a design decision. See the all-or-none rule under "No partial success" above. The all-or-none rule is the reason the interface has no partial-success messages and no lists of results for each item.
 
 ## Open questions
 
 - **Banners have no component.** The tense rule above says when a banner is right. No rule says what a banner looks like, where a banner sits on the page, whether the user can dismiss a banner, or whether several banners may appear at once.
-- **Live regions.** Nobody has decided which updates are announced to assistive technology, or how urgently. The session that recorded the typography rules openly put the question off, and this skill never took the question up. Individual component skills state the announcement requirements for each skill's component, but no policy covers the whole application.
-- **The notification channel.** A notification channel was mentioned as the place for global or system-wide conditions, "if one exists". Whether a notification channel exists, and what belongs in a notification channel instead of a banner, is not settled.
+- **Live regions.** Nobody has decided which updates are announced to assistive technology, or how urgently. The team openly put the question off when recording the typography rules, and this skill does not answer the question. Individual component skills state the announcement requirements for each skill's component, but no policy covers the whole application.
+- **The notification channel.** The team named a notification channel as the place for global or system-wide conditions, "if one exists". Whether a notification channel exists, and what belongs in a notification channel instead of a banner, is not settled.
 - **Whether a toast may have a title as well as a message**, and whether an error toast lasts a different length of time from a success toast.
-- **Banner versus modal.** The session that recorded these rules named banner versus modal as not covered, at the end of the session.
+- **Banner versus modal.** The team named banner versus modal as not covered, at the end of the session that recorded these rules.
 
 ## Pre-flight checklist
 
