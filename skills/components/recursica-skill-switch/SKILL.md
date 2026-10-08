@@ -9,7 +9,7 @@ metadata:
 
 # Switch
 
-A switch turns one item on or off. Each switch has a label, which names what the switch controls. The value of a switch is true or false.
+A switch turns one setting on or off. Each switch has a label, which names what the switch controls. The value of a switch is true or false.
 
 ## When to use a switch
 
@@ -78,7 +78,7 @@ The rules below describe each option by role, such as "the selected state". The 
 **A disabled switch item and a read-only field are different components, not two styles of one component.**
 
 - **Use a disabled switch item when the persona could make the switch usable by first taking a different action.** A disabled item is still a switch and still clearly a control, but the persona cannot use the switch right now.
-- **Use a read-only field when the persona viewing the value never changes the value here.** A read-only field has no control at all.
+- **Use a read-only field when the persona viewing the value never changes the value where the value is shown.** A read-only field has no control at all.
 
 ## Accessibility
 
@@ -138,7 +138,7 @@ The switch group, switch item and switch components already connect each switch 
 - [ ] The binary-inverse test passes. The opposite state is known, unique, and binary.
 - [ ] The label test passes. The label alone names what the switch controls, with no competing values.
 - [ ] The label names what the switch controls, never the state, and does not change when the switch turns on or off.
-- [ ] No bare switch controls a change with serious consequences, a destructive change, or a change that cannot be undone.
+- [ ] No switch controls a setting where turning the switch on or off by accident could have serious consequences, or a setting that is destructive, cannot be undone, or is high-risk.
 - [ ] No switch exists in a table row, unless the user approved the switch.
 - [ ] Every switch saves at the same point as every other switch in the system. When switches save immediately, the page shows a save status that stays on the page.
 - [ ] The system never mixes switches that save immediately with switches that wait for Save.
