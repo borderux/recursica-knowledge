@@ -17,7 +17,7 @@ A textarea is a field where the user types plain text on several lines.
 - **The user writes text, not a value that names or identifies an item**, such as a comment, feedback, a message or the details of a support ticket.
 - **Line breaks are part of the value.** If the user needs paragraphs, use a textarea.
 
-**The field's label is the fastest check for whether a textarea is right.** The labels `Description`, `Notes`, `Comments`, `Justification`, `Reason`, `Summary` and `Details` each promise the user room to write. A single-line field with a label that asks for prose is a mismatch. The user finds the mismatch by running out of space. The single-line field scrolls sideways and hides the text the user wrote. If the label suggests prose, use a textarea. If the label does not suggest prose, rethink the label.
+**The field's label is the fastest check for whether a textarea is right.** The labels `Description`, `Notes`, `Comments`, `Justification`, `Reason`, `Summary` and `Details` each tell the user there is room to write. A single-line field with a label that asks for prose is a mismatch. The user finds the mismatch by running out of space. The single-line field scrolls sideways and hides the text the user wrote. If the label suggests prose, use a textarea. If the label does not suggest prose, rethink the label.
 
 ## When not to use a textarea
 
@@ -42,10 +42,10 @@ For each case below, use the component the table names instead of adapting a tex
 
 The rules below describe each option by role, such as "the label beside the field". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-- **An error state and a disabled state.** In the standard UI kit, the two states are `error` and `disabled`.
-- **A fixed number of rows.** The theme sets the number of rows, and the textarea keeps that number fixed. Do not set the number of rows on any one textarea. Do not set a height. Do not set a row count to fit a particular answer. Do not wrap the textarea in a container to stretch the textarea. If the fixed height is wrong for a case, ask a person. See the open questions.
-- **Size and width.** If the project has a size variant or a width property, use the project's variant or property.
-- **Read-only value.** A read-only value uses a separate component, the read-only field, not a read-only state on the textarea. The read-only field has the same label-placement variant and no input.
+- **A textarea has an error state and a disabled state.** In the standard UI kit, the two states are `error` and `disabled`.
+- **The theme sets the number of rows, and the textarea's height stays fixed.** Do not set the number of rows on any one textarea, even to fit a particular answer. Do not set a height. Do not wrap the textarea in a container to stretch the textarea. If the fixed height is wrong for a case, ask a person. See the open questions.
+- **If the project has a size variant or a width property, use the project's variant or property.**
+- **Show a read-only value with the read-only field, a separate component, not with a read-only state on the textarea.** The read-only field has the same label-placement variant as the textarea, and no input.
 
 **Label placement is a variant.** A field's label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
 
@@ -59,15 +59,15 @@ The rules below describe each option by role, such as "the label beside the fiel
 
 **Never put required information in the placeholder.** The placeholder disappears when the user types the first character. Use the placeholder only to show the expected format of the answer.
 
-**Put the rules for the answer in the help text.** State what to include, any minimum and any maximum. The user then sees the rules before breaking one.
+**Put the rules for the answer in the help text.** State what to include, any minimum and any maximum. The user then sees the rules before breaking a rule.
 
-**Never enforce a character limit the user cannot see.** If the field has a maximum, state the maximum before the user starts typing. The user must be able to tell how close the text is to the maximum. If the project has a character counter, use the project's counter. If the project has no character counter and the design needs one, ask a person instead of building a counter.
+**Never enforce a character limit the user cannot see.** If the field has a maximum, state the maximum before the user starts typing. The user must be able to tell how close the text is to the maximum. If the project has a character counter, use the project's counter. If the project has no character counter and the design needs a counter, ask a person instead of building a counter.
 
 **Never cut off or delete the text the user typed.** Do not quietly drop characters past a limit. Do not clear the field when validation fails. The text belongs to the user.
 
 **On error, replace the help text with the error message.** Do not add the error message to the help text. Replacing the help text keeps the field's height the same, so the form below the field does not move. The error message must restate the rule. "Invalid input" is not an error message. "Enter at least 20 characters" is an error message.
 
-**Pair the error state with a signal that is not color: an icon, or the error message.** `recursica-skill-system-conventions` requires a signal that is not color.
+**Pair the error state with a signal that is not color: an icon, or the error message.** `recursica-skill-system-conventions` sets this rule.
 
 **Do not add spacing around a textarea to make up for the textarea's height.** The theme sets the spacing between fields and between form sections. A textarea is the tallest field in a form, and the difference in height is expected. `recursica-skill-forms` sets this rule.
 
@@ -91,8 +91,8 @@ The textarea component connects the label to the input and provides the focus ri
 - **Give the textarea a real label.** Never let the placeholder text be the accessible name (the name a screen reader reads out for a control). A screen reader does not announce placeholder text as a label, and the placeholder text disappears when the user types. A field with no label has no accessible name.
 - **State the limit, and what to write in the field, in the help text.** A visible character counter is not connected to the field, and a screen reader may never announce the counter. Put the maximum in words the user hears on reaching the field.
 - **Make a screen reader announce the field as multi-line.** The textarea must be a real multi-line control, not a single-line input styled to look tall. A screen reader then tells the user that line breaks are allowed.
-- **The app owns any icon placed inside the field.** Give a clickable icon an accessible name. Hide a decorative icon from screen readers.
-- **A screen reader announces the error message.** The error message replaces the help text and is the only text a screen reader reads for the field. The error message must state the rule.
+- **The app, not the textarea component, is responsible for any icon placed inside the field.** Give a clickable icon an accessible name. Hide a decorative icon from screen readers.
+- **A screen reader announces the error message.** The error message replaces the help text and is the only text a screen reader reads for the field.
 - **Do not announce every keystroke.** A live count that updates on every character interrupts the screen reader at each key press. If a screen reader must announce progress toward a limit, announce the progress sparingly, and keep the limit in the help text.
 
 ### Keyboard and non-mouse navigation
@@ -109,9 +109,7 @@ The textarea component connects the label to the input and provides the focus ri
 
 ## Styling set by tokens
 
-**Never set or override the textarea's styling.** The theme sets every visual property of the textarea, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the textarea's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
-
-The textarea's height is fixed.
+**Never set or override the textarea's styling.** The theme sets every visual property of the textarea, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the textarea's look. If the design needs a look the theme does not give, report the missing look as a gap in the design system. See `recursica-skill-design-router`.
 
 The textarea component connects the label to the input and handles the keys inside the field. Do not set or override the label connection or the key handling.
 
