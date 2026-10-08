@@ -15,9 +15,9 @@ A file upload has two parts: an upload area and a list of added files. The uploa
 
 ## When to use a file upload
 
-- **Uploading files is the main task of the page, panel, modal, or part of a page that holds the file upload**, such as an attachments section, a document intake, or a submission step. The upload area can take a large part of the page, because uploading is the main task.
-- **The persona adds several files.** The persona needs to see every added file, check the list, and remove a wrong file before saving.
-- **The list of added files must stay in place while the persona keeps working.** The list is not a single value that the next file replaces.
+- **Use a file upload when uploading files is the main task of the area that holds the file upload.** The area is a page, a panel, a modal, or a part of a page. Examples include an attachments section, a document intake, or a submission step. The upload area can take a large part of the page, because uploading is the main task.
+- **Use a file upload when the persona adds several files.** The persona needs to see every added file, check the list, and remove a wrong file before saving.
+- **Use a file upload when the list of added files must stay in place while the persona keeps working.** The list is not a single value that the next file replaces.
 
 ## When not to use a file upload
 
@@ -43,8 +43,14 @@ The rules below describe each option by role, such as "the error state". The nam
 - **States.** The file upload has an error state and a disabled state. In the standard UI kit, the variant is `states`, with the options `error` and `disabled`.
 - **A file upload differs from a file input only in the upload area and the list of added files.** A file input is a single-line field.
 - **The list of added files is part of the file upload component.** Do not build a separate list, chips, or list rows below the upload area.
-- **Upload feedback.** If the project has a progress state, a success state, or an error state for each file, use the project's state. Otherwise, see the open questions.
-- **Style, size, and one file versus several files.** If the project has a style variant, a size variant, or a variant for one file versus several files, use the project's variant. Otherwise, see the open questions.
+- **Upload feedback.** If the project has a progress, success, or error state for each file, use the project's state. Otherwise, see the open questions.
+- **Style, size, and one file versus several files.** If the project has one of the following variants, use the project's variant:
+
+  - a style variant
+  - a size variant
+  - a variant for one file versus several files
+
+  Otherwise, see the open questions.
 
 ## Rules
 
@@ -54,11 +60,11 @@ The rules below describe each option by role, such as "the error state". The nam
 
 **Also limit the file picker to the accepted file types.** The help text tells the persona which files the file upload accepts. The limit in the file picker keeps the persona from selecting other file types. Use both the help text and the limit in the file picker.
 
-**Drag and drop is an extra way to add a file, never the required way.** The upload area may accept a dropped file. The button inside the upload area is the required way to add a file, and the button must work. `recursica-skill-system-conventions` requires a second way to do every drag action, other than dragging.
+**Never make drag and drop the required way to add a file.** The upload area may accept a dropped file as an extra way to add a file. The button inside the upload area is the required way to add a file, and the button must work. `recursica-skill-system-conventions` requires a second way to do every drag action, other than dragging.
 
-**Give every added file a visible file name and a remove control for that one file.** A list of added files that the persona can change is the reason to use a file upload instead of a file input. Without file names and remove controls, the persona cannot check the list or remove a wrong file.
+**Give every added file a visible file name and a remove control for that one file.** An editable list of added files is the reason to use a file upload instead of a file input. Without file names and remove controls, the persona cannot check the list or remove a wrong file.
 
-**Choosing a file does not start an upload.** Choosing a file saves nothing. Choosing a file therefore does not use the form's save mode at all. The upload starts when the persona clearly asks to upload, never as a side effect of choosing a file. When the form saves all fields together, the upload finishes before the form is submitted. This rule is settled. This rule agrees with the rule in `recursica-skill-forms` that a form has one save mode.
+**Do not start an upload when the persona chooses a file.** Choosing a file saves nothing. Choosing a file therefore does not use the form's save mode at all. Start the upload when the persona clearly asks to upload, never as a side effect of choosing a file. When the form saves all fields together, finish the upload before the form is submitted. This rule is settled. This rule agrees with the rule in `recursica-skill-forms` that a form has one save mode.
 
 **Never block the screen while an upload runs.** Never show a spinner in a modal, never lock the page, and never gray out the form. The persona must be able to keep reading the values the persona entered. `recursica-skill-forms` bans overlays that block the screen during submit, for the same reason.
 
@@ -78,28 +84,28 @@ The rules below describe each option by role, such as "the error state". The nam
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
-The application must add every behavior in the two lists below. A drop zone (an area that accepts dropped files) is the most common control in an enterprise application that works only with a mouse.
+The application must add every behavior in the two lists below. A drop zone (an area that accepts dropped files) is the most common mouse-only control in an enterprise application.
 
 ### Screen readers
 
 - **Give the whole file upload a real label.** The text in the upload area, such as "Drag files here", is an instruction, not a name.
 - **The accepted file types and the size limit must be in text connected to the file upload.** Set the text through the file upload component. The text must be available before the persona picks a file, not only in a rejection message afterward.
-- **Every item in the list of added files announces the file name.** In a list of eight files, a persona using a screen reader cannot tell apart list items that announce only "file" or "document".
+- **Every item in the list of added files announces the file name.** A persona using a screen reader cannot tell apart eight list items that announce only "file" or "document".
 - **The accessible name (the name a screen reader reads out for a control) of each remove control must include the file name**, as in "Remove quarterly-report.pdf", not "Remove". Nobody can tell eight identical "Remove" buttons apart.
 - **Every addition, every removal and every rejection must be announced.** Each announcement names the file. A rejection announcement also says why the file was rejected.
 - **The number of files in the list should be available.** The persona should not have to count the files by going through every list item.
-- **Do not describe dropping files as the only way to add files.** Text that says only "drag files here" tells a persona using a keyboard that the file upload is not for personas using a keyboard.
-- **A screen reader must not announce the icon in the upload area, because the icon is decorative.**
+- **Do not describe dropping files as the only way to add files.** Text that says only "drag files here" tells a persona using a keyboard that the file upload excludes the persona.
+- **A screen reader must not announce the icon in the upload area.** The icon is decorative.
 
 ### Keyboard and non-mouse navigation
 
 - **The add control must be a real file input element.** The persona reaches the add control with Tab and presses the add control with Enter or Space. Do not build a `div` with a click handler wrapped around a hidden input.
-- **A drop zone must never be the only way to add a file.** A file upload breaks this rule more often than any other rule in this skill. When the file upload accepts dropped files, the file upload also has a way to add files by keyboard, and the keyboard way does the same job as dropping.
+- **A drop zone must never be the only way to add a file.** A file upload breaks this rule more often than any other rule in this skill. When the file upload accepts dropped files, give the file upload a way to add files by keyboard. The keyboard way does the same job as dropping.
 - **Every remove control is a separate tab stop** (a place the Tab key lands), in visual order down the list, and works with Enter or Space.
-- **After a removal, move focus to a specific element.** Move focus to the remove control of the next file, or to the add control when the list is now empty. When the focused element is removed, focus is lost with no announcement, and the persona using a keyboard no longer knows where focus is on the page.
+- **After a removal, move focus to a specific element.** Move focus to the next file's remove control, or to the add control when the list is now empty. When the focused element is removed, focus is lost with no announcement. The persona using a keyboard then no longer knows where focus is on the page.
 - **At any other time, do not move focus.** When the file picker closes, focus stays on the add control. The persona can then add another file.
 - **The tab order follows the visual order.** The order is the label, the add control, then the list from top to bottom.
-- **Nothing the persona needs may appear only on hover.** This rule covers the remove control, the file name, and the size limit. A remove button that appears only when the pointer is over a list item cannot be reached by keyboard or by touch.
+- **Nothing the persona needs may appear only on hover.** This rule covers the remove control, the file name, and the size limit. A remove button shown only on hover over a list item cannot be reached by keyboard or by touch.
 
 ## Styling set by tokens
 
@@ -109,7 +115,13 @@ The application must add every behavior in the two lists below. A drop zone (an 
 
 - `recursica-skill-label` — the label of the file upload, label placement, and the required or optional marker.
 - `recursica-skill-assistive-element` — the help text that states the accepted file types and the size limit, and the error message.
-- `recursica-skill-forms` — the single-column layout, one label placement per form and the container width that decides the placement, when to validate, the save mode, the ban on overlays that block the screen, and when to ask for confirmation.
+- `recursica-skill-forms` — the form rules a file upload follows:
+  - the single-column layout
+  - one label placement per form, and the container width that decides the placement
+  - when to validate
+  - the save mode
+  - the ban on overlays that block the screen
+  - when to ask for confirmation
 - `recursica-skill-system-conventions` — showing meaning in more than one way, and a way other than dragging for every drag action.
 
 ### Only if used on the same screen
@@ -118,19 +130,19 @@ The application must add every behavior in the two lists below. A drop zone (an 
 
 ## Open questions
 
-- **Upload feedback.** The persona needs feedback on each upload. This open question covers three kinds of feedback for each file: progress, success, and an error. Do not invent a progress bar, a spinner, or a checkmark on each list item. For each of the three kinds of feedback, confirm with the user only when the project has no state for that kind of feedback.
+- **Upload feedback.** The persona needs feedback on each upload. This open question covers three kinds of feedback for each file: progress, success, and an error. Do not invent a progress bar, a spinner, or a checkmark on each list item. Confirm with the user about a kind of feedback only when the project has no state for that kind.
 - **A button style and a drop zone style.** Only the design-system website shows the two styles. The design system has not settled which of the two styles the standard UI kit produces. The design system has also not settled whether both styles are available. Do not rely on either style without confirming with the user. Confirm with the user only when the project has no style variant.
 - **One file versus several files.** Only the design-system website shows a type for one file and a type for several files. Do not rely on either type without confirming with the user. Confirm with the user only when the project has no variant for one file versus several files.
-- **Retrying.** No rule says what happens to a file that failed to upload, or whether the persona can retry the upload in place.
+- **Retrying.** No rule says what happens to a file that failed to upload. No rule says whether the persona can retry the upload in place.
 - **Overall limits.** No rule sets a maximum number of files, or a maximum total size for all files in the list.
 - **Thumbnails or previews.** No rule says whether the list shows a thumbnail or a preview of an image file.
 - **An empty state.** No rule says what the list shows before the persona adds a file.
 
 ## Pre-flight checklist
 
-- [ ] Uploading files is the main task of the page, panel, modal, or part of a page that holds the file upload, which rules out a compact file input.
-- [ ] The file upload has a real, visible label. The label placement (`layouts` in the standard UI kit) matches every other field in the same form, with one placement per form, as `recursica-skill-forms` requires.
-- [ ] The help text states the accepted file types and the size limit before the persona picks a file, and the file picker allows only the accepted file types.
+- [ ] Uploading files is the main task of the area that holds the file upload. The area is a page, panel, modal, or part of a page. The main task rules out a compact file input.
+- [ ] The file upload has a real, visible label. The label placement (`layouts` in the standard UI kit) matches every other field in the same form. Each form has one placement, as `recursica-skill-forms` requires.
+- [ ] The help text states the accepted file types and the size limit before the persona picks a file. The file picker allows only the accepted file types.
 - [ ] The add control is a real file input element, in the tab order, and works with Enter or Space.
 - [ ] No drop zone is the only way to add a file. Drag and drop is an extra, and no text suggests that dragging is the only way to add a file.
 - [ ] Every added file shows the file name and has a remove control for that one file. The file name and the remove control are visible without hover.
@@ -138,11 +150,11 @@ The application must add every behavior in the two lists below. A drop zone (an 
 - [ ] Every addition, removal, and rejection is announced, with the reason for each rejection.
 - [ ] After a removal, focus moves to a specific element, such as the next remove control. At any other time, focus does not move.
 - [ ] A file is removed immediately, with no confirmation dialog.
-- [ ] The list of added files keeps the order the persona added the files in, and the number of files is available.
-- [ ] On error, an error message replaces the help text, restates the broken rule, and has a signal that is not color.
+- [ ] The list of added files keeps the order the persona added the files in. The number of files in the list is available.
+- [ ] On error, an error message replaces the help text and restates the broken rule. The error message has a signal that is not color.
 - [ ] No upload starts as a side effect of choosing a file. An upload starts when the persona clearly asks to upload. When the form saves all fields together, the upload finishes before the form is submitted. The screen is never blocked while an upload runs.
-- [ ] The tab order runs from the label to the add control, then down the list. The focus ring is intact, and the focus ring looks different from the highlight that shows where to drop a file.
+- [ ] The tab order runs from the label to the add control, then down the list. The focus ring is intact. The focus ring looks different from the highlight that shows where to drop a file.
 - [ ] The file upload sits in the form's single column, not inside a card.
-- [ ] Every variant, size, and state is one the Recursica MCP server lists for the project, and no variant or option is invented. The list of added files comes from the file upload component, with no hand-built list, chips, or list rows.
-- [ ] No styling is set or overridden on the file upload, and no container or spacer is added to change the file upload's look.
+- [ ] Every variant, size, and state is one the Recursica MCP server lists for the project. No variant or option is invented. The list of added files comes from the file upload component, with no hand-built list, chips, or list rows.
+- [ ] No styling is set or overridden on the file upload. No container or spacer is added to change the file upload's look.
 - [ ] Open questions were asked about, not decided: progress, success, retrying, previews, and overall limits.
