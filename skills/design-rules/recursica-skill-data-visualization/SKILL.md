@@ -11,7 +11,7 @@ metadata:
 
 This skill holds the house rules for charts in enterprise applications. The rules are opinions, not neutral best practices. Treat each rule as a constraint.
 
-The rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The Recursica theme sets the color palette and the styling of the Recursica components. A chart design still needs five decisions: whether to show a chart at all, which chart to use, what the chart axes show, what gets a label, and what the user can interact with in the chart.
+The rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The Recursica theme sets the color palette and the styling of the Recursica components. A chart design still needs five decisions: whether to show a chart at all, which chart to use, what the chart axes show, what gets a label, and what the persona can interact with in the chart.
 
 ## Charts from a charting library
 
@@ -127,7 +127,7 @@ Encoding is how the data becomes visual marks: position, length, color and patte
 
 **Put a data table next to the chart whenever the page has room for the data table.** A summary table is almost never wasted. Some readers prefer tables. The data table and the chart can sit side by side. The data table is the accessible version of the chart's data.
 
-**At a minimum, the data table must be available**, so a screen reader user can reach the chart's values.
+**At a minimum, the data table must be available**, so a persona using a screen reader can reach the chart's values.
 
 ## Tooltips and interaction
 
@@ -194,7 +194,7 @@ Encoding is how the data becomes visual marks: position, length, color and patte
 - **Connecting a chosen library's theme to Recursica tokens.** The requirement for Recursica tokens to set the chart's theme is clear. The method is not clear, and no adapter exists to connect a charting library to Recursica tokens.
 - **Category colors when the palette runs out.** In the build test, a badge in the standard UI kit (the unchanged UI kit in the official Recursica release) had four colors, each with a meaning. Four colors could not show five or more categories, and the shortage of colors forced a single, uniform fill. The rule against a single channel called for a uniform fill anyway. The build test reached the uniform fill by accident, not by design.
 
-No house rule covers the topics below yet. **Ask the person instead of choosing.** See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule above to fit the topics below.
+No house rule covers the topics below yet. **Ask the user instead of choosing.** See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule above to fit the topics below.
 
 - **Sparklines (tiny charts without axes) and other small charts inside table cells.**
 - **Legend placement**, and whether a chart has a title, and where the title goes.
