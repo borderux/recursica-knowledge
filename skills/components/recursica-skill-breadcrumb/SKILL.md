@@ -15,20 +15,20 @@ A breadcrumb shows where the current page sits in the page hierarchy. A breadcru
 
 - The application's pages are nested, and the current page is more than one level down. `recursica-skill-navigation` calls for breadcrumbs where the pages are nested deep enough to need breadcrumbs.
 - The page must answer "Where am I?" by itself, without the navigation on screen. Headings and breadcrumbs give that answer.
-- The user moves through several levels or categories, and needs to keep track of the current page's place along a deep path.
+- The persona moves through several levels or categories, and needs to keep track of the current page's place along a deep path.
 
 ## When not to use a breadcrumb
 
 | Situation                                                      | Use instead                                                                                                      |
 | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| The application is only one or two levels deep                 | Headings. A clear heading hierarchy shows the user's location. See `recursica-skill-navigation`.                 |
+| The application is only one or two levels deep                 | Headings. A clear heading hierarchy shows the persona's location. See `recursica-skill-navigation`.              |
 | The breadcrumb would be the only way back to the parent page   | Real navigation: a sidebar or a top bar. A breadcrumb is an extra aid for finding the way, not the main way.     |
-| The heading and the navigation already make the location clear | No breadcrumb. A breadcrumb that repeats a location the user can already see is clutter.                         |
-| The user moves through ordered steps in a process              | A stepper. See `recursica-skill-stepper`.                                                                        |
-| The user switches between parts of one whole on a page         | Tabs. Each tab has its own route. See `recursica-skill-tabs`.                                                    |
-| The breadcrumb would record the pages the user has visited     | A trail built from the page hierarchy. A breadcrumb shows how the pages are structured, not a history of visits. |
+| The heading and the navigation already make the location clear | No breadcrumb. A breadcrumb that repeats a location the persona can already see is clutter.                      |
+| The persona moves through ordered steps in a process           | A stepper. See `recursica-skill-stepper`.                                                                        |
+| The persona switches between parts of one whole on a page      | Tabs. Each tab has its own route. See `recursica-skill-tabs`.                                                    |
+| The breadcrumb would record the pages the persona has visited  | A trail built from the page hierarchy. A breadcrumb shows how the pages are structured, not a history of visits. |
 
-**A breadcrumb is never the primary navigation.** If removing the breadcrumb would leave a user unable to get out of a section, the problem is in the navigation, not in the breadcrumb. See `recursica-skill-navigation`.
+**A breadcrumb is never the primary navigation.** If removing the breadcrumb would leave a persona unable to get out of a section, the problem is in the navigation, not in the breadcrumb. See `recursica-skill-navigation`.
 
 ## Variants
 
@@ -42,19 +42,19 @@ Do not set a variant, a state or a content option that the MCP server does not l
 
 ## Rules
 
-**Build the trail from the page hierarchy, not from the user's history.** Two users who reach the same page by different paths see the same trail. A breadcrumb shows how the application's pages are structured. A breadcrumb is not a list of the pages the user has visited.
+**Build the trail from the page hierarchy, not from the persona's history.** Two personas who reach the same page by different paths see the same trail. A breadcrumb shows how the application's pages are structured. A breadcrumb is not a list of the pages the persona has visited.
 
-**The last item in the trail is the current page, and the current page is not a link.** Mark the current page clearly. A link to the current page does nothing when clicked, and leaves the user on the same page.
+**The last item in the trail is the current page, and the current page is not a link.** Mark the current page clearly. A link to the current page does nothing when clicked, and leaves the persona on the same page.
 
 **Every other item in the trail is a real link with a real `href`, to a page that exists.** See `recursica-skill-link`.
 
-**Label each item with the name of the destination page, with no verb.** The label should match the heading on the destination page. When the label and the heading match, the user who arrives on the page sees that the trail led to the right page.
+**Label each item with the name of the destination page, with no verb.** The label should match the heading on the destination page. When the label and the heading match, the persona who arrives on the page sees that the trail led to the right page.
 
-**A breadcrumb is one of three signals of the user's location, never the only signal.** `recursica-skill-navigation` requires the selected item in the navigation, a clear heading hierarchy, and breadcrumbs where the page hierarchy is deep enough to need breadcrumbs. `recursica-skill-navigation` also states that the selected navigation item alone is not enough.
+**A breadcrumb is one of three signals of the persona's location, never the only signal.** `recursica-skill-navigation` requires the selected item in the navigation, a clear heading hierarchy, and breadcrumbs where the page hierarchy is deep enough to need breadcrumbs. `recursica-skill-navigation` also states that the selected navigation item alone is not enough.
 
-**Include the current page and only the levels above the current page.** Leave out sibling pages, filters, search or sort settings, and any modal the user has open.
+**Include the current page and only the levels above the current page.** Leave out sibling pages, filters, search or sort settings, and any modal the persona has open.
 
-**Never point a breadcrumb item at a modal or a panel.** A modal or a panel opens from a control on the page. A modal or a panel is not a page the user navigates to, and adds no entry to the browser history. See `recursica-skill-navigation`.
+**Never point a breadcrumb item at a modal or a panel.** A modal or a panel opens from a control on the page. A modal or a panel is not a page the persona navigates to, and adds no entry to the browser history. See `recursica-skill-navigation`.
 
 **Never build a breadcrumb item that is only an icon, even when the project has an icon-only option.** An icon alone cannot name the destination page. If the project has a content option for an icon with a label, use text or an icon with a label. Otherwise, use text.
 
@@ -68,11 +68,11 @@ A breadcrumb is a short line of links. Assistive technology recognizes a breadcr
 
 ### Screen readers
 
-- **Mark the breadcrumb as a navigation region named "Breadcrumb".** A page with more than one navigation region must name each region. Without a name on each region, a screen reader user cannot tell the regions apart in the landmark list (the list of labeled page regions a screen reader can jump between).
-- **Mark up the trail as a semantic list, ordered or unordered.** All navigation is marked up as a list. The list markup tells a screen reader user how many levels the trail has and where the current page sits among the levels.
+- **Mark the breadcrumb as a navigation region named "Breadcrumb".** A page with more than one navigation region must name each region. Without a name on each region, a persona using a screen reader cannot tell the regions apart in the landmark list (the list of labeled page regions a screen reader can jump between).
+- **Mark up the trail as a semantic list, ordered or unordered.** All navigation is marked up as a list. The list markup tells a persona using a screen reader how many levels the trail has and where the current page sits among the levels.
 - **The current page is the last item, and the current page must be marked as current in code.** Styling the current page to look current is not enough.
 - **Separators are decorative and must be silent.** A slash or a chevron announced between every item turns a four-level trail into eight announcements. If the separator is a text character, hide the separator from assistive technology. If the breadcrumb component supplies the separator, do not add a second separator.
-- **Name each link after the page the link goes to.** The link name must make sense when read with no text around the link. A screen reader user can open a list of the page's links, and the list shows no text around each link.
+- **Name each link after the page the link goes to.** The link name must make sense when read with no text around the link. A persona using a screen reader can open a list of the page's links, and the list shows no text around each link.
 - **Never rely on position alone to mark the current page.** "Last in the list" is not a state a screen reader reports.
 - **Do not add a hidden copy of the trail or the page title for screen readers.** The last breadcrumb item and the page's H1 are expected to name the same page. A third copy makes a screen reader read the page name a third time.
 - **An icon beside a label is decorative and silent.** The label is the link name.
@@ -81,10 +81,10 @@ A breadcrumb is a short line of links. Assistive technology recognizes a breadcr
 
 - **Every breadcrumb link is a tab stop (a place the Tab key lands), in visual order from left to right.** Each breadcrumb link is a tab stop because the link has an `href`. Do not add a `tabindex` to force an order.
 - **The current page cannot receive focus, because the current page is not a link.**
-- **The whole trail must be reachable by keyboard, and the trail must not be the only way back.** A user who cannot reach the trail, or does not use the trail, must still be able to get to the parent page through the navigation.
-- **No part of the trail may appear only on hover, including a breadcrumb item or a collapsed part of the trail.** Keyboard users and touch users cannot reach levels that appear only on hover.
+- **The whole trail must be reachable by keyboard, and the trail must not be the only way back.** A persona who cannot reach the trail, or does not use the trail, must still be able to get to the parent page through the navigation.
+- **No part of the trail may appear only on hover, including a breadcrumb item or a collapsed part of the trail.** A persona using a keyboard and a persona on a touch device cannot reach levels that appear only on hover.
 - **Enter follows a breadcrumb link, and Space does not.** Browsers follow a link on Enter and not on Space. A breadcrumb item that responds to Space is a button, not a link.
-- **Do not intercept the modifier keys.** Ctrl, Cmd, Shift and middle-click must reach the browser. The user then chooses where the parent page opens.
+- **Do not intercept the modifier keys.** Ctrl, Cmd, Shift and middle-click must reach the browser. The persona then chooses where the parent page opens.
 
 ## Styling set by tokens
 
@@ -116,7 +116,7 @@ The breadcrumb's styling includes the separator's look, wherever the separator c
 
 - [ ] The application's pages are nested, and the trail is not the only way back to the parent page.
 - [ ] The selected navigation item and the page's heading hierarchy also show the location.
-- [ ] The trail follows the page hierarchy, not the user's click history, and holds the current page and only the levels above the current page.
+- [ ] The trail follows the page hierarchy, not the persona's click history, and holds the current page and only the levels above the current page.
 - [ ] The last item is the current page. The current page is not a link, and is marked as current in code.
 - [ ] Every other item is a real link with a real `href`, to a page that exists.
 - [ ] Each label names the destination page with no verb, and matches the heading on the destination page.
