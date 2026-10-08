@@ -61,7 +61,7 @@ The rules assume **complex enterprise web applications**, where people do real w
 
 **Business units rarely have competing requirements. Business units have different requirements.** Treat the requirements of different business units as parts that fit together. Resolve the requirements by understanding the workflow and by matching the user's mental model (what a person expects, based on the tools and work the person already knows). Do not resolve the requirements by judging between departments.
 
-**A legal limit, a compliance limit or a hard technical limit overrides the user's mental model.** These limits cannot be worked around, and the user's mental model has to change to fit the limits. Legal, compliance and hard technical limits are the only requirements that outrank the user.
+**A legal limit, a compliance limit or a hard technical limit overrides the user's mental model.** Legal, compliance and hard technical limits cannot be worked around. The user's mental model has to change to fit the limits. Legal, compliance and hard technical limits are the only requirements that outrank the user.
 
 **When stakeholders want every item on the screen, stack-rank the items.** Put every item in strict order, from most important to least important. Find the most important item, and make that item clear. Give that item visual priority: place the item higher up, or make the item larger.
 
@@ -78,7 +78,7 @@ Density depends on the use case, not on a threshold.
 
 ## The three tenets and the finished screen
 
-The three tenets are workflow, physicality and simplicity. Apply the three tenets in order. The third tenet depends on the first two tenets being done.
+The three tenets are workflow, physicality and simplicity. Apply the three tenets in order. Simplicity depends on workflow and physicality being done first.
 
 1. **Workflow.** Understand what the user is trying to do. Build the screen, or the screens, so the user can do the task efficiently.
 2. **Physicality.** Create connections between elements, pages and screens, so that moving through the elements, pages and screens feels connected, not like data scattered at random.
@@ -92,7 +92,7 @@ The three tenets are workflow, physicality and simplicity. Apply the three tenet
 - **No** → remove the piece of information.
 - **Possibly, or maybe** → do not remove the piece of information. Reduce the piece of information instead: shorten the piece of information, lower the piece of information's priority, or move the piece of information down the inverted triangle.
 
-**A decorative icon is the one stated exception.** A decorative icon changes nothing about how the interface is used. A decorative icon may still be kept beside a heading, as a point for the eye to find, on pages whose layouts are otherwise almost the same. `recursica-skill-icon-semantics` owns this exception. Remove every other piece of information that gets a "no."
+**A decorative icon is the one stated exception to the removal test.** A decorative icon changes nothing about how the interface is used. A decorative icon may still be kept beside a heading, as a point for the eye to find, on pages whose layouts are otherwise almost the same. `recursica-skill-icon-semantics` states the rule for this exception. Remove every other piece of information that gets a "no."
 
 ### A finished screen
 
@@ -119,11 +119,11 @@ The three tenets are workflow, physicality and simplicity. Apply the three tenet
 
 **Rank content by how often the reader needs the content, not by how much the content matters when the reader needs the content.** An occasional task can be important and still not get a permanent region on the screen. Importance is a reason to make the task easy to find. A well-placed trigger makes the task easy to find.
 
-**A form that is rarely used MUST NOT be kept permanently on the screen.** Forms for creating a record, importing and configuring are each occasional and each large. Each of these forms takes up space all the time, for a task that almost every visit does not need. Keep the trigger for the form visible. Open the form in a modal or a panel when the user asks for the form. See `recursica-skill-panels-modals`.
+**A form that is rarely used MUST NOT be kept permanently on the screen.** Forms for creating a record, importing and configuring are each occasional and each large. Each of these forms takes up space on every visit, though almost every visit does not need the form's task. Keep the trigger for the form visible. Open the form in a modal or a panel when the user asks for the form. See `recursica-skill-panels-modals`.
 
-**The sign of this mistake is a screen where the frequent task has to share space with a rare task.** For example, a create form sits permanently below the table the reader came for. The create form gives the rare task the same permanent space as the common task.
+**A screen shows this mistake when the frequent task has to share space with a rare task.** For example, a create form sits permanently below the table the reader came for. The create form gives the rare task the same permanent space as the common task.
 
-**Ranking by frequency is not the same as the removal test** in the three tenets above. The removal test asks whether a piece of information is needed at all. Here, the content is needed. The only question is whether the content is needed _now_, on arrival, every time.
+**Ranking by frequency is not the same as the removal test** in the three tenets above. The removal test asks whether a piece of information is needed at all. Ranking by frequency applies to content that is needed. The only question is whether the content is needed _now_, on arrival, every time.
 
 **Readers miss any content placed below a region of changing length.** The bottom of a table with an unknown number of rows is at an unpredictable position. A reader who does not know that content sits below the region has no reason to scroll to the end of a list to look for the content. Put the content above the region, or in a surface (a region that holds content, such as a page, panel, or modal) that opens over the region. This skill and `recursica-skill-tables` share this rule.
 
@@ -131,9 +131,9 @@ The three tenets are workflow, physicality and simplicity. Apply the three tenet
 
 Progressive disclosure shows only the content needed now. The remaining content is available on request.
 
-**Choosing which content appears right away and which content appears later is a real design tool.** Recursica has components for progressive disclosure: accordions, trees, tabs, steppers, and content and controls that a choice in a form reveals. All of these components exist.
+**Choosing which content appears right away and which content appears later is a real design tool.** Recursica has components for progressive disclosure: accordions, trees, tabs, steppers, and content and controls that a choice in a form reveals.
 
-**The right component depends on how cleanly the design comes together and how the information divides up.** Each component has separate rules. See `recursica-skill-accordion`, `recursica-skill-tree`, `recursica-skill-tabs`, `recursica-skill-stepper`, and `recursica-skill-forms`.
+**The right component depends on how cleanly the design comes together and on how the information divides into parts.** Each component has separate rules. See `recursica-skill-accordion`, `recursica-skill-tree`, `recursica-skill-tabs`, `recursica-skill-stepper`, and `recursica-skill-forms`.
 
 ### A long form versus a stepper
 
@@ -161,7 +161,7 @@ Progressive disclosure shows only the content needed now. The remaining content 
 
 **Always tell an empty state apart from an error state, with different messages.**
 
-- **No rows returned.** The data loaded, and there are no rows to show. Say so clearly.
+- **No rows returned.** The data loaded, and there are no rows to show. Say clearly that there are no rows.
 - **The rows could not be returned.** Loading the data failed. Use a different message.
 
 One message for both states leaves the user unable to tell whether to change the filters or to try again later.
@@ -214,12 +214,12 @@ One message for both states leaves the user unable to tell whether to change the
 - [ ] Every element passed the removal test, and every element with an uncertain answer is reduced instead of cut.
 - [ ] Labels and phrasing are as short as possible, simplified as the final step.
 - [ ] Hierarchy is shown by typography, position, white space, and width, never by color alone.
-- [ ] There is no playful or decorative content.
+- [ ] The screen has no playful or decorative content.
 - [ ] No rarely used element holds permanent space on the screen. Occasional forms for creating, importing and configuring open from a visible trigger into a modal or a panel, instead of staying permanently on the page.
 - [ ] No content the reader must find sits below a region of changing length.
 - [ ] Progressive disclosure uses an existing component, and a long form replaces a stepper where the information refers back and forth.
-- [ ] Beyond the header, footer, and navigation rail, there is at most one sticky element.
-- [ ] There is one scrollbar, and no inner scrolling region.
+- [ ] Beyond the header, footer, and navigation rail, the screen has at most one sticky element.
+- [ ] The application has one scrollbar, and no inner scrolling region.
 - [ ] Empty and error states have different messages.
 - [ ] An alignment pass against the other sections is complete, and every breach went to the user to decide instead of being resolved without telling the user.
 - [ ] Open questions were asked about, not decided: judging done versus overloaded by cognitive load, where the inverted triangle stops applying, research on scan patterns, alignment as a separate skill, how empty and error states are laid out, and what makes an image appropriate.
