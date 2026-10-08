@@ -68,7 +68,7 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 **Never make the whole page out of cards.** A layout made entirely of cards is chaotic. A grid of equally weighted cards has no hierarchy, and a dashboard needs a clear order of importance. Build a fixed layout from the design system's layout structures, type hierarchy and white space. Place cards inside the fixed layout. A card is for repeating peer objects (objects of the same kind, such as rows in a list). See `recursica-skill-card`, and the convention to group with space in `recursica-skill-system-conventions`.
 
-**Do not show competing visualizations on the screen at the same time.**
+**Do not show competing visualizations on the screen at the same time.** Confirm with the user which visualizations on the dashboard compete.
 
 ## Structure
 
