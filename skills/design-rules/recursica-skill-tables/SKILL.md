@@ -74,13 +74,13 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 **Avoid horizontal scrolling.** Horizontal scrolling is unusual in an application and awkward with a mouse. Horizontal scrolling also has almost no affordance (a visible cue that a control can be used, such as the underline on a link). A persona may never find out that the table has more columns to the right.
 
-Horizontal scrolling is sometimes unavoidable, for example when a client insists that every field gets a separate column and will not accept splitting the table into more than one view. When horizontal scrolling is unavoidable, say that horizontal scrolling is unavoidable. Treat horizontal scrolling as a last resort, not a pattern.
+Horizontal scrolling is sometimes unavoidable, for example when a client insists that every field gets a separate column and will not accept splitting the table into more than one view. Confirm with the user that horizontal scrolling is unavoidable before using horizontal scrolling. Then state that horizontal scrolling is unavoidable. Treat horizontal scrolling as a last resort, not a pattern.
 
 ## Stacked cell content
 
 **A cell may hold two values, primary text and secondary text, and never more than two.** Two stacked values are the approved way to show more data without adding columns.
 
-**Test two stacked values against the column header.** The column header must explain both values. A "Status" column passes when the primary text is _Open_ and the secondary text is the date the item opened. Both values are facts about status. If the column header cannot explain both values, the cell combines the two values only to save space. The two values then belong in separate columns, or one of the two values does not belong.
+**Test two stacked values against the column header.** The column header must explain both values. A "Status" column passes when the primary text is _Open_ and the secondary text is the date the item opened. Both values are facts about status. If the column header cannot explain both values, the cell combines the two values only to save space. Then put the two values in separate columns, or leave one of the two values out of the table.
 
 **Two stacked values also fail when too many cells hold two values.** If nearly every cell has two lines, the table becomes overwhelming, even when each pair of values passes the column header test.
 
@@ -234,7 +234,7 @@ Row density is how tightly the table content is packed together.
 
 ## Inline editing
 
-**Prefer editing the whole record on a page over editing cells in place.** Inline editing is a form problem. When a lot of data is saved at once, editing cell by cell is the wrong tool.
+**Prefer editing the whole record on a page over editing cells in place.** Editing data in a table cell raises the same problems as editing data in a form. When a lot of data is saved at once, editing one cell at a time is the wrong choice.
 
 **The main problem with inline editing is the affordance.** A cell shows no cue that tells the persona whether clicking the cell will edit, navigate, or select.
 
