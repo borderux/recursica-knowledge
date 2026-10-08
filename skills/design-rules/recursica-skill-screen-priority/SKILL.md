@@ -133,7 +133,7 @@ Progressive disclosure shows only the content needed now. The remaining content 
 
 **Choosing which content appears right away and which content appears later is a real design tool.** Recursica has components for progressive disclosure: accordions, trees, tabs, steppers, and content and controls that a choice in a form reveals.
 
-**The right component depends on how cleanly the design comes together and on how the information divides into parts.** Each component has separate rules. See `recursica-skill-accordion`, `recursica-skill-tree`, `recursica-skill-tabs`, `recursica-skill-stepper`, and `recursica-skill-forms`.
+**The right component depends on how the information divides into parts, and on which component makes the whole design fit together most cleanly.** Confirm the component with the user. Each component has separate rules. See `recursica-skill-accordion`, `recursica-skill-tree`, `recursica-skill-tabs`, `recursica-skill-stepper`, and `recursica-skill-forms`.
 
 ### A long form versus a stepper
 
@@ -168,7 +168,7 @@ One message for both states leaves the persona unable to tell whether to change 
 
 ## Alignment across the application
 
-**Separate sections must call the same concept by the same name, and must work the same way.** Areas that hold completely separate content can still be inconsistent with each other.
+**Separate sections must call the same concept by the same name, and must work the same way.** Two sections with completely separate content can still call one concept by two different names, or work in two different ways.
 
 **Look for two kinds of breach:**
 
