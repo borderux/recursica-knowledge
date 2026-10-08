@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-switch
-description: Rules for the Recursica switch — the tests a value must pass for a switch, commit timing that follows the app's save mode, no switches in table rows or for high-stakes settings, and disabled versus read-only. Use for on/off settings and toggles. Not for one setting that saves at a different time from the other switches — see recursica-skill-checkbox; control choice lives in recursica-skill-selection-controls.
+description: Rules for the Recursica switch — the tests a value must pass for a switch, when a switch saves under the application's save mode, no switches in table rows or for high-stakes settings, and disabled versus read-only. Use for on/off settings and toggles. Not for one setting that saves at a different time from the other switches — see recursica-skill-checkbox. To choose between controls, see recursica-skill-selection-controls.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -14,12 +14,12 @@ A switch turns one item on or off. Each switch has a label, which names what the
 ## When to use a switch
 
 - **The binary-inverse test passes.** The opposite of the value must be binary, known, and unique, as in true and false, yes and no, or on and off. The value "Black" fails the test, because _not black_ could be gray, pink, or any other value.
-- **The label test passes.** The label alone names what the switch controls, with no competing values. A radio group has one label with several values. A switch has one label, and the value of the switch is implied.
-- **The switch saves at the same point as every other switch in the system.** A switch may save immediately, or save with the form. Saving immediately feels slightly more natural. The application makes that choice once, for every switch. If one control has to save at a different point from the system's other switches, use a checkbox for that control.
-- **The user must read the state at a glance**, including on a touch screen. A switch has a larger target and a clearer on and off look, and both are an advantage on a touch screen.
-- **The field is the one lone binary field in a form.** A single checkbox that stands alone looks odd. A switch usually looks better in that spot. A lone binary field is the one case where appearance may decide, because a checkbox and a switch behave the same there.
+- **The label test passes.** The label alone names what the switch controls, with no competing values. A radio group has one label with several values. A switch has one label, and the label implies the value of the switch.
+- **The switch saves at the same point as every other switch in the system.** "Rules" names the two save modes a switch may use. If one control has to save at a different point from the system's other switches, use a checkbox for that control.
+- **The user must read the on or off state at a glance**, including on a touch screen. A switch has a larger area to tap and a clearer on and off look. The larger area and the clearer look both help on a touch screen.
+- **The field is the one lone binary field in a form.** A single checkbox that stands alone looks odd. A switch usually looks better in place of the lone checkbox. A lone binary field is the one case where appearance may decide, because a checkbox and a switch behave the same for a lone binary field.
 
-**A switch appears only inside a form.** Outside a form, use a segmented control for every value. Places outside a form include chrome (the header, navigation and footer around the content), a filter bar, a toolbar, and a header. See `recursica-skill-segmented-control`. `recursica-skill-selection-controls` sets this rule.
+**A switch appears only inside a form.** Outside a form, use a segmented control instead of a switch, for every value. Places outside a form include chrome (the header, navigation and footer around the content), a filter bar, a toolbar, and a header. See `recursica-skill-segmented-control`. `recursica-skill-selection-controls` sets this rule.
 
 ## When not to use a switch
 
@@ -34,7 +34,7 @@ A switch turns one item on or off. Each switch has a label, which names what the
 | The user performs an action rather than setting a state                           | A button. See `recursica-skill-button`.                                                                               |
 | The current user can never edit the value                                         | A read-only field, which shows the label and the value as text, with no input. See `recursica-skill-read-only-field`. |
 
-**A switch has a deliberately narrow use.** Use a checkbox unless the binary-inverse test and the label test both pass. The user must understand a switch instantly. If the user has to work out what "off" means, do not use a switch.
+**The user must understand a switch instantly.** If the user has to work out what "off" means, do not use a switch.
 
 ## Variants
 
@@ -42,32 +42,32 @@ A switch turns one item on or off. Each switch has a label, which names what the
 
 The rules below describe each option by role, such as "the selected state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-- **A switch field has three components:** a switch group, switch items and switches. A switch group holds the switch items and sets the layout. A switch item holds the label of one switch. A switch holds the track (the bar), the thumb (the handle that slides), and the selection state. In the standard UI kit, the three components are `switch-group`, `switch-item`, and `switch`. Set each variant on the component that has the variant, never on another component. Use all three components together. Never place a bare `switch` beside a line of text instead.
-- **Two selection states on the switch.** A switch is selected or unselected. In the standard UI kit, the variant is `selection-states`, with the options `selected` and `unselected`.
-- **A disabled state on each switch item.** The disabled state belongs to the switch item, so one switch can be unavailable while the switches beside the disabled switch stay usable. In the standard UI kit, the variant is `states`, with the option `disabled`. The switch item already shows the disabled look (the style of a control the user cannot use right now).
-- **Disabled combined with a selection state.** Only the design-system website shows `Enabled Selected`, `Disabled Selected`, `Enabled Unselected`, and `Disabled Unselected`. Each one combines the switch item's disabled state, on or off, with the switch's selection state. The four names are not four selection states.
-- **Label placement on the switch group.** Label placement is one decision for the whole field, so the label placement variant belongs to the switch group, not to each switch item.
-- **An icon on the thumb.** The thumb can show an icon. The icon is a second visual sign of the state, together with the thumb's position and the track's color.
-- **Side of the label.** If the project has a variant for which side of the label the switch sits on, use the project's variant. Otherwise, see the open questions.
+- **A switch field has three components:** a switch group, switch items and switches. A switch group holds the switch items and sets the layout of the field. A switch item holds the label of one switch. A switch has a track (the bar), a thumb (the handle that slides), and a selection state. In the standard UI kit, the three components are `switch-group`, `switch-item`, and `switch`. Set each variant on the component that has the variant, never on another component. Use all three components together. Never place a `switch` alone beside a line of text in place of the three components.
+- **A switch is selected or unselected.** In the standard UI kit, the variant is `selection-states`, with the options `selected` and `unselected`.
+- **The disabled state is set on each switch item.** A disabled state on the switch item lets one switch be unavailable while the switches beside the disabled switch stay usable. In the standard UI kit, the variant is `states`, with the option `disabled`. The switch item already shows the disabled look (the style of a control the user cannot use right now).
+- **The four names `Enabled Selected`, `Disabled Selected`, `Enabled Unselected`, and `Disabled Unselected` are not four selection states.** Only the design-system website shows the four names. Each name combines whether the switch item is disabled with the switch's selection state.
+- **Label placement is set on the switch group, not on each switch item.** Label placement is one decision for the whole field.
+- **The thumb can show an icon.** The icon is a second visual sign of the on or off state, together with the thumb's position and the track's color.
+- **If the project has a variant for which side of the label the switch sits on, use the project's variant.** Otherwise, see "Open questions".
 - **Read-only is a separate component.** The read-only field, `read-only-field` in the standard UI kit, shows text instead of a control.
 
 **Label placement is a variant, the same variant every field has.** A group's label sits beside the switches or above the switches. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`.
 
 ## Rules
 
-**Use a switch only when both tests pass.** Run the binary-inverse test and the label test before choosing a switch. If either test fails, use a checkbox.
+**Use a switch only when both tests pass.** A switch has a deliberately narrow use. Run the binary-inverse test and the label test before choosing a switch. If either test fails, use a checkbox.
 
-**The label names what the switch controls, not the state the switch would move to.** Write "Email notifications", not "Turn on email notifications", and not "Off". The switch shows on or off. The label must not repeat the state or contradict the state. The label must not change when the switch turns on or off.
+**The label names what the switch controls, not the state the switch would move to.** Write "Email notifications", not "Turn on email notifications", and not "Off". The switch shows whether the switch is on or off. The label must not repeat the state or contradict the state. The label must not change when the switch turns on or off.
 
 **Do not use a switch where turning the switch on or off by accident could have serious consequences.** Where a setting is destructive, cannot be undone, or is high-risk, use a checkbox with a confirmation, or another safeguard, instead.
 
-**The application's single save mode sets when a switch saves.** `recursica-skill-selection-controls` allows a switch to save immediately, or to save on submit with the other fields in the form. Saving immediately feels slightly more natural for a switch. The application makes the choice once, for the whole system. A switch in a form that saves every field together on submit is not ideal, but is allowed, as long as every switch in the system also waits for Save. The switch then acts like a checkbox and saves with the other fields. An application must never mix the two save modes, with some switches that save the instant the user turns the switch on or off and other switches that wait for Save. A switch that waits for Save is not, by itself, a reason to use a checkbox.
+**The application's single save mode sets when a switch saves.** `recursica-skill-selection-controls` allows two save modes for a switch: save immediately, or save on submit with the other fields in the form. Saving immediately feels slightly more natural for a switch. The application chooses one save mode once, for the whole system. A switch in a form that saves every field together on submit is not ideal, but is allowed, as long as every switch in the system also waits for Save. The switch then acts like a checkbox and saves with the other fields. A switch that waits for Save is not, by itself, a reason to use a checkbox.
 
-**If the system's switches save immediately, the page must show a save status that stays on the page.** Saving each field as the field changes requires the save status. Saving every field together on submit requires the opposite: no save status, and no sign of unsaved changes. See the save-mode table in `recursica-skill-forms`.
+**If the system's switches save immediately, the page must show a save status that stays on the page.** Saving each field as the field changes requires the save status. When every field saves together on submit, the page must show no save status and no sign of unsaved changes. See the save-mode table in `recursica-skill-forms`.
 
-**Never mix instant saving with saving every field together on submit.** Either every change saves when the change happens, or every change saves on submit. The rule covers the whole system, not only one form.
+**Never mix instant saving with saving every field together on submit.** Either every change saves when the change happens, or every change saves on submit. The rule covers the whole system, not only one form. An application must never have some switches that save the instant the user turns the switch on or off and other switches that wait for Save.
 
-**Put the rule or the consequence of the switch in assistive text below the switch.** Build the assistive text with the assistive element, the component that shows help text and error text below a form field. See `recursica-skill-assistive-element`. If turning the switch on or off has an effect the user cannot see on the screen, describe the effect in the assistive text.
+**Put the rule that governs the switch, or the consequence of turning the switch on or off, in assistive text below the switch.** Build the assistive text with the assistive element, the component that shows help text and error text below a form field. See `recursica-skill-assistive-element`. If turning the switch on or off has an effect the user cannot see on the screen, describe the effect in the assistive text.
 
 **A switch may reveal more fields.** The revealed fields appear immediately, directly below the switch.
 
@@ -77,14 +77,14 @@ The rules below describe each option by role, such as "the selected state". The 
 
 **A disabled switch item and a read-only field are different components, not two styles of one component.**
 
-- **Disabled switch item.** A disabled item is still a switch and still clearly a control, but the user cannot use the switch right now. Use a disabled item when the user could make the switch usable by first taking a different action.
-- **Read-only field.** A read-only field is a different component, with no control at all. Use a read-only field when the current user never changes the value here.
+- **Use a disabled switch item when the user could make the switch usable by first taking a different action.** A disabled item is still a switch and still clearly a control, but the user cannot use the switch right now.
+- **Use a read-only field when the current user never changes the value here.** A read-only field has no control at all.
 
 ## Accessibility
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
-The three switch components already connect each switch to the item label, make the on and off states available in code, and show the focus ring. The app must provide every behavior in the two lists below. Apps get a switch wrong more often than most controls, because a switch shows the state only by the thumb's position and the track's color.
+The switch group, switch item and switch components already connect each switch to the item label, make the on and off states available in code, and show the focus ring. The application must provide every behavior in the two lists below. Applications get a switch wrong more often than most controls, because a switch shows the on or off state only by the thumb's position and the track's color.
 
 ### Screen readers
 
@@ -94,25 +94,23 @@ The three switch components already connect each switch to the item label, make 
 - **The thumb icon is decorative, and must be hidden from screen readers.** The icon is only a second visual sign. The state in code says whether the switch is on or off.
 - **Never put the state in the visible label.** A screen reader announces a label that reads "On" as the name. The user hears "On, off", and cannot tell the name from the state.
 - **A group of switches needs a group label, set on the switch group (`switch-group`).** A screen reader announces the group label when focus enters the group.
-- **If turning a switch on or off saves immediately, the app must announce the result** as a status message the user can perceive, not a silent save. A screen reader user does not hear a confirmation that is only visual.
+- **If turning a switch on or off saves immediately, the application must announce the result of the save** as a status message the user can perceive, not a silent save. A screen reader user does not hear a confirmation that is only visual.
 - **Do not announce a change the user did not make.** When another control changes a switch's state, the switch shows the new state when the user reaches the switch, with no announcement.
-- **When a switch reveals more fields, say so before the user turns the switch on or off.** Say so in the label or in the assistive text.
+- **When a switch reveals more fields, say that the switch reveals more fields before the user turns the switch on or off.** Put the statement in the label or in the assistive text.
 
 ### Keyboard and non-mouse navigation
 
-- **Space toggles a switch.** Users expect the Space key. Do not remap Space, do not require a drag, and do not block Space.
+- **Space toggles a switch.** Users expect Space to toggle a switch. Do not remap Space, do not require a drag, and do not block Space.
 - **A switch must never need a drag or a swipe.** The thumb slides only as a visual cue. The user operates the switch with a click or a key press.
-- **The switch already responds to key presses, such as Space, with no extra code.** Do not add custom key handlers, and do not rebuild the toggling.
-- **Each switch is a separate tab stop** (a place the Tab key lands). A group of switches is a group of tab stops. A radio group works the opposite way. Do not add roving focus (where the arrow keys move between items that share one tab stop) or arrow-key movement between switches. Do not repurpose Home and End.
-- **Clicking or tapping the item label toggles the switch.** A real label connected to the switch provides the toggling, and gives the user a bigger target.
+- **The switch component handles key presses, such as Space.** Do not add custom key handlers, and do not rebuild the toggling.
+- **Each switch is a separate tab stop** (a place the Tab key lands). A group of switches is a group of tab stops. A whole radio group, by contrast, is one tab stop. Do not add roving focus (where the arrow keys move between items that share one tab stop) or arrow-key movement between switches. Do not repurpose Home and End.
+- **Clicking or tapping the item label toggles the switch.** A real label connected in code to the switch toggles the switch when clicked, and gives the user a bigger area to click or tap.
 - **Do not move focus for the user.** Focus stays on the switch after the user turns the switch on or off, including when the switch reveals fields below. The user can then turn the switch straight back.
 - **Never show information the user needs only on hover.** Neither the consequence of the switch nor a tooltip explaining what off means may appear only on hover.
 
 ## Styling set by tokens
 
-**Never set or override the switch's styling.** The theme sets every visual property of the switch, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the switch's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
-
-**Do not add margins or spacers between switches or around the switch group.** Do not set or override the thumb's movement, any animation, the hover and active looks, or the focus ring. The switch components already set each one.
+**Never set or override the switch's styling.** The theme sets every visual property of the switch, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the switch's look. Do not add margins or spacers between switches or around the switch group. Do not set or override the thumb's movement, any animation, the hover and active looks, or the focus ring. The switch components already set each of those properties. If the design needs a look the theme does not give, report the missing look as a gap in the design system. See `recursica-skill-design-router`.
 
 ## Related skills
 
@@ -142,11 +140,11 @@ The three switch components already connect each switch to the item label, make 
 - [ ] The label names what the switch controls, never the state, and does not change when the switch turns on or off.
 - [ ] No bare switch controls a change with serious consequences, a destructive change, or a change that cannot be undone.
 - [ ] No switch sits in a table row.
-- [ ] Every switch saves at the same point as every other switch in the system. Switches that save immediately come with a save status that stays on the page.
+- [ ] Every switch saves at the same point as every other switch in the system. When switches save immediately, the page shows a save status that stays on the page.
 - [ ] The system never mixes switches that save immediately with switches that wait for Save.
 - [ ] `switch`, `switch-item`, and `switch-group` are used together, and the switches in each group are stacked vertically.
 - [ ] Label placement matches every other field in the same form, with one placement per form at each breakpoint and no mixing between fields or form sections.
-- [ ] The rule or the consequence of each switch is in assistive text below the switch, built with the assistive element.
+- [ ] The rule that governs each switch, or the consequence of turning each switch on or off, is in assistive text below the switch, built with the assistive element.
 - [ ] The on and off state is available in code, never shown only by the thumb's position or the track's color, and the thumb icon is hidden from screen readers.
 - [ ] A group of switches has a group label, announced when focus enters the group.
 - [ ] Space toggles the switch, no drag or swipe is needed, and key handling comes from the component library.
