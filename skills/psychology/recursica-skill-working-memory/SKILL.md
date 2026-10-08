@@ -38,26 +38,26 @@ No house limit has been set for table columns, toolbar actions, or steps in a fl
 
 **Cowan (2001)** looked at the evidence again. Cowan put the true capacity of working memory closer to four chunks, plus or minus one. Cowan's figure holds once two aids are ruled out: repeating the items to oneself, and help from long-term memory. An honest summary of the research says the real capacity is _lower_ than seven, not higher.
 
-**The house rule uses 7 ± 2 as a limit on scanning and comparing, not as a claim about memory capacity.** Past about nine items, a user can no longer take in a list at a glance, and the list starts to need a careful search. The house rule is designed to prevent that careful search. The number 7 ± 2 is a useful, widely understood convention. The number also falls in the right place for scanning. The number is not evidence that users can hold nine items in mind.
+**The house rule uses 7 ± 2 as a limit on scanning and comparing, not as a claim about memory capacity.** Past about nine items, a persona can no longer take in a list at a glance, and the list starts to need a careful search. The house rule is designed to prevent that careful search. The number 7 ± 2 is a useful, widely understood convention. The number also falls in the right place for scanning. The number is not evidence that personas can hold nine items in mind.
 
 **Chunking is the method for showing more items, not a limit.** Grouping items under headings, or by the object the items belong to, lets a screen hold far more than nine items without going over the limit at any one level of grouping. Prefer reorganizing items into groups over cutting items.
 
 ## Recognition versus recall
 
-**The limit applies to sets where the user must compare options or hold the options in mind.** The limit does not apply to a visible, well-ordered list where the user only has to recognize the answer.
+**The limit applies to sets where the persona must compare options or hold the options in mind.** The limit does not apply to a visible, well-ordered list where the persona only has to recognize the answer.
 
 A long list therefore does not always break the limit. Two dropdowns show the difference:
 
-- **A dropdown of US states is fine at 50 items.** The list of states is fixed, in alphabetical order, and known to everyone. The user recognizes a value the user already has in mind. The user is not weighing up fifty choices.
-- **A dropdown of fifty unrelated values is not fine.** The user has to read and weigh each value. Reading and weighing each value is comparing, and the limit applies.
+- **A dropdown of US states is fine at 50 items.** The list of states is fixed, in alphabetical order, and known to everyone. The persona recognizes a value the persona already has in mind. The persona is not weighing up fifty choices.
+- **A dropdown of fifty unrelated values is not fine.** The persona has to read and weigh each value. Reading and weighing each value is comparing, and the limit applies.
 
-**This skill uses the same predictability test that `recursica-skill-selection-controls` applies to dropdowns.** The predictability test asks whether the user knows what is in the list before opening the dropdown. If yes, a long list costs the user little effort. If no, a long list costs the user a lot of effort.
+**This skill uses the same predictability test that `recursica-skill-selection-controls` applies to dropdowns.** The predictability test asks whether the persona knows what is in the list before opening the dropdown. If yes, a long list costs the persona little effort. If no, a long list costs the persona a lot of effort.
 
-**Do not justify a navigation count limit by claiming users cannot remember the options.** Users recognize items in menus and in navigation, and users do not have to remember navigation options. The navigation limit exists for easy scanning, not because users must memorize navigation items.
+**Do not justify a navigation count limit by claiming personas cannot remember the options.** Personas recognize items in menus and in navigation, and personas do not have to remember navigation options. The navigation limit exists for easy scanning, not because personas must memorize navigation items.
 
 ## Common misapplications
 
-**Do not cite 7 ± 2 to limit a list the user only recognizes items from.** Reference data in alphabetical order, search results, and table rows are not bound by the 7 ± 2 limit.
+**Do not cite 7 ± 2 to limit a list the persona only recognizes items from.** Reference data in alphabetical order, search results, and table rows are not bound by the 7 ± 2 limit.
 
 **Do not treat nine as a target.** Nine is the far end of a range. The range gets smaller as the content gets harder. Most enterprise subject matter is harder than average. Most counts should therefore be below seven.
 
@@ -84,7 +84,7 @@ Check each item below whenever a decision about how many items to show comes up.
 
 - [ ] Each level of a set of items holds 7 ± 2 items, leaning below seven where the content is unfamiliar or hard to tell apart.
 - [ ] Sets that go over the limit were reorganized into groups, or moved to a different control, not hidden behind a "more" control.
-- [ ] The limit was applied only to sets the user compares, not to lists the user recognizes items from, such as reference data in alphabetical order.
-- [ ] Any long list that was left long passes the predictability test: the user knows what is in the list before opening the list.
+- [ ] The limit was applied only to sets the persona compares, not to lists the persona recognizes items from, such as reference data in alphabetical order.
+- [ ] Any long list that was left long passes the predictability test: the persona knows what is in the list before opening the list.
 - [ ] No count limit was invented for a part of the interface the table above does not cover.
 - [ ] Any claim about the research is accurate. The accurate claim is that 7 ± 2 is a convention for easy scanning, not a finding about memory capacity.
