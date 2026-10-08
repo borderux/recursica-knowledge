@@ -16,18 +16,18 @@ A tree shows data as parent items and child items. The persona opens a parent it
 - **The data is a true hierarchy.** The meaning of a node (one item in the tree) depends on the node's parent, such as a folder inside a folder or a category inside a category.
 - **The depth of the hierarchy varies**, and the persona needs to see where an item sits in the hierarchy, not only that the item exists.
 - **The persona is exploring, not comparing.** A tree helps the persona find one item. A table helps the persona compare many items.
-- **Content must show and hide at more than one level.** Showing and hiding content when the persona asks is called disclosure. `recursica-skill-navigation` states that an accordion has one level unless the project has a nesting option. When the content has several levels, use a tree.
+- **Content must show and hide at more than one level.** `recursica-skill-navigation` states that an accordion has one level unless the project has a nesting option. When the content has several levels, use a tree.
 
 ## When not to use a tree
 
-| Situation                                                                                                         | Use instead                                                                                        |
-| ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| The records are peers (objects of the same kind, such as rows in a list), with no parent records or child records | A table. See `recursica-skill-table`.                                                              |
-| Sections of content are stacked at one level                                                                      | An accordion. An accordion shows and hides sections at one level. See `recursica-skill-accordion`. |
-| The persona moves between areas of the application                                                                | Navigation. See `recursica-skill-navigation`.                                                      |
-| The persona chooses one value from a hierarchy in a form                                                          | A dropdown or an autocomplete, unless the hierarchy itself is the point of the choice.             |
-| The hierarchy is only two levels deep                                                                             | A grouped list, or navigation with sub-items.                                                      |
-| The persona moves items between two sets                                                                          | A transfer list. See `recursica-skill-transfer-list`.                                              |
+| Situation                                                                                                         | Use instead                                                                                                                                                    |
+| ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The records are peers (objects of the same kind, such as rows in a list), with no parent records or child records | A table. See `recursica-skill-table`.                                                                                                                          |
+| Sections of content are stacked at one level                                                                      | An accordion. An accordion shows and hides sections at one level. See `recursica-skill-accordion`.                                                             |
+| The persona moves between areas of the application                                                                | Navigation. See `recursica-skill-navigation`.                                                                                                                  |
+| The persona chooses one value from a hierarchy in a form                                                          | A dropdown or an autocomplete, unless the hierarchy itself is the point of the choice. Confirm with the user whether the hierarchy is the point of the choice. |
+| The hierarchy is only two levels deep                                                                             | A grouped list, or navigation with sub-items.                                                                                                                  |
+| The persona moves items between two sets                                                                          | A transfer list. See `recursica-skill-transfer-list`.                                                                                                          |
 
 **Flat data in a tree is a list with indentation that means nothing.** When no item has children, the data is not a tree.
 
@@ -43,7 +43,7 @@ The rules below describe each variant and option by role, such as "the selected 
 
 ## Rules
 
-**Show every node collapsed by default.** Open only the nodes the persona needs for the current task. `recursica-skill-navigation` sets this rule for trees and accordions, for the same reason.
+**Show every node collapsed by default.** Open only the nodes the persona needs for the current task. `recursica-skill-navigation` sets this rule for trees and accordions. Opening every node adds no value, because the parent node labels then have no reason to exist.
 
 **Keep the number of visible nodes at each level within 7 ± 2.** A tree is built for many levels. But every visible node at one level adds to the load on working memory (how much a person can hold in mind at once). See `recursica-skill-working-memory`.
 
