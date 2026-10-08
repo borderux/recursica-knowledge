@@ -102,7 +102,7 @@ A value must pass two tests before the value is pre-selected.
 
 **What matters is how large the inconvenience is for the minority of personas.**
 
-**No rule exists for measuring the inconvenience.** The team said so outright. An agent therefore never settles the question by the agent's own judgment. Where a default has a real cost for a minority of personas, point out the trade-off and let a person decide.
+**No rule exists for measuring the inconvenience.** The team said so outright. An agent therefore never settles the question by the agent's own judgment. Where a default has a real cost for a minority of personas, point out the trade-off and let the user decide.
 
 ## Set by the theme or the component
 
@@ -142,5 +142,5 @@ A value must pass two tests before the value is pre-selected.
 - [ ] The screen keeps the persona's place and the data the persona entered after an error, a refresh, or signing out.
 - [ ] No tab or layout state is stored as a remembered preference in place of a route.
 - [ ] Where no safe default exists, a stakeholder made the choice.
-- [ ] Where a default has a cost for a minority of personas, the trade-off went to a person to decide.
+- [ ] Where a default has a cost for a minority of personas, the trade-off went to the user to decide.
 - [ ] Open questions were asked about, not decided: which remembered states last across sessions, weighing a minority's inconvenience against a majority's benefit, anti-patterns specific to initial state, defaults on regions of the screen that hold content and that this skill does not name, defaults that vary by persona or role or are learned, and the house set of relative date ranges.

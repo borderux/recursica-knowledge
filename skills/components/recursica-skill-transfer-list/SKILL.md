@@ -11,7 +11,7 @@ metadata:
 
 A transfer list shows two lists of options side by side. An item is one option in a list. Move buttons move items from one list to the other. A transfer list is also called a dual listbox, because each list is a listbox (a list the persona picks one or more options from).
 
-> **The transfer list is not built yet.** Both adapters (the Recursica component library for one framework, such as Mantine or Angular Material) ship the transfer list as a stub (an empty placeholder) that shows placeholder content. The adapters apply none of the 31 `transfer-list` tokens (named design values, such as colors or sizes, set by the design system) that the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) exports. The rules in this skill describe the intended transfer list, and the rules match the UI kit. A transfer list built today shows only a placeholder, with no error. Raise the missing transfer list with a person instead of building a workaround.
+> **The transfer list is not built yet.** Both adapters (the Recursica component library for one framework, such as Mantine or Angular Material) ship the transfer list as a stub (an empty placeholder) that shows placeholder content. The adapters apply none of the 31 `transfer-list` tokens (named design values, such as colors or sizes, set by the design system) that the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) exports. The rules in this skill describe the intended transfer list, and the rules match the UI kit. A transfer list built today shows only a placeholder, with no error. Raise the missing transfer list with the user instead of building a workaround.
 
 ## When to use a transfer list
 
@@ -59,7 +59,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 **Keep selecting an item and moving an item as two separate actions.** Selecting, or checking, an item marks the item to be moved. Moving the item puts the item in the other list. Do not move an item at the moment the persona selects the item. Moving many items at once is the reason a transfer list exists.
 
-**Do not build a move-all control.** `recursica-skill-selection-controls` treats a need for select-all as a sign to reconsider the control. The filter is the tool for working with a long list. Keep the filter. A list so long that a move-all control seems necessary is a sign that the screen's structure is wrong. Raise the problem with a person instead of adding a move-all control, as `recursica-skill-system-conventions` says.
+**Do not build a move-all control.** `recursica-skill-selection-controls` treats a need for select-all as a sign to reconsider the control. The filter is the tool for working with a long list. Keep the filter. A list so long that a move-all control seems necessary is a sign that the screen's structure is wrong. Raise the problem with the user instead of adding a move-all control, as `recursica-skill-system-conventions` says.
 
 **Sort both lists the same way, and keep the sort order the same after a move.** An item that appears in an unexpected place after the persona moves the item back looks lost.
 
@@ -133,7 +133,7 @@ A transfer list with arrow buttons often works only with a mouse. The app must a
 - [ ] Every step of a transfer works from the keyboard, with no dragging. Any drag and drop is an extra way to move items.
 - [ ] After a move, focus goes to a chosen place, and the result is announced: the items that moved, and the new count in each list.
 - [ ] The selected state is set in code, not shown by highlight color alone.
-- [ ] No move-all control was built. A list long enough to seem to need a move-all control was raised with a person as a sign that the screen's structure is wrong.
+- [ ] No move-all control was built. A list long enough to seem to need a move-all control was raised with the user as a sign that the screen's structure is wrong.
 - [ ] The transfer list has a real label, with the selection rules in assistive text.
 - [ ] The label placement matches every other field in the same form, with one placement per form, as `recursica-skill-forms` requires.
 - [ ] The error state has a signal that is not color. The label, the help text, and the error text are set through the transfer list component.

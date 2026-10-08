@@ -43,7 +43,7 @@ For each case below, use the component the table names instead of adapting a tex
 The rules below describe each option by role, such as "the label beside the field". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
 - **A textarea has an error state and a disabled state.** In the standard UI kit, the two states are `error` and `disabled`.
-- **The theme sets the number of rows, and the textarea's height stays fixed.** Do not set the number of rows on any one textarea, even to fit a particular answer. Do not set a height. Do not wrap the textarea in a container to stretch the textarea. If the fixed height is wrong for a case, ask a person. See the open questions.
+- **The theme sets the number of rows, and the textarea's height stays fixed.** Do not set the number of rows on any one textarea, even to fit a particular answer. Do not set a height. Do not wrap the textarea in a container to stretch the textarea. If the fixed height is wrong for a case, ask the user. See the open questions.
 - **If the project has a size variant or a width property, use the project's variant or property.**
 - **Show a read-only value with the read-only field, a separate component, not with a read-only state on the textarea.** The read-only field has the same label-placement variant as the textarea, and no input.
 
@@ -61,7 +61,7 @@ The rules below describe each option by role, such as "the label beside the fiel
 
 **Put the rules for the answer in the help text.** State what to include, any minimum and any maximum. The persona then sees the rules before breaking a rule.
 
-**Never enforce a character limit the persona cannot see.** If the field has a maximum, state the maximum before the persona starts typing. The persona must be able to tell how close the text is to the maximum. If the project has a character counter, use the project's counter. If the project has no character counter and the design needs a counter, ask a person instead of building a counter.
+**Never enforce a character limit the persona cannot see.** If the field has a maximum, state the maximum before the persona starts typing. The persona must be able to tell how close the text is to the maximum. If the project has a character counter, use the project's counter. If the project has no character counter and the design needs a counter, ask the user instead of building a counter.
 
 **Never cut off or delete the text the persona typed.** Do not quietly drop characters past a limit. Do not clear the field when validation fails. The text belongs to the persona.
 
@@ -129,7 +129,7 @@ The textarea component connects the label to the input and handles the keys insi
 
 ## Open questions
 
-- **Growing to fit the text.** The UI kit fixes the number of rows. The design-system website shows a vertical-resize variant with the options `auto` and `custom`. The UI kit and the website disagree. A person must decide whether the field grows with the text, and whether the field has a handle the persona can drag. Do not rely on a resize variant without asking. Ask only when the project has no resize variant.
+- **Growing to fit the text.** The UI kit fixes the number of rows. The design-system website shows a vertical-resize variant with the options `auto` and `custom`. The UI kit and the website disagree. The user must decide whether the field grows with the text, and whether the field has a handle the persona can drag. Do not rely on a resize variant without asking. Ask only when the project has no resize variant.
 - **Text longer than the fixed number of rows.** A source outside the UI kit describes a "default fixed height before content truncation". No source says whether the extra text scrolls or is cut off. Cutting off the text a persona typed would be a serious problem. Do not rely on either behavior without asking.
 - **The character counter.** The design-system website shows a character counter. Nobody has settled where a count goes or what happens at the limit. `recursica-skill-assistive-element` has the same open question. Do not rely on a counter without asking. Ask only when the project has no character counter.
 - **A rich text editor.** Ask only when the project has no rich text editor. Do not build a rich text editor out of a textarea.

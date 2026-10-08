@@ -111,7 +111,7 @@ A persona using a screen reader does not know a spinner is on the page unless th
 
 ## Open questions
 
-- **Showing progress.** A person must decide how a wait of known length shows progress. Do not assemble a progress indicator from other parts, and do not name a separate progress component as if the project had a progress component. If progress must be shown, ask instead of building a progress indicator. Ask only when the project has no determinate variant.
+- **Showing progress.** The user must decide how a wait of known length shows progress. Do not assemble a progress indicator from other parts, and do not name a separate progress component as if the project had a progress component. If progress must be shown, ask instead of building a progress indicator. Ask only when the project has no determinate variant.
 - **Whether the loader may have a label.** Without a label slot, the app places the text beside the loader. No rule says where the text goes relative to the spinner. Ask only when the project has no label slot.
 - **Whether the three adapter loader types are approved.** Oval, Bars, and Dots are the three values of a type setting in both adapters. The question covers how each type looks and when to use each type. Only the design-system website shows a progress track. Ask before relying on a type other than the default. Ask only when the project has no type variant.
 - **When a spinner for the whole page is called for, instead of an empty page.** The threshold for showing a loader is about three seconds. The clearest case for a spinner is one region still loading on a page that has otherwise loaded. No rule says where a region ends and the whole page begins.

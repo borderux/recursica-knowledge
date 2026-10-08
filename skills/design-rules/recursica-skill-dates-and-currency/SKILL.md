@@ -16,7 +16,7 @@ The house rules assume **complex enterprise web applications, designed for deskt
 ## Governing principles
 
 1. **Never make the reader decode or calculate.** The format does the work for the reader. A date the reader has to work out, or a timestamp the reader has to subtract from the current time, leaves that work to the reader.
-2. **Consistency matters more than the specific choice.** Use the same alignment, the same precision, and the same format across rows, columns, states, and screens. A rule below may say "right-aligned" where an existing screen is left-aligned throughout. Keep that screen uniform, because uniformity takes priority. Currency is the exception: currency is right-aligned unless a person explicitly says otherwise.
+2. **Consistency matters more than the specific choice.** Use the same alignment, the same precision, and the same format across rows, columns, states, and screens. A rule below may say "right-aligned" where an existing screen is left-aligned throughout. Keep that screen uniform, because uniformity takes priority. Currency is the exception: currency is right-aligned unless the user explicitly says otherwise.
 3. **Say when a value is not in the reader's own terms.** A value may be in a different time zone, in a converted currency, or rounded. The reader must never assume the value shown is the original.
 
 ## Whose locale wins
@@ -82,7 +82,7 @@ Relative time follows principle 1, "Never make the reader decode or calculate." 
 
 ## Currency
 
-**MUST right-align currency.** The only allowed exception is an explicit instruction from a person to align currency differently.
+**MUST right-align currency.** The only allowed exception is an explicit instruction from the user to align currency differently.
 
 **MUST show two decimal places, always**: `0.00`, `0.01`, `0.99`. Fixed precision makes right alignment work, because the decimal point lands in the same place on every row.
 
@@ -102,7 +102,7 @@ Relative time follows principle 1, "Never make the reader decode or calculate." 
 
 **MUST keep the same precision on every row in a column.** When some values in a column have a decimal, every whole number in the column gets a decimal too: `4.5` and `7.0`, never `4.5` and `7`. Mixed precision down a column breaks the alignment that the fixed precision exists to create.
 
-**The only exception is an explicit instruction from a person.**
+**The only exception is an explicit instruction from the user.**
 
 **MUST group digits once a value reaches four figures.** Write `2,046`, never `2046`. Group the digits of every quantity a reader might compare or read out loud, such as counts, totals, and row tallies, not only money. A reader reads an ungrouped four-figure number one digit at a time. Two ungrouped numbers in a column cannot be compared at a glance, and comparing at a glance is the whole reason the column is right-aligned.
 

@@ -147,7 +147,7 @@ Examples:
 
 ## A seventh convention
 
-**Do not add a seventh convention.** When a pattern seems to repeat across pages, panels, modals or other regions but is not listed in this skill, say so, and let a person decide whether the pattern is a convention. A later reader cannot tell a convention that an agent invented from a recorded convention. This skill exists to prevent that confusion.
+**Do not add a seventh convention.** When a pattern seems to repeat across pages, panels, modals or other regions but is not listed in this skill, say so, and let the user decide whether the pattern is a convention. A later reader cannot tell a convention that an agent invented from a recorded convention. This skill exists to prevent that confusion.
 
 ## Out of scope
 
@@ -170,4 +170,4 @@ Examples:
 - [ ] No form, form section, or form control sits inside a card.
 - [ ] Where a topic skill covers a decision, the topic skill's rule is followed, not the general convention in this skill.
 - [ ] No control both navigates and does a second action. One use of each control causes one change of state.
-- [ ] No new convention that repeats across pages, panels, modals or other regions was added without a person's decision.
+- [ ] No new convention that repeats across pages, panels, modals or other regions was added without the user's decision.

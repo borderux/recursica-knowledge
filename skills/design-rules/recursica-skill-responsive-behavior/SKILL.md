@@ -92,7 +92,7 @@ A breakpoint is the screen width at which the layout changes. Recursica has thre
 
 **Keep the same interaction patterns the desktop application uses.** Recursica does not introduce a new pattern only for a small device, an operating system, or the programming language the application is written in.
 
-**The exception is a mobile-first native product.** A mobile-first native product would be a very specific kind of project. Recursica is focused on web applications, not native apps. Unless someone clearly says otherwise, the native-product exception does not apply.
+**The exception is a mobile-first native product.** A mobile-first native product would be a very specific kind of project. Recursica is focused on web applications, not native apps. Unless the user clearly says otherwise, the native-product exception does not apply.
 
 ## Horizontal scrolling
 

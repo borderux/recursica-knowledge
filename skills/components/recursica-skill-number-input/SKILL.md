@@ -57,7 +57,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 **Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields like this one that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
-**Right-align the value.** Right-align every number, currency or not. Every number then lines up the same way. Use a different alignment only when a person explicitly asks for a different alignment.
+**Right-align the value.** Right-align every number, currency or not. Every number then lines up the same way. Use a different alignment only when the user explicitly asks for a different alignment.
 
 **Keep the number of decimal places fixed.** Currency always shows two decimal places, as in `0.00`, `0.01`, and `0.99`. Numbers shown together keep the same number of decimal places: `4.5` and `7.0`, never `4.5` and `7`. With a fixed number of decimal places, the decimal points of right-aligned numbers line up.
 
@@ -129,7 +129,7 @@ The number input component connects the label to the input and sets what each ke
 
 ## Open questions
 
-- **Increase and decrease controls.** Only the design-system website shows increase and decrease controls. A person must decide whether the number input ever gets a stepper, and what the stepper's step would be. Do not rely on a stepper without asking. Ask only when the project has no stepper.
+- **Increase and decrease controls.** Only the design-system website shows increase and decrease controls. The user must decide whether the number input ever gets a stepper, and what the stepper's step would be. Do not rely on a stepper without asking. Ask only when the project has no stepper.
 - **Collapsed and expanded states.** Only the design-system website shows a `collapsed` state and an `expanded` state. The two states seem to describe whether a stepper is visible. Do not build either state, and do not rely on either state without asking. Ask only when the project has no collapsed and expanded states.
 - **A content variant.** Only the design-system website shows a content variant, with the options `unvalued`, `unvalued with placeholder`, and `valued`. No rule says whether a number input should show a placeholder at all. Do not rely on the content variant without asking. Ask only when the project has no content variant.
 - **Formatting while the persona types.** No rule says whether the field formats the value while the persona types, such as adding thousands separators, or only when the field loses focus.

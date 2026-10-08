@@ -43,7 +43,7 @@ A toast is a short message that appears briefly and then disappears. A modal is 
 
 **Check the tense to decide a new case.** Write the message as a sentence and check the tense of the sentence. If the sentence uses "will", "is about to" or "is still", use a banner. If the sentence uses "has", "was" or "did not", use a toast.
 
-**If the project has a banner component, use the banner component.** Otherwise, do not build a banner by hand. Do not use a bordered container as a banner, and do not use a toast in place of a banner. Report the missing banner as a gap in the design system. If the message cannot wait for a banner component, ask the designer which component shows the message in the meantime. See `recursica-skill-design-router`.
+**If the project has a banner component, use the banner component.** Otherwise, do not build a banner by hand. Do not use a bordered container as a banner, and do not use a toast in place of a banner. Report the missing banner as a gap in the design system. If the message cannot wait for a banner component, ask the user which component shows the message in the meantime. See `recursica-skill-design-router`.
 
 ## Inline messages
 
