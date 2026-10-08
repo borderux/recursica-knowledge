@@ -13,8 +13,8 @@ Pagination moves the user between pages of one list of records. Pagination is a 
 
 ## When to use pagination
 
-- **An interior table holds more records than the table's fixed number of rows.** An interior table is a smaller table set inside a container, beside other elements. `recursica-skill-tables` gives an interior table a fixed five or ten rows, and then the table paginates.
-- **The interior table must not scroll**, in either direction. Every table row is visible without scrolling. Pagination reaches the records beyond the visible table rows.
+- **An interior table holds more records than the table's fixed number of table rows.** An interior table is a smaller table set inside a container, beside other elements. `recursica-skill-tables` gives an interior table a fixed five or ten table rows. An interior table with more records than those table rows paginates.
+- **The interior table must not scroll**, in either direction. Every table row is visible without scrolling. Pagination shows the records that do not fit in the visible table rows.
 - **The user needs to come back later to a specific place in an ordered list of records.** Continuous scrolling does not keep the user's place.
 
 ## When not to use pagination
@@ -37,17 +37,17 @@ Pagination moves the user between pages of one list of records. Pagination is a 
 The rules below describe each option by role. The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
 - **Pagination has three groups of controls, and each group has a separate look.** A page number is a control that goes to one page of the table. The current page number marks the page the table shows now. The previous control goes to the page before the current page, and the next control goes to the page after the current page. The three groups are the current page number, the other page numbers, and the previous and next controls. In the standard UI kit, the groups are `active-pages`, `inactive-pages` and `navigation-controls`. Never restyle the page numbers to match the previous and next controls, or the previous and next controls to match the page numbers.
-- **The current-page style is only a look, not a state in the code.** The current-page style makes the current page number look current. The style does not tell a screen reader that the page is current. Mark the current page as current in code as well.
-- **Rows-per-page select and results readout.** A results readout is a line such as "Showing 1–10 of 200". If the project has a rows-per-page select or a results readout, use the project's version. Otherwise, a required rows-per-page select or results readout is not part of the pagination component.
-- **First-page and last-page controls, an ellipsis, and a shortened list of page numbers.** Only the design-system website shows the three, as behaviors. If the project has a first-page or last-page control, an ellipsis, or a way to shorten a long list of page numbers, use the project's version. See the open questions.
+- **The current-page style changes only the look of the current page number, not a state in the code.** The current-page style does not tell a screen reader which page is current. Mark the current page as current in code as well, as "Screen readers" below says.
+- **If the project has a rows-per-page select or a results readout, use the project's version.** A results readout is a line such as "Showing 1–10 of 200". Otherwise, the pagination component does not supply a rows-per-page select or a results readout, even when one is required. Both questions are listed under "Open questions".
+- **If the project has a first-page control, a last-page control, an ellipsis, or a way to shorten a long list of page numbers, use the project's version.** The design-system website is the only source that shows first-page and last-page controls, an ellipsis, and a shortened list of page numbers. The website shows each one as a behavior. The questions are listed under "Open questions".
 
 ## Rules
 
 **Put pagination in the table's footer.** The design system provides the table footer as a fixed element. See `recursica-skill-tables`. Never place pagination as a separate control below the table.
 
-**The table sets the number of table rows on each page, not the pagination.** An interior table shows a fixed number of table rows, usually five or ten. Pagination never decides the number.
+**The table sets the number of table rows on each page, not the pagination.** An interior table shows a fixed number of table rows, usually five or ten. Pagination never decides the number of table rows.
 
-**Never give the user a rows-per-page control, unless the project's UI kit lists a rows-per-page select.** When the project has no rows-per-page select, no rule allows a rows-per-page control.
+**Never give the user a rows-per-page control, unless the project's UI kit lists a rows-per-page select.** No rule allows a rows-per-page control in a project with no rows-per-page select.
 
 **Make each page number a link with a real `href`, because a page is a location.** `recursica-skill-buttons-links` requires a link for every element on the screen that moves the user. `recursica-skill-navigation` requires every location to have a URL the user can reach, with an entry in the browser history. If a page of the table has no URL, the page number cannot have a real `href`. Fix the missing URL as a routing defect. Never build the page number as a button instead.
 
@@ -55,11 +55,13 @@ The rules below describe each option by role. The names in the standard UI kit (
 
 **Show only the page numbers and the previous and next controls, unless the project's UI kit lists more controls.** Never build a first-page control, a last-page control, a jump-to-page control, or an ellipsis that shortens the list of page numbers from other components.
 
-**Never show the previous control or the next control as a disabled link.** `recursica-skill-buttons-links` and `recursica-skill-link` both forbid disabling a link, and pagination is navigation. On the first page, the previous control is missing or cannot be used. On the last page, the next control is missing or cannot be used. Never show a control that looks available but cannot be used. Whether the house prefers a missing control or a control that cannot be used is still open. See the open questions. A disabled control is not one of the two options.
+**Never show the previous control or the next control as a disabled link.** `recursica-skill-buttons-links` and `recursica-skill-link` both forbid disabling a link, and pagination is navigation. On the first page, the previous control is missing or cannot be used. On the last page, the next control is missing or cannot be used. Handle the previous and next controls the same way on the first page, on the last page, and in every table in the application. Never show a control that looks available but cannot be used. A control that is present and looks usable but does nothing without notice is worse than a missing control. A disabled control is not one of the two options.
+
+No rule yet says whether the house prefers a missing control or a control that cannot be used. The question is listed under "Open questions".
 
 **Keep the table's default sort when the page changes.** The default sort belongs to the table. `recursica-skill-tables` sets the default sort on the primary content column. Changing pages never re-sorts the table.
 
-**If a paginated table shows totals, the footer labels must say what each total covers**: the current page, or every record in the table. Users confuse the two totals, and that confusion is why `recursica-skill-tables` prefers infinite scroll for full-size tables.
+**If a paginated table shows totals, the footer labels must say what each total covers**: the current page, or every record in the table. Users confuse a total for the current page with a total for every record. `recursica-skill-tables` prefers infinite scroll for full-size tables for that reason.
 
 **Never shrink the pagination controls or make the controls scroll to fit the footer.** When the list of page numbers is too long for the footer, fix the structure instead. See `recursica-skill-system-conventions`.
 
@@ -74,28 +76,26 @@ Pagination is a row of small controls that all look alike. Without names added i
 - **Make the pagination controls a navigation region with a name**, such as "Pagination", or "Invoice pages" when the page has more than one navigation region. A page with several navigation regions must name each navigation region. Otherwise, a screen reader user cannot tell the navigation regions apart in a landmark list (the list of labeled page regions a screen reader can jump between).
 - **The current page must be announced as current.** On screen, color shows which page is current. Color is a single visual channel (color, shape, position or text, each a separate signal), and `recursica-skill-system-conventions` forbids color as the only way to show meaning. Mark the current page as current in code as well.
 - **Give every control a name that says where the control goes**, such as "Page 3", "Next page" or "Previous page". A bare "3" is not a name. A bare chevron has no name at all.
-- **The previous and next controls are icon-only, so each one needs a tooltip and an accessible name** (the name a screen reader reads out for a control). The tooltip is for sighted mouse users. `recursica-skill-buttons-links` requires both.
-- **After a page change, announce that new table rows arrived**, as in "Page 3 of 20, 10 invoices". Without the announcement, nothing tells the user that the control worked, because the change on the screen is out of the user's sight.
+- **The previous and next controls are icon-only. Each one needs a tooltip and an accessible name** (the name a screen reader reads out for a control). The tooltip is for sighted mouse users. `recursica-skill-buttons-links` requires both.
+- **After a page change, announce that new table rows arrived**, as in "Page 3 of 20, 10 invoices". The change on the screen is out of the user's sight. Without the announcement, nothing tells the user that the control worked.
 - **The announcement must be polite.** The announcement must not play on every click while the user pages quickly.
-- **The user must be able to tell when the previous or next control cannot be used.** When the previous control cannot be used on the first page, the code must say so. A lighter gray alone is not enough.
+- **The user must be able to tell when the previous or next control cannot be used.** When the previous control cannot be used on the first page, the code must say that the previous control cannot be used. A lighter gray alone is not enough.
 - **Mark up the pagination controls as a list**, as `recursica-skill-navigation` requires for all navigation. The list markup lets the user hear how many pages there are.
-- **A truncation indicator, such as an ellipsis between page numbers, is decorative and hidden from screen readers**, if the project ever has one. An ellipsis read aloud between page numbers adds nothing.
+- **If the project ever has a truncation indicator, such as an ellipsis between page numbers, the truncation indicator is decorative and hidden from screen readers.** An ellipsis read aloud between page numbers adds nothing.
 
 ### Keyboard and non-mouse navigation
 
 - **Every control is a tab stop (a place the Tab key lands), in the order the controls appear on screen**: the previous control, then the page numbers in order, then the next control.
 - **After a page change, choose where focus goes.** Keep focus on the control the user activated, if that control still exists, such as the page number the user clicked or the next control. The user can then page again right away. Never move focus to the top of the document. Never let focus fall to the page body because the table rows that held focus were replaced.
 - **If focus was in a table row, move focus into the new table rows**, onto the table or the first table row. Never move focus past the whole page.
-- **The previous and next controls are never disabled links on the first page and the last page.** The previous and next controls are missing or cannot be used. Handle the previous and next controls the same way on the first page, on the last page, and in every table in the application. A control that is present and looks usable but does nothing without notice is worse than a missing control.
+- **The previous and next controls are never disabled links on the first page and the last page.** "Rules" above says how to handle the previous and next controls on the first page and the last page.
 - **Never add custom key handling inside the pagination component.** The component library the code uses handles keyboard behavior inside each component. See `recursica-skill-navigation`.
 
 ## Styling set by tokens
 
-**Never set or override the pagination's styling.** The theme sets every visual property of the pagination, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the pagination's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the pagination's styling.** The theme sets every visual property of the pagination, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the pagination's look. If the design needs a look the theme does not give, report the missing look as a gap in the design system. See `recursica-skill-design-router`.
 
-The theme also sets the focus ring and the area that responds to a click or a tap. Never change either one.
-
-The pagination component also handles keyboard behavior. Never add custom key handling, as the rules above say.
+The theme also sets the focus ring and the area that responds to a click or a tap. Never change the focus ring or the area that responds to a click or a tap.
 
 ## Related skills
 
@@ -111,13 +111,13 @@ The pagination component also handles keyboard behavior. Never add custom key ha
 
 ## Open questions
 
-- **Whether the previous and next controls are missing, or present but unusable, on the first page and the last page.** The rule that the controls are never disabled links is settled, above. Which of the two other options the house wants is not settled. Ask, and apply the answer everywhere.
-- **First-page and last-page controls.** Only the design-system website shows first-page and last-page controls. Do not assume the controls are available. The same goes for an ellipsis, and for shortening a long list of page numbers. Do not build any of the controls without asking. Ask about each control, and about shortening the list, only when the project has no such control.
+- **Whether the previous and next controls are missing, or present but unusable, on the first page and the last page.** The rule that the previous and next controls are never disabled links is settled, under "Rules". No rule says which of the two other options the house wants. Ask, and apply the answer everywhere.
+- **First-page and last-page controls.** Only the design-system website shows first-page and last-page controls. Do not assume the project has first-page and last-page controls. The same goes for an ellipsis, and for shortening a long list of page numbers. Do not build any of the controls without asking. Ask about each control, and about shortening the list, only when the project has no such control.
 - **Whether a page of a table is a real route with a history entry.** The answer decides whether a page number can be a link with an `href` at all. No rule says whether a table's pages are routes.
 - **Rows per page as the user's choice.** No rule says whether the user may change the number of table rows on each page. Ask only when the project has no rows-per-page select.
 - **A results readout**, such as "Showing 1–10 of 200". No rule says whether a results readout is required, or where the readout sits next to the pagination controls. Ask only when the project has no results readout.
 - **Where pagination sits in the footer.** No rule says which side of the footer pagination takes, or how pagination fits beside the totals the footer also shows.
-- **Loading and error states between pages.** `recursica-skill-tables` lists table loading states as having no owner.
+- **Loading and error states between pages.** `recursica-skill-tables` says no skill owns table loading states yet.
 
 ## Pre-flight checklist
 
@@ -125,7 +125,7 @@ The pagination component also handles keyboard behavior. Never add custom key ha
 - [ ] The choice between scrolling and paginating matches every other screen in the application.
 - [ ] The pagination controls sit in the table's fixed footer, and the table does not scroll.
 - [ ] The table sets the number of table rows, five or ten, not the pagination.
-- [ ] The footer has no rows-per-page select and no invented results readout, unless the project's UI kit lists one.
+- [ ] The footer has no rows-per-page select and no invented results readout, unless the project's UI kit lists the control.
 - [ ] No pagination controls are shown when the table has only one page.
 - [ ] Every page number is a link with a real `href`, and the current page stays the same after a reload and after the back button.
 - [ ] The pagination controls are a named navigation region, marked up as a list.
