@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-switch
-description: Rules for the Recursica switch — the tests a value must pass for a switch, when a switch saves under the application's save mode, no switches in table rows or for high-stakes settings, and disabled versus read-only. Use for on/off settings and toggles. Not for one setting that saves at a different time from the other switches — see recursica-skill-checkbox. To choose between controls, see recursica-skill-selection-controls.
+description: Rules for the Recursica switch — the tests a value must pass for a switch, when a switch saves under the application's save mode, avoiding switches in table rows, no switches for high-stakes settings, and disabled versus read-only. Use for on/off settings and toggles. Not for one setting that saves at a different time from the other switches — see recursica-skill-checkbox. To choose between controls, see recursica-skill-selection-controls.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -114,7 +114,7 @@ The switch group, switch item and switch components already connect each switch 
 
 ## Related skills
 
-- `recursica-skill-selection-controls` — the binary-inverse test and the label test, switch versus checkbox, the lone binary field, no switches in table rows, and when a change saves across the whole system.
+- `recursica-skill-selection-controls` — the binary-inverse test and the label test, switch versus checkbox, the lone binary field, avoiding switches in table rows, and when a change saves across the whole system.
 - `recursica-skill-forms` — the save-mode table and the save status each save mode requires, single-column layout, label placement and one placement per form, and progressive disclosure.
 - `recursica-skill-label` — label text that names the object and makes sense out of context, and the required and optional markers.
 - `recursica-skill-assistive-element` — the help text and error text below the switch, and the wording rules for both.
@@ -139,7 +139,7 @@ The switch group, switch item and switch components already connect each switch 
 - [ ] The label test passes. The label alone names what the switch controls, with no competing values.
 - [ ] The label names what the switch controls, never the state, and does not change when the switch turns on or off.
 - [ ] No bare switch controls a change with serious consequences, a destructive change, or a change that cannot be undone.
-- [ ] No switch sits in a table row.
+- [ ] No switch sits in a table row, unless the user approved the switch.
 - [ ] Every switch saves at the same point as every other switch in the system. When switches save immediately, the page shows a save status that stays on the page.
 - [ ] The system never mixes switches that save immediately with switches that wait for Save.
 - [ ] `switch`, `switch-item`, and `switch-group` are used together, and the switches in each group are stacked vertically.

@@ -98,7 +98,7 @@ Work down this list. The first match decides the control.
 - A click on a fully checked header checkbox makes the header checkbox fully unchecked. A click on a fully unchecked header checkbox makes the header checkbox fully checked.
 - The header checkbox becomes indeterminate **only** when the persona selects or deselects individual table rows. A click on the header checkbox never makes the header checkbox indeterminate.
 
-**Avoid switches in table rows.** A switch is bulky and fits awkwardly in a dense table row. A checkbox takes far less space. Prefer a checkbox or a radio button in the table row, and handle the on or off setting another way. A switch in a table row is possible, but avoid a switch there.
+**Avoid switches in table rows.** A switch is bulky and fits awkwardly in a dense table row. A checkbox takes far less space. Prefer a checkbox or a radio button in the table row, and handle the on or off setting another way. If the design still calls for a switch in a table row, ask the user.
 
 ## Layout
 
@@ -188,7 +188,7 @@ Check every item before treating a set of selection controls as done:
 - [ ] A select-all control appears only where the checkbox group is long, and the checkbox group shows an indeterminate state.
 - [ ] Row selection in a table uses a checkbox in the leftmost cell with a header checkbox, on every table that has row checkboxes. A click on an indeterminate header checkbox selects every table row.
 - [ ] Row checkboxes only choose table rows for bulk actions. Selecting one table row triggers no action on that single record. No separate clear or deselect-all control sits beside the header checkbox.
-- [ ] No table row holds a switch.
+- [ ] No table row holds a switch, unless the user approved the switch.
 - [ ] Checkboxes and radio buttons are stacked vertically, never horizontally. Where a horizontal arrangement is needed, a segmented control is used for single select, or selectable chips for multi-select.
 - [ ] The form saves every field together when the persona clicks a submit button. No field in the form saves instantly.
 - [ ] Switches save at the same point everywhere in the system.
