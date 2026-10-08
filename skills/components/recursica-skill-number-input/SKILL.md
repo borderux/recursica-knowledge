@@ -14,12 +14,12 @@ A number input records a quantity that the user types.
 ## When to use a number input
 
 - **The value is a quantity**, such as a count, an amount, a rate, or a measurement. Adding, subtracting, or averaging the value makes sense.
-- **The range of values is open, or too wide to list as options**, and the user knows the number to enter.
+- **The range of values is open-ended, or too wide to list as options**, and the user knows the number to enter.
 - **Precision matters.** The user needs the exact value, not a rough value.
 
 ## When not to use a number input
 
-**Use the component in the right column instead of adapting a number input.**
+**In each situation below, use the component in the right column, instead of changing a number input to fit the situation.**
 
 | Situation                                            | Use instead                                                                                                                       |
 | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
@@ -40,10 +40,10 @@ A number input records a quantity that the user types.
 
 The rules below describe each option by role, such as "the error state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-- **An error state and a disabled state.** The standard UI kit calls the state variant `states`, with the two options `error` and `disabled`.
-- **Size.** If the project has a size variant, use the size variant.
-- **Stepper.** If the project has a stepper, a collapsed or expanded state, or a content variant, use the project's version. Otherwise, do not claim that increase and decrease buttons exist. Do not build increase and decrease buttons from buttons placed beside the field. See the open questions.
-- **Read-only is a separate component, not a state.** A read-only field shows a label and text, with no input. The standard UI kit calls the read-only field `read-only-field`. A read-only field has the same label-placement variant as the number input.
+- **The number input has an error state and a disabled state.** The standard UI kit calls the state variant `states`, with the two options `error` and `disabled`.
+- **If the project has a size variant, use the size variant.**
+- **If the project has a stepper, a collapsed or expanded state, or a content variant, use the project's stepper, state or variant.** Otherwise, do not state that the number input has increase and decrease buttons. Do not build increase and decrease buttons from buttons placed beside the field. See the open questions.
+- **A read-only field is a separate component, not a state of the number input.** A read-only field shows a label and text, with no input. The standard UI kit calls the read-only field `read-only-field`. A read-only field has the same label-placement variant as the number input.
 
 **Label placement is a variant.** A field's label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
 
@@ -57,19 +57,19 @@ The rules below describe each option by role, such as "the error state". The nam
 
 **Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields like this one that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
-**Right-align the value.** Right-align every number, currency or not, so every number lines up the same way. Use a different alignment only when a person explicitly asks for a different alignment.
+**Right-align the value.** Right-align every number, currency or not. Every number then lines up the same way. Use a different alignment only when a person explicitly asks for a different alignment.
 
-**Keep one precision.** Currency always shows two decimal places, as in `0.00`, `0.01`, and `0.99`. Numbers shown together keep the same number of decimal places: `4.5` and `7.0`, never `4.5` and `7`. With fixed precision, the decimal points of right-aligned numbers line up.
+**Keep the number of decimal places fixed.** Currency always shows two decimal places, as in `0.00`, `0.01`, and `0.99`. Numbers shown together keep the same number of decimal places: `4.5` and `7.0`, never `4.5` and `7`. With a fixed number of decimal places, the decimal points of right-aligned numbers line up.
 
 **Read-only values and editable values on the same screen must use the same alignment.** A left-aligned read-only value next to a right-aligned editable value looks like the two values come from two different systems.
 
-**A currency symbol or a unit is an affix (text attached to the start or end of the field).** The currency symbol or unit is not part of the label wording, and is not joined onto the value. The currency symbol goes before the value, and the unit goes after the value. When several amounts sit in one column, put the currency symbol in the column header instead. See `recursica-skill-dates-and-currency`.
+**A currency symbol or a unit is an affix (text attached to the start or end of the field).** The currency symbol or unit is not part of the label wording, and is not joined onto the value. The currency symbol goes before the value, and the unit goes after the value. When several amounts appear in one column, put the currency symbol in the column header instead. See `recursica-skill-dates-and-currency`.
 
 **State the minimum, the maximum, and the step between allowed values in the help text below the field**, before the user can type a value that breaks the limits. Preventing an error is better than catching the error.
 
 **Zero is a value, and an empty field is not zero.** Do not pre-fill `0` to avoid an empty field. A submitted zero states that the value is zero.
 
-**Do not pre-fill a number the user would have to think about, look up, or check.** A default the user cannot check gets submitted without being checked. A default that nobody checked is worse than an empty field.
+**Do not pre-fill a number the user would have to think about, look up, or check.** A pre-filled number that the user cannot check gets submitted without a check. A pre-filled number that nobody checked is worse than an empty field.
 
 **On error, the error message replaces the help text.** Do not add the error message to the help text. Replacing the help text keeps the field the same height, and the form below the field does not move. The error message must restate the rule. "Invalid number" is not an error message. "Enter a whole number between 1 and 99" is an error message.
 
@@ -79,22 +79,22 @@ The rules below describe each option by role, such as "the error state". The nam
 
 **A disabled number input and a read-only field are different components, not two styles of one component.**
 
-- **Disabled number input.** A disabled number input is still a field and still clearly an input, but the user cannot use the field right now. Use a disabled number input when the user could make the field usable by taking a different action first.
-- **Read-only field.** A read-only field is a different component, with a label and text and no input. Use a read-only field when the current user never edits the value here.
+- **A disabled number input is still a field and still clearly an input, but the user cannot use the field right now.** Use a disabled number input when the user could make the field usable by taking a different action first.
+- **A read-only field is a different component, with a label and text and no input.** Use a read-only field when the current user never edits the value here.
 
 ## Accessibility
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
-The number input component connects the label to the input and provides the focus ring. The app provides the unit, the limits, and every control inside the field.
+The number input component connects the label to the input and shows the focus ring. The application provides the unit, the limits, and every control inside the field.
 
 ### Screen readers
 
 - **Give the field a real label.** Never let the placeholder text be the accessible name (the name a screen reader reads out for a control). A screen reader does not announce placeholder text as a label, and the placeholder text disappears when the user types. A field with no label has no accessible name.
-- **State the unit in text**, in the label or in the help text. A screen reader may not announce a visual prefix or suffix with the value. A currency symbol in a column header is not connected to the field at all. A user who hears "1000" with no unit does not know what the number means.
+- **State the unit in text**, in the label or in the help text. A screen reader may not announce an affix with the value. A currency symbol in a column header is not connected to the field at all. A user who hears "1000" with no unit does not know what the number means.
 - **State the expected format, the minimum, and the maximum in the help text.** Describe in words the thousands separators, the decimal places, and whether negative numbers are allowed. A mask (a pattern that guides what the user types) tells a screen reader nothing. Right alignment with two decimal places also tells a screen reader nothing.
-- **Give every icon inside the field that the user can use an accessible name**, such as a clear control, or a stepper button if the project ever adds a stepper. Decorative icons must be silent. A screen reader must never announce a decorative icon as an unlabeled graphic.
-- **When the field limits the range, expose the current value, the minimum, and the maximum to assistive technology.** A screen reader user then knows the maximum.
+- **Give every icon inside the field that the user can use an accessible name**, such as a clear control, or a stepper button if the project ever adds a stepper. Hide every decorative icon from screen readers. A screen reader must never announce a decorative icon as an unlabeled graphic.
+- **When the field limits the range, give assistive technology the current value, the minimum, and the maximum.** A screen reader user then knows the maximum.
 - **A screen reader announces the error message.** The error message replaces the help text, and a screen reader reads only the error message. The error message must state the rule and the limits.
 
 ### Keyboard and non-mouse navigation
@@ -103,16 +103,16 @@ The number input component connects the label to the input and provides the focu
 - **Typing is always enough to enter the value.** Any adjustment control, such as a stepper button, is only a shortcut. A user must be able to enter the value by typing alone, and never has to press a button forty times.
 - **Every control inside the field is a separate tab stop** (a place the Tab key lands). Every control inside the field works with Enter or Space, not only with a mouse click.
 - **Do not move focus for the user.** Do not jump focus ahead when the value reaches a set number of digits. Do not jump focus on any keystroke. A focus jump sends the user's next keystrokes to a different field.
-- **Never let a scroll wheel or a stray arrow key change a saved value** while the field has focus and the user is only reading. Never take over the arrow keys that the user needs to move the caret.
-- **Show every part the user needs to complete the field without hover**, including the limits, the unit, and any adjustment control.
+- **Never let a scroll wheel or an accidental arrow key press change a saved value** while the field has focus and the user is only reading. Never take over the arrow keys that the user needs to move the caret.
+- **Keep every part the user needs to complete the field visible without hover**, including the limits, the unit, and any adjustment control.
 
 ## Styling set by tokens
 
-**Never set or override the number input's styling.** The theme sets every visual property of the number input, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the number input's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the number input's styling.** The theme sets every visual property of the number input, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the number input's look. If the design needs a look the theme does not give, report the missing look as a gap in the design system. See `recursica-skill-design-router`.
 
-The number input component connects the label to the input and sets the keyboard behavior inside the field. Never set or override the label connection or the keyboard behavior.
+The number input component connects the label to the input and sets what each key does inside the field. Never set or override the link between the label and the input, or what each key does.
 
-**Never style an unfocused number input to look disabled.** An editable field must look editable when the user is not using the field.
+**Never style a number input without focus to look disabled.** An editable number input must look editable when the user is not using the number input.
 
 ## Related skills
 
@@ -129,7 +129,7 @@ The number input component connects the label to the input and sets the keyboard
 
 ## Open questions
 
-- **Increase and decrease controls.** Only the design-system website shows increase and decrease controls. Do not build increase and decrease controls from buttons placed beside the field. A person must decide whether the number input ever gets a stepper, and what the stepper's step would be. Do not rely on a stepper without asking. Ask only when the project has no stepper.
+- **Increase and decrease controls.** Only the design-system website shows increase and decrease controls. A person must decide whether the number input ever gets a stepper, and what the stepper's step would be. Do not rely on a stepper without asking. Ask only when the project has no stepper.
 - **Collapsed and expanded states.** Only the design-system website shows a `collapsed` state and an `expanded` state. The two states seem to describe whether a stepper is visible. Do not build either state, and do not rely on either state without asking. Ask only when the project has no collapsed and expanded states.
 - **A content variant.** Only the design-system website shows a content variant, with the options `unvalued`, `unvalued with placeholder`, and `valued`. No rule says whether a number input should show a placeholder at all. Do not rely on the content variant without asking. Ask only when the project has no content variant.
 - **Formatting while the user types.** No rule says whether the field formats the value while the user types, such as adding thousands separators, or only when the field loses focus.
@@ -150,11 +150,11 @@ The number input component connects the label to the input and sets the keyboard
 - [ ] The field is not pre-filled with `0` to avoid an empty field, and holds no default the user would have to understand to check.
 - [ ] Help text and error text are set through the number input component. The error text replaces the help text, and restates the rule and the limits.
 - [ ] The error state has a signal that is not color, and no value is quietly forced into range or rewritten.
-- [ ] Every icon inside the field that the user can use has an accessible name, and every decorative icon is silent.
+- [ ] Every icon inside the field that the user can use has an accessible name, and every decorative icon is hidden from screen readers.
 - [ ] Typing alone can enter any valid value. Any adjustment control is only a shortcut, and is a separate tab stop.
 - [ ] The arrow keys and the scroll wheel do not change the value unexpectedly.
 - [ ] Every variant, size, and state is one the Recursica MCP server lists for the project, and no variant or option is invented. No stepper is built unless the Recursica MCP server lists a stepper for the project.
 - [ ] No styling is set or overridden on the number input, and no container or spacer is added to change the number input's look.
-- [ ] An unfocused number input looks editable.
+- [ ] A number input without focus looks editable.
 - [ ] Numbers that are not editable here use the read-only field, not a disabled number input.
 - [ ] Open questions were asked about, not decided: increase and decrease controls, the `collapsed` and `expanded` states, a content variant, formatting as the user types, negative values, and choosing the unit.
