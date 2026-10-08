@@ -59,7 +59,7 @@ The rules assume **complex enterprise web applications** built on a configured i
 
 **The exemption allows an icon with no label and no tooltip only when the icon comes built into a component.** An icon placed separately on a screen gets no exemption.
 
-**When a component's built-in indicator shows a state, such as open or closed, the state must also be available in code, not shown by the icon alone.** `recursica-skill-system-conventions` and each component skill own this rule.
+**When a component's built-in indicator shows a state, such as open or closed, the state must also be available in code, not shown by the icon alone.** A state that is available in code can be read by software, such as a screen reader. `recursica-skill-system-conventions` and each component skill own this rule.
 
 ## Fixed meanings
 
