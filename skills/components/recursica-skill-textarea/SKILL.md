@@ -29,12 +29,12 @@ For each case below, use the component the table names instead of adapting a tex
 | The persona picks the value from a known list of options | A dropdown, a radio group, or an autocomplete. See `recursica-skill-selection-controls`.                                                           |
 | The persona must apply bold, italics, or lists           | A rich text editor. See the open questions.                                                                                                        |
 | The value is a number, a date, or a time                 | A number input, a date picker, or a time picker. See `recursica-skill-number-input`, `recursica-skill-date-picker`, `recursica-skill-time-picker`. |
-| Nobody can ever edit the value here                      | A read-only field, which shows the label and the text with no input. See `recursica-skill-read-only-field`.                                        |
+| Nobody can ever edit the value where the value is shown  | A read-only field, which shows the label and the text with no input. See `recursica-skill-read-only-field`.                                        |
 | The persona only reads long text and writes nothing      | Body text on the page, not a field.                                                                                                                |
 
 **Do not use a textarea to make a short field look important.** Size the field to the expected answer. A large textarea for a one-line answer leads the persona to write more than the answer needs.
 
-**Do not use a disabled textarea to show text.** Text that nobody can ever edit here does not belong in a form control.
+**Do not use a disabled textarea to show text.** Text that nobody can ever edit where the text is shown does not belong in a form control.
 
 ## Variants
 
@@ -78,7 +78,7 @@ The rules below describe each option by role, such as "the label beside the fiel
 **A disabled textarea and a read-only field are different components, not two styles of one component.**
 
 - **Disabled textarea.** A disabled textarea still looks like an input, but the persona cannot use the textarea right now. Use a disabled textarea when the persona could make the textarea usable by taking another step first.
-- **Read-only field.** A read-only field is a different component that shows a label and text, with no input. Use a read-only field when the persona viewing the value never edits the value here.
+- **Read-only field.** A read-only field is a different component that shows a label and text, with no input. Use a read-only field when the persona viewing the value never edits the value where the value is shown.
 
 ## Accessibility
 
@@ -125,7 +125,7 @@ The textarea component connects the label to the input and handles the keys insi
 ### Only if used on the same screen
 
 - `recursica-skill-text-field` — the field for one line of text, and the rule that sends a value too long for one line to a textarea.
-- `recursica-skill-read-only-field` — the component for text the persona never edits here.
+- `recursica-skill-read-only-field` — the component for text the persona never edits where the text is shown.
 
 ## Open questions
 
