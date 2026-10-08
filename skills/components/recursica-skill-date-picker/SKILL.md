@@ -11,7 +11,7 @@ metadata:
 
 A date picker records one calendar date. The persona types the date or picks the date from a calendar.
 
-> **The date picker is built in the Mantine adapter only.** The UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) has 34 date picker tokens (named design values, such as colors or sizes, set by the design system). The Mantine adapter applies 31 of the 34 tokens. The MUI adapter has an empty style file for the date picker. The MUI adapter applies none of the 34 tokens. On MUI, the date picker shows up unstyled, with no error. The rules in this skill are correct for the UI kit. Confirm which adapter the application uses before relying on how the date picker looks.
+> **The date picker is built in the Mantine adapter only.** The UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) has 34 date picker tokens (named design values, such as colors or sizes, set by the design system). The Mantine adapter applies 31 of the 34 tokens. The MUI adapter has an empty style file for the date picker. The MUI adapter applies none of the 34 tokens. On MUI, the date picker shows up unstyled, with no error. The rules below are correct for the UI kit. Confirm which adapter the application uses before relying on how the date picker looks.
 
 ## When to use a date picker
 
@@ -32,7 +32,14 @@ In each situation below, use the alternative in the right column. Never adapt a 
 | The value can never be edited where the value is shown      | A read-only field, which shows the label and the text with no input. See `recursica-skill-read-only-field`. |
 | A date is only shown, in a table or a detail view           | Formatted text. See `recursica-skill-dates-and-currency`.                                                   |
 
-**Use separate inputs, not a date picker, for a complex or partial date.** A month and year, a quarter, a fiscal period, or a date the persona builds from parts needs separate inputs with the format stated. Never use a calendar for a complex or partial date.
+**Use separate inputs, not a date picker, for a complex or partial date.** Use separate inputs, with the format stated, for each of the following dates:
+
+- a month and year
+- a quarter
+- a fiscal period
+- a date the persona builds from parts
+
+Never use a calendar for a complex or partial date.
 
 **Never use a disabled date picker to show a date.** A date that nobody can ever edit where the date is shown needs no form control.
 
@@ -49,28 +56,32 @@ The rules below describe each option by role, such as "the error state". The nam
 **Never build a focus state or a placeholder state.** Every Recursica field already shows the focus border and the placeholder text.
 
 - **The date picker has an error state and a disabled state.** In the standard UI kit, the variant is `states`, with the options `error` and `disabled`.
-- **If the project has a range variant, use the range variant for a date range.** A range variant takes a start date and an end date. Otherwise, do not build a range control without confirming with the user.
+- **If the project has a range variant, use the range variant for a date range.** A range variant takes a start date and an end date. Otherwise, confirm with the user before building a range control.
 - **Show a read-only date with the read-only field component, never with a read-only state of the date picker.** A value nobody can edit does not belong in a form control. The read-only field has the same label-placement variant as the date picker, and no input.
 
 ## Rules
 
 **Always give the date picker a visible label, set in the date picker component.** Name exactly what the field holds, as in "Start date", not "Date". A persona using a screen reader hears the label alone, without the headings, text, or layout around the field. Use sentence case, with no colon at the end of the label.
 
-**A date and a time together are one control with one label.** A date picker, a time entry, and an AM/PM choice on one line of a form are the only case where inputs share one line. The three inputs hold one value. `recursica-skill-forms` sets this rule.
+**A date and a time together are one control with one label.** A date picker, a time entry, and an AM/PM choice may share one line of a form. No other inputs share one line. The three inputs hold one value. `recursica-skill-forms` sets this rule.
 
 **Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form. Short fields like this one that would fit side by side follow the result too. A form may change placement at a breakpoint. A form never mixes placements at one breakpoint. A form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
 **A date picker without focus shows the readable format: `Jan 7, 2026`.** The readable format is a three-letter month, a day of one or two digits, and a four-digit year. The readable format is the only display format.
 
-**The numeric format, with slashes or hyphens, appears only inside an input that has focus.** The numeric format, as in `01/07/2026`, helps the persona type to match the mask (the pattern in the field that guides what the persona types). When the date picker loses focus, the date picker shows the readable format again. Focus decides the format. Whether the field can be edited never decides the format. See `recursica-skill-dates-and-currency`.
+**The numeric format, with slashes or hyphens, appears only inside an input that has focus.** The numeric format looks like `01/07/2026`. The numeric format helps the persona match the mask (the pattern in the field that guides what the persona types). When the date picker loses focus, the date picker shows the readable format again. Focus decides the format. Whether the field can be edited never decides the format. See `recursica-skill-dates-and-currency`.
 
 **Never show a numeric date outside an input that has focus.** This rule covers a field without focus, a read-only field, and a table. A spelled-out month adds only a few characters, and shows clearly whether the day or the month comes first.
 
-**The date picker must always accept a typed date. Typing is never optional.** Typing is faster for a persona who knows the date, and typing is the only way some personas can enter a date. The calendar speeds up entering a date. The calendar never replaces typing.
+**The date picker must always accept a typed date. Typing is never optional.** Typing is faster for a persona who knows the date. Typing is the only way some personas can enter a date. The calendar speeds up entering a date. The calendar never replaces typing.
 
 **State the expected format in help text.** The mask is visual only, and the mask does not name the format.
 
-**Use the persona's locale and the persona's time zone, never the locale or time zone of the tenant** (the organization whose account the application runs under). State the time zone whenever the date is in a time zone other than the persona's, the persona's time zone cannot be found, or the persona has switched time zones.
+**Use the persona's locale and the persona's time zone, never the locale or time zone of the tenant** (the organization whose account the application runs under). State the time zone in each of the following cases:
+
+- The date is in a time zone other than the persona's.
+- The persona's time zone cannot be found.
+- The persona has switched time zones.
 
 **Pre-fill only today's date, and only when today's date is the date being recorded.** Leave the date picker empty for any date the persona would have to think about or check. A pre-filled date that nobody checked gets submitted without a check.
 
@@ -80,20 +91,20 @@ The rules below describe each option by role, such as "the error state". The nam
 
 **A disabled date picker and a read-only field are different components, not two styles of one component.**
 
-- **A disabled date picker is still a field and still looks like an input, but the persona cannot use the field yet.** Use a disabled date picker when the persona can make the field usable by taking a different action first.
+- **A disabled date picker is still a field and still looks like an input.** The persona cannot use a disabled date picker yet. Use a disabled date picker when the persona can make the field usable by taking a different action first.
 - **A read-only field is a different component, with a label and text and no input.** Use a read-only field when the persona viewing the field never edits the value where the value is shown.
 
 ## Accessibility
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
-The date picker component connects the label to the input and shows the focus ring. The application builds the calendar trigger (the control that opens the calendar) and the calendar popover. Date pickers most often fail at the calendar trigger and at the calendar popover. Follow the rules below for both.
+Follow the rules below for the calendar trigger (the control that opens the calendar) and the calendar popover. The application builds the calendar trigger and the calendar popover. Date pickers most often fail at the calendar trigger and at the calendar popover. The date picker component connects the label to the input and shows the focus ring.
 
 ### Screen readers
 
 - **Set a real label in the date picker component.** Never let placeholder text be the accessible name (the name a screen reader reads out for a control). A screen reader does not announce placeholder text as a label, and placeholder text disappears when the persona types. A field with no label has no accessible name.
 - **Name the calendar icon when the icon is a control**, as in "Choose date". Hide a decorative calendar icon from screen readers. A screen reader announces an unlabeled clickable icon without saying what the icon does.
-- **State the expected format in the help text.** The mask that appears on focus is visual only, and a persona using a screen reader gets nothing from the mask. State `MM/DD/YYYY` in words the persona can act on.
+- **State the expected format in the help text.** The mask that appears on focus is visual only. A persona using a screen reader gets nothing from the mask. State `MM/DD/YYYY` in words the persona can act on.
 - **State the time zone in text** whenever the time zone matters. A persona cannot learn a time zone that the screen only implies.
 - **The error message is the text a screen reader announces.** The error message replaces the help text, and becomes the only text the screen reader reads. The error message must state the rule, including the format.
 
@@ -103,21 +114,27 @@ The date picker component connects the label to the input and shows the focus ri
 - **The calendar trigger is a separate tab stop** (a place the Tab key lands), and works with Enter or Space. Never build a calendar trigger that responds only to clicks.
 - **Typing must always work.** The calendar popover is never the only way to enter a date. A persona using a keyboard must be able to type the date and move on, without ever opening the calendar.
 - **The calendar popover must be fully usable by keyboard.** The calendar popover opens from the keyboard. The arrow keys move between dates, and Enter selects a date. Escape closes the calendar popover and returns focus to the field the calendar popover opened from. Never leave focus in a closed calendar popover, and never drop focus to the top of the page.
-- **Never move focus ahead automatically between the parts of a date**, such as from month to day to year as the persona types. An automatic jump leaves a persona using a keyboard or a screen reader in a part of the date the persona did not choose. An automatic jump also moves focus away from a persona fixing a typo.
+- **Never move focus ahead automatically between the parts of a date.** For example, never move focus from month to day to year as the persona types. An automatic jump moves focus to a part of the date the persona did not choose. A persona using a keyboard or a screen reader is left in that part of the date. An automatic jump also moves focus away from a persona fixing a typo.
 - **Do not move focus for the persona** when a value looks complete. When the calendar popover closes, do not move focus into a different field.
 
 ## Styling set by tokens
 
-**Never set or override the date picker's styling.** The theme sets every visual property of the date picker, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the date picker's look. If the design needs a look the theme does not give, report the missing look as a gap in the design system. See `recursica-skill-design-router`.
+**Never set or override the date picker's styling.** The theme sets every visual property of the date picker, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the date picker's look. If the theme does not give a look the design needs, report a gap in the design system. See `recursica-skill-design-router`.
 
-**Do not set or override the date picker's built-in behavior**: the link between the label and the input, and what each key does inside the field. The date picker component sets both.
+**Do not set or override the date picker's built-in behavior.** The built-in behavior is the link between the label and the input, and what each key does inside the field. The date picker component sets both behaviors.
 
 **Never style a date picker without focus to look disabled.** An editable date picker must look editable when the date picker does not have focus.
 
 ## Related skills
 
 - `recursica-skill-dates-and-currency` — the date format, time zones, relative versus absolute time, date ranges, and the rule that focus decides the date format.
-- `recursica-skill-forms` — label placement and one placement per form, the exception for a date and time on one line, validation timing, pre-fill, save mode, and the rule that no form control goes inside a card.
+- `recursica-skill-forms` — the form rules for fields:
+  - label placement and one placement per form
+  - the exception for a date and time on one line
+  - validation timing
+  - pre-fill
+  - save mode
+  - the rule that no form control goes inside a card
 - `recursica-skill-label` — the label component, the label-placement variant, and marking a field as required or optional.
 - `recursica-skill-assistive-element` — the help text and error text below the field, and why the error text replaces the help text.
 - `recursica-skill-system-conventions` — showing meaning in more than one way.
@@ -138,7 +155,7 @@ The date picker component connects the label to the input and shows the focus ri
 
 - [ ] The value is one calendar date, close enough to today that a calendar helps.
 - [ ] Dates the persona knows by heart, or dates far in the past, use a text field instead.
-- [ ] Every date picker has a visible label, set in the date picker component, that makes sense without the headings, text, or layout around the field. A date and a time on one line are one control with one label.
+- [ ] Every date picker has a visible label, set in the date picker component. The label makes sense without the headings, text, or layout around the field. A date and a time on one line are one control with one label.
 - [ ] Label placement is side by side, unless the container is too narrow.
 - [ ] Label placement matches every other field in the same form. Each form has one placement at each breakpoint, with no mixing between fields or form sections.
 - [ ] Each date picker without focus shows the readable format, as in `Jan 7, 2026`. The numeric format appears only while the date picker has focus, and the readable format returns when focus leaves.
@@ -148,10 +165,10 @@ The date picker component connects the label to the input and shows the focus ri
 - [ ] Help text and error text are set through the date picker component. The error message replaces the help text and restates the rule.
 - [ ] The error state has a signal that is not color.
 - [ ] The calendar trigger has an accessible name, is a separate tab stop, and works with Enter or Space. Decorative icons are hidden from screen readers.
-- [ ] The calendar popover opens from the keyboard, the arrow keys move between dates, and Escape closes the calendar popover and returns focus to the field.
+- [ ] The calendar popover opens from the keyboard, and the arrow keys move between dates. Escape closes the calendar popover and returns focus to the field.
 - [ ] Focus never jumps ahead automatically between the parts of a date, and is never moved for the persona.
 - [ ] Every variant and state is one the Recursica MCP server lists for the project. No size variant, range variant, or inline calendar is added unless the Recursica MCP server lists one for the project.
-- [ ] No styling is set or overridden on the date picker, and no container or spacer is added to change the date picker's look.
+- [ ] No styling is set or overridden on the date picker. No container or spacer is added to change the date picker's look.
 - [ ] Every field without focus looks editable, not disabled.
 - [ ] Dates that are not editable where the dates are shown use the read-only field, not a disabled date picker.
 - [ ] Open questions were asked about, not decided: date ranges, what the calendar popover contains, whether the calendar opens on focus, the earliest and latest dates and unavailable dates, and conventions for weeks, quarters, and fiscal periods.
