@@ -15,18 +15,18 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 ## The three governing principles
 
-1. **A filter must be understandable before anyone uses the filter.** If a user must try a control and watch the table to learn what the control does, the control is not a filter. The user of that control is left to guess. The filter's label and the column the label matches must show what the control filters, with no other help.
+1. **A filter must be understandable before anyone uses the filter.** If a persona must try a control and watch the table to learn what the control does, the control is not a filter. The persona using that control is left to guess. The filter's label and the column the label matches must show what the control filters, with no other help.
 2. **Every filter uses one convention for "not filtering."** A filter bar is the group of filters for one collection. Every filter in a filter bar starts in the same kind of neutral state (the state of a filter that narrows nothing). When some filters say `All` and other filters are empty, the same unfiltered state looks like two different states.
 3. **Filtering saves nothing.** A filter has no save mode, no unsaved-changes state and no confirmation. A filter changes which items are shown, and nothing else. See `recursica-skill-feedback-messaging`.
 
 ## Labels
 
-**A filter's label is a noun that names the field the filter narrows.** A field is one piece of data that each item in the collection holds, such as a name or a status. A filter label is never a verb, and never names the action the user is taking.
+**A filter's label is a noun that names the field the filter narrows.** A field is one piece of data that each item in the collection holds, such as a name or a status. A filter label is never a verb, and never names the action the persona is taking.
 
-- **`Name`, not `Search`.** The user is not filtering a field called "search". The user is filtering by name.
+- **`Name`, not `Search`.** The persona is not filtering a field called "search". The persona is filtering by name.
 - **`Status`, `Department`, `Requested`.** Each label names the field the way the table names the field.
 
-**A filter's label must match the column the filter narrows.** When the filter label and the column header use different names, the user cannot tell which field the filter narrows. When the two names differ, one of the two names is wrong. See `recursica-skill-naming-terminology`.
+**A filter's label must match the column the filter narrows.** When the filter label and the column header use different names, the persona cannot tell which field the filter narrows. When the two names differ, one of the two names is wrong. See `recursica-skill-naming-terminology`.
 
 **A placeholder is not a label, and a placeholder never does the label's job.** When the label is a noun that names the field, the placeholder does a separate task. The placeholder shows what kind of value the filter accepts. A filter labeled `Name` with the placeholder `New hire or requester` is clear. A filter labeled `Search` with the same placeholder is not clear.
 
@@ -36,9 +36,9 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 **Pick one convention for "not filtering," and use that convention across the whole filter bar.**
 
-**NEVER mix conventions.** In a mixed filter bar, some filters show `All`, other filters are empty, and both mean unfiltered. The mix tells the user that the filters behave differently, when the filters behave the same. A mix of conventions is the most common filter-bar defect, and avoiding the mix costs nothing.
+**NEVER mix conventions.** In a mixed filter bar, some filters show `All`, other filters are empty, and both mean unfiltered. The mix tells the persona that the filters behave differently, when the filters behave the same. A mix of conventions is the most common filter-bar defect, and avoiding the mix costs nothing.
 
-**A filter should appear on the screen unapplied.** Filters are additive. The user starts from the full collection and adds filters to narrow the collection down. A user may not notice a filter applied in advance, and may conclude that data is missing. `recursica-skill-defaults` owns this rule.
+**A filter should appear on the screen unapplied.** Filters are additive. The persona starts from the full collection and adds filters to narrow the collection down. A persona may not notice a filter applied in advance, and may conclude that data is missing. `recursica-skill-defaults` owns this rule.
 
 **A default that filters must be visible as a filter.** When the collection loads already narrowed, the filter that narrows the collection must show that the filter is applied. Never show a screen that quietly hides rows while every filter shows the neutral state. Set a default filter. Never filter the data itself.
 
@@ -46,27 +46,27 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 **Prefer one control that offers relative date ranges over a pair of empty date inputs.** A relative date range is a range people work in, such as `This month`, `Last 30 days` or `This quarter`. The relative-range control also offers a Custom option, which opens a modal for entering an exact range.
 
-**Avoid two bare date inputs.** `Start date on/after` and `Start date on/before` are two controls for one range. Both inputs are empty. The screen only implies that the two inputs belong together. The screen never shows the link between the two inputs. The user has to work out that the two inputs form one range.
+**Avoid two bare date inputs.** `Start date on/after` and `Start date on/before` are two controls for one range. Both inputs are empty. The screen only implies that the two inputs belong together. The screen never shows the link between the two inputs. The persona has to work out that the two inputs form one range.
 
 **Name a date field for the event the date records.** A column headed `Start date` that holds the date a request was raised has the wrong name. Every filter built on that column repeats the wrong name. `Requested` or `Request date` names the event. See `recursica-skill-naming-terminology`.
 
 ## Filter controls
 
-**A filter on a field with a known set of categories is multi-select.** People filtering a queue want two statuses at once far more often than one status. A single-select filter forces the user to run the search twice.
+**A filter on a field with a known set of categories is multi-select.** People filtering a queue want two statuses at once far more often than one status. A single-select filter forces the persona to run the search twice.
 
 **If the project has a multi-select control, use the project's multi-select control.** Otherwise, the missing multi-select control is a known gap. Where a filter needs multi-select, raise the gap. Do not build a multi-select control out of other parts. Until the gap is closed, the working substitute is separate single-value filters that all apply at once. See `recursica-skill-selection-controls` and `recursica-skill-dropdown`.
 
-**A lone on/off toggle is usually a filter with a bad name.** Before adding an on/off toggle, name the field the toggle filters. Then check whether the collection shows that field. When the collection has no column for that field, the user cannot check what the toggle did. When the toggle repeats information that every row already shows, the toggle does nothing.
+**A lone on/off toggle is usually a filter with a bad name.** Before adding an on/off toggle, name the field the toggle filters. Then check whether the collection shows that field. When the collection has no column for that field, the persona cannot check what the toggle did. When the toggle repeats information that every row already shows, the toggle does nothing.
 
 **Any toggle in a filter bar is a segmented control, not a switch.** A switch belongs in a form. See `recursica-skill-selection-controls`.
 
 ## Applied filters
 
-**The user must be able to tell the current applied state of every filter without opening each filter.** Show applied filters as chips the user can remove. Removing a chip runs the search again. See `recursica-skill-badges-chips`.
+**The persona must be able to tell the current applied state of every filter without opening each filter.** Show applied filters as chips the persona can remove. Removing a chip runs the search again. See `recursica-skill-badges-chips`.
 
 **A filter and the filter's chip share one state.** Removing the chip clears the filter.
 
-**Announce the result of filtering.** Filtering changes the number of rows without moving the focus. A screen reader user hears nothing about the change unless the application announces the change. Announce the result politely and debounced. Politely means the screen reader finishes speaking first. Debounced means the announcement waits until the user pauses, not on every keystroke. `recursica-skill-autocomplete` sets the same requirement for a typed filter.
+**Announce the result of filtering.** Filtering changes the number of rows without moving the focus. A persona using a screen reader hears nothing about the change unless the application announces the change. Announce the result politely and debounced. Politely means the screen reader finishes speaking first. Debounced means the announcement waits until the persona pauses, not on every keystroke. `recursica-skill-autocomplete` sets the same requirement for a typed filter.
 
 **Filtering down to zero results is not an empty collection.** "No results for these filters" and "nothing here yet" are different states, with different next steps.
 
@@ -84,7 +84,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 - **The look and spacing of the filter controls, and the wrapping of the filter bar.** The components and the layout set the look, the spacing and the wrapping.
 - **The table's columns.** `recursica-skill-tables` sets the columns.
-- **The debounce delay, and the choice to run a typed filter while the user types or on submit.** The debounce delay and the typed-filter behavior follow the rule "One behavioral mode per system" in `recursica-skill-system-conventions`.
+- **The debounce delay, and the choice to run a typed filter while the persona types or on submit.** The debounce delay and the typed-filter behavior follow the rule "One behavioral mode per system" in `recursica-skill-system-conventions`.
 
 ## Out of scope
 
@@ -97,7 +97,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 ## Open questions
 
 - **The house set of relative date ranges.** The relative-range pattern is settled. The specific ranges, and which range is the default, are not settled.
-- **Whether filters are kept** across navigation, sessions or users, and whether a user can save or share a filtered view.
+- **Whether filters are kept** across navigation, sessions or personas, and whether a persona can save or share a filtered view.
 - **Where the applied-filter chips sit** relative to the filter bar and the collection, and whether a clear-all control exists.
 - **How many filters a filter bar may hold** before the filter bar needs a different structure, and whether rarely used filters may be hidden behind a control.
 - **Whether a filter may ever be a text search across several fields at once**, and how to label such a filter when a filter label must name one field.
