@@ -9,7 +9,7 @@ metadata:
 
 # Transfer list
 
-A transfer list shows two lists of options side by side. An item is one option in a list. Move buttons move items from one list to the other. A transfer list is also called a dual listbox, because each list is a listbox (a list the user picks one or more options from).
+A transfer list shows two lists of options side by side. An item is one option in a list. Move buttons move items from one list to the other. A transfer list is also called a dual listbox, because each list is a listbox (a list the persona picks one or more options from).
 
 > **The transfer list is not built yet.** Both adapters (the Recursica component library for one framework, such as Mantine or Angular Material) ship the transfer list as a stub (an empty placeholder) that shows placeholder content. The adapters apply none of the 31 `transfer-list` tokens (named design values, such as colors or sizes, set by the design system) that the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) exports. The rules in this skill describe the intended transfer list, and the rules match the UI kit. A transfer list built today shows only a placeholder, with no error. Raise the missing transfer list with a person instead of building a workaround.
 
