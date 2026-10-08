@@ -35,7 +35,7 @@ Work down this list. The first match decides the control.
 
 **Inside a form, use a checkbox unless the value passes the switch tests below.** A switch has a deliberately narrow use.
 
-**Every switch MUST pass the binary-inverse test.** The opposite of the switch value must be binary, known, and unique: true or false, yes or no, on or off. A pair of qualities fails the test. "Black" is not a valid switch value, because _not black_ is not always white. _Not black_ could be gray, pink or any other color. If the opposite of the value is not the single, obvious other state, the value does not get a switch.
+**Every switch MUST pass the binary-inverse test.** The opposite of the switch value must be binary, known, and unique: true or false, yes or no, on or off. A choice between two qualities, such as black or white, fails the test. "Black" is not a valid switch value, because _not black_ is not always white. _Not black_ could be gray, pink or any other color. If the opposite of the value is not the single, obvious other state, the value does not get a switch.
 
 **The label test separates a switch from a radio group.** A radio group is _one label with several values_. The persona picks which value goes with the radio group label. A switch is _one label whose value is implied_. The switch label alone says which setting the switch controls, and the switch state is true or false. Use a switch only when both the value and the setting the label names are binary.
 
@@ -157,7 +157,7 @@ For example, a checkbox group lists ways to travel. Checking "Car" reveals a gro
 
 ## Resetting
 
-**A reset applies to the whole form, not to one control.** When a form needs a reset, use a button labeled with a verb and an object, such as "Reset form" or "Clear form". The reset button calls the native HTML reset. No single control has a reset of the control's own.
+**A reset applies to the whole form, not to one control.** When a form needs a reset, use a button labeled with a verb and an object, such as "Reset form" or "Clear form". The reset button uses the native HTML reset, which returns every field in the form to the field's default value. No single control has a reset of the control's own.
 
 ## Open questions
 
