@@ -351,6 +351,14 @@ const youApplies = (f) =>
   f.startsWith("agents/") ||
   f.startsWith("buzz-agents/agents/");
 
+/**
+ * The sentence limit covers the same files, except the glossary and the shared passages. Neither
+ * file is served to an agent, both are wrapped at 100 characters, which splits a sentence into
+ * lines the count reads as sentences, and the glossary lists its undefined terms on one line.
+ */
+const lengthApplies = (f) =>
+  youApplies(f) && !/^skills\/meta\/(GLOSSARY|SHARED-PASSAGES)\.md$/.test(f);
+
 /** `<file>: <rule>` → why it is still open. */
 export const KNOWN = JSON.parse(
   fs.readFileSync(
@@ -374,7 +382,7 @@ export function problemsIn(f, text) {
     const w = skillWordsFound(f, text);
     if (w.length) out.push({ rule: "words", detail: w.join(", ") });
   }
-  if (youApplies(f)) {
+  if (lengthApplies(f)) {
     const n = longSentences(text).length;
     if (n)
       out.push({
