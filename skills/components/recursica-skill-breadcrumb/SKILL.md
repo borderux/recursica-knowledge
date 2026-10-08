@@ -58,7 +58,7 @@ Do not set a variant, a state or a content option that the MCP server does not l
 
 **Never build a breadcrumb item that is only an icon, even when the project has an icon-only option.** An icon alone cannot name the destination page. If the project has a content option for an icon with a label, use text or an icon with a label. Otherwise, use text.
 
-**Never put the trail in a scrolling strip to make the trail fit.** A trail too long for the space means the page hierarchy is too deep. Raise the depth of the page hierarchy as a problem, instead of hiding the depth with layout. See `recursica-skill-system-conventions`.
+**Never put the trail in a scrolling strip or shrink the trail to make the trail fit.** A trail too long for the space means the page hierarchy is too deep. Raise the depth of the page hierarchy as a problem, instead of hiding the depth with layout. See `recursica-skill-system-conventions`.
 
 ## Accessibility
 
