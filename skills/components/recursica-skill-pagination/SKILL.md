@@ -24,7 +24,7 @@ Pagination moves the persona between pages of one list of records. Pagination is
 | A full-size table fills the width and height of the table's container | Infinite scroll. `recursica-skill-tables` prefers infinite scroll, because pagination makes the persona click through records page by page |
 | A feed built for continuous browsing                                  | Infinite scroll, chosen once for the whole system                                                                                          |
 | Every record fits on one page                                         | No pagination. Never show pagination controls for a single page                                                                            |
-| One continuous document runs long                                     | A different structure. Never paginate running text                                                                                         |
+| One continuous document runs long                                     | A different structure for the document. Confirm the structure with the user. Never paginate running text                                   |
 | The persona needs to know the current location in the app             | `recursica-skill-breadcrumb`                                                                                                               |
 | A process moves through ordered steps                                 | `recursica-skill-stepper`                                                                                                                  |
 
@@ -63,7 +63,7 @@ No rule yet says whether the house prefers a missing control or a control that c
 
 **If a paginated table shows totals, the footer labels must say what each total covers**: the current page, or every record in the table. Personas confuse a total for the current page with a total for every record. `recursica-skill-tables` prefers infinite scroll for full-size tables for that reason.
 
-**Never shrink the pagination controls or make the controls scroll to fit the footer.** When the list of page numbers is too long for the footer, fix the structure instead. See `recursica-skill-system-conventions`.
+**Never shrink the pagination controls or make the controls scroll to fit the footer.** When the list of page numbers is too long for the footer, fix the structure instead, and confirm the new structure with the user. See `recursica-skill-system-conventions`.
 
 ## Accessibility
 
