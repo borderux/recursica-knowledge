@@ -47,7 +47,7 @@ The rules below describe each option by role, such as "the selected state". The 
 
 ## Rules
 
-**Show chips in groups.** A single chip alone is either a badge or a mistake.
+**Show chips in groups.** Never show a single chip alone. A single chip alone either belongs in a badge or is a mistake in the design.
 
 **Keep a chip group to 7 ± 2 options**, and use fewer options when the choice is complex. See `recursica-skill-working-memory`.
 
