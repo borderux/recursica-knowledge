@@ -17,7 +17,7 @@ The rules assume **complex enterprise web applications** built on a configured i
 
 1. **Inconsistent icons are the clearest sign of a careless screen.** Two mistakes show that a screen was not designed with care, and both mistakes are failures of consistency. The first mistake is mixed icon styles on one screen. The second mistake is one function shown with different icons. No other mistake in the icon-semantics skill shows a careless screen as reliably.
 2. **Fix an unclear meaning with words, never with a better icon.** When an icon does not make a function's meaning obvious, add a text label or a tooltip. Searching for a cleverer symbol is the wrong fix.
-3. **An icon belongs to an action, not to a place.** A pencil means edit wherever editing happens. A user understands an icon only when the icon keeps one meaning everywhere.
+3. **An icon belongs to an action, not to a place.** A pencil means edit wherever editing happens. A persona understands an icon only when the icon keeps one meaning everywhere.
 
 ## One icon set, one style
 
@@ -49,7 +49,7 @@ The rules assume **complex enterprise web applications** built on a configured i
 
 **A tooltip does not replace a label in either case.** The tooltip rule above is the minimum for icon-only controls. A tooltip does not make an unclear icon acceptable.
 
-**A specialized business concept cannot be drawn as an icon.** Common, general actions, such as edit, home and close, are easy to remember, because the same icon means the same action everywhere. An icon invented for a function that exists in only one application is very hard to remember. In enterprise software, business concepts are often too abstract for any symbol to show. Users do not agree on what an icon for such a concept means. For a specialized concept, the text label gives the meaning, not the icon. For the same reason, a navigation rail made only of icons fails worst in business systems. See `recursica-skill-navigation` and `recursica-skill-working-memory`.
+**A specialized business concept cannot be drawn as an icon.** Common, general actions, such as edit, home and close, are easy to remember, because the same icon means the same action everywhere. An icon invented for a function that exists in only one application is very hard to remember. In enterprise software, business concepts are often too abstract for any symbol to show. Personas do not agree on what an icon for such a concept means. For a specialized concept, the text label gives the meaning, not the icon. For the same reason, a navigation rail made only of icons fails worst in business systems. See `recursica-skill-navigation` and `recursica-skill-working-memory`.
 
 ## Icons inside established components
 
@@ -84,11 +84,11 @@ The rules assume **complex enterprise web applications** built on a configured i
 
 ## Decorative icons
 
-**Apply the removal test to an icon: take the icon away.** If removing the icon changes nothing about how the user would use the interface, the icon is decorative.
+**Apply the removal test to an icon: take the icon away.** If removing the icon changes nothing about how the persona would use the interface, the icon is decorative.
 
 **Decorative does not mean forbidden.** An icon may exist only to break up a page visually and give the eye a point to settle on.
 
-**The allowed decorative icon is a landmarking icon: an icon beside an H2 or H3 heading that helps the user recognize where the user is.** A landmarking icon helps most where several pages share an almost identical layout, and little else shows the user is in the right place. A landmarking icon makes each page look different and shows the user where the user is.
+**The allowed decorative icon is a landmarking icon: an icon beside an H2 or H3 heading that helps the persona recognize where the persona is.** A landmarking icon helps most where several pages share an almost identical layout, and little else shows the persona is in the right place. A landmarking icon makes each page look different and shows the persona where the persona is.
 
 **A landmarking icon is a stated exception to the general removal test** in `recursica-skill-screen-priority`. The removal test removes every element on the screen that the workflow does not need. A landmarking icon may stay even though the icon fails the removal test. No other part of the removal test changes.
 
@@ -98,9 +98,9 @@ The rules assume **complex enterprise web applications** built on a configured i
 
 **A status may be shown as an icon instead of as text.** A status is often shown with both an icon and a color.
 
-**Status icons help users scan.** On a dense screen made almost entirely of text, reading even more text to find a status is hard work. An icon is faster to spot than text, most of all when the icon and the text appear together.
+**Status icons help personas scan.** On a dense screen made almost entirely of text, reading even more text to find a status is hard work. An icon is faster to spot than text, most of all when the icon and the text appear together.
 
-**Color never shows the status by itself.** `recursica-skill-system-conventions` requires that any meaning the user must receive survives when one channel (color, shape, position or text, each a separate signal) fails. An icon and a color are two channels, but both channels are still only visual. A status icon therefore needs an accessible name (the name a screen reader reads out for a control) that says what the status is.
+**Color never shows the status by itself.** `recursica-skill-system-conventions` requires that any meaning the persona must receive survives when one channel (color, shape, position or text, each a separate signal) fails. An icon and a color are two channels, but both channels are still only visual. A status icon therefore needs an accessible name (the name a screen reader reads out for a control) that says what the status is.
 
 **In a table cell, a status icon comes with text.** See "Icons in tables" below.
 
@@ -108,7 +108,7 @@ The rules assume **complex enterprise web applications** built on a configured i
 
 **An icon alone in a table cell is only ever an icon-only button.**
 
-**NEVER place an icon the user cannot interact with alone in a table cell with no other information.** The team said the rule has no limit and no exception. A status column pairs each status icon with the status text.
+**NEVER place an icon the persona cannot interact with alone in a table cell with no other information.** The team said the rule has no limit and no exception. A status column pairs each status icon with the status text.
 
 `recursica-skill-tables` owns how icons line up in a table cell, and which columns a table has at all.
 
@@ -148,5 +148,5 @@ The rules assume **complex enterprise web applications** built on a configured i
 - [ ] No function is shown with two different icons in any part of the application.
 - [ ] Assistive technology announces no decorative icon, and every icon kept after failing the removal test is a landmarking icon beside a heading.
 - [ ] Every status shown as an icon has an accessible name, and the status never depends on color alone.
-- [ ] No icon the user cannot interact with sits alone in a table cell.
+- [ ] No icon the persona cannot interact with sits alone in a table cell.
 - [ ] Open questions were asked about, not decided: icons for meanings outside the fixed-meanings table, more than one icon set, the external-link icon, status icons outside a table, how many decorative icons, and icon size.
