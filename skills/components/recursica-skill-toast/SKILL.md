@@ -33,7 +33,7 @@ A toast reports what just happened, without interrupting the user's work.
 
 **A toast reports an event that just happened.** The house rule decides by the tense of the message. `recursica-skill-feedback-messaging` chooses between the channels (the forms a message takes: a toast, a banner or a modal) by tense. A finished event is a toast. A condition that has not happened yet is a banner. Check the tense of the message before choosing a channel.
 
-**A toast is the wrong place for a message the user must not miss.** A toast appears away from where the user is looking, and the toast closes by itself. A critical alert that needs action right away is not a toast. No component in this system holds a critical alert yet. The tense rule calls for a banner component. The banner is planned, but the banner is not in the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has). Do not use a toast for a critical alert. Do not build a custom alert that stays on screen. Do not point the reader to a component that does not exist. Raise the critical alert with the user, as the open questions describe.
+**A toast is the wrong place for a message the user must not miss.** A toast appears away from where the user is looking, and the toast closes by itself. A critical alert that needs action right away is not a toast. The tense rule calls for a banner. **If the project has a banner component, use the banner component.** Otherwise, do not build a banner or another alert that stays on screen by hand, and do not point the reader to a component the project does not have. Report the missing banner as a gap in the design system. Do not use a toast for a critical alert. Ask the user about the critical alert, as the open questions describe.
 
 ## Variants
 
@@ -129,7 +129,7 @@ The theme also sets which icon each toast style shows. Never change the icon a s
 - **How a toast's action button is styled.** The rules above allow one action. Ask before styling the action button, and only when the project has no style for a toast's action button.
 - **Where toasts appear on screen.** Only the design-system website shows toasts toward the bottom of the screen. Ask before relying on that placement, and only when the project has no position variant.
 - **Stacking.** No rule says how many toasts may be visible at once, in what order the toasts appear, or what happens when more toasts arrive than the limit allows.
-- **Warnings and critical alerts.** No component yet holds an alert that stays on screen for a serious problem, or an alert the user must not miss. The planned banner component may cover part of this need. Until the banner ships, do not build a substitute, and do not name a component as though the component were available. Ask about a warning style only when the project has no warning style.
+- **Warnings and critical alerts.** No rule says which component holds an alert that stays on screen for a serious problem, or an alert the user must not miss. If the project has a banner component, the banner may cover part of this need. Otherwise, do not build a substitute, and do not name a component the project does not have. Ask about a warning style only when the project has no warning style.
 - **Toasts for a background job.** Nobody has decided whether a toast is ever right for a background job that finishes long after the action that started the job.
 
 ## Pre-flight checklist

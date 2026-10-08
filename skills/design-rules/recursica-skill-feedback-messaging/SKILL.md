@@ -43,7 +43,7 @@ A toast is a short message that appears briefly and then disappears. A modal is 
 
 **Check the tense to decide a new case.** Write the message as a sentence and check the tense of the sentence. If the sentence uses "will", "is about to" or "is still", use a banner. If the sentence uses "has", "was" or "did not", use a toast.
 
-**A banner component is planned, but the banner component is not in the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) yet.** The channel rule above is settled. The banner component is still coming. **Until the banner component ships, do not improvise a banner.** Do not use a bordered container as a banner, and do not use a toast in place of a banner. Raise the need for a banner component. If the message cannot wait for the banner component, ask the designer which component shows the message in the meantime. See `recursica-skill-design-router`.
+**If the project has a banner component, use the banner component.** Otherwise, do not build a banner by hand. Do not use a bordered container as a banner, and do not use a toast in place of a banner. Report the missing banner as a gap in the design system. If the message cannot wait for a banner component, ask the designer which component shows the message in the meantime. See `recursica-skill-design-router`.
 
 ## Inline messages
 
@@ -119,7 +119,7 @@ The channel table above has no row for a partial success, because a partial succ
 
 ## Open questions
 
-- **Banners have no component.** The tense rule above says when a banner is right. No rule says what a banner looks like, where a banner sits on the page, whether the user can dismiss a banner, or whether several banners may appear at once.
+- **What a banner looks like and where a banner sits.** The tense rule above says when a banner is right. No rule says what a banner looks like, where a banner sits on the page, whether the user can dismiss a banner, or whether several banners may appear at once.
 - **Live regions.** Nobody has decided which updates are announced to assistive technology, or how urgently. The team openly put the question off when recording the typography rules, and this skill does not answer the question. Individual component skills state the announcement requirements for each skill's component, but no policy covers the whole application.
 - **The notification channel.** The team named a notification channel as the place for global or system-wide conditions, "if one exists". Whether a notification channel exists, and what belongs in a notification channel instead of a banner, is not settled.
 - **Whether a toast may have a title as well as a message**, and whether an error toast lasts a different length of time from a success toast.
@@ -129,7 +129,7 @@ The channel table above has no row for a partial success, because a partial succ
 
 - [ ] No confirmation appears for a normal successful action.
 - [ ] Each message's channel matches the message's tense: a message about an event or condition that has not happened yet is a banner, and a message about an event or condition that just happened is a toast.
-- [ ] No hand-built banner is used while the banner component is pending. The need for a banner component is raised as a gap.
+- [ ] No banner is built by hand. Where the project has no banner component, the missing banner is reported as a gap.
 - [ ] No brief success or status message is inserted into the page layout.
 - [ ] Every field-level save shows the persistent save status that the forms rules require, or a toast, not an inline message that appears and disappears.
 - [ ] No partial-success message and no list of results for each item appear. Every partial result is raised as a backend problem with how the backend groups changes.

@@ -246,7 +246,7 @@ The signs below are listed in order, starting with the strongest sign.
 
 - **The layout grid.** This skill names an eight- or twelve-column grid as the grid pages should line up to, and leaves the grid to a separate skill. Until a layout-grid skill exists, lining up elements is a stated requirement with no stated grid.
 - **Empty states where data exists but is zero.** This skill does not cover the case.
-- **Where global notifications or alerts sit in the page structure.** This skill does not cover the case, and the banner component does not exist yet. See `recursica-skill-feedback-messaging`.
+- **Where global notifications or alerts sit in the page structure.** This skill does not cover the case. See `recursica-skill-feedback-messaging`.
 - **What may go in a footer** beyond a copyright notice, and when a footer stays fixed in place instead of appearing when the user scrolls down.
 - **Whether KPI tiles sit on layers or in cards.**
 
