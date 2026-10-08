@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-live-regions
-description: House rules for announcing changes to screen readers — what gets announced, what components announce for themselves, what the application must cover, toasts, and changes the user did not cause. Use when content changes without a page reload, a result count updates, or content or a control appears or disappears. Not for a component's own name or keyboard behavior.
+description: House rules for announcing changes to screen readers — what gets announced, what components announce for themselves, what the application must cover, toasts, and changes the persona did not cause. Use when content changes without a page reload, a result count updates, or content or a control appears or disappears. Not for a component's own name or keyboard behavior.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -27,12 +27,12 @@ Apply the following test to every change that happens without a page reload.
 | ------------------------------------------------------------------------------------------- | --------- |
 | **New content appeared** on the screen                                                      | **Yes**   |
 | **New interactive elements appeared** on the screen                                         | **Yes**   |
-| A change the user did not cause                                                             | **Yes**   |
+| A change the persona did not cause                                                          | **Yes**   |
 | **Only the appearance changed**, such as a visual state, a style or a decorative transition | **No**    |
 
 **The table above is the whole test.** If either of the first two table rows is true, announce the change. If the change is to neither content text nor an interactive element, do not announce the change.
 
-**A change the user did not start is still announced.** The user did not start the change, so the user has no reason to expect the change. The user needs to know that a significant change happened.
+**A change the persona did not start is still announced.** The persona did not start the change, so the persona has no reason to expect the change. The persona needs to know that a significant change happened.
 
 ## Announcements by components and by the application
 
@@ -48,13 +48,13 @@ Apply the following test to every change that happens without a page reload.
 
 An announcement has one of two priority levels. An assertive announcement interrupts the text the screen reader is reading now. A polite announcement waits until the screen reader reaches a natural pause.
 
-**Keep the assertive priority for errors and for conditions the user must know about right away.** Make every other announcement polite. The polite priority is the default for the great majority of changes. This rule follows established practice.
+**Keep the assertive priority for errors and for conditions the persona must know about right away.** Make every other announcement polite. The polite priority is the default for the great majority of changes. This rule follows established practice.
 
-**An assertive announcement interrupts by design.** A confirmation, a result count or a status update announced as assertive interrupts the text the user was reading or typing. The interruption is the reason the assertive priority is kept for rare cases. Use the assertive priority only for a message that cannot wait.
+**An assertive announcement interrupts by design.** A confirmation, a result count or a status update announced as assertive interrupts the text the persona was reading or typing. The interruption is the reason the assertive priority is kept for rare cases. Use the assertive priority only for a message that cannot wait.
 
 ## Specific cases
 
-**Announce a filtered result count when the filter takes effect**, not on every keystroke while the user types. See `recursica-skill-filters`.
+**Announce a filtered result count when the filter takes effect**, not on every keystroke while the persona types. See `recursica-skill-filters`.
 
 **Announce content that arrives after the page has loaded.** Content that arrives late is new content.
 
@@ -101,7 +101,7 @@ An announcement has one of two priority levels. An assertive announcement interr
 ## Pre-flight checklist
 
 - [ ] Every change that happens without a page reload is announced if the change adds new content or new interactive elements. A change that is only visual is not announced.
-- [ ] Every change the user did not cause is announced.
+- [ ] Every change the persona did not cause is announced.
 - [ ] Each component announces for itself, and each component is given the information the component needs to announce.
 - [ ] The application announces every change that no component announces, including a flow that succeeds silently and goes to another page.
 - [ ] Every toast makes the toast's own announcement, and no other announcement repeats the toast text.
