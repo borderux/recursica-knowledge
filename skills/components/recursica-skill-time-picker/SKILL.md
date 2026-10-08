@@ -23,7 +23,7 @@ In each situation below, use the alternative in the right column. Never adapt a 
 
 | Situation                                                    | Use instead                                                                                                 |
 | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| The user picks a rough or relative time                      | No time at all. "In 30 minutes" is an offset. Record the number and the unit.                               |
+| The user picks a rough or relative time                      | A number and a unit, not a time. "In 30 minutes" is an offset. Record the number and the unit.              |
 | The user chooses from a few set times                        | A segmented control or a dropdown. See `recursica-skill-selection-controls`.                                |
 | The value is a length of time, not a time of day             | A number input for each unit. Write `3h 20m`, never `3:20`. See `recursica-skill-dates-and-currency`.       |
 | The value is a calendar date                                 | A date picker. See `recursica-skill-date-picker`.                                                           |
@@ -46,11 +46,11 @@ The rules below describe each option by role, such as "the error state". The nam
 
 **Never build a focus state or a placeholder state.** Every Recursica field already shows the focus border and the placeholder text.
 
-- **An error state and a disabled state.** In the standard UI kit, the variant is `states`, with the options `error` and `disabled`.
-- **Clock format.** The user's preference sets a 12-hour or a 24-hour clock. The clock format is not a variant. See the rules below.
-- **Seconds.** If the project has a seconds variant, use the seconds variant. Otherwise, never add a seconds variant.
-- **Time range.** A time range is one control that takes a start time and an end time. If the project has a range variant, use the range variant. Otherwise, do not build a range control without asking.
-- **Read-only time.** Show a read-only time with the read-only field component, never with a read-only state of the time picker. A value nobody can edit does not belong in a form control. The read-only field has the same label-placement variant and no input.
+- **The time picker has an error state and a disabled state.** In the standard UI kit, the state variant is `states`, with the options `error` and `disabled`.
+- **The clock format is not a variant.** The user's preference sets a 12-hour or a 24-hour clock. See the rules below.
+- **If the project has a seconds variant, use the seconds variant.** Otherwise, never add a seconds variant.
+- **A time range is one control that takes a start time and an end time.** If the project has a range variant, use the range variant. Otherwise, do not build a range control without asking.
+- **Show a read-only time with the read-only field component, never with a read-only state of the time picker.** A value nobody can edit does not belong in a form control. The read-only field has the same label-placement variant as the time picker, and no input.
 
 ## Rules
 
@@ -62,13 +62,13 @@ The rules below describe each option by role, such as "the error state". The nam
 
 **Use the user's locale and the user's time zone, never the locale or time zone of the tenant** (the organization whose account the application runs under).
 
-**State the time zone clearly** whenever the time is outside the user's time zone, the user's time zone cannot be found, or the user has switched time zones.
+**State the time zone clearly** whenever the time shown is not in the user's time zone, the user's time zone cannot be found, or the user has switched time zones.
 
 **Do not convert a time to the user's time zone when the place where the event happened matters.** Show the time in the time zone where the event happened, with the time zone labeled. Give the user a way to switch the time to the user's own time zone. An event at 11:00 p.m. local time, converted to 8:00 p.m. for the reader, leads the reader to the wrong conclusion. See `recursica-skill-dates-and-currency`.
 
 **Show seconds only when the values being compared are under a minute, across several objects.** Once one value shows seconds, every value in the compared group shows seconds.
 
-**The user must be able to type the time and to pick the time.** Neither way may be the only way. Never force the user to type when picking would be faster. Never make picking the only way to enter a time. A user who knows the time types the time and moves on.
+**The user must be able to type the time and to pick the time.** Never force the user to type when picking would be faster. Never make picking the only way to enter a time. A user who knows the time types the time and moves on.
 
 **State the expected format in help text.** Without help text, the user has to guess the format from a mask that appears on focus, or from a field that expects `HH:MM` without saying so.
 
@@ -85,14 +85,14 @@ The rules below describe each option by role, such as "the error state". The nam
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
-The time picker component connects the label to the input and provides the focus ring. Time pickers most often fail at the clock trigger (the control that opens the clock popover), at the AM/PM control, and at the popover. The application builds the clock trigger, the AM/PM control, and the popover. Follow the rules below for all three.
+The time picker component connects the label to the input and provides the focus ring. A time picker most often fails accessibility at the clock trigger (the control that opens the clock popover), at the AM/PM control, and at the popover. The application builds the clock trigger, the AM/PM control, and the popover. Follow the rules below for the clock trigger, the AM/PM control, and the popover.
 
 ### Screen readers
 
 - **Set a real label in the time picker component.** Never let placeholder text be the accessible name (the name a screen reader reads out for a control). A screen reader does not announce placeholder text as a label, and placeholder text disappears when the user types. A field with no label has no accessible name.
 - **Name the clock icon when the icon is a control**, as in "Choose time". Hide a decorative clock icon from screen readers. A screen reader announces an unlabeled clickable icon without saying what the icon does.
 - **State the expected format in the help text.** The help text must say whether the field expects `9:00 AM` or `09:00`, and whether the field accepts seconds. A screen reader user gets nothing from a visual mask.
-- **State the time zone in text**, not by position or color. A user cannot learn a time zone that the screen only implies. A converted time, or a time that is not local, shown with no time zone label, shows the user the wrong time with no sign that the time is wrong.
+- **State the time zone in text**, not by position or color. A user cannot learn a time zone that the screen only implies. Without a time zone label, a converted time or a time that is not local shows the user the wrong time, with no sign that the time is wrong.
 - **Name the unit in the help text when the unit is not obvious**, such as when the field takes a duration, or a 24-hour time in a 12-hour locale.
 - **The error message is the text a screen reader announces.** The error message replaces the help text, and becomes the only text the screen reader reads. The error message must state the rule, including the format.
 
@@ -102,13 +102,13 @@ The time picker component connects the label to the input and provides the focus
 - **Every control inside the field is a separate tab stop** (a place the Tab key lands), such as the clock trigger and an AM/PM control. Each control works with Enter or Space. Never build a control inside the field that responds only to clicks.
 - **Typing must always work.** The popover is never the only way to enter a value. A keyboard user must be able to type the time and move on, without opening the popover.
 - **The popover must be fully usable by keyboard.** The popover opens from the keyboard. The arrow keys move between values, and Enter selects a value. Escape closes the popover and returns focus to the field the popover opened from. Never leave focus in a closed popover, and never drop focus to the top of the page.
-- **Never move focus ahead automatically between the parts of a time**, such as from hour to minute to AM/PM as the user types. An automatic jump leaves keyboard users and screen reader users in a part of the time the user did not choose. An automatic jump also moves focus away from a user fixing a typo.
+- **Never move focus ahead automatically between the parts of a time**, such as from hour to minute to AM/PM as the user types. An automatic jump puts a keyboard user or a screen reader user in a part of the time the user did not choose. An automatic jump also moves focus away from a user fixing a typo.
 - **Do not move focus for the user** when a value looks complete. When the popover closes, do not move focus into a different field.
-- **Show every part the user needs to complete the field without hover**, including the format, the time zone, and the clock trigger.
+- **Keep every part the user needs to complete the field visible without hover**, including the format, the time zone, and the clock trigger.
 
 ## Styling set by tokens
 
-**Never set or override the time picker's styling.** The theme sets every visual property of the time picker, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the time picker's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the time picker's styling.** The theme sets every visual property of the time picker, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the time picker's look. If the design needs a look the theme does not give, report the missing look as a gap in the design system. See `recursica-skill-design-router`.
 
 The time picker's width is fixed.
 
@@ -136,7 +136,7 @@ The time picker's width is fixed.
 - **Whether a time has a masked format while the field has focus**, as a date does. The rule in `recursica-skill-dates-and-currency` that focus decides the format gives only a date example.
 - **Seconds.** Whether the field can accept seconds at all is unknown. Ask only when the project has no seconds variant.
 - **Time ranges.** How a start time and an end time are checked against each other is not stated. Ask only when the project has no range variant.
-- **The UI kit defines a disabled state, but the design-system website does not show one.** Treat the list of states that the Recursica MCP server gives for the project as the authority, and flag the gap.
+- **The UI kit defines a disabled state, but the design-system website does not show one.** Treat the list of states that the Recursica MCP server gives for the project as the authority, and flag the missing disabled state on the website.
 
 ## Pre-flight checklist
 
