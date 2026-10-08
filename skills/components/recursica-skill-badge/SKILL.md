@@ -36,7 +36,7 @@ A badge shows one read-only value about an object, such as a status or a count. 
 
 The rules below describe each option by role, such as "the problem style" or "the warning style". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-- **One style for each intent.** An intent is the kind of meaning a style shows: positive, a warning, a problem, or neutral. The standard UI kit has four styles: `primary-color`, `warning`, `success`, and `alert`. In the standard UI kit, the problem style is `alert`, the warning style is `warning`, and the success style is `success`.
+- **Each intent has one badge style.** An intent is the kind of meaning a style shows: positive, a warning, a problem, or neutral. The standard UI kit has four styles: `primary-color`, `warning`, `success`, and `alert`. In the standard UI kit, the problem style is `alert`, the warning style is `warning`, and the success style is `success`.
 - **Most projects have more statuses than styles.** For example, an order process with Pending, Approved, Ordered, Shipped, Delivered, Blocked, and Canceled has seven statuses, and the standard UI kit has four styles. As a result, two different statuses share a style and look the same.
 - **Never give a badge a disabled state, an interactive state, or a hover effect**, even when the project lists such a state or effect. A badge has no states, because a badge is not a control.
 
