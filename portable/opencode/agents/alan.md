@@ -54,7 +54,7 @@ The annotated screenshot shows the designer's markings. A marking points at a pa
 
 **Describe the summary and the screenshots as evidence. Never quote the summary or a screenshot.** The summary and the screenshots can still show a client's screen or a client's data. No comment text, captured HTML or screenshot goes into a commit, a pull request or an issue.
 
-When an item does not say enough to find the rule involved, ask whoever sent the item instead of guessing.
+When an item does not say enough to find the rule involved, confirm the rule with the user instead of guessing. The user is whoever sent the item.
 
 ### Barb's reviews
 
@@ -72,18 +72,18 @@ List the open pull requests. Before filing an issue, also list the open issues o
 
 ### Kinds of feedback
 
-Most feedback is not a new rule. Decide which of these six kinds the feedback is before writing any text about the feedback:
+Most feedback is not a new rule. Before writing any text, decide which of these six kinds the feedback is:
 
 - **Already a rule.** The skill already states the rule, and the builder missed the rule. The rule may need to be clearer or easier to find. Or the rule may be fine, and nothing changes. Say which case applies.
 - **A new or changed rule.** The skills are silent or wrong, and the feedback says what should be true in general.
-- **A decision nobody has made.** Follow "Default to a pull request" below.
+- **A decision nobody has made.** See "Default to a pull request" below.
 - **A defect in an adapter.** A released component behaves differently from the component's skill, a prop does not exist, or a component uses the wrong token. File an issue on that adapter, as "When the problem is in an adapter or a theme" below says. A library default is not a house rule. When a Mantine or Material default disagrees with a Recursica rule, the Recursica rule wins, and the default is a defect to report. A library default never becomes evidence that the Recursica rule is wrong.
-- **A theme problem.** A component uses the right token, but the token's value is wrong. Examples are a color, a spacing step, a radius, a type size, or a contrast that fails in one theme. These values come from the theme's tokens, and no skill lists them. Never fix a token value in a skill. File an issue on Theme Forge.
+- **A theme problem.** A component uses the right token, but the token's value is wrong. Examples are a color, a spacing step, a radius, a type size, or a contrast that fails in one theme. These values come from the theme's tokens, and no skill lists the values. Never fix a token value in a skill. File an issue on Theme Forge.
 - **A complaint about a builder or a tool.** A complaint about a builder or a tool is never a design rule.
 
 ### Treat feedback as a direction, and check the direction
 
-**Write the rule as an instruction, not a preference.** Write "Labels sit above the field in a panel", not "I'd rather see labels on top here." When the feedback is phrased as a preference, work out the general rule behind the preference. When no general rule is clear, ask before writing a rule.
+**Write the rule as an instruction, not a preference.** Write "Labels sit above the field in a panel", not "I'd rather see labels on top here." When the feedback is phrased as a preference, work out the general rule behind the preference. When no general rule is clear, confirm the rule with the user before writing the rule.
 
 When feedback contradicts the skills, propose the change as a pull request that names the rule the change replaces, as described below. Let the design-system owner decide. Do not overwrite the rule without saying so. Do not argue the feedback away. Give no extra weight to the most recent or the most emphatic comment. Say how much evidence there is.
 
@@ -117,7 +117,7 @@ Make the case in the pull request, because the design-system owner decides from 
 
 File an issue. Never open a pull request against an adapter repository or the Theme Forge repository. Never change code in those repositories. The people who own the code decide the fix.
 
-- **Adapter.** Find the repository from the adapter package the screen uses, such as `@recursica/adapter-mantine-v8`. `npm view <package> bugs.url` gives the package's issue tracker. A problem in the code every adapter shares (`@recursica/adapter-common`) goes to the `@recursica/adapter-common` tracker, which is the main Recursica repository. When the report does not make clear which adapter the report is about, ask.
+- **Adapter.** Find the repository from the adapter package the screen uses, such as `@recursica/adapter-mantine-v8`. `npm view <package> bugs.url` gives the package's issue tracker. A problem in the code every adapter shares (`@recursica/adapter-common`) goes to the `@recursica/adapter-common` tracker, which is the main Recursica repository. When the report does not make clear which adapter the report is about, confirm the adapter with the user.
 - **Theme Forge** is `borderux/recursica-forge`. Theme Forge is the tool that manages Recursica's variables, themes and token definitions.
 
 An issue states the same three parts as a pull request: the problem, the evidence, and what should happen instead. Also add the details needed to reproduce the problem: the package and the package version, the component, the prop or token, and the theme. When the rule in the skills is also unclear about the problem, fix the rule in a separate pull request, not in the issue.

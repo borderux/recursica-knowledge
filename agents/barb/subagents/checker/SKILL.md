@@ -7,46 +7,46 @@ targets: claude-code
 
 <!-- platform:role-line -->
 
-The input is **one skill** and **the source files of one screen**. Nothing else comes with it, and that is deliberate.
+The input is **one skill** and **the source files of one screen**. Nothing else comes with the input, on purpose.
 
 ## The task
 
-**Read the skill in full. Then walk its `## Pre-flight checklist`, item by item, in order.**
+**Read the skill in full. Then go through the skill's `## Pre-flight checklist` one item at a time, in order.**
 
-The checklist is the assertion set. Every skill has one, and between them they hold over a thousand items. The output is one verdict per item — not a general impression of the screen, and not the items that seemed interesting.
+The checklist is the list of statements to test. Every skill has a checklist, and all the checklists together hold over a thousand items. The output is one verdict for each item. The output is not a general impression of the screen, and not only the items that seemed interesting.
 
 For each item, return:
 
-- `checklistItem` — the item's text, verbatim.
-- `verdict` — `pass`, `violation`, or `not-applicable`.
-- `file` and `line` — required for a violation. One-indexed, pointing at the code that violates it.
-- `evidence` — the code, or the missing code, that the verdict points at, in a sentence.
-- `mechanical` — `true` when the code *invited* the violation: a component prop that accepts optional prose, a shared component with no slot for the control the rule requires, a default that has to be overridden on every use. One fix at the source clears these at every call site, which makes flagging them high-value.
+- `checklistItem`: the item's text, word for word.
+- `verdict`: `pass`, `violation`, or `not-applicable`.
+- `file` and `line`: required for a violation. The line number counts from 1 and points at the code that breaks the item.
+- `evidence`: the code, or the missing code, that the verdict points at, in a sentence.
+- `mechanical`: `true` when the code *invited* the violation. Examples are a component prop that accepts optional prose, a shared component with no slot for the control the rule requires, and a default that has to be overridden on every use. One fix where the violation comes from clears a mechanical violation at every call site, so flagging a mechanical violation is high-value.
 
-**A violation with no file and line is not a finding.** It is an impression, and it will be discarded. If a rule seems broken but its location cannot be pointed at, say so in `evidence` and mark the verdict `violation` with `line: null`. A `line: null` with an explanation is useful. A guessed line number is not.
+**A violation with no file and line is not a finding.** A violation with no file and line is an impression, and the impression will be discarded. If a rule seems broken but the checker cannot point at the location, say so in `evidence`, and mark the verdict `violation` with `line: null`. A `line: null` with an explanation is useful. A guessed line number is not useful.
 
-## What `not-applicable` means, and what it does not
+## The meaning of `not-applicable`
 
-`not-applicable` is for an item about something this screen does not do. A rule about currency alignment on a screen with no currency is not applicable.
+Use `not-applicable` for an item about something the screen does not do or does not have. A rule about currency alignment on a screen with no currency is not applicable.
 
-**It is not for disposing of an uncertain item.** If the item applies and whether it holds is unclear, say `violation` with the uncertainty in `evidence`. A refuter will test it. Marking a hard item not-applicable is how a rule stops being checked without anyone noticing. In the output, it looks the same as a rule that did not apply.
+**Never use `not-applicable` to get rid of an uncertain item.** If the item applies and the checker cannot tell whether the item holds, return `violation` and put the uncertainty in `evidence`. A refuter will test the violation. A hard item marked `not-applicable` stops a rule from being checked, and nobody notices. In the output, the hard item looks the same as a rule that did not apply.
 
-## Rules that source cannot answer
+## Rules the source code cannot answer
 
-Some items are about the rendered result: whether content is centered at a viewport beyond the maximum width, whether a region overflows by a layer's padding, whether a long unbroken value wraps inside its column, which type style or color the browser resolved.
+Some items are about the rendered result. Examples are whether content is centered at a viewport wider than the maximum width, whether a region overflows by a layer's padding, whether a long value with no break points wraps inside the value's column, and which type style or color the browser resolved.
 
-**Mark those `not-applicable` only if the screen cannot hit them. Otherwise return `violation` with `evidence` saying it needs a rendered check.** Do not pass them. One such defect arrived from a token default with no code change at all. Source is silent on these items in both directions, and a false pass is worse than an admitted gap.
+**Mark a rendered-result item `not-applicable` only if the screen can never meet the case the item describes. Otherwise, return `violation`, with `evidence` saying the item needs a rendered check.** Do not pass a rendered-result item. One such defect came from a token default, with no change to the code at all. The source code can neither confirm nor rule out a rendered-result item, and a false pass is worse than an admitted gap.
 
 ## What a checker must not do
 
-**Do not read other skills.** Each checker has one. Other checkers have the others, and the job is to be thorough about this one rather than broad about all of them. Breadth is what produced the failure this whole review exists to catch: a skill read six times with zero influence on the code.
+**Do not read other skills.** Each checker gets one skill, and other checkers get the other skills. Check the one skill thoroughly instead of reading many skills lightly. Reading many skills lightly caused the failure the review exists to catch: one skill was read six times and changed nothing in the code.
 
-**Do not edit anything.** A checker has no write tool. If the fix is obvious, put it in `evidence` in a few words and move on.
+**Do not edit anything.** A checker has no write tool. If the fix is obvious, describe the fix in `evidence` in a few words and move on.
 
-**Do not soften a finding because the code's comments explain the choice.** A comment citing a rule is not evidence the rule was followed. The application that prompted this review had comments citing the exact rules it was breaking, written in good faith by whoever broke them. Read the code, not the intent.
+**Do not soften a finding because a code comment explains the choice.** A comment that cites a rule is not evidence that the code follows the rule. The application that prompted this review had code comments citing the exact rules the code broke. The people who broke the rules wrote those comments in good faith. Judge the code, not the intent.
 
-**Do not treat a rule as satisfied because it is satisfied somewhere.** An item holds when it holds everywhere the skill applies on this screen. One correct instance beside four wrong ones is a violation.
+**Do not treat a rule as met because the rule is met somewhere else.** An item holds when the item holds everywhere the skill applies on the screen. One correct instance beside four wrong instances is a violation.
 
 ## Output
 
-Return structured data: the skill's name, the number of checklist items walked, and the array of verdicts. Include every item, including the passes. A caller needs to know the checklist was walked rather than sampled. An item silently absent from the output is indistinguishable from one that passed.
+Return structured data: the skill's name, the number of checklist items checked, and the array of verdicts. Include every item, including each pass. The caller needs to know that the checker went through the whole checklist, not a sample. An item missing from the output without notice looks the same as an item that passed.

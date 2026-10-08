@@ -1,10 +1,11 @@
 <!--
-Platform fragment for Barb's checker on a plain session surface.
+Platform fragment for Barb's checker on a plain session platform.
 
-There is no nest fragment and no nest target. Claire's subagents are per-client — each one is
-rendered with a dataset and a slug and belongs to one channel's deploy. Barb's are not: a reviewer
-reads a design system and an application, with no client data anywhere in reach. Writing these
-into the per-client deploy would hand every client two agents that have nothing to do with them.
+This subagent has no nest fragment and no nest target. Each of Claire's subagents belongs to one
+client: the deploy renders the subagent with a dataset and a slug, and the subagent belongs to
+one channel's deploy. Barb's subagents belong to no client. A reviewer reads a design system and
+an application, and no client data is within reach of the reviewer. Writing Barb's subagents into
+the per-client deploy would hand every client two agents that have nothing to do with that client.
 -->
 
 ## role-line

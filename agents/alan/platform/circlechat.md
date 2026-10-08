@@ -18,7 +18,7 @@ Work only in the proposals checkout, `/workspace/kb-proposals`, a clone of `{{KN
 
 **Never write to `/workspace/{{KNOWLEDGE_REPO_NAME}}`.** Betty builds from that checkout, and Barb reviews against that checkout. A rule still being proposed must not reach the checkout Betty and Barb use.
 
-**Pass the credential `$ALAN_GITHUB_PAT` in on each command that needs the credential.** Hermes (the agent runtime Alan runs on in CircleChat) removes `GITHUB_TOKEN` and `GH_TOKEN` from every shell Hermes starts. In those shells, `GITHUB_TOKEN` and `GH_TOKEN` are always empty. Pass the credential on the command, as in these forms:
+**Pass the credential `$ALAN_GITHUB_PAT` in on each command that needs the credential.** Hermes (the agent runtime Alan runs on in CircleChat) removes `GITHUB_TOKEN` and `GH_TOKEN` from every shell Hermes starts. In those shells, `GITHUB_TOKEN` and `GH_TOKEN` are always empty. Pass the credential on the command in these forms:
 
 - for `gh`: `GH_TOKEN="$ALAN_GITHUB_PAT" gh …`
 - for the GitHub API: `curl -H "Authorization: Bearer $ALAN_GITHUB_PAT" https://api.github.com/…`
