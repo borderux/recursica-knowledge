@@ -13,9 +13,9 @@ An autocomplete is a text field whose value comes from a defined list of options
 
 ## When to use an autocomplete
 
-- **The list of options is too long to scan comfortably in a dropdown.** Opening a dropdown and reading down the whole list is worse than typing.
-- **The persona knows the options well** and can start typing a value the persona already has in mind. Typing relies on recall (remembering the answer). When the persona needs to recognize the answer among the options shown, the persona needs a control that shows the options instead.
-- **The value must still come from the list of options.** The typed text filters the list. The typed text is not a free-text entry.
+- **Use an autocomplete when the list of options is too long to scan comfortably in a dropdown.** Opening a dropdown and reading down the whole list is worse than typing.
+- **Use an autocomplete when the persona knows the options well.** The persona can start typing a value the persona already has in mind. Typing relies on recall (remembering the answer). If the persona needs to recognize the answer among the options shown, use a control that shows the options instead.
+- **Use an autocomplete when the value must still come from the list of options.** The typed text filters the list. The typed text is not a free-text entry.
 
 ## When not to use an autocomplete
 
@@ -57,13 +57,18 @@ The design-system website shows the autocomplete under the component's former na
 | `State`    | Default, Focused, Valued |
 | `Behavior` | Suggestions (optional)   |
 
-**The website's states are not UI kit variants and must not be set as variants.** The autocomplete shows the `Focused` and `Valued` looks automatically, in response to what the persona does. The website's states do show parts of the autocomplete: a leading icon, and a clear control that appears once the field holds text. The website describes Suggestions as an optional extra, not the default.
+**The website's states are not UI kit variants and must not be set as variants.** The autocomplete shows the `Focused` and `Valued` looks automatically, in response to what the persona does. The website's states do show two parts of the autocomplete:
+
+- a leading icon
+- a clear control that appears once the field holds text
+
+The website describes Suggestions as an optional extra, not the default.
 
 ## Rules
 
-**The list of options, not the field, decides whether an autocomplete is the right control.** Use a dropdown for a long list when the persona recognizes the options on sight. Use an autocomplete for a long list when the persona recalls the options from memory. The length of the list alone does not decide. See `recursica-skill-working-memory` on recognition versus recall.
+**Decide whether an autocomplete is the right control from the list of options, not from the field.** Use a dropdown for a long list when the persona recognizes the options on sight. Use an autocomplete for a long list when the persona recalls the options from memory. The length of the list alone does not decide. See `recursica-skill-working-memory` on recognition versus recall.
 
-**Never use an autocomplete for fewer than four options, the dropdown floor.** A dropdown is wrong for fewer than four options, and an autocomplete is wrong for fewer than four options for the same reason. Show a short list of options on the page instead.
+**Never use an autocomplete for fewer than four options, the dropdown floor.** A dropdown is wrong for fewer than four options, and an autocomplete is wrong for the same reason. Show a short list of options on the page instead.
 
 **The value must match an option in the list.** Typed text that matches no option is not a value. Do not quietly accept typed text that matches no option.
 
@@ -73,24 +78,24 @@ The design-system website shows the autocomplete under the component's former na
 
 **Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form. Short fields that would fit side by side follow the result too. A form may change placement at a breakpoint. A form never mixes placements at one breakpoint. A form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
-**On error, the error message replaces the assistive text.** The error message is not added to the assistive text. The error message must restate the rule the persona broke. The error state must show a signal other than color, in addition to the color change.
+**On error, replace the assistive text with the error message.** Do not add the error message to the assistive text. The error message must restate the rule the persona broke. The error state must show a signal other than color, in addition to the color change.
 
 **The filtered list must not be cut off by the viewport, or by any scrolling ancestor** (a container further up the page that scrolls). Check the filtered list near the bottom of the page, inside a panel, and inside a modal.
 
 **Never save when the persona selects an option in a form that saves every field together.** Across the whole system, either every field saves when the field changes, or every field saves on submit.
 
-**Choosing an autocomplete option may show more fields.** Put the new fields right below the autocomplete, and show the new fields immediately. The form still submits every field together.
+**Choosing an autocomplete option may show more fields.** Put the new fields right below the autocomplete. Show the new fields immediately. The form still submits every field together.
 
 **A disabled autocomplete and a read-only field are different components, not two styles of one component.**
 
-- **Disabled autocomplete.** A disabled autocomplete is still a field and still clearly an input, but the persona cannot use the field right now. Use a disabled autocomplete when the persona could make the field usable by taking a different action first.
+- **Disabled autocomplete.** Use a disabled autocomplete when the persona could make the field usable by taking a different action first. A disabled autocomplete is still a field and still clearly an input. The persona cannot use the disabled autocomplete right now.
 - **Read-only field.** A read-only field is a different component, with no input. Use a read-only field when the persona viewing the field never changes the value where the value is shown.
 
 **An autocomplete that filters a collection of items, instead of setting a form value, saves nothing.** An autocomplete that filters a collection of items does not use the form's save mode. See `recursica-skill-forms`.
 
-**The clear control appears only when the field has a value.** Clearing empties the field and removes the filter from the collection, so the collection shows every item again. Clearing never empties the text while a filter stays applied.
+**Show the clear control only when the field has a value.** Clearing empties the field and removes the filter from the collection. The collection then shows every item again. Clearing never empties the text while a filter stays applied.
 
-**The placeholder names what the field searches**, as in "Search invoices". The placeholder tells the persona which items the typed text narrows. The placeholder never replaces the label.
+**Make the placeholder name what the field searches**, as in "Search invoices". The placeholder tells the persona which items the typed text narrows. The placeholder never replaces the label.
 
 **Never make an autocomplete the only way to reach the content the autocomplete searches.** A persona who does not know the right word must still be able to reach the content.
 
@@ -98,7 +103,7 @@ The design-system website shows the autocomplete under the component's former na
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
-The autocomplete already links the label to the input and shows the focus ring. The autocomplete also filters the list and selects the option the persona picks. The app decides what a screen reader announces during filtering and selecting. Getting the announcements right is the hardest part of any control in the design system. The filtered list changes on every keystroke, and a persona using a screen reader hears none of the changes unless the app announces the changes.
+The app decides what a screen reader announces during filtering and selecting. Getting the announcements right is the hardest part of any control in the design system. The filtered list changes on every keystroke. A persona using a screen reader hears none of the changes unless the app announces the changes. The autocomplete already links the label to the input and shows the focus ring. The autocomplete also filters the list and selects the option the persona picks.
 
 ### Screen readers
 
@@ -107,13 +112,13 @@ The autocomplete already links the label to the input and shows the focus ring. 
 - **The code must tell assistive technology whether the filtered list is expanded or collapsed.** The persona must hear that the results opened, and hear that the results closed.
 - **The app must announce the number of filtered results after each filter**, politely, without interrupting the typing: "8 results", then "2 results", then "no results". The result count is the requirement missed most often. A sighted persona watches the list shrink. A persona using a screen reader hears nothing about the change.
 - **Announce "no results" clearly.** A persona cannot tell silence after typing apart from a broken field.
-- **The active option (the option the arrow keys point to) must be announced as the persona moves through the list**, with the option's position in the list and whether the option is selected.
+- **The active option (the option the arrow keys point to) must be announced as the persona moves through the list.** The announcement includes the option's position in the list and whether the option is selected.
 - **Do not announce every keystroke.** Do not announce the list on every typed character when the count has not changed. Too many announcements make the field as unusable as silence does.
 - **The selected option must be marked in code, never shown by a highlight or a checkmark alone.** `recursica-skill-system-conventions` sets this rule.
-- **The chosen value must be readable in the field after the persona selects the value**, and announced as the field's value. Never show the chosen value only as visible text that is not the field's value.
+- **The chosen value must be readable in the field after the persona selects the value.** The chosen value must be announced as the field's value. Never show the chosen value only as visible text that is not the field's value.
 - **On error, the error message is the only text announced**, because the error message has replaced the assistive text. The error message must state the rule. "Invalid input" is not an error message.
 - **Give the trailing indicator no separate announcement.** The trailing indicator is part of the field, not a second control.
-- **The clear control is a real control and needs a separate accessible name.** After clearing, a screen reader must announce that the field is empty and that the full list of options shows again. The leading icon is decorative and must be silent.
+- **The clear control is a real control and needs a separate accessible name.** After clearing, a screen reader must announce that the field is empty. The screen reader must also announce that the full list of options shows again. The leading icon is decorative and must be silent.
 
 ### Keyboard and non-mouse navigation
 
@@ -121,25 +126,55 @@ The autocomplete already links the label to the input and shows the focus ring. 
 - **The field is one tab stop, whether the list is open or closed.** Tab must never step through the results. While the list is open, Tab either closes the list or moves past the whole field.
 - **Arrow Down and Arrow Up move the active option.** Enter selects the active option. Escape closes the list without changing the value and returns focus to the input. Focus must never drop to the top of the page or to the `body` element.
 - **Home and End move the caret in the input.** Do not change Home and End to jump to the first or last result. The persona is in a text field and expects Home and End to move the caret within the typed text.
-- **The autocomplete responds to the keys inside the field automatically**, including which key opens the list, wrapping around at the ends of the list, and any inline completion (the field fills in the remaining letters of a matching option as the persona types). Do not add custom code that listens for key presses, and do not rebuild the filtering or the movement through the list.
+- **The autocomplete responds to the keys inside the field automatically.** The automatic key handling includes:
+
+  - which key opens the list
+  - wrapping around at the ends of the list
+  - any inline completion (the field fills in the remaining letters of a matching option as the persona types)
+
+  Do not add custom code that listens for key presses. Do not rebuild the filtering or the movement through the list.
+
 - **Do not move focus into the list.** The input keeps focus and points to the active option. Moving real focus into the list stops the persona from typing and from getting back to the input.
 - **Do not move focus for the persona after a selection.** Do not jump focus to the next field because the field now has a value. Do not jump focus when the filter narrows the list to exactly one result.
 - **Every element and action a mouse can reach must also be reachable by keyboard.** Filtering, moving through results, and choosing an option must never depend on a pointer. Nothing the persona needs may appear only on hover.
 
 ## Styling set by tokens
 
-**Never set or override the autocomplete's styling.** The theme sets every visual property of the autocomplete, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the autocomplete's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the autocomplete's styling.** The theme sets every visual property of the autocomplete, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the autocomplete's look. If the design needs a look the theme does not give, raise the missing look as a design-system gap. See `recursica-skill-design-router`.
 
-**Do not set or override the autocomplete's built-in behavior**: the connection between the label and the input, the filtering and matching, and the keyboard behavior inside the field. Do not change the space between the label and the field, or the space between fields.
+**Do not set or override the autocomplete's built-in behavior:**
+
+- the connection between the label and the input
+- the filtering and matching
+- the keyboard behavior inside the field
+
+Do not change the space between the label and the field, or the space between fields.
 
 **Never style an unfocused field so that the field looks disabled.** An editable field must look editable when the persona is not interacting with the field.
 
 ## Related skills
 
-- `recursica-skill-selection-controls` — which control a field gets, option counts, the dropdown affordance test, pre-selection, disabled versus read-only, and when a selection is saved.
-- `recursica-skill-forms` — single-column layout, label placement and the container width that switches label placement, one placement per form, required and optional markers, when validation runs, limits on pre-filled values, and the form's save mode.
-- `recursica-skill-label` — label text that names the object and makes sense without the text around the label, and the required and optional markers.
-- `recursica-skill-assistive-element` — the help text and error text below the field, and why the error text replaces the help text instead of joining the help text.
+- `recursica-skill-selection-controls` — the selection-control rules:
+  - which control a field gets
+  - option counts
+  - the dropdown affordance test
+  - pre-selection
+  - disabled versus read-only
+  - when a selection is saved
+- `recursica-skill-forms` — the form rules:
+  - single-column layout
+  - label placement, and the container width that switches label placement
+  - one placement per form
+  - required and optional markers
+  - when validation runs
+  - limits on pre-filled values
+  - the form's save mode
+- `recursica-skill-label` — the label rules:
+  - label text that names the object and makes sense without the text around the label
+  - the required and optional markers
+- `recursica-skill-assistive-element` — the assistive-text rules:
+  - the help text and error text below the field
+  - why the error text replaces the help text instead of joining the help text
 - `recursica-skill-working-memory` — recognition versus recall, the difference that decides between an autocomplete and a dropdown.
 - `recursica-skill-system-conventions` — never showing meaning in only one way.
 - `recursica-skill-live-regions` — announcing the result count as the list filters, and when the app must make the announcement.
@@ -151,10 +186,10 @@ The autocomplete already links the label to the input and shows the focus ring. 
 
 ## Open questions
 
-- **When an autocomplete replaces a dropdown.** `recursica-skill-selection-controls` lists the switch from a dropdown to an autocomplete as an open question. The dropdown guidance says only to consider a typeahead when the list is long and the persona knows the values. No count or threshold exists. Ask.
+- **When an autocomplete replaces a dropdown.** `recursica-skill-selection-controls` lists the switch from a dropdown to an autocomplete as an open question. The dropdown guidance says only to consider a typeahead when the list is long and the persona knows the values. No count or threshold exists. Confirm with the user.
 - **Free text.** May the persona submit free text that matches no option? May the persona create a new option from the typed text?
 - **How many characters to type.** How many characters must the persona type before results appear? Does the full list of options show when the field gets focus with no text typed?
-- **Match order.** How does the field find and order matches? The question covers matching the start of the text versus any position in the text, fuzzy matching, and whether the option highlights the matched characters.
+- **Match order.** How does the field find and order matches? The question covers matching the start of the text versus any position in the text. The question also covers fuzzy matching, and whether the option highlights the matched characters.
 - **No results.** What does the field show when no option matches the typed text? Does the field offer a next step?
 - **Loading.** What does the field show while results are loading? If the project has a loading, pending, or failed-to-load state, use that state. Otherwise, confirm with the user.
 - **Multi-select.** If the project has a multi-select variant, or chips that show the chosen values, use the project's version. Otherwise, confirm with the user.
@@ -162,17 +197,18 @@ The autocomplete already links the label to the input and shows the focus ring. 
 
 ## Pre-flight checklist
 
-- [ ] The list of options is too long to scan, and the persona knows the values well enough to type one value.
+- [ ] The list of options is too long to scan.
+- [ ] The persona knows the values well enough to type one value.
 - [ ] The list has at least four options, the dropdown floor. A short list of options is shown on the page instead.
-- [ ] The submitted value matches an option in the list, and typed text that matches no option is not accepted as a value.
-- [ ] The field has a real label that makes sense without the text around the field, and the placeholder is not used as the label.
+- [ ] The submitted value matches an option in the list. Typed text that matches no option is not accepted as a value.
+- [ ] The field has a real label that makes sense without the text around the field. The placeholder is not used as the label.
 - [ ] Label placement is side by side, unless the container is too narrow.
 - [ ] Label placement matches every other field in the same form. Each form has one placement at each breakpoint, with no mixing between fields or form sections.
 - [ ] No required information is in the placeholder. The field's rules are in the assistive text.
 - [ ] Any default is correct for nearly everyone.
 - [ ] On error, an error message that restates the rule replaces the assistive text, with a signal that is not color.
 - [ ] The filtered list is not cut off by the viewport, a panel, a modal, or any scrolling ancestor.
-- [ ] A screen reader announces the expanded state, the filtered result count after each change, "no results", the active option, and the chosen value. The screen reader gets no more announcements than the persona needs.
+- [ ] A screen reader announces the expanded state and the filtered result count after each change. The screen reader also announces "no results", the active option, and the chosen value. The screen reader gets no more announcements than the persona needs.
 - [ ] The field is one tab stop. The arrow keys move the active option, Enter selects, and Escape closes the list and returns focus to the input.
 - [ ] Home and End still move the caret in the input.
 - [ ] The autocomplete's built-in key handling and filtering are unchanged, and real focus never moves into the list.
@@ -180,6 +216,7 @@ The autocomplete already links the label to the input and shows the focus ring. 
 - [ ] Nothing the persona needs requires hover or a pointer. The focus ring is intact, and looks different from the active option style and the selected option style.
 - [ ] Disabled is used only for fields that are unavailable for now. Values that can never be edited use the read-only field.
 - [ ] Every variant, size, and state is one the project's UI kit lists. The built-in connection between the label and the input is unchanged. The space between the label and the field, and the space between fields, are unchanged. Every field without focus looks editable, not disabled.
-- [ ] No styling is set or overridden on the autocomplete, and no container or spacer is added to change the autocomplete's look.
+- [ ] No styling is set or overridden on the autocomplete.
+- [ ] No container or spacer is added to change the autocomplete's look.
 - [ ] The field saves with the form, in the same save mode as every other field in the system.
 - [ ] Open questions were asked about, not decided: the replacement threshold, free text, how many characters to type, match order, no results, loading, multi-select, and list details.
