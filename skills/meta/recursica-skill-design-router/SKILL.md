@@ -9,7 +9,7 @@ metadata:
 
 # Design router
 
-The design router is the first skill to load from the Recursica skill family. The router holds no design rules of its own. The router says **what to decide, in what order, which skill owns each decision, what to do when rules conflict, and when to stop and ask.**
+The design router is the first skill to load from the Recursica skill family. The router holds no design rules. The router says **what to decide, in what order, which skill owns each decision, what to do when rules conflict, and when to stop and ask.**
 
 Load the router before starting work. Then, at each decision, load the skill that owns the decision.
 
@@ -45,20 +45,20 @@ The repository also holds website content, build scripts, packaging templates, w
 
 The shorter form is each skill's pre-flight checklist and open questions. For a component skill, the shorter form also includes the "When not to use" table, the "Variants" section (the inventory of parts, styles, sizes and states) and the "Accessibility" section. In the shorter form, read any other section when a checklist item is unclear, when two checklist items seem to conflict, or before making a decision the skill may cover.
 
-In a skill's "Related skills" list, the links under "Only if used on the same screen" are alternatives and neighbors. This rule holds for the full text and for the shorter form. Load one of those linked skills only when the screen uses that component.
+In a skill's "Related skills" list, the links under "Only if used on the same screen" are alternatives and neighbors. Load a skill linked under that heading only when the screen uses the component the linked skill covers. The rule holds for the full text and for the shorter form.
 
-When the skills come through the Recursica knowledge server, `skill_family` returns the full text by default. `skill_family` with `detail: "contract"` returns the shorter form, without the Accessibility sections. `skill_section` returns any one section.
+When loading the skills from the Recursica knowledge server, `skill_family` returns the full text by default. `skill_family` with `detail: "contract"` returns the shorter form, without the Accessibility sections. `skill_section` returns any one section.
 
 ## Style overrides
 
-**A style override is a gap to report, not a permission.** An adapter (the Recursica component library for one framework, such as Mantine or Angular Material) offers a way for code to override a component's styles directly. The router calls that way a style override. A style override is also called the styling escape hatch. The name makes a style override sound like an allowed way to override styles. Treat a style override as a warning sign instead. Before overriding a style, ask one question:
+**A style override is a gap to report, not a permission.** A style override is the way an adapter (the Recursica component library for one framework, such as Mantine or Angular Material) offers for code to override a component's styles directly. A style override is also called the styling escape hatch. The name "escape hatch" makes a style override sound like an allowed way to change styles. Treat a style override as a warning sign instead. Before overriding a style, ask one question:
 
 **Is there a setting or a token (a named design value, such as a color or a size, set by the design system) for the property being changed?**
 
 - **Yes: the override changes a property the component controls, and the override is forbidden.** Every component skill lists the properties the component controls under "Styling set by tokens". Stop, and use the setting.
-- **No: the override fills in for a missing setting or token.** A missing setting or token is the normal reason for a style override. The next step matters most. The missing setting or token is a gap in the design system, and the gap must be reported. An override made without reporting the gap makes the gap permanent, and nobody sees the gap.
+- **No: the override fills in for a missing setting or token.** A missing setting or token is the normal reason for a style override. The missing setting or token is a gap in the design system. The gap must be reported, and reporting the gap is the most important step. A style override made without a report hides the gap from everyone, and the gap becomes permanent.
 
-**Either way, a style override means a problem exists, in the approach or in the design system.** Say which one, next to the code.
+**Either way, a style override means a problem exists, in the approach or in the design system.** Next to the style override in the code, say whether the problem is in the approach or in the design system.
 
 **Never use a style override to make a component that does not exist.** A badge forced to a fixed width to act as a bar in a chart does not fill in a missing setting. The fixed-width badge fakes a missing component, the chart bar, with a different component. See `recursica-skill-data-visualization`.
 
@@ -99,7 +99,7 @@ The table uses two Recursica terms. A surface (a region that holds content, such
 | 4   | The page's layout, and whether a region of the page needs a separate surface                                                                  | `recursica-skill-screen-scaffolding`               |
 | 5   | Which layer each surface sits on, starting from layer 0 on the root element                                                                   | `recursica-skill-layers`                           |
 | 6   | What matters most on the screen, what to cut, and whether the screen is finished                                                              | `recursica-skill-screen-priority`                  |
-| 7   | Whether the app supports any screen smaller than desktop, and at which tier. Ask before choosing a navigation pattern                         | `recursica-skill-responsive-behavior`              |
+| 7   | Whether the app supports any screen smaller than desktop, and at which breakpoint tier. Ask before choosing a navigation pattern              | `recursica-skill-responsive-behavior`              |
 | 8   | The type of content. Many instances of one object go in a table. One object's properties go in a detail view or a form view                   | `recursica-skill-tables` / `recursica-skill-forms` |
 | 9   | Where the task happens: in a panel beside the page, in a modal over the page, or on a separate page                                           | `recursica-skill-panels-modals`                    |
 | 10  | Narrowing a collection: the filter bar, search and date ranges                                                                                | `recursica-skill-filters`                          |
@@ -130,7 +130,7 @@ Apply the precedence rules below in order. The first precedence rule that settle
 
 1. **The design system beats every skill.** The design system decides every property the components control, such as spacing, color, type, focus states and keyboard behavior inside a control. A skill's rule that seems to ask for styling a component has been misread.
 
-   **A code library's default is not a house rule, and must never be treated as a house rule.** Each adapter is built on top of a code library. The code library's default behavior has no authority in Recursica. When a library default disagrees with a house rule, the house rule wins. The default is a defect to report. The default is not proof that the house rule is wrong, or that the behavior is intended. The panel is a current example. The panel is built on a library drawer that is modal by default, and the house rule is that a panel is non-modal (the page behind stays usable). Check the behavior in the running application. Do not assume the behavior from what the library usually does.
+   **A code library's default is not a house rule, and must never be treated as a house rule.** Each adapter is built on top of a code library. The code library's default behavior has no authority in Recursica. When a library default disagrees with a house rule, the house rule wins. The default is a defect to report. The default is not proof that the house rule is wrong, or that the behavior is intended. A panel is a current example. The Recursica panel is built on a code library's drawer, and the drawer is modal by default. The house rule is that a panel is non-modal (the page behind stays usable). Check the behavior in question in the running application. Do not assume the behavior from what the code library usually does.
 
 2. **A prohibition beats a permission.** `NEVER` and `MUST NOT` outrank "may", "is fine", and "acceptable". If one skill forbids a choice that another skill allows, the prohibition holds.
 3. **A design-rules or psychology skill beats a component skill.** Rule 3 settles most real conflicts, so apply rule 3 before the rules below. The design-rules skills come from the team. The component skills were put together from the token lists for the components. Composition means whether a component belongs in a place, how many of the component are allowed, what may contain what, and when one control should replace another. When the two kinds of skill disagree about composition, the design-rules skill is correct, and the component skill has a defect. Follow the design rule, and say that the component skill needs fixing.
