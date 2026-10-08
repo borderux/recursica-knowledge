@@ -21,7 +21,7 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 ## Whose locale wins
 
-**Always use the user's locale, never the tenant's** (the organization whose account the application runs under). Show time in the user's own time zone. Use a format the user will understand. The section "Time where an event happened" below gives the one exception.
+**Always use the persona's locale, never the tenant's** (the organization whose account the application runs under). Show time in the persona's own time zone. Use a format the persona will understand. The section "Time where an event happened" below gives the one exception.
 
 ## Date format
 
@@ -50,11 +50,11 @@ Use this one date format for every displayed date. This date format removes conf
 
 ## Time zones
 
-**State the time zone clearly whenever the time shown is not in the user's own time zone.** The browser reports the user's own time zone.
+**State the time zone clearly whenever the time shown is not in the persona's own time zone.** The browser reports the persona's own time zone.
 
-**When the user's time zone cannot be found, always show the time zone.**
+**When the persona's time zone cannot be found, always show the time zone.**
 
-**When the user has switched to a different time zone, label the time zone.** The label shows the user that the times are not in the user's current time zone.
+**When the persona has switched to a different time zone, label the time zone.** The label shows the persona that the times are not in the persona's current time zone.
 
 ## Time where an event happened
 
@@ -128,7 +128,7 @@ Relative time follows principle 1, "Never make the reader decode or calculate." 
 
 ## Time of day
 
-**The choice of 12-hour or 24-hour time is the user's preference**, set by the user's locale or by an explicit setting. The 12- or 24-hour choice is not a design decision, and the choice does not change from screen to screen.
+**The choice of 12-hour or 24-hour time is the persona's preference**, set by the persona's locale or by an explicit setting. The 12- or 24-hour choice is not a design decision, and the choice does not change from screen to screen.
 
 ## Duration
 
@@ -144,11 +144,11 @@ Relative time follows principle 1, "Never make the reader decode or calculate." 
 
 **Focus decides the format of a field, not whether the field can be edited.** A field has three states:
 
-| State                             | Format                                                                                                                                                           |
-| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Read-only field**               | The clear format, as in `Jan 7, 2026`. Never numeric                                                                                                             |
-| **Editable field, without focus** | The same clear format. The most readable format is correct while the user is reading                                                                             |
-| **Editable field, with focus**    | Switch to the local masked format, as in `01/07/2026`, so the user can type quickly into the input mask (a pattern in the field that guides what the user types) |
+| State                             | Format                                                                                                                                                                 |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Read-only field**               | The clear format, as in `Jan 7, 2026`. Never numeric                                                                                                                   |
+| **Editable field, without focus** | The same clear format. The most readable format is correct while the persona is reading                                                                                |
+| **Editable field, with focus**    | Switch to the local masked format, as in `01/07/2026`, so the persona can type quickly into the input mask (a pattern in the field that guides what the persona types) |
 
 **The numeric form with slashes or hyphens exists only inside an input that has focus.** The numeric form is an aid for typing, never a display format. The ban on read-only numeric dates is absolute for that reason. When the field loses focus, the field goes back to the readable form.
 
@@ -156,7 +156,7 @@ Relative time follows principle 1, "Never make the reader decode or calculate." 
 
 ## Open questions
 
-**Ask the person instead of choosing a format for the topics below.** The topics come up rarely enough that no house rule exists, and rarely enough that asking costs almost nothing. See the never-guess rule in `recursica-skill-design-router`.
+**Ask the user instead of choosing a format for the topics below.** The topics come up rarely enough that no house rule exists, and rarely enough that asking costs almost nothing. See the never-guess rule in `recursica-skill-design-router`.
 
 - **Conventions for weeks, quarters, and fiscal periods.** Ask how weeks are numbered, how quarters are labeled, and whether periods follow the calendar year or a fiscal year.
 - **The duration format past one day.** A duration past one day changes format, but the exact form has not been set.
@@ -178,8 +178,8 @@ Do not extend a rule above to cover one of these open questions. A reader will n
 - [ ] Every displayed date and time is built by a formatter, in the reader's locale and time zone. No value is cut out of a machine serialization, and no date cut from a UTC timestamp reaches a screen.
 - [ ] Each formatter is created once and shared, not defined separately in each place that uses a formatter or created for each row.
 - [ ] Every date field is identified as a date with no time or an exact moment, and no time-zone conversion shifts a date with no time.
-- [ ] Times are in the user's own time zone, not the tenant's.
-- [ ] A time zone is stated whenever the value is outside the user's time zone, the user's time zone is unknown, or the user has switched time zones.
+- [ ] Times are in the persona's own time zone, not the tenant's.
+- [ ] A time zone is stated whenever the value is outside the persona's time zone, the persona's time zone is unknown, or the persona has switched time zones.
 - [ ] Times for events that happened in another place are shown in the time zone where each event happened, labeled, with a way to convert the times.
 - [ ] Recent events use relative time within one week, and the absolute date after one week. The relative text comes from the platform's relative-time formatter, no relative value reaches the cutoff, and no seconds are shown.
 - [ ] Every quantity of four figures or more has grouped digits, from a formatter in the reader's locale. No plain `2046` appears, and no hand-written comma regex is used. No identifier, year, version, or port is grouped.
@@ -191,7 +191,7 @@ Do not extend a rule above to cover one of these open questions. A reader will n
 - [ ] Ranges drop the parts both ends share, carry one currency symbol at the start, and keep the same precision at both ends.
 - [ ] No range mixes levels of rounding, and a range with a large gap shows the full values.
 - [ ] Read-only fields and editable fields without focus both use the clear format. Only an input with focus shows the masked numeric form, and the input switches back when focus leaves.
-- [ ] 12-hour or 24-hour time follows the user's preference, and the choice does not change from screen to screen.
+- [ ] 12-hour or 24-hour time follows the persona's preference, and the choice does not change from screen to screen.
 - [ ] Durations use unit labels (`3h 20m`), never a clock format, and a duration extends to days only after the duration passes one day.
 - [ ] Seconds appear only for values under a minute across a set of objects, and then on every value in that set.
 - [ ] Alignment is uniform across read-only values and editable values on the same screen.
