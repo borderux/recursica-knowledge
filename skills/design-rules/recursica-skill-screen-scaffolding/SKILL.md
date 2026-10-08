@@ -40,7 +40,7 @@ An app shell is the header, the left rail and the footer around the page content
 - **A few navigation items → a top navigation bar.**
 - **More than about three or four navigation items → a left rail.** A left rail has room to stack the items. A desktop viewport is wider than the viewport is tall, so vertical space for navigation is the scarcer resource. A left rail gives up horizontal width to get more vertical room.
 
-**Three or four items is a default, not a hard limit.** The default can change to fit the product's needs. Where the choice is not obvious, ask the user whether to use a top navigation bar or a left rail, instead of picking one without asking. See `recursica-skill-design-router`.
+**Three or four items is a default, not a hard limit.** The default can change to fit the product's needs. Where the choice is not obvious, confirm with the user whether to use a top navigation bar or a left rail, instead of picking one without asking. See `recursica-skill-design-router`.
 
 ## Titles and breadcrumbs
 

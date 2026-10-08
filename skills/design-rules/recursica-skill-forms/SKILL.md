@@ -230,7 +230,7 @@ A CAPTCHA is a test that tells a person apart from a program.
 
 ## Open questions
 
-No house rule covers the following questions yet. **Ask the user instead of choosing.** See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit an open question.
+No house rule covers the following questions yet. **Confirm with the user instead of choosing.** See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit an open question.
 
 - **Validation across the steps of a multi-step flow.** No rule says whether a step validates when the persona leaves the step. No rule says what going back to an earlier step does to the data the persona entered.
 - **Search and filter inputs.** No rule says whether search and filter inputs follow the form rules, or are a different kind of region that holds content, such as a page, panel, or modal.

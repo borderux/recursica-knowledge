@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-design-router
-description: Start here for any Recursica screen work. The router says what to decide in what order, which skill owns each decision, which rule wins when two rules conflict, and when to ask the user instead of guessing. Load the router first to design, build, review, or refactor a screen, page, panel, or flow, or when rules seem to disagree or no rule applies. The router routes, and the owning skill holds the rules.
+description: Start here for any Recursica screen work. The router says what to decide in what order, which skill owns each decision, which rule wins when two rules conflict, and when to confirm with the user instead of guessing. Load the router first to design, build, review, or refactor a screen, page, panel, or flow, or when rules seem to disagree or no rule applies. The router routes, and the owning skill holds the rules.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -17,7 +17,7 @@ Load the router before starting work. Then, at each decision, load the skill tha
 
 1. **Put the decisions in order.** Make decisions in an order where each earlier answer limits the later answers.
 2. **Settle conflicts.** When two rules disagree, settle the conflict with the order of precedence below, not with personal preference.
-3. **Ask.** When requirements compete or no rule exists, ask the user. Never guess.
+3. **Ask.** When requirements compete or no rule exists, confirm with the user. Never guess.
 
 ## Sources of knowledge
 
@@ -70,7 +70,7 @@ When loading the skills from the Recursica knowledge server, `skill_family` retu
 | dual list box                     | transfer list                                     |
 | drop zone                         | file upload                                       |
 
-When a name is not in the table, find the Recursica component whose skill describes the same use. If no component fits, ask the user.
+When a name is not in the table, find the Recursica component whose skill describes the same use. If no component fits, confirm with the user.
 
 ## Style overrides
 
@@ -95,7 +95,7 @@ When a name is not in the table, find the Recursica component whose skill descri
 
 **NEVER settle uncertainty by picking an answer without saying so.** The ban on silent guesses is the most important rule in the skill family. The next person to read the work cannot tell a silent guess from a real house rule.
 
-Stop and ask the user when **any** of these five cases is true:
+Stop and confirm with the user when **any** of these five cases is true:
 
 - **Requirements compete.** The request asks for two requirements that cannot both be true.
 - **A requirement contradicts a house rule.** Do not follow the requirement without saying so, and do not refuse the requirement without saying so. Point out the conflict, and let the user decide.
@@ -103,7 +103,7 @@ Stop and ask the user when **any** of these five cases is true:
 - **No house rule covers the decision**, and the choice matters. See "Topics with no owner yet" below.
 - **The request is unclear** about scope, object or intent, in a way that would change what gets built.
 
-**Ask the user in this way:**
+**Confirm with the user in this way:**
 
 - **Ask before building, not after.** Put the question in the plan, or ask the question directly. Do not build on an assumption and mention the assumption afterward.
 - **Ask with options.** Give the two or three real choices, and the result of each choice. The user can then answer in one word instead of writing an essay.

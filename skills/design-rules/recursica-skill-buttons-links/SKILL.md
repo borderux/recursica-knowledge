@@ -172,7 +172,7 @@ A label of "Unfollow" puts a negative action in front of the persona and invites
 
 ## Open questions
 
-**Ask the user instead of choosing.** No house rule covers the topics below yet. See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit one of the topics.
+**Confirm with the user instead of choosing.** No house rule covers the topics below yet. See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit one of the topics.
 
 - **Split buttons.** No rule says whether split buttons are allowed at all.
 - **Loading and pending states on actions other than submit.** `recursica-skill-forms` covers the submit button. No skill owns the loading state for `Export` and `Recalculate`.

@@ -23,7 +23,7 @@ Read this section first.
 
 1. **Check whether the data needs a chart.** A number or a table is often better than a chart. The section "When to use a chart" often settles the question. Settle the question first, because the answer may remove the need for a charting library.
 2. **Check the project for a declared charting library.** Look in the project's dependency list and in the project's configuration. If the project declares a charting library, use that library. Do not add a second charting library. The project has made that decision.
-3. **If the project declares no charting library, stop and ask the user to add one.** Do not go ahead, and do not build a workaround for the missing library. Present open-source charting libraries that suit the application's architecture, with the tradeoffs of each library, and let the user choose. See `recursica-skill-design-router` on asking instead of guessing.
+3. **If the project declares no charting library, stop and confirm with the user that the project should add one.** Do not go ahead, and do not build a workaround for the missing library. Present open-source charting libraries that suit the application's architecture, with the tradeoffs of each library, and let the user choose. See `recursica-skill-design-router` on asking instead of guessing.
 4. **Never build a chart by hand out of basic layout components.** In a build test, a bar chart was built from layout and text components, with badges as the bars. The bar chart worked, but a chart built that way is not allowed. A badge is not a bar. Custom styling is for a missing setting or token (a named design value, such as a color or a size, set by the design system), never for a missing component.
 
 ### Criteria for a charting library
@@ -190,11 +190,11 @@ Encoding is how the data becomes visual marks: position, length, color and patte
 
 ## Open questions
 
-- **A house-standard charting library, if any.** The selection criteria above are settled. The process is settled too: check for a declared charting library, and ask the user to add one if the project has none. No library has been chosen. Each project currently makes the choice.
+- **A house-standard charting library, if any.** The selection criteria above are settled. The process is settled too: check for a declared charting library, and, if the project has none, confirm with the user that the project should add one. No library has been chosen. Each project currently makes the choice.
 - **Connecting a chosen library's theme to Recursica tokens.** The requirement for Recursica tokens to set the chart's theme is clear. The method is not clear, and no adapter exists to connect a charting library to Recursica tokens.
 - **Category colors when the palette runs out.** In the build test, a badge in the standard UI kit (the unchanged UI kit in the official Recursica release) had four colors, each with a meaning. Four colors could not show five or more categories, and the shortage of colors forced a single, uniform fill. The rule against a single channel called for a uniform fill anyway. The build test reached the uniform fill by accident, not by design.
 
-No house rule covers the topics below yet. **Ask the user instead of choosing.** See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule above to fit the topics below.
+No house rule covers the topics below yet. **Confirm with the user instead of choosing.** See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule above to fit the topics below.
 
 - **Sparklines (tiny charts without axes) and other small charts inside table cells.**
 - **Legend placement**, and whether a chart has a title, and where the title goes.

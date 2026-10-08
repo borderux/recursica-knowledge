@@ -29,7 +29,7 @@ A switch turns one item on or off. Each switch has a label, which names what the
 | One control alone must save at a different point from the system's other switches | A checkbox. See `recursica-skill-checkbox`. Mixing save modes across switches is forbidden.                           |
 | One label has several possible values                                             | A radio group. See `recursica-skill-radio-button`.                                                                    |
 | The persona sets several independent on-or-off options together                   | Checkboxes. See `recursica-skill-checkbox`. Checkboxes work in groups, and switches do not.                           |
-| The control sits in a table row                                                   | A checkbox. A switch is bulky, and wastes space in a dense table row.                                                 |
+| The control is in a table row                                                     | A checkbox. A switch is bulky, and wastes space in a dense table row.                                                 |
 | Turning the switch on or off could have serious consequences                      | A checkbox plus a confirmation. See `recursica-skill-buttons-links`.                                                  |
 | The persona performs an action rather than setting a state                        | A button. See `recursica-skill-button`.                                                                               |
 | The persona viewing the value can never edit the value                            | A read-only field, which shows the label and the value as text, with no input. See `recursica-skill-read-only-field`. |
@@ -139,7 +139,7 @@ The switch group, switch item and switch components already connect each switch 
 - [ ] The label test passes. The label alone names what the switch controls, with no competing values.
 - [ ] The label names what the switch controls, never the state, and does not change when the switch turns on or off.
 - [ ] No bare switch controls a change with serious consequences, a destructive change, or a change that cannot be undone.
-- [ ] No switch sits in a table row, unless the user approved the switch.
+- [ ] No switch exists in a table row, unless the user approved the switch.
 - [ ] Every switch saves at the same point as every other switch in the system. When switches save immediately, the page shows a save status that stays on the page.
 - [ ] The system never mixes switches that save immediately with switches that wait for Save.
 - [ ] `switch`, `switch-item`, and `switch-group` are used together, and the switches in each group are stacked vertically.

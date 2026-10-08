@@ -43,7 +43,7 @@ For each case below, use the component the table names instead of adapting a tex
 The rules below describe each option by role, such as "the label beside the field". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
 - **A textarea has an error state and a disabled state.** In the standard UI kit, the two states are `error` and `disabled`.
-- **The theme sets the number of rows, and the textarea's height stays fixed.** Do not set the number of rows on any one textarea, even to fit a particular answer. Do not set a height. Do not wrap the textarea in a container to stretch the textarea. If the fixed height is wrong for a case, ask the user. See the open questions.
+- **The theme sets the number of rows, and the textarea's height stays fixed.** Do not set the number of rows on any one textarea, even to fit a particular answer. Do not set a height. Do not wrap the textarea in a container to stretch the textarea. If the fixed height is wrong for a case, confirm with the user. See the open questions.
 - **If the project has a size variant or a width property, use the project's variant or property.**
 - **Show a read-only value with the read-only field, a separate component, not with a read-only state on the textarea.** The read-only field has the same label-placement variant as the textarea, and no input.
 
@@ -61,7 +61,7 @@ The rules below describe each option by role, such as "the label beside the fiel
 
 **Put the rules for the answer in the help text.** State what to include, any minimum and any maximum. The persona then sees the rules before breaking a rule.
 
-**Never enforce a character limit the persona cannot see.** If the field has a maximum, state the maximum before the persona starts typing. The persona must be able to tell how close the text is to the maximum. If the project has a character counter, use the project's counter. If the project has no character counter and the design needs a counter, ask the user instead of building a counter.
+**Never enforce a character limit the persona cannot see.** If the field has a maximum, state the maximum before the persona starts typing. The persona must be able to tell how close the text is to the maximum. If the project has a character counter, use the project's counter. If the project has no character counter and the design needs a counter, confirm with the user instead of building a counter.
 
 **Never cut off or delete the text the persona typed.** Do not quietly drop characters past a limit. Do not clear the field when validation fails. The text belongs to the persona.
 

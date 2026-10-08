@@ -270,7 +270,7 @@ A frozen column stays in place while the other columns scroll horizontally.
 
 ## Open questions
 
-**Ask the user instead of choosing.** No house rule covers the topics below yet. See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule above to fit an open question.
+**Confirm with the user instead of choosing.** No house rule covers the topics below yet. See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule above to fit an open question.
 
 - **Which data types cannot be sorted.** The sorting rule leaves out data types with no logical order, but nobody has listed the data types with no logical order.
 - **Error states for a table.** No rule covers error states for a table, including partial failure.

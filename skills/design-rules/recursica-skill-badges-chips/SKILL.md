@@ -148,7 +148,7 @@ The Recursica badge and chip components behave as follows with the keyboard. Bot
 
 ## Open questions
 
-No house rule covers the following questions yet. **Ask the user instead of choosing.** See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit an open question.
+No house rule covers the following questions yet. **Confirm with the user instead of choosing.** See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit an open question.
 
 - **How counts are written inside a badge.** No rule says whether counts stop at a maximum, such as `99+`, or at what number.
 - **Whether a badge may hold an icon.** If a badge gets an icon, `recursica-skill-icon-semantics` decides which symbol the badge may use. `recursica-skill-icon-semantics` also sets a chip's dismiss control as an X, never a trash can, because a trash can cannot be understood at chip size.

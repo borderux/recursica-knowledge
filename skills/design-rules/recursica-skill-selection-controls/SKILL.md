@@ -98,7 +98,7 @@ Work down this list. The first match decides the control.
 - A click on a fully checked header checkbox makes the header checkbox fully unchecked. A click on a fully unchecked header checkbox makes the header checkbox fully checked.
 - The header checkbox becomes indeterminate **only** when the persona selects or deselects individual table rows. A click on the header checkbox never makes the header checkbox indeterminate.
 
-**Avoid switches in table rows.** A switch is bulky and fits awkwardly in a dense table row. A checkbox takes far less space. Prefer a checkbox or a radio button in the table row, and handle the on or off setting another way. If the design still calls for a switch in a table row, ask the user.
+**Avoid switches in table rows.** A switch is bulky and fits awkwardly in a dense table row. A checkbox takes far less space. Prefer a checkbox or a radio button in the table row, and handle the on or off setting another way. If the design still calls for a switch in a table row, confirm with the user.
 
 ## Layout
 
@@ -161,7 +161,7 @@ For example, a checkbox group lists ways to travel. Checking "Car" reveals a gro
 
 ## Open questions
 
-No house rule covers the following questions yet. **Ask the user instead of choosing.** See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit an open question.
+No house rule covers the following questions yet. **Confirm with the user instead of choosing.** See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit an open question.
 
 - **When autocomplete or typeahead replaces a dropdown.** A dropdown handles many options. No rule sets the point at which searching works better than scanning.
 - **Radio buttons inside a table row.** This skill mentions radio buttons in a table row in passing, as an alternative to a switch. Radio buttons in a table row are not an established pattern.

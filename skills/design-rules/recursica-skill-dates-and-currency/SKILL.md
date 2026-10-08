@@ -156,7 +156,7 @@ Relative time follows principle 1, "Never make the reader decode or calculate." 
 
 ## Open questions
 
-**Ask the user instead of choosing a format for the topics below.** The topics come up rarely enough that no house rule exists, and rarely enough that asking costs almost nothing. See the never-guess rule in `recursica-skill-design-router`.
+**Confirm with the user instead of choosing a format for the topics below.** The topics come up rarely enough that no house rule exists, and rarely enough that asking costs almost nothing. See the never-guess rule in `recursica-skill-design-router`.
 
 - **Conventions for weeks, quarters, and fiscal periods.** Ask how weeks are numbered, how quarters are labeled, and whether periods follow the calendar year or a fiscal year.
 - **The duration format past one day.** A duration past one day changes format, but the exact form has not been set.

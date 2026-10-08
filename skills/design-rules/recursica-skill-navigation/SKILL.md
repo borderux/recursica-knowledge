@@ -157,7 +157,7 @@ Navigation has the following hard bans:
 
 ## Open questions
 
-No house rule covers the topics below yet. **Ask the user instead of choosing.** See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit these topics.
+No house rule covers the topics below yet. **Confirm with the user instead of choosing.** See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit these topics.
 
 - **The order of items within a level.** No rule says whether to order items by how often the items are used, alphabetically, or by workflow order.
 - **Maximum depth.** The 7 ± 2 rule governs the number of items in each level, not how many levels are acceptable.

@@ -56,7 +56,7 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 **Numbers shown together must agree with each other.** Two counts side by side invite the reader to compare the two counts. A number that is a subset of another number must clearly look like a subset. For example, a dashboard reports three pending and eighteen overdue, where overdue is a subset of pending. The pair of counts reports an impossible result, not a labeling problem. The reader then stops trusting every number on the screen. Check the math between the numbers before shipping. `recursica-skill-naming-terminology` owns naming. `recursica-skill-screen-scaffolding` owns the layout of a group of numbers.
 
-**Before putting any chart on a dashboard, confirm that the application has a charting library.** Recursica does not provide charts, so a chart needs a separate charting library. If the application declares no charting library, ask the user to add a charting library. Ask before designing the dashboard around charts that cannot be built yet. See `recursica-skill-data-visualization`.
+**Before putting any chart on a dashboard, confirm that the application has a charting library.** Recursica does not provide charts, so a chart needs a separate charting library. If the application declares no charting library, confirm with the user that the project should add a charting library. Ask before designing the dashboard around charts that cannot be built yet. See `recursica-skill-data-visualization`.
 
 **Put at most four charts on a dashboard.** With more than four charts, the reader is doing analysis, not glancing.
 
@@ -139,7 +139,7 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 ## Open questions
 
-No house rule covers the following questions yet. **Ask the user instead of choosing.** See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit an open question.
+No house rule covers the following questions yet. **Confirm with the user instead of choosing.** See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit an open question.
 
 - **The main position when nothing needs attention.** Announcing good news is forbidden, and no rule says what fills the main position instead.
 - **Calls to action for several roles.** No rule says whether the limit of one or two calls to action still holds when several roles share one screen.

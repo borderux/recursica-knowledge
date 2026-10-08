@@ -33,7 +33,7 @@ A toast reports what just happened, without interrupting the persona's work.
 
 **A toast reports an event that just happened.** The house rule decides by the tense of the message. `recursica-skill-feedback-messaging` chooses between the channels (the forms a message takes: a toast, a banner or a modal) by tense. A finished event is a toast. A condition that has not happened yet is a banner. Check the tense of the message before choosing a channel.
 
-**A toast is the wrong place for a message the persona must not miss.** A toast appears away from where the persona is looking, and the toast closes by itself. A critical alert that needs action right away is not a toast. The tense rule calls for a banner. **If the project has a banner component, use the banner component.** Otherwise, do not build a banner or another alert that stays on screen by hand, and do not point the reader to a component the project does not have. Report the missing banner as a gap in the design system. Do not use a toast for a critical alert. Ask the user about the critical alert, as the open questions describe.
+**A toast is the wrong place for a message the persona must not miss.** A toast appears away from where the persona is looking, and the toast closes by itself. A critical alert that needs action right away is not a toast. The tense rule calls for a banner. **If the project has a banner component, use the banner component.** Otherwise, do not build a banner or another alert that stays on screen by hand, and do not point the reader to a component the project does not have. Report the missing banner as a gap in the design system. Do not use a toast for a critical alert. Confirm the critical alert with the user, as the open questions describe.
 
 ## Variants
 
