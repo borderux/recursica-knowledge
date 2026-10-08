@@ -13,20 +13,20 @@ Tabs split one subject into sections and show one section at a time. A tab is th
 
 ## When to use tabs
 
-- **The tab panels are equal parts of one subject.** Every tab is about the same object, and the user could reasonably look at any tab first.
-- **The order of the tabs does not matter.** Nothing in the third tab depends on the user having visited the first tab.
-- **The user needs to move between the tab panels in one click**, with no step in between.
+- **The tab panels are equal parts of one subject.** Every tab is about the same object, and the persona could reasonably look at any tab first.
+- **The order of the tabs does not matter.** Nothing in the third tab depends on the persona having visited the first tab.
+- **The persona needs to move between the tab panels in one click**, with no step in between.
 
 ## When not to use tabs
 
-| Instead of tabs                                        | Use                                                                                                                                      |
-| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| The steps must be done in order                        | A stepper — see `recursica-skill-forms`                                                                                                  |
-| A form is too long for one screen                      | A stepper. A tab set that holds a form is an invalid structure                                                                           |
-| The sections are different areas of the app            | Navigation — see `recursica-skill-navigation`                                                                                            |
-| The user needs to compare content across sections      | One view that shows the compared content together. Tabs show one section at a time, so the user cannot see the compared content together |
-| The sections are long reference content                | An accordion — see `recursica-skill-accordion`                                                                                           |
-| There are more sections than the tab list has room for | Fewer sections, or a different structure. Never scroll or wrap tabs                                                                      |
+| Instead of tabs                                        | Use                                                                                                                                         |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| The steps must be done in order                        | A stepper — see `recursica-skill-forms`                                                                                                     |
+| A form is too long for one screen                      | A stepper. A tab set that holds a form is an invalid structure                                                                              |
+| The sections are different areas of the app            | Navigation — see `recursica-skill-navigation`                                                                                               |
+| The persona needs to compare content across sections   | One view that shows the compared content together. Tabs show one section at a time, so the persona cannot see the compared content together |
+| The sections are long reference content                | An accordion — see `recursica-skill-accordion`                                                                                              |
+| There are more sections than the tab list has room for | Fewer sections, or a different structure. Never scroll or wrap tabs                                                                         |
 
 **Never spread a form across tabs.** `recursica-skill-navigation` lists a form split across tabs as a misuse of tabs. A half-filled form behind a tab that is not selected hides both the work left to do and the validation errors. Use a stepper.
 
@@ -68,19 +68,19 @@ A tab set is one of the few components where a wrong role or a wrong connection 
 
 ### Screen readers
 
-- **The tab list, each tab, and each tab panel need the correct role for each part.** Each tab panel must be connected to the tab that controls the tab panel. Without the connection, a screen reader user cannot tell that the panel content changed, or which tab changed the panel content.
+- **The tab list, each tab, and each tab panel need the correct role for each part.** Each tab panel must be connected to the tab that controls the tab panel. Without the connection, a persona using a screen reader cannot tell that the panel content changed, or which tab changed the panel content.
 - **Only the selected tab is announced as selected.** Show which tab is selected by more than color or font weight, as `recursica-skill-system-conventions` requires.
 - **Each tab's accessible name (the name a screen reader reads out for a control) is the tab's visible label.** If the label is cut off on screen, the full label must still be announced.
 - **A counter on a tab must be part of the tab's announcement**, as in "Members, 12". Never leave the number as a separate item that a screen reader reads apart from the tab, or skips.
 - **A leading icon on a tab is decorative, and must be hidden from screen readers.** The tab label gives the meaning.
-- **Switching tabs must not replace the page without notice.** If the tab panel's content fills the whole view, tell the user that the tab panel changed, not only that a control was activated.
+- **Switching tabs must not replace the page without notice.** If the tab panel's content fills the whole view, tell the persona that the tab panel changed, not only that a control was activated.
 
 ### Keyboard and non-mouse navigation
 
 - **The tab list is a single tab stop** (a place the Tab key lands). The Tab key moves focus into the tab list, and then out of the tab list to the selected tab's panel. The Tab key does not step through every tab. The tab set sets up the single tab stop automatically. Do not add a `tabindex` to individual tabs, and do not override the tab set's built-in behavior.
 - **The arrow keys move between tabs**, following the orientation: left and right for a horizontal tab set, up and down for a vertical tab set. Home moves to the first tab, and End moves to the last tab.
-- **Pressing Tab on the selected tab moves focus into the selected tab's panel**, not to another place on the page. The user reaches the panel content right away.
-- **Never activate a tab only because the tab receives focus** when activating the tab causes a noticeable delay or navigates. The user must be able to move focus across the tabs and then choose a tab.
+- **Pressing Tab on the selected tab moves focus into the selected tab's panel**, not to another place on the page. The persona reaches the panel content right away.
+- **Never activate a tab only because the tab receives focus** when activating the tab causes a noticeable delay or navigates. The persona must be able to move focus across the tabs and then choose a tab.
 - **Enter or Space activates a tab.** A tab never works by click only.
 
 ## Styling set by tokens
