@@ -11,13 +11,13 @@ metadata:
 
 This skill holds the house rules for dashboards. The house rules are opinions, and unusually strong opinions. The team holds that most dashboards in enterprise software are failures. Treat each house rule as a constraint.
 
-The house rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. Grids, gutters, breakpoints, type styles, elevation (the shadow that makes a surface look raised), and spacing all come from the design system's layouts and tokens (named design values, such as colors or sizes, set by the design system). Do not change the grids, gutters, breakpoints, type styles, elevation or spacing. This skill covers three decisions: whether a dashboard is the right answer at all, what goes on the dashboard, and what the user does next.
+The house rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. This skill covers three decisions: whether a dashboard is the right answer at all, what goes on the dashboard, and what the user does next.
 
 ## Governing principles
 
 1. **A dashboard is for reading at a glance, not for doing work.** A dashboard is always laid out the same way. A dashboard shows the user what needs attention right now, then sends the user away from the dashboard to act.
 2. **Choose stability over novelty.** The data changes constantly, and the layout must not change. Every visit puts the same content in the same places. A quick look at a dashboard works only when the reader already knows where to look.
-3. **Take a position, or do not build a dashboard.** A dashboard is the team's statement of what matters. Showing data and leaving the user to work out what the data means is the lazy answer. The lazy answer has made most modern dashboards worthless.
+3. **Decide what matters, or do not build a dashboard.** A dashboard is the team's statement of what matters. Showing data and leaving the user to work out what the data means is the lazy answer. The lazy answer has made most modern dashboards worthless.
 
 ## The workbench test
 
@@ -28,11 +28,11 @@ The house rules assume **complex enterprise web applications, designed for deskt
 | A glance at what needs attention, then a way out to act | **Dashboard**                                         |
 | Tools and data in one place, to do the user's work      | **Workbench**. Do not call the workbench a dashboard. |
 
-**A screen where the user does work is a workbench.** Name the workbench for the job the workbench does, such as "Scorecard" or "Queue". High-level charts above a work area are fine, but a work area with charts above the work area is not a dashboard.
+**A screen where the user does work is a workbench.** Name the workbench for the job the workbench does, such as "Scorecard" or "Queue". High-level charts may sit above a work area. A work area with charts above the work area is still not a dashboard.
 
-**Build a dashboard only for a large application.** If the product is small enough to take the user straight to the tools, take the user straight to the tools instead. In an application with ten sections, the dashboard's job is to point to the one section that needs attention.
+**Build a dashboard only for a large application.** If the product is small enough to open straight on the tools, open the product on the tools instead of on a dashboard. In an application with ten sections, the dashboard's job is to point to the one section that needs attention.
 
-**If the team cannot say what matters, do not build a dashboard.** Do not fall back on a table or a configurable canvas because nobody has an opinion. A fallback table or canvas combines three failures, the same three as an empty dashboard, and presents the three failures as a feature. Do not clutter a screen to hide that nobody knows what matters.
+**If the team cannot say what matters, do not build a dashboard.** Do not fall back on a table or a configurable canvas because nobody has an opinion. A fallback table or canvas combines the same three failures as an empty dashboard: not knowing what matters, making the screen configurable to avoid deciding, and having no default content. The fallback presents the three failures as a feature. Do not clutter a screen to hide that nobody knows what matters.
 
 **A dashboard must not exist to make up for a badly organized application.** If the reason for a dashboard is to let users finally find content in the application, the real problem is the navigation and the information architecture (how the application's content is organized and labeled).
 
@@ -40,11 +40,11 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 **Aim for one item that needs attention, plus maybe two or three supporting items, each an item the user can act on.** For example, show "Inventory is running low — reorder these products," with a way to go and reorder the products. An inventory chart that the reader must interpret does not meet this aim.
 
-**A dashboard MUST answer "what needs attention right now, and is everything okay."** Answering that question is the dashboard's job.
+**A dashboard MUST answer "what needs attention right now, and is everything okay."**
 
 **Do not announce that nothing needs attention.** A dashboard that announces good news adds noise.
 
-**A status without a trend is close to useless.** A green status light says nothing about whether the number is falling toward yellow. Where a value has a healthy range, show the threshold and the direction the value is moving. The reader can then act before the status changes.
+**A status without a trend is close to useless.** A green status light says nothing about whether the number is falling toward yellow. Where a value has a healthy range, show the threshold and the direction the value is moving. The threshold and the direction let the reader act before the status changes.
 
 **NEVER add an AI summary of the dashboard.** A widget that summarizes the dashboard shows that the dashboard failed to communicate. Fix the dashboard.
 
@@ -52,15 +52,15 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 ## Amount of content
 
-**The ban on inner scrolling applies to the whole application, not only to dashboards.** The application has one scrollbar, and sticky regions that stay in place. No region requires the user to hover over the region before the region scrolls. See `recursica-skill-screen-priority`.
+**Never use inner scrolling (a region that scrolls separately from the page) on any screen in the application, not only on dashboards.** The application has one scrollbar, plus sticky regions that stay in place. No region requires the user to hover over the region before the region scrolls. See `recursica-skill-screen-priority`.
 
-**Numbers shown together must agree with each other.** Two counts side by side invite the reader to compare the two counts. A number that is a subset of another number must clearly look like a subset. For example, a dashboard reports three pending and eighteen overdue, where overdue is a subset of pending. The pair of counts is not a labeling annoyance. The pair of counts reports an impossible result, and the reader stops trusting every number on the screen. Check the math between the numbers before shipping. `recursica-skill-naming-terminology` owns naming. `recursica-skill-screen-scaffolding` owns the layout of a group of numbers.
+**Numbers shown together must agree with each other.** Two counts side by side invite the reader to compare the two counts. A number that is a subset of another number must clearly look like a subset. For example, a dashboard reports three pending and eighteen overdue, where overdue is a subset of pending. The pair of counts reports an impossible result, not a labeling problem. The reader then stops trusting every number on the screen. Check the math between the numbers before shipping. `recursica-skill-naming-terminology` owns naming. `recursica-skill-screen-scaffolding` owns the layout of a group of numbers.
 
-**Before putting any chart on a dashboard, confirm that the application has a charting library.** Recursica draws no charts. If the application declares no charting library, ask the user to add a charting library. Ask before designing the dashboard around charts that cannot be built yet. See `recursica-skill-data-visualization`.
+**Before putting any chart on a dashboard, confirm that the application has a charting library.** Recursica does not provide charts, so a chart needs a separate charting library. If the application declares no charting library, ask the user to add a charting library. Ask before designing the dashboard around charts that cannot be built yet. See `recursica-skill-data-visualization`.
 
 **Put at most four charts on a dashboard.** With more than four charts, the reader is doing analysis, not glancing.
 
-**Four cards across the top of a dashboard is good. Six to eight cards is the limit.** Order the page so the content that is fastest to read comes first. A single number is read in a second. A table takes real time to take in.
+**Four cards across the top of a dashboard is good. Six to eight cards is the limit.** Order the page so the content that is fastest to read comes first. A single number is read in a second. A table takes much longer to read.
 
 **Prefer a number to a chart.** When a percentage, a count or a quantity gives the information, show the number in a larger type size instead of in a chart. A chart that repeats a number right next to the chart adds nothing.
 
@@ -98,20 +98,20 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 **NEVER let a dashboard rearrange the dashboard's content between visits.** Content chosen on the fly, such as widgets picked by AI or arrangements that change, must not be the main dashboard. Content chosen on the fly is acceptable in two forms: a separate changing view that the user chooses to open, or one specific widget that changes. The whole screen must not shift.
 
-**By default, a dashboard is not configurable.** Configurability is usually a technical answer to not having researched what the user needs. A configurable dashboard also has a real support cost. Data problems are much harder to track down in a customized dashboard than in a shared dashboard.
+**By default, a dashboard is not configurable.** Configurability is usually a technical answer to not having researched what the user needs. A configurable dashboard is also harder to support. Data problems are much harder to track down in a customized dashboard than in a shared dashboard.
 
 **Prefer a fixed dashboard for each persona over a dashboard each user configures.** Showing each persona a different fixed dashboard at login is correct.
 
 **Where customization is required anyway, follow two rules:**
 
 - **Keep the user's arrangement across sessions.** The user sets the arrangement once, and the system does not rearrange the arrangement.
-- **Do not advertise customization.** Offer a settings or configuration entry point without drawing attention to the entry point. Let people discover the entry point, or pass the entry point along to colleagues. This approach is the unadvertised affordance convention in `recursica-skill-system-conventions`. See `recursica-skill-discoverability` for why the convention works.
+- **Do not advertise customization.** Offer a settings or configuration entry point without drawing attention to the entry point. Let people find the entry point, or learn about the entry point from colleagues. An unadvertised entry point follows the unadvertised affordance convention in `recursica-skill-system-conventions`. See `recursica-skill-discoverability` for why the convention works.
 
 ## Empty and first-run states
 
 **NEVER ship an empty dashboard.** A new user does not know what the product can do. A new user has no basis for building a personal view. An empty dashboard is the result of three failures: not knowing what matters, making the dashboard configurable to avoid deciding, and having no default content to fill the dashboard.
 
-**If no content is worth putting on a dashboard, there should be no dashboard.**
+**If no content is worth putting on a dashboard, the application should have no dashboard.**
 
 **A first-run dashboard should include an onboarding element.** The onboarding element walks the user through the user's first tasks and explains what the product does. The onboarding element must be dismissible, so the user decides whether the guidance continues.
 
@@ -131,7 +131,7 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 **NEVER use inner scrolling areas, in the dashboard or inside a card.** The whole dashboard scrolls as one page. Ten cards that each have a separate scrolling area are clearly wrong.
 
-**Use the design system's layouts and tokens for grids, gutters, breakpoints, type styles, elevation, and spacing.** Do not change the layouts or the tokens. Plenty of white space separates the groups of content on the dashboard.
+**Use the design system's layouts and tokens (named design values, such as colors or sizes, set by the design system) for grids, gutters, breakpoints, type styles, elevation (the shadow that makes a surface look raised), and spacing.** Do not change the grids, gutters, breakpoints, type styles, elevation or spacing. Do not change the layouts or the tokens. Plenty of white space separates the groups of content on the dashboard.
 
 ## Smaller viewports
 
