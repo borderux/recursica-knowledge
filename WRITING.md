@@ -72,9 +72,10 @@ Quoted interface copy keeps the exact interface wording, such as a button label 
 | surface                                       | page, panel, or modal                                 |
 | gray bars where text will be                  | skeleton screen                                       |
 | summary figures                               | KPI tiles                                             |
-| interactive                                   | clickable                                             |
 | design-system names                           | the names in Figma and the UI kit                     |
 | a bad component alias or a bad semantic alias | the wrong color, set in the component or in the theme |
+
+**"Clickable" and "interactive" mean different things.** Write "clickable" for an element the user clicks to trigger one action, such as a button, a link or a table row that opens a record. Write "interactive" for any element the user can operate in any way, such as clicking, typing into a field or using the keyboard. Never swap one word for the other, because "interactive" covers more elements than "clickable".
 
 **Say what the reader sees and does, not what the code does.** Write "Clicking goes to a different page", not "the user ends up somewhere else". Write "the name the code uses", not "the adapter's name for the axis".
 

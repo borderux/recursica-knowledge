@@ -200,6 +200,14 @@ These were open when this file was first written. Each was settled by reading th
 | Whether a layer and a card are alternatives                  | No. A card sits on a layer and carries its own colour set for each of the four levels. A layer is a surface and a token scope; a card is an object boundary for repeating peers                                                                                            | `recursica-skill-layers`, `recursica-skill-card`                       |
 | Whether drawer, panel, and sidebar are different things      | Drawer and panel are synonyms — a surface that slides in. A sidebar is the permanent desktop nav. Modal and dialog are also interchangeable                                                                                                                                | `recursica-skill-panels-modals`                                        |
 
+### Decided 2026-10-08
+
+These came out of Edie's review of every skill. Each was a sentence Edie could not make clearer without changing a rule, and the owner decided each one.
+
+| Was open                                                            | Resolution                                                                                                                                                                                                                          |
+| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Whether "interactive" should become "clickable", as WRITING.md said | The two words mean different things. "Clickable" is an element the user clicks to trigger one action. "Interactive" is any element the user can operate, including typing and the keyboard. Both stay, each where the rule means it |
+
 ### Decided 2026-10-05
 
 These came out of rewriting every component skill to the button model. Each was a skill that contradicted itself or another skill, and the owner decided each one.
