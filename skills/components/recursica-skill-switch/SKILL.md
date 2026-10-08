@@ -89,7 +89,7 @@ The application must provide every behavior in the two lists below. The switch g
 ### Screen readers
 
 - **Every switch needs a real label, set on the switch item (`switch-item`).** The item label is the accessible name (the name a screen reader reads out for a control). Text that only sits beside the track is not a label. A screen reader announces a switch with no accessible name as an unlabeled control.
-- **The label must state what the switch controls, and make sense out of context.** The reason is that a screen reader announces the label without the text around the switch. "Notifications" beside a track tells a persona using a screen reader nothing about what turning the switch off does.
+- **The label must state what the switch controls, and make sense out of context.** A screen reader announces the label without the text around the switch. "Notifications" beside a track tells a persona using a screen reader nothing about what turning the switch off does.
 - **The on and off state must be available in code.** Never show the state only by the thumb's position or the track's color. The persona must hear "on" or "off". `recursica-skill-system-conventions` requires the state in code.
 - **The thumb icon is decorative, and must be hidden from screen readers.** The icon is only a second visual sign. The state in code says whether the switch is on or off.
 - **Never put the state in the visible label.** A screen reader announces a label that reads "On" as the name. The persona hears "On, off", and cannot tell the name from the state.
