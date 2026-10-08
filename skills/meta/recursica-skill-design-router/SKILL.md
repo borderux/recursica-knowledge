@@ -89,15 +89,15 @@ Stop and ask the user when **any** of these five cases is true:
 
 Make the decisions in the table from top to bottom. Each answer limits the decisions below the answer.
 
-The table uses two Recursica terms. A surface (a region that holds content, such as a page, panel, or modal) sits on a layer (a numbered background level, 0 to 3, that sets the colors of the components on that level). Layer 0 is the page itself.
+The table uses one Recursica term. A region that holds content, such as a page, panel or modal, sits on a layer (a numbered background level, 0 to 3, that sets the colors of the components on that level). Layer 0 is the page itself.
 
 | #   | Decision                                                                                                                                      | Owner                                              |
 | --- | --------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
 | 1   | The object the screen is about, and whether the screen is about one object or many                                                            | `recursica-skill-information-architecture`         |
 | 2   | Whether the content being designed is a location. A location needs a unique route, a URL, and a history entry                                 | `recursica-skill-navigation`                       |
 | 3   | Where the screen sits in the app shell: the navigation pattern, the navigation item, breadcrumbs and the page heading                         | `recursica-skill-navigation`                       |
-| 4   | The page's layout, and whether a region of the page needs a separate surface                                                                  | `recursica-skill-screen-scaffolding`               |
-| 5   | Which layer each surface sits on, starting from layer 0 on the root element                                                                   | `recursica-skill-layers`                           |
+| 4   | The page's layout, and whether part of the page needs a separate region that holds content, such as a page, panel or modal                    | `recursica-skill-screen-scaffolding`               |
+| 5   | Which layer each region that holds content sits on, such as a page, panel or modal, starting from layer 0 on the root element                 | `recursica-skill-layers`                           |
 | 6   | What matters most on the screen, what to cut, and whether the screen is finished                                                              | `recursica-skill-screen-priority`                  |
 | 7   | Whether the app supports any screen smaller than desktop, and at which breakpoint tier. Ask before choosing a navigation pattern              | `recursica-skill-responsive-behavior`              |
 | 8   | The type of content. Many instances of one object go in a table. One object's properties go in a detail view or a form view                   | `recursica-skill-tables` / `recursica-skill-forms` |
@@ -137,8 +137,8 @@ Apply the precedence rules below in order. The first precedence rule that settle
 
    The component skill still wins on exactly one question: **which variants and states exist.** Each component skill says to get the project's list of variants and states from the Recursica MCP server. A designer can add variants, options and states in Theme Forge, so the project's list wins over the standard UI kit (the unchanged UI kit in the official Recursica release). If a design rule assumes a capability and the project's component lacks the capability, raise the gap. The gap is not permission to invent the capability.
 
-4. **Within the same tier, the rule about the more specific surface wins.** A rule about one control beats a general rule about all controls. For example, a segmented control is capped at 2–5 options, even though the general limit is 7 ± 2. The segmented control's rule wins because the segmented control's rule is narrower. Rule 4 does not raise a component skill above a design rule. Rule 3 settles that case.
-5. **The skill that names a surface owns the surface.** When two skills both seem to apply, the skill whose description names the surface is in charge. The other skill is background.
+4. **Within the same tier, the rule with the narrower subject wins.** A rule about one control beats a general rule about all controls. For example, a segmented control is capped at 2–5 options, even though the general limit is 7 ± 2. The segmented control's rule wins because the segmented control's rule is narrower. Rule 4 does not raise a component skill above a design rule. Rule 3 settles that case.
+5. **The skill that names a subject owns the subject.** When two skills both seem to apply, the skill whose description names the subject is in charge. The other skill is background.
 6. **A stated house rule beats an outside convention.** Common practice from outside Recursica does not override a Recursica rule, and is never a reason to loosen a Recursica rule. If the house rule looks wrong, say so and ask. Do not work around the house rule.
 7. **A later clarification beats an earlier general statement, but only on wording and scope.** If the substance of the two statements conflicts, ask instead of assuming the newer text wins.
 
@@ -146,7 +146,7 @@ Apply the precedence rules below in order. The first precedence rule that settle
 
 ## Conventions to check before asking
 
-**When no topic skill covers a decision, check `recursica-skill-system-conventions` before treating the decision as unowned.** The system conventions are the house position on surfaces nobody has designed before. `recursica-skill-system-conventions` holds six conventions drawn from across the topic skills:
+**When no topic skill covers a decision, check `recursica-skill-system-conventions` before treating the decision as unowned.** The system conventions are the house position on a subject nobody has designed before. `recursica-skill-system-conventions` holds six conventions drawn from across the topic skills:
 
 - One behavioral mode per system.
 - The unadvertised affordance (a control that works but is not shown in the main interface, such as a keyboard shortcut).

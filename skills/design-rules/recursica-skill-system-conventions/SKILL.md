@@ -9,14 +9,14 @@ metadata:
 
 # System conventions
 
-The Recursica design rules repeat six conventions. Each convention was stated more than once, each time about a different surface (a region that holds content, such as a page, panel, or modal) and in a different recording. The repetition across recordings makes each of the six rules a convention, not a one-off rule.
+The Recursica design rules repeat six conventions. Each convention was stated more than once, each time about a different page, panel, modal or other region that holds content, and in a different recording. The repetition across recordings makes each of the six rules a convention, not a one-off rule.
 
 **This skill is drawn from other skills, not recorded from the team.** Each convention below lists the rules the convention comes from, and the skill that owns each rule. The rules in those skills are the authority. This skill describes the pattern that those rules share.
 
 **Follow two rules when using this skill:**
 
-1. **A rule about a specific surface always wins.** When the owning skill states a different rule for the surface being designed, follow the owning skill. This skill does not replace or extend the owning skill.
-2. **This skill is mainly for new surfaces.** When no topic skill, such as the forms skill or the tables skill, covers a decision, the six conventions are the house position. Apply the six conventions instead of inventing an answer or borrowing a convention from another source.
+1. **A rule about a specific page, panel, modal or other region always wins.** When the owning skill states a different rule for the page, panel, modal or other region being designed, follow the owning skill. This skill does not replace or extend the owning skill.
+2. **This skill is mainly for a new page, panel, modal or other region.** When no topic skill, such as the forms skill or the tables skill, covers a decision, the six conventions are the house position. Apply the six conventions instead of inventing an answer or borrowing a convention from another source.
 
 ## 1. One behavioral mode per system
 
@@ -32,7 +32,7 @@ Examples:
 
 **The convention applies generally because the user builds one mental model** (what a person expects, based on the tools and work the person already knows) of the whole application, not a separate mental model for each view. Mixed modes do more than make the mental model a little less accurate on one screen. Mixed modes take away the user's ability to predict any behavior, because the user can no longer trust the mental model.
 
-**On a new surface, ask whether the user can see on screen which mode is active.** If the user can see which mode is active, letting the mode vary by screen might be acceptable. If the user cannot see the mode, the whole application uses one mode. The user cannot see when a change is saved, whether a click starts editing, or whether a change commits as soon as the user makes the change.
+**On a new page, panel, modal or other region, ask whether the user can see on screen which mode is active.** If the user can see which mode is active, letting the mode vary by screen might be acceptable. If the user cannot see the mode, the whole application uses one mode. The user cannot see when a change is saved, whether a click starts editing, or whether a change commits as soon as the user makes the change.
 
 **When a requirement calls for a second mode, raise the conflict with the user.** Do not build the second mode in as a variation without telling anyone. See `recursica-skill-design-router`.
 
@@ -71,9 +71,9 @@ Examples:
 | An empty value versus zero in a table cell | An explicit "NA". Not an empty cell, and not a `0` that looks like a real value                                           | `recursica-skill-tables`             |
 | An object's status                         | An icon as well as a color, and an accessible name (the name a screen reader reads out for a control) as well as the icon | `recursica-skill-icon-semantics`     |
 
-**The convention applies generally because the rules above guard against the same failure.** Each rule was written about an unrelated surface. When a meaning is shown in only one channel and that channel fails, the user loses the meaning. The color palette belongs to the design system. The screen designer decides which channels show the meaning.
+**The convention applies generally because the rules above guard against the same failure.** Each rule was written about an unrelated page, panel, modal or other region. When a meaning is shown in only one channel and that channel fails, the user loses the meaning. The color palette belongs to the design system. The screen designer decides which channels show the meaning.
 
-**On a new surface, name the channel that the meaning depends on now.** Then ask what a user who cannot perceive that channel would see. If the user would see nothing, add a second channel.
+**On a new page, panel, modal or other region, name the channel that the meaning depends on now.** Then ask what a user who cannot perceive that channel would see. If the user would see nothing, add a second channel.
 
 ## 4. Fix the structure, do not engineer around the symptom
 
@@ -92,7 +92,7 @@ Examples:
 
 **The convention applies generally because a workaround keeps the broken structure and adds to the structure.** Overflow menus, scroll areas inside the page, and density toggles (switches for how tightly content is packed together) all look like solutions. Each workaround makes the broken structure permanent.
 
-**On a new surface, stop before any addition whose purpose is to make content fit.** Name what would have to change for the content to fit without the addition, and propose that change instead. When a limit comes from outside the design and cannot be moved, say so plainly. A client requirement and an amount of data that cannot be reduced are two such limits. Do not let the workaround pass as a design choice.
+**On a new page, panel, modal or other region, stop before any addition whose purpose is to make content fit.** Name what would have to change for the content to fit without the addition, and propose that change instead. When a limit comes from outside the design and cannot be moved, say so plainly. A client requirement and an amount of data that cannot be reduced are two such limits. Do not let the workaround pass as a design choice.
 
 ## 5. Group with space, not boxes
 
@@ -108,15 +108,15 @@ Examples:
 | A dashboard layout                                                                                   | A fixed layout that uses type hierarchy and white space, with cards placed inside the layout. Never a screen made of cards                                                                                             | `recursica-skill-dashboards`                     |
 | Spacing between form fields and between form sections                                                | The form components include the spacing. Do not add wrappers or spacer elements                                                                                                                                        | `recursica-skill-forms`                          |
 | A form, a form section, or a single form control                                                     | **Never inside a card**, with no exception. Group with headings and the spacing built into the components                                                                                                              | `recursica-skill-forms`, `recursica-skill-card`  |
-| A region that needs a surface but has no peers                                                       | A layer (a numbered background level, 0 to 3, that sets the colors of the components on that level), at the shallowest level that works. Never a card, and never hand-written styles                                   | `recursica-skill-layers`                         |
+| A region that needs a separate background but has no peers                                           | A layer (a numbered background level, 0 to 3, that sets the colors of the components on that level), at the shallowest level that works. Never a card, and never hand-written styles                                   | `recursica-skill-layers`                         |
 
 **The convention applies generally because a border tells the user two facts.** A border says that the content inside the border belongs together _and is separate from similar items beside the border._ With no similar items beside the border, the border is decoration and tells the user nothing. A decorative border takes up padding and width, and uses up a level of hierarchy. Boxes inside boxes on a generated screen are the most common sign of decorative borders.
 
-**On a new surface, name the peer that a container separates the content from, before drawing the container.** If the container has no peer, remove the container and use spacing instead.
+**On a new page, panel, modal or other region, name the peer that a container separates the content from, before drawing the container.** If the container has no peer, remove the container and use spacing instead.
 
 ## 6. One control, one outcome
 
-**One interaction has one outcome.** A control that navigates _and_ does a second action is hyperloaded (doing more than one action at once), and a hyperloaded control must be split. The second action can be opening a surface, applying a filter, changing a mode, or switching a tab.
+**One interaction has one outcome.** A control that navigates _and_ does a second action is hyperloaded (doing more than one action at once), and a hyperloaded control must be split. The second action can be opening a page, panel, modal or other region, applying a filter, changing a mode, or switching a tab.
 
 Examples:
 
@@ -128,7 +128,7 @@ Examples:
 
 **The convention applies generally because a hyperloaded control causes three separate problems, and the problems add up.** The user cannot predict what the control will do, because the control's label can honestly describe only one of the two actions. The user cannot undo the control's actions, because going back reverses one action and leaves the other action in place. The user cannot describe to a colleague what happened. Not being able to describe what happened makes an application feel impossible to learn, not merely awkward.
 
-**On a new surface, list every change of state that one use of the control causes.** A change of state can be the route, an opened surface, a filter, a selection, a mode or the scroll position. If one use of the control causes more than one change of state, the control is hyperloaded. Either split the control into two controls, or make the second change of state one the user clearly asked for, not one bundled in.
+**On a new page, panel, modal or other region, list every change of state that one use of the control causes.** A change of state can be the route, an opened page, panel, modal or other region, a filter, a selection, a mode or the scroll position. If one use of the control causes more than one change of state, the control is hyperloaded. Either split the control into two controls, or make the second change of state one the user clearly asked for, not one bundled in.
 
 **Convention 6 allows a single action with necessary side effects.** A single action with necessary side effects is still one outcome. Submitting a form saves the form and closes the form. Deleting a row removes the row and shows an undo option. The test is whether the second effect is _part of_ what the user asked for, or a separate effect added to the request.
 
@@ -147,7 +147,7 @@ Examples:
 
 ## A seventh convention
 
-**Do not add a seventh convention.** When a pattern seems to repeat across surfaces but is not listed in this skill, say so, and let a person decide whether the pattern is a convention. A later reader cannot tell a convention that an agent invented from a recorded convention. This skill exists to prevent that confusion.
+**Do not add a seventh convention.** When a pattern seems to repeat across pages, panels, modals or other regions but is not listed in this skill, say so, and let a person decide whether the pattern is a convention. A later reader cannot tell a convention that an agent invented from a recorded convention. This skill exists to prevent that confusion.
 
 ## Out of scope
 
@@ -170,4 +170,4 @@ Examples:
 - [ ] No form, form section, or form control sits inside a card.
 - [ ] Where a topic skill covers a decision, the topic skill's rule is followed, not the general convention in this skill.
 - [ ] No control both navigates and does a second action. One use of each control causes one change of state.
-- [ ] No new cross-surface convention was added without a person's decision.
+- [ ] No new convention that repeats across pages, panels, modals or other regions was added without a person's decision.

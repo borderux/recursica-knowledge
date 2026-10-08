@@ -217,7 +217,7 @@ W_max = 44 × 12.48                 = 555px
 
 - **The `c_font` value for a specific typeface.** The typeface classes above cover the common cases. A typeface with unusual proportions needs a ratio measured for that typeface, not an estimated ratio.
 - **Text wrapping and truncation.** The team explicitly set the topic aside when the team recorded the typography rules. `recursica-skill-tables` covers truncation inside a table cell. Every other part of text wrapping and truncation is open.
-- **Live regions and `aria-live`.** This skill set the topic aside, and no other skill covers the topic. Each component skill states what the component must announce to assistive technology, but no policy covers every surface (a region that holds content, such as a page, panel, or modal).
+- **Live regions and `aria-live`.** This skill set the topic aside, and no other skill covers the topic. Each component skill states what the component must announce to assistive technology, but no policy covers every region that holds content, such as a page, panel, or modal.
 - **Which heading level a page's sections start at**, given that the single H1 may be hidden.
 - **Whether `abbr` markup is used** for the later, abbreviated uses, or whether plain text is enough once the term has been written out.
 - **Whether every type style includes a capitalization setting.** The rule is that the typography token controls capitalization. When a type style seems not to include capitalization, report the missing capitalization.

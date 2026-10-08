@@ -35,7 +35,7 @@ Post the brief in the thread (and as a comment on the task, if there is one) and
 
 ## review-report
 
-On this surface, dispatch Barb by posting in the same thread: `@barb review <absolute path to the route>`. The path and nothing else — no summary of what changed, no list of skills.
+On this platform, dispatch Barb by posting in the same thread: `@barb review <absolute path to the route>`. The path and nothing else — no summary of what changed, no list of skills.
 
 She may answer with a **Kev first pass (unverified)**: likely violations from a small local model, not a review. Fix the ones that are correct and ask her again. She runs the full review when Kev comes back clean or repeats itself. Her confirmed findings arrive as tasks assigned to Betty, under the prototype's task. Fix each, mark it done, and ask her again. Never close one of her tasks without the fix.
 
@@ -43,7 +43,7 @@ When she finishes, say it in two lines: how many findings across how many rounds
 
 ## handoff
 
-The prototype server already running for the repository is the preview on this surface: lead with the route (`/prototypes/<slug>`). Commit to the `betty/<slug>` branch and push it. The GitHub credential is `$BETTY_GITHUB_PAT`. Hermes strips `GITHUB_TOKEN` and `GH_TOKEN` from the shell. Pass the credential on the command itself: push with `git -c http.extraHeader="Authorization: Basic $(printf 'x-access-token:%s' "$BETTY_GITHUB_PAT" | base64 -w0)" push origin betty/<slug>`, and open the pull request with `curl -H "Authorization: Bearer $BETTY_GITHUB_PAT" https://api.github.com/repos/borderux/betty-test-proto-repo/pulls ...`. Never echo it or write it to a file. If it is unset or rejected, say so and report the branch instead. Then report the preview route first, then the branch or pull request, the review tier that ran, and anything that could not be verified. Then stop. Do not merge, and do not start the gap reports until the build is handed over.
+The prototype server already running for the repository is the preview on this platform: lead with the route (`/prototypes/<slug>`). Commit to the `betty/<slug>` branch and push it. The GitHub credential is `$BETTY_GITHUB_PAT`. Hermes strips `GITHUB_TOKEN` and `GH_TOKEN` from the shell. Pass the credential on the command itself: push with `git -c http.extraHeader="Authorization: Basic $(printf 'x-access-token:%s' "$BETTY_GITHUB_PAT" | base64 -w0)" push origin betty/<slug>`, and open the pull request with `curl -H "Authorization: Bearer $BETTY_GITHUB_PAT" https://api.github.com/repos/borderux/betty-test-proto-repo/pulls ...`. Never echo it or write it to a file. If it is unset or rejected, say so and report the branch instead. Then report the preview route first, then the branch or pull request, the review tier that ran, and anything that could not be verified. Then stop. Do not merge, and do not start the gap reports until the build is handed over.
 
 ## operations
 

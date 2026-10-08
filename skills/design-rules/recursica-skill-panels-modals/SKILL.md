@@ -11,7 +11,7 @@ metadata:
 
 The house rules below decide where a task goes: in a panel beside the page, in a modal over the page, or on a separate page. The rules are the team's opinions, not neutral best practices. Treat every rule as a constraint.
 
-The rules assume **complex enterprise web applications, designed for desktop first**, built on a design system with accessible components. Use the rules to choose the surface (a region that holds content, such as a page, panel, or modal) for each task. The components set how each surface looks, and the rules below do not.
+The rules assume **complex enterprise web applications, designed for desktop first**, built on a design system with accessible components. Use the rules to choose whether each task goes in a page, a panel or a modal. The components set how a page, a panel and a modal look, and the rules below do not.
 
 ## The three governing principles
 
@@ -159,7 +159,7 @@ A panel exists to sit beside the page the panel depends on. Below the width wher
 - **A small workflow, a form, or editing details in a modal becomes a page** below the tablet breakpoint.
 - **A confirmation modal stays a modal** at every width. "Are you sure you want to delete this?" is not work.
 
-**MUST NOT use a surface native to one platform instead.** The iOS sheet (a panel that slides up from the bottom on iPhones) is the most likely substitute, and the iOS sheet is forbidden. Android does not use the iOS sheet, and a user who does not use iOS finds the sheet confusing rather than familiar. Keep the interaction patterns the desktop application already uses. See `recursica-skill-responsive-behavior`.
+**MUST NOT replace a page, panel or modal with a pattern native to one platform.** The iOS sheet (a panel that slides up from the bottom on iPhones) is the most likely substitute, and the iOS sheet is forbidden. Android does not use the iOS sheet, and a user who does not use iOS finds the sheet confusing rather than familiar. Keep the interaction patterns the desktop application already uses. See `recursica-skill-responsive-behavior`.
 
 ## Focus and navigation priority
 
@@ -171,7 +171,7 @@ A panel exists to sit beside the page the panel depends on. Below the width wher
 
 ## Set by the theme or the component
 
-- **Panel and modal styling inside the components:** padding, sizes, dividers, elevation (the shadow that makes a surface look raised), and overlay treatment.
+- **Panel and modal styling inside the components:** padding, sizes, dividers, elevation (the shadow that makes a layer, card, menu, popover, panel or modal look raised), and overlay treatment.
 - **Panel width.** In the standard UI kit (the unchanged UI kit in the official Recursica release), the panel's minimum and maximum width are fixed. If the project has a size variant, use the size variant. Otherwise, do not set the panel width. The designer still chooses the side each panel opens from.
 - **Focus inside a component.** The design system provides focus behavior inside each component. Do not break the focus behavior.
 
@@ -216,7 +216,7 @@ A panel exists to sit beside the page the panel depends on. Below the width wher
 - [ ] Panels close on a route change, except where the navigation exists only to open another panel or modal.
 - [ ] Below the tablet breakpoint, every panel opens as a page, not as a narrower panel or a full-screen overlay styled as a panel.
 - [ ] Modals where the user does work become pages below the tablet breakpoint, and confirmation modals stay modals.
-- [ ] No surface native to iOS or Android, such as a sheet, takes the place of a panel or modal below desktop size.
+- [ ] No pattern native to iOS or Android, such as a sheet, takes the place of a panel or modal below desktop size.
 - [ ] No shader, scrim, or tint is drawn behind any open panel, and the code library's default overlay is overridden.
 - [ ] Every drawer is treated as a panel, and no permanent sidebar is called a drawer.
 - [ ] Every modal traps focus. No panel is modal or traps focus, and the page behind a panel stays reachable by keyboard.

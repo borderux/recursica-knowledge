@@ -204,9 +204,10 @@ These were open when this file was first written. Each was settled by reading th
 
 These came out of Edie's review of every skill. Each was a sentence Edie could not make clearer without changing a rule, and the owner decided each one.
 
-| Was open                                                            | Resolution                                                                                                                                                                                                                          |
-| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Whether "interactive" should become "clickable", as WRITING.md said | The two words mean different things. "Clickable" is an element the user clicks to trigger one action. "Interactive" is any element the user can operate, including typing and the keyboard. Both stay, each where the rule means it |
+| Was open                                                            | Resolution                                                                                                                                                                                                                                                            |
+| ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Whether "interactive" should become "clickable", as WRITING.md said | The two words mean different things. "Clickable" is an element the user clicks to trigger one action. "Interactive" is any element the user can operate, including typing and the keyboard. Both stay, each where the rule means it                                   |
+| Whether to keep the word "surface"                                  | No. "Surface" is too generic. Each sentence names the specific component or region, such as a page, panel or modal. The glossary no longer defines "surface", and "elevation" is now "the shadow that makes a layer, card, menu, popover, panel or modal look raised" |
 
 ### Decided 2026-10-05
 

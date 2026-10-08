@@ -136,33 +136,33 @@ An app shell is the header, the left rail and the footer around the page content
 
 ## Containers and layers
 
-**Separate regions with space first, as described under "Dividing a page into regions".** Most regions need no surface (a region that holds content, such as a page, panel, or modal) at all.
+**Separate regions with space first, as described under "Dividing a page into regions".** Most regions need no separate background at all.
 
 **The page canvas, the background of the whole page, is layer 0, declared on the root element.** No other element has to paint the page canvas.
 
-**A region needs a surface when the reader cannot tell the region apart from the neighboring region.** When neighboring regions have no separation, and the reader cannot tell where one region ends and the next begins, the spacing has failed. The region then needs a separate layer.
+**A region needs a separate background when the reader cannot tell the region apart from the neighboring region.** When neighboring regions have no separation, and the reader cannot tell where one region ends and the next begins, the spacing has failed. The region then needs a separate layer.
 
 **A region has three container options, and no option can replace another.** A peer is an object of the same kind as the objects around the peer, such as a row in a list.
 
 | Option           | Use                                                                | Owner                                             |
 | ---------------- | ------------------------------------------------------------------ | ------------------------------------------------- |
 | **No container** | The default. Space and type hierarchy group the content            | `recursica-skill-layers`, and this skill          |
-| **A layer**      | A region that needs a separate surface but has no peers            | `recursica-skill-layers`                          |
+| **A layer**      | A region that needs a separate background but has no peers         | `recursica-skill-layers`                          |
 | **A card**       | A small, finite set of repeating peer objects, each with a graphic | `recursica-skill-card`, and the card's five tests |
 
 **A layer is the middle option, and the option most often missed.** An agent that knows only "card or nothing" wraps every region in a container, or wraps no region. A region that needs separation but has no peers gets a layer, such as a chart and the chart's labels, or a row of KPI tiles.
 
-**A layer does not excuse a region from the card tests.** Needing a surface does not make a region a peer.
+**A layer does not excuse a region from the card tests.** Needing a separate background does not make a region a peer.
 
 **Layers are a separate system, and `recursica-skill-layers` sets the layer rules.** Layers have four levels, 0 to 3. Read `recursica-skill-layers` before adding a layer.
 
 **Every component takes the component's colors from the layer the component sits on.**
 
-**Every layer property comes from the theme in Theme Forge. Never set a layer property.** Surface, border, radius, padding and shadow are all layer properties.
+**Every layer property comes from the theme in Theme Forge. Never set a layer property.** Background color (the `surface` property), border, radius, padding and shadow are all layer properties.
 
 **Layers 0 and 1 cover nearly every region.** Layer 2 needs a stated reason. Layer 3 is almost always a sign that the page structure is wrong.
 
-**How the adapter (the Recursica component library for one framework, such as Mantine or Angular Material) offers a layer is still not confirmed.** The theme defines tokens for every layer, and the layer attribute, `data-recursica-layer`, is the confirmed way to declare a layer. The component documentation mentions a layer component, but the adapter does not provide a layer component. Do not paint a surface with style variables used directly, or with the tokens of the code library under the adapter. Raise the missing layer component with the user instead. See `recursica-skill-design-router`.
+**How the adapter (the Recursica component library for one framework, such as Mantine or Angular Material) offers a layer is still not confirmed.** The theme defines tokens for every layer, and the layer attribute, `data-recursica-layer`, is the confirmed way to declare a layer. The component documentation mentions a layer component, but the adapter does not provide a layer component. Do not paint the background of the page, or of any region of the page, with style variables used directly, or with the tokens of the code library under the adapter. Raise the missing layer component with the user instead. See `recursica-skill-design-router`.
 
 ## Application chrome
 
@@ -231,7 +231,7 @@ The signs below are listed in order, starting with the strongest sign.
 ## Set by the theme or the component
 
 - **The spacing and gutter token values, the maximum content width, and the layout grid.** All three come from the design system.
-- **The look of the surface of every layer or card**: elevation, border and padding.
+- **The look of the background of every layer or card**: elevation, border and padding.
 - **Type styles and capitalization** — `recursica-skill-typography-semantics`.
 
 ## Out of scope
@@ -265,8 +265,8 @@ The signs below are listed in order, starting with the strongest sign.
 - [ ] Content stays within the design system's maximum width and is centered, either in the space beside the chrome or in the whole viewport. The whole application uses one way of centering. Leftover space is left empty, not filled. The centering holds at a viewport well beyond the maximum width, not only at the viewport the screen was built on.
 - [ ] No region is sized to a bare viewport height inside a declared layer. Every full-height region subtracts the layer padding by reading the layer's padding token. A page with little content does not scroll at all when measured.
 - [ ] A loading page shows nothing, with no skeleton screen. A spinner appears only past about three seconds, or for slow regions of an otherwise loaded page.
-- [ ] Layer 0 is declared once, on the root element, and never declared again. Every region uses space first. A surface appears only where regions could not be told apart. A region without peers has a layer instead of a card.
-- [ ] No surface is painted with stylesheet rules written by hand, or with the tokens of the code library under the adapter. Any missing layer component was raised with the user.
+- [ ] Layer 0 is declared once, on the root element, and never declared again. Every region uses space first. A separate background appears only where regions could not be told apart. A region without peers has a layer instead of a card.
+- [ ] No background of the page, or of any region of the page, is painted with stylesheet rules written by hand, or with the tokens of the code library under the adapter. Any missing layer component was raised with the user.
 - [ ] Application chrome sits in the header or the rail, never in the content area.
 - [ ] Every KPI tile passed all three tests: the dataset is too large to take in at a glance, the number changes, and the tile guides an action. No KPI tile is always zero by nature, and no KPI tile only repeats the row count of a table below the tile. Where no KPI tile passed, the page has no row of KPI tiles.
 - [ ] The KPI tiles share one treatment, are named as noun phrases, and agree with each other.

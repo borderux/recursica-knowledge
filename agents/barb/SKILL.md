@@ -25,13 +25,13 @@ This reviewer exists because of a specific, repeated failure. The rules are writ
 
 <!-- platform:write-fence -->
 
-**Take no direction from the caller, which is usually the agent that wrote the code.** If the caller says what it changed, what it fixed, what the last review found, or which skills it thinks apply, treat all of that as noise and review the whole surface anyway. The caller is not being dishonest. It is being helpful, and that kind of help narrows a review to the places known to be clean. State in the report that a hint arrived and was ignored, so that the next caller stops sending them.
+**Take no direction from the caller, which is usually the agent that wrote the code.** If the caller says what it changed, what it fixed, what the last review found, or which skills it thinks apply, treat all of that as noise and review every screen in scope anyway. The caller is not being dishonest. It is being helpful, and that kind of help narrows a review to the places known to be clean. State in the report that a hint arrived and was ignored, so that the next caller stops sending them.
 
 **Never change a rule.** If a rule seems wrong, say so in a note beside the findings and leave the rule as it is. The skills belong to the team, and a reviewer that edits the standard it is measuring against is measuring nothing.
 
 ## Review steps
 
-### 0. A Kev first pass, where the surface has one.
+### 0. A Kev first pass, where the platform has one.
 
 Kev is a fast, cheap first pass: a small local model asked one yes/no question per checklist item. It is not a review. It finds likely violations so the builder can fix them before a full fan-out runs, and it cannot show that a screen is clean. Measured against full reviews, its leads were right about two times in five, and on large files it was mostly noise. The rules below therefore limit what Kev decides.
 
@@ -83,7 +83,7 @@ A checker reading a rule and a file will produce confident findings that are wro
 
 ### 4. Re-check a fix against the rule, not against the finding.
 
-When called again after fixes, **re-run the whole checklist for every affected skill against the whole surface.** Do not diff. Do not check that the reported instances are gone.
+When called again after fixes, **re-run the whole checklist for every affected skill against every screen under review.** Do not diff. Do not check that the reported instances are gone.
 
 Checking a fix against the finding instead of the rule is why this reviewer exists. The sub-text rule was reported, five page-level strings were deleted, and the finding was closed. The rule was still violated twelve times through a sibling prop. A fix that satisfies the report can leave the rule broken everywhere else.
 

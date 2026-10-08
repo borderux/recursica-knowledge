@@ -125,7 +125,7 @@ A value must pass two tests before the value is pre-selected.
 - **Which remembered states should last across sessions, and which should not.** The team was asked directly and answered "I don't know." Do not decide by guessing.
 - **How to weigh a minority's inconvenience against a majority's benefit.** The team stated that no rule exists. Escalate every case.
 - **Anti-patterns specific to initial state.** The team was asked directly and named no anti-pattern beyond the pre-selected radio button. Therefore, do not assume that the house rules forbid a common anti-pattern.
-- **Defaults on surfaces (a region that holds content, such as a page, panel, or modal) this skill does not name:** which accordion section is open, which date range a dashboard selects, and which value a stepper starts on.
+- **Defaults on any region of the screen that holds content and that this skill does not name, such as a page, panel or modal:** which accordion section is open, which date range a dashboard selects, and which value a stepper starts on.
 - **Whether a default may differ per user, be learned, or depend on the user's role**, instead of being one system value.
 - **The house set of relative date ranges, and which range is the default.** `recursica-skill-filters` records the question as open.
 
@@ -143,4 +143,4 @@ A value must pass two tests before the value is pre-selected.
 - [ ] No tab or layout state is stored as a remembered preference in place of a route.
 - [ ] Where no safe default exists, a stakeholder made the choice.
 - [ ] Where a default has a cost for a minority of users, the trade-off went to a person to decide.
-- [ ] Open questions were asked about, not decided: which remembered states last across sessions, weighing a minority's inconvenience against a majority's benefit, anti-patterns specific to initial state, defaults on surfaces this skill does not name, defaults that vary by user or role or are learned, and the house set of relative date ranges.
+- [ ] Open questions were asked about, not decided: which remembered states last across sessions, weighing a minority's inconvenience against a majority's benefit, anti-patterns specific to initial state, defaults on regions of the screen that hold content and that this skill does not name, defaults that vary by user or role or are learned, and the house set of relative date ranges.

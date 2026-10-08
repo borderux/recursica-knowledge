@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-layers
-description: House rules for Recursica layers, the numbered levels 0 to 3 that set component colors — layer 0 declared once, containment as the only reason to raise a region, the depth budget, and layer properties coming from the theme. Use when nesting containers, building an app shell, or deciding whether a region needs a separate surface. Not for cards — see recursica-skill-card.
+description: House rules for Recursica layers, the numbered levels 0 to 3 that set component colors — layer 0 declared once, containment as the only reason to raise a region, the depth budget, and layer properties coming from the theme. Use when nesting containers, building an app shell, or deciding whether a region needs to be contained. Not for cards — see recursica-skill-card.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -33,7 +33,7 @@ The house rules assume **complex enterprise web applications** built on a Recurs
 
 ## Containment, the only reason to leave layer 0
 
-**Layer 0 is the default for every region on the page**, including the header, the navigation and the main content. A region moves to layer 1 only when the region needs to be contained. A contained region sits on a separate surface (a region that holds content, such as a page, panel, or modal), clearly apart from the regions around the contained region.
+**Layer 0 is the default for every region on the page**, including the header, the navigation and the main content. A region moves to layer 1 only when the region needs to be contained. A contained region sits on a separate layer, clearly apart from the regions around the contained region.
 
 **A page with the header, the navigation and the main content all on layer 0 is correct** when none of the three regions needs containing. Three regions on layer 0 are not an omission and not a missed opportunity. Three regions on layer 0 are the result of the "space first" rule, under "The four levels and nesting depth" below.
 
@@ -65,7 +65,7 @@ The application shell is the header, the rail, the footer and the titles. `recur
 
 **Open a new layer when spacing has failed to separate neighboring regions, and the regions still blur into each other.**
 
-**Do not go down a level every time the markup nests one container inside another on screen.** A layer is a surface with a meaning, not a generic wrapper element. The depth limit in the table above exists to prevent one mistake: nesting three layers only because the components happen to sit three levels deep in the markup.
+**Do not go down a level every time the markup nests one container inside another on screen.** A layer is a region that holds content and has a meaning, not a generic wrapper element. The depth limit in the table above exists to prevent one mistake: nesting three layers only because the components happen to sit three levels deep in the markup.
 
 **A need for a fifth level means the nesting is too deep.** Change the structure of the screen. See convention 4, "Fix the structure, do not engineer around the symptom", in `recursica-skill-system-conventions`.
 
@@ -73,15 +73,15 @@ The application shell is the header, the rail, the footer and the titles. `recur
 
 **MUST NOT set any layer property, on a layer or on any element imitating a layer.** The layer properties are:
 
-- **surface or background color**
+- **background color** (the `surface` property)
 - **border size and border color**
 - **corner radius**
 - **padding**
-- **shadow or elevation** (the shadow that makes a surface look raised)
+- **shadow or elevation** (the shadow that makes a layer, card, menu, popover, panel or modal look raised)
 
 **The theme sets every layer property, and the application reads each layer property from the theme.** The theme author can configure each layer property in Theme Forge (the Recursica tool where themes are written). Every layer property has a token. The agent building the screen reads the layer tokens and never writes the layer tokens.
 
-**Declare a layer to get the layer properties.** A correctly declared layer already has the layer's surface, border, radius and padding. A layer property set by hand means one of two errors: the layer was not declared, or the code overrides the theme.
+**Declare a layer to get the layer properties.** A correctly declared layer already has the layer's background color (the `surface` property), border, radius and padding. A layer property set by hand means one of two errors: the layer was not declared, or the code overrides the theme.
 
 **Never hardcode a value read from the theme.** A color read in light mode is wrong in dark mode. A radius read today is wrong after the theme changes. Tokens exist to keep each value correct when the mode or the theme changes.
 
@@ -122,7 +122,7 @@ The page's markup uses two Recursica attributes: the layer attribute, `data-recu
 
 **Forty-nine component entries have a separate set of colors for each layer**, `layer-0` through `layer-3`. Each set covers background, border, text and icon colors. The 49 entries include the button, the table, the panel, the modal, the card and every form control.
 
-**A layer sets the colors of every component on the layer.** A component inside an undeclared region, or inside a region declared at the wrong level, is not slightly off. The component takes a palette meant for a different surface.
+**A layer sets the colors of every component on the layer.** A component inside an undeclared region, or inside a region declared at the wrong level, is not slightly off. The component takes a palette meant for a different layer.
 
 **Opening a new layer changes the palette of every element inside the new layer.** Check the contents of the new layer, not only the container.
 
@@ -130,26 +130,26 @@ The page's markup uses two Recursica attributes: the layer attribute, `data-recu
 
 **A layer and a card are different, and neither one can stand in for the other.**
 
-|                  | **Layer**                              | **Card**                                                                    |
-| ---------------- | -------------------------------------- | --------------------------------------------------------------------------- |
-| **Kind**         | A surface and token scope              | A component                                                                 |
-| **When**         | A region that needs a separate surface | A small, finite set of repeating peer objects, each with a graphic          |
-| **Plurality**    | A layer is a single region             | **A card never appears alone**                                              |
-| **Relationship** | Every element is on a layer            | **A card sits on a layer**, and has a separate set of colors for each level |
+|                  | **Layer**                                      | **Card**                                                                    |
+| ---------------- | ---------------------------------------------- | --------------------------------------------------------------------------- |
+| **Kind**         | A region that holds content, and a token scope | A component                                                                 |
+| **When**         | A region that needs containing                 | A small, finite set of repeating peer objects, each with a graphic          |
+| **Plurality**    | A layer is a single region                     | **A card never appears alone**                                              |
+| **Relationship** | Every element is on a layer                    | **A card sits on a layer**, and has a separate set of colors for each level |
 
 In the table, plurality (the number of items) means how many layers or cards appear together. A peer is one of a set of repeating objects of the same kind.
 
 **A card is placed on a layer, not instead of a layer.** A card and a layer stack.
 
-**Needing a surface does not make a region one of a set of peers.** A region that needs separating but has no peers gets a layer. A region that needs a container becomes a card only when the region passes the card tests that `recursica-skill-card` sets.
+**Needing containment does not make a region one of a set of peers.** A region that needs separating but has no peers gets a layer. A region that needs a container becomes a card only when the region passes the card tests that `recursica-skill-card` sets.
 
 **NEVER use a layer to divide a page into regions**, in the same way that a card may never divide a page. The ban in `recursica-skill-screen-scaffolding` on dividing regions with containers applies to layers too. Space and headings divide a page.
 
-**Form fields never go inside a card. Form fields may sit on a layer**, because a layer is a surface, not the container of one object.
+**Form fields never go inside a card. Form fields may sit on a layer**, because a layer is a region that holds content, not the container of one object.
 
 ## No meaning in a layer level
 
-**A layer level is not a rank, a status, or a sign of importance.** A layer level says how deeply a surface is nested, and nothing else.
+**A layer level is not a rank, a status, or a sign of importance.** A layer level says how deeply a region that holds content is nested, and nothing else.
 
 **MUST NOT use a layer level to show hierarchy or state.** Show priority with position, size, type and white space. See `recursica-skill-screen-priority`. Show status with the components made for status, and never with the shade of a container.
 
@@ -157,13 +157,13 @@ In the table, plurality (the number of items) means how many layers or cards app
 
 **The light or dark theme is a setting separate from the layer.** The theme setting and the layer setting are independent of each other. Each of the four layers has a full set of tokens in each theme. The layer number does not change when the theme changes.
 
-**A design must not depend on how any two layers happen to differ in the current theme.** Two neighboring levels may share a surface color. Two neighboring levels may also differ in the border rather than the fill. The theme author decides how the levels differ. A separation that matters has to stay visible when the theme changes.
+**A design must not depend on how any two layers happen to differ in the current theme.** Two neighboring levels may share a background color. Two neighboring levels may also differ in the border rather than the fill. The theme author decides how the levels differ. A separation that matters has to stay visible when the theme changes.
 
 **A theme control is part of the application chrome, not of the page content.** See `recursica-skill-screen-scaffolding`.
 
 ## Set by the theme or the component
 
-- **Every value in the layer tokens:** surfaces, borders, radii, padding, shadows, emphasis transparencies, and meaning-based colors. The theme owns every layer token value, and each value is written in Theme Forge.
+- **Every value in the layer tokens:** background colors, borders, radii, padding, shadows, emphasis transparencies, and meaning-based colors. The theme owns every layer token value, and each value is written in Theme Forge.
 - **The number of levels.** There are four levels.
 - **A component's palette on each layer.** The component works out the palette. Choose only the layer the component sits on.
 - **Elevation.** The theme has separate elevation tokens. A layer does not come with a shadow. Do not add a shadow to a layer.
@@ -180,7 +180,7 @@ In the table, plurality (the number of items) means how many layers or cards app
 ## Open questions
 
 - **How the adapter offers a layer.** The layer tokens and the layer attribute are confirmed from the theme. No source confirms whether each adapter (the Recursica component library for one framework, such as Mantine or Angular Material) ships a layer component, offers a setting, or expects the layer attribute directly. `recursica-skill-screen-scaffolding` records that the component documentation mentions a layer component, but the adapter does not provide a layer component. Confirm before building, and do not hand-build a substitute.
-- **Which surfaces sit at which level by default.** No source states the layer of a panel, a modal, a table or a dashboard widget. The available sources state only that each of those components has colors for each layer.
+- **Which regions that hold content sit at which level by default.** No source states the layer of a panel, a modal, a table or a dashboard widget. The available sources state only that each of those components has colors for each layer.
 - **Whether a modal or panel opens a new layer scope**, or takes on the layer beneath the modal or panel.
 - **Whether KPI tiles sit on layers or in cards.** Still open in `recursica-skill-screen-scaffolding`.
 - **What a layer does below the tablet breakpoint** — see `recursica-skill-responsive-behavior`.
@@ -195,7 +195,7 @@ In the table, plurality (the number of items) means how many layers or cards app
 - [ ] Only levels 0 to 3 are used. Layer 2 has a stated reason, every use of layer 3 was questioned as a sign of a structural problem, and no region needed a fourth level.
 - [ ] Every region was tried with space and type hierarchy first. A layer appears only where regions still blurred together.
 - [ ] No layer is opened only because the markup nests.
-- [ ] No surface, background, border, radius, padding, shadow, or elevation is set on a layer, or on any element imitating a layer.
+- [ ] No background or background color (the `surface` property), border, radius, padding, shadow, or elevation is set on a layer, or on any element imitating a layer.
 - [ ] No theme value is hardcoded in any part of the application. Every theme value comes from a token.
 - [ ] No layer is faked with style values written into the code. Any layer that could not be declared is reported as a gap.
 - [ ] No separation depends on how two levels happen to differ in the current theme.
@@ -204,4 +204,4 @@ In the table, plurality (the number of items) means how many layers or cards app
 - [ ] No layer level stands for rank, status, importance, or any other meaning.
 - [ ] No layer divides a page into regions, and no card has been swapped for a layer, or a layer for a card.
 - [ ] The contents of every newly opened layer have been checked, not only the container.
-- [ ] Open questions were asked about, not decided: how the adapter offers a layer, which surfaces sit at which level by default, whether a modal or panel opens a new layer scope, whether KPI tiles sit on layers or in cards, and what a layer does below the tablet breakpoint.
+- [ ] Open questions were asked about, not decided: how the adapter offers a layer, which regions that hold content sit at which level by default, whether a modal or panel opens a new layer scope, whether KPI tiles sit on layers or in cards, and what a layer does below the tablet breakpoint.

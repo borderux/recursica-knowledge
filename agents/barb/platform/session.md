@@ -21,6 +21,6 @@ The input is a screen â€” a route, a page, a component, or a directory of them â
 
 ## kev
 
-No Kev engine is configured on this surface. Skip step 0 and run the full review.
+No Kev engine is configured on this platform. Skip step 0 and run the full review.
 
 ## operations

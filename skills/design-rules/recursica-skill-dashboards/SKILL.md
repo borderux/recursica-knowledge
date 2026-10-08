@@ -131,7 +131,7 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 **NEVER use inner scrolling areas, in the dashboard or inside a card.** The whole dashboard scrolls as one page. Ten cards that each have a separate scrolling area are clearly wrong.
 
-**Use the design system's layouts and tokens (named design values, such as colors or sizes, set by the design system) for grids, gutters, breakpoints, type styles, elevation (the shadow that makes a surface look raised), and spacing.** Do not change the grids, gutters, breakpoints, type styles, elevation or spacing. Do not change the layouts or the tokens. Plenty of white space separates the groups of content on the dashboard.
+**Use the design system's layouts and tokens (named design values, such as colors or sizes, set by the design system) for grids, gutters, breakpoints, type styles, elevation (the shadow that makes a layer, card, menu, popover, panel or modal look raised), and spacing.** Do not change the grids, gutters, breakpoints, type styles, elevation or spacing. Do not change the layouts or the tokens. Plenty of white space separates the groups of content on the dashboard.
 
 ## Smaller viewports
 

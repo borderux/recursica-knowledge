@@ -125,7 +125,7 @@ The three tenets are workflow, physicality and simplicity. Apply the three tenet
 
 **Ranking by frequency is not the same as the removal test** in the three tenets above. The removal test asks whether a piece of information is needed at all. Ranking by frequency applies to content that is needed. The only question is whether the content is needed _now_, on arrival, every time.
 
-**Readers miss any content placed below a region of changing length.** The bottom of a table with an unknown number of rows is at an unpredictable position. A reader who does not know that content sits below the region has no reason to scroll to the end of a list to look for the content. Put the content above the region, or in a surface (a region that holds content, such as a page, panel, or modal) that opens over the region. This skill and `recursica-skill-tables` share this rule.
+**Readers miss any content placed below a region of changing length.** The bottom of a table with an unknown number of rows is at an unpredictable position. A reader who does not know that content sits below the region has no reason to scroll to the end of a list to look for the content. Put the content above the region of changing length, or in a region that holds content and opens over the region of changing length, such as a page, panel or modal. This skill and `recursica-skill-tables` share this rule.
 
 ## Progressive disclosure
 

@@ -65,15 +65,15 @@ Quoted interface copy keeps the exact interface wording, such as a button label 
 
 **Write the term a designer would say.** Look the term up when unsure.
 
-| Insider word                                  | What a designer says                                  |
-| --------------------------------------------- | ----------------------------------------------------- |
-| axis                                          | variant                                               |
-| the component draws the chevron               | the accordion already shows the chevron               |
-| surface                                       | page, panel, or modal                                 |
-| gray bars where text will be                  | skeleton screen                                       |
-| summary figures                               | KPI tiles                                             |
-| design-system names                           | the names in Figma and the UI kit                     |
-| a bad component alias or a bad semantic alias | the wrong color, set in the component or in the theme |
+| Insider word                                  | What a designer says                                                        |
+| --------------------------------------------- | --------------------------------------------------------------------------- |
+| axis                                          | variant                                                                     |
+| the component draws the chevron               | the accordion already shows the chevron                                     |
+| surface                                       | the specific component, such as a page, panel, modal, card, menu or popover |
+| gray bars where text will be                  | skeleton screen                                                             |
+| summary figures                               | KPI tiles                                                                   |
+| design-system names                           | the names in Figma and the UI kit                                           |
+| a bad component alias or a bad semantic alias | the wrong color, set in the component or in the theme                       |
 
 **"Clickable" and "interactive" mean different things.** Write "clickable" for an element the user clicks to trigger one action, such as a button, a link or a table row that opens a record. Write "interactive" for any element the user can operate in any way, such as clicking, typing into a field or using the keyboard. Never swap one word for the other, because "interactive" covers more elements than "clickable".
 
