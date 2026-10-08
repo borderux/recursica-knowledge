@@ -87,7 +87,7 @@ A chip group is a form control laid out horizontally. A chip group must behave l
 - **When the component library makes the chip group a single tab stop (a place the Tab key lands), with the arrow keys moving between chips, keep that behavior.** Do not add a `tabindex` to an individual chip, and do not add custom key handling on top of the component library's key handling.
 - **The close control of a removable chip is a separate stop for keyboard focus, inside the chip.** A persona can reach the close control without a pointer.
 - **After a chip is removed, move focus on purpose**, to the next chip, or to the chip group when no chips are left. When focus stays on a removed chip, focus is lost, and the persona is quietly sent back to the top of the page.
-- **Never show the close control only on hover.** A persona using a keyboard or a persona on a touch device cannot reach a close control that appears only on hover.
+- **Never show the close control only on hover.** A persona using a keyboard or a persona using touch cannot reach a close control that appears only on hover.
 
 ## Styling set by tokens
 

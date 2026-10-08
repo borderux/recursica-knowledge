@@ -13,7 +13,7 @@ A read-only field shows a label and a value inside a form. A read-only field sho
 
 ## When to use a read-only field
 
-- **A form shows a value that the current persona cannot edit on this screen**, such as a profile page or a settings page in view mode.
+- **A form shows a value that the persona viewing the screen cannot edit**, such as a profile page or a settings page in view mode.
 - **A confirmation step sums up the values the persona entered**, so the persona can review the values before submitting.
 - **The system created the value**, such as an account ID, a created date or a calculated total.
 - **The value belongs to the object the form is about**, and the value needs the same label-and-value layout as the fields around the value.

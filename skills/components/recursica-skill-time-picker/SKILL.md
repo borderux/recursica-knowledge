@@ -79,7 +79,7 @@ The rules below describe each option by role, such as "the error state". The nam
 **A disabled time picker and a read-only field are different components, not two styles of one component.**
 
 - **Disabled time picker.** A disabled time picker is still a field, and still looks clearly like an input, but the persona cannot use the field yet. Use a disabled time picker when the persona can make the field usable by taking a different action first.
-- **Read-only field.** A read-only field is a different component. A read-only field shows a label and text, with no input. Use a read-only field when the current persona never edits the value in this place.
+- **Read-only field.** A read-only field is a different component. A read-only field shows a label and text, with no input. Use a read-only field when the persona viewing the field never edits the value in this place.
 
 ## Accessibility
 

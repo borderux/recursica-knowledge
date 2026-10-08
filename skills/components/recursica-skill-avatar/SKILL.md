@@ -84,7 +84,7 @@ An avatar is either a picture or a control, and each kind fails a persona using 
 - **A control avatar is a real button or link, is a tab stop, and works from the keyboard.** The control avatar's place in the tab order matches the avatar's place on screen, among the elements around the avatar.
 - **When a control avatar opens a menu, focus moves into the menu.** Focus returns to the avatar when the menu closes. See `recursica-skill-menu`.
 - **An avatar inside an element the persona can click or select, such as a link in a table or list row, or a list item, is part of that element's name.** The avatar is not a separate tab stop inside the element.
-- **Nothing about the avatar may depend on hover.** Personas using a keyboard and personas on a touch device cannot reach a name that appears only in a hover tooltip. The name in text identifies the person, not a hover tooltip.
+- **Nothing about the avatar may depend on hover.** Personas using a keyboard and personas using touch cannot reach a name that appears only in a hover tooltip. The name in text identifies the person, not a hover tooltip.
 
 ## Styling set by tokens
 

@@ -80,7 +80,7 @@ The rules below describe each option by role, such as "the error state". The nam
 **A disabled number input and a read-only field are different components, not two styles of one component.**
 
 - **A disabled number input is still a field and still clearly an input, but the persona cannot use the field right now.** Use a disabled number input when the persona could make the field usable by taking a different action first.
-- **A read-only field is a different component, with a label and text and no input.** Use a read-only field when the current persona never edits the value here.
+- **A read-only field is a different component, with a label and text and no input.** Use a read-only field when the persona viewing the field never edits the value here.
 
 ## Accessibility
 

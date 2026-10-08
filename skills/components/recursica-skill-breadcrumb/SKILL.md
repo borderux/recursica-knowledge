@@ -82,7 +82,7 @@ A breadcrumb is a short line of links. Assistive technology recognizes a breadcr
 - **Every breadcrumb link is a tab stop (a place the Tab key lands), in visual order from left to right.** Each breadcrumb link is a tab stop because the link has an `href`. Do not add a `tabindex` to force an order.
 - **The current page cannot receive focus, because the current page is not a link.**
 - **The whole trail must be reachable by keyboard, and the trail must not be the only way back.** A persona who cannot reach the trail, or does not use the trail, must still be able to get to the parent page through the navigation.
-- **No part of the trail may appear only on hover, including a breadcrumb item or a collapsed part of the trail.** A persona using a keyboard and a persona on a touch device cannot reach levels that appear only on hover.
+- **No part of the trail may appear only on hover, including a breadcrumb item or a collapsed part of the trail.** A persona using a keyboard and a persona using touch cannot reach levels that appear only on hover.
 - **Enter follows a breadcrumb link, and Space does not.** Browsers follow a link on Enter and not on Space. A breadcrumb item that responds to Space is a button, not a link.
 - **Do not intercept the modifier keys.** Ctrl, Cmd, Shift and middle-click must reach the browser. The persona then chooses where the parent page opens.
 

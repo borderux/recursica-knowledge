@@ -125,7 +125,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - **A card the persona cannot act on is not a tab stop** (a place the Tab key lands). Do not give a static card a `tabindex` or a click handler.
 - **If the whole card is a link, the link must be the only element in the card the persona can act on.** A button inside a clickable card gives a persona using a keyboard two overlapping targets, and the persona cannot tell what a press activates. `recursica-skill-tables` applies the same reasoning to clickable table rows.
 - **Prefer making the card's heading the link, instead of the whole card.** The heading gives the link a real name. A link the size of the card is announced with every word in the card.
-- **Never make any element appear on hover.** Personas using a keyboard and personas on a touch device cannot reach an action that appears only when the pointer is over a card. Keep every card action visible, or put the action in a menu the persona can reach.
+- **Never make any element appear on hover.** Personas using a keyboard and personas using touch cannot reach an action that appears only when the pointer is over a card. Keep every card action visible, or put the action in a menu the persona can reach.
 - **The tab order moves card by card**, in the visual order, not column by column against the layout.
 
 ## Styling set by tokens

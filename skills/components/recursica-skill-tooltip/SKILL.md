@@ -52,7 +52,7 @@ Neither component may hold content the persona needs to complete a task. Neither
 
 **Write the tooltip text as one short phrase that names the control.** Write "Delete invoice", not a sentence. A tooltip is a label, not instructions.
 
-**Never make a tooltip the only place a piece of information appears.** A touch device has no hover, so a persona using a touch device may never see the tooltip. Put information that matters on the page, in the accessible name, or in assistive text as well.
+**Never make a tooltip the only place a piece of information appears.** A touch device has no hover, so a persona using touch may never see the tooltip. Put information that matters on the page, in the accessible name, or in assistive text as well.
 
 **Never put a control or a link inside a tooltip.** To click a control inside a tooltip, the persona must move the pointer from the trigger onto the tooltip before the tooltip closes. Put a control or a link in a popover instead.
 
@@ -113,7 +113,7 @@ The tooltip's beak is part of the tooltip component. Do not draw a separate beak
 - **Placement.** Only the design-system website shows a position variant of top, left, right, and bottom, a beak alignment variant of start, middle, and end, and a position setting. Ask before relying on placement. Ask only when the project has no placement variant.
 - **Custom content.** Only the design-system website shows the content types "text" and "custom". Ask before relying on custom content. Ask only when the project has no custom-content variant.
 - **Show and hide delays.** No token (a named design value, such as a color or a size, set by the design system) or rule defines the delay before the tooltip shows, the delay before the tooltip hides, or any time after which the tooltip hides automatically.
-- **Touch behavior.** A touch screen has no hover. No rule says how a persona using a touch screen reaches the content of a tooltip.
+- **Touch behavior.** A touch screen has no hover. No rule says how a persona using touch reaches the content of a tooltip.
 - **Targets that cannot take focus.** No rule says whether a tooltip may attach to an element the persona cannot interact with, such as a table cell with cut-off text or a chart label. A tooltip on an element that cannot take focus never appears for a persona using a keyboard.
 - **The viewport edge.** No rule says what happens when a tooltip reaches the edge of the viewport.
 
