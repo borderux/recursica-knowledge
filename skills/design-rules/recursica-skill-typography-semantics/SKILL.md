@@ -15,8 +15,8 @@ The house rules below cover type and the HTML markup that holds the text. The ho
 
 ## The three governing principles
 
-1. **The semantic structure is the design itself, not a separate step under the design.** Use semantic HTML (HTML elements chosen by role, such as a button element for a button). Choose each element for the element's meaning, not for the element's look. The markup matches what is on the screen. Never get a visual effect by using the wrong element.
-2. **Type styles always come from tokens.** The design system defines the type styles, and the code applies the type styles. A custom typographic value is a defect, unless no type style exists for the case.
+1. **The semantic structure is the design itself, not a separate step.** Use semantic HTML (HTML elements chosen by role, such as a button element for a button). Choose each element for the element's meaning, not for the element's look. The markup matches what is on the screen. Never get a visual effect by using the wrong element.
+2. **Type styles always come from tokens.** The design system defines the type styles, and the code applies the type styles. A custom typographic value is a defect, unless no type style exists for the text being styled.
 3. **Being understood comes before being brief.** When text cannot be both short and easy to understand, make the text easy to understand. The persona should not have to hover over an item on the screen to find out what the item means.
 
 ## Real HTML elements
@@ -155,7 +155,7 @@ Headings get a shorter measure than body text because people scan headings rathe
 W_max = N_opt × w_avg
 ```
 
-**Set the text block's maximum width to `W_max`.** When the container is wider than `W_max`, the text does not fill the container. The leftover space stays empty. A wide container never justifies a longer measure, for the same reason a wide form never justifies a second column.
+**Set the text block's maximum width to `W_max`.** When the container is wider than `W_max`, the text does not fill the container. The leftover space stays empty. A wide container never justifies a longer measure. The measure comes from the type style's tokens, not from the width of the container. In the same way, a wide form never justifies a second column.
 
 ### Worked example
 
