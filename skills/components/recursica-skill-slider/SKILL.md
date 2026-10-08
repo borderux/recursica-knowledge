@@ -71,7 +71,7 @@ Neither situation conflicts with the one-save-mode rule in `recursica-skill-form
 
 **Pair the error state with a signal that is not color**, either the assistive element's icon or the error message. `recursica-skill-system-conventions` requires a signal that is not color.
 
-**Never disable a slider to show a value.** A disabled slider means the persona could make the slider usable by taking a different action first. When the persona can never set the value here, show the value with `recursica-skill-read-only-field`, not with a form control.
+**Never disable a slider to show a value.** A disabled slider means the persona could make the slider usable by taking a different action first. When the persona can never set the value where the value is shown, show the value with `recursica-skill-read-only-field`, not with a form control.
 
 **Do not use a slider to add variety to a long form.** The type and structure of the data decide which control fits best.
 
