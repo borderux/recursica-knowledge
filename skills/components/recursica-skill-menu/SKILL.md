@@ -9,7 +9,7 @@ metadata:
 
 # Menu
 
-A menu is a temporary list of choices or actions. A trigger is the button that opens a menu. A menu closes when the user dismisses the menu.
+A menu is a temporary list of choices or actions. A trigger is the button that opens a menu. A menu closes when the persona dismisses the menu.
 
 ## When to use a menu
 
@@ -29,7 +29,7 @@ A menu is a temporary list of choices or actions. A trigger is the button that o
 | The menu has grown too long to show every menu item                                                         | Fewer menu items, or a different structure. See `recursica-skill-system-conventions`.                                                      |
 | The content is a form or a multi-step flow                                                                  | A modal or a panel. See `recursica-skill-modal` or `recursica-skill-panel`.                                                                |
 | The value must stay visible in a field                                                                      | A dropdown. See `recursica-skill-dropdown`.                                                                                                |
-| The content is rich detail that the user cannot act on                                                      | A hover card or a popover. See `recursica-skill-hover-card-popover`.                                                                       |
+| The content is rich detail that the persona cannot act on                                                   | A hover card or a popover. See `recursica-skill-hover-card-popover`.                                                                       |
 | The content is a short text label for an icon-only control                                                  | A tooltip. See `recursica-skill-tooltip`.                                                                                                  |
 
 **Do not hide a primary action in a menu.** Show the primary action as a button. A menu holds the secondary and tertiary actions.
@@ -44,7 +44,7 @@ The rules below describe each option by role, such as "the selected option". The
 - **The menu container holds the menu items and any dividers between the menu items.**
 - **A menu item is one entry in the menu.** A menu item has a leading icon, a trailing icon, a label, and supporting text.
 - **A menu item has a selection variant, with an unselected option and a selected option.** The selected option marks the chosen value in a list of options. Use the selection variant only for selection, never for other states. In the standard UI kit, the selection variant is `selection-states`, with the options `unselected` and `selected`.
-- **A menu item has a disabled state, for a menu item the user can unlock.** See the permissions rule under "Rules". How to turn on the disabled state is an open question. In the standard UI kit, the state variant is `states`, with the option `disabled`.
+- **A menu item has a disabled state, for a menu item the persona can unlock.** See the permissions rule under "Rules". How to turn on the disabled state is an open question. In the standard UI kit, the state variant is `states`, with the option `disabled`.
 - **A menu item may show a second line of supporting text.** A menu item may show a label and one line of description. Use the supporting text where the label alone is unclear. Keep the supporting text to one line, not a paragraph.
 - **The menu and each menu item come with a hover state, a focus state, and an active state.**
 - **A menu has a maximum height, so a long menu scrolls.** See the rule on long menus under "Rules".
@@ -54,7 +54,7 @@ The rules below describe each option by role, such as "the selected option". The
 
 ## Rules
 
-**A menu never opens on hover.** A menu opens when the user clicks the trigger, activates the trigger, or presses a key. `recursica-skill-navigation` sets this house rule. Users clearly struggle to steer a pointer across a menu that appears on hover. A hover menu is also much harder to make accessible. The keyboard rules under "Accessibility" also forbid opening a menu on hover, for accessibility.
+**A menu never opens on hover.** A menu opens when the persona clicks the trigger, activates the trigger, or presses a key. `recursica-skill-navigation` sets this house rule. Personas clearly struggle to steer a pointer across a menu that appears on hover. A hover menu is also much harder to make accessible. The keyboard rules under "Accessibility" also forbid opening a menu on hover, for accessibility.
 
 **Build the trigger as a button, not a link.** Opening a menu does not go to a different page or URL, and opening a menu adds no entry to the browser history. See `recursica-skill-buttons-links`.
 
@@ -66,13 +66,13 @@ The rules below describe each option by role, such as "the selected option". The
 
 **A destructive item states the consequence in the destructive item's label.** If the project has no destructive item state, the label is the only channel (color, shape, position or text, each a separate signal) that shows the consequence. `recursica-skill-modal` covers confirming a destructive action.
 
-**Hide a menu item the user can never use. Disable a menu item the user can unlock.** `recursica-skill-navigation` sets this permissions rule. When the user has no permission for an action, the menu shows no menu item for the action. The menu never puts a disabled menu item, or a menu item that fails when used, in place of the hidden menu item.
+**Hide a menu item the persona can never use. Disable a menu item the persona can unlock.** `recursica-skill-navigation` sets this permissions rule. When the persona has no permission for an action, the menu shows no menu item for the action. The menu never puts a disabled menu item, or a menu item that fails when used, in place of the hidden menu item.
 
-**A long menu is a sign that the structure of the menu is wrong.** A scrolling menu hides the length of the menu, so the user cannot see how many options exist. Keyboard navigation then has to scroll the menu to follow focus. `recursica-skill-system-conventions` requires fixing the structure instead of adding a workaround. A scrolling list is a workaround. Group the menu items, or cut the number of menu items. Above about nine items, a user can no longer scan a list easily. See `recursica-skill-working-memory` for what the limit of about nine items claims.
+**A long menu is a sign that the structure of the menu is wrong.** A scrolling menu hides the length of the menu, so the persona cannot see how many options exist. Keyboard navigation then has to scroll the menu to follow focus. `recursica-skill-system-conventions` requires fixing the structure instead of adding a workaround. A scrolling list is a workaround. Group the menu items, or cut the number of menu items. Above about nine items, a persona can no longer scan a list easily. See `recursica-skill-working-memory` for what the limit of about nine items claims.
 
 **A menu never holds the only way to finish a task.** A gear button that opens a column-visibility menu is a valid unadvertised affordance (a control that works but is not shown in the main interface, such as a keyboard shortcut). A menu that hides the only way to finish a task is not valid. See `recursica-skill-discoverability`.
 
-**A row that has a menu is not a clickable row.** The rule covers a table row, a list row, and every other kind of row. With two click targets in one row, the user cannot predict what a click will do. See `recursica-skill-tables`.
+**A row that has a menu is not a clickable row.** The rule covers a table row, a list row, and every other kind of row. With two click targets in one row, the persona cannot predict what a click will do. See `recursica-skill-tables`.
 
 ## Accessibility
 
@@ -82,25 +82,25 @@ Most menu accessibility rules are about where keyboard focus goes. The list of m
 
 ### Screen readers
 
-- **The trigger must announce that the trigger opens a menu, and whether the menu is open.** Without the open state, the user cannot tell whether pressing the trigger opened the menu.
-- **Give the trigger a real accessible name.** A screen reader reads nothing for an icon-only ellipsis trigger with no accessible name. In a table, the trigger's accessible name must name the object in the table row, as in "More actions for invoice 1043". Otherwise, the user hears the same announcement on every table row.
-- **A screen reader announces the menu as a menu, and each menu item as an item of the menu.** The user then learns how many menu items the menu holds before moving through the menu items.
+- **The trigger must announce that the trigger opens a menu, and whether the menu is open.** Without the open state, the persona cannot tell whether pressing the trigger opened the menu.
+- **Give the trigger a real accessible name.** A screen reader reads nothing for an icon-only ellipsis trigger with no accessible name. In a table, the trigger's accessible name must name the object in the table row, as in "More actions for invoice 1043". Otherwise, the persona hears the same announcement on every table row.
+- **A screen reader announces the menu as a menu, and each menu item as an item of the menu.** The persona then learns how many menu items the menu holds before moving through the menu items.
 - **The selected menu item's state must be available in code.** A checkmark or a filled background alone shows the selected state in one visual channel. `recursica-skill-system-conventions` forbids showing a meaning in one channel only.
 - **Give an icon-only menu item a real accessible name.** A screen reader has nothing to read out for an icon alone.
-- **An unavailable menu item must stay perceivable on screen and to assistive technology, or the menu must not show the menu item at all.** A disabled menu item stays in the accessibility tree (the version of the page that assistive technology reads), and a screen reader announces the menu item as disabled. If the user can never use a menu item, do not show the menu item. Never show a menu item on screen while hiding the menu item from assistive technology.
+- **An unavailable menu item must stay perceivable on screen and to assistive technology, or the menu must not show the menu item at all.** A disabled menu item stays in the accessibility tree (the version of the page that assistive technology reads), and a screen reader announces the menu item as disabled. If the persona can never use a menu item, do not show the menu item. Never show a menu item on screen while hiding the menu item from assistive technology.
 - **Make the supporting text part of the menu item's announcement**, not a separate element placed beside the label. A screen reader skips a second line that is not linked to the menu item.
 - **A divider is decoration to a screen reader. A screen reader must not announce a divider as a menu item.**
 
 ### Keyboard and non-mouse navigation
 
-- **A menu must never open on hover.** A keyboard user cannot open a hover menu, and a touch user cannot open a hover menu. A hover menu closes the moment the pointer strays off the path to the menu. The ban on hover menus is both the house rule and the hard minimum for accessibility.
+- **A menu must never open on hover.** A persona using a keyboard cannot open a hover menu, and a persona using touch cannot open a hover menu. A hover menu closes the moment the pointer strays off the path to the menu. The ban on hover menus is both the house rule and the hard minimum for accessibility.
 - **The trigger is a tab stop (a place the Tab key lands), and Enter or Space opens the menu.** Never build a trigger that responds only to clicks.
 - **When the menu opens, focus moves into the menu.** Focus moves onto the first menu item. In a list of options, focus moves onto the selected menu item.
-- **When the menu closes, focus returns to the trigger and to no other place.** The menu closes when the user presses Escape, activates a menu item, or clicks outside the menu. Focus never goes to the top of the page, and never into the content that the chosen action changed. Returning focus to the trigger is the step most often skipped. Skipping the step drops the user at the top of the page.
+- **When the menu closes, focus returns to the trigger and to no other place.** The menu closes when the persona presses Escape, activates a menu item, or clicks outside the menu. Focus never goes to the top of the page, and never into the content that the chosen action changed. Returning focus to the trigger is the step most often skipped. Skipping the step drops the persona at the top of the page.
 - **The arrow keys move between menu items. Escape closes the menu. Enter and Space activate the focused menu item. Home and End jump to the first menu item and the last menu item.** Support every one of these keys.
 - **The whole menu is one tab stop, not a series of tab stops.** The Tab key does not move from one menu item to the next. The arrow keys move between menu items. The Tab key leaves the menu.
-- **A menu that scrolls must scroll to follow keyboard focus.** When the user presses an arrow key to reach a menu item below the fold (the part of the page visible only after scrolling), the menu item must scroll into view.
-- **Never show a needed control only on hover.** A keyboard user or a touch user cannot reach a row-action menu whose trigger appears only when the pointer is over the row. If a row has row actions, show the trigger of the row-action menu.
+- **A menu that scrolls must scroll to follow keyboard focus.** When the persona presses an arrow key to reach a menu item below the fold (the part of the page visible only after scrolling), the menu item must scroll into view.
+- **Never show a needed control only on hover.** A persona using a keyboard or a persona using touch cannot reach a row-action menu whose trigger appears only when the pointer is over the row. If a row has row actions, show the trigger of the row-action menu.
 
 ## Styling set by tokens
 
@@ -114,11 +114,11 @@ Most menu accessibility rules are about where keyboard focus goes. The list of m
 - `recursica-skill-navigation` — sub-navigation that opens on click and never on hover, never using an overflow menu to make the navigation fit, the number of navigation items, and permissions.
 - `recursica-skill-tables` — the row-action menu, the column-visibility gear button, and why a table row with a menu cannot be clickable.
 - `recursica-skill-system-conventions` — fixing the structure instead of scrolling a long list, never showing a meaning in one channel only, unadvertised affordances, and the keyboard requirement for an unadvertised affordance.
-- `recursica-skill-working-memory` — 7 ± 2 as the upper limit on how many items a user can scan, and why a menu lets the user recognize an option instead of recalling the option.
+- `recursica-skill-working-memory` — 7 ± 2 as the upper limit on how many items a persona can scan, and why a menu lets the persona recognize an option instead of recalling the option.
 
 ## Open questions
 
-- **Submenus.** Only the design-system website shows a submenu: a menu item with a trailing chevron that opens a nested submenu "on hover or click". Opening on hover contradicts the house rule in `recursica-skill-navigation`. Nobody has decided whether a submenu exists, or how the user opens a submenu. If the project has no submenu, ask before relying on a submenu.
+- **Submenus.** Only the design-system website shows a submenu: a menu item with a trailing chevron that opens a nested submenu "on hover or click". Opening on hover contradicts the house rule in `recursica-skill-navigation`. Nobody has decided whether a submenu exists, or how the persona opens a submenu. If the project has no submenu, ask before relying on a submenu.
 - **Menus with multi-select.** Only the design-system website shows a type variant with the options single select, multi-select, and custom content. If the project has no multi-select variant, ask before relying on multi-select.
 - **Custom content inside a menu item.** Only the design-system website shows custom content inside a menu item. If the project has no custom content option, ask before relying on custom content.
 - **How the disabled state is set.** The standard UI kit defines a disabled state on the menu item. Nobody has confirmed that the adapter (the Recursica component library for one framework, such as Mantine or Angular Material) exposes the disabled state as a setting. Check the menu item component's settings, or ask, before relying on the disabled state.
@@ -137,7 +137,7 @@ Most menu accessibility rules are about where keyboard focus goes. The list of m
 - [ ] Supporting text appears only where the label is unclear, and sits in the menu item's supporting text, not in a separate element.
 - [ ] Each divider separates two groups of related menu items, and no divider is decorative.
 - [ ] Every destructive item states the consequence in words.
-- [ ] Menu items the user has no permission for are hidden, not disabled.
+- [ ] Menu items the persona has no permission for are hidden, not disabled.
 - [ ] The trigger announces that the trigger opens a menu, and whether the menu is open.
 - [ ] The selected menu item's state is available in code, not shown by a mark alone. Icon-only menu items have accessible names, and dividers are not announced.
 - [ ] Every unavailable menu item is perceivable and announced as disabled, or is not shown.
