@@ -14,14 +14,19 @@ A textarea is a field where the persona types plain text on several lines.
 ## When to use a textarea
 
 - **The expected answer is longer than one sentence**, such as a description, a justification or a note.
-- **The persona writes text, not a value that names or identifies an item.** Examples are a comment, feedback, a message or the details of a support ticket.
+- **The persona writes text, not a value that names or identifies an item, such as a title.** Examples are a comment, feedback, a message or the details of a support ticket.
 - **Line breaks are part of the value.** If the persona needs paragraphs, use a textarea.
 
-**The field's label is the fastest check for whether a textarea is right.** If the label suggests prose, use a textarea. If the label does not suggest prose, rethink the label. The labels `Description`, `Notes`, `Comments`, `Justification`, `Reason`, `Summary` and `Details` each tell the persona there is room to write. A single-line field with a label that asks for prose is a mismatch. The persona finds the mismatch by running out of space. The single-line field scrolls sideways and hides the text the persona wrote.
+**The field's label is the fastest check for whether a textarea is right.**
+
+- If the label suggests prose, use a textarea.
+- If the label does not suggest prose, rethink the label.
+
+The labels `Description`, `Notes`, `Comments`, `Justification`, `Reason`, `Summary` and `Details` each tell the persona there is room to write. A single-line field with a label that asks for prose is a mismatch. The persona finds the mismatch by running out of space. The single-line field then scrolls sideways and hides the text the persona wrote.
 
 ## When not to use a textarea
 
-For each case below, use the component the table names instead of adapting a textarea.
+For each case below, use the component in the right column instead of adapting a textarea.
 
 | Situation                                                | Use instead                                                                                                                                        |
 | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -32,20 +37,29 @@ For each case below, use the component the table names instead of adapting a tex
 | Nobody can ever edit the value where the value is shown  | A read-only field, which shows the label and the text with no input. See `recursica-skill-read-only-field`.                                        |
 | The persona only reads long text and writes nothing      | Body text on the page, not a field.                                                                                                                |
 
-**Do not use a textarea to make a short field look important.** Size the field to the expected answer. A large textarea for a one-line answer leads the persona to write more than the answer needs.
+**Do not use a textarea to make a short field look important.** Size the field to the expected answer. For example, do not make a `Title` field a textarea to make the title look important. A large textarea for a one-line answer leads the persona to write more than the answer needs.
 
 **Do not use a disabled textarea to show text.** Text that nobody can ever edit where the text is shown does not belong in a form control.
 
 ## Variants
 
-**Use only the textarea variants and options that the Recursica MCP server lists for the project.** A designer can add variants and options in Theme Forge, so each project can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. The code can use a different name from the name in Figma and the UI kit. A wrong name in code has no effect and shows no error. Never invent a variant or an option.
+**Use only the textarea variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Never invent a variant or an option.
 
-The rules below describe each option by role, such as "the label beside the field". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
+**Use the names the code uses.** Get the list of variants and options with the server's `recursica_get_component_doc` tool. The name in code can differ from the name in Figma and the UI kit. A wrong name in code has no effect and shows no error.
+
+Each option below is described by role, such as "the label beside the field". A name from the standard UI kit (the unchanged UI kit in the official Recursica release) is only an example.
 
 - **A textarea has an error state and a disabled state.** In the standard UI kit, the two states are `error` and `disabled`.
-- **The theme sets the number of rows, and the textarea's height stays fixed.** Do not set the number of rows on any one textarea, even to fit a particular answer. Do not set a height. Do not wrap the textarea in a container to stretch the textarea. If the fixed height is wrong for a case, confirm with the user. See the open questions.
-- **If the project has a size variant or a width property, use the project's variant or property.**
-- **Show a read-only value with the read-only field, a separate component, not with a read-only state on the textarea.** The read-only field has the same label-placement variant as the textarea, and no input.
+- **The theme sets the number of rows, and the textarea's height stays fixed.**
+
+  - Do not set the number of rows on any one textarea, even to fit a particular answer.
+  - Do not set a height.
+  - Do not wrap the textarea in a container to stretch the textarea.
+
+  If the fixed height is wrong for a case, confirm with the user. See the open questions.
+
+- **If the theme has a size variant or a width property, use the theme's variant or property.**
+- **Show a read-only value with the read-only field, not with a read-only state on the textarea.** The read-only field is a separate component. The read-only field shows a label and text, with no input. The read-only field has the same label-placement variant as the textarea.
 
 **Label placement is a variant.** A field's label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`.
 
@@ -55,45 +69,68 @@ The rules below describe each option by role, such as "the label beside the fiel
 
 ## Rules
 
-**Always give the textarea a visible label.** Name exactly what the field holds in the label. A persona using a screen reader hears the label alone, without the text around the field. Write the label in sentence case, with no colon at the end.
+**Always give the textarea a visible label.**
+
+- Name exactly what the field holds, such as `Delivery instructions`.
+- Write the label in sentence case, with no colon at the end.
+
+A persona using a screen reader hears the label alone, without the text around the field.
 
 **Never put required information in the placeholder.** The placeholder disappears when the persona types the first character. Use the placeholder only to show the expected format of the answer.
 
-**Put the rules for the answer in the help text.** State what to include, any minimum and any maximum. The persona then sees the rules before breaking a rule.
+**Put the rules for the answer in the help text.** For example, "Include the order number and what went wrong. Up to 500 characters." The help text states each rule for the answer:
 
-**Never enforce a character limit the persona cannot see.** If the field has a maximum, state the maximum before the persona starts typing. The persona must be able to tell how close the text is to the maximum. If the project has a character counter, use the project's counter. If the design needs a counter and the project has none, confirm with the user instead of building a counter.
+- what to include
+- any minimum
+- any maximum
 
-**Never cut off or delete the text the persona typed.** Do not quietly drop characters past a limit. Do not clear the field when validation fails. The text belongs to the persona.
+The persona then sees the rules before breaking a rule.
 
-**On error, replace the help text with the error message.** Do not add the error message to the help text. Replacing the help text keeps the field's height the same, so the form below the field does not move. The error message must restate the rule. "Invalid input" is not an error message. "Enter at least 20 characters" is an error message.
+**Never enforce a character limit the persona cannot see.** If the field has a maximum, such as 500 characters, state the maximum before the persona starts typing. The persona must be able to tell how close the text is to the maximum.
 
-**Pair the error state with a signal that is not color: an icon, or the error message.** `recursica-skill-system-conventions` sets this rule.
+- If the theme has a character counter, use the theme's counter.
+- If the design needs a counter and the theme has none, confirm with the user instead of building a counter.
 
-**Do not add spacing around a textarea to make up for the textarea's height.** The theme sets the spacing between fields and between form sections. A textarea is the tallest field in a form, and the difference in height is expected. `recursica-skill-forms` sets this rule.
+**Never cut off or delete the text the persona typed.**
+
+- Do not quietly drop characters past a limit.
+- Do not clear the field when validation fails.
+
+The text belongs to the persona.
+
+**On error, replace the help text with the error message.** Do not add the error message to the help text. Replacing the help text keeps the field's height the same, so the form below the field does not move.
+
+**The error message must restate the rule.** For example, write "Enter at least 20 characters", not "Invalid input".
+
+**Never show the error state with color alone.** Pair the error state with an icon or with the error message. `recursica-skill-system-conventions` sets this rule.
+
+**Do not add spacing around a textarea to make up for the textarea's height.** A textarea is the tallest field in a form, and the difference in height is expected. The theme sets the spacing between fields and between form sections. `recursica-skill-forms` sets this rule.
 
 **Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form. Short fields that would fit side by side follow the result too. A form may change placement at a breakpoint. A form never mixes placements at one breakpoint. A form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
-**Never stack the label of one textarea because the textarea is tall.** A stacked label often looks better on a textarea. A tall field beside a one-line label looks unbalanced in a narrow container. The width of the form's container decides label placement, not the height of the field. If the form's labels are side by side, the textarea's label is side by side too.
+**Never put the label of one textarea above the field because the textarea is tall.** A label above a textarea often looks better. A tall field beside a one-line label looks unbalanced in a narrow container. Even so, the width of the form's container decides label placement, not the height of the field. If the form's labels are side by side, the textarea's label is side by side too.
 
 **A disabled textarea and a read-only field are different components, not two styles of one component.**
 
-- **Disabled textarea.** A disabled textarea still looks like an input, but the persona cannot use the textarea right now. Use a disabled textarea when the persona could make the textarea usable by taking another step first.
+- **Disabled textarea.** A disabled textarea still looks like an input, but the persona cannot use the textarea right now. Use a disabled textarea when the persona could make the textarea usable by taking another step first. For example, the persona picks `Other` in a dropdown above, and the `Other reason` textarea turns on.
 - **Read-only field.** A read-only field is a different component that shows a label and text, with no input. Use a read-only field when the persona viewing the value never edits the value where the value is shown.
 
 ## Accessibility
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
-The app must add the behavior in the two lists below. The textarea component connects the label to the input and provides the focus ring. The keyboard rules matter more for a textarea than a single-line field, because Enter and Tab differ inside a textarea.
+The textarea component connects the label to the input and shows the focus ring. The app must add the behavior in the two lists below. Enter and Tab behave differently inside a textarea, so the keyboard rules matter more than for a single-line field.
 
 ### Screen readers
 
 - **Give the textarea a real label.** Never let the placeholder text be the accessible name (the name a screen reader reads out for a control). A screen reader does not announce placeholder text as a label, and the placeholder text disappears when the persona types. A field with no label has no accessible name.
-- **State the limit, and what to write in the field, in the help text.** A visible character counter is not connected to the field, and a screen reader may never announce the counter. Put the maximum in words the persona hears on reaching the field.
+- **State the limit, and what to write in the field, in the help text.** Put the maximum in words the persona hears on reaching the field, such as "Up to 500 characters". A visible character counter is not connected to the field. A screen reader may never announce the counter.
 - **Make a screen reader announce the field as multi-line.** The textarea must be a real multi-line control, not a single-line input styled to look tall. A screen reader then tells the persona that line breaks are allowed.
-- **The app, not the textarea component, is responsible for any icon placed inside the field.** Give a clickable icon an accessible name. Hide a decorative icon from screen readers.
+- **The app, not the textarea component, is responsible for any icon placed inside the field.**
+  - Give a clickable icon an accessible name.
+  - Hide a decorative icon from screen readers.
 - **A screen reader announces the error message.** The error message replaces the help text and is the only text a screen reader reads for the field.
-- **Do not announce every keystroke.** A live count that updates on every character interrupts the screen reader at each key press. If a screen reader must announce progress toward a limit, announce progress sparingly and keep the limit in help text.
+- **Do not announce every keystroke.** A live count that updates on every character interrupts the screen reader at each key press. If a screen reader must announce progress toward a limit, announce progress sparingly. For example, announce progress once when the text nears the limit. Keep the limit in help text.
 
 ### Keyboard and non-mouse navigation
 
@@ -101,7 +138,7 @@ The app must add the behavior in the two lists below. The textarea component con
 - **Tab must move focus out of the field, not insert a tab character.** Tab is the only way a persona using a keyboard can leave a textarea.
 - **Enter inserts a line break and must not submit the form.** Never make Enter submit the form from inside a textarea. Never make a key combination the only way to add a new line.
 - **Escape must not clear the field or delete the text the persona entered.**
-- **Every control inside the field is a separate tab stop (a place the Tab key lands)** and works with Enter or Space. A control inside the field must not respond only to clicks.
+- **Every control inside the field is a separate tab stop (a place the Tab key lands)** and works with Enter or Space. A control inside the field, such as an icon button, must not respond only to clicks.
 - **Do not move focus automatically** when the text reaches a set length or a limit.
 - **If the text in the field scrolls, the persona must be able to scroll the text from the keyboard.** Keyboard scrolling must work with focus inside the field. The arrow keys, Page Up and Page Down must scroll the text. A persona using a keyboard cannot reach text that only a pointer can scroll to.
 - **Never make the persona resize the field to read or finish the text.** A persona using a keyboard cannot use a drag handle. The field must be usable at the size the field is given.
@@ -129,10 +166,16 @@ The textarea component connects the label to the input and handles the keys insi
 
 ## Open questions
 
-- **Growing to fit the text.** The UI kit fixes the number of rows. The design-system website shows a vertical-resize variant with the options `auto` and `custom`. The UI kit and the website disagree. The user must decide whether the field grows with the text. The user must also decide whether the field has a handle the persona can drag. Do not rely on a resize variant without confirming with the user. Confirm with the user only when the project has no resize variant.
+- **Growing to fit the text.** The UI kit fixes the number of rows. The design-system website shows a vertical-resize variant with the options `auto` and `custom`. The UI kit and the website disagree. The user must answer two questions:
+
+  - Does the field grow with the text?
+  - Does the field have a handle the persona can drag?
+
+  Do not rely on a resize variant without confirming with the user. Confirm with the user only when the theme has no resize variant.
+
 - **Text longer than the fixed number of rows.** A source outside the UI kit describes a "default fixed height before content truncation". No source says whether the extra text scrolls or is cut off. Cutting off the text a persona typed would be a serious problem. Do not rely on either behavior without confirming with the user.
-- **The character counter.** The design-system website shows a character counter. Nobody has settled where a count goes or what happens at the limit. `recursica-skill-assistive-element` has the same open question. Do not rely on a counter without confirming with the user. Confirm with the user only when the project has no character counter.
-- **A rich text editor.** Confirm with the user only when the project has no rich text editor. Do not build a rich text editor out of a textarea.
+- **The character counter.** The design-system website shows a character counter. Nobody has settled where a count goes or what happens at the limit. `recursica-skill-assistive-element` has the same open question. Do not rely on a counter without confirming with the user. Confirm with the user only when the theme has no character counter.
+- **A rich text editor.** Confirm with the user only when the theme has no rich text editor. Do not build a rich text editor out of a textarea.
 - **A minimum length.** No rule says whether a minimum length is a limit the component supports, or only a validation message.
 
 ## Pre-flight checklist
@@ -152,6 +195,6 @@ The textarea component connects the label to the input and handles the keys insi
 - [ ] Focus never moves automatically, and no live count is announced on every keystroke.
 - [ ] No styling is set or overridden on the textarea. No container or spacer is added to change the textarea's look.
 - [ ] No number of rows and no height is set on the textarea. The textarea has no wrapper and no custom margins.
-- [ ] Every variant, size, and state is one the project's UI kit lists, and no variant or option is invented.
+- [ ] Every variant, size, and state is one the theme's UI kit lists, and no variant or option is invented.
 - [ ] Text that nobody can edit uses the read-only field, not a disabled textarea.
 - [ ] Open questions were asked about, not decided: growing to fit the text, text longer than the fixed number of rows, the character counter, a rich text editor, and a minimum length.
