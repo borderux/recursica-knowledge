@@ -60,7 +60,7 @@ The rules below describe each option by role, such as "the primary style". The n
 
 **Label a toggle button with the button's current state.** "Follow" becomes "Following" after the persona presses Follow.
 
-**While a submit action runs, show the submit button in the disabled look with an animated icon.** `recursica-skill-forms` requires a disabled, loading look on the submit button. Build the look from the variants above: the disabled state and an icon, with or without a label. Animate the icon. Keep the button the same size and in the same place. A button that moves or resizes is no longer under the persona's pointer.
+**While a submit action runs, show the submit button as a disabled button with a spinner.** `recursica-skill-forms` requires this look. If the project has a loading state, use the loading state. Otherwise, build the look from the disabled state and an icon, with or without a label. Every UI kit has both. Animate the icon. Keep the button the same size and in the same place. A button that moves or resizes is no longer under the persona's pointer.
 
 **Never use the smaller size to fit more side-by-side buttons**, in a toolbar, a footer, or a table row. Change the screen's structure instead of shrinking the buttons. Too many buttons side by side means the screen offers too many actions. See `recursica-skill-system-conventions`.
 
@@ -110,7 +110,7 @@ The button component shows the focus ring. The button component also responds to
 
 - **When to use the smaller size.** No rule says which screens use the smaller size.
 - **Full-width buttons.** When the project has no full-width option, no rule says whether a full-width button is ever allowed, or where.
-- **The icon for a loading button.** A loading button uses the disabled look with an animated icon, and that part is settled. Which icon to use is not settled. Whether the UI kit or the adapter (the Recursica component library for one framework, such as Mantine or Angular Material) defines the animation is also unknown.
+- **The icon for a loading button.** A loading button uses the project's loading state, or the disabled look with an animated icon. That part is settled. Which icon to use is not settled. Whether the UI kit or the adapter (the Recursica component library for one framework, such as Mantine or Angular Material) defines the animation is also unknown.
 - **Split buttons and button groups.** Use a split button or a button group only when the project has that component. Never build either one from separate buttons.
 - **Setting the disabled state.** Nobody has confirmed that each adapter offers the disabled state as a setting. Check the button's settings with the Recursica MCP server, or confirm with the user, before relying on the disabled state.
 
@@ -126,7 +126,7 @@ The button component shows the focus ring. The button component also responds to
 - [ ] No action appears only on hover.
 - [ ] Every row action names the object, or gets the object from the row.
 - [ ] Focus returns to the button when a modal or menu that the button opened closes.
-- [ ] A loading button shows the disabled look with an animated icon. The loading button has no spinner beside the button, no new label and no new state. The loading button does not move or resize.
+- [ ] A loading button shows the project's loading state, or the disabled look with an animated icon. The loading button has no spinner beside the button, no new label and no new state. The loading button does not move or resize.
 - [ ] A loading button is marked busy, keeps the accessible name and stays in the tab order.
 - [ ] A loading button follows the persona's reduced-motion preference.
 - [ ] Every variant, size, and state is one the project's UI kit lists, and no variant or option is invented.
