@@ -19,28 +19,28 @@ A button performs an action. A button never takes the persona to a different pag
 
 ## When not to use a button
 
-| Situation                                                           | Use instead                                                                                                        |
-| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Clicking goes to a different page or URL                            | A link, with a real `href`. See `recursica-skill-link`.                                                            |
-| A table row opens a related record                                  | A link. A link has less visual weight than a button, and a dense table needs less visual weight in each table row. |
-| The persona chooses one of two to five options, such as a view      | A segmented control. See `recursica-skill-segmented-control`.                                                      |
-| The persona turns a setting on or off, such as email alerts         | A switch or a checkbox. See `recursica-skill-selection-controls`.                                                  |
-| A table row has more action buttons than the table row has room for | Fewer actions in the table row, not smaller buttons. See `recursica-skill-tables`.                                 |
+| Situation                                                           | Use instead                                                                                                    |
+| ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Clicking goes to a different page or URL                            | A link, with a real `href`. See `recursica-skill-link`.                                                        |
+| A table row opens a related record                                  | A link. A link has less visual weight than a button. A dense table needs less visual weight in each table row. |
+| The persona chooses one of two to five options, such as a view      | A segmented control. See `recursica-skill-segmented-control`.                                                  |
+| The persona turns a setting on or off, such as email alerts         | A switch or a checkbox. See `recursica-skill-selection-controls`.                                              |
+| A table row has more action buttons than the table row has room for | Fewer actions in the table row, not smaller buttons. See `recursica-skill-tables`.                             |
 
-**Never use a button to go to a different page or URL.** Using a button to go to a different page is the most common misuse of buttons. If clicking a control changes the URL, build the control as a link, even when the design shows a button. A link has less visual weight than a button. When a control that goes to a different page needs less visual weight, use a link, never a button in the text style.
+**Never use a button to go to a different page or URL.** If clicking a control changes the URL, build the control as a link, even when the design shows a button. Using a button to go to a different page is the most common misuse of buttons. If a control that goes to a different page needs less visual weight, use a link. Never use a button in the text style instead. A link has less visual weight than a button.
 
 ## Variants
 
-**Use only the button variants and options that the Recursica MCP server lists for the project.** A designer can add variants and options in Theme Forge, so each project can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
+**Use only the button variants and options that the Recursica MCP server lists for the project.** Get the list with the server's `recursica_get_component_doc` tool. Use the names the code uses. Never invent a variant or an option. Each project can differ, because a designer can add variants and options in Theme Forge.
 
 The rules below describe each option by role, such as "the primary style". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
-- **Style.** Use the primary style for the main action, the secondary style for the next most important action, and the least prominent style for every other action. In the standard UI kit, the styles are `solid`, `outline` and `text`. The `text` style is also called "Ghost".
+- **Style.** Use the primary style for the main action. Use the secondary style for the next most important action. Use the least prominent style for every other action. In the standard UI kit, the styles are `solid`, `outline` and `text`. The `text` style is also called "Ghost".
 - **Size.** A button has a default size and a smaller size. The standard UI kit calls the smaller size `small`.
 - **Content.** A button shows a label alone, an icon with a label, or an icon alone. The same variant puts an icon before the label, after the label, or on both sides of the label.
 - **Disabled state.** How to turn on the disabled state is an open question.
 - **Destructive action.** If the project has a destructive style, use the destructive style. Color alone cannot mark a destructive action (an action that deletes data or cannot be undone). Name the destructive action in the label, as in "Delete invoice". Confirm any action that cannot be undone. See `recursica-skill-buttons-links`.
-- **Loading.** If the project has a loading state, use the loading state. Otherwise, show a loading button (a button whose action is still running) in the disabled look with an animated icon, with or without a label. Never add a spinner beside the button, change the label, or invent a state.
+- **Loading.** If the project has a loading state, use the loading state. Otherwise, show a loading button (a button whose action is still running) in the disabled look. Give the loading button an animated icon, with or without a label. Never add a spinner beside the button, change the label, or invent a state.
 - **Success.** If the project has a success state, use the success state. Otherwise, show any confirmation of a finished action outside the button, such as in a toast. See `recursica-skill-toast`.
 - **Width.** If the project has a full-width option, use the full-width option. Otherwise, never stretch a button to fill the container the button sits in.
 
@@ -62,7 +62,7 @@ The rules below describe each option by role, such as "the primary style". The n
 
 **While a submit action runs, show the submit button in the disabled look with an animated icon.** `recursica-skill-forms` requires a disabled, loading look on the submit button. Build the look from the variants above: the disabled state and an icon, with or without a label. Animate the icon. Keep the button the same size and in the same place. A button that moves or resizes is no longer under the persona's pointer.
 
-**Never use the smaller size to fit more buttons side by side**, in a toolbar, a footer, or a table row. Too many buttons side by side means the screen offers too many actions. Change the screen's structure instead of shrinking the buttons. See `recursica-skill-system-conventions`.
+**Never use the smaller size to fit more side-by-side buttons**, in a toolbar, a footer, or a table row. Change the screen's structure instead of shrinking the buttons. Too many buttons side by side means the screen offers too many actions. See `recursica-skill-system-conventions`.
 
 **Hide a button the persona has no permission to use.** Never show the button disabled instead. See `recursica-skill-navigation`.
 
@@ -76,10 +76,10 @@ The button component shows the focus ring. The button component also responds to
 
 - **Give every button an accessible name.** Set the accessible name explicitly on an icon-only button. A screen reader does not read the icon. A button with no accessible name is read only as "button".
 - **The accessible name should match the visible label.** When the accessible name and the label differ, the accessible name must still contain the label. A persona using voice control presses a button by saying the label.
-- **Name the object in an action button in a table row or a list.** In a table of thirteen rows with "Delete" in every table row, a screen reader announces "Delete" thirteen times with nothing to tell the rows apart. Put the object in the accessible name, as in "Delete invoice 1043". Or, in the code, set the object on the row as context for the button.
+- **Name the object in an action button in a table row or a list.** Put the object in the accessible name, as in "Delete invoice 1043". Or, in the code, set the object on the row as context for the button. A table of thirteen rows might show "Delete" in every table row. A screen reader then announces "Delete" thirteen times, with nothing to tell the rows apart.
 - **Update the accessible name when a toggle button's label changes.** An accessible name that is out of date after a press is worse than no accessible name.
 - **Spell out the count in the accessible name.** The label shows `Apply status (102)`, and the screen reader says "Apply status to 102 items." A bare number after the label, as in "Apply status 102", is unclear when heard. The number could be a quantity, an ID, or part of the name.
-- **The count is the one approved case where the accessible name and the label differ.** The count still follows the rule that the accessible name must contain the label, because the accessible name contains the label. A persona using voice control can still say "Apply status".
+- **The count is the one approved case where the accessible name and the label differ.** The count still follows the rule that the accessible name must contain the label. The accessible name keeps the label words. A persona using voice control can still say "Apply status".
 - **Update the accessible name as the count changes.** With no item selected, the accessible name is `Apply status`, with no count. Do not announce every increase in the count while the persona selects items. The accessible name must be correct by the time the persona reaches the button.
 - **Use a real `button` element**, never a `div` or a `span` with a click handler. A screen reader announces only a real `button` element as a button. Only a real `button` element responds to Enter and Space by default.
 - **Put the meaning in the accessible name, not only in the icon.** A screen reader announces the accessible name of an icon-only button and nothing about the icon. `recursica-skill-system-conventions` requires every meaning to be shown in more than one way.
@@ -88,21 +88,21 @@ The button component shows the focus ring. The button component also responds to
 
 ### Keyboard and non-mouse navigation
 
-- **Enter and Space both press a button.** Do not intercept, remap, or block either key.
+- **Do not intercept, remap, or block Enter or Space on a button.** Enter and Space both press a button.
 - **Each button is a tab stop (a place the Tab key lands), in the order the buttons appear on screen.** A persona using a keyboard must reach the primary button without tabbing through the whole page.
-- **Never show an action, label, or value the persona needs only on hover.** Personas using a keyboard and personas using touch cannot reach an action that appears only when the pointer is over a table row or list item. Show every action, or put the action in a menu the persona can reach.
-- **When a button opens a modal or a menu, move focus into the modal or menu.** When the modal or menu closes, return focus to the button. If focus goes to the top of the page instead, a persona using a keyboard has to tab through the whole page to get back to the button.
+- **Never show an action, label, or value the persona needs only on hover.** Show every action, or put the action in a menu the persona can reach. A hover action appears only while the pointer is over a table row or list item. Personas using a keyboard or touch cannot reach a hover action.
+- **When a button opens a modal or a menu, move focus into the modal or menu.** When the modal or menu closes, return focus to the button. If focus is not returned, focus can go to the top of the page. A persona using a keyboard then has to tab through the whole page to get back to the button.
 - **When a button does not open a modal or a menu, leave focus on the button after a press.** The persona can then press the button again.
-- **Keep a loading button in the tab order.** A disabled control leaves the tab order, and focus falls back to the top of the page. Show the disabled look without removing the button from the tab order, or move focus to the next element the persona needs.
+- **Keep a loading button in the tab order.** Show the disabled look and keep the button in the tab order. Or move focus to the next element the persona needs. A disabled control leaves the tab order, and focus falls back to the top of the page.
 - **The animated icon follows the persona's reduced-motion preference** (a setting that asks for less animation).
 
 ## Styling set by tokens
 
-**Never set or override the button's styling.** The theme sets every visual property of the button, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the button's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the button's styling.** Do not add extra containers or spacers to change the button's look. If the design needs a look the theme does not give, raise the gap. The theme sets every visual property of the button, such as size, spacing, borders, colors and animation. See `recursica-skill-design-router`.
 
 ## Related skills
 
-- `recursica-skill-buttons-links` — button versus link, label wording, button hierarchy and placement, confirming destructive actions, undo, toggles, row actions and bulk actions, and buttons that open a modal.
+- `recursica-skill-buttons-links` — button versus link, label wording, button hierarchy and placement. The skill also covers confirming destructive actions, undo, toggles, row actions, bulk actions, and buttons that open a modal.
 - `recursica-skill-forms` — what submit and cancel buttons do, the form's save mode, and where the form footer goes.
 - `recursica-skill-system-conventions` — showing meaning in more than one way, and changing the screen's structure instead of shrinking controls to fit.
 
@@ -126,10 +126,12 @@ The button component shows the focus ring. The button component also responds to
 - [ ] No action appears only on hover.
 - [ ] Every row action names the object, or gets the object from the row.
 - [ ] Focus returns to the button when a modal or menu that the button opened closes.
-- [ ] A loading button shows the disabled look with an animated icon, with no spinner beside the button, no new label, and no new state. The loading button does not move or resize.
-- [ ] A loading button is marked busy, keeps the accessible name, stays in the tab order, and follows the persona's reduced-motion preference.
+- [ ] A loading button shows the disabled look with an animated icon. The loading button has no spinner beside the button, no new label and no new state. The loading button does not move or resize.
+- [ ] A loading button is marked busy, keeps the accessible name and stays in the tab order.
+- [ ] A loading button follows the persona's reduced-motion preference.
 - [ ] Every variant, size, and state is one the project's UI kit lists, and no variant or option is invented.
-- [ ] No styling is set or overridden on the button, and no container or spacer is added to change the button's look.
+- [ ] No styling is set or overridden on the button.
+- [ ] No container or spacer is added to change the button's look.
 - [ ] The focus ring comes from the button component.
 - [ ] Actions the persona has no permission for are hidden, not disabled.
 - [ ] Open questions were asked about, not decided: when to use the smaller size, full-width buttons, the icon for a loading button, split buttons and button groups, and setting the disabled state.
