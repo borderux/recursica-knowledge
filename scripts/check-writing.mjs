@@ -9,8 +9,9 @@
  *   words      in a skill: no "whatever", "axis", "React" or "prop" (rule 4)
  *   grade      a Flesch-Kincaid grade below 10 (a 9th-grade reading level) in skills and agent
  *              instructions
- *   length     no sentence longer than 20 words in skills and agent instructions, table cells
- *              included, glossary definitions and the open-questions checklist line left out.
+ *   length     no sentence longer than 20 words in skills, table cells included, glossary
+ *              definitions and the open-questions checklist line left out. Agent instructions
+ *              are exempt: the owner accepts long sentences there.
  *              `node scripts/check-writing.mjs --long <file>…` lists each long sentence.
  *
  * Code, inline code and text in double quotes are skipped: they quote an interface, a value or
@@ -352,12 +353,14 @@ const youApplies = (f) =>
   f.startsWith("buzz-agents/agents/");
 
 /**
- * The sentence limit covers the same files, except the glossary and the shared passages. Neither
- * file is served to an agent, both are wrapped at 100 characters, which splits a sentence into
- * lines the count reads as sentences, and the glossary lists its undefined terms on one line.
+ * The sentence limit covers the skills only. Agent instructions are exempt by the owner's choice.
+ * The glossary and the shared passages are exempt too. Neither file is served to an agent, both
+ * are wrapped at 100 characters, which splits a sentence into lines the count reads as sentences,
+ * and the glossary lists its undefined terms on one line.
  */
 const lengthApplies = (f) =>
-  youApplies(f) && !/^skills\/meta\/(GLOSSARY|SHARED-PASSAGES)\.md$/.test(f);
+  f.startsWith("skills/") &&
+  !/^skills\/meta\/(GLOSSARY|SHARED-PASSAGES)\.md$/.test(f);
 
 /** `<file>: <rule>` → why it is still open. */
 export const KNOWN = JSON.parse(

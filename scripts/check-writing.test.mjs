@@ -111,6 +111,9 @@ test("a sentence over 20 words is caught, in prose, lists and table cells", () =
     ),
   );
   assert.ok(!problemsIn("AGENT.md", long).some((p) => p.rule === "length"));
+  assert.ok(
+    !problemsIn("agents/betty/SKILL.md", long).some((p) => p.rule === "length"),
+  );
 });
 
 test("glossary definitions and the open-questions line are fixed wording, so not counted", () => {
