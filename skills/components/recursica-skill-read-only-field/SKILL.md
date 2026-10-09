@@ -9,18 +9,18 @@ metadata:
 
 # Read-only field
 
-A read-only field shows a label and a value inside a form. A read-only field shows no input.
+A read-only field shows a label and a value inside a form, such as "Account ID" and the account's ID. A read-only field shows no input.
 
 ## When to use a read-only field
 
 - **A form shows a value that the persona viewing the screen cannot edit.** Examples are a profile page or a settings page in view mode.
 - **A confirmation step sums up the values the persona entered**, so the persona can review the values before submitting.
 - **The system created the value**, such as an account ID, a created date or a calculated total.
-- **The value belongs to the object the form is about.** The value also needs the same label-and-value layout as the fields around the value.
+- **The value belongs to the object the form is about**, such as the order number on an order form. The value also needs the same label-and-value layout as the fields around the value.
 
 ## When not to use a read-only field
 
-Use the component in the table below instead of adapting a read-only field.
+In each situation below, use the listed component instead of changing a read-only field to fit.
 
 | Situation                                               | Use instead                                                                                         |
 | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
@@ -30,18 +30,18 @@ Use the component in the table below instead of adapting a read-only field.
 | The content is not a pair of a label and a value        | Standard text elements, such as headings and body text                                              |
 | Several repeating objects each have the same properties | A table. Each table row is one object, and each column is one field. See `recursica-skill-tables`.  |
 
-**If the value cannot be edited, use a read-only field, not a disabled input.** A disabled input is still clearly an input. A disabled input tells the persona that the input cannot be used now. A disabled input also tells the persona that the persona could reasonably make the input usable with another action first. A read-only field does not suggest that the value can become editable.
+**If the value cannot be edited, use a read-only field, not a disabled input.** A disabled input still looks like an input. A disabled input tells the persona that the input cannot be used now. The persona then expects that another action first, such as checking a box, could reasonably make the input usable. A read-only field does not suggest that the value can become editable.
 
 **Never fake a read-only field by disabling an input or by removing an input's borders.** `recursica-skill-forms` sets the rule against faking a read-only field.
 
 ## Variants
 
-**Use only the read-only field variants and options that the Recursica MCP server lists for the project.** A designer can add variants and options in Theme Forge, so each project can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. The code can use a different name from the name in Figma and the UI kit. A wrong name in code has no effect and shows no error. Never invent a variant or an option.
+**Use only the read-only field variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. The code can use a different name from the name in Figma and the UI kit. A wrong name in code has no effect and shows no error. Never invent a variant or an option.
 
 The rules below describe each option by role, such as "the label above the field". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
 - **Do not set a state on a read-only field, and do not fake a state.** A read-only field is not a control. A read-only field never has an error state, a disabled state, a focus state or a hover state. No part of a read-only field can be invalid or unusable.
-- **If the project has a size variant or a `rows` option, use that variant or option.** Otherwise, no rule says how a long value is shown. The question is listed under "Open questions".
+- **If the theme has a size variant or a `rows` option, use that variant or option.** Otherwise, no rule says how a long value is shown. See the open questions.
 - **Keep the read-only background that the read-only field's tokens set.** Do not choose another background style for a read-only field.
 
 **Label placement is a variant.** A field's label sits beside the field or above the field. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. The label beside the field is the house default. The label above the field is the fallback when the form's container is too narrow for both side by side. The container's width decides, not the viewport's width. See `recursica-skill-forms`. Every field has the same label-placement variant. Set the read-only field's label placement to match the fields around the read-only field. A read-only field among stacked fields is stacked too.
@@ -50,21 +50,37 @@ The rules below describe each option by role, such as "the label above the field
 
 ## Rules
 
-**Always give the read-only field a visible label**, and let the read-only field connect the label to the value. In the label, name the object clearly, use sentence capitalization, and leave off any colon at the end. The rules in `recursica-skill-label` apply without change to the read-only field's label.
+**Always give the read-only field a visible label.** Give the label to the read-only field, and let the read-only field connect the label to the value. Write the label this way:
+
+- Name the object clearly, such as "Account ID".
+- Use sentence case, as in "Created date".
+- Leave off any colon at the end.
+
+The rules in `recursica-skill-label` apply without change to the read-only field's label.
 
 **Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form, editable or not. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form. Short fields that would fit side by side follow the result too. A form may change placement at a breakpoint. A form never mixes placements at one breakpoint. A form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
-**Make a read-only field look clearly different from an input.** Keep the look that the read-only field's tokens set. Do not restyle read-only fields or editable fields to look like each other. A persona must see at a glance whether a field is read-only, disabled or editable. The most common mistake is a light gray background on editable fields. The light gray background makes a whole form look read-only.
+**Make a read-only field look clearly different from an input.** A persona must see at a glance whether a field is read-only, disabled or editable.
 
-**Format the value by the rules for showing values, not the rules for entering values.** Always write a read-only date in the format `Jan 7, 2026`, never `01/07/2026`. The numeric date format appears only inside an input that has focus. Right-align numbers, with a fixed number of decimal places (fixed precision). Give currency two decimal places. Give durations unit labels. `recursica-skill-dates-and-currency` sets the rules for showing values.
+- Keep the look that the read-only field's tokens set.
+- Do not restyle read-only fields or editable fields to look like each other.
+
+The most common mistake is a light gray background on editable fields. The light gray background makes a whole form look read-only.
+
+**Format the value the way a value is shown, not the way a value is entered.** `recursica-skill-dates-and-currency` sets the rules for showing values.
+
+- Always write a read-only date in the format `Jan 7, 2026`, never `01/07/2026`. The numeric date format appears only inside an input that has focus.
+- Right-align numbers, with a fixed number of decimal places (fixed precision).
+- Give currency two decimal places.
+- Give durations unit labels, as in "3 days".
 
 **Align read-only values the same way as the editable values on the same screen.** One mismatch is read-only values aligned left to sit near the labels, beside editable values aligned right. The mismatch makes one screen look like two different design systems.
 
-**Put the time zone and the unit in the value's text.** A persona who copies the value then gets the time zone and the unit with the value. A persona who hears the value read aloud also hears the time zone and the unit.
+**Put the time zone and the unit in the value's text**, such as the "kg" in "12 kg". A persona who copies the value then gets the time zone and the unit with the value. A persona who hears the value read aloud also hears the time zone and the unit.
 
-**If the persona can edit the value in another flow, open that flow from a named control that stays visible.** Never use a control that appears on hover. See "Open questions" before adding an edit control.
+**If the persona can edit the value in another flow, open that flow from a named control that stays visible.** For example, name the control "Edit email address", not "Edit". Never use a control that appears on hover. Read the open questions before adding an edit control.
 
-**A read-only field holds one label and one value.** If the value is several items, use a list or a table. Do not put the items in one read-only field, separated by commas.
+**A read-only field holds one label and one value.** If the value is several items, such as three phone numbers, use a list or a table. Do not put the items in one read-only field, separated by commas.
 
 ## Accessibility
 
@@ -75,7 +91,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 ### Screen readers
 
 - **A read-only field must not be announced as an input.** Do not build a read-only field as an `input`, a `textarea` or an element with a textbox role. The ban includes a disabled `input` and an `input` with a `readonly` attribute. A persona who hears "edit text" tries to type into the field.
-- **The label must still be connected to the value in code.** Give the label to the read-only field. A label shown as separate text beside a value is paired with the value only visually. A persona moving through the page with a screen reader then hears the value without the label.
+- **The label must still be connected to the value in code.** Give the label to the read-only field. A label shown as separate text beside a value looks paired with the value. The code does not pair the label with the value. A persona moving through the page with a screen reader then hears the value without the label.
 - **The value must be real text in the page.** The value is never an image, a canvas, a background image, or content that a style sheet adds. A screen reader cannot announce text inside an image, a canvas or a style sheet.
 - **Do not mark a read-only field required or optional.** A read-only field has nothing to require. A required marker on a value the persona cannot enter is a false instruction.
 - **Do not apply a disabled look or `aria-disabled` to a read-only field.** A read-only field is not disabled. Announcing a read-only field as disabled tells the persona that a condition could make the field editable. The read-only state is permanent.
@@ -87,8 +103,12 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 - **A read-only field is not a tab stop** (a place the Tab key lands). Do not add a `tabindex`. Do not make a read-only field able to receive focus only to give the field a focus ring. A persona using a keyboard tabs from the field above the read-only field straight to the field below. Skipping the read-only field is correct.
 - **The value must be text the persona can select and copy.** Never block selection. An account number or an ID that cannot be copied forces the persona to type the number out by hand. Copying is the most common action on a read-only value.
-- **No part of a read-only field may depend on hover or focus.** A read-only field never receives focus. Every piece of information in a read-only field is text that shows without hover or focus. The information includes the value, the unit, the time zone and any note about why the value cannot be edited.
-- **Any edit control is a control.** The edit control is a separate tab stop and works with Enter or Space. The edit control has a separate accessible name (the name a screen reader reads out for a control), and is visible without hover. Personas using a keyboard and personas using touch cannot reach an edit icon that appears on hover.
+- **No part of a read-only field may depend on hover or focus.** A read-only field never receives focus. Show each piece of information as text that needs no hover or focus. The information includes the value, the unit, the time zone and any note about why the value cannot be edited.
+- **Any edit control is a control.** Personas using a keyboard and personas using touch cannot reach an edit icon that appears on hover.
+  - The edit control is a separate tab stop.
+  - The edit control works with Enter or Space.
+  - The edit control has a separate accessible name (the name a screen reader reads out for a control).
+  - The edit control is visible without hover.
 - **A read-only field must not interrupt the tab order** of the fields around the read-only field. Placing a read-only field between two inputs changes what a persona reads, never the order the persona tabs through.
 
 ## Styling set by tokens
@@ -100,7 +120,7 @@ Never set or override the connection between the label and the value. The read-o
 ## Related skills
 
 - `recursica-skill-forms` — label placement, the container-width test and one placement per form. The forms skill also says a read-only field is a separate component, not an input restyled to look read-only. The forms skill also says no form control goes inside a card.
-- `recursica-skill-dates-and-currency` — the read-only date format, right alignment, precision and durations. The dates skill's rule that the format follows focus gives the read-only field the display format.
+- `recursica-skill-dates-and-currency` — the read-only date format, right alignment, precision and durations. In the dates skill, the format follows focus, and the focus rule gives the read-only field the display format.
 - `recursica-skill-label` — the label component, the label's placement variant, and the room a label makes for an edit icon.
 - `recursica-skill-selection-controls` — disabled versus read-only, and when a value should not be a form control at all.
 - `recursica-skill-tables` — the table to use instead for read-only values that repeat for several objects.
@@ -115,7 +135,7 @@ Never set or override the connection between the label and the value. The read-o
 - **No rule settles the editable read-only field.** Only the design-system website shows an "Is editable" behavior. In that behavior, an edit icon appears on hover and sends the persona to another flow. `recursica-skill-label` makes room for an edit icon on a label without saying what the edit icon does. A control that appears only on hover also conflicts with the accessibility rules above. Confirm with the user before settling the question or relying on the behavior.
 - **A source outside the UI kit describes required and optional markers on a read-only field.** The source describes turning on an optional label or a required asterisk on a read-only field. The description contradicts the fact that a read-only field has no input to require. Do not rely on the markers without confirming with the user.
 - **No rule says what a read-only field shows for an empty or null value.** `recursica-skill-tables` has a rule for null table cells, but no rule extends the table rule to a read-only field.
-- **No rule says whether a long value, or a value on several lines, wraps, scrolls or is truncated.** Confirm with the user only when the project has no size variant and no `rows` option.
+- **No rule says whether a long value, or a value on several lines, wraps, scrolls or is truncated.** Confirm with the user only when the theme has no size variant and no `rows` option.
 - **No rule says whether help text or assistive text may sit under a read-only field.**
 - **No rule says whether a read-only field can be part of a compound control.** One example is one half of a date-and-time row.
 
@@ -137,7 +157,7 @@ Never set or override the connection between the label and the value. The read-o
 - [ ] The read-only field is not a tab stop and has no `tabindex`. The read-only field does not interrupt the tab order around the read-only field.
 - [ ] No part of the read-only field depends on hover or focus.
 - [ ] Any edit control stays visible, is a separate tab stop and keeps the focus ring. The edit control's accessible name says what the control edits.
-- [ ] Every variant and option is one the Recursica MCP server lists for the project. No variant or option is invented.
+- [ ] Every variant and option is one the Recursica MCP server lists for the theme. No variant or option is invented.
 - [ ] No styling is set or overridden on the read-only field. No container or spacer is added to change the read-only field's look.
 - [ ] Read-only fields and editable fields keep different looks.
 - [ ] Open questions were asked about, not decided: the edit control that appears on hover, required and optional markers, empty and null values, long values, help text, and use in a compound control.
