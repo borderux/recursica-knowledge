@@ -9,67 +9,94 @@ metadata:
 
 # Typography and semantics
 
-Treat each house rule for type, and for the HTML markup that holds the text, as a constraint. The house rules are opinions, not neutral best practices.
+Follow each house rule below for type, and for the HTML markup that holds the text. The house rules are the team's opinions, not neutral best practices.
 
-**The rules assume complex enterprise web applications, designed for desktop first.** The applications use a design system that delivers typography as tokens (named design values, such as colors or sizes, set by the design system). The person or agent who builds the screen chooses each part's HTML element by the part's meaning. The design system's tokens set how each element looks.
+**The rules are written for complex enterprise web applications, designed for desktop first.** The design system delivers typography as tokens (named design values, such as colors or sizes, set by the design system). Whoever builds the screen picks each HTML element by what the content means. The design system's tokens set how each element looks.
 
 ## The three governing principles
 
-1. **Treat the semantic structure as the design itself, not as a separate step.** Use semantic HTML (HTML elements chosen by role, such as a button element for a button). Choose each element for the element's meaning, not for the element's look. Make the markup match what is on the screen. Never get a visual effect by using the wrong element.
-2. **Always take type styles from tokens.** The design system defines the type styles, and the code applies the type styles. A custom typographic value is a defect, unless no type style exists for the text being styled.
-3. **Put being understood before being brief.** If text cannot be both short and easy to understand, make the text easy to understand. The persona should not have to hover over an item on the screen to find out what the item means.
+1. **Treat the semantic structure as the design itself, not as a separate step.** Use semantic HTML (HTML elements chosen by role, such as a button element for a button).
+   - Pick each element for what the content means, not for how the element looks.
+   - Make the markup match what is on the screen.
+   - Never use the wrong element to get a visual effect. For example, never pick an H4 only for the H4's small size.
+2. **Always take type styles from tokens.** The design system defines the type styles, and the code applies the type styles. A custom type value, such as a custom font size, is a defect. The one exception is text that has no type style.
+3. **Choose easy to understand over short.** When text cannot be both short and easy to understand, make the text easy to understand. The persona should not have to hover over an item on the screen to learn what the item means. An abbreviation is one example of such an item.
 
 ## Real HTML elements
 
-**Use a `button` element for every button.** An `onclick` handler on a `div` is semantically wrong. A `role="button"` on a `div` only imitates the `button` element that the web platform provides. Use the `button` element even when another element would look the same.
+**Use a `button` element for every button, even when another element would look the same.**
 
-**Mark emphasis with `em` or `strong`, never with a visual style in place of one of those tags.** Add the `em` or `strong` tag in the markup, and let styles decide how the tag looks. A font weight or an italic style used to suggest emphasis makes the text look emphasized on screen. Everywhere other than the screen, the text is plain.
+- A `div` with an `onclick` handler is the wrong element.
+- A `div` with `role="button"` only imitates the `button` element that the web platform provides.
 
-**Mark up a data table as a semantic table, structured to match what is on the screen.** See `recursica-skill-table`.
+**Mark emphasis with an `em` or `strong` tag, never with a visual style in place of the tag.** Add the `em` or `strong` tag in the markup, and let styles decide how the tag looks. A font weight or an italic style used to suggest emphasis makes the text look emphasized on screen. Everywhere other than the screen, such as in a screen reader, the text is plain.
 
-**If the web platform has an element for a purpose, use that element.** Styling the element is a separate decision.
+**Mark up a data table as a semantic table, with the same structure the screen shows.** See `recursica-skill-table`.
+
+**When the web platform has an element for a purpose, use that element.** For example, use a `nav` element for navigation and a `ul` element for a list. How the element looks is a separate decision.
 
 ## Headings
 
-**A page MUST have exactly one H1.** No case in the applications this design system serves needs a second H1.
+**A page MUST have exactly one H1.** No page in the applications this design system serves needs a second H1.
 
-**The H1 must be in the markup, even when the H1 is not visible.** If the design has no place for the H1, the H1 may be hidden with styles. The H1 says what the page is, even when the layout does not show the H1.
+**The H1 must be in the markup, even when the H1 is not visible.** When the design has no place for the H1, the H1 may be hidden with styles. For example, a dashboard with no visible title still has an H1 in the markup. The H1 says what the page is, even when the layout does not show the H1.
 
-**Choose a heading level by meaning, not by size.** Choose the heading level by where the content sits in the structure of the document. To make a heading look smaller, use a smaller type style. Do not lower the heading level, such as to H4.
+**Choose a heading level by meaning, not by size.** The heading level comes from where the content sits in the structure of the page. To make a heading look smaller, use a smaller type style. Do not lower the heading level, such as to H4. For example, give an H2 a smaller type style instead of changing the H2 to an H4.
 
 ## Type styles from tokens
 
-**Always use the design system's typography tokens.** An H1 gets the H1 type style because the code applies the H1 typography tokens. On this team, design system work means applying the tokens in code.
+**Always use the design system's typography tokens.** For example, an H1 looks like an H1 because the code applies the H1 typography tokens. On this team, design system work means applying the tokens in code.
 
-**Never define a custom font size, line height, or letter spacing** to fit a particular case.
+**Never set a custom font size, line height or letter spacing** to fit one particular case.
 
-**The one exception is a case that no type style covers.** A case with no type style should be very rare. If no type style covers a case, report the missing type style instead of inventing a value without telling anyone. The missing type style belongs in the design system, not in the component.
+**The one exception is a case that no type style covers.** A case with no type style should be very rare.
+
+- When no type style covers a case, report the missing type style.
+- Do not invent a value without telling anyone.
+- The missing type style belongs in the design system, not in the component.
 
 ### Brand typefaces and the base font family
 
-**The brand names more than one typeface, such as a primary, a secondary and a tertiary typeface.** The theme uses every typeface the brand names. Different components use different brand typefaces.
+**The brand names more than one typeface, such as a primary, a secondary and a tertiary typeface.** The theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes) uses every typeface the brand names. Different components use different brand typefaces.
 
-**MUST load every typeface the brand names.** A screen that loads only the primary typeface has a bigger problem than "one web font missing". The browser quietly swaps in a default typeface for each typeface that is not loaded. A component then shows up in a typeface the theme never asked for, and nobody sees an error. The screen looks like two design systems. People report the problem in these exact words, "the fonts are not the ones in the theme," and not as a missing font file.
+**The code MUST load every typeface the brand names, not only the primary typeface.** A screen that loads only the primary typeface has a bigger problem than one missing web font.
 
-**MUST set the document's base font family from the brand's primary typeface token.** Every element the design system does not style inherits the base font family. The following unstyled elements are examples:
+- The browser quietly swaps in a default typeface for each typeface the code did not load.
+- A component then shows in a typeface the theme never asked for, and no error appears.
+- The screen looks like two design systems.
+
+People report the problem in these exact words: "the fonts are not the ones in the theme." People do not report a missing font file.
+
+**The code MUST set the page's base font family from the brand's primary typeface token.** Every element the design system does not style inherits the base font family. Examples of unstyled elements:
 
 - plain text in a table cell
 - a navigation link whose type style is set to inherit
 - a list item with no style
 
-If no base font family is set, the unstyled elements fall back to the browser's default font. On most machines, the browser's default font is the operating system's interface font or a serif. The navigation then shows a different typeface from the page title beside the navigation.
+Without a base font family, the unstyled elements use the browser's default font. On most machines, the browser's default font is the operating system's interface font or a serif. The navigation then shows a different typeface from the page title beside the navigation.
 
-**Reading the token to set the base font family is not writing a value, and is not an override.** The elements that inherit the base font family belong to the application, not to the design system. Do not hardcode the font name in place of the token.
+**Setting the base font family from the token is not writing a custom value, and is not an override.** The elements that inherit the base font family belong to the application, not to the design system. Do not hardcode the font name in place of the token.
 
-**Check the font family with the computed value, not by looking at the screen.** Compare the computed font family on the document body, on a navigation link, and inside a component. All three should name the same brand typeface. A different typeface in any of the three places is the defect the base font family rule above describes.
+**Check the font family by the computed value (the font the browser applies), not by looking at the screen.** Compare the computed font family in three places:
+
+- the page's `body` element
+- a navigation link
+- text inside a component
+
+All three should name the same brand typeface. A different typeface in any of the three places is the defect the base font family rule above describes.
 
 ## Vertical spacing around headings
 
-**Do not apply one vertical gap token to every heading.** The right spacing above and below a heading depends on the heading's level. The spacing _also_ depends on the elements before and after the heading. An H2 followed directly by an H3 needs different spacing from an H2 followed by body text.
+**Do not apply one vertical gap token to every heading.** The right spacing above and below a heading depends on two factors:
 
-**Of the team's pet peeves, one gap token on every heading is the most reliable sign of generated work.** A single gap size everywhere makes a page look basic and undesigned, even with every token correct.
+- the heading's level
+- the elements before and after the heading
 
-**Even when spacing changes with context, use no custom spacing values.** The tokens are still the source of every spacing value. Decide which spacing token each pair of elements calls for.
+For example, an H2 followed directly by an H3 needs different spacing from an H2 followed by body text.
+
+**Of the team's pet peeves, one gap token on every heading is the surest sign of generated work.** The same gap everywhere makes a page look basic and undesigned, even when every token is correct.
+
+**Take every spacing value from a token, even when the spacing changes from place to place.** Use no custom spacing values. For each pair of elements, such as an H2 followed by body text, decide which spacing token the pair needs.
 
 ## Visually hidden text
 
@@ -78,40 +105,38 @@ If no base font family is set, the unstyled elements fall back to the browser's 
 1. Showing the heading breaks up the layout, **and**
 2. The heading adds nothing to what the persona understands from the screen.
 
-**If both conditions are true, hide the heading visually and keep the heading available to screen readers.** The heading stays in the page structure. Only the visible text goes away.
+**When both conditions are true, hide the heading from sight and keep the heading available to screen readers.** The heading stays in the page structure. Only the visible text goes away.
 
-**If the heading adds to what the persona understands, show the heading.** Hiding meaningful content from sighted personas to keep a layout tidy is the wrong choice.
+**If the heading adds to what the persona understands, show the heading.** Do not hide meaningful content from sighted personas to keep a layout tidy.
 
 ## Eyebrow text
 
-Eyebrow text is a small label that sits above a heading.
+Eyebrow text is a small label that sits above a heading, such as "Billing" above the heading "Payment methods".
 
-**The markup for eyebrow text must match what the eyebrow text is.** Eyebrow text with markup that does not match the eyebrow text's meaning is a known mistake.
+**The markup for eyebrow text must match what the eyebrow text is.** Wrong markup on eyebrow text is a known mistake.
 
 - If the eyebrow text is a category, do not mark up the eyebrow text as a heading.
 - If the eyebrow text is part of the title, put the eyebrow text in the heading.
 
-Do not use a heading level to get the eyebrow text's size. A heading level used for size is the wrong element used for a visual effect. The typography rules exist to prevent exactly that mistake.
+**Do not use a heading level to get the eyebrow text's size.** For example, do not mark up eyebrow text as an H6 because the H6 style is the right size. A heading level used for size is the wrong element used for a visual effect. The typography rules exist to prevent exactly that mistake.
 
 ## Abbreviations
 
-**Write out the full term at the term's first use.** Later uses may be abbreviated.
+**Write out the full term the first time the term appears, with the abbreviation in parentheses after the full term.** For example, write "annual percentage rate (APR)" the first time. Later uses may say "APR". Every later use of a term may be abbreviated. The persona then learns what the short form looks like.
 
-**Put the abbreviation in parentheses after the first full use.** The persona then learns what the short form will look like.
+**Do not rely on a tooltip or an `aria-label` alone.** Not every persona knows to hover over an abbreviation to learn what the abbreviation means.
 
-**Do not rely on a tooltip or an `aria-label` alone.** Not every persona knows to hover over an abbreviation to find out what the abbreviation means.
-
-**Exception: abbreviate at first use when the term is common knowledge and the context cannot be misread.** The exception applies only where everyone understands the term and the context allows no other meaning. MPG on a fuel-economy dashboard is fine. Spelling out MPG on a fuel-economy dashboard would look strange.
+**One exception: abbreviate at first use when the term is common knowledge and the context cannot be misread.** The exception applies only where everyone understands the term and the context allows no other meaning. For example, "MPG" on a fuel-economy dashboard is fine at first use. Spelling out "miles per gallon" on a fuel-economy dashboard would look strange.
 
 ## Line length
 
-**Run the line-length check on every text block set in an `h3` through `h6` style, a body style, or a caption style.** The `h3` through `h6`, body and caption styles hold running text, and running text can wrap. The check produces a maximum width for the text block.
+**Run the line-length check on every text block set in an `h3` through `h6` style, a body style or a caption style.** The line-length check is the formula in steps 1 to 3 below. The check gives the text block a maximum width. The `h3` through `h6`, body and caption styles hold running text, and running text can wrap.
 
 **Leave `h1` and `h2` out of the line-length check.** An `h1` or `h2` is a short title, set on purpose, and is not expected to wrap.
 
 **If an `h1` or `h2` is long enough to wrap, report the wording as a problem.** Do not compute a measure (the length of a line of text) for that `h1` or `h2`.
 
-**The line-length check produces a layout limit, not a type style.** Every input to the check comes from the tokens. The check produces only a width. The check gives no permission to change a font size, a line height, or a letter-spacing value.
+**The line-length check produces a layout limit, not a type style.** Every input to the check comes from the tokens. The check produces only a width. The check gives no permission to change a font size, a line height or a letter-spacing value.
 
 ### Step 1 — average character width
 
@@ -147,7 +172,7 @@ w_avg = (S × c_font × k_weight) + LS
 
 ### Step 2 — optimal measure
 
-The comfortable number of characters per line goes up with the line height. Taller leading (the space between lines) lets the eye travel further along a line and still find the next line. The formula works out the measure from the line-height ratio, compared against a reference ratio of 1.5.
+A taller line height allows more characters per line. With more space between lines, the eye can follow a longer line and still find the next line. The formula works out the measure from the line-height ratio, compared against a reference ratio of 1.5.
 
 ```
 R      = LH / S                                  (line-height ratio, unitless)
@@ -160,7 +185,7 @@ N_opt  = clamp( N_min ,  N_base × (R / 1.5) ,  N_max )
 | Body      | 66       | 45      | 75      |
 | Caption   | 52       | 40      | 60      |
 
-Headings get a shorter measure than body text because people scan headings rather than read headings. A full-width subheading in a wide container is harder to take in than the paragraph beneath the subheading. Captions get a shorter measure because the eye has a harder time finding the next line's start in small text.
+Headings get a shorter measure than body text because people scan headings rather than read headings. A full-width subheading in a wide container is harder to take in than the paragraph beneath the subheading. Captions get a shorter measure because small text makes the start of the next line harder to find.
 
 ### Step 3 — maximum width
 
@@ -168,7 +193,11 @@ Headings get a shorter measure than body text because people scan headings rathe
 W_max = N_opt × w_avg
 ```
 
-**Set the text block's maximum width to `W_max`.** If the container is wider than `W_max`, the text does not fill the container. The leftover space stays empty. A wide container never justifies a longer measure. The measure comes from the type style's tokens, not from the width of the container. In the same way, a wide form never justifies a second column.
+**Set the text block's maximum width to `W_max`.** If the container is wider than `W_max`, the text does not fill the container. The leftover space stays empty. For example, help text in a wide panel stops at `W_max`, and the panel space beside the text stays empty.
+
+- A wide container never justifies a longer measure.
+- The measure comes from the type style's tokens, not from the width of the container.
+- In the same way, a wide form never justifies a second column.
 
 ### Worked example
 
@@ -194,28 +223,38 @@ W_max = 44 × 12.48                 = 555px
 
 **`c_font` and `k_weight` are estimates. The line-length check gives a rough limit, not a precise measurement.** The check stops text from running to 140 characters across a wide screen. The check does not aim to hit an exact character count. If the real width of the text on screen can be measured, prefer the measured width. The formula exists because a real measurement usually is not available.
 
-**Do not apply the check to text that cannot wrap.** Examples are a label, a button, a badge, and a single-line table cell. The component that holds the text limits the text.
+**Do not apply the check to text that cannot wrap.** Examples are a label, a button, a badge and a single-line table cell. The component that holds the text limits the text.
 
 ## Copy standard
 
-**Follow the AP style guide** (the Associated Press rules for writing style). Checks of typography and of copy conventions both follow AP standards.
+**Follow the AP style guide** (the Associated Press rules for writing style). Checks of typography and checks of copy both follow AP standards.
 
-**The typography token sets sentence case or title case, and the case must not be changed.** Sentence case capitalizes only the first word. Title case capitalizes every major word. The brand decides which case a heading uses, and the heading's type style includes that case. The case is settled before an agent ever sees the heading. Do not change the capitalization of a heading or a label to suit a layout or a preference. If a type style does not seem to include a case, report the missing case. Do not choose a case. `recursica-skill-naming-terminology` governs naming.
+**The typography token sets sentence case or title case, and the case must not be changed.** Sentence case capitalizes only the first word, as in "Order history". Title case capitalizes every major word, as in "Order History". The brand decides which case a heading uses, and the heading's type style includes that case. The case is settled before an agent ever sees the heading.
+
+- Do not change the capitalization of a heading or a label to suit a layout or a preference.
+- If a type style does not seem to include a case, report the missing case. Do not choose a case.
+
+For naming, see `recursica-skill-naming-terminology`.
 
 ## Reading order
 
-**The semantic structure should match what is on the screen.** The markup order is the order the content appears in on screen. If the visual arrangement and the document order disagree, change the visual arrangement.
+**The semantic structure should match what is on the screen.** The markup order is the order the content appears in on screen. For example, a filter bar shown above a table comes before the table in the markup. If the visual arrangement and the markup order disagree, change the visual arrangement.
 
 ## Screen reader verbosity is not a concern
 
-**Keep markup correct, even when the correct markup makes a screen reader read more.** Use correct structure, correct elements, and content that matches the screen. Correct markup comes ahead of a shorter readout. Correct markup also comes ahead of a confusion about meaning that exists only in theory. A correct structure with a long readout is better than a clever structure with a short readout.
+**Keep markup correct, even when the correct markup makes a screen reader read more.** Correct markup means correct structure, correct elements, and content that matches the screen. Correct markup comes ahead of:
+
+- a shorter readout
+- a confusion about meaning that exists only in theory
+
+A correct structure with a long readout is better than a clever structure with a short readout.
 
 ## Set by the theme or the component
 
 - **The values behind every type style.** Tokens deliver the font size, line height, letter spacing and weight of every type style.
 - **Capitalization.** The typography token sets sentence case or title case. The brand decides which case.
 - **The look of `em` and `strong`.** Styles set the look on the `em` and `strong` tags.
-- **Typography inside a component.** The component owns the typography inside the component.
+- **Typography inside a component.** The component sets the typography inside the component.
 - **Spacing token values.** Choose the existing spacing token that each pair of elements calls for. Do not write new spacing token values.
 
 ## Out of scope
@@ -238,14 +277,14 @@ W_max = 44 × 12.48                 = 555px
 ## Pre-flight checklist
 
 - [ ] Every typeface the brand names is loaded, not only the primary typeface.
-- [ ] The document's base font family is set from the brand's primary typeface token.
+- [ ] The page's base font family is set from the brand's primary typeface token.
 - [ ] The computed font family is the same typeface on the body, on a navigation link, and inside a component.
 - [ ] Every interactive element is the web platform element made for that purpose. No `div` carries an `onclick` or a `role="button"`.
 - [ ] Emphasis uses `em` or `strong`, never a visual style in place of one of those tags.
 - [ ] Exactly one H1 exists on the page.
 - [ ] The H1 is in the markup, even if the H1 is hidden with styles.
-- [ ] Heading levels follow the structure of the document, not the visual size.
-- [ ] Every type style comes from a typography token. There is no custom font size, line height, or letter spacing.
+- [ ] Heading levels follow the structure of the page, not the visual size.
+- [ ] Every type style comes from a typography token. No text has a custom font size, line height, or letter spacing.
 - [ ] Where no type style existed, the missing style is reported, and no custom value fills the gap.
 - [ ] Vertical spacing around each heading matches the elements before and after the heading.
 - [ ] No single gap token is applied to every heading.
