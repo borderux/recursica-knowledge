@@ -9,6 +9,10 @@
  *   words      in a skill: no "whatever", "axis", "React" or "prop" (rule 4)
  *   grade      a Flesch-Kincaid grade below 10 (a 9th-grade reading level) in skills and agent
  *              instructions
+ *   length     no sentence longer than 20 words in skills, table cells included, glossary
+ *              definitions and the open-questions checklist line left out. Agent instructions
+ *              are exempt: the owner accepts long sentences there.
+ *              `node scripts/check-writing.mjs --long <file>…` lists each long sentence.
  *
  * Code, inline code and text in double quotes are skipped: they quote an interface, a value or
  * a bad example, and keep their own words. WRITING.md itself is skipped, because it has to quote
@@ -24,6 +28,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { GLOSSARY, parseGlossary } from "./check-glossary.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -209,16 +214,23 @@ function syllables(word) {
 }
 
 /**
- * Flesch-Kincaid grade of the prose. Front matter, headings, tables, code and quoted text are
- * left out. Every other line counts as the end of a sentence, so a list item without a full stop
- * is not merged into the next one. Sentences of one or two words are left out, so short labels
- * do not pull the grade down.
+ * The sentences of the prose. Front matter, headings, code and quoted text are left out, and so
+ * are tables unless `tables` is set, which adds each table cell as its own line. Every line
+ * counts as the end of a sentence, so a list item without a full stop is not merged into the
+ * next one.
  */
-export function readingGrade(text) {
+export function sentences(text, { tables = false } = {}) {
   const lines = prose(text.replace(/^---\n[\s\S]*?\n---\n/, ""))
     .replace(/<!--[\s\S]*?-->/g, "")
     .split("\n")
     .map((l) => l.trim())
+    .flatMap((l) =>
+      tables && l.startsWith("|")
+        ? /^\|[\s:|-]+\|$/.test(l)
+          ? []
+          : l.split(/(?<!\\)\|/).map((c) => c.trim())
+        : [l],
+    )
     .filter((l) => l && !/^(#|\||<)/.test(l))
     .map((l) =>
       l
@@ -227,19 +239,67 @@ export function readingGrade(text) {
         .replace(/[*_]/g, ""),
     )
     .map((l) => (/[.!?]$/.test(l) ? l : `${l.replace(/[:;]$/, "")}.`));
-  const sentences = lines
+  return lines
     .join(" ")
-    .split(/[.!?]+(?=\s|$)/)
-    .map((s) => s.match(/[A-Za-z][A-Za-z'-]*/g) ?? [])
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+const wordsOf = (s) => s.match(/[A-Za-z][A-Za-z'-]*/g) ?? [];
+
+/**
+ * Flesch-Kincaid grade of the prose, tables left out. Sentences of one or two words are left
+ * out, so short labels do not pull the grade down.
+ */
+export function readingGrade(text) {
+  const kept = sentences(text)
+    .map(wordsOf)
     .filter((words) => words.length > 2);
-  const words = sentences.flat();
+  const words = kept.flat();
   if (!words.length) return 0;
   const syl = words.reduce((n, w) => n + syllables(w), 0);
   return (
-    0.39 * (words.length / sentences.length) +
-    11.8 * (syl / words.length) -
-    15.59
+    0.39 * (words.length / kept.length) + 11.8 * (syl / words.length) - 15.59
   );
+}
+
+export const SENTENCE_LIMIT = 20;
+
+let definitions;
+/** The glossary's definitions. A skill must copy each one word for word, so none is counted. */
+function glossaryDefinitions() {
+  definitions ??= new Set(
+    [...parseGlossary(fs.readFileSync(GLOSSARY, "utf8")).values()].flat(),
+  );
+  return definitions;
+}
+
+/**
+ * Every sentence longer than the limit, table cells included, with its word count. Two kinds of
+ * fixed wording are not counted: a glossary definition in brackets, and the checklist line that
+ * lists the open questions, which check-uncovered.mjs reads as one line.
+ */
+export function longSentences(text) {
+  const defs = glossaryDefinitions();
+  const counted = text
+    .replace(/\s\(([^()]*)\)/g, (m, inner) =>
+      defs.has(
+        inner
+          .replace(/\s+/g, " ")
+          .trim()
+          .replace(/[.;,:]$/, ""),
+      )
+        ? ""
+        : m,
+    )
+    .replace(
+      /^.*(?:Open questions|Uncovered items) were asked about, not decided\s*:.*$/gm,
+      "",
+    );
+  return sentences(counted, { tables: true })
+    .map((s) => ({ sentence: s, words: wordsOf(s).length }))
+    .filter((s) => s.words > SENTENCE_LIMIT);
 }
 
 export const GRADE_LIMIT = 10;
@@ -292,6 +352,16 @@ const youApplies = (f) =>
   f.startsWith("agents/") ||
   f.startsWith("buzz-agents/agents/");
 
+/**
+ * The sentence limit covers the skills only. Agent instructions are exempt by the owner's choice.
+ * The glossary and the shared passages are exempt too. Neither file is served to an agent, both
+ * are wrapped at 100 characters, which splits a sentence into lines the count reads as sentences,
+ * and the glossary lists its undefined terms on one line.
+ */
+const lengthApplies = (f) =>
+  f.startsWith("skills/") &&
+  !/^skills\/meta\/(GLOSSARY|SHARED-PASSAGES)\.md$/.test(f);
+
 /** `<file>: <rule>` → why it is still open. */
 export const KNOWN = JSON.parse(
   fs.readFileSync(
@@ -315,6 +385,14 @@ export function problemsIn(f, text) {
     const w = skillWordsFound(f, text);
     if (w.length) out.push({ rule: "words", detail: w.join(", ") });
   }
+  if (lengthApplies(f)) {
+    const n = longSentences(text).length;
+    if (n)
+      out.push({
+        rule: "length",
+        detail: `${n} sentence(s) over ${SENTENCE_LIMIT} words`,
+      });
+  }
   if (youApplies(f)) {
     const g = readingGrade(text);
     if (g >= GRADE_LIMIT)
@@ -329,7 +407,12 @@ export function problemsIn(f, text) {
 const invokedDirectly =
   process.argv[1] &&
   path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
-if (invokedDirectly) {
+if (invokedDirectly && process.argv[2] === "--long") {
+  for (const f of process.argv.slice(3)) {
+    for (const s of longSentences(fs.readFileSync(f, "utf8")))
+      console.log(`${f}  ${s.words} words: ${s.sentence}`);
+  }
+} else if (invokedDirectly) {
   const failures = [];
   const seen = new Set();
   let known = 0;

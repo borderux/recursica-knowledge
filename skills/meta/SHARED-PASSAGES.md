@@ -70,7 +70,7 @@ Starts with:
 Passage:
 
 ```text
-**Set label placement explicitly on every field.** The house rule puts the label beside the input. The code library under an adapter may put the label above the input by default, at every container width. Set the label beside the input on every field, using the names the code uses for the variant and the option.
+**Set label placement explicitly on every field.** The house rule puts the label beside the input. The code library under an adapter may put the label above the input by default, at every container width. Set the label beside the input on every field. Use the names the code uses for the variant and the option.
 ```
 
 ## one-placement-per-form
@@ -84,7 +84,7 @@ Starts with:
 Passage:
 
 ```text
-**Label placement is one decision per form, not per field.** This {field|group} uses the same label placement as every other field in the form{, editable or not|}. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form, including short fields {like this one |}that would fit side by side. A form may change placement at a breakpoint, but a form never mixes placements at one breakpoint, and a form section never gets a separate placement. `recursica-skill-forms` sets this rule.
+**Label placement is one decision per form, not per field.** This {field|group} uses the same label placement as every other field in the form{, editable or not|}. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form. Short fields {like this one |}that would fit side by side follow the result too. A form may change placement at a breakpoint. A form never mixes placements at one breakpoint. A form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 ```
 
 ## one-placement-checklist
@@ -98,7 +98,7 @@ Starts with:
 Passage:
 
 ```text
-- [ ] Label placement matches every other field in the same form, with one placement per form at each breakpoint and no mixing between fields or form sections
+- [ ] Label placement matches every other field in the same form. Each form has one placement at each breakpoint, with no mixing between fields or form sections
 ```
 
 ## focus-and-placeholder

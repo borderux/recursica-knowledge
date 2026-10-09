@@ -11,7 +11,7 @@ metadata:
 
 A card separates one repeating object from the object's peers (objects of the same kind, such as rows in a list). A card is not a container for grouping any content.
 
-**Using too many cards is the most common mistake.** Generated screens end up with boxes inside boxes, because a card looks like a safe way to group content. A card is not a safe way to group content. Group content with space. Draw a boundary only around repeated items.
+**Group content with space. Draw a boundary only around repeated items.** Using too many cards is the most common mistake. Generated screens end up with boxes inside boxes, because a card looks like a safe way to group content. A card is not a safe way to group content.
 
 ## Five tests for a card
 
@@ -25,16 +25,14 @@ A card separates one repeating object from the object's peers (objects of the sa
 
 **If any test fails, do not use a card.** Use a table or spacing instead, depending on which test failed.
 
-**Test 4 has one exception, described below. Tests 1, 2, 3 and 5 have no exception.**
+**Test 4 has one exception, the aesthetic exception. Tests 1, 2, 3 and 5 have no exception.**
 
 ## The aesthetic exception
 
-**A small, finite list of repeating items sometimes looks better as cards, even with no graphic.** The aesthetic exception makes looks a valid reason to show that list as cards. The aesthetic exception is the only exception for looks in this skill.
-
-The aesthetic exception has three limits.
+**A small, finite list of repeating items sometimes looks better as cards, even with no graphic.** The aesthetic exception makes looks a valid reason to show the list as cards. The aesthetic exception is the only exception for looks in the card rules.
 
 - **The aesthetic exception waives test 4 only.** A high plurality is still a table. A single object is still not a card. A form is still never a card.
-- **The aesthetic exception is occasional.** If most of the card sets in an application use the aesthetic exception, the exception has become the normal case, and the reasoning about cards has gone wrong.
+- **Keep the aesthetic exception occasional.** If most card sets in an application use the aesthetic exception, the exception has become the normal case. The reasoning about cards in that application has gone wrong.
 - **State when a card set uses the aesthetic exception.** Say that the card set is a choice made for looks, not the default. The statement keeps the choice visible and rare.
 
 ## When to use a card
@@ -66,10 +64,10 @@ The rule follows from the five tests. A form shows the properties of one object,
 
 ## Spacing instead of cards
 
-**When the five tests fail and content still needs grouping, use white space, then type hierarchy, then layout structure, in this order:**
+**If the five tests fail and content still needs grouping, group the content with the three tools below, in order.**
 
 1. **White space.** Distance is the main way to group content. Put related items closer together than unrelated items.
-2. **Type hierarchy.** A heading starts a group and shows the group's rank, without any drawn element, such as a line or a box.
+2. **Type hierarchy.** A heading starts a group and shows the group's rank. The heading needs no drawn element, such as a line or a box.
 3. **Layout structure.** The design system's layouts, grids and gutters (the gaps between columns and regions) place regions relative to each other.
 
 ## Variants
@@ -89,11 +87,11 @@ The rules below describe each option by role. The names in the standard UI kit (
 
 ## Rules
 
-**Every card in a card set has the same layout.** Every card shows the same fields, in the same order, in the same slots. When the cards in a card set differ, the objects are probably not peers.
+**Give every card in a card set the same layout.** Show the same fields in every card, in the same order and the same slots. When the cards in a card set differ, the objects are probably not peers.
 
-**The card header names the specific item**, not the category and not a field label.
+**Name the specific item in the card header**, not the category and not a field label.
 
-**Put a card's actions in one area at most.** A card can have a header button and a footer, but a card with actions in three places has too many places for actions.
+**Put a card's actions in one area at most.** A card can have a header button and a footer. A card with actions in three places has too many places for actions.
 
 **Do not put a table inside a card**, and do not put a card inside a table cell.
 
@@ -108,24 +106,24 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 **A screen reader must announce a card set as one list of objects.** Two failures matter:
 
 - A screen reader announces the card set as one long run of text, with no boundary between cards.
-- A persona using a keyboard cannot activate a clickable card, or the click area of a clickable card blocks the controls inside the card.
+- A persona using a keyboard cannot activate a clickable card, or the card's click area blocks the card's controls.
 
 ### Screen readers
 
-- **Announce a card set as a list, with the number of cards.** The cards in a card set are peers. A persona using a screen reader needs to know how many cards the list holds, such as six, and which card the persona is on.
+- **Announce a card set as a list, with the number of cards.** The cards in a card set are peers. A persona using a screen reader needs to know how many cards the list holds, such as six. The persona also needs to know which card the persona is on.
 - **Start every card with a heading**, at the same heading level in every card of the card set. The headings let the persona jump from card to card instead of reading every word.
-- **The reading order must match the visual order.** If the graphic slot is at the top of the card, the graphic slot also comes first in the reading order.
+- **The reading order must match the visual order.** If the graphic slot is at the top of the card, put the graphic slot first in the reading order.
 - **Give an image in the graphic slot alternative text, or mark the image clearly as decorative.** A screen reader announces an unlabeled image as "graphic" in every card, and the word tells the persona nothing. A meaningful image with no alternative text loses information.
 - **A chart in the graphic slot is not accessible alone.** `recursica-skill-data-visualization` requires a data table with every chart, and the data table makes a chart card usable.
 - **Do not rely on the card's border or elevation to show where a card ends.** The border or the elevation separates the objects visually. In code, the list structure and the headings must separate the objects.
-- **Name the object in every repeated control.** An "Edit" control in each of five cards gives five identical announcements. The control's name must say which item, or the card's code must give the item as context, such as an `aria-describedby` on the control that points to the card's heading.
+- **Name the object in every repeated control.** An "Edit" control in each of five cards gives five identical announcements. Either the control's name must say which item, or the card's code must give the item as context. For example, an `aria-describedby` on the control can point to the card's heading.
 
 ### Keyboard and non-mouse navigation
 
 - **A card the persona cannot act on is not a tab stop** (a place the Tab key lands). Do not give a static card a `tabindex` or a click handler.
-- **If the whole card is a link, the link must be the only element in the card the persona can act on.** A button inside a clickable card gives a persona using a keyboard two overlapping targets, and the persona cannot tell what a press activates. `recursica-skill-tables` applies the same reasoning to clickable table rows.
+- **If the whole card is a link, the card must hold no other element the persona can act on.** A button inside a clickable card gives a persona using a keyboard two overlapping targets. The persona cannot tell what a press activates. `recursica-skill-tables` applies the same reasoning to clickable table rows.
 - **Prefer making the card's heading the link, instead of the whole card.** The heading gives the link a real name. A link the size of the card is announced with every word in the card.
-- **Never make any element appear on hover.** Personas using a keyboard and personas using touch cannot reach an action that appears only when the pointer is over a card. Keep every card action visible, or put the action in a menu the persona can reach.
+- **Never make any element appear on hover.** Personas using a keyboard or touch cannot reach an action that appears only when the pointer is over a card. Keep every card action visible, or put the action in a menu the persona can reach.
 - **The tab order moves card by card**, in the visual order, not column by column against the layout.
 
 ## Styling set by tokens
@@ -147,22 +145,24 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - **How many cards count as a "small and finite" card set.** The skill states the limit as a judgment, not a number.
 - **Card layout across breakpoints**, meaning how many cards fit across the screen, and what happens below desktop size. `recursica-skill-design-router` names card layout across breakpoints as a topic with no owner.
 - **Whether a persona may select a card** as part of a multi-select, and what the selected state looks like. Confirm with the user only when the project has no selected state.
-- **The empty state of a card set**, meaning what a card set shows when the set has one card or no cards.
+- **The empty state of a card set**, meaning what a card set shows with one card or no cards.
 - **Whether the header button and the footer may both be used** in the same card.
 
 ## Pre-flight checklist
 
-- [ ] All five tests pass, or the card set uses the aesthetic exception and is labeled as a choice made for looks.
+- [ ] All five tests pass, or the card set uses the aesthetic exception and is labeled a choice made for looks.
 - [ ] A high plurality went to a table, and a single object did not become a card.
 - [ ] No form, form section, or form control is inside a card.
 - [ ] No card is nested inside a card, and the screen is not built out of cards.
 - [ ] No region has a box around the region where white space and type hierarchy could group the region instead.
 - [ ] Every card in the card set has the same layout, and each card header names the specific item.
-- [ ] The card set is announced as a list with the number of cards, and each card starts with a heading at the same level.
+- [ ] The card set is announced as a list with the number of cards.
+- [ ] Each card starts with a heading at the same level.
 - [ ] The reading order matches the visual order, and every image in a slot has alternative text or is marked decorative.
 - [ ] Every chart in a slot has a data table.
 - [ ] Every repeated control names the control's object.
 - [ ] No static card is a tab stop, and a clickable card contains no other element the persona can act on.
 - [ ] Every card variant, option and state is one the project lists, and no variant or option is invented.
-- [ ] No styling is set or overridden on the card, and no container or spacer is added to change the card's look.
+- [ ] No styling is set or overridden on the card.
+- [ ] No container or spacer is added to change the card's look.
 - [ ] Open questions were asked about, not decided: the raised style versus the outlined style, how many cards make a small finite card set, card layout across breakpoints, selectable cards, the empty state of a card set, the header button with the footer in one card.

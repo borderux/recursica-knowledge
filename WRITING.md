@@ -77,6 +77,8 @@ Quoted interface copy keeps the exact interface wording, such as a button label 
 
 **"The persona" uses the software, and "the user" talks to the agent.** Write "the persona" for any person using the software being designed: "the persona clicks the trigger", "a persona using a screen reader". Write "the user" only for the person interacting with the agent: the person who asks for a design, answers the agent's questions and approves decisions, as in "confirm with the user". The agent talks only to the user, so a rule never says "ask a person", "a person must decide" or "ask the designer". Write "confirm with the user" and "the user decides". Never write "ask the user". Keep fixed terms such as "user interface" and "the paradox of the active user". Write "a role" for a type of persona, such as an admin or a first-time buyer: "a fixed dashboard for each role". A persona is one person, and a role is a group of personas.
 
+**"The theme" is the design, and "the code" is the code.** Write "the theme" for what a designer sets in Theme Forge: the token values, and the variants, states, sizes and components the design has. Write "Do not invent a state that the theme does not list", not "a state that the project does not list". Write "the code" for what the application installs and builds, such as the dependency list or a charting library. Never write "the project".
+
 **"Clickable" and "interactive" mean different things.** Write "clickable" for an element the user clicks to trigger one action, such as a button, a link or a table row that opens a record. Write "interactive" for any element the user can operate in any way, such as clicking, typing into a field or using the keyboard. Never swap one word for the other, because "interactive" covers more elements than "clickable".
 
 **Say what the reader sees and does, not what the code does.** Write "Clicking goes to a different page", not "the user ends up somewhere else". Write "the name the code uses", not "the adapter's name for the axis".
@@ -108,6 +110,7 @@ Name the specific component, action or result. A reader should be able to pictur
 ### 6. Short, direct sentences
 
 - **Write at a 9th-grade reading level or lower.** Use short sentences and common words. The check fails a skill or agent file with a Flesch-Kincaid grade of 10 or higher. A low score does not prove a sentence is clear. A short sentence full of jargon still fails review.
+- **Keep every sentence to 20 words or fewer.** Split a longer sentence, or turn a list inside the sentence into bullets. The check fails a skill with a sentence over 20 words, table cells and checklist items included. Agent instructions are exempt. A glossary definition in brackets and the checklist line that lists the open questions are not counted, because both are fixed wording. Run `node scripts/check-writing.mjs --long <file>` to list each long sentence.
 - **Put the subject first.** Start the sentence with the noun the sentence is about, then say what is true of that noun. Write "An accordion has four parts", not "Four parts make up one accordion". Write "A radio field has three components", not "Three components make up one radio field".
 - **Cut every word and sentence that adds nothing.** Delete a sentence that repeats another, restates a rule in different words, or says that clear writing is good. Cut filler words: "really", "genuinely", "actually", "simply", "just", "already", "in practice", "it is worth noting", "on its own", "its own way". Use "quietly" only for an event that happens without notice.
 - **Write complete sentences, with a subject and a verb.** Never open a document, a paragraph or a list item with a fragment such as "How everything is written:" or "How wide a panel is." A list item that names a topic uses a noun phrase: "Panel width."
@@ -115,6 +118,16 @@ Name the specific component, action or result. A reader should be able to pictur
 - **Give the reason once, in one sentence.** The reason lets a reader apply the rule to a case the rule does not name.
 - **Write one idea per sentence.** Split a sentence that needs a semicolon and a dash. Split a run-on joined by "so" into two sentences, and name what each sentence is about. Write "The check cannot tell a vague sentence from a clear one. Read this guide before writing or reviewing a skill.", not "The rest takes judgment, so read this before any change".
 - **State each rule in one place.** Either state the rule or link to the file that states the rule. Do not summarize another file's rule and then point to that file. The skills are the one exception. An agent may load one skill without the others, and each skill must stand alone. Skills copy shared passages and glossary definitions for that reason, and `npm run skills:check` keeps the copies identical.
+- **Write a rule the way you would explain the rule to a colleague.** Short sentences can still be hard to follow. If a plainer explanation of a paragraph comes to mind, write that explanation as the paragraph. Start with a concrete example, then list what to do. Write:
+
+  > **A single on/off control in a filter bar is a filter on one field.** For example, "Show archived" filters on the Status field.
+  >
+  > - Label the control with the field's name, like every other filter.
+  > - Show the field as a column in the table, so the persona can see what the control changed.
+
+  Not: "A lone on/off toggle is usually a filter with a bad name. Before adding an on/off toggle, name the field the toggle filters."
+
+- **Name the thing a designer would point at.** Write "a table or a list", not "a collection", when a table or a list is what the rule means. Write "a form that adds a record", not "a create form". An abstract noun makes the reader translate the rule before using the rule.
 - **Never open with a setup.** State the rule, without a line such as "This is the judgment that matters most:" before the rule.
 
 ### 7. Definitions for unfamiliar terms

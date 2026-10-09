@@ -9,9 +9,9 @@ metadata:
 
 # Feedback and messaging
 
-This skill sets the house rules for the messages the application shows the persona after the persona acts, and while the persona waits. The house rules are opinions, not neutral best practices. Treat each house rule as a constraint.
+Treat each house rule as a constraint. The house rules are opinions, not neutral best practices. The house rules cover every message the application shows the persona after the persona acts and while the persona waits.
 
-The house rules assume **complex enterprise web applications, designed for desktop first**, built on a design system whose components are accessible. A message's channel (the form a message takes: a toast, a banner or a modal) and the message's content are design decisions. The message's timing mostly is not a design decision.
+The house rules assume **complex enterprise web applications, designed for desktop first**. The applications are built on a design system whose components are accessible. A message's channel (the form a message takes: a toast, a banner or a modal) and the message's content are design decisions. The message's timing mostly is not a design decision.
 
 ## The three governing principles
 
@@ -27,7 +27,7 @@ The house rules assume **complex enterprise web applications, designed for deskt
 | An event or condition **just happened**                                         | A **toast**                                                                           |
 | An event or condition **has not happened yet**                                  | A **banner**, a notification on the page                                              |
 | The system failed to complete an action, such as a save that did not go through | A **toast**                                                                           |
-| A broader or system-wide condition                                              | A notification channel, where one exists                                              |
+| A broader or system-wide condition                                              | A notification channel, if the application has a notification channel                 |
 | An action is in progress                                                        | The loading state of the button that started the action. See `recursica-skill-button` |
 | A decision must be made before continuing                                       | A modal. See `recursica-skill-modal`                                                  |
 | A field's value is invalid                                                      | The field's assistive element. See `recursica-skill-forms`                            |
@@ -43,18 +43,18 @@ A toast is a short message that appears briefly and then disappears. A modal is 
 
 **Check the tense to decide a new case.** Write the message as a sentence and check the tense of the sentence. If the sentence uses "will", "is about to" or "is still", use a banner. If the sentence uses "has", "was" or "did not", use a toast.
 
-**If the project has a banner component, use the banner component.** Otherwise, do not build a banner by hand. Do not use a bordered container as a banner, and do not use a toast in place of a banner. Report the missing banner as a gap in the design system. If the message cannot wait for a banner component, confirm with the user which component shows the message in the meantime. See `recursica-skill-design-router`.
+**If the project has a banner component, use the banner component.** Otherwise, do not build a banner by hand. Do not use a bordered container as a banner, and do not use a toast in place of a banner. Report the missing banner as a gap in the design system. If the message cannot wait for a banner component, confirm with the user which component shows the message until then. See `recursica-skill-design-router`.
 
 ## Inline messages
 
-**Avoid inline messages. The house does not use inline messages at all.** An inline success or status message inserted into the page changes the height of the page. The change in height moves all the content below the message while the persona is reading that content or about to click that content.
+**Avoid inline messages. The house does not use inline messages at all.** An inline success or status message inserted into the page changes the height of the page. The change in height moves all the content below the message. The content moves while the persona reads the content or is about to click the content.
 
 The ban on inline messages covers brief status and success messages placed in the page layout. The ban does **not** override two rules:
 
 - **Field validation.** The field's assistive element shows the field's error. The error replaces the help text instead of adding to the help text. Because the error replaces the help text, the height of the field does not change. `recursica-skill-forms` owns this rule.
-- **A persistent save status.** A form that saves each field as the field changes requires a save status that stays on the page. The key word is persistent. An element that is always on the page does not change the height of any part of the page when the element updates. `recursica-skill-forms` owns this rule.
+- **A persistent save status.** A form that saves each field as the field changes requires a save status that stays on the page. The key word is persistent. When an element that is always on the page updates, no part of the page changes height. `recursica-skill-forms` owns this rule.
 
-**On a field that saves to the server immediately, use the persistent save status that the forms rules require, or a toast.** Do not insert and remove a message next to the field. An inline message is most tempting on a field that saves immediately.
+**On a field that saves to the server immediately, show a toast or the forms rules' persistent save status.** Do not insert and remove a message next to the field. An inline message is most tempting on a field that saves immediately.
 
 ## Toasts
 
@@ -63,7 +63,7 @@ The ban on inline messages covers brief status and success messages placed in th
 **Use a toast when:**
 
 - **The action moved the persona away from the place where the persona acted.** The previous page no longer has a place on screen to show a message.
-- **Saving happens bit by bit as the persona works, and a message in the form would interrupt the persona more than the message would reassure the persona.**
+- **Saving happens bit by bit while the persona works, and a message in the form would interrupt more than reassure.**
 - **The system failed.** Report a save that did not go through in a toast.
 
 **The code library behind the toast component sets the duration (how long the toast stays on screen).** Use the duration the code library sets. Do not change the duration, and do not build a separate timing scheme for each message.
@@ -78,15 +78,15 @@ The ban on inline messages covers brief status and success messages placed in th
 
 **An operation either succeeded or failed. The backend saves all of an operation's changes or none of the changes.**
 
-The interface therefore has no "3 of 5 records saved" message to design, and no list of results for each item to show. If an operation produces partial results, the cause is a problem with how the backend groups the operation's changes, not a messaging problem. **Raise the partial results as a backend problem instead of building an interface to report the partial results.**
+The interface therefore has no "3 of 5 records saved" message to design, and no list of results for each item to show. If an operation produces partial results, the problem is in how the backend groups the operation's changes. Partial results are not a messaging problem. **Raise the partial results as a backend problem instead of building an interface to report the partial results.**
 
 The channel table above has no row for a partial success, because a partial success should not reach the interface.
 
 ## Duplicate messages
 
-**Never stack duplicate messages. Combine repeats of the same message into one message.** Ten or twelve identical toasts piled up from one repeating error show that the application failed to handle the underlying problem. A stack of identical toasts is not a notification strategy.
+**Never stack duplicate messages. Combine repeats of the same message into one message.** Ten or twelve identical toasts from one repeating error show that the application failed to handle the underlying problem. A stack of identical toasts is not a notification strategy.
 
-**Never show many messages at the same time.** A screen with several messages at once leaves the persona with no idea which message to read, which message to act on, or where to start. If one operation produces many errors, show one message about that operation, not many messages.
+**Never show many messages at the same time.** A screen with several messages at once confuses the persona. The persona cannot tell which message to read, which message to act on, or where to start. If one operation produces many errors, show one message about that operation, not many messages.
 
 **Where duplicate messages pile up, fix the cause.** An error that keeps repeating is a structural problem. The message is only a sign of the structural problem. See `recursica-skill-system-conventions`.
 
@@ -119,26 +119,29 @@ The channel table above has no row for a partial success, because a partial succ
 
 ## Open questions
 
-- **What a banner looks like and where a banner sits.** The tense rule above says when a banner is right. No rule says what a banner looks like, where a banner sits on the page, whether the persona can dismiss a banner, or whether several banners may appear at once.
+- **What a banner looks like and where a banner sits.** The tense rule above says when a banner is right. No rule says what a banner looks like or where a banner sits on the page. No rule says whether the persona can dismiss a banner, or whether several banners may appear at once.
 - **Live regions.** Nobody has decided which updates are announced to assistive technology, or how urgently. The team openly put the question off when recording the typography rules, and this skill does not answer the question. Individual component skills state the announcement requirements for each skill's component, but no policy covers the whole application.
 - **The notification channel.** The team named a notification channel as the place for global or system-wide conditions, "if one exists". Whether a notification channel exists, and what belongs in a notification channel instead of a banner, is not settled.
-- **Whether a toast may have a title as well as a message**, and whether an error toast lasts a different length of time from a success toast.
+- **Toast titles and how long an error toast lasts.** Nobody has decided whether a toast may have a title as well as a message. Nobody has decided whether an error toast lasts a different length of time from a success toast.
 - **Banner versus modal.** The team named banner versus modal as not covered, at the end of the session that recorded these rules.
 
 ## Pre-flight checklist
 
 - [ ] No confirmation appears for a normal successful action.
-- [ ] Each message's channel matches the message's tense: a message about an event or condition that has not happened yet is a banner, and a message about an event or condition that just happened is a toast.
+- [ ] Every message about an event or condition that has not happened yet is a banner.
+- [ ] Every message about an event or condition that just happened is a toast.
 - [ ] No banner is built by hand. Where the project has no banner component, the missing banner is reported as a gap.
 - [ ] No brief success or status message is inserted into the page layout.
-- [ ] Every field-level save shows the persistent save status that the forms rules require, or a toast, not an inline message that appears and disappears.
+- [ ] Every field-level save shows a toast or the persistent save status the forms rules require.
+- [ ] No field-level save shows an inline message that appears and disappears.
 - [ ] No partial-success message and no list of results for each item appear. Every partial result is raised as a backend problem with how the backend groups changes.
 - [ ] Repeats of the same message are combined into one message, and no messages stack.
 - [ ] No screen shows several messages at the same time, and a repeating error is treated as a cause to fix.
 - [ ] The toast duration, the toast persistence and the undo time are the code library's defaults, unchanged.
 - [ ] The persona can dismiss every toast.
 - [ ] No undo exists only inside a toast that times out.
-- [ ] A loading indicator appears only for operations that take more than about 3 seconds, and the submit button is the loading indicator for the submit action.
+- [ ] A loading indicator appears only for operations that take more than about 3 seconds.
+- [ ] The submit button is the loading indicator for the submit action.
 - [ ] No blocking spinner or overlay appears on submit.
 - [ ] A long-running operation waits with no extra message by default. Any "taking longer than usual" message is deliberate, stated as non-standard, and appears no earlier than about 10 seconds.
 - [ ] Open questions were asked about, not decided: what a banner looks like and where a banner sits, live regions, the notification channel, toast titles, how long an error toast lasts, and banner versus modal.

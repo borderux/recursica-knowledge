@@ -13,10 +13,10 @@ A chip is one of several short values the persona can see, select, or remove.
 
 ## When to use a chip
 
-- **Chips show several values, not one.** Examples are several tags, several categories, or several applied filters on one object.
-- **A layout needs a horizontal multi-select, where the persona picks several options laid out side by side.** Use selectable chips for a horizontal multi-select. Never lay out a checkbox group in a horizontal row.
-- **The persona filters or narrows down the content on the screen** by turning options on and off.
-- **The persona added the values**, and may remove the values again.
+- **Use chips for several values, not one.** Examples are several tags, several categories, or several applied filters on one object.
+- **Use selectable chips when a layout needs a horizontal multi-select.** In a horizontal multi-select, the persona picks several options laid out side by side. Never lay out a checkbox group in a horizontal row.
+- **Use chips when the persona filters or narrows down the content on the screen** by turning options on and off.
+- **Use chips when the persona added the values**, and may remove the values again.
 
 ## When not to use a chip
 
@@ -29,7 +29,7 @@ A chip is one of several short values the persona can see, select, or remove.
 | More options than one row of chips can hold         | A dropdown or an autocomplete. See `recursica-skill-selection-controls`.                                                                         |
 | Primary navigation, or a label on a navigation item | Links for navigation, and a badge for the label on a navigation item.                                                                            |
 
-**Never show a status as a chip.** A status shown as a chip is the misuse to watch for. A chip looks like a control the persona can click. A status is not for the persona to change.
+**Never show a status as a chip.** Watch for a status shown as a chip. A chip looks like a control the persona can click. A status is not for the persona to change.
 
 ## Variants
 
@@ -38,7 +38,7 @@ A chip is one of several short values the persona can see, select, or remove.
 The rules below describe each option by role, such as "the selected state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
 - **A chip is either unselected or selected.** In the standard UI kit, the two selection states are `unselected` and `selected`.
-- **The UI kit and both Recursica component libraries (one for each framework) define an error state for the chip, and a house rule forbids using the error state.** The house rule does not remove the error state from the UI kit or the component libraries. The error state in the UI kit and the component libraries does not cancel the house rule.
+- **The UI kit and both Recursica component libraries (one for each framework) define an error state for the chip.** A house rule forbids using the error state. The house rule does not remove the error state from the UI kit or the component libraries. The error state in the UI kit and the component libraries does not cancel the house rule.
 - **A chip is set up as a selectable chip or as a removable chip.** A removable chip has a close icon. Only the design-system website shows the two chip setups. A chip can also show an optional icon before the label.
 
 **The error state combines with either selection state.** Error and selection are separate variants. The UI kit defines the error state separately for an unselected chip and for a selected chip. In the standard UI kit, the error state is called `error` and sits under each selection state. "Error-selected" is the error state on a selected chip, not a fourth state. The error state sits under each selection state because the error state combines with the selected state.
@@ -55,9 +55,15 @@ The rules below describe each option by role, such as "the selected state". The 
 
 **Never show an error as a chip, and never use a chip to report an error.** `recursica-skill-badges-chips` forbids an error condition as the content of a chip. A chip never tells the persona about a problem.
 
-**When a required chip group has no chip selected, show a form validation error below the chip group.** `recursica-skill-forms` sets this rule, and every other form control follows the same rule. The error message goes in the chip group's assistive element, below the chip group. The error message restates the rule the persona must meet, and shows a signal that is not color. See `recursica-skill-assistive-element`. This validation rule and the rule against errors on chips do not conflict. The error belongs to the chip group, not to any chip in the chip group, and no chip changes the chip's look to report the error.
+**When a required chip group has no chip selected, show a form validation error below the chip group.** `recursica-skill-forms` sets this rule, and every other form control follows the same rule. Put the error message in the chip group's assistive element, below the chip group. The error message restates the rule the persona must meet, and shows a signal that is not color. See `recursica-skill-assistive-element`. This validation rule and the rule against errors on chips do not conflict. The error belongs to the chip group, not to any chip in the chip group. No chip changes the chip's look to report the error.
 
-**Selectable chips follow the rules for a checkbox group.** The checkbox group rules cover the limit on the number of options, caution with options selected in advance, and how the form saves. When the form saves every field together, the chip selections save when the persona submits the form, the same as every other field. See `recursica-skill-forms`.
+**Apply the rules for a checkbox group to selectable chips.** The checkbox group rules cover three topics:
+
+- the limit on the number of options
+- caution with options selected in advance
+- how the form saves
+
+If the form saves every field together, the chip selections save when the persona submits the form. The chip selections save the same way as every other field. See `recursica-skill-forms`.
 
 **Write each chip label as a noun of one or two words.** Never put a verb, a sentence or a count in a chip label. The chip has a maximum width, which limits how long a chip label can be. The maximum width is one more reason to keep phrases out of a chip.
 
@@ -69,24 +75,24 @@ The rules below describe each option by role, such as "the selected state". The 
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
-A chip group is a form control laid out horizontally. A chip group must behave like every other form control. The most common failure is a group of clickable `div` elements with a colored selected state. A persona who does not use a mouse cannot find or use chips built as clickable `div` elements with a colored selected state.
+A chip group must behave like every other form control. A chip group is a form control laid out horizontally. The most common failure is a group of clickable `div` elements with a colored selected state. A persona not using a mouse cannot find or use chips built as clickable `div` elements with a colored selected state.
 
 ### Screen readers
 
-- **A selectable chip group is a group of checkboxes, and a screen reader must announce the chip group as a group of checkboxes.** The chip group has an accessible name (the name a screen reader reads out for a control). Each chip announces the chip's label and whether the chip is selected.
+- **A screen reader must announce a selectable chip group as a group of checkboxes.** A selectable chip group is a group of checkboxes. Give the chip group an accessible name (the name a screen reader reads out for a control). Each chip announces the chip's label and whether the chip is selected.
 - **Give the chip group a label, such as "Categories".** Without a label, the persona hears a list of options and does not know what the options are for.
-- **Mark the selected state in the code, not only by color on the screen.** A persona using a screen reader cannot tell a selected chip from an unselected chip when only the fill color differs. `recursica-skill-system-conventions` forbids showing the selected state only by color.
-- **Give the close control of a removable chip (the control that removes the chip) an accessible name that includes the chip's value**, such as "Remove Marketing". Never name the close control "Remove" alone, and never leave the accessible name empty. A row of five close controls that are each named "Remove" cannot be used.
+- **Mark the selected state in the code, not only by color on the screen.** A persona using a screen reader cannot tell selected chips from unselected chips by fill color alone. `recursica-skill-system-conventions` forbids showing the selected state only by color.
+- **Give the close control of a removable chip an accessible name that includes the chip's value**, such as "Remove Marketing". The close control is the control that removes the chip. Never name the close control "Remove" alone, and never leave the accessible name empty. A row of five close controls that are each named "Remove" cannot be used.
 - **Announce each chip removal.** After a chip is removed, the persona needs to know that the chip is gone and which chips are left. Without an announcement, a persona using a screen reader cannot tell a removal from a click that failed.
 - **Keep the leading icon (an optional icon before the label) silent to a screen reader.** The leading icon is decorative, and the chip label gives the meaning.
-- **Do not announce a chip's count of matching results as part of the chip**, unless the chip also shows the count.
+- **If a chip shows no count of matching results, do not announce that count as part of the chip.**
 
 ### Keyboard and non-mouse navigation
 
 - **A persona using a keyboard must be able to reach and use every chip.** Space selects or clears a selectable chip. Enter or Space activates the close control of a removable chip.
-- **When the component library makes the chip group a single tab stop (a place the Tab key lands), with the arrow keys moving between chips, keep that behavior.** Do not add a `tabindex` to an individual chip, and do not add custom key handling on top of the component library's key handling.
+- **Keep the component library's behavior when the chip group is a single tab stop (a place the Tab key lands) and arrow keys move between chips.** Do not add a `tabindex` to an individual chip. Do not add custom key handling on top of the component library's key handling.
 - **The close control of a removable chip is a separate stop for keyboard focus, inside the chip.** A persona can reach the close control without a pointer.
-- **After a chip is removed, move focus on purpose**, to the next chip, or to the chip group when no chips are left. When focus stays on a removed chip, focus is lost, and the persona is quietly sent back to the top of the page.
+- **After a chip is removed, move focus on purpose.** Move focus to the next chip. If no chips are left, move focus to the chip group. If focus stays on a removed chip, focus is lost. The persona is then quietly sent back to the top of the page.
 - **Never show the close control only on hover.** A persona using a keyboard or a persona using touch cannot reach a close control that appears only on hover.
 
 ## Styling set by tokens
@@ -113,7 +119,8 @@ A chip group is a form control laid out horizontally. A chip group must behave l
 
 - [ ] Chips show several values, and no chip stands alone.
 - [ ] No status, and no error condition, is shown as a chip.
-- [ ] A required chip group's validation error appears in the assistive element below the chip group, and no chip reports the error.
+- [ ] A required chip group's validation error appears in the assistive element below the chip group.
+- [ ] No chip reports the chip group's validation error.
 - [ ] Each chip group stays within 7 ± 2 options, and has one behavior: selectable or removable, never both.
 - [ ] Only chips with values the persona added can be removed.
 - [ ] Every chip label is a noun of one or two words.
@@ -123,5 +130,6 @@ A chip group is a form control laid out horizontally. A chip group must behave l
 - [ ] Every chip and every close control works from the keyboard, and nothing in the chip group depends on hover.
 - [ ] Focus moves on purpose after a chip is removed.
 - [ ] Every chip uses only the states and variants the project lists, and no chip is set to the error state.
-- [ ] No styling is set or overridden on the chip, and no container or spacer is added to change the chip's look.
+- [ ] No styling is set or overridden on the chip.
+- [ ] No container or spacer is added to change the chip's look.
 - [ ] Open questions were asked about, not decided: whether a chip may be disabled, overflow, select-all or clear-all, and a chip that opens a menu.

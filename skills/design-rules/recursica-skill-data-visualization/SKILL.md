@@ -9,115 +9,144 @@ metadata:
 
 # Data visualization
 
-This skill holds the house rules for charts in enterprise applications. The rules are opinions, not neutral best practices. Treat each rule as a constraint.
+Treat each rule below as a constraint. The rules are house opinions about charts in enterprise applications, not neutral best practices.
 
-The rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The Recursica theme sets the color palette and the styling of the Recursica components. A chart design still needs five decisions: whether to show a chart at all, which chart to use, what the chart axes show, what gets a label, and what the persona can interact with in the chart.
+The rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes) sets the colors and the styling of the Recursica components. Each chart still needs five decisions:
+
+- whether to show a chart at all
+- which chart to use
+- what the chart axes show
+- what gets a label
+- what the persona can interact with in the chart
 
 ## Charts from a charting library
 
 Read this section first.
 
-**No Recursica component shows a chart, and no chart component is planned.** Charts come from a third-party charting library. The first question for any screen that needs a chart is whether the application has a charting library at all. The question of how to build the chart comes later.
+**No Recursica component shows a chart, and no chart component is planned.** A chart comes from a third-party charting library. For any screen that needs a chart, first check whether the application has a charting library at all. Decide how to build the chart after that check.
 
 ### Steps before building a chart
 
-1. **Check whether the data needs a chart.** A number or a table is often better than a chart. The section "When to use a chart" often settles the question. Settle the question first, because the answer may remove the need for a charting library.
-2. **Check the project for a declared charting library.** Look in the project's dependency list and in the project's configuration. If the project declares a charting library, use that library. Do not add a second charting library. The project has made that decision.
-3. **If the project declares no charting library, stop and confirm with the user that the project should add one.** Do not go ahead, and do not build a workaround for the missing library. Present open-source charting libraries that suit the application's architecture, with the tradeoffs of each library, and let the user choose. See `recursica-skill-design-router` on asking instead of guessing.
-4. **Never build a chart by hand out of basic layout components.** In a build test, a bar chart was built from layout and text components, with badges as the bars. The bar chart worked, but a chart built that way is not allowed. A badge is not a bar. Custom styling is for a missing setting or token (a named design value, such as a color or a size, set by the design system), never for a missing component.
+1. **Check whether the data needs a chart.** Answer the question first, because the answer may remove the need for a charting library. A number or a table is often better than a chart. The rules under "When to use a chart" often settle the question.
+2. **Check whether the code already declares a charting library.** Look in the code's dependency list and in the code's configuration. If the code declares a charting library, use that library. Do not add a second charting library, because the choice of library has been made.
+3. **If the code declares no charting library, stop. Confirm with the user that a charting library should be added to the code.**
+   - Do not go ahead, and do not build a workaround for the missing library.
+   - Present open-source charting libraries that suit the application's architecture, with the tradeoffs of each library.
+   - Let the user choose.
+   - See `recursica-skill-design-router` on confirming with the user instead of guessing.
+4. **Never build a chart by hand out of basic layout components.** For example, a build test made a bar chart from layout and text components, with badges as the bars. The bar chart worked, but a chart built that way is not allowed. A badge is not a bar. Custom styling is for a missing setting or token (a named design value, such as a color or a size, set by the design system), never for a missing component.
 
 ### Criteria for a charting library
 
 Judge each charting library by how well the library fits the application, not by how popular the library is.
 
 - **The library is truly open source**, under a permissive license: MIT, Apache 2.0, or BSD.
-- **The library is built first for the project's framework.** The project's adapter (the Recursica component library for one framework, such as Mantine or Angular Material) sets the framework. Avoid an older library that connects to the framework through a wrapper (a thin layer of extra code) that conflicts with how the framework builds the page.
-- **The library's theme can be set from outside the library**, so Recursica tokens can set the series colors, the chart axes and the gridlines. A library that forces a built-in palette cannot meet the color rules below.
-- **The library has no competing theme provider (code that sets a theme).** A library that brings separate theme settings and expects to control the color scheme leaves a page only half themed. A half-themed page follows the Recursica theme in some places and the library's theme in other places.
-- **The library has a setting for each feature the rules in this skill require**: a zero baseline, linear scales, axis labels, and pattern or texture in addition to color. A library with decorative defaults, such as 3D effects, gradient fills and animated pie charts, will conflict with every rule below.
-- **The library is reasonable in size.** Enterprise data screens are dense, and personas use the screens all day. Downloading a large library for one chart is a poor trade.
-- **The library's output is accessible, or works alongside a data table.** The rule that requires a data table with each chart is not optional. The chart does not have to solve accessibility alone, because the data table comes with the chart. The chart still must not actively block accessibility.
+- **The library is built first for the code's framework.** The adapter (the Recursica component library for one framework, such as Mantine or Angular Material) that the code uses sets the framework. A wrapper is a thin layer of extra code that connects a library to a framework. Avoid an older library whose wrapper conflicts with how the framework builds the page.
+- **The library's theme can be set from outside the library.** Recursica tokens can then set the series colors, the chart axes and the gridlines. A library that forces a built-in color palette cannot meet the color rules below.
+- **The library has no competing theme provider (code that sets a theme).** A library that brings separate theme settings and expects to control the color scheme leaves the page half themed. Some parts of a half-themed page follow the Recursica theme, and other parts follow the library's theme.
+- **The library has a setting for each feature the chart rules below require:**
 
-**The house has not endorsed a charting library yet.** Present candidate libraries and the tradeoffs of each library instead of stating a standard. Once a project picks a charting library, the choice belongs to the project. Every rule below still applies to every chart the chosen library draws.
+  - a value axis that starts at zero
+  - a linear scale
+  - axis labels
+  - a pattern or texture in addition to color
 
-The sections below describe a correct chart, whichever library draws the chart.
+  A library with decorative defaults conflicts with every rule below. Decorative defaults include 3D effects, gradient fills and animated pie charts.
+
+- **The library is a reasonable size.** Enterprise data screens are dense, and personas use the screens all day. Downloading a large library for one chart is a poor trade.
+- **The library's charts are accessible, or work alongside a data table.** Every chart requires a data table, and that rule is not optional. The data table comes with the chart, so the chart does not have to solve accessibility alone. The chart still must not actively block accessibility.
+
+**Present candidate libraries and the tradeoffs of each library instead of stating a standard.** The house has not endorsed a charting library yet. Once a charting library is chosen for the code, the choice belongs to the code. Every rule below applies to every chart, whichever library draws the chart.
 
 ## Governing principles
 
-1. **Decide the story first, then use the simplest form that tells the story.** Decide what the chart says, such as a change, a lack of change or a comparison. Then use the simplest chart that shows that story. The temptation to add one more dimension or one more series is constant. Resist the temptation. Each added dimension or series makes the simple story harder for the persona to see.
-2. **Keep the data honest.** A chart is extremely easy to make misleading, usually by accident. Use zero baselines, linear scales and complete sequences. Add no unexplained emphasis. Mark projections as projections.
-3. **Never show meaning in only one channel (color, shape, position or text, each a separate signal).** Color alone fails for a large share of personas, and on every printed page. Patterns, labels, values and an available data table keep a chart readable.
+1. **Decide the story first, then use the simplest form that tells the story.** The story is the point the chart makes, such as a change, a lack of change or a comparison. For example: "Orders grew every month this quarter." Resist the urge to add one more dimension or one more series. Each added dimension or series makes the story harder for the persona to see.
+2. **Keep the data honest.** A chart is extremely easy to make misleading, usually by accident.
+   - Start the value axis at zero.
+   - Use a linear scale.
+   - Show every point in a sequence, such as all seven days of a week.
+   - Add no unexplained emphasis.
+   - Mark projections as projections.
+3. **Never show meaning in only one channel (color, shape, position or text, each a separate signal).** For example, show each series with a color and a pattern, not with color alone. Color alone fails for a large share of personas, and on every printed page. Patterns, labels, values and an available data table keep a chart readable.
 
 ## When to use a chart
 
 **A chart must tell the story more simply than words, numbers or a table.** A simpler story is the only reason to have a chart. If the persona cannot understand the chart quickly, plain text or a table would have worked better.
 
-**Do not chart a difference too small to see.** A split of 51% versus 49% does not get a chart. State a difference that small in text.
+**Do not chart a difference too small to see.** State a difference that small in text. For example, write a split of 51% versus 49% as text, not as a chart.
 
-**Only put a chart on a dashboard when the chart tells the story more simply, at a glance.** Ten charts on one dashboard overwhelm and confuse the persona. The urge to add charts nobody needs is real. See `recursica-skill-dashboards` for the limits: at most four charts, and a number in large type instead of a chart that repeats the number.
+**Only put a chart on a dashboard when the chart tells the story more simply, at a glance.** Ten charts on one dashboard overwhelm and confuse the persona. The urge to add charts nobody needs is real. `recursica-skill-dashboards` sets two dashboard limits:
 
-**NEVER use an infographic in an enterprise application.** An infographic is a marketing tool for telling a story. Do not decorate application data. Show the data plainly.
+- at most four charts
+- a number in large type instead of a chart that repeats the number
+
+**NEVER use an infographic in an enterprise application.** An infographic is a marketing tool for telling a story, such as a poster of illustrated statistics. Show application data plainly, and do not decorate application data.
 
 ## Chart type
 
-**Pie and donut charts are effectively banned.** A pie or donut chart is allowed only with two segments, or very rarely three, where the difference in value is large enough to see. Every other case uses a different chart.
+**Use a pie or donut chart only with two segments, or rarely three.** Use the chart only where the difference in value is large enough to see. Otherwise, use a different chart.
 
 - **The segments of a pie or donut chart MUST add up to 100%.** A pie chart whose segments do not add up to the whole is invalid.
-- **Do not put the chart's value in the donut hole.** A two-segment donut chart labeled "75%" in the hole tells the story twice and adds nothing. A _different_ kind of value in the donut hole is fine: a written summary, such as an overall status.
+- **Do not put the chart's value in the donut hole.** For example, a two-segment donut chart labeled "75%" in the hole tells the story twice and adds nothing. The donut hole may hold a _different_ kind of value: a written summary, such as an overall status like "On track".
 
-**The choice between bars and columns, or lines and areas, is not all-or-nothing.** Bars, columns, lines and areas tell the same story in different ways. Lines and areas differ from bars and columns in slope. A line or an area shows the rate of change, and the steepness of the line or area has meaning. Bars and columns show values at single moments, and the persona must work out the slope. Pick the chart type that fits the story.
+**Pick the chart type that fits the story.** Bars, columns, lines and areas tell the same story in different ways. The difference is the slope:
 
-**Never use a line chart for nominal categories.** Nominal categories have no natural order. If reordering the categories does not change the meaning, as with apples, oranges and bananas, no slope exists between the categories to draw. A line suggests a connection between neighboring points, and nominal categories have no such connection. Time, and any sequence with a natural order, does connect neighboring points. That connection makes time and ordered sequences suitable for a line.
+- A line or an area shows the rate of change. The steepness of the line or area has meaning. For example, a steep line of monthly orders shows fast growth.
+- A bar or a column shows a value at a single moment. The persona must work out the slope from one bar to the next.
 
-**Combine different chart techniques instead of repeating one.** Two different techniques used together keep overlapping data easy to tell apart. Examples are a trend line over a column chart, or an area behind bars.
+The choice between bars and columns, or lines and areas, is not all-or-nothing.
+
+**Never use a line chart for nominal categories (categories with no natural order).** Apples, oranges and bananas are an example. If reordering the categories does not change the meaning, the chart has no slope between the categories to draw. A line suggests a connection between neighboring points, and nominal categories have no such connection. Time, and any sequence with a natural order, does connect neighboring points. That connection makes time and ordered sequences suitable for a line.
+
+**Combine different chart techniques instead of repeating one technique.** For example, draw a trend line over a column chart, or an area behind bars. Two different techniques used together keep overlapping data easy to tell apart.
 
 **NEVER use 3D.** Every chart is two-dimensional. A third data dimension may be shown as the size of a dot or bubble, never as depth or volume.
 
-**Use a third data dimension only when the third dimension adds value.** Bubble size and clustering are valid. Size draws attention, though, and changes what the persona looks at first. Confirm that the third dimension adds value before using the third dimension.
+**Use a third data dimension only when the third dimension adds value.** Confirm that the third dimension adds value before using the third dimension. Size draws attention and changes what the persona looks at first. Bubble size and clustering are valid.
 
 ## Axes and scale
 
-**The value axis MUST start at zero.** A value axis that starts above zero exaggerates the variation. Values between one and five million that vary by one percent look wildly unstable if the axis starts at 900,000. A value axis that starts above zero is the most common way an honest chart becomes a dishonest one.
+**The value axis (the axis that shows the amounts) MUST start at zero.** A value axis that starts above zero exaggerates the variation. Values between one and five million that vary by one percent look wildly unstable on an axis starting at 900,000. A value axis that starts above zero is the most common way an honest chart becomes a dishonest one.
 
 **The scale MUST be linear. NEVER use a logarithmic scale.** On a logarithmic scale, each step up the axis multiplies the value by the same amount, such as ten. Personas do not read the steps of a logarithmic scale as evenly spaced. A logarithmic scale misleads by design, and makes the chart harder for everyone to read.
 
-**Put time on the horizontal axis whenever the data has a time dimension.** Time is the most powerful dimension available, because time shows a trend. A value without time is a single moment. A single moment gives no answer to "Is this getting better or worse?" If the chart needs a third dimension, keep time on the horizontal axis and show the third dimension as size.
+**Put time on the horizontal axis whenever the data has a time dimension.** For example, put the months along the bottom of a chart of monthly orders. Time is the most powerful dimension available, because time shows a trend. A value without time is a single moment. A single moment cannot show whether a value is getting better or worse. If the chart needs a third dimension, keep time on the horizontal axis and show the third dimension as size.
 
-**NEVER skip values in a sequence.** A chart that shows five of seven days to suggest a weekly trend is invalid. If the data for some points in a sequence does not exist, do not skip those points. Mark the gap instead, as the section "Missing and incomplete data" describes.
+**NEVER skip values in a sequence.** If the data for some points in a sequence does not exist, do not skip those points. Mark the gap instead, as the section "Missing and incomplete data" describes. A chart that shows five of seven days to suggest a weekly trend is invalid.
 
-**NEVER rearrange a natural sequence.** Days of the week sorted by amount, such as Monday, Wednesday, Thursday, Tuesday, cannot be read, because the persona expects the days in calendar order. The same rule applies to numbered groups and to any set with a built-in order.
+**NEVER rearrange a natural sequence.** Natural sequences include days of the week, numbered groups and any set with a built-in order. Days of the week sorted by amount, such as Monday, Wednesday, Thursday, Tuesday, cannot be read. The persona expects the days in calendar order.
 
 **An axis of categories with no natural sequence may be sorted on purpose**, from largest to smallest, or alphabetically. Sort the categories in the most natural way the data allows.
 
-**Include gridlines, spaced far enough apart to be useful.** The persona cannot tell a bar's value when a chart has too few gridlines. A chart with too many gridlines is chaotic and hard to follow. Use enough gridlines to read the values, and no more.
+**Include gridlines, spaced far enough apart to be useful.** Use enough gridlines to read the values, and no more. With too few gridlines, the persona cannot tell a bar's value. A chart with too many gridlines is chaotic and hard to follow.
 
 ## Labels
 
 **Always label both axes. Always show the data values.**
 
-**Put the value at the end of each bar or column** where the chart has room, even when the value falls between gridlines. If the axis reads 10 and the value is 11, show 11. An exact value is better than making the persona guess.
+**Put the value at the end of each bar or column where the chart has room, even between gridlines.** For example, if the axis reads 10 and the value is 11, show 11. An exact value is better than making the persona guess.
 
-**Keep each label as short as possible while the persona still understands the label.** Shortening to "1M" or "2M" is fine when the persona knows the unit. Do not use an abbreviation or an acronym that the persona may not know from the persona's field.
+**Keep each label as short as possible while the persona still understands the label.** Shortening to "1M" or "2M" is fine when the persona knows the unit. Do not use an abbreviation or an acronym that the persona may not know from the persona's line of work.
 
-**Make numbers easy for the persona to read.** Very large numbers with many decimal places are effectively unreadable. Round each number to a precision the persona can use.
+**Make numbers easy for the persona to read.** Round each number to a precision the persona can use. For example, show 1,204,331.5872 as 1.2M. Very large numbers with many decimal places are effectively unreadable.
 
 ## Thresholds and benchmarks
 
-**Include thresholds, ideal ranges, or reference lines wherever a value can be "good" or "bad."** The persona usually does not know what a healthy number looks like. A threshold turns a chart the persona must interpret into a chart the persona can read at a glance. A threshold is one of the most valuable additions to a chart.
+**Include thresholds, ideal ranges, or reference lines wherever a value can be "good" or "bad".** For example, draw a line at the monthly sales target. The persona usually does not know what a healthy number looks like. A threshold turns a chart the persona must interpret into a chart the persona can read at a glance. A threshold is one of the most valuable additions to a chart.
 
-**Label each benchmark clearly and name the benchmark's source.** Make clear that a benchmark is a benchmark, not the application's data. Label trend lines. Naming the source keeps a comparison from misleading the persona.
+**Label each benchmark clearly and name the benchmark's source.** Make clear that a benchmark is a benchmark, not the application's data. Label trend lines too. Naming the source keeps a comparison from misleading the persona.
 
 ## Encoding, color, and accessibility
 
 Encoding is how the data becomes visual marks: position, length, color and pattern.
 
-**NEVER rely on color alone to tell series apart.** Use a pattern in addition to color. Where an icon in the legend helps, add the icon too. The rule applies even to a two-color donut chart.
+**NEVER rely on color alone to tell series apart.** Use a pattern in addition to color. For example, show one series as solid bars and the other series as striped bars. Where an icon in the legend helps, add the icon too. The rule applies even to a two-color donut chart.
 
-**Personas with a color vision impairment must be able to tell the series apart easily.** Avoid putting colors such as purple and fuchsia next to each other, especially when the chart's segments are far apart and the persona must match each segment to the legend.
+**Personas with a color vision impairment must be able to tell the series apart easily.** Avoid putting colors such as purple and fuchsia next to each other. Avoid that pairing most of all when the persona must match far-apart chart segments to the legend.
 
-**Apply the black-and-white test: show the chart without color.** If the story is still clear, the encoding is sound. If the story is lost, add patterns or labels. The test matters for a second reason: printed reports may have no color at all.
+**Apply the black-and-white test: show the chart without color.** If the story is still clear, the encoding is sound. If the story is lost, add patterns or labels. The test also matters because printed reports may have no color at all.
 
-**Each color MUST have the same meaning across neighboring charts.** If blue has one meaning in one bar chart and a different meaning in the bar chart beside that chart, the persona can no longer read either chart quickly.
+**Each color MUST have the same meaning across neighboring charts.** For example, if blue means "This year" in one bar chart, blue also means "This year" in the next bar chart. When blue has two meanings, the persona can no longer read either chart quickly.
 
 **Every chart, including the chart's labels, must meet contrast and accessibility requirements.** Chart labels fail contrast and accessibility requirements most often.
 
@@ -127,35 +156,38 @@ Encoding is how the data becomes visual marks: position, length, color and patte
 
 **Put a data table next to the chart whenever the page has room for the data table.** A summary table is almost never wasted. Some personas prefer tables. The data table and the chart can sit side by side. The data table is the accessible version of the chart's data.
 
-**At a minimum, the data table must be available**, so a persona using a screen reader can reach the chart's values.
+**At a minimum, the data table must be available.** The data table lets a persona using a screen reader reach the chart's values.
 
 ## Tooltips and interaction
 
 **Tooltip content MUST be extra detail only.** Put any information needed to understand the story in the chart itself.
 
-**A chart that can only be read by hovering is an anti-pattern.** A chart whose meaning the persona must piece together by hovering over each element in turn is inaccessible. The persona must also remember each value to compare the value with the next one. The axes and the legend show the story, and the tooltip adds detail.
+**Make every chart readable without hovering.** The axes and the legend show the story, and the tooltip only adds detail. A chart whose meaning the persona must piece together by hovering over each element in turn is inaccessible. The persona must also remember each value to compare the value with the next one.
 
-**Hover aids are welcome**, such as a highlight on the hovered element, or a guide line that helps the persona find a value.
+**Hover aids are welcome.** Hover aids include a highlight on the hovered element and a guide line that helps the persona find a value.
 
-**Highlight or isolate on interaction, not permanently.** Show emphasis on hover, on click or through an isolate control (a control that singles out the selected data), because emphasis is part of exploring the chart. A permanent visual difference adds clutter.
+**Highlight or isolate on interaction, not permanently.** Show emphasis on hover, on click or through an isolate control (a control that singles out the selected data). For example, hovering over one line in a chart of five lines highlights that line. Emphasis is part of exploring the chart. A permanent visual difference adds clutter.
 
-**Be careful about permanently emphasizing particular chart elements.** Random differences in lightness or color strength suggest a ranking that the data does not support. Permanent emphasis must have a stated reason.
+**Give every permanently emphasized chart element a stated reason.** Random differences in lightness or color strength suggest a ranking that the data does not support.
 
-**A drill-down does not conflict with a simple chart.** A drill-down lets the persona click through to more detail. A good chart lets the persona explore. Let the persona click through to the underlying data. The chart itself does not need to change.
+**A drill-down does not conflict with a simple chart.** A drill-down lets the persona click through to more detail. A good chart lets the persona explore. For example, clicking the March column opens the orders from March. Let the persona click through to the underlying data. The chart itself does not need to change.
 
 ## Missing and incomplete data
 
-**Data with large gaps should not be charted at all.**
+**Never chart data with large gaps.** If the gaps might be large or might be only a few missing points, confirm with the user.
 
-**A chart of data that lags behind must say that the data lags**, clearly and visibly.
+**A chart of data that lags behind must say that the data lags**, clearly and visibly. For example: "Data as of yesterday, 6 PM."
 
-**Where a few data points are missing, leave the points out instead of suggesting values for the points**, and point out the gap clearly. Never let a chart suggest continuity the data does not have.
+**If a few data points are missing, leave the points out.** Do not suggest values for the missing points. Point out the gap clearly. Never let a chart suggest continuity the data does not have. For example, do not draw a line across a missing day as if the day had data.
 
 ## Projections and forecasts
 
-**Any projected or forecast part of a chart MUST look different**, dashed or see-through, so the persona cannot mistake the projection for recorded data.
+**Any projected or forecast part of a chart MUST look different, dashed or see-through.** For example, draw next quarter's forecast as a dashed line. The persona then cannot mistake the projection for recorded data.
 
-**A trend line drawn over existing data is fine.** Base a projection on a median of the past range shown, or on a weighted value where the period calls for a weighted value, such as quarter over quarter.
+**A trend line drawn over existing data is fine.** Base a projection on one of two values:
+
+- a median of the past range shown
+- a weighted value, where the period calls for a weighted value, such as quarter over quarter
 
 ## Real-time data
 
@@ -170,31 +202,34 @@ Encoding is how the data becomes visual marks: position, length, color and patte
 
 **Prefer filters that the persona applies.**
 
-**Where the chart's data is filtered by default, say so clearly.** The persona must know that the chart shows only part of the data.
+**If the chart's data is filtered by default, say clearly that the data is filtered.** For example, a chart that opens on the last 30 days says "Showing the last 30 days". The persona must know that the chart shows only part of the data.
 
 ## Annotations and outliers
 
-**Keep notes off the chart itself.** Mark an outlier with a symbol, a cross or a double cross, and put the explanation of the outlier in a note or footnote beside the chart. Do not cover the chart with note text.
+**Keep notes off the chart itself.** Mark an outlier with a symbol, a cross or a double cross. Put the explanation of the outlier in a note or footnote beside the chart. Do not cover the chart with note text.
 
 ## Density
 
-**Use different chart techniques when series overlap.** Several overlapping lines told apart only by the shape of the points, such as triangles, squares and stars, cannot be read. Columns with a single line over the columns separate cleanly.
+**Use different chart techniques when series overlap.** Several overlapping lines told apart only by point shapes, such as triangles, squares and stars, cannot be read. Columns with a single line over the columns separate cleanly.
 
 **When a chart has too many points to label, make the chart bigger.** Physical size is the main way to fit more labels. Increase the chart's size before dropping detail.
 
 ## Smaller viewports
 
-**Adapt the chart; do not shrink the chart.** One chart forced to work on both desktop and phone either loses detail, which changes the story, or reduces the desktop version to a chart that says little.
+**Adapt the chart, and do not shrink the chart.** Forcing one chart to work on both desktop and phone has one of two results:
 
-**The story must be the same at every size.** A larger display may show a richer set of data. Where a smaller size leaves out information, say so clearly.
+- The chart loses detail, which changes the story.
+- The desktop version shrinks to a chart that says little.
+
+**The story must be the same at every size.** A larger display may show a richer set of data. If a smaller size leaves out information, say clearly that information is left out. For example: "Showing the top 5 of 12 regions."
 
 ## Open questions
 
-- **A house-standard charting library, if any.** The selection criteria above are settled. The process is settled too: check for a declared charting library, and, if the project has none, confirm with the user that the project should add one. No library has been chosen. Each project currently makes the choice.
-- **Connecting a chosen library's theme to Recursica tokens.** The requirement for Recursica tokens to set the chart's theme is clear. The method is not clear, and no adapter exists to connect a charting library to Recursica tokens.
-- **Category colors when the palette runs out.** In the build test, a badge in the standard UI kit (the unchanged UI kit in the official Recursica release) had four colors, each with a meaning. Four colors could not show five or more categories, and the shortage of colors forced a single, uniform fill. The rule against a single channel called for a uniform fill anyway. The build test reached the uniform fill by accident, not by design.
+- **A house-standard charting library, if any.** The selection criteria above are settled. The process is settled too. Check for a declared charting library. If the code declares none, confirm with the user that a charting library should be added to the code. No library has been chosen. Each code base currently makes the choice.
+- **Connecting a chosen library's theme to Recursica tokens.** Recursica tokens must set the chart's theme, and that requirement is clear. How to connect the two is not clear. No adapter exists to connect a charting library to Recursica tokens.
+- **Category colors when the palette runs out.** In the build test, a badge in the standard UI kit (the unchanged UI kit in the official Recursica release) had four colors, each with a meaning. Four colors could not show five or more categories. The shortage of colors forced one fill color for every category. The rule against a single channel called for one fill color anyway. The build test reached one fill color by accident, not by design.
 
-No house rule covers the topics below yet. **Confirm with the user instead of choosing.** See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule above to fit the topics below.
+**Confirm with the user instead of choosing.** No house rule covers the topics below yet. See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule above to fit the topics below.
 
 - **Sparklines (tiny charts without axes) and other small charts inside table cells.**
 - **Legend placement**, and whether a chart has a title, and where the title goes.
@@ -203,17 +238,19 @@ No house rule covers the topics below yet. **Confirm with the user instead of ch
 
 ## Out of scope
 
-- **Choosing the palette and styling components.** The Recursica theme sets the palette and the styling of the Recursica components. The rules in this skill govern which channel shows the meaning, not which colors to use.
+- **Choosing the palette and styling components.** The theme sets the palette and the styling of the Recursica components. The rules in this skill govern which channel shows the meaning, not which colors to use.
 - **Dashboard layout**: what goes on a dashboard and how the dashboard is arranged. `recursica-skill-dashboards` covers dashboard layout.
 - **Data tables as the main content of a screen.** `recursica-skill-tables` covers data tables as main content. This skill only requires a data table with each chart.
 
 ## Pre-flight checklist
 
 - [ ] The data needs a chart. A number or a table was ruled out first.
-- [ ] The chart uses the project's declared charting library. If the project declared no charting library, the user was asked to add one, with real open-source options and the tradeoffs of each option, and work stopped there.
-- [ ] No chart is built by hand out of basic layout components, and no component is used as part of a chart.
+- [ ] The chart uses the charting library the code declares.
+- [ ] If the code declared no charting library, work stopped there. The agent confirmed with the user that a charting library should be added to the code.
+- [ ] If the code declared no charting library, the confirmation listed real open-source options, with the tradeoffs of each option.
+- [ ] No chart is built by hand out of basic layout components. No component is used as part of a chart.
 
-Before treating a chart as done, check each item below.
+Check each item below before treating a chart as done.
 
 - [ ] The chart tells the story more simply than words or a table. No difference too small to see is charted.
 - [ ] No pie or donut chart appears, except one with two clearly different segments, or rarely three, that add up to 100%.
@@ -226,7 +263,8 @@ Before treating a chart as done, check each item below.
 - [ ] No data points are skipped, and no natural sequence is rearranged.
 - [ ] Gridlines are present, spaced so the gridlines are easy to read.
 - [ ] Both axes are labeled, values are shown, and each bar's value sits at the end of the bar.
-- [ ] Labels are short, but not abbreviated where the persona may not know the field's terms. Numbers are rounded to a precision the persona can read.
+- [ ] Labels are short, but not abbreviated where the persona may not know the terms of the persona's line of work.
+- [ ] Numbers are rounded to a precision the persona can read.
 - [ ] Thresholds or reference ranges are present wherever a value can be "good" or "bad".
 - [ ] Each benchmark is labeled, and the benchmark's source is named.
 - [ ] No series is told apart by color alone, and the chart passes the black-and-white test.
