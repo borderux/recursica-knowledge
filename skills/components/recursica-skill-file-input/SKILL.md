@@ -9,15 +9,23 @@ metadata:
 
 # File input
 
-A file input is a single-line field where the persona picks a file from the persona's device. A file input looks and behaves like a text field.
+A file input is a single-line field where the persona picks a file from the persona's device. A file input looks and behaves like a text field. For example, an "Attachment" field on a support ticket is a file input.
 
-> **The file input is not built yet.** Both Recursica component libraries ship the file input as a stub (an empty placeholder) that shows a placeholder. Neither component library applies any of the 40 `file-input` variables that the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) exports. The rules below describe the file input as intended, and the rules are correct about what the UI kit defines. A screen built on the file input today shows a placeholder, with no error. Until the file input is built, use `recursica-skill-text-field` and a native `<input type="file">`. Report that the file input is missing. Do not work around the missing file input.
+> **The file input is not built yet.** Both Recursica component libraries ship the file input as a stub (an empty placeholder) that shows a placeholder. Neither component library applies any of the 40 `file-input` variables that the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) exports. A screen built on the file input today shows a placeholder, with no error.
+>
+> Until the file input is built:
+>
+> - Use `recursica-skill-text-field` and a native `<input type="file">`.
+> - Report that the file input is missing.
+> - Do not work around the missing file input.
+>
+> The rules below describe the file input as intended. The rules are correct about what the UI kit defines.
 
 ## When to use a file input
 
 - **The file is one field among many.** Examples are an attachment on a support ticket, a document on a submission, and an avatar on a profile. The file is one detail of the ticket, the submission or the profile, not the purpose of the screen.
 - **The form is dense**, and a large drop area would take up too much of the form.
-- **The persona adds one file or a few files.** The persona does not need a list for managing the files.
+- **The persona adds one file or a few files.** The persona does not need a list to manage the files.
 
 ## When not to use a file input
 
@@ -30,21 +38,27 @@ A file input is a single-line field where the persona picks a file from the pers
 | The persona types a path or a URL                                  | A text field. See `recursica-skill-text-field`.                                                       |
 | An attached file is shown, and the persona cannot replace the file | A read-only field. See `recursica-skill-read-only-field`.                                             |
 
-**Do not use a file input to manage many files.** A file input picks a file. A file input is not a file manager. Do not use a file input when the persona needs to see upload progress, retry a file, or reorganize files.
+**Do not use a file input to manage many files.** A file input picks a file. A file input is not a file manager. Do not use a file input when the persona needs to do any of the following:
+
+- See upload progress.
+- Retry a file.
+- Reorganize files.
 
 ## Variants
 
-**Use only the file input variants and options that the Recursica MCP server lists for the project.** A designer can add variants and options in Theme Forge, so each project can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
+**Use only the file input variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Never invent a variant or an option.
+
+**Get the list with the server's `recursica_get_component_doc` tool.** Use the names the code uses.
 
 The rules below describe each option by role, such as "the error state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
 - **A file input has an error state and a disabled state.** In the standard UI kit, the state variant is `states`, with the two options `error` and `disabled`.
 - **A file input is a single-line form field and looks like a text field.**
 - **A file input shows one icon.** The icon tells the persona that the field takes a file.
-- **If the project has a progress, success, or error state for each file, use that state for upload feedback.** Otherwise, see "Upload feedback" in the open questions.
-- **If the project has a drop-zone variant, use the drop-zone variant.** Otherwise, see "A drop target on the file input" in the open questions.
-- **If the project has a variant for more than one file, use that variant.** Otherwise, see "More than one file in one field" in the open questions.
-- **If the project has a file chip, a dismiss control, or a clear control, use that chip or control.** Otherwise, see "The file chip and the clear icon" in the open questions.
+- **If the theme has a progress, success, or error state for each file, use that state for upload feedback.** Upload feedback is what the persona sees about an upload, such as the upload's progress or result. Otherwise, see "Upload feedback" in the open questions.
+- **If the theme has a drop-zone variant, use the drop-zone variant.** A drop zone is an area where the persona drags and drops a file. Otherwise, see "A drop target on the file input" in the open questions.
+- **If the theme has a variant for more than one file, use that variant.** Otherwise, see "More than one file in one field" in the open questions.
+- **If the theme has a file chip, a dismiss control, or a clear control, use that chip or control.** Otherwise, see "The file chip and the clear icon" in the open questions.
 
 **Never build a focus state or a placeholder state.** Every Recursica field already shows the focus border and the placeholder text.
 
@@ -56,15 +70,22 @@ The rules below describe each option by role, such as "the error state". The nam
 
 **State both the accepted file types and the size limit in help text, before the persona picks a file.** For example, the help text under the field reads "PDF or PNG, up to 10 MB". Stating the file types and the size limit first lets the persona pick a file the field accepts. `recursica-skill-assistive-element` sets the rules for help text.
 
-**Also limit the file picker to the accepted file types.** The help text tells the persona which file types the field accepts. The limit on the file picker makes the file picker offer only the accepted file types. Use both the help text and the limit on the file picker, never only one.
+**Also limit the file picker to the accepted file types.** The help text tells the persona which file types the field accepts. The limit makes the file picker offer only the accepted file types, such as PDF and PNG. Use both the help text and the limit on the file picker, never only one.
 
-**Choosing a file does not start an upload.** Choosing a file saves nothing. The form's save mode therefore does not apply to choosing a file. The upload starts when the persona clearly asks for the upload, never as a side effect of choosing a file. When the form saves every field together, the upload finishes before the form submits. This upload rule is settled. This upload rule does not conflict with the rule in `recursica-skill-forms` that a form uses one save mode.
+**Choosing a file does not start an upload.** Choosing a file saves nothing, so the form's save mode does not apply to choosing a file. The save mode says when a form saves. A form saves each field on change, or saves every field together on submit.
 
-**Show the file the persona picked.** The name of the picked file is the field's value. A field that looks empty after the persona picks a file looks as if the pick failed.
+- The upload starts when the persona clearly asks for the upload, never as a side effect of choosing a file.
+- When the form saves every field together, the upload finishes before the form submits.
 
-**Never put a field rule in the placeholder.** The placeholder disappears as soon as the field has a value. Use the placeholder only to show the format the field expects.
+This upload rule is settled. This upload rule does not conflict with the rule in `recursica-skill-forms` that a form uses one save mode.
 
-**On error, replace the help text with the error message.** Do not show the error message in addition to the help text. The error message must restate the rule the file broke, as in "File must be under 10 MB", not "Invalid file". Replacing the help text keeps the field the same height. The fields below the file input then stay in place.
+**Show the file the persona picked.** The name of the picked file is the field's value. For example, after the persona picks `quarterly-report.pdf`, the field shows `quarterly-report.pdf`. A field that looks empty after the persona picks a file looks as if the pick failed.
+
+**Never put a field rule in the placeholder.** For example, "PDF or PNG, up to 10 MB" goes in the help text, not the placeholder. The placeholder disappears as soon as the field has a value. Use the placeholder only to show the format the field expects.
+
+**On error, replace the help text with the error message.** Do not show the error message in addition to the help text. Replacing the help text keeps the field the same height, so the fields below the file input stay in place.
+
+**The error message must restate the rule the file broke**, as in "File must be under 10 MB", not "Invalid file".
 
 **Pair the error state with a signal that is not color.** `recursica-skill-system-conventions` sets this rule.
 
@@ -80,8 +101,10 @@ The app must add every behavior in the two lists below. A file input is a form f
 
 ### Screen readers
 
-- **Give the file input a real label.** The field's icon does not name the field. A placeholder is not a label. A field with no label has no accessible name (the name a screen reader reads out for a control).
-- **The accepted file types and the size limit must be in text linked to the field in code.** Set the accepted file types and the size limit as the file input's help text. Do not show the accepted file types and the size limit in separate text beside the field. Do not show the accepted file types and the size limit only in an error message. The error message for a rejected file appears only after the persona picks the file.
+- **Give the file input a real label, such as "Attachment".** The field's icon does not name the field. A placeholder is not a label. A field with no label has no accessible name (the name a screen reader reads out for a control).
+- **The accepted file types and the size limit must be in text linked to the field in code.** Put the accepted file types and the size limit in the file input's help text.
+  - Do not show the accepted file types and the size limit in separate text beside the field.
+  - Do not show the accepted file types and the size limit only in an error message. The error message for a rejected file appears only after the persona picks the file.
 - **A screen reader must announce the name of the picked file as the field's value.** When the visible file name is truncated, the full file name must still be available.
 - **Give any clear or remove control an accessible name that includes the file name**, as in "Remove quarterly-report.pdf", not "Clear".
 - **The app must announce a removed file.** The app must also announce a rejected file and the reason the field rejected the file.
@@ -99,9 +122,9 @@ The app must add every behavior in the two lists below. A file input is a form f
 
 ## Styling set by tokens
 
-**Never set or override the file input's styling.** The theme sets every visual property of the file input, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the file input's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the file input's styling.** The theme sets every visual property of the file input, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the file input's look. If the theme does not give a look the design needs, report the missing look as a design-system gap. See `recursica-skill-design-router`.
 
-Do not change the gap between the label and the file input. Do not change the gap between the file input and the next item in the form.
+Do not change the space between the label and the file input. Do not change the space between the file input and the next item in the form.
 
 **Never style an unfocused file input so that the field looks disabled.** An editable field must look editable when the persona is not using the field.
 
@@ -126,11 +149,11 @@ Do not change the gap between the label and the file input. Do not change the ga
 
 ## Open questions
 
-- **Upload feedback.** The persona needs feedback on an upload. Do not invent a spinner, a progress bar, or a checkmark. Confirm with the user only when the project has no progress, no success, or no error state for each file.
-- **More than one file in one field.** Only the design-system website shows a "multiple files" content option. Whether a file input may hold more than one file, and how the file input then looks, is not settled. Do not rely on the "multiple files" option without confirming with the user. Confirm with the user only when the project has no variant for more than one file.
-- **The file chip and the clear icon.** Only the design-system website shows each file as a chip the persona can dismiss. Only the design-system website shows the optional icon that clears every file. Do not rely on the chip or the clear icon without confirming with the user. Confirm with the user only when the project has no file chip, no dismiss control, or no clear control.
+- **Upload feedback.** The persona needs feedback on an upload. Do not invent a spinner, a progress bar, or a checkmark. Confirm with the user only when the theme has no progress, no success, or no error state for each file.
+- **More than one file in one field.** Only the design-system website shows a "multiple files" content option. Whether a file input may hold more than one file, and how the file input then looks, is not settled. Do not rely on the "multiple files" option without confirming with the user. Confirm with the user only when the theme has no variant for more than one file.
+- **The file chip and the clear icon.** Only the design-system website shows each file as a chip the persona can dismiss. Only the design-system website shows the optional icon that clears every file. Do not rely on the chip or the clear icon without confirming with the user. Confirm with the user only when the theme has no file chip, no dismiss control, or no clear control.
 - **Retrying after the field rejects a file or an upload fails.** No rule says whether the persona can retry in the same field. No rule says what the field shows while a retry waits.
-- **A drop target on the file input.** If the design needs drag and drop, confirm with the user. Confirm with the user only when the project has no drop-zone variant.
+- **A drop target on the file input.** If the design needs drag and drop, confirm with the user. Confirm with the user only when the theme has no drop-zone variant.
 - **Truncating file names.** No rule says how much of a long file name to show. No rule says from which end to truncate the file name.
 
 ## Pre-flight checklist
@@ -148,7 +171,7 @@ Do not change the gap between the label and the file input. Do not change the ga
 - [ ] Removed files and rejected files are announced. After a removal, focus is moved on purpose.
 - [ ] The field's icon is silent, and the required state is set in code.
 - [ ] Choosing a file does not start an upload. The upload starts when the persona clearly asks for the upload. When the form saves every field together, the upload finishes before the form submits.
-- [ ] Every variant, size, and state is one the project's UI kit lists, and no variant or option is invented.
+- [ ] Every variant, size, and state is one the theme's UI kit lists, and no variant or option is invented.
 - [ ] No styling is set or overridden on the file input.
 - [ ] No container or spacer is added to change the file input's look.
 - [ ] Every file input without focus looks editable, not disabled.
