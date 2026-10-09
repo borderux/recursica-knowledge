@@ -9,15 +9,23 @@ metadata:
 
 # Live regions
 
-This skill holds the house rules for telling assistive technology that the page has changed, such as through a live region (an area of the page that a screen reader announces automatically when the area's content changes). The house rules are opinions, not neutral best practices. Treat each house rule as a constraint.
+This skill holds the house rules for telling assistive technology that the page has changed. One way to tell assistive technology is a live region (an area of the page that a screen reader announces automatically when the area's content changes). Treat each house rule as a constraint. The house rules are opinions, not neutral best practices.
 
 The house rules assume **complex enterprise web applications**, built on a component library that handles the accessibility of each component. The components leave two tasks to the application. First, the application makes each announcement that no component makes. Second, the application gives each component the information the component needs to announce correctly.
 
 ## The three governing principles
 
-1. **Announce new content and new interactive elements, not a change in appearance.** A change that is only visual is not announced. This principle is the house rule that this skill exists to state.
-2. **Established accessibility practice decides how to announce.** Four questions are not house decisions: announcement priority, debouncing (waiting until a burst of updates stops before announcing), combining messages, and how much announcing is too much. Established accessibility practice has settled each of the four questions. Live regions are the one topic in the Recursica skills where established practice is openly the authority, rather than a question to ask about.
-3. **Testing will not catch a missing announcement.** Screen-reader announcements are not routinely tested. Each announcement must be right from the start.
+1. **Announce new content and new interactive elements, not a change in appearance.** Do not announce a change that is only visual. This principle is the house rule that this skill exists to state.
+2. **Follow established accessibility practice on how to announce.** Four questions are not house decisions. Established accessibility practice has settled each of the four questions:
+
+   - announcement priority
+   - debouncing (waiting until a burst of updates stops before announcing)
+   - combining messages
+   - how much announcing is too much
+
+   Live regions are the one topic in the Recursica skills where established practice is openly the authority. Follow established practice on live regions without confirming the practice with the user.
+
+3. **Each announcement must be right from the start.** Testing will not catch a missing announcement. Screen-reader announcements are not routinely tested.
 
 ## Changes to announce
 
@@ -30,19 +38,19 @@ Apply the following test to every change that happens without a page reload.
 | A change the persona did not cause                                                          | **Yes**   |
 | **Only the appearance changed**, such as a visual state, a style or a decorative transition | **No**    |
 
-**The table above is the whole test.** If either of the first two table rows is true, announce the change. If the change is to neither content text nor an interactive element, do not announce the change.
+**Use only the table above to decide whether to announce a change.** If either of the first two table rows is true, announce the change. If the change is to neither content text nor an interactive element, do not announce the change.
 
-**A change the persona did not start is still announced.** The persona did not start the change, so the persona has no reason to expect the change. The persona needs to know that a significant change happened.
+**Announce a change the persona did not start.** The persona has no reason to expect a change the persona did not start. The persona needs to know that a significant change happened.
 
 ## Announcements by components and by the application
 
 **Every component is responsible for announcing the component's own changes.** Component announcements are the default, and the default holds for the great majority of changes.
 
-**Each component sets what the component must be given.** A component that announces for itself can announce only the information the component receives, such as an accessible name (the name a screen reader reads out for a control), a message or a count. Give the component every piece of information the component needs to comply. Each component skill states what the component needs.
+**Give each component every piece of information the component needs to comply.** Each component sets what the component must be given. A component that announces for itself can announce only the information the component receives. Examples of that information are an accessible name (the name a screen reader reads out for a control), a message or a count. Each component skill states what the component needs.
 
-**When no component announces a change, add a live region that announces the change.** When a component already announces the change to screen readers, add nothing. The clearest case for a live region is a form that submits successfully, goes to a new page, and shows nothing. No component makes any announcement in that case. The screen must add a live region with a message.
+**If no component announces a change, add a live region that announces the change.** If a component already announces the change to screen readers, add nothing. The clearest live-region case is a form that submits successfully, goes to a new page, and shows nothing. No component makes any announcement in that case. The screen must add a live region with a message.
 
-**A toast always announces, with no exception.** A toast never appears without an announcement. Because the toast text is the announcement, no other announcement needs to repeat the toast text.
+**A toast always announces, with no exception.** A toast never appears without an announcement. No other announcement needs to repeat the toast text, because the toast text is the announcement.
 
 ## Priority
 
@@ -50,7 +58,7 @@ An announcement has one of two priority levels. An assertive announcement interr
 
 **Keep the assertive priority for errors and for conditions the persona must know about right away.** Make every other announcement polite. The polite priority is the default for the great majority of changes. This rule follows established practice.
 
-**An assertive announcement interrupts by design.** A confirmation, a result count or a status update announced as assertive interrupts the text the persona was reading or typing. The interruption is the reason the assertive priority is kept for rare cases. Use the assertive priority only for a message that cannot wait.
+**Use the assertive priority only for a message that cannot wait.** An assertive announcement interrupts by design. An assertive confirmation, result count or status update interrupts the text the persona was reading or typing. The interruption is the reason the assertive priority is kept for rare cases.
 
 ## Specific cases
 
@@ -58,7 +66,7 @@ An announcement has one of two priority levels. An assertive announcement interr
 
 **Announce content that arrives after the page has loaded.** Content that arrives late is new content.
 
-**Announce the new content when a region of the page reloads in place.** A table that moves to another page of results reloads in place. A panel that swaps the panel's contents also reloads in place.
+**If a region of the page reloads in place, announce the new content.** A table that moves to another page of results reloads in place. A panel that swaps the panel's contents also reloads in place.
 
 **Do not announce a change that is only decorative.** A hover effect, a color shift, and an animation with no real change behind the animation are decorative changes.
 
@@ -68,7 +76,7 @@ An announcement has one of two priority levels. An assertive announcement interr
 
 **Follow established practice for how many announcements are too many.** No house number has been set.
 
-**Cutting noise is not the same as leaving out new content or new interactive elements.** Combining five identical updates into one announcement is good practice. Deciding that a truly new piece of content needs no announcement at all is the mistake this skill exists to prevent.
+**Cutting noise is not the same as leaving out new content or new interactive elements.** Combining five identical updates into one announcement is good practice. Deciding that a truly new piece of content needs no announcement is a mistake. This skill exists to prevent that mistake.
 
 ## Testing
 
