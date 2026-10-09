@@ -9,67 +9,93 @@ metadata:
 
 # Selection controls
 
-Use these house rules to choose the selection control a field gets. The selection controls are a checkbox, a switch, a radio group, a dropdown and a multi-select. The rules also set how the chosen control behaves. The rules are the team's opinions, not neutral best practices. Treat each rule as a constraint.
+Use these house rules to choose the selection control for a field. The selection controls are a checkbox, a switch, a radio group, a dropdown and a multi-select. The rules also set how the chosen control behaves. The rules are the team's opinions, not neutral best practices. Treat each rule as a constraint.
 
-The rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The Recursica components set how each control looks, the control's states, and the keyboard interaction inside the control. This skill does not decide the look, the states or the keyboard interaction. This skill decides the following choices:
+The rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The Recursica components set how each control looks, the control's states, and the keyboard interaction inside the control. This skill does not decide the look, the states or the keyboard interaction. This skill decides four choices:
 
 - which control to use
 - how many options the control has
-- which options are selected in advance
+- which options start out selected
 - when a change is saved
 
 ## Governing principles
 
-1. **Let the type and structure of the data decide which control fits best.** Answer three questions. How many values can the persona select? Do the values rule each other out? Is the opposite of the value obvious? The answers decide the control. Decide how the control looks last, not first.
-2. **Options should be visible and easy to scan.** Arrange the options vertically. Keep the number of options within working memory (how much a person can hold in mind at once). Hide options inside a dropdown only when the list is predictable enough that the persona knows the options in advance.
-3. **Give each form one save point.** By default, the form submits every field together. Never mix instant saving with saving later, such as on submit, in the same system. The persona needs one reliable answer to the question "Is my work saved?"
+1. **Let the type and structure of the data decide the control.** Answer three questions about the field:
+
+   - How many values can the persona select?
+   - Do the values rule each other out?
+   - Is the opposite of the value obvious?
+
+   The answers decide the control. Decide how the control looks last, not first.
+
+2. **Options should be visible and easy to scan.**
+
+   - Stack the options vertically.
+   - Keep the number of options within working memory (how much a person can hold in mind at once).
+   - Put options inside a dropdown only when the list is predictable enough that the persona knows the options in advance. A list of US states is an example.
+
+3. **Give each form one save point.** By default, every field in a form saves together when the persona clicks the submit button. In one system, never mix fields that save on change with fields that save later, such as on submit. The persona needs one reliable answer to the question "Is my work saved?"
 
 ## Choosing the control
 
 Work down this list. The first match decides the control.
 
-1. **One value whose opposite is binary, known, and unique → a switch.** See the binary-inverse test below.
-2. **Options that rule each other out, where the persona must choose one, up to the option limit → a radio group.** When the layout needs a horizontal arrangement, use a segmented control instead.
+1. **One value whose opposite is binary, known, and unique → a switch.** For example, "Email alerts" is either on or off. See the binary-inverse test below.
+2. **Options that rule each other out, where the persona must choose one, up to the option limit → a radio group.** For example, a shipping speed of Standard, Express or Overnight. When the layout needs a horizontal arrangement, use a segmented control instead.
 3. **Options that rule each other out, more options than the limit → a dropdown** (single select).
 4. **The persona can select zero to many options, up to the option limit → a checkbox group.** When the layout needs a horizontal arrangement, use selectable chips instead.
 5. **The persona can select zero to many options, and either case below is true → a multi-select dropdown.** A multi-select dropdown is a checkbox group inside a dropdown.
    - The list has more options than the limit.
    - The form is already very long.
 
+The option limit is set under "Option counts and dropdowns" below.
+
 ## Switch vs. checkbox
 
-**Use a switch only inside a form.** Before the tests below, check whether the value is inside a form. Outside a form, use a segmented control for a toggle, not a switch. Places outside a form include application chrome (the header, navigation and footer around the content), a filter bar, a toolbar and a page header. See `recursica-skill-segmented-control`.
+**Use a switch only inside a form.** Check whether the value is inside a form before the tests below. Outside a form, use a segmented control for a toggle, not a switch. Places outside a form include:
+
+- application chrome (the header, navigation and footer around the content)
+- a filter bar
+- a toolbar
+- a page header
+
+See `recursica-skill-segmented-control`.
 
 **Inside a form, use a checkbox unless the value passes the switch tests below.** A switch has a deliberately narrow use.
 
-**Every switch MUST pass the binary-inverse test.** The switch value's opposite must be binary, known, and unique: true or false, yes or no, on or off. A choice between two qualities, such as black or white, fails the test. "Black" is not a valid switch value, because _not black_ is not always white. _Not black_ could be gray, pink or any other color. If the opposite of the value is not the single, obvious other state, do not use a switch.
+**Every switch MUST pass the binary-inverse test.** The opposite of the switch's value must be binary, known, and unique. True or false, yes or no, and on or off pass the test. A choice between two qualities, such as black or white, fails the test. "Black" is not a valid switch value, because _not black_ is not always white. _Not black_ could be gray, pink or any other color. If the opposite of the value is not the single, obvious other state, do not use a switch.
 
-**Use the label test to tell a switch from a radio group.** A radio group is _one label with several values_. The persona picks which value goes with the radio group label. A switch is _one label whose value is implied_. The switch label alone says which setting the switch controls, and the switch state is true or false. Use a switch only when both the value and the setting the label names are binary.
+**Use the label test to choose between a switch and a radio group.**
 
-**A checkbox turns a true/false flag on or off for one specific value.** The checkbox value can be any value. For that reason, a checkbox works in a group, and a switch does not.
+- A radio group is _one label with several values_. For example, the label "Shipping speed" has the values Standard, Express and Overnight. The persona picks which value goes with the label.
+- A switch is _one label whose value is implied_. The switch label alone says which setting the switch controls, and the switch state is true or false. For example, the label "Email alerts" names the setting.
 
-**A lone binary field is the one case where appearance may decide.** A lone binary field is a checkbox group that holds only one checkbox. A lone checkbox looks odd, and a switch often looks better. A checkbox and a switch work the same way for a lone binary field. Confirm the choice with the user.
+Use a switch only when both the value and the setting the label names are binary.
+
+**A checkbox marks one specific value as true or false.** For example, in a "Contact me by" group, the "Email" checkbox marks Email as chosen or not chosen. A checkbox can stand for any value. For that reason, checkboxes work in a group, and switches do not.
+
+**A lone binary field is the one case where the look may decide between a checkbox and a switch.** A lone binary field is a checkbox group that holds only one checkbox. A checkbox and a switch work the same way for a lone binary field. A lone checkbox looks odd, and a switch often looks better. Confirm the choice with the user.
 
 ## Checkbox vs. radio
 
-**MUST use radio buttons for options that rule each other out.** Never use checkboxes for options that rule each other out. Checkboxes mean "select as many as apply" by definition. Checkboxes used for a choice of one get the data wrong.
+**MUST use radio buttons for options that rule each other out.** Never use checkboxes for options that rule each other out. By definition, checkboxes mean "select as many as apply." Checkboxes used for a choice of one get the data wrong.
 
 - **Radio group:** the persona selects exactly one of N options. Traditionally, an answer is required, and the persona cannot move on until one option is selected.
 - **Checkbox group:** the persona selects zero through N options.
 
-**Treat a radio group with no option selected, and no requirement to select an option, as a warning sign.** A radio group like that does happen, and the radio group is unusual and confusing. If no answer is required, check whether the field is a choice of one at all.
+**Treat a radio group with no option selected, and no answer required, as a warning sign.** A radio group like that does happen, but the radio group is unusual and confusing. If no answer is required, check whether the field is a choice of one at all.
 
 ## Defaults and pre-selection
 
 **Pre-select checkboxes freely.** A checkbox group may start with no checkboxes, some checkboxes or every checkbox checked. No house rule limits checkbox defaults either way.
 
-**Be very careful about selecting a radio button in advance.** Most personas do not know how to deselect a radio button after one is selected. A default radio button quietly becomes the persona's answer. A pre-selected radio button is the riskiest default in the system.
+**Be very careful about selecting a radio button in advance.** Most personas do not know how to deselect a radio button after one is selected. A radio button selected in advance quietly becomes the persona's answer. A pre-selected radio button is the riskiest default in the system.
 
 **Pre-select an option only where about 90 percent of personas would choose that option anyway.** Never pre-select an option that has major consequences later in the workflow, however likely the option is. `recursica-skill-defaults` sets both tests.
 
 ## Option counts and dropdowns
 
-**Aim for 7 ± 2 options, adjusted for how hard the options are to understand.** The 7 ± 2 limit applies to options the persona compares, not to a list the persona recognizes an item from. See `recursica-skill-working-memory` for the reasoning and the limits of the reasoning. Adjust the number of options this way:
+**Aim for 7 ± 2 options, adjusted for how hard the options are to understand.** The 7 ± 2 limit applies to options the persona compares. The limit does not apply to a list where the persona recognizes an item. See `recursica-skill-working-memory` for the reasoning and the limits of the reasoning. Adjust the number of options this way:
 
 - **Options that are similar and easy to understand** → the upper end of the range is fine.
 - **Options that are different from each other, hard to grasp, or need specialist knowledge** → use fewer.
@@ -94,17 +120,19 @@ For example, six options that are easy to read fit a checkbox group. If the form
 
 **A checkbox group may include a select-all control.** The checkbox group has the indeterminate state (the partly selected state, shown as a dash, when some but not all items are selected). When the persona selects all and then deselects one checkbox, the select-all control moves to the indeterminate state.
 
-**Treat the need for select all as a warning sign.** If checking each checkbox one by one would tire the persona, question whether a checkbox group is the right control. Twenty checkboxes would tire the persona, for example. Rethink the form design before adding a select-all control.
+**Treat the need for select all as a warning sign.** If checking each checkbox one by one would tire the persona, question whether a checkbox group is the right control. For example, twenty checkboxes would tire the persona. Rethink the form design before adding a select-all control.
 
 ## Selection in tables
 
-**For table row selection, put a checkbox in the leftmost cell of the table row.** Put a header checkbox in the table header. `recursica-skill-tables` sets the table structure.
+**To let the persona select table rows, put a checkbox in the leftmost cell of each table row.** Put a header checkbox in the table header. `recursica-skill-tables` sets the table structure.
 
 **Every table with checkboxes in the table rows has a header checkbox.** The header checkbox is not optional. Without a header checkbox, the persona has no way to select every table row or clear the whole selection. The persona then has to clear each row checkbox one by one to undo a selection made by accident.
 
-**A row checkbox has one meaning: the row checkbox adds the table row to a bulk action.** A row checkbox does not focus on a record, open a record, or show actions for a record. NEVER let selecting a single table row trigger an action on that one record. For example, a table offers `Correct this name` for one selected table row and `Combine` for two. The table gives the checkbox two unrelated meanings. The persona learns neither meaning. Editing one record starts from that record. See `recursica-skill-tables`.
+**A row checkbox has one meaning: the row checkbox adds the table row to a bulk action.** A row checkbox does not focus on a record, open a record, or show actions for a record. NEVER let selecting a single table row trigger an action on that one record.
 
-**Never add a separate clear or deselect-all control.** The header checkbox is the clear control. When the header checkbox is checked or indeterminate, a click on the header checkbox changes the selection. The header checkbox rules below set how the selection changes. A second control that does the same job in another place is one more control to read. The second control also gives a second answer to the question "How do I start over?"
+For example, a table offers `Correct this name` when one table row is selected and `Combine` when two are selected. The checkbox then has two unrelated meanings, and the persona learns neither meaning. Editing one record starts from that record. See `recursica-skill-tables`.
+
+**Never add a separate clear or deselect-all control.** The header checkbox is the clear control. When the header checkbox is checked or indeterminate, a click on the header checkbox changes the selection. The header checkbox rules below set how the selection changes. A second control that does the same job in another place is one more control to read. A second control also gives a second answer to the question "How do I start over?"
 
 **The header checkbox MUST behave this way:**
 
@@ -131,7 +159,7 @@ A segmented control and selectable chips both show where each option begins and 
 - care with pre-selection for single select
 - how saving works
 
-**Limit a segmented control to 2–5 options.** The 2–5 limit is tighter than the general 7 ± 2 limit, because a segmented control is horizontal and compact. Above five options, go back to a vertical radio group. If the options are also over the general limit, use a dropdown. Never fall back to tabs.
+**Limit a segmented control to 2–5 options.** The 2–5 limit is tighter than the general 7 ± 2 limit, because a segmented control is horizontal and compact. Above five options, go back to a vertical radio group. If the options are also over the general limit, use a dropdown. Never use tabs instead.
 
 ## Immediate vs. batch submit
 
@@ -140,17 +168,22 @@ A segmented control and selectable chips both show where each option begins and 
 1. The persona must be able to change a decision before any change is saved.
 2. Tracking and logging records is far easier. One submit makes one timestamp and one update. Saving field by field makes much more noise in the records.
 
-**MUST NOT mix instant saving of individual fields with submitting every field together.** Either every field saves when the field changes, or every field saves on submit. Mixing the two save modes confuses the persona, because the persona can no longer tell which changes are live.
+**MUST NOT mix instant saving of individual fields with submitting every field together.** Either every field saves when the field changes, or every field saves on submit. Mixing the two save modes confuses the persona. The persona can no longer tell which changes are live.
 
 **Avoid saving to the server immediately in any form with more than one field.**
 
-**Save a switch at the same point as every other field in the system.** In a system that saves on change, a switch saves immediately. In a system that saves on submit, a switch saves with the form. A switch never saves at a different point from the fields around the switch. A switch in a form that saves on submit is allowed, but not ideal. The switch then acts like a checkbox and saves with the other fields.
+**Save a switch at the same point as every other field in the system.**
+
+- In a system that saves on change, a switch saves immediately.
+- In a system that saves on submit, a switch saves with the form.
+
+A switch never saves at a different point from the fields around the switch. A switch in a form that saves on submit is allowed, but not ideal. The switch then acts like a checkbox and saves with the other fields.
 
 ## Uncommitted changes
 
 **Use exactly one save mode in a form. The save mode decides what the form shows:**
 
-- **Batch save → no status, and no sign of unsaved changes.** A sign of unsaved changes is very rarely worth showing. The only signal the persona needs is the submit button becoming enabled once every editable control is valid.
+- **Batch save, on submit → no save status, and no sign of unsaved changes.** A sign of unsaved changes is very rarely worth showing. The submit button becomes enabled once every editable control is valid. That enabled submit button is the only signal the persona needs.
 - **Field-level or instant save → a save status message that stays on the page is required.** If the server saves on every field change, the save status must stay visible on the page at all times.
 
 Never mix the two save modes within a system. See `recursica-skill-forms` for the full table of save modes.
@@ -159,11 +192,11 @@ Never mix the two save modes within a system. See `recursica-skill-forms` for th
 
 **Save revealed fields the same way as every other field in the form.** A selection control may reveal more fields. For example, a checkbox may reveal a field or a group of fields further down the form. The revealed fields still submit together with every other field in the form. Submitting every field together is easier than saving the revealed fields separately.
 
-For example, a checkbox group lists ways to travel. Checking "Car" reveals a group of car details: make, model, and color.
+For example, a checkbox group lists ways to travel. Checking "Car" reveals fields for the car's make, model and color.
 
 ## Disabled vs. read-only
 
-**Disable a control when the persona can take an action that would enable the control.** Every selection control (switch, checkbox, radio button and dropdown) has a disabled state. The disabled state is the right way to show a choice that is unavailable for now.
+**Disable a control when the persona can take an action that would enable the control.** For example, a "Text me updates" checkbox stays disabled until the persona enters a phone number. Every selection control (switch, checkbox, radio button and dropdown) has a disabled state. The disabled state is the right way to show a choice that is unavailable for now.
 
 **Use the read-only control when both conditions below are true:**
 
@@ -187,7 +220,7 @@ The read-only control shows the field label with the field's values, and the rea
 **Confirm with the user instead of choosing.** No house rule covers the following questions yet. See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit an open question.
 
 - **When autocomplete or typeahead replaces a dropdown.** A dropdown handles many options. No rule sets the point at which searching works better than scanning.
-- **Radio buttons inside a table row.** This skill mentions radio buttons in a table row in passing, as an alternative to a switch. Radio buttons in a table row are not an established pattern.
+- **Radio buttons inside a table row.** The "Avoid switches in table rows" rule names a radio button in a table row as an alternative to a switch. Radio buttons in a table row are not an established pattern.
 - **Limits on multi-select.** No rule says whether a form may limit the persona to selecting _n_ options out of many.
 
 ## Out of scope
@@ -212,7 +245,7 @@ Check every item before treating a set of selection controls as done:
 - [ ] Row selection in a table uses a checkbox in the leftmost cell of the table row. Every table that has row checkboxes has a header checkbox.
 - [ ] A click on an indeterminate header checkbox selects every table row.
 - [ ] Row checkboxes only choose table rows for bulk actions. Selecting one table row triggers no action on that single record. No separate clear or deselect-all control sits beside the header checkbox.
-- [ ] No table row holds a switch, unless the user approved the switch.
+- [ ] No table row holds a switch, unless the user confirmed the switch.
 - [ ] Checkboxes and radio buttons are stacked vertically, never horizontally. Where a horizontal arrangement is needed, a segmented control is used for single select, or selectable chips for multi-select.
 - [ ] The form saves every field together when the persona clicks a submit button. No field in the form saves instantly.
 - [ ] Switches save at the same point everywhere in the system.
