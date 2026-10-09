@@ -50,7 +50,7 @@ The rules below describe each option by role, such as "the error state". The nam
   - a size variant
   - a variant for one file versus several files
 
-  Otherwise, see the open questions.
+  If the project has no size variant, use the file upload's default size. For a missing style or file-count variant, see the open questions.
 
 ## Rules
 

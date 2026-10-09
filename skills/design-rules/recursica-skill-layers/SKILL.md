@@ -37,7 +37,7 @@ The house rules assume **complex enterprise web applications** built on a Recurs
 
 **When the header, the navigation and the main content need no containing, all three on layer 0 is correct.** Three regions on layer 0 are not an omission and not a missed opportunity. Three regions on layer 0 are the result of the "space first" rule, under "The four levels and nesting depth" below.
 
-**When a region needs containing, an application usually uses one of the following two patterns, not both:**
+**When a region needs containing, use one of the following two patterns, not both:**
 
 - **The navigation raised to layer 1, with the main content left on layer 0**, or
 - **The main content raised to layer 1, with the navigation left on layer 0.**

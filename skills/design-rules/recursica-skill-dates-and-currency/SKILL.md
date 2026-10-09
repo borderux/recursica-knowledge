@@ -15,9 +15,9 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 ## Governing principles
 
-1. **Never make the reader decode or calculate.** Let the format do the work for the reader. A date the reader has to work out leaves the work to the reader. A timestamp the reader has to subtract from the current time also leaves the work to the reader.
+1. **Never make the persona decode or calculate.** Let the format do the work for the persona. A date the persona has to work out leaves the work to the persona. A timestamp the persona has to subtract from the current time also leaves the work to the persona.
 2. **Consistency matters more than the specific choice.** Use the same alignment, the same precision, and the same format across rows, columns, states, and screens. A rule below may say "right-aligned" where an existing screen is left-aligned throughout. Keep that screen uniform, because uniformity takes priority. Currency is the exception. Right-align currency unless the user explicitly says otherwise.
-3. **Say when a value is not in the reader's own terms.** A value may be in a different time zone, in a converted currency, or rounded. The reader must never assume the value shown is the original.
+3. **Say when a value is not in the persona's own terms.** A value may be in a different time zone, in a converted currency, or rounded. The persona must never assume the value shown is the original.
 
 ## Whose locale wins
 
@@ -27,26 +27,26 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 **MUST use a three-letter month abbreviation, a day of one or two digits, and a four-digit year**, as in `Jan 7, 2026` or `Jun 24, 2026`.
 
-Use this one date format for every displayed date. This date format removes confusion. A reader in any region reads the date correctly.
+Use this one date format for every displayed date. This date format removes confusion. A persona in any region reads the date correctly.
 
-**NEVER display a date as numbers separated by slashes or hyphens, except inside an input that has focus.** `01/07/2026` is ambiguous. A reader cannot tell the month from the day whenever both numbers could reasonably be either one. A spelled-out month removes the confusion completely. A numeric date then serves no purpose.
+**NEVER display a date as numbers separated by slashes or hyphens, except inside an input that has focus.** `01/07/2026` is ambiguous. A persona cannot tell the month from the day whenever both numbers could reasonably be either one. A spelled-out month removes the confusion completely. A numeric date then serves no purpose.
 
 **The house dislikes a numeric date more than any other mistake in this skill.** A screen with slashed or hyphenated numeric dates looks careless, because the clear date format takes no extra effort.
 
 ### Date formatters
 
-**MUST build the displayed value with a date formatter, in the reader's locale and time zone.** In a browser, use the browser's built-in date formatter, and never pass the formatter a locale. A locale passed to the formatter is a locale the reader did not choose. The tenant's locale then wins over the reader's locale, and the section "Whose locale wins" above forbids the tenant's locale.
+**MUST build the displayed value with a date formatter, in the persona's locale and time zone.** In a browser, use the browser's built-in date formatter, and never pass the formatter a locale. A locale passed to the formatter is a locale the persona did not choose. The tenant's locale then wins over the persona's locale, and the section "Whose locale wins" above forbids the tenant's locale.
 
 **NEVER make a displayed date by cutting characters out of a machine serialization.** A machine serialization is a machine-readable text form of a value. A machine serialization is meant for computers to store and exchange, not for people to read. Look for code that takes the first ten characters of a UTC timestamp. Also look for any other cut of that kind. UTC is the reference time zone that all other time zones are measured from. A date cut out of a timestamp breaks two separate rules at once:
 
 - **The cut date is the numeric form with hyphens**, as in `2026-08-10`. The section "Date format" forbids the numeric form.
-- **The cut date is in UTC, not the reader's time zone.** The cut date has the wrong format and also the wrong day. An entry made at 6 p.m. on the 10th, west of Greenwich, displays as the 11th. Nobody reviewing the screen sees a bug, because the screen shows a believable date.
+- **The cut date is in UTC, not the persona's time zone.** The cut date has the wrong format and also the wrong day. An entry made at 6 p.m. on the 10th, west of Greenwich, displays as the 11th. Nobody reviewing the screen sees a bug, because the screen shows a believable date.
 
 **Fix where the value comes from and how the value is formatted, together.** The wrong day is the dangerous problem, because the wrong day remains after the numeric form is fixed. Reformatting the same UTC string into `Aug 10, 2026` still shows the wrong day.
 
 **Format once, in one place.** Create each formatter once and export the formatter. A separate formatter in every place that formats a value gives a screen three date formats. A new formatter for every table row also makes the screen measurably slow.
 
-**A date with no time is not a timestamp.** Convert the time zone only for an exact moment in time. Some stored values are a date with no time. Examples are a birth date, a due date, and an accounting period. Converting a date with no time to the reader's time zone moves the date one day earlier or later. If the kind of value a field holds is not clear, confirm with the user. Do not pick a default.
+**A date with no time is not a timestamp.** Convert the time zone only for an exact moment in time. Some stored values are a date with no time. Examples are a birth date, a due date, and an accounting period. Converting a date with no time to the persona's time zone moves the date one day earlier or later. If the kind of value a field holds is not clear, confirm with the user. Do not pick a default.
 
 ## Time zones
 
@@ -60,15 +60,15 @@ Use this one date format for every displayed date. This date format removes conf
 
 **If an event happened in another place and the place matters, show the event's time in the event's time zone.** Label the time zone, and do not convert the time.
 
-For example, a log records a break-in at 11:00 p.m. local time. Converted to the reader's time zone, the log shows 8:00 p.m. The reader then draws the wrong conclusion about what time of night the break-in happened. The local time of the break-in is the information the reader needs.
+For example, a log records a break-in at 11:00 p.m. local time. Converted to the persona's time zone, the log shows 8:00 p.m. The persona then draws the wrong conclusion about what time of night the break-in happened. The local time of the break-in is the information the persona needs.
 
-**Always give the reader a way to switch the time to the reader's own time zone.** State the time zone, and do not convert by default. Let the reader convert the time.
+**Always give the persona a way to switch the time to the persona's own time zone.** State the time zone, and do not convert by default. Let the persona convert the time.
 
 ## Relative and absolute time
 
-**Use relative time for recent events**, such as `15 minutes ago`, `today`, `yesterday`, or `this week`, wherever more detail does not help the reader.
+**Use relative time for recent events**, such as `15 minutes ago`, `today`, `yesterday`, or `this week`, wherever more detail does not help the persona.
 
-Relative time follows principle 1: never make the reader decode or calculate. An event shown at 2:23 p.m. and read at 2:45 p.m. makes the reader do math. The math tells the reader what the reader wanted to know: "recently."
+Relative time follows principle 1: never make the persona decode or calculate. An event shown at 2:23 p.m. and read at 2:45 p.m. makes the persona do math. The math tells the persona what the persona wanted to know: "recently."
 
 **Past a cutoff of one week, switch to the absolute date.** Within the last week, show the value in relative terms: `now`, `5 minutes ago`, `16 hours ago`, `yesterday`, `3 days ago`. At a week and beyond, show the absolute date, as in `Jun 24, 2026`. A product may change the cutoff with a stated reason. Without a stated reason, a week is the house rule, not a decision to reopen on each screen.
 
@@ -76,9 +76,9 @@ Relative time follows principle 1: never make the reader decode or calculate. An
 
 **Keep every relative value below the cutoff.** Rounding can push a value to the cutoff: a value 6.9 days old shows `7 days ago`. A value one hour older, in the same column, shows an absolute date. Cap the largest relative value below the cutoff.
 
-**Relative time never shows seconds.** A value under a minute old shows `now`. The rule on seconds under "Duration" allows seconds only for a set of values under a minute that the reader compares. A single timestamp is not a set of values.
+**Relative time never shows seconds.** A value under a minute old shows `now`. The rule on seconds under "Duration" allows seconds only for a set of values under a minute that the persona compares. A single timestamp is not a set of values.
 
-**Either refresh a relative value, or use the absolute form.** A relative value is calculated when the screen shows the value. The relative value does not update by itself. A screen may stay open a long time and never reload the screen's data. The relative value then goes out of date. The reader cannot see that the relative value is out of date. Do not leave a page saying `now` an hour later.
+**Either refresh a relative value, or use the absolute form.** A relative value is calculated when the screen shows the value. The relative value does not update by itself. A screen may stay open a long time and never reload the screen's data. The relative value then goes out of date. The persona cannot see that the relative value is out of date. Do not leave a page saying `now` an hour later.
 
 ## Currency
 
@@ -88,9 +88,9 @@ Relative time follows principle 1: never make the reader decode or calculate. An
 
 **The decimal separator and the thousands separator follow the locale.** One locale uses a comma where another locale uses a period. The locale changes the separator, never the alignment.
 
-**Put the currency symbol in the column header, not in the cells.** For example, the column header says `Debits (USD $)`, and the cells in the column show plain amounts. This layout is the accounting style. The reader does not have to read past a symbol at the front of every value.
+**Put the currency symbol in the column header, not in the cells.** For example, the column header says `Debits (USD $)`, and the cells in the column show plain amounts. This layout is the accounting style. The persona does not have to read past a symbol at the front of every value.
 
-**If the reader views a currency other than the currency of the transaction, label the currency in the cell.** A transaction made in dollars and shown in Mexican pesos is not the original data. The cell must say that the amount is not the original data.
+**If the persona views a currency other than the currency of the transaction, label the currency in the cell.** A transaction made in dollars and shown in Mexican pesos is not the original data. The cell must say that the amount is not the original data.
 
 **Negative values may use accounting parentheses.** If negative values use accounting parentheses, pad the values so the decimal points stay lined up. A closing parenthesis must not push the number inside the parentheses out of line.
 
@@ -104,11 +104,11 @@ Relative time follows principle 1: never make the reader decode or calculate. An
 
 **The only exception is an explicit instruction from the user.**
 
-**MUST group digits once a value reaches four figures.** Write `2,046`, never `2046`. Group the digits of every quantity a reader might compare or read out loud, not only money. Counts, totals, and row tallies are examples of such quantities. A reader reads an ungrouped four-figure number one digit at a time. Two ungrouped numbers in a column cannot be compared at a glance. Comparing at a glance is the whole reason the column is right-aligned.
+**MUST group digits once a value reaches four figures.** Write `2,046`, never `2046`. Group the digits of every quantity a persona might compare or read out loud, not only money. Counts, totals, and row tallies are examples of such quantities. A persona reads an ungrouped four-figure number one digit at a time. Two ungrouped numbers in a column cannot be compared at a glance. Comparing at a glance is the whole reason the column is right-aligned.
 
 **Let the platform choose the digit separator, because the digit separator depends on the locale.** Use the platform's built-in number formatter. The separator is a comma in one locale, and a period or a thin space in another. Never insert commas with a hand-written regex (a search pattern written in code). A hand-written regex puts the wrong separator in every locale except the one locale the regex was written for. A hand-written regex is the same kind of mistake as cutting a date out of a machine serialization.
 
-**NEVER group an identifier.** A year, a version, a port, an account number, a record number, and a postal code are identifiers. Write `2026`, not `2,026`. Grouping marks a value as a quantity the reader can compare. On an identifier, grouping makes a false claim, and the reader believes the false claim for a moment. If doing math on a value makes no sense, the value is not a number for the grouping rule.
+**NEVER group an identifier.** A year, a version, a port, an account number, a record number, and a postal code are identifiers. Write `2026`, not `2,026`. Grouping marks a value as a quantity the persona can compare. On an identifier, grouping makes a false claim, and the persona believes the false claim for a moment. If doing math on a value makes no sense, the value is not a number for the grouping rule.
 
 **Rounding and abbreviating are acceptable when the goal is to shorten a number**: `952` below a thousand, `1.2K` above a thousand. Round or abbreviate on purpose, not by default. Grouping is the default.
 
@@ -124,7 +124,7 @@ Relative time follows principle 1: never make the reader decode or calculate. An
 
 **In a currency range or a number range, put the symbol on the first value only**, as in `$5–6`. Keep the same precision at both ends: `$5.25–6.00`.
 
-**NEVER mix levels of rounding within a range.** `1.2K–1 million` hides how big the gap is. If the two ends are wildly different in size, show the full values so the reader sees the difference easily.
+**NEVER mix levels of rounding within a range.** `1.2K–1 million` hides how big the gap is. If the two ends are wildly different in size, show the full values so the persona sees the difference easily.
 
 ## Time of day
 
@@ -134,11 +134,11 @@ Relative time follows principle 1: never make the reader decode or calculate. An
 
 **A duration is a length of time, not a clock time.** Format a duration with unit labels, as in `3h 20m`. Use this format for every duration until the duration passes one day. Past one day, the format extends to include days.
 
-**Never format a duration as a clock time.** `3:20` is a time of day, and the reader has to work out which meaning was intended.
+**Never format a duration as a clock time.** `3:20` is a time of day, and the persona has to work out which meaning was intended.
 
 **Show seconds only when the values shown are under a minute, across several objects.** A single duration does not need seconds. A set of durations measured in hours does not need seconds either. Seconds belong in a list of items whose differences are smaller than a minute. In that list, dropping the seconds would make different values look the same.
 
-**Once seconds are shown, show seconds on every duration in that set.** The same precision rule applies to durations as to every other value. The same precision lets the reader compare the durations.
+**Once seconds are shown, show seconds on every duration in that set.** The same precision rule applies to durations as to every other value. The same precision lets the persona compare the durations.
 
 ## Field format and focus
 
@@ -162,7 +162,7 @@ Relative time follows principle 1: never make the reader decode or calculate. An
 - **The duration format past one day.** A duration past one day changes format, but the exact form has not been set.
 - **Seconds outside a set of compared values.** Confirm with the user whether seconds ever appear outside a set of values under a minute that are being compared.
 
-Do not extend a rule above to cover one of these open questions. A reader will not catch a wrong convention in a fiscal period or a week number.
+Do not extend a rule above to cover one of these open questions. A persona will not catch a wrong convention in a fiscal period or a week number.
 
 ## Out of scope
 
@@ -175,14 +175,14 @@ Do not extend a rule above to cover one of these open questions. A reader will n
 
 - [ ] Dates use a three-letter month, a day of one or two digits, and a four-digit year.
 - [ ] No read-only date appears as numbers separated by slashes or hyphens.
-- [ ] Every displayed date and time is built by a formatter, in the reader's locale and time zone. No value is cut out of a machine serialization, and no date cut from a UTC timestamp reaches a screen.
+- [ ] Every displayed date and time is built by a formatter, in the persona's locale and time zone. No value is cut out of a machine serialization, and no date cut from a UTC timestamp reaches a screen.
 - [ ] Each formatter is created once and shared. No formatter is defined separately in each place that uses a formatter, or created for each row.
 - [ ] Every date field is identified as a date with no time or as an exact moment. No time-zone conversion shifts a date with no time.
 - [ ] Times are in the persona's own time zone, not the tenant's.
 - [ ] A time zone is stated for every value outside the persona's time zone. A time zone is also stated when the persona's time zone is unknown. A time zone is also stated when the persona has switched time zones.
 - [ ] Times for events that happened in another place are shown in the time zone where each event happened. The times are labeled, with a way to convert the times.
 - [ ] Recent events use relative time within one week, and the absolute date after one week. The relative text comes from the platform's relative-time formatter, no relative value reaches the cutoff, and no seconds are shown.
-- [ ] Every quantity of four figures or more has grouped digits, from a formatter in the reader's locale. No plain `2046` appears, and no hand-written comma regex is used. No identifier, year, version, or port is grouped.
+- [ ] Every quantity of four figures or more has grouped digits, from a formatter in the persona's locale. No plain `2046` appears, and no hand-written comma regex is used. No identifier, year, version, or port is grouped.
 - [ ] Currency is right-aligned, with two decimal places on every value.
 - [ ] The currency symbol is in the column header, not in each cell.
 - [ ] Any converted currency is labeled in the cell that shows the converted currency.

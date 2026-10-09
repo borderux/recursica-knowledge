@@ -38,7 +38,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 **NEVER mix conventions.** In a mixed filter bar, some filters show `All`, other filters are empty, and both mean unfiltered. The mix tells the persona that the filters behave differently, when the filters behave the same. A mix of conventions is the most common filter-bar defect, and avoiding the mix costs nothing.
 
-**A filter should appear on the screen unapplied.** Filters are additive. The persona starts from the full collection and adds filters to narrow the collection down. A persona may not notice a filter applied in advance, and may conclude that data is missing. `recursica-skill-defaults` owns this rule.
+**Every filter starts off when the page loads.** The persona sees the full list first. A persona may not notice a filter that is already on, and may think data is missing. One exception is allowed: a filter almost every persona wants, such as "Open orders only", may start on. A filter that starts on must show as on, so the persona can turn the filter off. `recursica-skill-defaults` sets this rule.
 
 **A default that filters must be visible as a filter.** When the collection loads already narrowed, the filter that narrows the collection must show that the filter is applied. Never show a screen that quietly hides rows while every filter shows the neutral state. Set a default filter. Never filter the data itself.
 
@@ -56,7 +56,11 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 **If the project has a multi-select control, use the project's multi-select control.** Otherwise, the missing multi-select control is a known gap. Where a filter needs multi-select, raise the gap. Do not build a multi-select control out of other parts. Until the gap is closed, the working substitute is separate single-value filters that all apply at once. See `recursica-skill-selection-controls` and `recursica-skill-dropdown`.
 
-**A lone on/off toggle is usually a filter with a bad name.** Before adding an on/off toggle, name the field the toggle filters. Then check whether the collection shows that field. When the collection has no column for that field, the persona cannot check what the toggle did. When the toggle repeats information that every row already shows, the toggle does nothing.
+**A single on/off control in a filter bar is a filter on one field.** For example, "Show archived" filters on the Status field.
+
+- Label the control with the field's name, like every other filter.
+- Show the field as a column in the table, so the persona can see what the control changed.
+- Disable the control when every row has the same value for the field. The control then has no effect.
 
 **Use a segmented control, not a switch, for any toggle in a filter bar.** A switch belongs in a form. See `recursica-skill-selection-controls`.
 

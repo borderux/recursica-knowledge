@@ -48,7 +48,7 @@ Do not set a variant, state or content option that the MCP server does not list 
 
 **Make every other item in the trail a real link with a real `href`, to a page that exists.** See `recursica-skill-link`.
 
-**Label each item with the name of the destination page, with no verb.** The label should match the heading on the destination page. When the label matches the heading, the persona who arrives sees that the trail led to the right page.
+**Label each item with the name of the destination page, with no verb.** The label should match the heading on the destination page. A label may differ slightly when several places lead to the same page under names that fit each context. When the label matches the heading, the persona who arrives sees that the trail led to the right page.
 
 **Never make a breadcrumb the only signal of the persona's location.** A breadcrumb is one of three location signals. `recursica-skill-navigation` requires all three signals:
 
@@ -130,7 +130,7 @@ The breadcrumb's styling includes the separator's look, wherever the separator c
 - [ ] The trail holds the current page and only the levels above the current page.
 - [ ] The last item is the current page. The current page is not a link, and is marked as current in code.
 - [ ] Every other item is a real link with a real `href`, to a page that exists.
-- [ ] Each label names the destination page with no verb, and matches the heading on the destination page.
+- [ ] Each label names the destination page with no verb, and matches the heading on the destination page where possible.
 - [ ] No breadcrumb item points to a modal or a panel.
 - [ ] The trail is a named navigation region, and is marked up as a semantic list.
 - [ ] Separators are hidden from assistive technology, and no separator is announced between items.

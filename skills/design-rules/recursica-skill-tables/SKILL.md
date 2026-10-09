@@ -30,15 +30,15 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 **Always use a table when the set of objects has high plurality (a large number of items of the same kind), has no fixed end, or keeps growing.**
 
-**Use a table for data that is only text and numbers, however few the records.** A table shows the same values in less space. A table also lets the reader compare values down a column. `recursica-skill-card` allows an occasional exception for visual reasons, for a small, finite set. Use the exception on purpose, and say that the card set uses the exception. Never make the exception the default.
+**Use a table for data that is only text and numbers, however few the records.** A table shows the same values in less space. A table also lets the persona compare values down a column. `recursica-skill-card` allows an occasional exception for visual reasons, for a small, finite set. Use the exception on purpose, and say that the card set uses the exception. Never make the exception the default.
 
 **Use cards for a set that is small, finite, and graphic.** See `recursica-skill-card`.
 
 ## One table per object type
 
-**Put all the items of one object type in one table. NEVER split the items into sections by status.** A screen that stacks three sections, headed `Suggested`, `Consolidated people` and `Every speaker`, shows one object type three times. The reader has to add up three row counts to answer "how many people are there?" One table answers the question with one row count.
+**Put all the items of one object type in one table. NEVER split the items into sections by status.** A screen that stacks three sections, headed `Suggested`, `Consolidated people` and `Every speaker`, shows one object type three times. The persona has to add up three row counts to answer "how many people are there?" One table answers the question with one row count.
 
-**Show status as a column, not as a heading.** The reader can sort and filter a single table by the status column. The reader can also see the share of items in each state at a glance. Three separate lists make the reader work out the share from the lengths of the three lists.
+**Show status as a column, not as a heading.** The persona can sort and filter a single table by the status column. The persona can also see the share of items in each state at a glance. Three separate lists make the persona work out the share from the lengths of the three lists.
 
 **Treat a section heading that names a state as the sign of splitting by status.** `Suggested`, `Pending`, `Archived`, `Needs review` and `Everything else` are each a status value shown as a page section. A section heading names a kind of object. A status names what happened to one object. If a section heading would be a valid value in a status column, the heading is a filter. Put the filter inside the table.
 
@@ -46,19 +46,19 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 - The items are a truly different object type.
 - The two tables have different columns.
-- The reader would never want to compare the two object types down a column.
+- The persona would never want to compare the two object types down a column.
 
 Two tables with the same columns were always one table.
 
-**One table also keeps the row count correct.** Sections by status count an item in two states twice. Sections by status also drop an item in no state, without notice. The reader can see neither problem. See the rule in `recursica-skill-screen-scaffolding` that figures shown together agree with each other.
+**One table also keeps the row count correct.** Sections by status count an item in two states twice. Sections by status also drop an item in no state, without notice. The persona can see neither problem. See the rule in `recursica-skill-screen-scaffolding` that figures shown together agree with each other.
 
 ### A table row awaiting a decision
 
-**Show a proposed result as if the result were already applied, and mark the table row as waiting for approval.** The reader can judge a finished result. Piecing a result together from a proposal takes effort. A suggested merge of records appears as the merged record, with a pending status on the merged record.
+**Show a proposed result as if the result were already applied, and mark the table row as waiting for approval.** The persona can judge a finished result. Piecing a result together from a proposal takes effort. A suggested merge of records appears as the merged record, with a pending status on the merged record.
 
 **Show what went into the proposed result in place.** Use one level of expand and collapse on the table row, a side panel, or a modal. `recursica-skill-panels-modals` decides which of the three to use. Use one of the three, and never another section on the page. The expand-and-collapse option is the same single level of expand and collapse that the rule under "Grouped rows" requires.
 
-**The table row MUST keep the same expansion, panel or modal after approval, with undo inside.** After approval, the expansion, panel or modal that showed the proposal shows the result. Put undo where the reader made the decision, as `recursica-skill-buttons-links` says. Approval does not end the reader's interest in the combined records. The reader most needs to check what was combined right after approval. If approval removes the only view of what happened, nobody can audit the decision.
+**The table row MUST keep the same expansion, panel or modal after approval, with undo inside.** After approval, the expansion, panel or modal that showed the proposal shows the result. Put undo where the persona made the decision, as `recursica-skill-buttons-links` says. Approval does not end the persona's interest in the combined records. The persona most needs to check what was combined right after approval. If approval removes the only view of what happened, nobody can audit the decision.
 
 ## Which fields get a column
 
@@ -76,7 +76,7 @@ Two tables with the same columns were always one table.
 
 **Give a column to a status that every table row has.** How many table rows have a value decides whether a field gets a column. The topic of the field does not decide. A `Status` field, where every record is `active` or `archived`, has a value in every table row. The `Status` field gets a column.
 
-**Use a filter to find exceptions.** A reader looking for the four flagged table rows wants to see those four table rows. The reader does not want a column to scan.
+**Use a filter to find exceptions.** A persona looking for the four flagged table rows wants to see those four table rows. The persona does not want a column to scan.
 
 **Put data that does not fit in the table in one of three places:**
 
@@ -117,7 +117,7 @@ Before using horizontal scrolling, confirm with the user that horizontal scrolli
 
 **A fixed width on the sentence column is the first failure.** The sentence column keeps the fixed width, and every column beside the sentence column gets squeezed. A date column then wraps `Aug 10,` onto one line and `2026` onto the next. A wrapped date beside a sentence with spare room is the sign of this mistake.
 
-**Setting no widths at all is the other failure.** With no widths set, the table divides the table width by the content of each column. The identity column is the column the reader scans. The identity column loses width to all the number columns to the right of the identity column. A long value in the identity column then overlaps the next column instead of wrapping inside the identity column.
+**Setting no widths at all is the other failure.** With no widths set, the table divides the table width by the content of each column. The identity column is the column the persona scans. The identity column loses width to all the number columns to the right of the identity column. A long value in the identity column then overlaps the next column instead of wrapping inside the identity column.
 
 **Set each width by data type, not by screen.** Define the width for each data type once, for the whole application. Use that one definition in every table. A count column is then the same width in every table. Pixel widths set separately for each table differ from table to table right away.
 
@@ -158,7 +158,7 @@ Decide between truncating and wrapping in this order:
 - a URL
 - any value joined by underscores or dots
 
-A value with no spaces does not break at the edge of the column. The value runs straight across the next columns. The reader sees two values overlap and takes the overlap for a display bug. The overlap is a display bug.
+A value with no spaces does not break at the edge of the column. The value runs straight across the next columns. The persona sees two values overlap and takes the overlap for a display bug. The overlap is a display bug.
 
 **Allow wrapping to break inside a word.** Set the word break on every cell, not only in the column where the overlap was noticed. Breaking inside a word is a behavior of the whole table, not a property of one column. The next set of data will put a long value in a different column.
 
@@ -194,7 +194,7 @@ A value with no spaces does not break at the edge of the column. The value runs 
 
 ## Default sort
 
-**Every table MUST be sorted, and the sorted column MUST always be clearly marked.** Without a visible sort indicator, the reader has to work out the order from the data. The reader will usually get the order wrong. Mark the sorted column even when the persona cannot change the sort. A fixed order is still an order. The reader has a right to know which column sets the order, and in which direction.
+**Every table MUST be sorted, and the sorted column MUST always be clearly marked.** Without a visible sort indicator, the persona has to work out the order from the data. The persona will usually get the order wrong. Mark the sorted column even when the persona cannot change the sort. A fixed order is still an order. The persona has a right to know which column sets the order, and in which direction.
 
 Show the sort indicator on one column. The sort indicator is part of the column header component. See `recursica-skill-table`.
 
@@ -206,7 +206,7 @@ Show the sort indicator on one column. The sort indicator is part of the column 
 - Names → A to Z.
 - Statuses → most important first: errors, then problems, then active. The order depends on what matters in that table.
 
-**The sort column does not have to be the leading column.** The leftmost column often holds the object's name, because the reader scans the name first. The meaningful sort can be a date column further to the right. Sorting on that date column is correct.
+**The sort column does not have to be the leading column.** The leftmost column often holds the object's name, because the persona scans the name first. The meaningful sort can be a date column further to the right. Sorting on that date column is correct.
 
 ## Multi-sort
 
@@ -232,9 +232,9 @@ Show the sort indicator on one column. The sort indicator is part of the column 
 
 ## Opening a record
 
-**Make the identifying value of each record the link to the record.** The link needs no extra column. The reader already tries to click the identifying value. The identifying value is the name, title, label, or any value the reader would point at to mean "that one."
+**Make the identifying value of each record the link to the record.** The link needs no extra column. The persona already tries to click the identifying value. The identifying value is the name, title, label, or any value the persona would point at to mean "that one."
 
-**If the table row holds no other interactive element, the whole table row may be the link instead.** See the rule on clickable rows. Both choices are correct. Pick one choice, and use the choice in every table in the application. The reader cannot see which mode a table is in.
+**If the table row holds no other interactive element, the whole table row may be the link instead.** See the rule on clickable rows. Both choices are correct. Pick one choice, and use the choice in every table in the application. The persona cannot see which mode a table is in.
 
 **A separate edit or view action in the table row is the third option.** Use the separate action in two cases:
 
@@ -243,17 +243,17 @@ Show the sort indicator on one column. The sort indicator is part of the column 
 
 `recursica-skill-buttons-links` covers how the separate action looks.
 
-**NEVER trigger an action on a single record by selecting that record.** A row selection checkbox means "include this in what the bulk action does," and the row selection checkbox means nothing else. Suppose ticking one table row offers `Correct this name` and ticking two table rows offers `Combine`. Selection then means two unrelated actions, and the reader learns neither meaning. Start editing one record from that record: from the record's name, or from the record's own row action. See `recursica-skill-selection-controls`.
+**NEVER trigger an action on a single record by selecting that record.** A row selection checkbox means "include this in what the bulk action does," and the row selection checkbox means nothing else. Suppose ticking one table row offers `Correct this name` and ticking two table rows offers `Combine`. Selection then means two unrelated actions, and the persona learns neither meaning. Start editing one record from that record: from the record's name, or from the record's own row action. See `recursica-skill-selection-controls`.
 
 ## Adding a record
 
 **Put the add control, the control for adding a record, at the table header, on the right. NEVER put the add control below the table.**
 
-**A table has an unknown number of table rows. The position below a table is unpredictable.** The area under the last table row can be one screen down on a short table. On a long table, the area under the last table row can be twenty screens down. A reader unaware of the add control has no reason to scroll to the end of a list. Content below a list of changing length may never be seen at all. The table header is the one part of a table with a fixed position. The eye already starts at the table header.
+**A table has an unknown number of table rows. The position below a table is unpredictable.** The area under the last table row can be one screen down on a short table. On a long table, the area under the last table row can be twenty screens down. A persona unaware of the add control has no reason to scroll to the end of a list. Content below a list of changing length may never be seen at all. The table header is the one part of a table with a fixed position. The eye already starts at the table header.
 
-**A form that changes the table rows MUST NOT sit inline on the page.** Open the form in a modal or a panel, as `recursica-skill-panels-modals` says. The table has to change visibly when the persona saves the form successfully. An inline form leaves the reader looking at a form and a table at once. The reader then cannot tell which state the form or the table is in. Closing the modal or panel tells the reader the work is done. The changed table behind the modal or panel is the confirmation.
+**A form that changes the table rows MUST NOT sit inline on the page.** Open a short form in a modal or a panel, and a long form on a separate page. A short form has fewer than five fields. `recursica-skill-panels-modals` sets this rule. The table has to change visibly when the persona saves the form successfully. An inline form leaves the persona looking at a form and a table at once. The persona then cannot tell which state the form or the table is in. Closing the modal or panel tells the persona the work is done. The changed table behind the modal or panel is the confirmation.
 
-**Give a rarely used action no permanent space on the screen.** Creating a record happens now and then. The table is why the reader came. A create form that stays on screen uses the most valuable part of the screen for the least frequent task. See `recursica-skill-screen-priority`.
+**Give a rarely used action no permanent space on the screen.** Creating a record happens now and then. The table is why the persona came. An always-visible form for adding a record uses the best part of the screen for the rarest task. See `recursica-skill-screen-priority`.
 
 ## Bulk actions
 
@@ -267,7 +267,7 @@ The tables skill sets three bulk action rules.
 
 **Put bulk actions directly above the table, and never inside the filter bar.** A filter changes which data is shown. A bulk action changes the data. See `recursica-skill-filters`.
 
-**The bulk action area holds controls and nothing else. NEVER repeat the selection inside the bulk action area.** The ticked checkboxes show which table rows are selected, and the count is in the button label. A list of the names of the selected records repeats the selection in a weaker form. The list also makes the height of the bulk action area depend on how many table rows are ticked. The table then moves down the page as the reader works.
+**The bulk action area holds controls and nothing else. NEVER repeat the selection inside the bulk action area.** The ticked checkboxes show which table rows are selected, and the count is in the button label. A list of the names of the selected records repeats the selection in a weaker form. The list also makes the height of the bulk action area depend on how many table rows are ticked. The table then moves down the page as the persona works.
 
 **Add no separate clear or deselect control.** The header checkbox is the deselect-all control, as `recursica-skill-selection-controls` says. A second deselect control in a different place is one more control to read, and a second answer to "how do I start over?"
 
@@ -285,7 +285,7 @@ The tables skill sets three bulk action rules.
 
 **The table footer usually cannot be clicked.**
 
-**Totals are another reason to prefer infinite scroll.** A single scrolling table shows that the total covers every record. On a paginated table, the reader cannot tell whether the total is for the page or for every record.
+**Totals are another reason to prefer infinite scroll.** A single scrolling table shows that the total covers every record. On a paginated table, the persona cannot tell whether the total is for the page or for every record.
 
 If a paginated table shows totals, the labels in the table footer must name the scope of each total. The scope of a total is either the page or the whole set of records.
 
@@ -351,7 +351,7 @@ Check every item before treating a table as done.
 - [ ] The table has no invented row density variant.
 - [ ] A table row is clickable only if the table row holds no other interactive element.
 - [ ] A record opens from the record's identifying value, the whole table row, or a separate row action. One of the three is chosen once for the whole application. Selecting a record triggers no action on that single record.
-- [ ] The add control is at the table header, on the right, never below the table. The create form opens in a modal or panel instead of sitting inline on the page.
+- [ ] The add control is at the table header, on the right, never below the table. A short form that adds a record opens in a modal or panel. A long form opens on a separate page. Neither sits inline on the page.
 - [ ] The bulk action area holds only controls. The bulk action area has no list of the selected records. The bulk action area has no separate clear control competing with the header checkbox.
 - [ ] Inline editing matches across the application: every table has inline editing, or no table does.
 - [ ] Totals sit in the fixed table footer. On a paginated table, each total says whether the total covers the page or the whole set of records.

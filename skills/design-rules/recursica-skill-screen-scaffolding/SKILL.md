@@ -54,18 +54,18 @@ An app shell is the header, the left rail and the footer around the page content
 
 ## The line under a heading
 
-**Leave the line under a page title or a section heading empty by default.** A page title and a section heading each have room for a line of text below the heading. A well-named heading already says what the region is. A line that repeats the heading adds no context. The repeated line is the heading a second time in smaller type. Every reader spends time on the repeated line on every visit.
+**Leave the line under a page title or a section heading empty by default.** A page title and a section heading each have room for a line of text below the heading. A well-named heading already says what the region is. A line that repeats the heading adds no context. The repeated line is the heading a second time in smaller type. Every persona spends time on the repeated line on every visit.
 
 **Use the line under a heading only for information the heading cannot hold:**
 
 - an order
 - a limit
 - a consequence
-- a state the reader would otherwise get wrong
+- a state the persona would otherwise get wrong
 
-Keep the line `Newest first. Append-only: nothing here is ever rewritten.` under a heading named Changes. The word Changes does not tell the reader the sort order. The word Changes also does not tell the reader that no entry is ever rewritten. Delete the line `The closed vocabulary the tagging rests on.` under a heading named Tags. The deleted line only defines the word Tags.
+Keep the line `Newest first. Append-only: nothing here is ever rewritten.` under a heading named Changes. The word Changes does not tell the persona the sort order. The word Changes also does not tell the persona that no entry is ever rewritten. Delete the line `The closed vocabulary the tagging rests on.` under a heading named Tags. The deleted line only defines the word Tags.
 
-**Check each line under a heading with the subtraction test, which takes one reading.** In the subtraction test, delete the line. If the line only restated the heading, the line added nothing, and the line stays deleted. If a reader would now make a mistake, put the line back. Then cut the restored line down to only the information that prevents the mistake.
+**Check each line under a heading with the subtraction test, which takes one reading.** In the subtraction test, delete the line. If the line only restated the heading, the line added nothing, and the line stays deleted. If a persona would now make a mistake, put the line back. Then cut the restored line down to only the information that prevents the mistake.
 
 **Do not treat a component's setting for optional text as an instruction to fill the setting.** A heading component has an optional text setting because some headings need a line of text. A setting that accepts text is the single most common reason someone writes an explanation nobody asked for. Leaving the setting empty is the normal case, not the unfinished one.
 
@@ -147,7 +147,7 @@ Keep the line `Newest first. Append-only: nothing here is ever rewritten.` under
 
 **Declare the page canvas, the background of the whole page, as layer 0 on the root element.** No other element has to paint the page canvas.
 
-**Give a region a separate background when the reader cannot tell the region apart from the neighboring region.** When neighboring regions have no separation, and the reader cannot see the boundary between the regions, the spacing has failed. The region then needs a separate layer.
+**Give a region a separate background when the persona cannot tell the region apart from the neighboring region.** When neighboring regions have no separation, and the persona cannot see the boundary between the regions, the spacing has failed. The region then needs a separate layer.
 
 **A region has three container options, and no option can replace another.** A peer is an object of the same kind as the objects around the peer. A row in a list is one example of a peer.
 
@@ -205,13 +205,13 @@ Keep the line `Newest first. Append-only: nothing here is ever rewritten.` under
 
 **Add KPI tiles only when the tiles pass all three tests:**
 
-1. **The dataset is too large to take in at a glance.** A count belongs on the page only when the count tells the reader a fact the page content cannot. Above a table of eleven rows, the table has already given the count. The reader can see eleven rows. Confirm with the user the realistic maximum number of records, not the theoretical maximum. If the realistic maximum is dozens, the table is enough.
+1. **The dataset is too large to take in at a glance.** A count belongs on the page only when the count tells the persona a fact the page content cannot. Above a table of eleven rows, the table has already given the count. The persona can see eleven rows. Confirm with the user the realistic maximum number of records, not the theoretical maximum. If the realistic maximum is dozens, the table is enough.
 2. **The number changes.** A KPI tile exists to be read again on the next visit and found different. A KPI tile that reports the same value every time is a label, not data.
-3. **The tile guides the next action.** After reading the tile, the reader should be able to act differently.
+3. **The tile guides the next action.** After reading the tile, the persona should be able to act differently.
 
-**NEVER show a KPI tile that is always zero by nature.** A count of a state that no item ever reaches is not a reassuring zero. A KPI tile that is always zero is a permanently empty tile that the reader learns to skip. Once the reader has learned to skip that tile, the reader skips the box beside that tile too. Put a zero that will one day be more than zero in the page content. In the page content, the reader can see the change in context.
+**NEVER show a KPI tile that is always zero by nature.** A count of a state that no item ever reaches is not a reassuring zero. A KPI tile that is always zero is a permanently empty tile that the persona learns to skip. Once the persona has learned to skip that tile, the persona skips the box beside that tile too. Put a zero that will one day be more than zero in the page content. In the page content, the persona can see the change in context.
 
-**Two or three tiles that pass are a better screen than six tiles where three are always zero.** The problem is not the number of tiles. Extra tiles added only to fill the row teach the reader that the whole row is decoration.
+**Two or three tiles that pass are a better screen than six tiles where three are always zero.** The problem is not the number of tiles. Extra tiles added only to fill the row teach the persona that the whole row is decoration.
 
 **Delete a KPI tile that only repeats a table's row count.** A tile that repeats the row count is the most common failing tile. `Speaker records: 11` above a table of eleven speakers only repeats the table's row count in a box. Apply the subtraction test under "The line under a heading" to KPI tiles without change.
 
@@ -221,7 +221,7 @@ Keep the line `Newest first. Append-only: nothing here is ever rewritten.` under
 
 **Name each KPI tile with a noun phrase that says what the tile counts.** Write `Pending requests`, not `Total pending requests`. Write `Overdue requests`, not `Overdue`. See `recursica-skill-naming-terminology`.
 
-**KPI tiles shown together must agree with each other.** The reader compares two counts shown side by side. A tile that counts a subset must clearly look like a subset. A screen that reports a mathematically impossible result loses the reader's trust in every number on the screen.
+**KPI tiles shown together must agree with each other.** The persona compares two counts shown side by side. A tile that counts a subset must clearly look like a subset. A screen that reports a mathematically impossible result loses the persona's trust in every number on the screen.
 
 **Do not define a term right next to the term.** A KPI tile with a caption that explains the tile's own label has the wrong label. Fix the label.
 

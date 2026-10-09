@@ -23,14 +23,14 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 Ask the questions in the table in order:
 
-| Question                                                                                                | If yes                                                                                                       |
-| ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Must the persona interact with the task, or make a decision in the task, before doing any other action? | A **modal**                                                                                                  |
-| Does the task add to or edit a collection on the page, such as a table or a list?                       | A **modal** or a **panel**, never inline on the page. See "Forms that change a collection on the page" below |
-| Does the task need information from the page, or does the page need the task done beside the page?      | A **panel**                                                                                                  |
-| Can the persona do all of the task without the page's context?                                          | A **page**. A page is simpler and has room                                                                   |
-| Does the content cause scrolling inside the panel?                                                      | A **page**, even if the task needs the page's context. See "Scrolling" below                                 |
-| Is the viewport at a smaller breakpoint?                                                                | A **page**. Panels become pages at smaller breakpoints                                                       |
+| Question                                                                                                | If yes                                                                                                                                                       |
+| ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Must the persona interact with the task, or make a decision in the task, before doing any other action? | A **modal**                                                                                                                                                  |
+| Does the task add to or edit a collection on the page, such as a table or a list?                       | A short form: a **modal** or a **panel**. A long form: a separate **page**. Never inline on the page. See "Forms that change a collection on the page" below |
+| Does the task need information from the page, or does the page need the task done beside the page?      | A **panel**                                                                                                                                                  |
+| Can the persona do all of the task without the page's context?                                          | A **page**. A page is simpler and has room                                                                                                                   |
+| Does the content cause scrolling inside the panel?                                                      | A **page**, even if the task needs the page's context. See "Scrolling" below                                                                                 |
+| Is the viewport at a smaller breakpoint?                                                                | A **page**. Panels become pages at smaller breakpoints                                                                                                       |
 
 ## The context test
 
@@ -47,11 +47,11 @@ Working in a panel helps the persona keep track of the work on the page.
 
 ### Forms that change a collection on the page
 
-**Put a form that adds to or edits a collection on the page in a modal or a panel.** A table and a list are examples of a collection. Never put the form inline on the page beside the collection. Creating a row in a table goes in a modal or a panel. Editing a record in a list also goes in a modal or a panel.
+**Put a short form that adds to or edits a collection on the page in a modal or a panel.** A table and a list are examples of a collection. Adding a row to a table and editing a record in a list are examples of such a form. Give a long form a separate page. A short form has fewer than five fields. A long form has five or more. Never put the form inline on the page beside the collection.
 
-**Choose a modal or a panel for the form because of what happens when the form saves.** The form's size is not the reason. The collection has to change visibly when the save succeeds. Closing the modal or panel tells the persona the work is done. The persona looks up and sees the added or edited row in the list. An inline form leaves the persona looking at a form and a list at the same time. Nothing shows whether the form saved or whether the list changed. The only answer to "did that save?" is to read the list again.
+**Never put the form inline, because of what happens when the form saves.** The collection has to change visibly when the save succeeds. Closing the modal or panel tells the persona the work is done. The persona looks up and sees the added or edited row in the list. An inline form leaves the persona looking at a form and a list at the same time. Nothing shows whether the form saved or whether the list changed. The only answer to "did that save?" is to read the list again.
 
-**Choose between a modal and a panel with the context test above.** A form that creates a record usually needs nothing from the page. By the context test alone, a create form would go on a page. But a create form is small and used now and then. The persona also wants to get back to exactly the same place on the page. Modals and panels exist for that kind of task. Put the form in a panel when the persona needs to read the list while the form is open. In that case, the form and the page depend on each other. Picking rows in a table or a list to combine is one example. Comparing a new record with the existing records is another.
+**Use a modal for the form, unless the persona needs information from the page to fill in the form.** In that case, use a panel, so the page stays in view beside the form. For example, the persona picks table rows to combine, or compares a new record with the existing records.
 
 **Put the control that opens the form in the table header, on the right.** `recursica-skill-tables` sets the rule for that control, not the panels-and-modals skill. `recursica-skill-screen-priority` explains why a form used now and then gets no permanent space on the page.
 
@@ -200,7 +200,7 @@ A panel exists to sit beside the page the panel depends on. Below the width wher
 - [ ] The choice of page, panel, or modal for each task follows from mode and context. The choice does not follow from how hard or how big the task is.
 - [ ] Every modal exists because the persona must interact or decide in the modal before continuing.
 - [ ] The work in every panel depends on the page beside the panel, or the page depends on the panel's work.
-- [ ] No form that adds to or edits a collection on the page sits inline beside the collection. Each such form opens in a modal or panel, so that closing the modal or panel confirms the list changed.
+- [ ] No form that adds to or edits a collection on the page sits inline beside the collection. Each short form opens in a modal or panel, so that closing the modal or panel confirms the list changed. Each long form opens on a separate page.
 - [ ] No panel scrolls horizontally, under any circumstances.
 - [ ] No content in a panel causes scrolling up and down. Content that caused scrolling is on a page.
 - [ ] Every panel is flush against the left or right edge of the viewport. Every panel runs full height, from top to bottom.

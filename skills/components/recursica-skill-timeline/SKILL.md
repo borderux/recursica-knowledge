@@ -13,23 +13,23 @@ A timeline lists events that already happened, in order. Each event has a timest
 
 ## When to use a timeline
 
-- **Use a timeline when the reader must read a record over time as a sequence of events.** Examples are an audit trail, an incident log, the activity on one object, or a release history.
+- **Use a timeline when the persona must read a record over time as a sequence of events.** Examples are an audit trail, an incident log, the activity on one object, or a release history.
 - **Use a timeline when the order and the date of each event matter more than the event's details.** Each timeline entry is a short title, one line of description, and a time.
-- **Use a timeline when the screen reports milestones already reached.** The reader wants to know what happened and when.
+- **Use a timeline when the screen reports milestones already reached.** The persona wants to know what happened and when.
 
 ## When not to use a timeline
 
-| Situation                                                                                        | Use instead                                                                                        |
-| ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| The screen guides the persona through a process the persona is doing now                         | A stepper. See `recursica-skill-stepper`.                                                          |
-| The order of the entries does not matter                                                         | A list. A timeline shows an order of events, and an order that does not exist misleads the reader. |
-| A large number of records, or records the persona will sort, filter, or compare                  | A table. See `recursica-skill-tables`.                                                             |
-| Tabular data only, with the same fields in every entry                                           | A table. See `recursica-skill-tables`.                                                             |
-| Entries arrive in a stream that updates fast, such as chat messages or live logs                 | A table or an activity view built for a large number of entries, not a timeline.                   |
-| Each entry needs long text, media, or controls that belong to the entry                          | An accordion, or a page for each entry. See `recursica-skill-accordion`.                           |
-| The events branch, or the events depend on one another                                           | No linear component. A timeline shows only one sequence of events.                                 |
-| The dates are unknown or approximate                                                             | A grouped list. A grouped list makes no claim about the order of events.                           |
-| The design needs to separate repeating objects of the same kind visually, such as rows in a list | A card, if the objects pass the tests in `recursica-skill-card`, or a table.                       |
+| Situation                                                                                        | Use instead                                                                                         |
+| ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| The screen guides the persona through a process the persona is doing now                         | A stepper. See `recursica-skill-stepper`.                                                           |
+| The order of the entries does not matter                                                         | A list. A timeline shows an order of events, and an order that does not exist misleads the persona. |
+| A large number of records, or records the persona will sort, filter, or compare                  | A table. See `recursica-skill-tables`.                                                              |
+| Tabular data only, with the same fields in every entry                                           | A table. See `recursica-skill-tables`.                                                              |
+| Entries arrive in a stream that updates fast, such as chat messages or live logs                 | A table or an activity view built for a large number of entries, not a timeline.                    |
+| Each entry needs long text, media, or controls that belong to the entry                          | An accordion, or a page for each entry. See `recursica-skill-accordion`.                            |
+| The events branch, or the events depend on one another                                           | No linear component. A timeline shows only one sequence of events.                                  |
+| The dates are unknown or approximate                                                             | A grouped list. A grouped list makes no claim about the order of events.                            |
+| The design needs to separate repeating objects of the same kind visually, such as rows in a list | A card, if the objects pass the tests in `recursica-skill-card`, or a table.                        |
 
 **Group a very long history instead of making the timeline longer.** Group the events by month or by quarter, or split the timeline into pages with `recursica-skill-pagination`. Showing a thousand events at once is a problem with the structure of the screen. `recursica-skill-system-conventions` says to fix the structure instead of working around the problem.
 
@@ -54,7 +54,7 @@ The rules below describe each part and option by role, such as "the selected sta
 
 **Format every timestamp by the rules in `recursica-skill-dates-and-currency`:**
 
-- **Use relative time for recent events**, such as `15 minutes ago` or `yesterday`. Relative time saves the reader from working out how long ago the event happened.
+- **Use relative time for recent events**, such as `15 minutes ago` or `yesterday`. Relative time saves the persona from working out how long ago the event happened.
 - **After the switchover point (the point where relative time switches to an absolute date), show the absolute date**, such as `Jan 7, 2026`. Never use a date in numbers with slashes or hyphens. The numeric form appears only inside an input that has focus.
 - **State the time zone whenever the time is not in the persona's time zone.** Also state the time zone when the persona's time zone is unknown.
 - **When the place of the event matters, show the time in the time zone where the event happened.** Label the time zone. Do not convert the time. Give the persona a way to convert the time.
@@ -64,7 +64,7 @@ The rules below describe each part and option by role, such as "the selected sta
 
 **Treat the bullet as decoration.** An avatar bullet or an icon bullet can help show who or what an entry is about. The title and the description must still say who or what. `recursica-skill-system-conventions` forbids showing a meaning in only one channel (color, shape, position or text, each a separate signal). The bullet is the weakest channel in the timeline. See `recursica-skill-avatar` for the rules an avatar bullet must also follow.
 
-**Use one bullet type in the whole timeline.** Use a different bullet type only where text also states what the difference means. Without that text, the reader has to guess what each icon means.
+**Use one bullet type in the whole timeline.** Use a different bullet type only where text also states what the difference means. Without that text, the persona has to guess what each icon means.
 
 **Never put the timeline in a card.** Never put a form or a form control inside a timeline item. See `recursica-skill-card`.
 

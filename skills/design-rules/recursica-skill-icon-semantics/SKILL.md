@@ -25,7 +25,7 @@ The rules assume **complex enterprise web applications** built on a configured i
 
 **NEVER mix icon styles on the same screen.** An icon library offers several styles of the same icon. The styles include filled or solid, outline and thin. Other styles differ in corner roundness and line thickness. Mixed styles are the clearest sign that a screen was put together from parts rather than designed.
 
-**The one-style rule has no exception within a screen, and usually no exception within the system.**
+**Use one icon style across the whole system, with no exception.**
 
 **If the configured set has no icon for a meaning, do not bring in an icon from outside the set.** Raise the missing icon as a gap, and leave the gap unfilled. See `recursica-skill-design-router`.
 

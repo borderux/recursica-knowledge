@@ -97,7 +97,7 @@ Do not use a heading level to get the eyebrow text's size. A heading level used 
 
 **Write out the full term at the term's first use.** Later uses may be abbreviated.
 
-**Put the abbreviation in parentheses after the first full use.** The reader then learns what the short form will look like.
+**Put the abbreviation in parentheses after the first full use.** The persona then learns what the short form will look like.
 
 **Do not rely on a tooltip or an `aria-label` alone.** Not every persona knows to hover over an abbreviation to find out what the abbreviation means.
 

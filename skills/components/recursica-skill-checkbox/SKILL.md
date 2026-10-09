@@ -24,7 +24,7 @@ A checkbox turns one specific value on or off. A checkbox group lets the persona
 | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | Selecting one option rules out the other options, and the persona picks exactly one | A radio group. See `recursica-skill-radio-button`. Never use checkboxes when the persona picks exactly one option.      |
 | The change must take effect the moment the persona turns the setting on or off      | A switch. See `recursica-skill-switch`.                                                                                 |
-| There is one lone yes-or-no field, with no others beside the field                  | Usually a switch, in the form. See `recursica-skill-switch`.                                                            |
+| There is one lone yes-or-no field, with no others beside the field                  | A switch or a checkbox. Confirm the choice with the user. See `recursica-skill-switch`.                                 |
 | A checkbox group needs more options than the 7 ± 2 limit in the rules below         | A multi-select dropdown. See `recursica-skill-dropdown`. A multi-select dropdown is a checkbox group inside a dropdown. |
 | The options must sit side by side in a horizontal row                               | Selectable chips. See `recursica-skill-chip`. Never lay out a checkbox group in a horizontal row.                       |
 | The persona chooses an action, not a value                                          | A button. See `recursica-skill-button`.                                                                                 |
@@ -51,7 +51,7 @@ The rules below describe each option by role, such as "the checked state". The n
 
 ## Rules
 
-**Put at least two checkbox items in a checkbox group.** One checkbox alone is not a group. For a single yes-or-no field, consider a switch instead.
+**Put at least two checkbox items in a checkbox group.** One checkbox alone is not a group. For a single yes-or-no field, confirm with the user whether to use a switch instead.
 
 **Keep a checkbox group to 7 ± 2 options.** Lean toward fewer options when the options differ from each other, are hard to understand, or need specialist knowledge. If a checkbox group needs more options than the limit, use a multi-select dropdown instead. `recursica-skill-working-memory` gives the reason for the limit.
 

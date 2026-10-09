@@ -20,7 +20,7 @@ The house rules assume **complex enterprise web applications, designed for deskt
 ## Governing principles
 
 1. **Build a dashboard for reading at a glance, not for doing work.** Always lay out a dashboard the same way. Show the persona what needs attention right now. Then send the persona away from the dashboard to act.
-2. **Choose stability over novelty.** The data changes constantly. The layout must not change. Put the same content in the same places on every visit. A quick look at a dashboard works only when the reader already knows where to look.
+2. **Choose stability over novelty.** The data changes constantly. The layout must not change. Put the same content in the same places on every visit. A quick look at a dashboard works only when the persona already knows where to look.
 3. **Decide what matters, or do not build a dashboard.** A dashboard is the team's statement of what matters. Showing data and leaving the persona to work out what the data means is the lazy answer. The lazy answer has made most modern dashboards worthless.
 
 ## The workbench test
@@ -48,13 +48,13 @@ The fallback presents the three failures as a feature. Do not clutter a screen t
 
 ## Dashboard content
 
-**Aim for one item that needs attention, plus maybe two or three supporting items.** Aim for each item to be one the persona can act on. For example, show "Inventory is running low — reorder these products," with a way to go and reorder the products. An inventory chart that the reader must interpret does not meet this aim.
+**Aim for one item that needs attention, plus maybe two or three supporting items.** Aim for each item to be one the persona can act on. For example, show "Inventory is running low — reorder these products," with a way to go and reorder the products. An inventory chart that the persona must interpret does not meet this aim.
 
 **A dashboard MUST answer "what needs attention right now, and is everything okay."**
 
 **Do not announce that nothing needs attention.** A dashboard that announces good news adds noise.
 
-**Where a value has a healthy range, show the threshold and the direction the value is moving.** A status without a trend is close to useless. A green status light says nothing about whether the number is falling toward yellow. The threshold and the direction let the reader act before the status changes.
+**Where a value has a healthy range, show the threshold and the direction the value is moving.** A status without a trend is close to useless. A green status light says nothing about whether the number is falling toward yellow. The threshold and the direction let the persona act before the status changes.
 
 **NEVER add an AI summary of the dashboard.** A widget that summarizes the dashboard shows that the dashboard failed to communicate. Fix the dashboard.
 
@@ -64,13 +64,13 @@ The fallback presents the three failures as a feature. Do not clutter a screen t
 
 **Never use inner scrolling (a region that scrolls separately from the page) on any screen in the application.** The ban covers every screen, not only dashboards. Give the application one scrollbar, plus sticky regions that stay in place. Do not make the persona hover over a region before the region scrolls. See `recursica-skill-screen-priority`.
 
-**Numbers shown together must agree with each other.** Check the math between the numbers before shipping. Two counts side by side invite the reader to compare the two counts. A number that is a subset of another number must clearly look like a subset. For example, a dashboard reports three pending and eighteen overdue, where overdue is a subset of pending. The pair of counts reports an impossible result, not a labeling problem. The reader then stops trusting every number on the screen. `recursica-skill-naming-terminology` owns naming. `recursica-skill-screen-scaffolding` owns the layout of a group of numbers.
+**Numbers shown together must agree with each other.** Check the math between the numbers before shipping. Two counts side by side invite the persona to compare the two counts. A number that is a subset of another number must clearly look like a subset. For example, a dashboard reports three pending and eighteen overdue, where overdue is a subset of pending. The pair of counts reports an impossible result, not a labeling problem. The persona then stops trusting every number on the screen. `recursica-skill-naming-terminology` owns naming. `recursica-skill-screen-scaffolding` owns the layout of a group of numbers.
 
 **Before putting any chart on a dashboard, confirm that the application has a charting library.** Recursica does not provide charts. A chart needs a separate charting library. If the application declares no charting library, confirm with the user that the project should add a charting library. Confirm with the user before designing the dashboard around charts that cannot be built yet. See `recursica-skill-data-visualization`.
 
-**Put at most four charts on a dashboard.** With more than four charts, the reader is doing analysis, not glancing.
+**Put at most four charts on a dashboard.** With more than four charts, the persona is doing analysis, not glancing.
 
-**Four cards across the top of a dashboard is good. Six to eight cards is the limit.** Order the page so the content that is fastest to read comes first. A single number is read in a second. A table takes much longer to read.
+**Show as many cards as the data needs, and never more than eight.** Order the page so the content that is fastest to read comes first. A single number is read in a second. A table takes much longer to read.
 
 **Prefer a number to a chart.** If a percentage, a count or a quantity gives the information, show the number in a larger type size. Show the number instead of a chart. A chart that repeats a number right next to the chart adds nothing.
 
@@ -82,11 +82,11 @@ The fallback presents the three failures as a feature. Do not clutter a screen t
 
 ## Structure
 
-**Order the dashboard from broad to detailed.** Put the summary at the top, and show more detail as the reader moves down the page.
+**Order the dashboard from broad to detailed.** Put the summary at the top, and show more detail as the persona moves down the page.
 
-**All content below the fold (the part of the page visible only after scrolling) is optional.** The reader must never have to scroll to learn what is going on.
+**All content below the fold (the part of the page visible only after scrolling) is optional.** The persona must never have to scroll to learn what is going on.
 
-**A data table probably does not belong on a dashboard.** A data table is a drill-down (a click through to more detail). Where a data table cannot be avoided, show rollups with a way to click through to the detail. Rollups are counts, percentages and totals that the persona can act on themselves. A screen that shows a full table is no longer a dashboard.
+**Never put a full data table on a dashboard.** Show rollups instead, with a way to click through to the detail. Rollups are counts, percentages and totals that the persona can act on themselves. A data table is a drill-down (a click through to more detail). A screen that shows a full table is no longer a dashboard.
 
 ## Interaction
 
@@ -104,7 +104,7 @@ The fallback presents the three failures as a feature. Do not clutter a screen t
 
 ## Stability and customization
 
-**A dashboard MUST be stable across visits.** Keep the same objects in the same places on every visit. A reader can read a snapshot quickly only when the reader already knows the layout.
+**A dashboard MUST be stable across visits.** Keep the same objects in the same places on every visit. A persona can read a snapshot quickly only when the persona already knows the layout.
 
 **NEVER let a dashboard rearrange the dashboard's content between visits.** Content chosen on the fly must not be the main dashboard. Examples are widgets picked by AI and arrangements that change. Content chosen on the fly is acceptable in two forms:
 
@@ -181,7 +181,7 @@ Check every item before treating a dashboard as done.
 - [ ] The team can say what matters on the dashboard. No element on the dashboard is there to cover for not knowing what matters.
 - [ ] The dashboard answers "what needs attention right now", and does not announce that nothing needs attention.
 - [ ] Each status shows the status's threshold and trend, not only the current state.
-- [ ] The dashboard has at most four charts. The dashboard has four cards across the top, and never more than eight cards.
+- [ ] The dashboard has at most four charts. The dashboard never has more than eight cards.
 - [ ] Simple metrics are shown as numbers in larger type, not as charts that repeat the numbers.
 - [ ] The layout is fixed and has a real hierarchy. The layout is not a grid made only of equally weighted cards.
 - [ ] Content runs from broad to detailed, and no essential content sits below the fold.

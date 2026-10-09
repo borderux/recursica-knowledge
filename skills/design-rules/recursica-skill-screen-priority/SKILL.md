@@ -120,15 +120,15 @@ Base density on the use case, not on a threshold.
 
 ## Permanent space for frequent tasks
 
-**Rank content by how often the reader needs the content.** Do not rank content by how much the content matters when the reader needs the content. An occasional task can be important and still not get a permanent region on the screen. Importance is a reason to make the task easy to find. A well-placed trigger makes the task easy to find.
+**Rank content by how often the persona needs the content.** Do not rank content by how much the content matters when the persona needs the content. An occasional task can be important and still not get a permanent region on the screen. Importance is a reason to make the task easy to find. A well-placed trigger makes the task easy to find.
 
 **A rarely used form MUST NOT be kept permanently on the screen.** Forms for creating a record, importing and configuring are each occasional and each large. A form for creating, importing or configuring takes up space on every visit. Almost no visit needs the form's task. Keep the trigger for the form visible. Open the form in a modal or a panel when the persona asks for the form. See `recursica-skill-panels-modals`.
 
-**A screen breaks the frequency ranking when the frequent task has to share space with a rare task.** For example, a create form sits permanently below the table the reader came for. The create form gives the rare task the same permanent space as the common task.
+**A screen breaks the frequency ranking when the frequent task has to share space with a rare task.** For example, a form that adds a record sits permanently below the table the persona came for. The form gives the rare task the same permanent space as the common task.
 
 **Ranking by frequency is not the same as the removal test** in the three tenets above. The removal test asks whether a piece of information is needed at all. Ranking by frequency applies to content that is needed. Ranking by frequency asks only whether the content is needed _now_, on arrival, every time.
 
-**Readers miss any content placed below a region of changing length.** The bottom of a table with an unknown number of rows is at an unpredictable position. A reader unaware of the content below the region has no reason to scroll to the end of a list. Put the content in one of two places instead:
+**Personas miss any content placed below a region of changing length.** The bottom of a table with an unknown number of rows is at an unpredictable position. A persona unaware of the content below the region has no reason to scroll to the end of a list. Put the content in one of two places instead:
 
 - above the region of changing length
 - in a region that holds content and opens over the region of changing length. Examples are a page, a panel and a modal.
@@ -237,7 +237,7 @@ With one message for both states, the persona cannot tell whether to change the 
 - [ ] The screen has no playful or decorative content.
 - [ ] No rarely used element holds permanent space on the screen.
 - [ ] Occasional forms for creating, importing and configuring open from a visible trigger into a modal or a panel.
-- [ ] No content the reader must find sits below a region of changing length.
+- [ ] No content the persona must find sits below a region of changing length.
 - [ ] Progressive disclosure uses an existing component, and a long form replaces a stepper where the information refers back and forth.
 - [ ] Beyond the header, footer, and navigation rail, the screen has at most one sticky element.
 - [ ] The application has one scrollbar, and no inner scrolling region.

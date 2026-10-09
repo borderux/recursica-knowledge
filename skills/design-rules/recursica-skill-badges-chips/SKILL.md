@@ -23,7 +23,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 1. **Choose between a badge and a chip by whether the persona can act on the component.** A badge is only displayed. The persona acts on a chip. A status is a fact the system reports, and a selection is a choice the persona makes. A status the persona can click is the wrong component for a status, not a design variation.
 2. **A badge holds one value, and chips hold several values.** One object carries at most one badge. When an object has more than one value, use chips.
-3. **Use position to show which object each badge or chip belongs to.** Put the object first and the object's status right after the object, on the same line. Place the object and the status close together, so the reader reads the pair like a sentence.
+3. **Use position to show which object each badge or chip belongs to.** Put the object first and the object's status right after the object, on the same line. Place the object and the status close together, so the persona reads the pair like a sentence.
 4. **Prefer an icon to a badge.** A badge draws a lot of attention, and a badge is not the default. Use a badge only where the information needs that much attention. Decide between an icon and a badge first, before deciding between a badge and a chip.
 
 ## Badge or chip
@@ -54,13 +54,13 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 **Prefer an icon. Use a badge only in the cases listed below.**
 
-**A badge demands a lot of attention.** A badge is a filled, bordered, colored box with a word in the box, sized to be noticed. A badge is right for one important fact, and wrong for eight. Each badge on a screen takes some of the reader's attention. The data the reader came for then gets less attention. A badge stands out only when few other badges are on the screen.
+**A badge demands a lot of attention.** A badge is a filled, bordered, colored box with a word in the box, sized to be noticed. A badge is right for one important fact, and wrong for eight. Each badge on a screen takes some of the persona's attention. The data the persona came for then gets less attention. A badge stands out only when few other badges are on the screen.
 
-**Use an icon by default.** An icon shows the same fact and draws far less attention. Using icons by default keeps badges for the facts the reader must notice. `recursica-skill-icon-semantics` sets the rules for the icon and the icon's meaning.
+**Use an icon by default.** An icon shows the same fact and draws far less attention. Using icons by default keeps badges for the facts the persona must notice. `recursica-skill-icon-semantics` sets the rules for the icon and the icon's meaning.
 
 **Use a badge for the object's one main status, when both of the following are true:**
 
-- The reader's next decision depends on the status.
+- The persona's next decision depends on the status.
 - A word rather than a symbol makes the status clear.
 
 Use one badge per object, as principle 2 requires.
@@ -101,12 +101,12 @@ Each of the values in the list above should be an icon, a column, or plain text.
 
 **Give a status a separate column only when most table rows have a status.** Before adding a status column, check how many table rows have a status. `recursica-skill-tables` rejects a column that is empty for most table rows. A rare exception therefore never gets a column. Show a rare exception as an icon beside the object's identifying value, inside the identifying value's table cell. The rules below in this section apply to a status that the whole table carries.
 
-**Put the status near the left edge of the table, in the second or third column.** People read left to right. A reader scanning a table looks at the left edge first.
+**Put the status near the left edge of the table, in the second or third column.** People read left to right. A persona scanning a table looks at the left edge first.
 
 - **If the table has a bulk-selection checkbox, keep the first column for the checkbox.**
 - Place the status **right before or right after the information that identifies the object.** If the identifying information is in the first column, put the status in the second column. If the identifying information is in the second column, the status can come first.
 
-The status must sit where a reader sees at once which object the status belongs to. `recursica-skill-tables` sets the rules for column order and column widths.
+The status must sit where a persona sees at once which object the status belongs to. `recursica-skill-tables` sets the rules for column order and column widths.
 
 ## Placement beside the object
 
@@ -117,9 +117,9 @@ The status must sit where a reader sees at once which object the status belongs 
 
 **Show the object first, then the object's status.** The object and the badge must sit close together, side by side. The pair then forms a sentence: _the heading has the status of `<badge>`_.
 
-**NEVER stack a badge above or below the badge's object.** Stack a badge only for a real lack of space, as on mobile or in a similarly compact layout. A stacked badge makes the eye scan in a different pattern. The reader can then no longer tell which object the badge belongs to.
+**NEVER stack a badge above or below the badge's object.** Stack a badge only for a real lack of space, as on mobile or in a similarly compact layout. A stacked badge makes the eye scan in a different pattern. The persona can then no longer tell which object the badge belongs to.
 
-**Do not put a badge above a heading and a chip below the heading.** The layout is an anti-pattern called competing status. The badge and the chip compete to be the object's main status. The reader cannot tell which one is the main status.
+**Do not put a badge above a heading and a chip below the heading.** The layout is an anti-pattern called competing status. The badge and the chip compete to be the object's main status. The persona cannot tell which one is the main status.
 
 ## Placement in cards
 
@@ -141,7 +141,7 @@ The status must sit where a reader sees at once which object the status belongs 
 
 **Never use a chip to show an error.**
 
-**A badge for an error is an exception at best.** Badges show extra metadata, not negative conditions. A reader easily mistakes a badge that says "Error" for a positive marker.
+**A badge for an error is an exception at best.** Badges show extra metadata, not negative conditions. A persona easily mistakes a badge that says "Error" for a positive marker.
 
 **Prefer a stronger treatment designed to show an error**, such as an icon or another visual treatment that draws attention. If a design needs an error state on an object, design the error state instead of using a badge.
 
@@ -180,7 +180,7 @@ The Recursica badge and chip components provide the keyboard behavior below. Bot
 
 Check every item below before treating status and metadata as done.
 
-- [ ] Every badge on the screen shows a main status. The reader's next decision depends on that status, and an icon would not do.
+- [ ] Every badge on the screen shows a main status. The persona's next decision depends on that status, and an icon would not do.
 - [ ] No rare exception, no role or type that is a field value, and no count is shown as a badge.
 - [ ] Every icon that replaces a badge sits beside the value that identifies the object. No such icon is alone in a cell or in a column that is empty for most rows.
 - [ ] No badge is interactive, selectable, or dismissible.

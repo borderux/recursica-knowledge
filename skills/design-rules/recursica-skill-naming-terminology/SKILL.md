@@ -67,9 +67,9 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 | `Corrections needing review` | `Corrections to review` | an "-ing" form where a "to" form is shorter                                  |
 | `Your corrections`           | `Corrections`           | a possessive that repeats what the screen already makes clear                |
 
-**NEVER speak to the reader in a label.** `Your`, `you`, `my`, and `I` are the most common filler words in a label. A screen belongs to the person looking at the screen. A possessive points to a difference that exists only when the same screen also shows another party's items. If the same screen does show another party's items, make the difference the qualifier. Name the other party in the qualifier. Write `Corrections` beside `Team corrections`, not `Your corrections` beside `All corrections`.
+**NEVER speak to the persona in a label.** `Your`, `you`, `my`, and `I` are the most common filler words in a label. A screen belongs to the person looking at the screen. A possessive points to a difference that exists only when the same screen also shows another party's items. If the same screen does show another party's items, make the difference the qualifier. Name the other party in the qualifier. Write `Corrections` beside `Team corrections`, not `Your corrections` beside `All corrections`.
 
-**A label that cannot be made shorter is usually two labels, or two columns that should be one column.** A `Lines` column next to an `Untagged lines` column shows two facts and makes the reader subtract. One `Tagged lines` column that shows `11 / 34` has one heading and does the math for the reader. Combine two columns this way before writing a longer column header.
+**A label that cannot be made shorter is usually two labels, or two columns that should be one column.** A `Lines` column next to an `Untagged lines` column shows two facts and makes the persona subtract. One `Tagged lines` column that shows `11 / 34` has one heading and does the math for the persona. Combine two columns this way before writing a longer column header.
 
 **Label wording matters most for table headers.** Table headers are read more often than any other label on the screen, and table headers have the least room. This skill and `recursica-skill-tables` jointly own label wording for table headers.
 
@@ -130,7 +130,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 - [ ] Every label is a noun, with the noun present. No label other than a button label holds a verb. No label is an adjective standing alone.
 - [ ] No label holds a filler word. Every word in a label makes the label more accurate.
 - [ ] Every label and table header is a noun phrase of two or three words, with one qualifier at most. No label or table header holds a relative clause or a sentence. No label or table header holds `Your`, `you` or `my`, unless the same screen shows another party's items and names the other party.
-- [ ] Where the reader would otherwise subtract one column from another, one combined column does the math. The two columns are not kept with longer headings.
+- [ ] Where the persona would otherwise subtract one column from another, one combined column does the math. The two columns are not kept with longer headings.
 - [ ] No label, heading, or page title has a definition next to the name. The line under a page title or a section heading holds no definition of the title or heading.
 - [ ] Every object is named in the personas' vocabulary, not the business's or the data model's.
 - [ ] The data model's term appears only where the persona does not already know the concept from everyday use.

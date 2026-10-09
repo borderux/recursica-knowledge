@@ -68,7 +68,7 @@ The rules below describe each option by role, such as "the error state". The nam
 - The persona's time zone cannot be found.
 - The persona has switched time zones.
 
-**Do not convert a time to the persona's time zone when the place where the event happened matters.** Show the time in the time zone where the event happened, with the time zone labeled. Give the persona a way to switch the time to the persona's own time zone. An event at 11:00 p.m. local time, converted to 8:00 p.m. for the reader, leads the reader to the wrong conclusion. See `recursica-skill-dates-and-currency`.
+**Do not convert a time to the persona's time zone when the place where the event happened matters.** Show the time in the time zone where the event happened, with the time zone labeled. Give the persona a way to switch the time to the persona's own time zone. An event at 11:00 p.m. local time, converted to 8:00 p.m. for the persona, leads the persona to the wrong conclusion. See `recursica-skill-dates-and-currency`.
 
 **Show seconds only when the values being compared are under a minute, across several objects.** Once one value shows seconds, every value in the compared group shows seconds.
 
@@ -125,7 +125,7 @@ The time picker's width is fixed.
 - `recursica-skill-dates-and-currency` — the date and time format rules:
   - 12-hour versus 24-hour clocks
   - time zones
-  - when not to convert a time to the reader's time zone
+  - when not to convert a time to the persona's time zone
   - seconds
   - the format of a duration
   - the rule that focus decides the format

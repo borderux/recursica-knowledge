@@ -69,7 +69,7 @@ The sections below describe a correct chart, whichever library draws the chart.
 
 ## Chart type
 
-**Pie and donut charts are effectively banned.** Use a pie or donut chart only with two segments, or very rarely three. Even then, use the pie or donut chart only where the difference in value is large enough to see. Use a different chart in every other case.
+**Use a pie or donut chart only with two segments, or rarely three.** Use the chart only where the difference in value is large enough to see. Otherwise, use a different chart.
 
 - **The segments of a pie or donut chart MUST add up to 100%.** A pie chart whose segments do not add up to the whole is invalid.
 - **Do not put the chart's value in the donut hole.** A two-segment donut chart labeled "75%" in the hole tells the story twice and adds nothing. The donut hole may hold a _different_ kind of value: a written summary, such as an overall status.
@@ -142,19 +142,19 @@ Encoding is how the data becomes visual marks: position, length, color and patte
 
 **Tooltip content MUST be extra detail only.** Put any information needed to understand the story in the chart itself.
 
-**A chart that can only be read by hovering is an anti-pattern.** A chart whose meaning the persona must piece together by hovering over each element in turn is inaccessible. The persona must also remember each value to compare the value with the next one. The axes and the legend show the story, and the tooltip adds detail.
+**Make every chart readable without hovering.** The axes and the legend show the story, and the tooltip only adds detail. A chart whose meaning the persona must piece together by hovering over each element in turn is inaccessible. The persona must also remember each value to compare the value with the next one.
 
 **Hover aids are welcome.** Hover aids include a highlight on the hovered element and a guide line that helps the persona find a value.
 
 **Highlight or isolate on interaction, not permanently.** Show emphasis on hover, on click or through an isolate control (a control that singles out the selected data). Emphasis is part of exploring the chart. A permanent visual difference adds clutter.
 
-**Be careful about permanently emphasizing particular chart elements.** Random differences in lightness or color strength suggest a ranking that the data does not support. Permanent emphasis must have a stated reason.
+**Give every permanently emphasized chart element a stated reason.** Random differences in lightness or color strength suggest a ranking that the data does not support.
 
 **A drill-down does not conflict with a simple chart.** A drill-down lets the persona click through to more detail. A good chart lets the persona explore. Let the persona click through to the underlying data. The chart itself does not need to change.
 
 ## Missing and incomplete data
 
-**Data with large gaps should not be charted at all.**
+**Never chart data with large gaps.** If the gaps might be large or might be only a few missing points, confirm with the user.
 
 **A chart of data that lags behind must say that the data lags**, clearly and visibly.
 

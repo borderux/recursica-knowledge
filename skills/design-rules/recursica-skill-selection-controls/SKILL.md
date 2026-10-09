@@ -48,7 +48,7 @@ Work down this list. The first match decides the control.
 
 **A checkbox turns a true/false flag on or off for one specific value.** The checkbox value can be any value. For that reason, a checkbox works in a group, and a switch does not.
 
-**A lone binary field is the one case where appearance may decide.** A lone binary field is a checkbox group that holds only one checkbox. A lone checkbox looks odd. In a form, a switch usually looks better. A checkbox and a switch work the same way for a lone binary field.
+**A lone binary field is the one case where appearance may decide.** A lone binary field is a checkbox group that holds only one checkbox. A lone checkbox looks odd, and a switch often looks better. A checkbox and a switch work the same way for a lone binary field. Confirm the choice with the user.
 
 ## Checkbox vs. radio
 
@@ -74,7 +74,7 @@ Work down this list. The first match decides the control.
 - **Options that are similar and easy to understand** → the upper end of the range is fine.
 - **Options that are different from each other, hard to grasp, or need specialist knowledge** → use fewer.
 
-**Above the option limit, use a dropdown.** A dropdown handles a long list of options well. A dropdown is usually single select. A multi-select dropdown (a checkbox group inside a dropdown) is available when the persona can select many values.
+**Above the option limit, use a dropdown.** A dropdown handles a long list of options well. A dropdown is single select by default. A multi-select dropdown (a checkbox group inside a dropdown) is available when the persona can select many values.
 
 **Before choosing a dropdown, apply the dropdown affordance test.** The test asks whether the persona knows the options before clicking the dropdown. A dropdown hides the options. The persona has no affordance (a visible cue that a control can be used, such as the underline on a link) for the options inside the dropdown.
 
@@ -88,13 +88,13 @@ Work down this list. The first match decides the control.
 - how hard the options are to tell apart
 - the overall size of the form
 
-Six options that are easy to read normally get a checkbox group. If the form is already long, a multi-select dropdown for the six options is acceptable. The dropdown saves a lot of scrolling down the page.
+For example, six options that are easy to read fit a checkbox group. If the form is already long, a multi-select dropdown for the six options is acceptable. The dropdown saves a lot of scrolling down the page.
 
 ## Select all and indeterminate state
 
 **A checkbox group may include a select-all control.** The checkbox group has the indeterminate state (the partly selected state, shown as a dash, when some but not all items are selected). When the persona selects all and then deselects one checkbox, the select-all control moves to the indeterminate state.
 
-**Treat the need for select all as a warning sign.** If checking each checkbox one by one would tire the persona, a checkbox group is probably the wrong control. Twenty checkboxes would tire the persona, for example. Rethink the form design before adding a select-all control.
+**Treat the need for select all as a warning sign.** If checking each checkbox one by one would tire the persona, question whether a checkbox group is the right control. Twenty checkboxes would tire the persona, for example. Rethink the form design before adding a select-all control.
 
 ## Selection in tables
 
