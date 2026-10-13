@@ -9,77 +9,84 @@ metadata:
 
 # Link
 
-A link takes the persona to a different location. A link never changes data.
+A link takes the persona to a different location, such as another page. A link never changes data.
 
 ## When to use a link
 
 - **The link goes to a different location.** The new location is another page, a section of the same page, an outside website, or a file to download.
-- **The link sits inside a sentence**, as a link to a source, definition, or related object the text mentions.
+- **The link sits inside a sentence.** The link goes to a source, a definition, or a related object the text mentions. For example, "Acme Corp" in "Ordered by Acme Corp" links to the customer's page.
 - **The link stands apart from any sentence**, as in a menu, a footer, or a "view all" link beside a heading.
-- **The persona goes from a table row to a related object.** A link has less visual weight than a button. A dense table needs less visual weight in each table row.
+- **The persona goes from a table row to a related object**, such as from an order to the order's customer. A link has less visual weight than a button. A dense table needs less visual weight in each table row.
 
 ## When not to use a link
 
-| Situation                                                     | Use instead                                                                                                                                                      |
-| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A control changes data or state                               | A button. See `recursica-skill-button`.                                                                                                                          |
-| A control that changes data or state needs less visual weight | A button in the least prominent button style, such as `text` in the standard UI kit (the unchanged UI kit in the official Recursica release). Do not use a link. |
-| A control opens a modal on the same page                      | A button. A modal is not a location.                                                                                                                             |
-| A link's destination is unavailable right now                 | Leave the link out, or explain in text why the destination is unavailable. Never disable the link.                                                               |
-| The persona switches between parts of one whole on one page   | Tabs. Each tab has a separate route. See `recursica-skill-tabs`.                                                                                                 |
+| Situation                                                                                           | Use instead                                                                                                                                                      |
+| --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A control changes data or state                                                                     | A button. See `recursica-skill-button`.                                                                                                                          |
+| A control that changes data or state needs less visual weight                                       | A button in the least prominent button style, such as `text` in the standard UI kit (the unchanged UI kit in the official Recursica release). Do not use a link. |
+| A control opens a modal on the same page                                                            | A button. A modal is not a location.                                                                                                                             |
+| A link's destination is unavailable right now                                                       | Leave the link out, or explain in text why the destination is unavailable. Never disable the link.                                                               |
+| The persona switches between parts of one whole on one page, such as an order's Details and History | Tabs. Each tab has a separate route. See `recursica-skill-tabs`.                                                                                                 |
 
-**A link that changes state is the misuse to watch for.** Build Save, Delete, Close, and Apply as buttons, even when a link would look better.
+**Watch for a link that changes state.** Build Save, Delete, Close, and Apply as buttons, even when a link would look better.
 
 ## Variants
 
-**Use only the link variants and options that the Recursica MCP server lists for the project.** A designer can add variants and options in Theme Forge, so each project can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
+**Use only the link variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
 
 The rules below describe each option by role. The names in the standard UI kit are examples only.
 
-- **A visited state.** The standard UI kit calls the visited state `visited`.
-- **Never disable a link, even when the project adds a disabled state in Theme Forge.** The rule "Never disable a link" under "Rules" gives the reason.
-- **The browser and the link component set every part of the link's look and behavior not named in this list.**
+- **The visited state shows a link the persona has opened before.** The standard UI kit calls the visited state `visited`.
+- **Never disable a link, even when a designer adds a disabled state to the theme in Theme Forge.** The rule "Never disable a link" under "Rules" gives the reason.
+- **The browser and the link component set each part of the link's look and behavior not named in this list.**
 - **An icon may sit before or after the link's label.** Only the design-system website shows the two icon positions.
-- **Two link behaviors appear only on the design-system website.** An internal link goes to a location within the product. An external link is marked as leaving the product.
+- **The design-system website shows two kinds of link: internal and external.** Only the website shows the two kinds. An internal link goes to a location within the product, such as the Orders page. An external link is marked as leaving the product.
 
 ## Rules
 
-**Always give a link a real `href`, never a click handler on text.** A real `href` lets the persona right-click, middle-click, and open the link in a new tab. A real `href` also lets the persona copy the link address and see the browser's preview of the destination. With a real `href`, assistive technology announces the link as a link.
+**Always give a link a real `href`, never a click handler on text.** The `href` is the address the link goes to. With a real `href`, the persona can:
+
+- right-click or middle-click the link
+- open the link in a new tab
+- copy the link address
+- see the browser's preview of the destination.
+
+With a real `href`, assistive technology also announces the link as a link.
 
 **Write the label as the name of the destination, with no verb.** Write "Billing settings", not "Go to billing settings". Never write "Click here" or "Learn more". The persona decides what to do after arriving at the destination.
 
-**Give each link a unique label that makes sense without the text around the link.** Personas using a screen reader bring up lists of links without the text around each link. Three links that all say "View" tell a persona using a screen reader nothing.
+**Give each link a unique label that makes sense without the text around the link.** For example, write "Invoice 1042", not "View". Personas using a screen reader bring up a list of the page's links, without the text around each link. Three links that all say "View" tell a persona using a screen reader nothing.
 
-**Never open a new tab automatically**, unless a new tab is clearly the only possible behavior. The persona chooses a new tab with the browser's context menu or a modifier key.
+**Never open a new tab automatically**, unless a new tab is clearly the only possible behavior. The persona chooses a new tab with the browser's context menu or a modifier key, such as Ctrl or Cmd.
 
-**Mark an external link as external.** The mark tells the persona, before the persona clicks, that the link leaves the product. Only the design-system website shows the external link behavior. No rule yet sets the icon or the wording for the mark. See the open questions.
+**Mark an external link as external.** An external link leaves the product, such as a link to an outside help site. The mark tells the persona, before the persona clicks, that the link leaves the product. No rule yet sets the icon or the wording for the mark. See the open questions.
 
-**Never disable a link.** The persona can always go to a related object. If the destination should not exist for the persona viewing the page, do not show the link at all. See `recursica-skill-navigation`.
+**Never disable a link.** The persona can always go to a related object. If the destination should not exist for the persona viewing the page, do not show the link at all. For example, a persona with no billing access sees no "Billing settings" link. See `recursica-skill-navigation`.
 
-**A link can be the primary call to action (CTA) when the CTA goes to a new location.** A CTA is the main button or link that prompts the persona's next step. A prominent CTA that goes to a new location is still a link. The CTA's prominence comes from the layout, not from restyling the link to look like a button.
+**A link can be the primary call to action (CTA) when the CTA goes to a new location.** A CTA is the main button or link that prompts the persona's next step. A prominent CTA that goes to a new location is still a link. For example, a "Pricing plans" CTA on a home page opens the pricing page. The CTA stands out because of the layout, not because the link is restyled to look like a button.
 
 ## Accessibility
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
-Every Recursica link already shows the underline, the color, and the focus ring. The app's code writes the HTML markup for each link. A link built from the wrong HTML element fails every kind of assistive technology at once.
+Every Recursica link already shows the underline, the color, and the focus ring. The app's code writes the HTML markup for each link. A link built from the wrong HTML element fails with every kind of assistive technology.
 
 ### Screen readers
 
 - **Every link must be a real anchor (the HTML element for a link) with an `href`.** A `div` or `span` with a click handler is not announced as a link. The `div` or `span` does not appear in a screen reader's list of links. The keyboard cannot reach the `div` or `span`.
-- **The accessible name (the name a screen reader reads out for a control) must name the destination**, and must make sense when read completely out of context. "Click here" is forbidden, because "Click here" makes no sense out of context. In a list of links, a persona using a screen reader cannot use a link named "Click here".
-- **Two links with the same name must go to the same destination.** Some links to different destinations share a label, such as "View" in every table row. The accessible name or the context of the row holding the link must tell those links apart.
-- **Unless an icon is a link's only content, the icon is decorative and must be hidden from screen readers.** An icon that is the link's only content must have the link's accessible name.
-- **If a link opens in a new tab or downloads a file, state the new tab or the download.** Put the statement in the accessible name or in text right next to the link. A new tab or a download that nobody announces confuses a persona using a screen reader. A persona using a screen reader has no visual sign that the window changed.
+- **The accessible name (the name a screen reader reads out for a control) must name the destination.** The accessible name must make sense when read completely out of context. "Click here" is forbidden, because "Click here" makes no sense out of context. In a list of links, a persona using a screen reader cannot use a "Click here" link.
+- **Two links with the same name must go to the same destination.** Some links to different destinations share a label, such as "View" in every row of an orders table. The accessible name or the context of the row holding the link must tell those links apart. For example, the accessible name of each "View" link names the order, such as "Order 1042".
+- **An icon inside a link must be hidden from screen readers, unless the icon is the link's only content.** The hidden icon is decorative. An icon that is the link's only content must have the link's accessible name.
+- **If a link opens in a new tab or downloads a file, state the new tab or the download.** For example, write "Help center (opens in a new tab)". Put the statement in the accessible name or in text right next to the link. A persona using a screen reader has no visual sign that the window changed. A new tab or a download that nobody announces confuses that persona.
 - **Never mark an external link by color or icon alone.** `recursica-skill-system-conventions` requires a second channel (color, shape, position or text, each a separate signal).
 
 ### Keyboard and non-mouse navigation
 
 - **Every link is a tab stop (a place the Tab key lands) because every link has an `href`.** Do not remove a link from the tab order. Never add a tabindex to force an order.
 - **Enter activates a link. Space does not.** Browsers activate a link with Enter only, and the browser behavior is correct. A link that needs a Space handler is a button.
-- **Do not intercept the modifier keys.** Ctrl, Cmd, Shift, and middle-click must reach the browser. The persona then decides where the destination opens.
+- **Do not intercept the modifier keys.** Ctrl, Cmd, Shift, and middle-click must reach the browser. The persona then decides where the destination opens, such as in a new tab.
 - **A link that appears only on hover cannot be reached** by keyboard or by touch. Links inside text and in rows, such as table rows, must stay visible.
-- **Focus must be visible on the link**, not only implied by the underline. Never hide the focus ring.
+- **Focus must be visible on the link.** The underline alone does not show focus. Never hide the focus ring.
 - **After navigation, focus belongs at the start of the new content**, not on the old page.
 
 ## Styling set by tokens
@@ -96,7 +103,7 @@ Every Recursica link already shows the underline, the color, and the focus ring.
 
 - **The icon for an external link.** No rule says which icon marks an external link, or whether the icon is required or optional. `recursica-skill-icon-semantics` sets what icons mean, but names no icon for an external link.
 - **Download links.** No rule says whether a download link shows the file type and size, or where.
-- **A size or emphasis style for links.** No rule says whether a link may have a size variant or an emphasis style. Confirm a size variant with the user only when the project has no size variant. Confirm an emphasis style with the user only when the project has no emphasis style.
+- **A size or emphasis style for links.** No rule says whether a link may have a size variant or an emphasis style. Confirm a size variant with the user only when the theme has no size variant. Confirm an emphasis style with the user only when the theme has no emphasis style.
 - **Links inside a paragraph in a table cell.** No rule covers a link inside a sentence in a cell of a dense table.
 
 ## Pre-flight checklist
@@ -110,7 +117,7 @@ Every Recursica link already shows the underline, the color, and the focus ring.
 - [ ] No link is disabled. Each link to an unavailable destination is left out, or text on the page explains why the destination is unavailable.
 - [ ] No link appears only on hover, and the focus ring shows on every focused link.
 - [ ] After navigation, focus lands at the start of the new content.
-- [ ] Every variant and state is one the Recursica MCP server lists for the project, under the name the code uses.
+- [ ] Every variant and state is one the Recursica MCP server lists for the theme, under the name the code uses.
 - [ ] No variant or option is invented.
 - [ ] No styling is set or overridden on the link.
 - [ ] No container or spacer is added to change the link's look.
