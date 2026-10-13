@@ -9,49 +9,58 @@ metadata:
 
 # Tree
 
-A tree shows data as parent items and child items. The persona opens a parent item to see the parent item's children. The persona opens only the parent items the persona needs.
+A tree shows items inside other items, such as folders inside folders. A parent item holds child items. The persona opens a parent item to see the parent item's children. The persona opens only the parent items the persona needs.
 
 ## When to use a tree
 
-- **The data is a true hierarchy.** The meaning of a node (one item in the tree) depends on the node's parent. For example, a folder sits inside a folder, or a category sits inside a category.
-- **The depth of the hierarchy varies, and the persona needs to see where an item sits in the hierarchy.** Knowing only that the item exists is not enough for the persona.
+- **The data is a true hierarchy.** The meaning of a node (one item in the tree) depends on the node's parent. For example, a folder sits inside a folder, or a category sits inside a category. A "2026" folder inside "Invoices" holds the invoices from 2026.
+- **The depth of the hierarchy varies, and the persona needs to see where an item sits in the hierarchy.** For example, the persona needs to know that a file sits in "Invoices", then "2026". Knowing only that an item exists is not enough for the persona.
 - **The persona is exploring, not comparing.** A tree helps the persona find one item. A table helps the persona compare many items.
-- **Content must show and hide at more than one level.** `recursica-skill-navigation` states that an accordion has one level unless the project has a nesting option. When the content has several levels, use a tree.
+- **Content must show and hide at more than one level.** For example, a section opens to show subsections, and a subsection opens to show pages. `recursica-skill-navigation` states that an accordion has one level unless the theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes) has a nesting option. When the content has several levels, use a tree.
 
 ## When not to use a tree
 
 | Situation                                                                                                         | Use instead                                                                                                                                                    |
 | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | The records are peers (objects of the same kind, such as rows in a list), with no parent records or child records | A table. See `recursica-skill-table`.                                                                                                                          |
-| Sections of content are stacked at one level                                                                      | An accordion. An accordion shows and hides sections at one level. See `recursica-skill-accordion`.                                                             |
-| The persona moves between areas of the application                                                                | Navigation. See `recursica-skill-navigation`.                                                                                                                  |
-| The persona chooses one value from a hierarchy in a form                                                          | A dropdown or an autocomplete, unless the hierarchy itself is the point of the choice. Confirm with the user whether the hierarchy is the point of the choice. |
+| Sections of content are stacked at one level, such as the questions on a help page                                | An accordion. See `recursica-skill-accordion`.                                                                                                                 |
+| The persona moves between areas of the application, such as Orders and Settings                                   | Navigation. See `recursica-skill-navigation`.                                                                                                                  |
+| The persona chooses one value in a form, and the values form a hierarchy, such as product categories              | A dropdown or an autocomplete, unless the hierarchy itself is the point of the choice. Confirm with the user whether the hierarchy is the point of the choice. |
 | The hierarchy is only two levels deep                                                                             | A grouped list, or navigation with sub-items.                                                                                                                  |
 | The persona moves items between two sets                                                                          | A transfer list. See `recursica-skill-transfer-list`.                                                                                                          |
 
-**Flat data in a tree is a list with indentation that means nothing.** When no item has children, the data is not a tree.
+**When no item has children, the data is not a tree.** Flat data shown in a tree is a list with indentation that means nothing.
 
 ## Variants
 
-**Use only the tree variants and options that the Recursica MCP server lists for the project.** A designer can add variants and options in Theme Forge, so each project can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
+**Use only the tree variants and options that the Recursica MCP server lists for the theme.** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
 
 The rules below describe each variant and option by role, such as "the selected option". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
 - **A node is selected or not selected.** In the standard UI kit, the variant is `selection-states`, with the options `unselected` and `selected`.
 - **A node's expand control is separate from the node's label.** The expand control opens and closes the node. Selecting a node and expanding a node are different actions, with a mouse and with the keyboard. The two actions differ because the expand control is separate from the label.
-- **If the project has an expanded state or a collapsed state, use the project's state.** Otherwise, do not invent a rotation or a second icon token (a named design value, such as a color or a size, set by the design system) to show an open node. See "Open questions".
+- **If the theme has an expanded state or a collapsed state, use the theme's state.** Otherwise, do not invent a rotation or a second icon token (a named design value, such as a color or a size, set by the design system) to show an open node. See "Open questions".
 
 ## Rules
 
-**Show every node collapsed by default.** Open only the nodes the persona needs for the current task. `recursica-skill-navigation` sets the collapsed-by-default rule for trees and accordions. Opening every node adds no value, because the parent node labels then have no reason to exist.
+**Show every node collapsed by default.** Open only the nodes the persona needs for the current task.
 
-**Keep the number of visible nodes at each level within 7 ± 2.** A tree is built for many levels. But every visible node at one level adds to the load on working memory (how much a person can hold in mind at once). See `recursica-skill-working-memory`.
+- `recursica-skill-navigation` sets the collapsed-by-default rule for trees and accordions.
+- Opening every node adds no value, because the parent node labels then have no reason to exist.
 
-**Label a node with what the node is, not where the node sits.** Do not label a node "Level 2". Do not add numbers that repeat the node's place in the nesting.
+**Keep the number of visible nodes at each level within 7 ± 2.** For example, a folder that shows 30 subfolders at once breaks the limit. A tree is built for many levels. But every visible node at one level adds to the load on working memory (how much a person can hold in mind at once). See `recursica-skill-working-memory`.
 
-**A node label must be clear enough to choose the node while the node's children are hidden.** If the persona has to expand a node to learn what the node holds, rewrite the label.
+**Label a node with what the node is, not where the node sits.** Do not label a node "Level 2". Name what the node is instead, such as "Invoices". Do not add numbers that repeat the node's place in the nesting, such as "2.3.1".
 
-**Use a tree for a real hierarchy, and an accordion for showing and hiding sections at one level.** `recursica-skill-navigation` states that an accordion has one level unless the project has a nesting option. The navigation skill also states that content with several levels uses a tree. Never nest an accordion to look like a tree, and never put a tree inside an accordion panel. If the sections are peers at one level, use an accordion. See `recursica-skill-accordion`. The choice between a tree and an accordion is settled, and every case is one or the other.
+**A node label must be clear enough to choose the node while the node's children are hidden.** For example, a node labeled "Misc" makes the persona open the node to learn what the node holds. If the persona has to expand a node to learn what the node holds, rewrite the label.
+
+**Use a tree for a real hierarchy, and an accordion for showing and hiding sections at one level.** For example, a folder structure uses a tree, and the questions on a help page use an accordion. `recursica-skill-navigation` states that an accordion has one level unless the theme has a nesting option. The navigation skill also states that content with several levels uses a tree.
+
+- Never nest an accordion to look like a tree.
+- Never put a tree inside an accordion panel.
+- If the sections are peers at one level, use an accordion. See `recursica-skill-accordion`.
+
+The choice between a tree and an accordion is settled. Every case is one or the other.
 
 **Do not put a form, a table, or a card inside a tree node.** A node is a label, not a container.
 
@@ -65,7 +74,7 @@ The rules below describe each variant and option by role, such as "the selected 
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
-A tree has the most specific keyboard rules of any component. The tree's keyboard rules are also the keyboard rules most often ignored. A persona using a keyboard or a screen reader cannot use a tree of nested `div` elements that respond to clicks. A tree built that way has no level, no expand state, and no keyboard access.
+The tree has the most specific keyboard rules of any component, and the keyboard rules most often ignored. A persona using a keyboard or a screen reader cannot use a tree of clickable nested `div` elements. A tree built that way has no level, no expand state, and no keyboard access.
 
 ### Screen readers
 
@@ -74,9 +83,9 @@ A tree has the most specific keyboard rules of any component. The tree's keyboar
 - **A node with children must report whether the node is expanded or collapsed.** A node with no children must not report that the node can expand.
 - **The selected state must be set in code**, never shown only by the selected node's fill or color.
 - **An expand control that is separate from the node needs a separate accessible name** (the name a screen reader reads out for a control). The expand control's accessible name must include the node's label, as in "Expand Marketing", not "Expand".
-- **Announce the change when a node expands.** Announce how many child nodes appeared, or at least announce that the node is expanded.
-- **A node's icon is decorative and must be hidden from screen readers.** The expand state tells a persona using a screen reader that a node has children. A folder icon does not tell a persona using a screen reader that a node has children.
-- **The tree needs an accessible name** that says which hierarchy the tree shows.
+- **Announce the change when a node expands.** Announce how many child nodes appeared, as in "Marketing expanded, 4 items". At the least, announce that the node is expanded.
+- **A node's icon is decorative and must be hidden from screen readers.** The expand state tells a persona using a screen reader that a node has children. A folder icon does not.
+- **The tree needs an accessible name** that says which hierarchy the tree shows, as in "Product categories".
 
 ### Keyboard and non-mouse navigation
 
@@ -97,7 +106,7 @@ A tree has the most specific keyboard rules of any component. The tree's keyboar
 - `recursica-skill-navigation` covers six topics:
   - nodes collapsed by default
   - sub-levels that open on click and not on hover
-  - the rule that an accordion has one level unless the project has a nesting option
+  - the rule that an accordion has one level unless the theme has a nesting option
   - the rule that content with several levels uses a tree
   - routing when the tree is navigation
   - permissions
@@ -111,11 +120,11 @@ A tree has the most specific keyboard rules of any component. The tree's keyboar
 
 ## Open questions
 
-- **The look of an expanded node compared with a collapsed node.** The look of an expanded node is the biggest open question about the tree. Confirm with the user only when the project has no expanded state.
-- **Choosing several items in a tree**, with or without checkboxes. The design rules do not cover choosing several items in a hierarchy. Confirm with the user only when the project has no option for choosing several items.
+- **The look of an expanded node compared with a collapsed node.** The look of an expanded node is the biggest open question about the tree. Confirm with the user only when the theme has no expanded state.
+- **Choosing several items in a tree**, with or without checkboxes. The design rules do not cover choosing several items in a hierarchy. Confirm with the user only when the theme has no option for choosing several items.
 - **A maximum depth.** No rule sets a maximum number of levels. A tree with no limit on levels is a real usability problem.
 - **Selecting a parent node.** No rule says whether a parent node can be selected, or only a node with no children.
-- **Loading children only when a node opens**, and what the node shows while the children load. When the project has a loading state, confirm with the user only whether children load when a node opens.
+- **Loading children only when a node opens**, and what the node shows while the children load. When the theme has a loading state, confirm with the user only whether children load when a node opens.
 - **Dragging to reorder nodes or move a node to a new parent.** If dragging is allowed, `recursica-skill-system-conventions` also requires a way to reorder and move nodes without dragging.
 - **The empty state of the tree**, and what an expanded node with no children shows.
 - **Treat every open question above as a question nobody has answered.** Never treat an open question as a decision that someone forgot to write down. The design-system website adds nothing about the tree. Unlike most component skills, the tree skill has the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) as the only source.
@@ -136,5 +145,5 @@ A tree has the most specific keyboard rules of any component. The tree's keyboar
 - [ ] No part of the tree appears only on hover. Sub-levels open on click.
 - [ ] No styling is set or overridden on the tree. No container or spacer is added to change the tree's look.
 - [ ] Indentation comes from the theme, and no expanded state or icon was invented.
-- [ ] Every variant, option, and state is one the Recursica MCP server lists for the project. No variant or option is invented.
+- [ ] Every variant, option, and state is one the Recursica MCP server lists for the theme. No variant or option is invented.
 - [ ] Open questions were asked about, not decided: the look of an expanded node, choosing several items, a maximum depth, selecting a parent node, loading children when a node opens, dragging to reorder or move a node, and the empty state.
