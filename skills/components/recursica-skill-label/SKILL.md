@@ -9,7 +9,7 @@ metadata:
 
 # Label
 
-A label names a form field. A label is a Recursica component, not plain text placed beside an input.
+A label names a form field, such as "Email address" above or beside the email field. A label is a Recursica component, not plain text placed beside an input.
 
 ## When to use a label
 
@@ -29,21 +29,31 @@ A label names a form field. A label is a Recursica component, not plain text pla
 
 ## Variants
 
-**Use only the label variants and options that the Recursica MCP server lists for the project.** A designer can add variants and options in Theme Forge, so each project can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
+**Use only the label variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
 
 The rules below describe each option by role, such as "the smaller size". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only. The code can use a different name from the name in Figma and the standard UI kit. A wrong name in code has no effect and shows no error.
 
-- **A label sits beside the field or above the field, the same two placements every field has.** In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`. Set the label's placement to match the field's placement. The label's placement and the field's placement are one decision, not two. The form makes the placement decision, not the label. See the placement rules under "Rules".
+- **A label sits beside the field or above the field.** Every field has the same two placements. In the standard UI kit, the variant is `layouts`, with the options `side-by-side` and `stacked`.
+  - Set the label's placement to match the field's placement.
+  - The label and the field share one placement decision, not two.
+  - The form makes the placement decision, not the label. The placement rules are under "Rules".
 - **A label comes in a default size and a smaller size.** In the standard UI kit, the variant is `sizes`, with the options `default` and `small`. No rule says when to use the smaller size. The question is listed under "Open questions".
-- **In the standard UI kit, a label has a required indicator and an optional text.** The form decides which of the two to use, not the field.
+- **In the standard UI kit, a label has a required indicator and an optional text.** The required indicator is a mark such as an asterisk. The optional text is a word such as "Optional". The form decides which of the two markers to use, not the field.
 - **In the standard UI kit, a label can hold an edit icon.** The edit icon is an edit control. No rule says what the edit control is for. The question is listed under "Open questions".
-- **If the project has a disabled state for the label, use the label's disabled state.** Otherwise, the field sets the label's color in each of the field's states.
+- **If the theme has a disabled state for the label, use the label's disabled state.** Otherwise, the field sets the label's color in each of the field's states.
 
 **Set label placement explicitly on every field.** The house rule puts the label beside the input. The code library under an adapter may put the label above the input by default, at every container width. Set the label beside the input on every field. Use the names the code uses for the variant and the option.
 
 ## Rules
 
-**Put the label beside the field by default.** The label sits to the left of the field, on the same line. Right-align the label text, so the label sits close to the field. Put the label above the field only in a narrow form container. A form container is narrow when the label and the field do not fit side by side. The width of the form's container decides, not the width of the viewport. `recursica-skill-forms` sets this rule.
+**Put the label beside the field by default.** The label sits to the left of the field, on the same line.
+
+- Right-align the label text, so the label sits close to the field.
+- Put the label above the field only in a narrow form container.
+- A form container is narrow when the label and the field do not fit side by side. This check is the container-width test.
+- The width of the form's container decides, not the width of the viewport. For example, a narrow drawer can stack labels in a wide viewport.
+
+`recursica-skill-forms` sets this rule.
 
 **Label placement is one decision per form.** A form uses side-by-side labels or stacked labels, never both at the same breakpoint.
 
@@ -60,19 +70,27 @@ Mixing the two placements in one form causes three problems:
 
 `recursica-skill-forms` sets the one-placement rule.
 
-**Name exactly what the field holds.** The label must make sense without the content around the label. A persona using a screen reader hears the label alone. If the label has a verb, use a clear, active verb. Never use a passive verb. Never use a linking verb (a verb such as "is" or "seems" that connects words instead of showing an action).
+**Name exactly what the field holds.** For example, write "Shipping address", not "Address" under a "Shipping" heading.
 
-**Write the label in sentence case, with no colon at the end.** Keep the label short enough to fit on one line.
+- The label must make sense without the content around the label. A persona using a screen reader hears the label alone.
+- If the label has a verb, use a clear, active verb, such as "Send me order updates".
+- Never use a passive verb, such as "Order updates are sent".
+- Never use a linking verb (a verb such as "is" or "seems" that connects words instead of showing an action).
 
-**In each form, mark only the exception: the required fields or the optional fields, never both.** If most fields in a form are required, mark the few optional fields. If most fields are optional, mark the few required fields.
+**Write the label in sentence case, with no colon at the end.** For example, write "Email address", not "Email Address:". Keep the label short enough to fit on one line.
+
+**In each form, mark only the exception: the required fields or the optional fields, never both.**
+
+- If most fields in a form are required, mark the few optional fields.
+- If most fields are optional, mark the few required fields.
 
 **Avoid cluttering the form with asterisks.** When nearly every field in a form is required, use one signal for the whole form. One example signal is a bold label for a required field and a regular-weight label for an optional field. State the signal once.
 
-**If an entire form section may not apply, mark the whole group of fields as optional.** Mark the group once, instead of marking every field in the group.
+**If an entire form section may not apply, mark the whole group of fields as optional.** For example, a "Company details" section may not apply to a persona buying for a home. Mark the group once, instead of marking every field in the group.
 
-**Give each control one label.** A compound control is several inputs that make up one value, such as a date, a time and AM/PM. A compound control gets one label for all of the inputs.
+**Give each control one label.** A compound control is several inputs that make up one value, such as a date, a time and AM/PM. A compound control gets one label for all of the inputs, such as "Appointment time".
 
-**A group label is not an item label.** A checkbox group has a group label, and each checkbox in the group has an item label. Do not use a group label as an item label, or an item label as a group label.
+**A group label is not an item label.** A checkbox group has a group label, and each checkbox in the group has an item label. For example, the group label is "Notifications", and the item labels are "Email" and "Text message". Do not use a group label as an item label, or an item label as a group label.
 
 ## Accessibility
 
@@ -86,15 +104,17 @@ A persona using a screen reader can use a field only when the field has a label.
 - **Never replace a label with text that is only visual.** Text placed next to an input is not a label. If the field component takes a label, use the field component's label.
 - **The label must make sense when read alone**, out of order and out of context. A persona using a screen reader can hear a label with no text around the label. The rule to name exactly what the field holds exists for that reason.
 - **The required state must be available in code, not only shown by an indicator.** The asterisk or the bold weight is the visual channel (color, shape, position or text, each a separate signal). The field must also mark in code that the field is required. `recursica-skill-system-conventions` forbids relying on a single channel.
-- **An optional marker must also be available in code.** If a word marks a field as optional, the word must be part of the label the screen reader announces. The word must not be a separate fragment of text.
+- **An optional marker must also be available in code.** If a word marks a field as optional, the word must be part of the label the screen reader announces. For example, the screen reader announces "Phone number, optional". The word must not be a separate fragment of text.
 - **Do not hide the label visually.** Sighted personas using a keyboard and personas using voice control need the visible label too. A visible label is a house requirement.
-- **A group label must be announced when focus enters the group.** Placing the group label before the group in the reading order is not enough. Without the announcement, the persona hears the options without the question the options answer.
-- **Do not cram instructions into the label.** Put the rules for a field in an assistive element (`recursica-skill-assistive-element`). A screen reader announces a long label in full every time the persona reaches the field.
+- **A group label must be announced when focus enters the group.** For example, the screen reader announces "Delivery speed" when focus enters a group of radio buttons. Placing the group label before the group in the reading order is not enough. Without the announcement, the persona hears the options without the question the options answer.
+- **Do not cram instructions into the label.** Put the rules for a field in an assistive element (`recursica-skill-assistive-element`). For example, label a field "Password", and put "At least 8 characters" in the assistive element. A screen reader announces a long label in full every time the persona reaches the field.
 
 ### Keyboard and non-mouse navigation
 
 - **The label is not a tab stop** (a place the Tab key lands). The label cannot receive focus by itself.
-- **Clicking or tapping the label must move focus to the label's control.** A label connected in code moves focus to the control. The connected label also gives the persona a bigger area to click or tap. Do not show the label as text that is not connected to the control. Text that is not connected does not move focus and gives no bigger area to click or tap.
+- **Clicking or tapping the label must move focus to the label's control.** For example, clicking "Email address" puts the cursor in the email field.
+  - A label connected in code moves focus to the control. The connected label also gives the persona a bigger area to click or tap.
+  - Do not show the label as text that is not connected to the control. Unconnected text does not move focus and gives no bigger area to click or tap.
 - **An edit icon on a label is a control.** The edit icon must be a separate tab stop with a separate accessible name.
 - **A stacked label must not change the tab order.** Label placement changes only the look. The order is the label, then the field, for both placements.
 
@@ -127,9 +147,10 @@ A persona using a screen reader can use a field only when the field has a label.
 - [ ] Every form control and every group of form controls has a real label. The label is given to the field component or the group component.
 - [ ] Each label's placement matches the field's placement, and labels sit beside fields unless the form's container is too narrow.
 - [ ] Every label in a form uses the same placement at each breakpoint. No form mixes placements between fields or form sections. No field's width or height changes the placement of the field's label.
-- [ ] Each label names the object, makes sense when read alone, uses active verbs, and has no colon at the end.
+- [ ] Each label names what the field holds and makes sense when read alone.
+- [ ] Each label uses active verbs and has no colon at the end.
 - [ ] Each form marks only the exception, the required fields or the optional fields, never both.
-- [ ] The form has no clutter of asterisks. Where one signal applies across the form, the form states the signal once.
+- [ ] The form is not cluttered with asterisks. Where one signal applies across the form, the form states the signal once.
 - [ ] The required state and the optional state are available in code, not shown only by the visual marker.
 - [ ] No label is visually hidden, and no label has rules or instructions crammed into the label.
 - [ ] A compound control has one label, and no group label is used as an item label.
