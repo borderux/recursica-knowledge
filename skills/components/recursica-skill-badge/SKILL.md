@@ -9,13 +9,13 @@ metadata:
 
 # Badge
 
-A badge shows one read-only value about an object, such as a status or a count. The badge sits on the object. The system sets the value, and the persona never acts on the badge.
+A badge shows one read-only value about an object, such as a status or a count. For example, an order row shows "Shipped", and a Members tab shows "12". The badge sits on the object. The system sets the value, and the persona never acts on the badge.
 
 ## When to use a badge
 
-- **One value describes the object.** The value is a status the system owns, a count, or one short attribute.
-- **The badge sits on the object the badge describes.** Example objects include a table row, a list item, a heading, a tab, a navigation item, and a card. A badge never stands alone.
-- **Space on the screen is tight.** A badge is small and uses small text, which suits a dense screen.
+- **One value describes the object.** The value is a status the system owns, such as "Approved", a count, or one short attribute.
+- **The badge sits on the object the badge describes.** Examples are a table row, a list item, a heading, a tab, a navigation item and a card. A badge never stands alone.
+- **Space on the screen is tight.** A badge is small and uses small text, so a badge suits a crowded screen.
 
 ## When not to use a badge
 
@@ -23,8 +23,8 @@ A badge shows one read-only value about an object, such as a status or a count. 
 | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | The persona selects, toggles, or dismisses the value           | A chip. See `recursica-skill-chip`.                                                                |
 | The object has several values                                  | Chips. A badge holds one value.                                                                    |
-| The value is an error or a failure                             | An icon, or a treatment built for errors. See the rule on errors below.                            |
-| The text is long, or a phrase                                  | Plain text. A badge never holds a sentence.                                                        |
+| The value is an error or a failure, such as "Failed"           | An icon, or a treatment built for errors. See the rule on errors under "Rules".                    |
+| The text is long, or is a phrase                               | Plain text. A badge never holds a sentence.                                                        |
 | The text labels a page or a section                            | A heading. A badge describes an object, not a page, a section, or any other view.                  |
 | The text is the title of a region, a group, or a panel section | A heading. **Never a badge.** A badge gives a fact about an object. A badge never names an object. |
 
@@ -32,35 +32,50 @@ A badge shows one read-only value about an object, such as a status or a count. 
 
 ## Variants
 
-**Use only the badge variants and options that the Recursica MCP server lists for the project.** A designer can add variants and options in Theme Forge, so each project can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
+**Use only the badge variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
 
 The rules below describe each option by role, such as "the problem style" or "the warning style". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
 - **Each intent has one badge style.** An intent is the kind of meaning a style shows: positive, a warning, a problem, or neutral. The standard UI kit has four styles: `primary-color`, `warning`, `success`, and `alert`. In the standard UI kit, the problem style is `alert`, the warning style is `warning`, and the success style is `success`.
-- **Most projects have more statuses than styles.** For example, an order process has seven statuses: Pending, Approved, Ordered, Shipped, Delivered, Blocked, and Canceled. The standard UI kit has four styles. As a result, two different statuses share a style and look the same.
-- **Never give a badge a disabled state, an interactive state, or a hover effect.** The ban holds even when the project lists such a state or effect. A badge has no states, because a badge is not a control.
+- **Most applications have more statuses than the theme has badge styles.** For example, an order process has seven statuses: Pending, Approved, Ordered, Shipped, Delivered, Blocked, and Canceled. The standard UI kit has four styles. As a result, two different statuses share a style and look the same.
+- **Never give a badge a disabled state, an interactive state, or a hover effect.** The ban holds even when the theme lists such a state or effect. A badge has no states, because a badge is not a control.
 
 ## Rules
 
-**A badge's style must agree with the sentiment of the badge's value.** The sentiment is whether the value is good, bad, or neutral. Never give a positive value the negative style. The problem style means a problem. An approved, complete, or successful value must never use the problem style. A badge in the wrong style contradicts the badge text, and personas notice the color before personas read the word. Which status gets which intent is not decided, and is listed under the open questions. The rule that the intent must never contradict the badge text is settled.
+**A badge's style must agree with the sentiment of the badge's value.** The sentiment is whether the value is good, bad, or neutral. The problem style means a problem.
 
-**Repeating a style is safe only because the badge text always shows the difference between statuses.** Map several statuses to one intent on purpose. Let the badge text name the status. Never use color to tell Ordered apart from Shipped. `recursica-skill-system-conventions` requires the badge text, not color, to tell statuses apart.
+- Never give a positive value the negative style.
+- Never give an approved, complete, or successful value the problem style.
 
-**Do not invent an intent that the project does not list.** An unlisted intent has no badge style to choose. Making a new intent means working around the badge component. A color for an unlisted intent is not a missing token to report. The standard UI kit keeps the number of styles small on purpose. See `recursica-skill-design-router` on style overrides.
+A badge in the wrong style contradicts the badge text. Personas notice the color before personas read the word.
+
+Which status gets which intent is not decided, and is listed under the open questions. The rule that the intent must never contradict the badge text is settled.
+
+**Several statuses can share one style only because the badge text always names each status.**
+
+- Map several statuses to one intent on purpose.
+- Let the badge text name the status.
+- Never use color to tell "Ordered" apart from "Shipped".
+
+`recursica-skill-system-conventions` requires the badge text, not color, to tell statuses apart.
+
+**Do not invent an intent that the theme does not list.** For example, do not create an "on hold" intent for an "On hold" status. An unlisted intent has no badge style to choose. Making a new intent means working around the badge component. A color for an unlisted intent is not a missing token to report. The standard UI kit keeps the number of styles small on purpose. See `recursica-skill-design-router` on style overrides.
 
 **Use one badge per object.** Two values side by side mean the object has more than one value. Use chips for more than one value.
 
-**Never use a badge to show an error.** Use an icon, or a stronger treatment built for errors. A badge looks like positive information about an object. "Error" in a badge looks like an achievement. The ban holds even though the warning style and the problem style exist. The purpose of the warning style and the problem style is an open question, listed below.
+**Never use a badge to show an error**, such as "Error" or "Failed". Use an icon, or a stronger treatment built for errors.
 
-**Put the badge right after the object the badge describes, on the same line.** Never stack the badge above or below the object.
+A badge looks like positive information about an object. "Error" in a badge looks like an achievement. The ban holds even though the warning style and the problem style exist. What the warning style and the problem style are for is an open question, listed below.
 
-**Give every count a unit.** Put the unit in the badge text, in the object, or in another place, such as a column header. Make the badge part of the object, not a separate element placed beside the object. A badge that shows "12" has a meaning only because of the object the badge sits on.
+**Put the badge right after the object the badge describes, on the same line.** For example, an "Overdue" badge sits right after "Invoice 1043". Never stack the badge above or below the object.
 
-**Keep the value to one or two words, or a number.** A value that does not fit the badge's small text does not belong in a badge.
+**Give every count a unit.** For example, a "12" badge on a Members tab counts members. Put the unit in the badge text, in the object, or in another place, such as a column header. Make the badge part of the object, not a separate element placed beside the object. A badge that shows "12" has a meaning only because of the object the badge sits on.
 
-**When a status changes, swap the badge to the new value with no animation.** Use no pulse, no flash, and no transition.
+**Keep the value to one or two words, or a number**, such as "Shipped", "On hold" or "12". A value that does not fit the badge's small text does not belong in a badge.
 
-**A badge on a tab or a navigation item describes the content the tab or navigation item leads to.** The badge is not a second control. The persona can never click the badge separately, even when the persona can click the tab the badge sits on.
+**When a status changes, swap the badge to the new value with no animation.** For example, "Pending" changes to "Approved" at once. Use no pulse, no flash, and no transition.
+
+**A badge on a tab or a navigation item describes the content the tab or navigation item leads to.** For example, a "3" badge on an Inbox tab counts items in the Inbox. The badge is not a second control. The persona can never click the badge separately, even when the persona can click the tab the badge sits on.
 
 ## Accessibility
 
@@ -70,23 +85,23 @@ A badge is text, not a control. For most components, the accessibility risk is t
 
 ### Screen readers
 
-- **Announce the badge as part of the object the badge describes**, not as a separate item. "Members, 12" and "Invoice 1043, overdue" are useful. A "12" heard alone is not.
+- **Announce the badge as part of the object the badge describes**, not as a separate item. For example, a screen reader says "Members, 12" or "Invoice 1043, overdue". A "12" heard alone is not useful.
 - **Announce a count with the unit**, as in "3 unread messages", not "3". When a screen reader reads the page in order, the persona cannot see the object that makes the number clear.
 - **Never rely on the style to show the meaning.** The word in the badge must state the whole meaning, as `recursica-skill-system-conventions` requires. The success style and the problem style are colors, and a persona using a screen reader hears only the text.
 - **Never use a badge that shows only an icon.** A badge with no text gives a screen reader nothing to announce.
-- **If a badge changes while the persona is on the page, announce the change politely or not at all.** A count that updates often must never interrupt the persona, and must never be announced on every increase.
-- **Do not add a second, screen-reader copy of the badge text while both copies stay in the reading order.** The persona hears the badge text twice.
+- **If a badge changes while the persona is on the page, announce the change politely or not at all.** A polite announcement waits for a pause instead of interrupting. A count that updates often, such as an unread count, must never interrupt the persona. The count must never be announced on every increase.
+- **Do not add a second, screen-reader copy of the badge text while both copies stay in the reading order.** The persona hears the badge text twice, as in "Overdue, overdue".
 
 ### Keyboard and non-mouse navigation
 
 - **A badge cannot receive focus, and the tab order skips the badge.** Never give a badge a `tabindex`, a click handler, or a role that suggests a persona can act on the badge.
 - **If a badge seems to need focus, the badge is the wrong component.** Use a chip instead.
-- **A badge inside a control is part of the control's accessible name** (the name a screen reader reads out for a control). Example controls include a tab, a navigation item, and a row link. The badge is not a separate stop inside the control.
+- **A badge inside a control is part of the control's accessible name** (the name a screen reader reads out for a control). Examples are a tab, a navigation item and a row link. The badge is not a separate stop inside the control.
 - **Never show a badge only on hover.** The purpose of a badge is to be seen at a glance.
 
 ## Styling set by tokens
 
-**Never set or override the badge's styling.** The theme sets every visual property of the badge, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the badge's look. If the design needs a look the theme does not give, raise the gap. See `recursica-skill-design-router`.
+**Never set or override the badge's styling.** The theme sets every visual property of the badge, such as size, spacing, borders, colors and animation. Do not add extra containers or spacers to change the badge's look. If the design needs a look the theme does not give, report the missing look as a design-system gap. See `recursica-skill-design-router`.
 
 ## Related skills
 
@@ -95,12 +110,12 @@ A badge is text, not a control. For most components, the accessibility risk is t
 
 ## Open questions
 
-- **The mapping of statuses to intents.** The principle is settled. The intent agrees with the sentiment of the value, and the problem style never shows a positive value. Which intent each status gets is not decided. When a project has more statuses than intents, the mapping must be stated, not invented while building.
+- **The mapping of statuses to intents.** The principle is settled. The intent agrees with the sentiment of the value, and the problem style never shows a positive value. Which intent each status gets is not decided. For example, the intent for "Pending" is not decided. When the application has more statuses than the theme has intents, the mapping must be stated, not invented while building.
 - **What the warning style and the problem style are for**, given that a badge must not show an error. Use neither style until the question has an answer.
-- **A size variant, with default and large, and a content variant, with message and counter.** Only the design-system website shows the two variants. If the project lists a size variant or a content variant, use the listed variant. If the project does not list the variant, do not assume the variant is available. Confirm with the user before relying on an unlisted variant.
-- **A limit on counts.** Whether a large number is shortened, and how.
-- **An icon in a badge.** Whether a badge may show an icon beside the badge text.
-- **A count of zero.** Whether a count badge is hidden at zero, or shown.
+- **A size variant, with default and large, and a content variant, with message and counter.** Only the design-system website shows the two variants. If the theme lists a size variant or a content variant, use the listed variant. If the theme does not list the variant, do not assume the variant is available. Confirm with the user before relying on an unlisted variant.
+- **A limit on counts.** Is a large number, such as 1,250, shortened? If so, how?
+- **An icon in a badge.** May a badge show an icon beside the badge text?
+- **A count of zero.** Is a count badge hidden at zero, or shown?
 
 ## Pre-flight checklist
 
@@ -111,15 +126,15 @@ A badge is text, not a control. For most components, the accessibility risk is t
 - [ ] The badge text alone states the full meaning, and no meaning depends on color.
 - [ ] No badge is the title of a region, a group, or a section. A heading is the title.
 - [ ] Every badge's intent agrees with the sentiment of the badge's value, and no positive value uses the problem style.
-- [ ] Where a project has more statuses than intents, the mapping of statuses to intents is deliberate.
-- [ ] Where a project has more statuses than intents, the badge text tells the statuses apart.
-- [ ] No badge uses an invented intent that the project does not list.
+- [ ] Where the application has more statuses than the theme has intents, the mapping of statuses to intents is deliberate.
+- [ ] Where the application has more statuses than the theme has intents, the badge text tells the statuses apart.
+- [ ] No badge uses an invented intent that the theme does not list.
 - [ ] Every count includes the unit in what a screen reader announces.
 - [ ] A screen reader announces each badge as part of the badge's object, not as a separate fragment.
 - [ ] No badge has a `tabindex`, a click handler, or a role that suggests a persona can act on the badge.
 - [ ] A status change swaps the badge with no animation, and any live update is announced politely or not at all.
-- [ ] Every badge uses a style the project lists.
-- [ ] No badge relies on a size variant or a content variant that the project does not list.
+- [ ] Every badge uses a style the theme lists.
+- [ ] No badge relies on a size variant or a content variant that the theme does not list.
 - [ ] No styling is set or overridden on any badge.
 - [ ] No container or spacer is added to change a badge's look.
 - [ ] Open questions were asked about, not decided: the mapping of statuses to intents, what the warning style and the problem style are for, a size variant and a content variant, a limit on counts, an icon beside the badge text, and a count of zero.
