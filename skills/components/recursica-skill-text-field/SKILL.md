@@ -9,31 +9,31 @@ metadata:
 
 # Text field
 
-A text field records free-form text on a single line.
+A text field holds one line of text that the persona types freely.
 
 ## When to use a text field
 
 - **The value is unpredictable**, such as a name, an address, a description or a reference. No fixed list of options could cover every value.
-- **Typing is faster than choosing.** The persona knows the value well. The persona can type the value faster than pick the value from a list or another control.
+- **Typing is faster than choosing.** The persona knows the value well. The persona types the value faster than picking the value from a list or another control.
 - **The text is short and fits on one line.**
 
 ## When not to use a text field
 
-Use the component in the right column instead of adapting a text field.
+Use the component in the right column. Do not change a text field to fit the situation.
 
-| Situation                                                                             | Use instead                                                                               |
-| ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| The value comes from a known list of options                                          | A dropdown, a radio group, or an autocomplete. See `recursica-skill-selection-controls`.  |
-| The answer is yes or no                                                               | A switch or a checkbox                                                                    |
-| The content runs to several lines                                                     | `recursica-skill-textarea`                                                                |
-| The value is a quantity the persona types — a count, an amount, a rate, a measurement | `recursica-skill-number-input`. Free-form entry is wrong for a value used in calculations |
-| The persona viewing the field can never edit the value                                | A read-only field, a separate component that shows text with no input                     |
+| Situation                                                                 | Use instead                                                                              |
+| ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| The value comes from a known list of options, such as a country           | A dropdown, a radio group, or an autocomplete. See `recursica-skill-selection-controls`. |
+| The answer is yes or no                                                   | A switch or a checkbox                                                                   |
+| The text runs to several lines, such as a comment                         | `recursica-skill-textarea`                                                               |
+| The persona types a quantity: a count, an amount, a rate or a measurement | `recursica-skill-number-input`. Free-form text is wrong for a value used in calculations |
+| The persona viewing the field can never edit the value                    | A read-only field, a separate component that shows text with no input                    |
 
-**Never use a disabled text field to show a value.** A value nobody can ever edit where the value is shown does not belong in a form control.
+**Never use a disabled text field to show a value.** A value that nobody can ever edit where the value is shown does not belong in a form control. An order's creation date is one example.
 
 ## Variants
 
-**Use only the text field variants, options and states that the Recursica MCP server lists for the project.** A designer can add variants and options in Theme Forge, so each project can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. The code can use a different name from the name in Figma and the UI kit. A wrong name in code has no effect and shows no error. Never invent a variant or an option.
+**Use only the text field variants, options and states that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. The code can use a different name from the name in Figma and the UI kit. A wrong name in code has no effect and shows no error. Never invent a variant or an option.
 
 The rules below describe each option by role, such as "the label beside the field". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
@@ -48,49 +48,63 @@ The rules below describe each option by role, such as "the label beside the fiel
 
 ## Rules
 
-**Always give the text field a visible label.** In the label, name exactly what the field holds. A persona using a screen reader hears the label without the context around the field. Write the label in sentence case, with no colon at the end. Keep the label short enough to fit on one line.
+**Always give the text field a visible label.**
 
-**Never put required information in the placeholder.** The placeholder disappears when the persona types the first character. Use the placeholder only to show the format of the expected value.
+- Name exactly what the field holds, such as "Billing email". A persona using a screen reader hears the label without the context around the field.
+- Write the label in sentence case, with no colon at the end.
+- Keep the label short enough to fit on one line.
 
-**Put the rule for the field's value in the assistive text** (the help text below the field). The rule can be a format, a character requirement or a minimum. The persona then sees the rule before entering a value that breaks the rule.
+**Never put required information in the placeholder.** The placeholder disappears when the persona types the first character. Use the placeholder only to show the format of the expected value, such as "name@acme.com".
+
+**Put the rule for the field's value in the assistive text** (the help text below the field). The persona then reads the rule before typing a value that breaks the rule. The rule can be one of the following:
+
+- A format, such as "Format: AB-1234".
+- A character requirement, such as "Letters and numbers only".
+- A minimum, such as "At least 8 characters".
 
 **Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form. Short fields that would fit side by side follow the result too. A form may change placement at a breakpoint. A form never mixes placements at one breakpoint. A form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
-**On error, replace the assistive text with the error message.** Do not add the error message to the assistive text. Replacing the assistive text keeps the field the same height, and the form below the field does not move. The error message must restate the rule that the value broke. "Invalid input" is not an error message.
+**On error, replace the assistive text with the error message.** Do not add the error message to the assistive text. Replacing the assistive text keeps the field the same height, so the form below the field does not move. The error message must restate the rule that the value broke, such as "At least 8 characters". "Invalid input" is not an error message.
 
 **Show the error state with an icon or the message text, as well as color.** `recursica-skill-system-conventions` requires more than color to show an error.
 
-**Put a prefix or a suffix inside the field, not in the label and not joined to the value.** A prefix or a suffix is text fixed to the start or the end of the field. A currency symbol goes before an amount. A unit or an email domain goes after the value.
+**Put a prefix or a suffix inside the field, not in the label and not as part of the value.** A prefix or a suffix is text fixed to the start or the end of the field.
+
+- A currency symbol, such as "$", goes before an amount.
+- A unit, such as "kg", goes after the value.
+- An email domain, such as "@acme.com", goes after the value.
 
 **A disabled text field and a read-only field are different components, not two styles of one component.**
 
-- **A disabled text field** still looks like an input, but the persona cannot use the field at the moment. Use a disabled text field when the persona can make the field usable by first taking another action. A disabled field cannot be edited, but a disabled field is not a read-only field.
-- **A read-only field** is a separate component. A read-only field shows a label and text, with no input. Use a read-only field when the persona viewing the field never edits the value where the value is shown.
+- **A disabled text field** still looks like an input, but the persona cannot use the field at the moment. Use a disabled text field when the persona can make the field usable by first taking another action. For example, a "Company name" field stays disabled until the persona checks "Buying for a company". A disabled field cannot be edited, but a disabled field is not a read-only field.
+- **A read-only field** is a separate component. A read-only field shows a label and text, with no input. Use a read-only field when the persona viewing the field never edits the value where the value is shown. For example, an order number on the order's detail page uses a read-only field.
 
 **When values are often longer than the field, use a textarea or a detail view instead.** A value longer than the field scrolls sideways, past the right edge of the field. The persona cannot read a long value in full.
 
-**Some values, such as a date, change format when the field has focus.** Without focus, a date shows in a readable format. With focus, the date switches to a masked number format (a pattern that guides what the persona types). See `recursica-skill-dates-and-currency`.
+**Some values, such as a date, change format when the field has focus.** Without focus, a date shows in a readable format, such as "Oct 13, 2026". With focus, the date switches to a masked number format (a pattern that guides what the persona types), such as "MM/DD/YYYY". See `recursica-skill-dates-and-currency`.
 
 ## Accessibility
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
 
-The app must add the behavior in the two lists below. Apps most often miss the behavior in the two lists. A text field connects the label to the input and shows the focus ring. A text field also responds to keys pressed inside the field.
+The app must add the behavior in the two lists below. Apps most often miss the behavior in the two lists. The text field connects the label to the input and shows the focus ring. The text field also responds to keys pressed inside the field.
 
 ### Screen readers
 
-- **Give the text field a real label.** Never let the placeholder text be the accessible name (the name a screen reader reads out for a control). A screen reader does not announce placeholder text as a label, and the placeholder text disappears when the persona types. A field with no label has no accessible name.
+- **Give the text field a real label, not only placeholder text.** Never let the placeholder text be the accessible name (the name a screen reader reads out for a control). A screen reader does not announce placeholder text as a label, and the placeholder text disappears when the persona types. A field with no label has no accessible name.
 - **The error message must be the text a screen reader announces.** The error message replaces the assistive text, and a screen reader reads only the error message. The error message must state the rule, not "Invalid input".
 - **Give every clickable icon inside the field an accessible name.** Clickable icons include the icon that clears the field and the icon that opens a calendar. Hide every decorative icon from screen readers. A screen reader then never announces a decorative icon as an unlabeled graphic.
-- **When a prefix or a suffix changes the value's meaning, state the meaning in the label or assistive text.** A currency symbol or a unit changes the value's meaning. A screen reader may not announce a visual prefix or suffix with the value.
-- **When a value's format changes on focus**, state the expected format in the assistive text. The masked format is visual only, and a screen reader does not announce the masked format.
+- **When a prefix or a suffix changes the value's meaning, state the meaning in the label or assistive text.** A currency symbol or a unit changes the value's meaning. For example, label a field with a "$" prefix "Price in US dollars". A screen reader may not announce a visual prefix or suffix with the value.
+- **When a value's format changes on focus**, state the expected format in the assistive text, such as "Format: MM/DD/YYYY". The masked format is visual only, and a screen reader does not announce the masked format.
 
 ### Keyboard and non-mouse navigation
 
 - **Never remove the field from the tab order.** Never make a pointer the only way to reach the field.
 - **Make the tab order follow the visual order.** The single-column form rule in `recursica-skill-forms` keeps the two orders the same. Change the on-screen order and the DOM order (the order in the page's code) together.
 - **Make every control inside the field a separate tab stop** (a place the Tab key lands). Make every control inside the field respond to Enter or Space as well as to clicks.
-- **Do not move focus for the persona.** Do not move focus to the next field when a value looks complete. Do not move focus on a keystroke. A persona using a keyboard or a screen reader can be partway through typing. A jump in focus then sends the persona's next keystrokes into a different field.
+- **Do not move focus for the persona.** A persona using a keyboard or a screen reader can be partway through typing. A jump in focus then sends the persona's next keystrokes into a different field.
+  - Do not move focus to the next field when a value looks complete, such as a full phone number.
+  - Do not move focus on a keystroke.
 
 ## Styling set by tokens
 
@@ -125,9 +139,9 @@ Never set or override how the label connects to the input or how keys work insid
 
 ## Open questions
 
-- **Character or word counters.** No rule says whether the text field supports a character or word counter. No rule says what happens when the persona reaches the character or word limit. Confirm with the user only when the project has no counter option.
-- **A clear or reset control inside the field.** No rule says whether the text field has a control that clears or resets the value. Confirm with the user only when the project has no clear or reset option.
-- **Password fields.** `recursica-skill-forms` allows a toggle that shows the password. No rule says whether a password variant of the text field exists. Confirm with the user only when the project has no password variant.
+- **Character or word counters.** No rule says whether the text field supports a character or word counter. No rule says what happens when the persona reaches the character or word limit. Confirm with the user only when the theme has no counter option.
+- **A clear or reset control inside the field.** No rule says whether the text field has a control that clears or resets the value. Confirm with the user only when the theme has no clear or reset option.
+- **Password fields.** `recursica-skill-forms` allows a toggle that shows the password. No rule says whether a password variant of the text field exists. Confirm with the user only when the theme has no password variant.
 
 ## Pre-flight checklist
 
@@ -140,7 +154,7 @@ Never set or override how the label connects to the input or how keys work insid
 - [ ] The assistive text states the field's rule. On error, an error message that restates the rule replaces the assistive text.
 - [ ] The error state shows an icon or the message text, as well as color.
 - [ ] Every clickable icon inside the field has an accessible name, and every decorative icon is hidden from screen readers.
-- [ ] Every label placement, state and size is one the project's UI kit lists, and no variant or option is invented. No size is set unless the project's UI kit lists a size variant.
+- [ ] Every label placement, state and size is one the theme's UI kit lists, and no variant or option is invented. No size is set unless the theme's UI kit lists a size variant.
 - [ ] No styling is set or overridden on the text field.
 - [ ] No container or spacer is added to change the text field's look.
 - [ ] Every unfocused field looks editable.
