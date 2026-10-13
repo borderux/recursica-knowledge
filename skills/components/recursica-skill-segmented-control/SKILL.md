@@ -9,15 +9,22 @@ metadata:
 
 # Segmented control
 
-A segmented control is a horizontal radio group. The persona selects exactly one of 2 to 5 options, and every option is visible at once.
+A segmented control is a horizontal radio group. The persona selects exactly one of 2 to 5 options, and every option is visible at once. For example, a "List" and "Grid" control switches how a page of orders is shown.
 
 ## When to use a segmented control
 
-- **The layout needs a horizontal single-select, where the persona selects exactly one option.** A segmented control is the house component for a horizontal single-select. Never lay out radio buttons in a horizontal row.
-- **The screen needs a toggle outside a form.** A switch belongs only in a form. Use a segmented control for every two-state control in application chrome (the header, navigation and footer around the content), a filter bar, or a toolbar. In application chrome, show icons in the segmented control instead of text labels. A control that switches between a light theme and a dark theme is the standard example. See `recursica-skill-screen-scaffolding` for where application chrome sits.
+- **The persona selects exactly one option, and the options sit side by side in a row.** A segmented control is the house component for a horizontal single-select. Never lay out radio buttons in a horizontal row.
+- **The screen needs a toggle outside a form.** A switch belongs only in a form. Use a segmented control for every two-state control in these places:
+
+  - application chrome (the header, navigation and footer around the content)
+  - a filter bar
+  - a toolbar
+
+  In application chrome, show icons in the segmented control instead of text labels. The standard example is a control that switches between light mode and dark mode. See `recursica-skill-screen-scaffolding` for where application chrome sits.
+
 - **The choice has 2 to 5 options**, with short labels.
-- **The choice switches a view or a mode**, such as list or grid, or daily or weekly. The options are closely tied to the content on screen.
-- **The persona filters content where the content is shown, and the filter needs less than a dropdown or a modal.**
+- **The choice switches a view or a mode**, such as list or grid, or daily or weekly. The options are closely tied to the content on the screen.
+- **The persona filters content where the content is shown.** The filter is too simple for a dropdown or a modal. For example, "Open" and "Closed" above a table of orders.
 
 ## When not to use a segmented control
 
@@ -26,47 +33,56 @@ A segmented control is a horizontal radio group. The persona selects exactly one
 | More than five options                                                 | A vertical radio group. Use a dropdown for more than 7 ± 2 options.                       |
 | The persona may choose more than one option                            | Selectable chips for a horizontal layout, or a checkbox group for a vertical layout.      |
 | The labels are long or complex                                         | A vertical radio group. Long labels do not fit the compact layout of a segmented control. |
-| The options are parts of one whole, and each part has separate content | Tabs, which have routes. See `recursica-skill-tabs`.                                      |
-| Switching to another option causes a heavy reload or changes data      | A control with an explicit submit action, and feedback.                                   |
+| The options are parts of one whole, and each part has separate content | Tabs, which give each part a separate URL. See `recursica-skill-tabs`.                    |
+| Switching to another option causes a heavy reload or changes data      | A control with an explicit submit action, such as an "Apply" button, and feedback.        |
 | The choice is on or off                                                | A switch or a checkbox. See `recursica-skill-selection-controls`.                         |
 
-**Never use tabs in place of a segmented control that grows past five options.** Tabs hold the parts of one whole. A segmented control holds the options of one single-select field. Tabs never replace a segmented control, and a segmented control never replaces tabs. When the options grow past five, use a vertical radio group or a dropdown.
+**Never switch to tabs when a segmented control grows past five options.** Use a vertical radio group or a dropdown instead.
+
+- Tabs hold the parts of one whole, such as the "Details" and "History" sections of one order.
+- A segmented control holds the options of one single-select field, such as "Daily" or "Weekly".
+
+Tabs never replace a segmented control, and a segmented control never replaces tabs.
 
 ## Variants
 
-**Use only the segmented control variants and options that the Recursica MCP server lists for the project.** A designer can add variants and options in Theme Forge, so each project can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
+**Use only the segmented control variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
 
 The rules below describe each option by role, such as "the horizontal orientation". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
 - **A segmented control has two parts: the control and the segments.** The control is the whole group of options. A segment is one option in the group. In the standard UI kit, the two parts are `segmented-control` and `segmented-control-item`.
 - **The control has an orientation variant, with a horizontal option and a vertical option.** Always use the horizontal option. The orientation rule under "Rules" gives the reason. In the standard UI kit, the variant is `orientation`, with the options `horizontal` and `vertical`.
-- **The control has a fill-width variant.** With fill width on, the control stretches to the width of the container the control sits in. With fill width on, the segments share the control's width equally. Fill width is off by default. In the standard UI kit, the variant is `fill-width`, with the options `false` and `true`.
+- **The control has a fill-width variant, and fill width is off by default.** In the standard UI kit, the variant is `fill-width`, with the options `false` and `true`. With fill width on:
+  - the control stretches to the width of the container the control sits in, such as a card
+  - the segments share the control's width equally
 - **Each segment has a selection variant, with a selected option and an unselected option.** In the standard UI kit, the variant is `selection-states`, with the options `selected` and `unselected`.
 - **A segment may show a leading icon.**
 
 ## Rules
 
-**Give a segmented control 2 to 5 options.** The house limit on the number of options in a choice is 7 ± 2, and the 2-to-5 limit overrides the house limit. The 2-to-5 limit is tighter because a segmented control is horizontal and compact. `recursica-skill-selection-controls` sets this rule.
+**Give a segmented control 2 to 5 options.** The house limit for the number of options in a choice is 7 ± 2. The 2-to-5 limit overrides the house limit for a segmented control. The limit is tighter because a segmented control is horizontal and compact. `recursica-skill-selection-controls` sets this rule.
 
-**Use the horizontal orientation.** A segmented control is the house component for a _horizontal_ single-select, and for no other layout. `recursica-skill-selection-controls` names the radio group as the vertical single-select, with the options stacked one above another. Do not use the vertical orientation, even when the project's UI kit has a vertical orientation. Build a vertical single-select as a radio group.
+**Use the horizontal orientation, even when the theme's UI kit has a vertical orientation.** A segmented control is the house component for a _horizontal_ single-select, and for no other layout. `recursica-skill-selection-controls` names the radio group as the vertical single-select, with the options stacked one above another. Build a vertical single-select as a radio group.
 
-**Write each segment label in one or two words.** If a label needs more than two words, use a different control.
+**Write each segment label in one or two words**, such as "Daily" or "Last week". If a label needs more than two words, use a different control.
 
-**Keep one option selected at all times.** A segmented control has no empty state, because a segmented control is a single-select field with a default option. Choose the default option by the pre-selection rules in `recursica-skill-selection-controls`.
+**Keep one option selected at all times.** A segmented control never shows with no option selected. The control is a single-select field with a default option. Choose the default option by the pre-selection rules in `recursica-skill-selection-controls`.
 
-**Save segmented control changes in the same mode as every other part of the system.** If the application saves selection changes immediately, save the segmented control's changes immediately too. If the application saves all changes together, save the segmented control's changes with all the other changes. Never give a segmented control a separate save mode. See `recursica-skill-system-conventions`.
+**Save segmented control changes in the same mode as every other part of the system.** See `recursica-skill-system-conventions`.
+
+- If the application saves selection changes immediately, save the segmented control's changes immediately too.
+- If the application saves all changes together, save the segmented control's changes with all the other changes.
+- Never give a segmented control a separate save mode.
 
 **Switching to another option must be quick and must not be destructive.** If a switch would be slow or destructive, use a control with an explicit submit action and feedback instead.
 
-**Apply every rule in this skill to a segmented control used as a toggle.** The rules include:
+**A segmented control used as a toggle follows every rule in this skill.** A segmented control with two options is still a segmented control, not a switch. The rules include:
 
 - 2 to 5 options
 - one option always selected
 - quick switching that is not destructive
 
-A segmented control with two options is still a segmented control, not a switch.
-
-**Give every icon-only segment a name.** An icon alone does not say what the segment does. See the screen reader rules below.
+**Give every icon-only segment a name**, such as "Grid view" for a grid icon. An icon alone does not say what the segment does. See the screen reader rules below.
 
 **Never turn on fill width to fit more options.** A segmented control with fill width on still has a limit of 5 options.
 
@@ -74,7 +90,10 @@ A segmented control with two options is still a segmented control, not a switch.
 
 The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
 
-**Build a segmented control as a radio group.** The most common mistake is a row of buttons where only color marks the selected button. A screen reader does not announce the color, and a persona using a keyboard has to tab through every segment.
+**Build a segmented control as a radio group.** The most common mistake is a row of buttons where only color marks the selected button. A row of buttons fails in two ways:
+
+- A screen reader does not announce the color.
+- A persona using a keyboard has to tab through every segment.
 
 ### Screen readers
 
@@ -88,8 +107,11 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 ### Keyboard and non-mouse navigation
 
 - **The group is a single tab stop** (a place the Tab key lands). The Tab key moves focus into the segmented control and then out of the segmented control. The Tab key does not step through every segment. Do not add a tabindex to any single segment.
-- **The arrow keys move the selection within the group, in the direction of the orientation.** The Left and Right arrow keys move the selection in a horizontal control. The Up and Down arrow keys move the selection in a vertical control. The Home key moves to the first segment, and the End key moves to the last segment.
-- **Keep each change of selection quick and not destructive.** Use a different control for a slow or destructive switch, because the arrow keys select every segment on the way.
+- **The arrow keys move the selection within the group, in the direction of the orientation.**
+  - The Left and Right arrow keys move the selection in a horizontal control.
+  - The Up and Down arrow keys move the selection in a vertical control.
+  - The Home key moves to the first segment, and the End key moves to the last segment.
+- **Keep each change of selection quick and not destructive.** The arrow keys select every segment on the way. For example, pressing Right twice from "Daily" selects "Weekly" and then "Monthly". Use a different control for a slow or destructive switch.
 - **When the persona tabs into the group, focus lands on the selected segment**, not on the first segment.
 - **Focus and selection must look different.** Focus can be on one segment of the group while a different segment is selected. Both the focus and the selection must be visible.
 
@@ -107,7 +129,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 ## Open questions
 
 - **When to use fill width.** No rule says where a segmented control with fill width on is used.
-- **A disabled segment.** No rule says whether a single segment may be disabled, or how a disabled segment looks. Confirm with the user only when the project has no disabled state.
+- **A disabled segment.** No rule says whether a single segment may be disabled, or how a disabled segment looks. Confirm with the user only when the theme has no disabled state.
 - **A segmented control as a form field.** No rule says whether a segmented control may be a labeled form field instead of a view switcher. No rule says where the label goes if a segmented control may be a form field.
 - **Screens narrower than desktop size.** Five short labels may not fit on a narrow screen. `recursica-skill-design-router` names behavior below desktop size as a topic with no owner.
 
@@ -124,8 +146,8 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - [ ] The group is one tab stop. The arrow keys move the selection, and no single segment has a tabindex.
 - [ ] Focus lands on the selected segment when the persona tabs in.
 - [ ] A persona using a screen reader can perceive every content change that switching causes.
-- [ ] Every variant, option, and state is one the project's UI kit lists, and no variant or option is invented.
+- [ ] Every variant, option, and state is one the theme's UI kit lists, and no variant or option is invented.
 - [ ] The orientation is horizontal, and every vertical single-select is a radio group.
 - [ ] No styling is set or overridden on the segmented control.
 - [ ] No container or spacer is added to change the segmented control's look.
-- [ ] Open questions were asked about, not decided: when to use fill width, a disabled segment when the project has no disabled state, a segmented control as a labeled form field, and behavior below desktop size.
+- [ ] Open questions were asked about, not decided: when to use fill width, a disabled segment when the theme has no disabled state, a segmented control as a labeled form field, and behavior below desktop size.
