@@ -116,7 +116,7 @@ Group fields in the following order of preference:
 
 **MUST: on submit, turn the submit button itself into a loading, disabled state.** The submit button is the progress indicator. A disabled submit button also stops the form from being submitted twice.
 
-**If the theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes) has a loading variant for a button, use the loading variant.** Otherwise, build the loading state from the button's disabled look. Use the disabled look with an icon alone or an icon with a label, and animate the icon. See `recursica-skill-button`.
+**If the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes) has a loading variant for a button, use the loading variant.** Otherwise, build the loading state from the button's disabled look. Use the disabled look with an icon alone or an icon with a label, and animate the icon. See `recursica-skill-button`.
 
 Three more rules apply to the submit button:
 

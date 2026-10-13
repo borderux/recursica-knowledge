@@ -57,7 +57,7 @@ Follow each house rule below for type, and for the HTML markup that holds the te
 
 ### Brand typefaces and the base font family
 
-**The brand names more than one typeface, such as a primary, a secondary and a tertiary typeface.** The theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes) uses every typeface the brand names. Different components use different brand typefaces.
+**The brand names more than one typeface, such as a primary, a secondary and a tertiary typeface.** The theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes) uses every typeface the brand names. Different components use different brand typefaces.
 
 **The code MUST load every typeface the brand names, not only the primary typeface.** A screen that loads only the primary typeface has a bigger problem than one missing web font.
 

@@ -109,7 +109,7 @@ If a name is not in the table, find the Recursica component whose skill describe
 
 ## Extending components
 
-**Never build an extension of a component.** An extension is a change or addition made outside the build. Examples are a new variant added to the theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes), or a component the application's own team adds to the code.
+**Never build an extension of a component.** An extension is a change or addition made outside the build. Examples are a new variant added to the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes), or a component the application's own team adds to the code.
 
 - Use an extension only if the theme or the code already has the extension.
 - Never assemble a missing capability from other components.
@@ -118,6 +118,16 @@ If a name is not in the table, find the Recursica component whose skill describe
 
 - Name the requirement, the component and the missing capability.
 - Present the gap as an opportunity to extend the component.
+
+## Missing components
+
+**When the theme has no component a screen needs, follow these steps in order.** For example, a screen needs a banner, and the theme has no banner component.
+
+1. **Check for the component under another name.** Look in "Names from other design systems" above. Then confirm with the user that the component is missing, not named differently.
+2. **If the component exists under another name, use the component.** Tell the user about the naming mismatch. Have the other name added to the names table in this router, for future reference.
+3. **If the component is missing and the app's code has a version, use the code's version.**
+4. **File a defect on Theme Forge for the missing component.** If the code has a version, include the code. Remove any personal data from the code first, such as names, email addresses and customer records.
+5. **If the code has no version either, report the gap.** Never build the component. See "Extending components" above.
 
 ## Asking instead of guessing
 
@@ -267,6 +277,9 @@ Check every item before starting, and again before declaring the work done.
 - [ ] The design router was loaded first, before any other Recursica skill.
 - [ ] Every source is a `SKILL.md`. No `DOCS.md` was used, and no convention came from another design system.
 - [ ] Every name from another design system was translated to the Recursica component.
+- [ ] Every component the theme lacks was checked under other names and confirmed missing with the user.
+- [ ] A missing component came from the app's code, if the code had a version.
+- [ ] Each missing component has a defect filed on Theme Forge.
 - [ ] No component was extended in the build. Each requirement no component in the theme or the code meets was flagged as an opportunity to extend a component.
 - [ ] Every component on the screen has both of the component's skills loaded: the component skill and the design-rules skill.
 - [ ] The screen's object was named before any component was chosen.

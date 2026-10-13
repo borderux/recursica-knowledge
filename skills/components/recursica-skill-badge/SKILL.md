@@ -32,7 +32,7 @@ A badge shows one read-only value about an object, such as a status or a count. 
 
 ## Variants
 
-**Use only the badge variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
+**Use only the badge variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
 
 The rules below describe each option by role, such as "the problem style" or "the warning style". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 

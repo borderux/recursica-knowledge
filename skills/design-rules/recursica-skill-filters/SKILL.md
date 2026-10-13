@@ -54,9 +54,8 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 **Make a filter multi-select when the filter's field has a known set of categories, such as statuses.** People filtering a queue want two statuses at once far more often than one status. A single-select filter forces the persona to run the search twice.
 
-**If the theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes) has a multi-select control, use the theme's multi-select control.** Otherwise, the missing multi-select control is a known gap.
+**If the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes) has a multi-select control, use the theme's multi-select control.** Otherwise, follow the steps under "Missing components" in `recursica-skill-design-router`.
 
-- Where a filter needs multi-select, raise the gap.
 - Do not build a multi-select control out of other parts.
 - Until the gap is closed, the working substitute is separate single-value filters that all apply at once.
 
@@ -132,7 +131,7 @@ The three kinds of control are not filters. A disabled action control among the 
 - [ ] Any default that narrows the collection is visible in the filter control that sets the default.
 - [ ] Dates use a relative-range control with a Custom option, not a pair of bare date inputs.
 - [ ] Every date field is named for the event the date records.
-- [ ] Category filters are multi-select. Where the theme has no multi-select control, the gap is raised, and no multi-select control is built from other parts.
+- [ ] Category filters are multi-select. Where the theme has no multi-select control, the steps for a missing component were followed. No multi-select control is built from other parts.
 - [ ] The filter bar holds no switch. Every toggle in the filter bar is a segmented control.
 - [ ] Every filter matches data visible in the collection.
 - [ ] The applied state of the filters is visible without opening each filter.

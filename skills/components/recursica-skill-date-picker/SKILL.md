@@ -52,7 +52,7 @@ Never use a calendar for a complex or partial date.
 
 ## Variants
 
-**Use only the date picker variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Never invent a variant or an option.
+**Use only the date picker variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Never invent a variant or an option.
 
 **Get the list with the server's `recursica_get_component_doc` tool.** Use the names the code uses. A wrong name in code has no effect and shows no error.
 

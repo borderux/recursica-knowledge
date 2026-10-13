@@ -108,7 +108,7 @@ A link may show an icon that marks the destination as external or as opening in 
 
 ## Button hierarchy
 
-**Give the primary function a button in the primary style. Give secondary and tertiary functions a button in a less prominent style.** In the standard UI kit, the primary style is `solid`, and the less prominent styles are `outline` and `text`. If the theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes) names or adds styles, use the theme's styles. Buttons rank in the same order as the functions the buttons perform, by definition.
+**Give the primary function a button in the primary style. Give secondary and tertiary functions a button in a less prominent style.** In the standard UI kit, the primary style is `solid`, and the less prominent styles are `outline` and `text`. If the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes) names or adds styles, use the theme's styles. Buttons rank in the same order as the functions the buttons perform, by definition.
 
 **Aim for exactly one primary action per page, panel, modal, or other region that holds content.**
 

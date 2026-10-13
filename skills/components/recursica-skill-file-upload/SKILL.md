@@ -18,7 +18,7 @@ A file upload has two parts: an upload area and a list of added files.
 >
 > - A file upload built today shows only placeholder content, with no error.
 > - The rules in this skill describe the planned file upload, and the rules match the UI kit.
-> - Report the missing file upload instead of building a workaround.
+> - Instead of building a workaround, follow the steps under "Missing components" in `recursica-skill-design-router`.
 
 ## When to use a file upload
 
@@ -41,7 +41,7 @@ A file upload has two parts: an upload area and a list of added files.
 
 ## Variants
 
-**Use only the file upload variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
+**Use only the file upload variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
 
 Each option below is described by role, such as "the error state". A name from the standard UI kit (the unchanged UI kit in the official Recursica release) is only an example.
 

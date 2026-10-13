@@ -34,7 +34,7 @@ A checkbox turns one specific value on or off, such as "Remember me". A checkbox
 
 ## Variants
 
-**Use only the checkbox variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
+**Use only the checkbox variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
 
 Each option below is described by role, such as "the checked state". A name from the standard UI kit (the unchanged UI kit in the official Recursica release) is only an example.
 
@@ -173,7 +173,7 @@ Apps most often miss the behavior in the two lists.
 ## Open questions
 
 - **How a checkbox group shows an error.** A checkbox group can have a selection rule that fails validation. No rule says how a checkbox group shows the validation error. If the theme has an error state for any of the three checkbox components, use that error state. Otherwise, confirm with the user.
-- **Whether the theme has a multi-select dropdown.** `recursica-skill-selection-controls` requires a multi-select dropdown in two places. If the theme has a multi-select dropdown, use that multi-select dropdown. Otherwise, confirm with the user.
+- **Whether the theme has a multi-select dropdown.** `recursica-skill-selection-controls` requires a multi-select dropdown in two places. If the theme has a multi-select dropdown, use that multi-select dropdown. Otherwise, follow the steps under "Missing components" in `recursica-skill-design-router`.
   - A theme with no multi-select dropdown has a gap in the list of components. The gap is not permission to build a multi-select dropdown from other parts.
   - Do not put a checkbox group inside a dropdown.
   - Confirm with the user before using a transfer list instead.

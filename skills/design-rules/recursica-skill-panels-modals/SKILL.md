@@ -198,7 +198,7 @@ A panel exists to sit beside the page the panel depends on. On a screen too narr
 ## Set by the theme or the component
 
 - **Panel and modal styling inside the components:** padding, sizes, dividers, elevation (the shadow that makes a layer, card, menu, popover, panel or modal look raised), and overlay treatment.
-- **Panel width.** In the standard UI kit (the unchanged UI kit in the official Recursica release), the panel's minimum and maximum width are fixed. If the theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes) has a size variant, use the size variant. Otherwise, do not set the panel width. The user still chooses the side each panel opens from.
+- **Panel width.** In the standard UI kit (the unchanged UI kit in the official Recursica release), the panel's minimum and maximum width are fixed. If the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes) has a size variant, use the size variant. Otherwise, do not set the panel width. The user still chooses the side each panel opens from.
 - **Focus inside a component.** The design system provides focus behavior inside each component. Do not break the focus behavior.
 
 ## Out of scope

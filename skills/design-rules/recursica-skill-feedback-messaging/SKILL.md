@@ -76,7 +76,7 @@ The tense of the message is the whole difference between a banner and a toast. T
 - If the sentence uses "will", "is about to" or "is still", use a banner.
 - If the sentence uses "has", "was" or "did not", use a toast.
 
-**If the theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes) has a banner component, use the banner component.** Otherwise, do not build a banner by hand. Do not use a bordered container as a banner, and do not use a toast in place of a banner. Report the missing banner as a gap in the design system. If the message cannot wait for a banner component, confirm with the user which component shows the message until then. See `recursica-skill-design-router`.
+**If the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes) has a banner component, use the banner component.** Otherwise, follow the steps under "Missing components" in `recursica-skill-design-router`. Never build a banner by hand. Do not use a bordered container as a banner, and do not use a toast in place of a banner. If the message cannot wait for a banner component, confirm with the user which component shows the message until then.
 
 ## Inline messages
 
@@ -171,7 +171,7 @@ A partial success should not reach the interface. For that reason, the channel t
 - [ ] No confirmation appears for a normal successful action.
 - [ ] Every message about an event or condition that has not happened yet is a banner.
 - [ ] Every message about an event or condition that just happened is a toast.
-- [ ] No banner is built by hand. Where the theme has no banner component, the missing banner is reported as a gap.
+- [ ] No banner is built by hand. Where the theme has no banner component, the steps for a missing component were followed.
 - [ ] No brief success or status message is inserted into the page layout.
 - [ ] Every field-level save shows a toast or the persistent save status the forms rules require.
 - [ ] No field-level save shows an inline message that appears and disappears.

@@ -11,7 +11,7 @@ metadata:
 
 This skill holds the house rules for Recursica layers. A layer (a numbered background level, 0 to 3, that sets the colors of the components on that level) is how Recursica stacks one container inside another. Layer 0 is the page itself. Treat each house rule as a constraint. The house rules are opinions, not neutral best practices.
 
-The house rules assume **complex enterprise web applications** built on a Recursica theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes). Each layer has a set of tokens (named design values, such as colors or sizes, set by the design system). The theme defines the layer tokens, at `https://forge.recursica.com/theme/layers`. The theme decides how each layer looks. This skill decides only which layer each region sits on.
+The house rules assume **complex enterprise web applications** built on a Recursica theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes). Each layer has a set of tokens (named design values, such as colors or sizes, set by the design system). The theme defines the layer tokens, at `https://forge.recursica.com/theme/layers`. The theme decides how each layer looks. This skill decides only which layer each region sits on.
 
 ## The three governing principles
 

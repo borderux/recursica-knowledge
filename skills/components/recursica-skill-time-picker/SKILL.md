@@ -42,7 +42,7 @@ See `recursica-skill-forms`.
 
 ## Variants
 
-**Use only the time picker variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ.
+**Use only the time picker variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ.
 
 - Get the list with the server's `recursica_get_component_doc` tool.
 - Before using a variant, look up the variant's name in code with the same tool. Use the name the code uses.

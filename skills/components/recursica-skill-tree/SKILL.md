@@ -16,7 +16,7 @@ A tree shows items inside other items, such as folders inside folders. A parent 
 - **The data is a true hierarchy.** The meaning of a node (one item in the tree) depends on the node's parent. For example, a folder sits inside a folder, or a category sits inside a category. A "2026" folder inside "Invoices" holds the invoices from 2026.
 - **The depth of the hierarchy varies, and the persona needs to see where an item sits in the hierarchy.** For example, the persona needs to know that a file sits in "Invoices", then "2026". Knowing only that an item exists is not enough for the persona.
 - **The persona is exploring, not comparing.** A tree helps the persona find one item. A table helps the persona compare many items.
-- **Content must show and hide at more than one level.** For example, a section opens to show subsections, and a subsection opens to show pages. `recursica-skill-navigation` states that an accordion has one level unless the theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes) has a nesting option. When the content has several levels, use a tree.
+- **Content must show and hide at more than one level.** For example, a section opens to show subsections, and a subsection opens to show pages. `recursica-skill-navigation` states that an accordion has one level unless the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes) has a nesting option. When the content has several levels, use a tree.
 
 ## When not to use a tree
 

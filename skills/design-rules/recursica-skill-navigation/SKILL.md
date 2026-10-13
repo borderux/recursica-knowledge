@@ -125,7 +125,7 @@ A large number of items may force a mega menu (a large panel that shows many lin
 
 ## Choosing the sub-nav component
 
-**An accordion has one level only, unless the theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes) has a nesting option.** Without a nesting option, NEVER nest an accordion inside an accordion. If the navigation structure has several levels, use a tree instead.
+**An accordion has one level only, unless the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes) has a nesting option.** Without a nesting option, NEVER nest an accordion inside an accordion. If the navigation structure has several levels, use a tree instead.
 
 **Use the simplest structure the content allows.** A plain list of links is a valid answer, and often the right answer. For example, five reports with no groups need only a list of five links. Use an accordion or a tree only when the content has a real hierarchy.
 

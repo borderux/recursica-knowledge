@@ -16,7 +16,7 @@ A file input is a single-line field where the persona picks a file from the pers
 > Until the file input is built:
 >
 > - Use `recursica-skill-text-field` and a native `<input type="file">`.
-> - Report that the file input is missing.
+> - For the missing file input, follow the steps under "Missing components" in `recursica-skill-design-router`.
 > - Do not work around the missing file input.
 >
 > The rules below describe the file input as intended. The rules are correct about what the UI kit defines.
@@ -46,7 +46,7 @@ A file input is a single-line field where the persona picks a file from the pers
 
 ## Variants
 
-**Use only the file input variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Never invent a variant or an option.
+**Use only the file input variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Never invent a variant or an option.
 
 **Get the list with the server's `recursica_get_component_doc` tool.** Use the names the code uses.
 

@@ -38,7 +38,7 @@ A switch turns one setting on or off, such as "Email notifications". Each switch
 
 ## Variants
 
-**Use only the switch variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes).** Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option. A designer can add variants and options in Theme Forge, so each theme can differ.
+**Use only the switch variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option. A designer can add variants and options in Theme Forge, so each theme can differ.
 
 Each option below is described by role, such as "the selected state". A name from the standard UI kit (the unchanged UI kit in the official Recursica release) is only an example.
 

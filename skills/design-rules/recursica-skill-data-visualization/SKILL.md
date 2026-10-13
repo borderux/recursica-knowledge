@@ -11,7 +11,7 @@ metadata:
 
 Treat each rule below as a constraint. The rules are house opinions about charts in enterprise applications, not neutral best practices.
 
-The rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes) sets the colors and the styling of the Recursica components. Each chart still needs five decisions:
+The rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system. The theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes) sets the colors and the styling of the Recursica components. Each chart still needs five decisions:
 
 - whether to show a chart at all
 - which chart to use

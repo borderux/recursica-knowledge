@@ -36,7 +36,7 @@ Using a button to go to a different page is the most common misuse of buttons.
 
 ## Variants
 
-**Use only the button variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes).** Get the list with the server's `recursica_get_component_doc` tool. Use the names the code uses. Never invent a variant or an option. Each theme can differ, because a designer can add variants and options in Theme Forge.
+**Use only the button variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** Get the list with the server's `recursica_get_component_doc` tool. Use the names the code uses. Never invent a variant or an option. Each theme can differ, because a designer can add variants and options in Theme Forge.
 
 The rules below describe each option by role, such as "the primary style". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 

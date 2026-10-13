@@ -39,7 +39,7 @@ A hover card or a popover shows richer content in a box beside a trigger. A trig
 
 ## Variants
 
-**Use only the hover card and popover variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
+**Use only the hover card and popover variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
 
 The rules below name each part and option by role, such as "the beak". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
