@@ -50,7 +50,7 @@ The rules below describe each option by role, such as "the vertical orientation"
 - stays open after a page refresh
 - works with the browser's back and forward buttons
 
-`recursica-skill-navigation` states the preference for a route per tab.
+A tab inside a panel or a modal gets an address under the panel's or the modal's address. `recursica-skill-navigation` states the preference for a route per tab.
 
 **Open the first tab in reading order by default.** For example, in a horizontal tab set in English, open the leftmost tab. `recursica-skill-screen-starting-state` sets this rule.
 

@@ -24,7 +24,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 - If the content the control opens can change data, the label must say so, as in `Edit` or `Manage`.
 - To check a label, open the content the control opens. Confirm that the label describes the content.
 
-**Use a button to open a panel or a modal. Do not use a link to open a panel or a modal.** The one exception is a modal with a URL of the modal's own. See "Modal triggers" below. Opening a panel or a modal is an action. Use a button for an action, even where a link would look lighter. Use a link to go to a different location, such as another page, another object, or a different URL.
+**Use a button to open a panel or a modal. Do not use a link to open a panel or a modal.** See "Modal triggers" below. Opening a panel or a modal is an action. Use a button for an action, even where a link would look lighter. Use a link to go to a different location, such as another page, another object, or a different URL.
 
 **Give each control one outcome.** A control that opens a panel, a modal, or another region that holds content does not also:
 
@@ -246,15 +246,7 @@ The house rule admits the positive label is slightly a dark pattern.
 
 ## Modal triggers
 
-**Use a button to open a modal, unless the modal is designed on purpose to be linked to.** The persona opens the modal and does not navigate to the modal.
-
-**A link may open a modal only when the modal is designed on purpose to be linked to.** A linked modal is the only exception, and a linked modal is rare.
-
-- A linked modal has a URL of the modal's own.
-- A persona can copy the URL from the browser and send the URL to another person. The modal then opens for the other person.
-- Give a linked modal a route and a link that opens the modal together, both on purpose.
-
-Without a real URL that can be shared, the modal has no route. Use a button to open a modal with no route.
+**Use a button to open a modal or a panel on the same page.** The persona opens the modal and does not navigate to the modal. A modal or a panel still gets an address whenever possible, as `recursica-skill-navigation` says. The address lets a persona share or reopen the view. The control that opens the modal stays a button.
 
 ## Open questions
 
@@ -302,5 +294,5 @@ Before treating a set of buttons and links as done, check each item:
 - [ ] Every undo follows `recursica-skill-undo`.
 - [ ] Toggles are buttons, labeled with the positive state reached, never with a negative like "Unfollow".
 - [ ] Rarely used toolbar functions sit in an overflow menu, and standard sets of functions follow convention.
-- [ ] Controls that open a modal are buttons, unless the modal has a real URL that can be shared.
+- [ ] Controls that open a modal or a panel on the same page are buttons.
 - [ ] Open questions were asked about, not decided: split buttons, loading states on actions other than submit, when to move actions into an overflow menu, and keyboard shortcuts.

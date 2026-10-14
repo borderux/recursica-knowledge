@@ -32,7 +32,6 @@ A modal blocks the page until the persona makes one decision or finishes one sho
 | The action can be undone                                    | Do the action, and offer undo. See `recursica-skill-undo`.                                     |
 | The message confirms a success                              | A toast. See `recursica-skill-toast`.                                                          |
 | The task is long, has several steps, or is a big form       | A page. A form inside a modal that scrolls belongs on a separate route.                        |
-| The content is a location the persona can link to           | A page, unless the content is a modal built on purpose for linking. See "Rules".               |
 | Another modal is already open                               | Restructure the flow. Do not open a second modal, and do not use another option in this table. |
 
 **Watch for the main misuse of a modal, a routine confirmation.** Asking "Are you sure?" about an action that can be undone teaches the persona to dismiss confirmations without reading each confirmation. The persona then dismisses the one confirmation that comes before a dangerous action.
@@ -57,12 +56,7 @@ The rules below describe each part and option by role. The names in the standard
 
 **Open a modal with a button.** The persona never navigates to a modal. Opening a modal adds no entry to the browser history.
 
-The one exception is a modal built on purpose for linking, with a URL the persona can share. A modal built for linking is a location. Add both of the following on purpose:
-
-- a route for the modal
-- a link that opens the modal
-
-`recursica-skill-navigation` sets this rule.
+**Give the modal an address whenever possible.** The address opens the page with the modal already open. A confirmation modal, such as "Delete this invoice?", gets no address. `recursica-skill-navigation` sets this rule.
 
 **In a confirmation modal, give the primary action button the primary style and the cancel button the secondary style.** In the standard UI kit, the primary style is `solid`.
 
@@ -137,7 +131,7 @@ Never restyle the overlay behind the modal. Never change when the scroll divider
   - protecting unsaved changes
 - `recursica-skill-buttons-links` — the controls that open a modal, confirming destructive actions, and the order of importance of footer buttons.
 - `recursica-skill-undo` — offering an undo instead of a confirmation.
-- `recursica-skill-navigation` — routes and browser history, including the exception for a modal built on purpose for linking.
+- `recursica-skill-navigation` — routes, addresses and browser history.
 - `recursica-skill-forms` — the save mode and validation of any form inside the modal.
 - `recursica-skill-design-system-conventions` — the accessibility baseline every component follows.
 
@@ -156,7 +150,7 @@ Never restyle the overlay behind the modal. Never change when the scroll divider
 - [ ] Blocking the page is justified, and the task is short and self-contained.
 - [ ] No action that can be undone asks for confirmation. Each action that can be undone offers undo instead.
 - [ ] Every variant and option on the modal is one the Recursica MCP server lists for the theme. No size, type, or severity variant is set unless the theme has one, and no variant or option is invented.
-- [ ] A button opens the modal, with no browser history entry. The one exception is a modal built on purpose for linking, with a route.
+- [ ] A button opens the modal, with no browser history entry. The modal has an address whenever possible, unless the modal is a confirmation.
 - [ ] The title states the decision, and the label of the primary action says what will happen.
 - [ ] No modal opens another modal on top of the first modal, and no two scrims are ever visible at once. A reused confirmation modal replaces the open modal instead of stacking on the open modal.
 - [ ] No card wraps the content of the modal.

@@ -26,7 +26,6 @@ A panel shows extra content beside the page. The persona can still use the page 
 | Confirming that an action succeeded, or offering undo                | `recursica-skill-toast`                                                                          |
 | A brief alert, or a simple acknowledgment                            | `recursica-skill-toast`                                                                          |
 | The content is a long form, a form with several parts, or a big form | A page, with `recursica-skill-stepper` when the form has several parts                           |
-| The destination is a location the persona can link to                | A page with a route. See `recursica-skill-navigation`.                                           |
 | The feature is critical, and the persona must find the feature       | The page itself. The panel content does not exist until the persona opens the panel.             |
 | Primary or secondary navigation for the application                  | The application's navigation. `recursica-skill-navigation` sets the rules for hiding navigation. |
 | Separating repeated items of one type, or wrapping a form in a box   | Nothing. A panel is not a card, and a panel never contains a card. See `recursica-skill-card`.   |
@@ -46,9 +45,9 @@ The rules below describe each part and option by role. The names in the standard
 
 ## Rules
 
-**Open a panel with a button.** Opening a panel adds no entry to the browser history. The persona does not navigate to a panel. A region that a control opens, such as a panel or a modal, is not a location. `recursica-skill-navigation` sets this rule for modals and panels together.
+**Open a panel with a button.** Opening a panel adds no entry to the browser history. The persona does not navigate to a panel.
 
-**The one exception is a panel built on purpose for linking.** Give a panel built for linking both a route and a link that opens the panel. A modal may get a route and a link in exactly the same way. Building a panel for linking is an explicit decision, not a default. See `recursica-skill-navigation`.
+**Give the panel an address whenever possible.** The address opens the page with the panel already open, and keeps the panel open after a refresh. Changing the address adds no history entry. See `recursica-skill-navigation`.
 
 **Write a panel header that says what the panel is for.** Name the object or the task in the header, not "Panel" or "Details". For example, write "Filter orders" or "Edit shipping address". The header is the panel's accessible name (the name a screen reader reads out for a control).
 
@@ -174,7 +173,7 @@ The rules below add to the accessibility baseline in `recursica-skill-design-sys
   - forms in a panel
   - protecting unsaved changes
   - the difference in focus trapping
-- `recursica-skill-navigation` — a location is a route. A panel that a control opens is not a location and gets no browser history entry.
+- `recursica-skill-navigation` — routes and addresses. A panel gets an address whenever possible, but no browser history entry.
 - `recursica-skill-forms` — the form rules:
   - one label placement per form, and the container-width test behind the rule
   - single-column layout
@@ -205,7 +204,7 @@ The rules below add to the accessibility baseline in `recursica-skill-design-sys
 - [ ] The page underneath the panel is needed while the panel is open. No critical content is hidden in the panel.
 - [ ] Every task that must be finished or given up first is in a modal. Brief feedback is in a toast.
 - [ ] Every variant and option on the panel is one the Recursica MCP server lists for the theme. No side, width, size, or type variant is set unless the theme has that variant. No variant or option is invented.
-- [ ] A button opens the panel, with no route and no browser history entry. The one exception is a panel built on purpose for linking. A panel built for linking has both a route and a link that opens the panel.
+- [ ] A button opens the panel, with no browser history entry. The panel has an address whenever possible.
 - [ ] The header names the panel's purpose and is connected as the panel's accessible name.
 - [ ] No card wraps the panel content, and no form, form section, or form control sits inside a card.
 - [ ] Every form in the panel stacks the labels, uses a single column, and follows the application's one save mode.

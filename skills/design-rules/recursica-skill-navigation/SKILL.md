@@ -41,7 +41,7 @@ When one click has two of the outcomes above, the control's label can honestly d
 
 ## Governing principles
 
-1. **Make every location a route.** Give each place the persona navigates to a separate URL and an entry in the browser history. A modal, a panel, or any other element that a trigger opens has neither a URL nor a history entry. The route rule is the most important rule in this skill, because designs break the route rule most often.
+1. **Make every location a route.** Give each place the persona navigates to a separate URL and an entry in the browser history. A modal or a panel that a trigger opens gets a URL whenever possible, but no history entry. The route rule is the most important rule in this skill, because designs break the route rule most often.
 2. **Fix the information architecture instead of working around the information architecture.** Information architecture is how the application's content is organized and labeled. `recursica-skill-information-architecture` sets the rules for information architecture. Each of the following is a symptom of a mistake in the information architecture:
 
    - navigation that overflows, wraps or scrolls
@@ -57,14 +57,9 @@ When one click has two of the outcomes above, the control's label can honestly d
 
 **MUST NOT create history entries for modals or panels.** A trigger, such as a button, opens a modal or a panel. The persona does not navigate to a modal or a panel. The browser history should record the difference between a place in the application and a temporary state. A history entry for a modal or a panel erases that difference.
 
-**A modal or panel deliberately built to be linked to is the only exception.** Four statements describe a linked modal or panel:
+**Give every panel, modal and tab an address whenever possible.** An address is a URL that opens the view with the panel, modal or tab already open. For example, a persona sends a coworker a link that opens the Orders page with one order's panel open. An address and a history entry are separate. Opening a panel or a modal changes the address, but adds no history entry.
 
-- A person can copy the URL of the linked modal or panel and share the URL.
-- Another person can reopen the URL.
-- The linked modal or panel is a location.
-- The modal or panel gets a route and a link that opens the modal or panel, together and on purpose.
-
-Real cases exist for sending a person a URL that opens a view with the modal or panel already open. A linked modal or panel is rare, and must be an explicit decision. The default stays the same: modals and panels have no route, and a button opens each modal or panel. See `recursica-skill-panels-modals`.
+**A confirmation modal gets no address.** For example, "Delete this invoice?" has no URL. A link that opens a confirmation makes no sense. See `recursica-skill-panels-modals`.
 
 Apply the routing and history rules equally to moving through primary navigation, secondary navigation and tabs.
 
@@ -257,7 +252,7 @@ Check every item below before treating the navigation as done.
 - [ ] The application has no option to pin the drawer open.
 - [ ] Every view the persona can navigate to has its own route, reachable by URL.
 - [ ] Navigation adds entries to the browser history, and back and forward work correctly.
-- [ ] No modal or panel creates a history entry. The exception is a modal or panel deliberately built to be linked to, with a shareable URL.
+- [ ] No modal or panel creates a history entry. Every panel, modal and tab has an address whenever possible. A confirmation modal has none.
 - [ ] No tab state is kept as remembered UI state in place of a route.
 - [ ] Each tab has its own sub-path under the route of the view that holds the tabs.
 - [ ] A top bar holds only a few items, about three or four, that will not grow. More items, or items expected to grow, get a sidebar. No sidebar appears below the tablet breakpoint.

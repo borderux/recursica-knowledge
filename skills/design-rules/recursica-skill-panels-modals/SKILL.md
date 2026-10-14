@@ -162,9 +162,7 @@ A panel may be _covered_ by another panel, but a panel may never _contain_ anoth
 
 ## Links to a panel or modal
 
-**A panel may have a separate URL that a persona can link to on purpose, the same as a modal.** A persona may need to send another person a URL. The URL opens a particular view with the panel or modal already open. For example, a persona sends a coworker a link that opens the Orders page with one order's panel already open.
-
-**A link to a panel or modal is a deliberate decision, not a default.** Give a panel or modal built for linking both a route and a link that opens the panel or modal. `recursica-skill-navigation` sets this rule, and the navigation skill makes the same exception for modals.
+**Give every panel and modal an address whenever possible.** The address opens a particular view with the panel or modal already open. For example, a persona sends a coworker a link that opens the Orders page with one order's panel already open. Opening the panel or modal adds no history entry. A confirmation modal gets no address. `recursica-skill-navigation` sets this rule.
 
 ## Route changes
 
@@ -239,7 +237,7 @@ A panel exists to sit beside the page the panel depends on. On a screen too narr
 - [ ] Secondary material sits in a second tab, not below the main content.
 - [ ] Nothing that has already happened is shown in a pending or toned-down style.
 - [ ] Closing a panel with unsaved form data asks before throwing the data away. Closing a panel the persona has not touched does not ask.
-- [ ] Every panel or modal that a URL can link to was built for linking by deliberate decision. Each such panel or modal has a route and a link that opens the panel or modal.
+- [ ] Every panel and modal has an address whenever possible, with no history entry. A confirmation modal has no address.
 - [ ] Panels close on a route change, except where the navigation exists only to open another panel or modal.
 - [ ] Below the tablet breakpoint, every panel opens as a page.
 - [ ] Below the tablet breakpoint, no panel opens as a narrower panel or a full-screen overlay styled as a panel.
