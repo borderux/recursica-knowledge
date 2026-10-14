@@ -129,7 +129,7 @@ The app must add every behavior listed under "Screen readers" and "Keyboard and 
   - select-all as a sign that the screen's structure is wrong
   - disabled versus read-only
   - when a selection is saved
-- `recursica-skill-working-memory` — the research behind the 7 ± 2 limit. The skill also says why list length depends on the task:
+- `recursica-skill-working-memory` — the research behind the 7 ± 2 guideline. The skill also says why list length depends on the task:
   - A list the persona scans to recognize an item may be long.
   - A set of items the persona compares may not be long.
 - `recursica-skill-forms` — the form rules a transfer list follows:

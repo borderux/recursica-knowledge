@@ -49,7 +49,7 @@ The rules below describe each variant and option by role, such as "the selected 
 - `recursica-skill-navigation` sets the collapsed-by-default rule for trees and accordions.
 - Opening every node adds no value, because the parent node labels then have no reason to exist.
 
-**Let the data set how many nodes each level shows.** Sort the nodes at each level so the persona can scan them. A tree is for finding one item, and the 7 ± 2 limit does not apply to finding. A level that grows very long can be grouped one level deeper. See chunking in `recursica-skill-working-memory`.
+**Let the data set how many nodes each level shows.** Sort the nodes at each level so the persona can scan them. A tree is for finding one item, and the 7 ± 2 guideline does not apply to finding. A level that grows very long can be grouped one level deeper. See chunking in `recursica-skill-working-memory`.
 
 **Label a node with what the node is, not where the node sits.** Do not label a node "Level 2". Name what the node is instead, such as "Invoices". Do not add numbers that repeat the node's place in the nesting, such as "2.3.1".
 

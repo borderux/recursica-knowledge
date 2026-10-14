@@ -142,7 +142,7 @@ The rules below add to the accessibility baseline in `recursica-skill-design-sys
 - [ ] No status, and no error condition, is shown as a chip.
 - [ ] A required chip group's validation error appears in the assistive element below the chip group.
 - [ ] No chip reports the chip group's validation error.
-- [ ] Each chip group stays within 7 ± 2 options, and has one behavior: selectable or removable, never both.
+- [ ] Each chip group holds about 7 ± 2 options, judged by label length, and has one behavior: selectable or removable, never both.
 - [ ] Only chips with values the persona added can be removed.
 - [ ] Every chip label is a noun of one or two words.
 - [ ] Each chip group has an accessible name, and each chip announces the chip's label and whether the chip is selected.

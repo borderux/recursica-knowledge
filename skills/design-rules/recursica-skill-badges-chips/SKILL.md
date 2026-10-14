@@ -156,12 +156,12 @@ The status must sit where a persona sees at once which object the status belongs
 
 ## How many chips
 
-**Keep a chip group to 7 ± 2 chips, the same limit as a checkbox group.** Adjust the limit for cognitive load:
+**Aim for about 7 ± 2 chips in a group, the same guideline as a checkbox group.** The number is a guideline from psychology, not a hard limit. Use judgment. For example, more items fit when every label is short. Going well past the guideline is a sign that a different pattern or component may fit better. Adjust for cognitive load:
 
 - Allow up to nine chips when the chips are similar and easy to understand.
 - Allow as few as five chips when the chips differ from each other or are hard to grasp.
 
-A filter bar is a chip group. `recursica-skill-working-memory` gives the reasoning for the limit and says where the limit stops applying.
+A row of filter chips is a chip group. `recursica-skill-working-memory` gives the reasoning for the guideline and says where the guideline stops applying.
 
 ## Error states
 
@@ -224,7 +224,7 @@ Check every item below before treating status and metadata as done.
 - [ ] Each badge on a card uses the card component's upper-right position.
 - [ ] Chips on a card sit in the card's content area.
 - [ ] Labels on sidebar navigation items are badges, not chips.
-- [ ] Chip groups hold 7 ± 2 chips, adjusted for cognitive load.
+- [ ] Chip groups hold about 7 ± 2 chips, judged by label length and cognitive load.
 - [ ] No chip and no badge shows an error state.
 - [ ] Dense data views use badges, not chips.
 - [ ] Badges cannot receive focus. Chips the persona can act on can receive focus.

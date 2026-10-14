@@ -158,7 +158,7 @@ On screen, a switch shows the on or off state only by the thumb's position and t
 - **Which side of the label the switch sits on.** The design-system website shows a variant for the side, with the options `On Left` and `On Right`, and no token behind the variant. Do not build the variant, and do not rely on the website's options without confirming with the user. Confirm with the user only when the theme has no variant for the side of the label.
 - **How a switch shows an error.** The standard UI kit gives `dropdown` and `autocomplete` an `error` state. Confirm with the user only when the theme has no error state.
 - **What a switch does while the switch's change is still saving**, and what happens if the immediate save fails. Always confirm with the user what the switch does during the save and after a failed save. Confirm with the user which state to show only when the theme has no pending, loading, or failure state.
-- **Whether a switch group may hold more than a few switches**, and whether the 7 ± 2 limit applies to switches at all. The 7 ± 2 limit is stated only for radio groups and checkbox groups.
+- **Whether a switch group may hold more than a few switches**, and whether the 7 ± 2 guideline applies to switches at all. The 7 ± 2 guideline is stated only for radio groups and checkbox groups.
 
 ## Pre-flight checklist
 

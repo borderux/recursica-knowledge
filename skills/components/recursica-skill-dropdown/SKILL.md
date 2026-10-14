@@ -14,7 +14,7 @@ A dropdown is a form field that hides a list of options until the persona opens 
 ## When to use a dropdown
 
 - **The answer comes from a specific, finite list of options**, such as the US states. The persona picks the answer from the list instead of typing the answer.
-- **The list has more than 7 ± 2 options.** More than 7 ± 2 options is too many for a visible group of options, such as a radio group.
+- **The list has well over about 7 ± 2 options.** That many options is too many to scan in a visible group, such as a radio group. The number is a guideline, not a hard limit. Going well past the guideline is a sign that a dropdown fits better.
 - **The form has little space.** A dropdown takes little space. In a long form, a dropdown can replace a checkbox group or a radio group. The visible options would add too much scrolling to a long form.
 - **The persona knows which options the dropdown holds before opening the dropdown.** For example, the persona knows a "State" dropdown holds the US states. See the affordance test under Rules.
 

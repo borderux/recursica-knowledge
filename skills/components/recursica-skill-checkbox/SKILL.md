@@ -24,7 +24,7 @@ A checkbox turns one specific value on or off, such as "Remember me". A checkbox
 | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | Selecting one option rules out the other options, and the persona picks exactly one | A radio group. See `recursica-skill-radio-button`. Never use checkboxes when the persona picks exactly one option.      |
 | There is one lone yes-or-no field, with no others beside the field                  | A switch or a checkbox. Confirm the choice with the user. See `recursica-skill-switch`.                                 |
-| A checkbox group needs more options than the 7 ± 2 limit in the rules below         | A multi-select dropdown. See `recursica-skill-dropdown`. A multi-select dropdown is a checkbox group inside a dropdown. |
+| A checkbox group needs well over the 7 ± 2 guideline in the rules below             | A multi-select dropdown. See `recursica-skill-dropdown`. A multi-select dropdown is a checkbox group inside a dropdown. |
 | The options must sit side by side in a horizontal row                               | Selectable chips. See `recursica-skill-chip`. Never lay out a checkbox group in a horizontal row.                       |
 | The persona chooses an action, such as "Send invoice", not a value                  | A button. See `recursica-skill-button`.                                                                                 |
 | The persona viewing the field can never edit the value                              | A read-only field, which shows the label and the value as text, with no input. See `recursica-skill-read-only-field`.   |
@@ -59,7 +59,7 @@ Each option below is described by role, such as "the checked state". A name from
 
 **Put at least two checkbox items in a checkbox group.** One checkbox alone is not a group. For a single yes-or-no field, confirm with the user whether to use a switch instead.
 
-**Keep a checkbox group to 7 ± 2 options.** `recursica-skill-working-memory` gives the reason for the limit.
+**Aim for about 7 ± 2 options in a checkbox group.** The number is a guideline from psychology, not a hard limit. Use judgment. For example, more items fit when every label is short. Going well past the guideline is a sign that a different pattern or component may fit better. `recursica-skill-working-memory` gives the reason.
 
 - Lean toward fewer options when the options differ from each other, are hard to understand, or need specialist knowledge.
 - If a checkbox group needs more options than the limit, use a multi-select dropdown instead.
@@ -163,7 +163,7 @@ Apps most often miss the behavior in the two lists.
   - label text that makes sense without the text around the label
   - the required and optional markers
 - `recursica-skill-assistive-element` — the help text and error text below the group, and the wording rules for both.
-- `recursica-skill-working-memory` — the reason for the 7 ± 2 limit. The skill also sets the line between recognizing an option and comparing options. The line decides when a long list is acceptable.
+- `recursica-skill-working-memory` — the reason for the 7 ± 2 guideline. The skill also sets the line between recognizing an option and comparing options. The line decides when a long list is acceptable.
 - `recursica-skill-tables` — the table structure around row selection and the header checkbox.
 - `recursica-skill-design-system-conventions` — two design system conventions:
   - never showing a meaning in only one way
@@ -184,7 +184,7 @@ Apps most often miss the behavior in the two lists.
 ## Pre-flight checklist
 
 - [ ] Selecting one option never rules out another option, and no single-choice question is built as checkboxes.
-- [ ] The group holds at least two items, within 7 ± 2, and fewer where the options are hard to tell apart.
+- [ ] The group holds at least two items, and about 7 ± 2 or fewer. Label length and how alike the options are guide the count.
 - [ ] Checkbox items are stacked vertically. There is no horizontal group, and `side-by-side` is used only for label placement.
 - [ ] Label placement matches every other field in the same form. Each form has one placement at each breakpoint, with no mixing between fields or form sections.
 - [ ] `checkbox`, `checkbox-item`, and `checkbox-group` are used together. No form holds a bare `checkbox` without the item and the group.

@@ -93,7 +93,7 @@ Use a switch only when both the value and the setting the label names are binary
 
 ## Option counts and dropdowns
 
-**Aim for 7 ± 2 options, adjusted for how hard the options are to understand.** The 7 ± 2 limit applies to options the persona compares. The limit does not apply to a list where the persona recognizes an item. See `recursica-skill-working-memory` for the reasoning and the limits of the reasoning. Adjust the number of options this way:
+**Aim for about 7 ± 2 options, adjusted for how hard the options are to understand.** The number is a guideline from psychology, not a hard limit. Use judgment. For example, more items fit when every label is short. Going well past the guideline is a sign that a different pattern or component may fit better. The guideline applies to options the persona compares. The guideline does not apply to a list where the persona recognizes an item. See `recursica-skill-working-memory` for the reasoning and the limits of the reasoning. Adjust the number of options this way:
 
 - **Options that are similar and easy to understand** → the upper end of the range is fine.
 - **Options that are different from each other, hard to grasp, or need specialist knowledge** → use fewer.
@@ -157,7 +157,7 @@ A segmented control and selectable chips both show where each option begins and 
 - care with pre-selection for single select
 - how saving works
 
-**Limit a segmented control to 2–5 options.** The 2–5 limit is tighter than the general 7 ± 2 limit, because a segmented control is horizontal and compact. Above five options, go back to a vertical radio group. If the options are also over the general limit, use a dropdown. Never use tabs instead.
+**Limit a segmented control to 2–5 options.** The 2–5 limit is tighter than the general 7 ± 2 guideline, because a segmented control is horizontal and compact. Above five options, go back to a vertical radio group. If the options are also over the general limit, use a dropdown. Never use tabs instead.
 
 ## Immediate vs. batch submit
 
@@ -237,7 +237,7 @@ Check every item before treating a set of selection controls as done:
 - [ ] Every switch passes the binary-inverse test: the opposite state is known, unique, and binary.
 - [ ] Every switch passes the label test: the switch label alone names the setting the switch controls, with no competing values.
 - [ ] A checkbox group is used wherever the persona can select zero to many options.
-- [ ] Each group holds 7 ± 2 options, and fewer where the options are different from each other or need specialist knowledge.
+- [ ] Each group holds about 7 ± 2 options, judged by label length and how hard the options are to tell apart.
 - [ ] A list of options above the limit uses a dropdown. The list is predictable enough that the persona knows the options before opening the dropdown.
 - [ ] A checkbox or radio button starts selected only when about 90 percent of personas would choose the option. The option also has no major later consequences.
 - [ ] A select-all control appears only where the checkbox group is long, and the checkbox group shows an indeterminate state.

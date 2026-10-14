@@ -102,7 +102,7 @@ A wrong role or a wrong connection in the tab set's markup makes the tab set's c
 
 - `recursica-skill-navigation` — what tabs may contain, tab routes and history, active states, and breadcrumbs.
 - `recursica-skill-stepper` — the stepper, which is the correct alternative to a form split across tabs.
-- `recursica-skill-working-memory` — the reason for the 7 ± 2 limit on tabs.
+- `recursica-skill-working-memory` — the reason for the 7 ± 2 guideline on tabs.
 - `recursica-skill-badges-chips` — the counter on a tab.
 - `recursica-skill-design-system-conventions` — the accessibility baseline every component follows.
 
@@ -118,7 +118,7 @@ A wrong role or a wrong connection in the tab set's markup makes the tab set's c
 - [ ] Every tab panel is an equal part of one subject, and the order of the tabs does not matter.
 - [ ] No form, and no process with steps in order, is split across tabs.
 - [ ] Every tab has a separate sub-route, stays open after a refresh, and works with back and forward.
-- [ ] Tab labels are nouns. The tab set is within 7 ± 2 tabs, and the tabs do not wrap, scroll, or overflow.
+- [ ] Tab labels are nouns. The tab set holds about 7 ± 2 tabs or fewer, and the tabs do not wrap, scroll, or overflow.
 - [ ] A tab set that did not fit is vertical or has shorter labels.
 - [ ] The fix for a tab set that did not fit was chosen without confirming with the user.
 - [ ] One style applies to the whole tab set. No tab item mixes in another style, and no style is invented.

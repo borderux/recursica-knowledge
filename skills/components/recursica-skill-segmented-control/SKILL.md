@@ -60,7 +60,7 @@ The rules below describe each option by role, such as "the horizontal orientatio
 
 ## Rules
 
-**Give a segmented control 2 to 5 options.** The house limit for the number of options in a choice is 7 ± 2. The 2-to-5 limit overrides the house limit for a segmented control. The limit is tighter because a segmented control is horizontal and compact. `recursica-skill-selection-controls` sets this rule.
+**Give a segmented control 2 to 5 options.** The general guideline for the number of options in a choice is 7 ± 2. The 2-to-5 limit overrides the guideline for a segmented control. The limit is tighter because a segmented control is horizontal and compact. `recursica-skill-selection-controls` sets this rule.
 
 **Use the horizontal orientation, even when the theme's UI kit has a vertical orientation.** A segmented control is the house component for a _horizontal_ single-select, and for no other layout. `recursica-skill-selection-controls` names the radio group as the vertical single-select, with the options stacked one above another. Build a vertical single-select as a radio group.
 

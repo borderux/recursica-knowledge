@@ -11,22 +11,23 @@ metadata:
 
 Read this skill before overriding a count limit, such as the limit on options in a radio group. When asked where a count limit came from, cite this skill.
 
-Every 7 ± 2 limit on item counts in the Recursica design rules rests on research about working memory (how much a person can hold in mind at once). This skill explains where the number in each limit comes from, and when the limit does not apply. The cases where the limit does not apply matter as much as the number.
+Every 7 ± 2 guideline on item counts in the Recursica design rules rests on research about working memory (how much a person can hold in mind at once). This skill explains where the number in each limit comes from, and when the limit does not apply. The cases where the limit does not apply matter as much as the number.
 
-## The house rule
+## The house guideline
 
 **Aim for 7 ± 2 items, adjusted for the cognitive load of the content.**
 
 - If the items are similar, easy to tell apart and familiar, allow the high end of the range, up to 9. For example, navigation links named Orders, Customers and Invoices.
 - If the items differ from each other, are hard to think about or need expert knowledge, use fewer items. Aim closer to 5.
+- If every label is short, more items may fit. Use judgment.
 
-Today the house rule applies to the four parts of the interface in the table below. The skill named in each table row owns that rule and states the rule.
+Today the house guideline applies to the four parts of the interface in the table below. The 7 ± 2 number is a guideline, not a hard limit. Going well past the guideline is a sign that a different pattern or component may fit better. The skill named in each table row owns that guideline.
 
-| Part of the interface                | Rule                                                                          | Skill that owns the rule             |
+| Part of the interface                | Guideline                                                                     | Skill that owns the rule             |
 | ------------------------------------ | ----------------------------------------------------------------------------- | ------------------------------------ |
 | Navigation items per level           | 7 ± 2; nearer 5 for complex subject matter, up to 9 for simple subject matter | `recursica-skill-navigation`         |
-| Options in a radio or checkbox group | 7 ± 2 scaled by cognitive load; above the limit, convert to a dropdown        | `recursica-skill-selection-controls` |
-| Chips in a group or filter bar       | 7 ± 2 scaled by cognitive load, as a checkbox group                           | `recursica-skill-badges-chips`       |
+| Options in a radio or checkbox group | 7 ± 2 scaled by cognitive load; well above it, consider a dropdown            | `recursica-skill-selection-controls` |
+| Chips in a group                     | 7 ± 2 scaled by cognitive load, as a checkbox group                           | `recursica-skill-badges-chips`       |
 | Options in a segmented control       | 2–5, tighter than 7 ± 2 because the control is horizontal and compact         | `recursica-skill-segmented-control`  |
 
 **Some count limits do not rest on working memory.** `recursica-skill-dashboards` limits the charts and the items on a dashboard. That skill owns those limits and states the reasons.
@@ -51,7 +52,7 @@ Miller also named _chunking_. Chunking is grouping information into larger units
 
 An honest summary of the research says the real capacity is _lower_ than seven, not higher.
 
-**The house rule uses 7 ± 2 as a limit on scanning and comparing, not as a claim about memory capacity.** Past about nine items, a persona can no longer take in a list at a glance. A list that long starts to need a careful search. The house rule is designed to prevent that careful search.
+**The house guideline uses 7 ± 2 for scanning and comparing, not as a claim about memory capacity.** Past about nine items, a persona can no longer take in a list at a glance. A list that long starts to need a careful search. The house rule is designed to prevent that careful search.
 
 The number 7 ± 2 is a useful, widely understood convention, and the number falls in the right place for scanning. The number is not evidence that personas can hold nine items in mind.
 
@@ -77,11 +78,11 @@ A long list does not always break the limit.
 
 ## Common misapplications
 
-**Do not cite 7 ± 2 to limit a list where the persona only recognizes the item the persona wants.** Reference data in alphabetical order, search results, and table rows are not bound by the 7 ± 2 limit. For example, a list of countries in alphabetical order is not bound by the limit.
+**Do not cite 7 ± 2 to limit a list where the persona only recognizes the item the persona wants.** Reference data in alphabetical order, search results, and table rows are not bound by the 7 ± 2 guideline. For example, a list of countries in alphabetical order is not bound by the limit.
 
 **Do not treat nine as a target.** Nine is the far end of the range, and the range gets smaller as the content gets harder. Most enterprise subject matter is harder than average, so most counts should be below seven.
 
-**Do not use the 7 ± 2 limit to justify hiding items behind a "more" control.** When a count is over the limit, group the items or use a different control. For example, use a dropdown instead of a radio group. Hiding items is not the fix. See the overflow rules in `recursica-skill-navigation`.
+**Do not use the 7 ± 2 guideline to justify hiding items behind a "more" control.** When a count is over the limit, group the items or use a different control. For example, use a dropdown instead of a radio group. Hiding items is not the fix. See the overflow rules in `recursica-skill-navigation`.
 
 **Do not claim that 7 ± 2 is settled science.** When 7 ± 2 is challenged, give the accurate position in three points:
 

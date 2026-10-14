@@ -15,7 +15,7 @@ A radio group has one group label and several options. Exactly one option may be
 
 - **Use a radio group when the options rule each other out, and the persona must choose exactly one option.** For example, an order ships at one speed, never two. Radio buttons are the only correct control for a choice of exactly one option.
 - **Use a radio group when the persona should see every option at once.** The options sit in a stacked list that is easy to scan. The persona should not have to open a control, such as a dropdown, to find out which options exist.
-- **Use a radio group when the options are few enough to compare on the screen**, within the 7 ± 2 limit under "Rules".
+- **Use a radio group when the options are few enough to compare on the screen**, within the 7 ± 2 guideline under "Rules".
 - **A radio group saves the chosen option under the application's save mode**, like every other field in the form.
 
 ## When not to use a radio button
@@ -24,7 +24,7 @@ A radio group has one group label and several options. Exactly one option may be
 | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | The persona may select any number of options, from zero to all                               | `recursica-skill-checkbox`                                                                                   |
 | The value is binary, such as email alerts on or off. The opposite value is known and unique. | `recursica-skill-switch`. See the binary-inverse test in `recursica-skill-selection-controls`.               |
-| The choice has more options than the 7 ± 2 limit                                             | `recursica-skill-dropdown`, with a single selection                                                          |
+| The choice has well over the 7 ± 2 guideline                                                 | `recursica-skill-dropdown`, with a single selection                                                          |
 | The persona must type to find the value in a long list of familiar options                   | `recursica-skill-autocomplete`                                                                               |
 | The options must sit side by side in a horizontal row                                        | `recursica-skill-segmented-control`. Never lay out a radio group's options in a row, and never use tabs.     |
 | The persona does not have to choose any option                                               | First check whether the field is a choice of one option at all. See `recursica-skill-selection-controls`.    |
@@ -62,7 +62,7 @@ Never build a radio group in a form from radio buttons alone, without the group 
 
 **Give a radio group at least two options.** A single radio button gives the persona no choice. A single radio button also cannot be deselected once the radio button is selected.
 
-**Keep a radio group to 7 ± 2 options.** `recursica-skill-working-memory` and `recursica-skill-selection-controls` state the same limit. Use fewer options when any one of the following is true:
+**Aim for about 7 ± 2 options in a radio group.** The number is a guideline from psychology, not a hard limit. Use judgment. For example, more items fit when every label is short. Going well past the guideline is a sign that a different pattern or component may fit better. `recursica-skill-working-memory` and `recursica-skill-selection-controls` state the same guideline. Use fewer options when any one of the following is true:
 
 - The options are different from each other.
 - The options are hard to grasp.
@@ -170,7 +170,7 @@ Never set or override the styling of the radio group or the radio items either.
   - label text that makes sense without the text around the label
   - the required and optional markers
 - `recursica-skill-assistive-element` — the help text and error text below the group, and the wording rules for both.
-- `recursica-skill-working-memory` — the research behind the 7 ± 2 limit, and the difference between recognizing an option and comparing options.
+- `recursica-skill-working-memory` — the research behind the 7 ± 2 guideline, and the difference between recognizing an option and comparing options.
 - `recursica-skill-design-system-conventions` — never convey meaning in only one way.
 
 ### Only if used on the same screen
@@ -186,7 +186,7 @@ Never set or override the styling of the radio group or the radio items either.
 ## Pre-flight checklist
 
 - [ ] The options rule each other out, and no choice of one option is built from checkboxes.
-- [ ] The radio group holds at least two options, within 7 ± 2, and fewer for options that are hard to tell apart.
+- [ ] The radio group holds at least two options, and about 7 ± 2 or fewer. Label length and how alike the options are guide the count.
 - [ ] The options are stacked vertically. No radio group runs in a row, and the side-by-side option is used only for label placement.
 - [ ] Label placement matches every other field in the same form. Each form has one placement at each breakpoint, with no mixing between fields or form sections.
 - [ ] The group, item, and radio button components are used together.

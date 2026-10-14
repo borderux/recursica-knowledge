@@ -135,7 +135,7 @@ Apps get the two jobs wrong more often than any other accordion rule.
   - permissions
   - why a top-level item with no children stays a link
 - `recursica-skill-discoverability` — progressive disclosure, and the three cases where hiding content is not safe.
-- `recursica-skill-working-memory` — 7 ± 2 as the most items a persona can scan at a glance, and what the 7 ± 2 limit does not claim.
+- `recursica-skill-working-memory` — 7 ± 2 as the most items a persona can scan at a glance, and what the 7 ± 2 guideline does not claim.
 - `recursica-skill-design-system-conventions` — two conventions:
   - never show a meaning in a single channel
   - fix the structure instead of collapsing content to work around the structure

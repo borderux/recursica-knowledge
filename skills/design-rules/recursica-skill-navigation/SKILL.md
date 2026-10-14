@@ -93,12 +93,12 @@ Treat three or four items as a default, not a hard limit. If the choice is not o
 
 ## Number of navigation items
 
-**Aim for 7 ± 2 items per navigation level, adjusted for how complex the subject matter is.**
+**Aim for about 7 ± 2 items per navigation level, adjusted for how complex the subject matter is.** The number is a guideline from psychology, not a hard limit. Use judgment. For example, more items fit when every label is short. Going well past the guideline is a sign that a different pattern or component may fit better.
 
 - **For complex subject matter, aim for about 5 items.**
 - **For simple subject matter, allow up to 9 items.**
 
-See `recursica-skill-working-memory` for the reasoning, the research, and the limits of the 7 ± 2 rule.
+See `recursica-skill-working-memory` for the reasoning, the research, and the limits of the 7 ± 2 guideline.
 
 **Treat too many items as the real defect, and the overflow as the symptom.** A horizontal navigation that runs out of room has almost always gone past 7 ± 2 items first. Keeping to 7 ± 2 items makes the overflow rules possible to enforce.
 
@@ -233,7 +233,7 @@ Show the blocked item disabled, and enable the item once the persona makes the c
 **Confirm with the user instead of choosing.** No house rule covers the topics below yet. See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit the topics below.
 
 - **The order of items within a level.** No rule says whether to order items by how often the items are used, alphabetically, or by workflow order.
-- **Maximum depth.** The 7 ± 2 rule governs the number of items in each level, not how many levels are acceptable.
+- **Maximum depth.** The 7 ± 2 guideline covers the number of items in each level, not how many levels are acceptable.
 - **Whether a dashboard or overview screen gets its own navigation item, and where.**
 
 ## Out of scope
@@ -257,7 +257,7 @@ Check every item below before treating the navigation as done.
 - [ ] Each tab has its own sub-path under the route of the view that holds the tabs.
 - [ ] A top bar holds only a few items, about three or four, that will not grow. More items, or items expected to grow, get a sidebar. No sidebar appears below the tablet breakpoint.
 - [ ] The navigation is vertical where top-level items will grow.
-- [ ] Each level holds 7 ± 2 items: closer to 5 for complex subjects, up to 9 for simple subjects.
+- [ ] Each level holds about 7 ± 2 items, judged by label length and how complex the subject is.
 - [ ] The item count holds for each role, after permissions hide items.
 - [ ] Search, notifications, and the account menu are outside primary navigation.
 - [ ] Sub-navigation opens on click, not on hover.
