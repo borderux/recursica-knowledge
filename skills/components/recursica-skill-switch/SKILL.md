@@ -144,7 +144,8 @@ On screen, a switch shows the on or off state only by the thumb's position and t
 - `recursica-skill-forms` — the save-mode table and the save status each save mode requires, and single-column layout. The skill also covers label placement, one placement per form, and progressive disclosure.
 - `recursica-skill-label` — label text that names the object and makes sense out of context, and the required and optional markers.
 - `recursica-skill-assistive-element` — the help text and error text below the switch, and the wording rules for both.
-- `recursica-skill-buttons-links` — confirmation for changes with serious consequences, and undo.
+- `recursica-skill-buttons-links` — confirmation for changes with serious consequences.
+- `recursica-skill-undo` — offering an undo for a change.
 - `recursica-skill-system-conventions` — one mode of behavior per system, and never showing a meaning in only one way.
 
 ### Only if used on the same screen

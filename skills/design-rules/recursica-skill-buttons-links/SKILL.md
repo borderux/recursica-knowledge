@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-buttons-links
-description: House rules for clickable controls — button versus link, table row actions, icon-only buttons and their tooltips, disabled states, bulk actions, primary and secondary hierarchy, labels, destructive-action confirmation, undo, and toolbar overflow. Use when placing, labeling, or reviewing any button or link. Not for the form submit flow — see recursica-skill-forms.
+description: House rules for clickable controls — button versus link, table row actions, icon-only buttons and their tooltips, disabled states, bulk actions, primary and secondary hierarchy, labels, destructive-action confirmation, and toolbar overflow. Use when placing, labeling, or reviewing any button or link. Not for the form submit flow — see recursica-skill-forms.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -222,17 +222,7 @@ A destructive action deletes an object, a value, or any other data, or cannot ea
 
 ## Undo
 
-**When the persona deletes one row item, or one of many objects, replace the delete control with an undo button.** The undo button appears where the delete control was. For example, after the persona deletes one comment, `Undo` appears where `Delete` was.
-
-**When the persona destroys a whole object, use a confirmation modal instead.** Ask for confirmation before the action. A persona destroys a whole object in any of three ways:
-
-- saving over the whole object
-- deleting the whole object
-- destroying a whole form of data
-
-An undo is no longer useful after a loss that large.
-
-**Show a global undo notification as a toast.**
+**Follow `recursica-skill-undo` for when an action gets an undo, and where the undo goes.**
 
 ## Toggle actions
 
@@ -309,8 +299,7 @@ Before treating a set of buttons and links as done, check each item:
 - [ ] The bulk action area holds only controls. The bulk action area has no list of the selected records. No clear or deselect-all control competes with the checkbox in the table header. The bulk action area has no "nothing selected" placeholder and no action on a single record.
 - [ ] Confirmation modals appear only for destruction that cannot be undone and is hard to recreate. Every action that can be undone happens immediately.
 - [ ] Cancel in a confirmation modal is the secondary button.
-- [ ] Deleting a single item swaps the delete control for an undo button. Destroying a whole object asks for confirmation first instead.
-- [ ] A global undo appears as a toast.
+- [ ] Every undo follows `recursica-skill-undo`.
 - [ ] Toggles are buttons, labeled with the positive state reached, never with a negative like "Unfollow".
 - [ ] Rarely used toolbar functions sit in an overflow menu, and standard sets of functions follow convention.
 - [ ] Controls that open a modal are buttons, unless the modal has a real URL that can be shared.

@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-toast
-description: Rules for the Recursica toast — when brief feedback is right, toast styles, success confirmations, keeping an undo reachable, and announcing without taking focus. Use for toasts, snackbars, and just-happened notifications. Not for decisions — see recursica-skill-modal; not for field errors — see recursica-skill-forms.
+description: Rules for the Recursica toast — when brief feedback is right, toast styles, success confirmations, an Undo button in a toast, and announcing without taking focus. Use for toasts, snackbars, and just-happened notifications. Not for decisions — see recursica-skill-modal; not for field errors — see recursica-skill-forms.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -14,7 +14,7 @@ A toast reports what just happened, without interrupting the persona's work.
 ## When to use a toast
 
 - **Confirming that an action worked**, such as "Invoice saved", "Comment deleted" or "Message sent".
-- **Offering an undo for the whole page.** `recursica-skill-buttons-links` requires a toast for an undo notification that covers the whole page.
+- **Offering an undo after a destructive action removes the object from view.** See `recursica-skill-undo`.
 - **Reporting an error that belongs to no field.** For example:
   - a conflict on the server, such as another persona changing the same invoice
   - a broken business rule
@@ -25,9 +25,9 @@ A toast reports what just happened, without interrupting the persona's work.
 
 | Situation                                                                                      | Use instead                                                                            |
 | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| Asking the persona to confirm an action that can be reversed                                   | Perform the action and offer an undo. See `recursica-skill-buttons-links`.             |
+| Asking the persona to confirm an action that can be reversed                                   | Perform the action and offer an undo. See `recursica-skill-undo`.                      |
 | A validation error on a specific field                                                         | The field's error state. See `recursica-skill-forms` and `recursica-skill-text-field`. |
-| Undoing the delete of one row in a table or a list, or of one item                             | An undo button in place of the delete button. See `recursica-skill-buttons-links`.     |
+| Undoing the delete of one row in a table or a list, or of one item                             | An undo button in place of the delete button. See `recursica-skill-undo`.              |
 | Destroying a whole object, when the delete cannot be undone and the object is hard to recreate | A confirmation before the action. See `recursica-skill-modal`.                         |
 | A decision the persona must make before continuing                                             | A modal. See `recursica-skill-modal`.                                                  |
 | Information the persona will need to refer to later                                            | The page. A toast disappears.                                                          |
@@ -71,8 +71,6 @@ The rules below describe each option by role, such as "the success style". The n
 
 **Put at most one action in a toast**, and make the action a single follow-up, such as Undo. A toast with two actions asks the persona to make a decision before the toast disappears. A decision belongs in a modal.
 
-**A toast's action must not be the only way to reach that action.** An undo that disappears with the toast is gone before a persona using a keyboard can reach the undo. See the keyboard rules below.
-
 **Never use a toast as the only record of a destructive action** (an action that deletes data or cannot be undone). Once the toast is gone, the persona has no way back to the record.
 
 **Leave the duration (how long the toast stays on screen) unchanged, unless the user asks for a change.** The code library behind the toast component sets the duration. `recursica-skill-feedback-messaging` owns this rule.
@@ -82,11 +80,7 @@ The rules below describe each option by role, such as "the success style". The n
 
 **Every toast has a dismiss control, built into the toast component.** The persona can always close the toast. Never ship a toast that cannot be dismissed.
 
-**Leave how long an immediate undo lasts unchanged, unless the user asks for a change.** The code library also sets how long an undo stays available.
-
-**A toast may have its own Undo button.** For example, "Comment deleted" with an Undo button. The undo must never exist only inside the toast, because the toast closes by itself. Also put the undo in a part of the page that stays on screen.
-
-A persona using a keyboard has to leave the current field, tab to the toast, and press the undo. All three steps have to happen before the code library's timer closes the toast.
+**For an Undo button in a toast, follow `recursica-skill-undo`.**
 
 **Combine duplicate toasts.** Show a repeated message as one toast. For example, ten identical "Could not save" toasts stacked on screen report one problem ten times. See `recursica-skill-feedback-messaging`.
 
@@ -115,7 +109,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 ### Keyboard and non-mouse navigation
 
 - **Never move focus to the toast when the toast appears.** A focus move pulls the text cursor out of a field in the middle of a word. A focus move also puts the persona in a place the persona did not ask to go.
-- **A toast with an action cannot close by itself while a persona is trying to reach the action.** Reaching an undo by keyboard means leaving the current field, tabbing to the toast, and pressing the undo. A timer running during those steps makes the action impossible to reach. The code library sets the duration, and nobody changes the duration. So the toast's undo action must also be in a part of the page that stays on screen. Have the toast point to the undo action on the page. Never ship a timed toast whose action is the only way to undo.
+- **A persona using a keyboard must be able to reach a toast's action before the toast closes.** Reaching the action means leaving the current field, tabbing to the toast, and pressing the action. `recursica-skill-undo` covers how an Undo button stays in reach.
 - **The toast must be in the tab order while the toast is visible.** The toast's place in the tab order must be predictable, not after every other element on the page.
 - **If the toast's timer pauses on hover, the timer must also pause on focus.** Otherwise the pause helps only personas using a mouse.
 - **Closing a toast must work from the keyboard, not only with a pointer.** Every toast has a dismiss control, and the dismiss control works from the keyboard.
@@ -137,7 +131,8 @@ The theme also sets which icon each toast style shows. Never change the icon a s
   - why messages next to the content are avoided
   - what the code library controls
   - the time limits for showing feedback while the persona waits
-- `recursica-skill-buttons-links` — the rules for undo, and the wording of action labels. The buttons-links skill also covers an undo in place versus an undo for the whole page. The buttons-links skill says when to perform a reversible action instead of asking the persona to confirm.
+- `recursica-skill-undo` — when an action gets an undo instead of a confirmation, and where the undo goes.
+- `recursica-skill-buttons-links` — the wording of action labels.
 - `recursica-skill-forms` — errors on fields, and the status message that must stay on screen when each field saves separately. The forms skill also holds the rule against any status when the form saves all changes at once.
 - `recursica-skill-system-conventions` — showing meaning in more than one way. The system-conventions rule is why the style is never the whole message.
 - `recursica-skill-live-regions` — what the app must announce along with a toast, and how to announce changes the persona did not cause.
@@ -169,7 +164,6 @@ The theme also sets which icon each toast style shows. Never change the icon a s
 - [ ] The icon is silent, and the text states the result.
 - [ ] Stacked toasts share one live region, with messages in order. The announcements of stacked toasts never overlap.
 - [ ] Every toast action has a real accessible name that includes the item the action affects. Every close control has a real accessible name.
-- [ ] No undo exists only inside a toast. The action also exists in a part of the page that stays on screen.
 - [ ] The duration (how long the toast stays on screen) and the undo time are the code library's defaults.
 - [ ] A changed duration or undo time was asked for by the user.
 - [ ] The persona can dismiss every toast, and duplicate toasts are combined, not stacked.

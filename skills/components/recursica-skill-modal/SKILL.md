@@ -29,7 +29,7 @@ A modal blocks the page until the persona makes one decision or finishes one sho
 | Situation                                                   | Use instead                                                                                    |
 | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | The persona needs the content under the modal while working | A panel, or editing in place on the page. See `recursica-skill-panel`.                         |
-| The action can be undone                                    | Do the action, and offer undo. See `recursica-skill-buttons-links`.                            |
+| The action can be undone                                    | Do the action, and offer undo. See `recursica-skill-undo`.                                     |
 | The message confirms a success                              | A toast. See `recursica-skill-toast`.                                                          |
 | The task is long, has several steps, or is a big form       | A page. A form inside a modal that scrolls belongs on a separate route.                        |
 | The content is a location the persona can link to           | A page, unless the content is a modal built on purpose for linking. See "Rules".               |
@@ -135,7 +135,8 @@ Never restyle the overlay behind the modal. Never change when the scroll divider
   - why mode is the only real difference among a modal, a panel and a page
   - the ban on stacking modals
   - protecting unsaved changes
-- `recursica-skill-buttons-links` — the controls that open a modal, confirming destructive actions, undo, and the order of importance of footer buttons.
+- `recursica-skill-buttons-links` — the controls that open a modal, confirming destructive actions, and the order of importance of footer buttons.
+- `recursica-skill-undo` — offering an undo instead of a confirmation.
 - `recursica-skill-navigation` — routes and browser history, including the exception for a modal built on purpose for linking.
 - `recursica-skill-forms` — the save mode and validation of any form inside the modal.
 - `recursica-skill-system-conventions` — the accessibility baseline every component follows.

@@ -204,7 +204,8 @@ A panel exists to sit beside the page the panel depends on. On a screen too narr
 ## Out of scope
 
 - **The variants, states, and accessibility details of the panel and modal components** — `recursica-skill-panel` and `recursica-skill-modal`.
-- **When to ask for a confirmation at all, policy on destructive actions, and undo** — `recursica-skill-buttons-links`.
+- **When to ask for a confirmation at all, and policy on destructive actions** — `recursica-skill-buttons-links`.
+- **Undo** — `recursica-skill-undo`.
 - **Routing and browser history in general** — `recursica-skill-navigation`.
 - **Form layout, validation, and saving behavior** — `recursica-skill-forms`.
 - **Tooltips, hover cards, and popovers.** Tooltips, hover cards, and popovers are small components attached to one element, not modes, and are outside the panels-and-modals skill.

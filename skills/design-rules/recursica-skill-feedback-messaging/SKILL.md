@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-feedback-messaging
-description: House rules for telling the persona what happened — whether a success needs confirming, banner versus toast, avoiding inline messages, combining duplicates, where system errors appear, and when to show loading. Use for toasts, banners, success or error messages, undo, and waiting states. Not for field validation — see recursica-skill-forms.
+description: House rules for telling the persona what happened — whether a success needs confirming, banner versus toast, avoiding inline messages, combining duplicates, where system errors appear, and when to show loading. Use for toasts, banners, success or error messages, and waiting states. Not for field validation — see recursica-skill-forms.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -103,7 +103,7 @@ The ban on inline messages covers brief status and success messages placed in th
 
 **The code library also sets how long an undo lasts, including how long an immediate undo stays available.** Change how long an undo lasts only when the user asks.
 
-**Do not make a toast's duration longer to keep the toast's action, such as Undo, within reach.** A toast may have its own Undo button. Where an undo matters, the undo must also exist in a place that stays on the screen. See `recursica-skill-toast`.
+**Do not make a toast's duration longer to keep the toast's action, such as Undo, within reach.** For an Undo button in a toast, follow `recursica-skill-undo`.
 
 ## No partial success
 
@@ -150,7 +150,7 @@ A partial success should not reach the interface. For that reason, the channel t
 
 - **When a field is validated, what the field's error says, and the save-status requirement**: `recursica-skill-forms`.
 - **Blocking confirmations, and dialogs for destructive actions**: `recursica-skill-modal`.
-- **Undo policy, meaning when an action gets an undo instead of a confirmation**: `recursica-skill-buttons-links`.
+- **Undo policy, meaning when an action gets an undo and where the undo goes**: `recursica-skill-undo`.
 - **The toast component's variants, states and accessibility details**: `recursica-skill-toast`.
 - **Loader variants, and what a spinner can and cannot tell the persona**: `recursica-skill-loader`.
 - **Error logging, retry policy, and how the backend classifies a failure.** These topics are not interface decisions.
@@ -179,7 +179,6 @@ A partial success should not reach the interface. For that reason, the channel t
 - [ ] The toast duration, the toast persistence and the undo time are the code library's defaults.
 - [ ] A changed duration, persistence or undo time was asked for by the user.
 - [ ] The persona can dismiss every toast.
-- [ ] No undo exists only inside a toast that times out.
 - [ ] A loading indicator appears only for operations that take more than about 3 seconds.
 - [ ] The submit button is the loading indicator for the submit action.
 - [ ] No blocking spinner or overlay appears on submit.

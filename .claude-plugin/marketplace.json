@@ -38,6 +38,7 @@
         "./skills/design-rules/recursica-skill-system-conventions",
         "./skills/design-rules/recursica-skill-tables",
         "./skills/design-rules/recursica-skill-typography-semantics",
+        "./skills/design-rules/recursica-skill-undo",
         "./skills/psychology/recursica-skill-discoverability",
         "./skills/psychology/recursica-skill-working-memory",
         "./skills/components/recursica-skill-accordion",

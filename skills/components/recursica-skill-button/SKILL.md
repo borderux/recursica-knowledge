@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-button
-description: Rules for the Recursica button — button versus link, button styles, sizes and content, how many primary buttons, labels, destructive actions, icon-only buttons, and accessibility. Use for any button, submit and cancel pair, toolbar, or row action. Not for going to another page — see recursica-skill-link. Button hierarchy and undo rules are in recursica-skill-buttons-links.
+description: Rules for the Recursica button — button versus link, button styles, sizes and content, how many primary buttons, labels, destructive actions, icon-only buttons, and accessibility. Use for any button, submit and cancel pair, toolbar, or row action. Not for going to another page — see recursica-skill-link. Button hierarchy is in recursica-skill-buttons-links, and undo in recursica-skill-undo.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -128,7 +128,8 @@ The button component shows the focus ring. The button component also responds to
 
 ## Related skills
 
-- `recursica-skill-buttons-links` — button versus link, label wording, button hierarchy and placement. The skill also covers confirming destructive actions, undo, toggles, row actions, bulk actions, and buttons that open a modal.
+- `recursica-skill-buttons-links` — button versus link, label wording, button hierarchy and placement. The skill also covers confirming destructive actions, toggles, row actions, bulk actions, and buttons that open a modal.
+- `recursica-skill-undo` — when an action gets an undo, and where the Undo button goes.
 - `recursica-skill-forms` — what submit and cancel buttons do, the form's save mode, and where the form footer goes.
 - `recursica-skill-system-conventions` — showing meaning in more than one way, and changing the screen's structure instead of shrinking controls to fit.
 

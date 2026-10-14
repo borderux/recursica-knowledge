@@ -180,11 +180,12 @@ A region that holds content, such as a page, panel or modal, sits on a layer (a 
 | 18  | Any date, time, currency or numeric value on screen                                                                                                                      | `recursica-skill-dates-and-currency`               |
 | 19  | Any count of items, such as navigation items, options and chips                                                                                                          | `recursica-skill-working-memory`                   |
 | 20  | What the application tells the persona back: success, failure, waiting, and a banner versus a toast                                                                      | `recursica-skill-feedback-messaging`               |
-| 21  | Announcing a change to assistive technology, such as a screen reader, when content updates in place                                                                      | `recursica-skill-live-regions`                     |
-| 22  | What every object, navigation item, title and column is called                                                                                                           | `recursica-skill-naming-terminology`               |
-| 23  | Which icon shows which meaning, and whether an icon may appear without a label                                                                                           | `recursica-skill-icon-semantics`                   |
-| 24  | Headings, emphasis, abbreviations, and the markup under the visual hierarchy                                                                                             | `recursica-skill-typography-semantics`             |
-| 25  | Empty, loading, error and partial states                                                                                                                                 | **No skill yet — ask**                             |
+| 21  | Whether an action gets an undo, and where the Undo button goes                                                                                                           | `recursica-skill-undo`                             |
+| 22  | Announcing a change to assistive technology, such as a screen reader, when content updates in place                                                                      | `recursica-skill-live-regions`                     |
+| 23  | What every object, navigation item, title and column is called                                                                                                           | `recursica-skill-naming-terminology`               |
+| 24  | Which icon shows which meaning, and whether an icon may appear without a label                                                                                           | `recursica-skill-icon-semantics`                   |
+| 25  | Headings, emphasis, abbreviations, and the markup under the visual hierarchy                                                                                             | `recursica-skill-typography-semantics`             |
+| 26  | Empty, loading, error and partial states                                                                                                                                 | **No skill yet — ask**                             |
 
 **Follow two ordering rules:**
 
