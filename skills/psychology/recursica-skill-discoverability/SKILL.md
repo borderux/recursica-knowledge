@@ -46,7 +46,7 @@ The paradox says most personas will not take the three steps. Building a configu
 
 **The paradox also explains why teaching configuration up front fails.** A persona new to the product has not used the product yet. The new persona has no basis for arranging a workspace in the product. A tour that explains configuration arrives before the persona has any preference to set.
 
-For that reason, `recursica-skill-dashboards` requires a first-run element that the persona can dismiss. An example is a "Get started" checklist. The first-run element focuses on the persona's _first tasks_, not on customization.
+For that reason, a first-run element in `recursica-skill-dashboards` must be one the persona can dismiss. An example is a "Get started" checklist. The first-run element focuses on the persona's _first tasks_, not on customization.
 
 **Progressive disclosure is the second research finding behind the house rules.** Nielsen defines progressive disclosure as two steps:
 
@@ -102,7 +102,7 @@ For example, a persona who never needed to hide a table column does not look for
 
 - **Item counts and the limits of memory.** `recursica-skill-working-memory` covers item counts and the limits of memory.
 - **The house rules.** `recursica-skill-system-conventions`, `recursica-skill-dashboards`, and `recursica-skill-tables` state the house rules.
-- **Onboarding design beyond the first-run element the persona can dismiss.** `recursica-skill-dashboards` requires the first-run element.
+- **Onboarding design beyond the first-run element the persona can dismiss.** `recursica-skill-dashboards` adds the first-run element only when the requirements call for one.
 
 ## Pre-flight checklist
 

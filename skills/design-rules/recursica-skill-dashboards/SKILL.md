@@ -170,7 +170,7 @@ The whole screen must not shift.
 
 **If no content is worth putting on a dashboard, the application should have no dashboard.**
 
-**A first-run dashboard should include an onboarding element**, such as a "Get started" checklist.
+**Add an onboarding element to a first-run dashboard only when the requirements call for one.** An example is a "Get started" checklist.
 
 - The onboarding element walks the persona through the persona's first tasks.
 - The onboarding element explains what the product does.
@@ -244,7 +244,8 @@ Check every item before treating a dashboard as done.
 - [ ] Every object sits in the same place on every visit. No content on the dashboard rearranges itself.
 - [ ] The dashboard is not configurable by default.
 - [ ] Where the dashboard is configurable, the entry point is not advertised, and each persona's individual arrangement is kept.
-- [ ] The dashboard is not empty on first run, and a dismissible onboarding element is present.
+- [ ] The dashboard is not empty on first run.
+- [ ] An onboarding element appears only when the requirements call for one, and the persona can dismiss the element.
 - [ ] The dashboard says how up to date the data is, for each part where the refresh schedules differ.
 - [ ] No unrelated data, and no data on different scales, is placed side by side.
 - [ ] The dashboard has a maximum width, and the screen has no inner scrolling area of any kind.
