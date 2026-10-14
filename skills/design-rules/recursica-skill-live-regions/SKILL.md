@@ -18,7 +18,7 @@ The house rules assume **complex enterprise web applications**, built on a compo
 
 ## The three governing principles
 
-1. **Announce new content and new interactive elements, not a change in appearance.** For example, announce new search results, and do not announce a hover effect. This principle is the main house rule in this skill.
+1. **Announce new content and new interactive elements, not a change in appearance.** A change that is only visual is not announced. For example, announce new search results, and do not announce a hover effect. This principle is the main house rule in this skill.
 2. **Follow established accessibility practice on how to announce.** The house made no decision on four questions. Established accessibility practice has settled each of the four questions:
 
    - announcement priority
