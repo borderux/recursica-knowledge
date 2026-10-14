@@ -41,7 +41,7 @@ The house rules in this skill say when an action gets an undo, and where the und
 
 ## An Undo button in a toast
 
-**Put one action at most in a toast.** An Undo button is that one action. `recursica-skill-toast` sets the rest of the toast rules.
+**Put one action at most in a toast.** An Undo button is that one action. `recursica-skill-toast` sets the toast's text, styles, timing and announcements.
 
 **Give the Undo button an accessible name (the name a screen reader reads out for a control) that includes the item.** For example, name the button "Undo delete of invoice 1043", not "Undo". By the time the persona reaches the button, the context around the button is gone.
 
@@ -56,7 +56,7 @@ The house rules in this skill say when an action gets an undo, and where the und
 - **The confirmation modal**: `recursica-skill-buttons-links` and `recursica-skill-modal`.
 - **The toast component and toast timing**: `recursica-skill-toast` and `recursica-skill-feedback-messaging`.
 - **Undo inside a table row waiting for a decision**: `recursica-skill-tables`.
-- **A control that does two things and so cannot be undone**: `recursica-skill-system-conventions`.
+- **A control with two outcomes, which no undo can reverse**: `recursica-skill-system-conventions`.
 
 ## Open questions
 
