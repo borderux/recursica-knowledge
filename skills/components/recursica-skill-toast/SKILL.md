@@ -75,17 +75,16 @@ The rules below describe each option by role, such as "the success style". The n
 
 **Never use a toast as the only record of a destructive action** (an action that deletes data or cannot be undone). Once the toast is gone, the persona has no way back to the record.
 
-**Leave the duration (how long the toast stays on screen) unchanged.** The code library behind the toast component sets the duration. `recursica-skill-feedback-messaging` owns this rule.
+**Leave the duration (how long the toast stays on screen) unchanged, unless the user asks for a change.** The code library behind the toast component sets the duration. `recursica-skill-feedback-messaging` owns this rule.
 
-- Do not tune the duration.
 - Do not give different messages different durations.
 - Do not make the duration longer so the persona can reach an action.
 
 **Every toast has a dismiss control, built into the toast component.** The persona can always close the toast. Never ship a toast that cannot be dismissed.
 
-**Do not set in the design how long an immediate undo lasts.** The code library also sets how long an undo stays available.
+**Leave how long an immediate undo lasts unchanged, unless the user asks for a change.** The code library also sets how long an undo stays available.
 
-**An undo must never exist only inside a toast, because the toast's duration cannot be made longer.**
+**An undo must never exist only inside a toast, because the toast closes by itself.**
 
 - Put the toast's undo action in a part of the page that stays on screen.
 - Have the toast point to the undo action on the page.
@@ -174,7 +173,8 @@ The theme also sets which icon each toast style shows. Never change the icon a s
 - [ ] Stacked toasts share one live region, with messages in order. The announcements of stacked toasts never overlap.
 - [ ] Every toast action has a real accessible name that includes the item the action affects. Every close control has a real accessible name.
 - [ ] No undo exists only inside a toast. The action also exists in a part of the page that stays on screen.
-- [ ] The code library sets the duration (how long the toast stays on screen), and the duration is not tuned. The code library also sets how long the undo stays available, and that time is not tuned.
+- [ ] The duration (how long the toast stays on screen) and the undo time are the code library's defaults.
+- [ ] A changed duration or undo time was asked for by the user.
 - [ ] The persona can dismiss every toast, and duplicate toasts are combined, not stacked.
 - [ ] Each toast message reports an event that just happened. Each message about a condition that has not happened yet was raised as a case for a banner.
 - [ ] The toast can be reached by keyboard at a predictable point in the tab order while the toast is visible.

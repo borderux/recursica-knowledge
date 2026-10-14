@@ -18,7 +18,7 @@ The design decides two parts of a message:
 - the message's channel (the form a message takes: a toast, a banner or a modal)
 - the message's content
 
-The message's timing, such as how long a toast stays, mostly is not a design decision.
+The message's timing, such as how long a toast stays, comes from the code library by default.
 
 ## The three governing principles
 
@@ -36,13 +36,11 @@ The message's timing, such as how long a toast stays, mostly is not a design dec
    - An inline message is a brief status or success message placed in the page layout. For example, "Changes saved" text that appears under a form is an inline message.
    - The rule also covers messages other than inline messages.
 
-3. **The code library behind the components sets the message timing. The design does not set the timing.** The code library sets three parts of the timing:
+3. **Use the code library's default message timing, unless the user asks for a change.** The code library behind the adapter sets three parts of the timing:
 
    - how long a message stays
    - whether the message persists
    - how long an undo lasts
-
-   Choose the channel and combine the message content. Do not set any duration in milliseconds.
 
 ## Choosing the channel
 
@@ -99,13 +97,13 @@ The ban on inline messages covers brief status and success messages placed in th
 - **Saving happens bit by bit while the persona works, and a message in the form would interrupt more than reassure.**
 - **The system failed.** Report a save that did not go through in a toast.
 
-**Use the toast duration (how long the toast stays on screen) that the code library behind the toast component sets.** Do not change the duration. Do not build a separate timing scheme for each message.
+**Use the toast duration (how long the toast stays on screen) that the code library behind the toast component sets.** Change the duration only when the user asks. Do not build a separate timing scheme for each message.
 
 **Every toast has a dismiss control.** The toast component has a dismiss control built in. Never ship a toast the persona cannot dismiss.
 
-**The code library also sets how long an undo lasts, including how long an immediate undo stays available.** The design does not set how long an undo lasts.
+**The code library also sets how long an undo lasts, including how long an immediate undo stays available.** Change how long an undo lasts only when the user asks.
 
-**A toast's duration cannot be made longer to keep the toast's action, such as Undo, within reach.** Where an undo matters, the undo must also exist in a place that stays on the screen. The toast points to that undo, and the toast is not the only way to reach the undo. See `recursica-skill-toast`.
+**Do not make a toast's duration longer to keep the toast's action, such as Undo, within reach.** Where an undo matters, the undo must also exist in a place that stays on the screen. The toast points to that undo, and the toast is not the only way to reach the undo. See `recursica-skill-toast`.
 
 ## No partial success
 
@@ -178,7 +176,8 @@ A partial success should not reach the interface. For that reason, the channel t
 - [ ] No partial-success message and no list of results for each item appear. Every partial result is raised as a backend problem with how the backend groups changes.
 - [ ] Repeats of the same message are combined into one message, and no messages stack.
 - [ ] No screen shows several messages at the same time, and a repeating error is treated as a cause to fix.
-- [ ] The toast duration, the toast persistence and the undo time are the code library's defaults, unchanged.
+- [ ] The toast duration, the toast persistence and the undo time are the code library's defaults.
+- [ ] A changed duration, persistence or undo time was asked for by the user.
 - [ ] The persona can dismiss every toast.
 - [ ] No undo exists only inside a toast that times out.
 - [ ] A loading indicator appears only for operations that take more than about 3 seconds.
