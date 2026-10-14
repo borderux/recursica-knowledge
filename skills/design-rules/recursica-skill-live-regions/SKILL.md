@@ -52,8 +52,9 @@ Check every change that happens without a page reload against the following tabl
 
 **Every component is responsible for announcing the component's own changes.** A component's announcement is the default. The default holds for the great majority of changes.
 
-**Give each component every piece of information the component needs to comply.** A component can announce only the information the component receives. Examples of the information are:
+**Give each component every piece of information a screen reader needs from the component.** A component can pass on only the information the component receives. The information includes:
 
+- the correct ARIA attributes
 - an accessible name (the name a screen reader reads out for a control)
 - a message
 - a count
