@@ -13,7 +13,7 @@ A toast reports what just happened, without interrupting the persona's work.
 
 ## When to use a toast
 
-- **Confirming that an action worked**, such as "Invoice saved", "Comment deleted" or "Message sent".
+- **Confirming that an action worked when the persona cannot see the result.** For example, the action moved the persona to another page, or removed the object from view. A normal save that leaves the result in view gets no toast.
 - **Offering an undo after a destructive action removes the object from view.** See `recursica-skill-undo`.
 - **Reporting an error that belongs to no field.** For example:
   - a conflict on the server, such as another persona changing the same invoice
@@ -56,11 +56,11 @@ The rules below describe each option by role, such as "the success style". The n
 
 **Put the meaning in the toast's text, and use the style only to support the text.** For example, write "Could not save — the invoice was changed by someone else." An error toast that reads "Something went wrong" in red tells a persona using a screen reader nothing. In black and white, the same toast tells no persona what happened. `recursica-skill-design-system-conventions` requires this rule.
 
-**Put a success confirmation in a toast, never on a field.** The rule has no exception. Never add a green check mark to an input, or a "Saved" note to each field.
+**Never put a success confirmation on a field.** The rule has no exception. When a success needs a message, the message is a toast. Never add a green check mark to an input, or a "Saved" note to each field.
 
 **Never use a toast as the save status that stays on screen.** When each field in a form saves separately, `recursica-skill-forms` requires a status message that stays visible. A toast disappears, so a toast cannot be the status message. A toast each time a field saves also shows the persona too many messages.
 
-**When a form saves all changes at once on submit, confirm success with a toast and nothing else.** Show no marker for unsaved changes and no status line. `recursica-skill-forms` states that the enabled submit button is the only other signal to the persona.
+**When a form saves all changes at once on submit and the persona stays on the page, show no toast.** The saved values on the page confirm the save. Show no marker for unsaved changes and no status line. `recursica-skill-forms` states that the enabled submit button is the only other signal to the persona.
 
 **Show one toast per event.** For example, when the persona deletes 12 invoices at once, show one toast: "12 invoices deleted".
 
@@ -156,7 +156,7 @@ The theme also sets which icon each toast style shows. Never change the icon a s
 - [ ] Errors on a field stay on the field. The undo for a single item that stays in view stays in place. A delete that cannot be undone is confirmed before the action instead.
 - [ ] Every toast style is one the theme's UI kit lists, such as `default`, `success`, or `error` in the standard UI kit. No warning style or other style is invented.
 - [ ] The toast's text names what happened. The style and the icon only support the text, and are never the only way the message is shown.
-- [ ] The success confirmation is a toast, not a check mark on a field.
+- [ ] A success toast appears only when the persona cannot see the result. No success shows as a check mark on a field.
 - [ ] No toast replaces the status message that must stay on screen when each field saves separately.
 - [ ] Each event has one toast, with a count for a bulk action. Each toast has at most one action.
 - [ ] A live region is in the page before the message is added, and the toast is announced without moving focus.

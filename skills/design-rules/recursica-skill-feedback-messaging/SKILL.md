@@ -85,7 +85,7 @@ The ban on inline messages covers brief status and success messages placed in th
 - **Field validation.** The field's assistive element shows the field's error. The error replaces the help text instead of adding to the help text. Because the error replaces the help text, the height of the field does not change.
 - **A persistent save status.** A form that saves each field as the field changes requires a save status that stays on the page. The key word is persistent. When an element that is always on the page updates, no part of the page changes height.
 
-**On a field that saves to the server immediately, show a toast or the persistent save status from `recursica-skill-forms`.** Do not insert and remove a message next to the field. An inline message is most tempting on a field that saves immediately.
+**On a field that saves to the server immediately, show the persistent save status from `recursica-skill-forms`, not a toast.** Do not insert and remove a message next to the field. An inline message is most tempting on a field that saves immediately.
 
 ## Toasts
 
@@ -94,7 +94,7 @@ The ban on inline messages covers brief status and success messages placed in th
 **Use a toast when:**
 
 - **The action moved the persona away from the place where the persona acted.** The previous page no longer has a place on screen to show a message.
-- **Saving happens bit by bit while the persona works, and a message in the form would interrupt more than reassure.**
+- **The action removed the object from view.** See `recursica-skill-undo`.
 - **The application failed.** Report a save that did not go through in a toast.
 
 **Use the toast duration (how long the toast stays on screen) that the code library behind the toast component sets.** Change the duration only when the user asks. Do not build a separate timing scheme for each message.
@@ -171,7 +171,7 @@ A partial success should not reach the interface. For that reason, the channel t
 - [ ] Every message about an event or condition that just happened is a toast.
 - [ ] No banner is built by hand. Where the theme has no banner component, the steps for a missing component were followed.
 - [ ] No brief success or status message is inserted into the page layout.
-- [ ] Every field-level save shows a toast or the persistent save status the forms rules require.
+- [ ] Every field-level save shows the persistent save status the forms rules require, never a toast.
 - [ ] No field-level save shows an inline message that appears and disappears.
 - [ ] No partial-success message and no list of results for each item appear. Every partial result is raised as a backend problem with how the backend groups changes.
 - [ ] Repeats of the same message are combined into one message, and no messages stack.

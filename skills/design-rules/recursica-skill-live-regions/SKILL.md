@@ -63,7 +63,7 @@ Each component sets what the component must be given, and each component skill l
 
 **If no component announces a change, add a live region that announces the change.** If a component already announces the change to screen readers, add nothing.
 
-The clearest case is a form that submits successfully, goes to a new page, and shows nothing. No component makes any announcement in that case. The screen must add a live region with a message.
+The clearest case is a form that saves and stays on the same page, with no message. A sighted persona sees the saved values. No component announces the save, so the screen must add a live region with a message, such as "Invoice saved".
 
 **A toast always announces, with no exception.** The toast text is the announcement. No other announcement needs to repeat the toast text.
 

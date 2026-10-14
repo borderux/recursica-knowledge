@@ -23,11 +23,13 @@ The house rules in this skill say when an action gets an undo, and where the und
 
 **Confirm only when the action is massively destructive, hard to recreate, and cannot be undone.** For that action, show a confirmation modal after the click. `recursica-skill-buttons-links` sets the confirmation rules.
 
-**When the persona destroys a whole object, use a confirmation instead of an undo.** An undo is no longer useful after a loss that large. A persona destroys a whole object in any of three ways:
+**Saving over or deleting a whole object often cannot be undone. When the action cannot be undone, confirm first.** A persona destroys a whole object in any of three ways:
 
 - saving over the whole object
 - deleting the whole object
 - destroying a whole form of data
+
+**When deleting a whole object can be undone, offer the undo instead of a confirmation.** For example, "Project archived" appears in a toast with an Undo button.
 
 ## Where the undo goes
 
