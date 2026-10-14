@@ -102,7 +102,7 @@ Choose one save mode once, for the whole application. A switch that waits for Sa
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, which every Recursica component follows.
 
 **The application must provide every behavior in the two lists below.** The switch group, switch item and switch components already handle three behaviors:
 
@@ -116,7 +116,7 @@ On screen, a switch shows the on or off state only by the thumb's position and t
 
 - **Every switch needs a real label, set on the switch item (`switch-item`).** The item label is the accessible name (the name a screen reader reads out for a control). Text that only sits beside the track is not a label. A screen reader announces a switch with no accessible name as an unlabeled control.
 - **The label must state what the switch controls, and make sense out of context.** A screen reader announces the label without the text around the switch. For example, "Notifications" beside a track tells a persona using a screen reader nothing about what turning the switch off does.
-- **The on and off state must be available in code.** Never show the state only by the thumb's position or the track's color. The persona must hear "on" or "off". `recursica-skill-system-conventions` requires the state in code.
+- **The on and off state must be available in code.** Never show the state only by the thumb's position or the track's color. The persona must hear "on" or "off". `recursica-skill-design-system-conventions` requires the state in code.
 - **The thumb icon is decorative, and must be hidden from screen readers.** The icon is only a second visual sign. The state in code says whether the switch is on or off.
 - **Never put the state in the visible label.** A screen reader announces a label that reads "On" as the name. The persona hears "On, off", and cannot tell the name from the state.
 - **A group of switches needs a group label, set on the switch group (`switch-group`).** A screen reader announces the group label when focus enters the group.
@@ -146,7 +146,7 @@ On screen, a switch shows the on or off state only by the thumb's position and t
 - `recursica-skill-assistive-element` — the help text and error text below the switch, and the wording rules for both.
 - `recursica-skill-buttons-links` — confirmation for changes with serious consequences.
 - `recursica-skill-undo` — offering an undo for a change.
-- `recursica-skill-system-conventions` — one mode of behavior per system, and never showing a meaning in only one way.
+- `recursica-skill-design-system-conventions` — one mode of behavior per system, and never showing a meaning in only one way.
 
 ### Only if used on the same screen
 

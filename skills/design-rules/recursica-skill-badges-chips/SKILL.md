@@ -22,7 +22,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 ## Governing principles
 
 1. **Choose between a badge and a chip by whether the persona can act on the component.** A badge only shows information. The persona acts on a chip.
-   - A status is a fact the system reports, such as an order's "Shipped" status.
+   - A status is a fact the application reports, such as an order's "Shipped" status.
    - A selection is a choice the persona makes, such as a "Shipped" filter.
    - A status the persona can click is not a design variation. A status the persona can click uses the wrong component.
 2. **A badge holds one value, and chips hold several values.** One object has at most one badge. When an object has more than one value, use chips.
@@ -35,7 +35,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 - A badge shows a status, a count, or a short label.
 - **A badge MUST NOT be interactive.** A badge is never selectable and never dismissible. A badge is text for the persona to read, for information only.
-- The system updates a badge when the object the badge describes changes. For example, the badge on an order changes from "Processing" to "Shipped" when the order ships. The persona never changes the badge to change the status.
+- The application updates a badge when the object the badge describes changes. For example, the badge on an order changes from "Processing" to "Shipped" when the order ships. The persona never changes the badge to change the status.
 
 **A chip is larger than a badge. The persona can act on some chips and not on others.**
 

@@ -22,7 +22,7 @@ Cite this skill when someone argues that hiding a control is unfriendly to perso
 
 Other Recursica skills state the rule for one part of the interface each. For example:
 
-- `recursica-skill-system-conventions` states the full rule, with the rule's three conditions.
+- `recursica-skill-design-system-conventions` states the full rule, with the rule's three conditions.
 - `recursica-skill-dashboards` applies the rule to dashboard configuration.
 - `recursica-skill-tables` applies the rule to showing, hiding and reordering table columns, and to sorting by several columns.
 
@@ -79,7 +79,7 @@ Personas with a real need are a different group from the personas the paradox de
 
 ## Common misapplications
 
-**Do not cite this skill when the reason for hiding is a crowded screen.** A crowded screen is a problem with the structure of the screen. See the rule in `recursica-skill-system-conventions` to fix the structure of the screen. This skill is about features few personas want, not about screen space.
+**Do not cite this skill when the reason for hiding is a crowded screen.** A crowded screen is a problem with the structure of the screen. See the rule in `recursica-skill-design-system-conventions` to fix the structure of the screen. This skill is about features few personas want, not about screen space.
 
 **Do not cite this skill to avoid making a decision.** The reasoning in this skill argues against the answer "We will make it configurable". The reasoning never argues for that answer.
 
@@ -101,7 +101,7 @@ For example, a persona who never needed to hide a table column does not look for
 ## Out of scope
 
 - **Item counts and the limits of memory.** `recursica-skill-working-memory` covers item counts and the limits of memory.
-- **The house rules.** `recursica-skill-system-conventions`, `recursica-skill-dashboards`, and `recursica-skill-tables` state the house rules.
+- **The house rules.** `recursica-skill-design-system-conventions`, `recursica-skill-dashboards`, and `recursica-skill-tables` state the house rules.
 - **Onboarding design beyond the first-run element the persona can dismiss.** `recursica-skill-dashboards` adds the first-run element only when the requirements call for one.
 
 ## Pre-flight checklist

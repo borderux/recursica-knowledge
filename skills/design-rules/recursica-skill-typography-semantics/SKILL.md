@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-typography-semantics
-description: House rules for type and semantic markup — real elements instead of styled divs, one H1 per page, type styles from tokens only, loading the brand typefaces, hidden headings, emphasis with em and strong, abbreviations, and AP style. Use for headings, body copy, emphasis, and the markup under a visual hierarchy. Not for naming — see recursica-skill-naming-terminology.
+description: House rules for type and semantic markup — real elements instead of styled divs, one H1 per page, type styles from tokens only, loading the brand typefaces, hidden headings, emphasis with em and strong, abbreviations, and AP style. Use for headings, body copy, emphasis, and the markup under a visual hierarchy. Not for naming — see recursica-skill-names-and-terms.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -234,7 +234,7 @@ W_max = 44 × 12.48                 = 555px
 - Do not change the capitalization of a heading or a label to suit a layout or a preference.
 - If a type style does not seem to include a case, report the missing case. Do not choose a case.
 
-For naming, see `recursica-skill-naming-terminology`.
+For naming, see `recursica-skill-names-and-terms`.
 
 ## Reading order
 

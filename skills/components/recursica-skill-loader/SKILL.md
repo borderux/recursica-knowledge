@@ -67,7 +67,7 @@ Each option below is described by role, such as "the largest size". The names in
 
 **Do not show a loader for a wait under about 3 seconds.** Delay the loader, or leave the loader out. A spinner that appears and disappears at once distracts the persona. The spinner also makes a fast operation feel slower than the operation was. `recursica-skill-feedback-messaging` sets the 3-second threshold. An earlier version of this skill gave 300ms. The 300ms figure was never a recorded house rule and has been corrected.
 
-**Never let the spinning motion be the only signal.** `recursica-skill-system-conventions` forbids showing meaning in a single channel (color, shape, position or text, each a separate signal). The persona loses the animation more easily than any other channel:
+**Never let the spinning motion be the only signal.** `recursica-skill-design-system-conventions` forbids showing meaning in a single channel (color, shape, position or text, each a separate signal). The persona loses the animation more easily than any other channel:
 
 - A screen reader cannot report the animation.
 - The animation disappears when motion is reduced.
@@ -90,7 +90,7 @@ The text with the loader is the second channel.
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, including the focus ring, which every Recursica component follows.
 
 A spinner is only animation. A persona using a screen reader knows a spinner is showing only when the app announces the spinner. The most common failure is a wait that starts and ends with no announcement. The persona then never learns that a wait started or ended. A control the keyboard cannot reach is a less common failure.
 
@@ -101,7 +101,7 @@ A spinner is only animation. A persona using a screen reader knows a spinner is 
 - **Each announcement must be polite, never assertive.** A polite announcement waits for a pause instead of interrupting. The announcement must not interrupt what the persona is reading or typing. The persona does not need to know at once that a wait started or finished. See `recursica-skill-live-regions`.
 - **Put the live region (an area of the page that a screen reader announces automatically when the area's content changes) on the page before the loader appears.** The live region makes the announcement. A screen reader often never announces a live region added at the same moment as the live region's message.
 - **Never announce progress that is not known.** Without a determinate variant, the app has no percentage, no step count, and no time estimate to report. Do not make up a percentage, a step count, or a time estimate.
-- **The spinning motion tells assistive technology nothing.** The motion is a single visual channel. `recursica-skill-system-conventions` requires a second channel, which for a loader is the text and the announcement.
+- **The spinning motion tells assistive technology nothing.** The motion is a single visual channel. `recursica-skill-design-system-conventions` requires a second channel, which for a loader is the text and the announcement.
 - **Do not announce every check, retry, or refresh.** A region that reloads on a schedule must not announce each reload. Announce only the changes the persona needs to know about.
 - **If a load fails, announce the failure.** When a spinner disappears with no message, the persona assumes the load succeeded.
 
@@ -125,7 +125,7 @@ A spinner is only animation. A persona using a screen reader knows a spinner is 
 
 ## Related skills
 
-- `recursica-skill-system-conventions` — never showing meaning in a single channel, and one behavioral mode per system.
+- `recursica-skill-design-system-conventions` — never showing meaning in a single channel, and one behavioral mode per application.
 - `recursica-skill-dashboards` — the ban on shipping an empty dashboard. The dashboards skill covers text on how up to date each component's data is, for components on different refresh schedules.
 - `recursica-skill-tables` — lists loading and error states for a table, including partial failure, as a topic no skill owns.
 - `recursica-skill-buttons-links` — lists a pending state on an action other than submit as a topic no skill owns.

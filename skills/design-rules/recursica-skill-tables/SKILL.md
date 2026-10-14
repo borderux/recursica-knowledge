@@ -126,7 +126,7 @@ The icon goes beside the name because the name gives the icon context.
 
 **Never put unrelated data in one column.** For example, never put a customer's name and the order total in one column. If combining unrelated values is the only way to fit all the data, the table has too many columns. Horizontal scrolling is then the only option left.
 
-**Never show a complex data table below the tablet breakpoint.** A complex data table holds too much data for a narrow screen. Leaving the table out solves the problem of a narrow table. Making the table swipeable never solves the problem. `recursica-skill-responsive-behavior` owns this rule.
+**Never show a complex data table below the tablet breakpoint.** A complex data table holds too much data for a narrow screen. Leaving the table out solves the problem of a narrow table. Making the table swipeable never solves the problem. `recursica-skill-responsive-layout` owns this rule.
 
 ## Column widths
 
@@ -210,7 +210,7 @@ A value with no spaces, such as the filename `q3_sales_report_final.xlsx`, does 
 
 **Use neutral 500, not the table cell's disabled color.** The two colors are not the same value. The table cell's disabled text color is one step lighter. The `NA` color is a stated rule, not a reuse of the disabled state. Take neutral 500 from the neutral palette token (a named design value, such as a color or a size, set by the design system), so the `NA` color changes when the theme changes.
 
-**Keep the italics.** The italics are the second channel (color, shape, position or text, each a separate signal), after the gray color. `recursica-skill-system-conventions` forbids showing meaning through color alone. A gray `NA` without italics shows meaning through color alone.
+**Keep the italics.** The italics are the second channel (color, shape, position or text, each a separate signal), after the gray color. `recursica-skill-design-system-conventions` forbids showing meaning through color alone. A gray `NA` without italics shows meaning through color alone.
 
 **`NA` must be real text in the cell**, not a background, an icon, or an empty cell styled to look empty. A screen reader announces an empty cell as nothing at all.
 
@@ -323,7 +323,7 @@ One click cannot both switch the sort direction and open multi-sort.
 
 ## Column visibility and reordering
 
-**Treat showing, hiding and reordering columns as a customization, with the same approach as dashboard configuration.** `recursica-skill-system-conventions` sets the approach, as the convention for an unadvertised affordance (a control that works but is not shown in the main interface, such as a keyboard shortcut).
+**Treat showing, hiding and reordering columns as a customization, with the same approach as dashboard configuration.** `recursica-skill-design-system-conventions` sets the approach, as the convention for an unadvertised affordance (a control that works but is not shown in the main interface, such as a keyboard shortcut).
 
 - Put a fairly hidden control on the table, such as a settings or gear icon.
 - The control opens a screen where the persona chooses which columns are visible, and in what order.

@@ -84,7 +84,7 @@ The most common mistake is a light gray background on editable fields. The light
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, including the focus ring, which every Recursica component follows.
 
 **A read-only field must be announced as a labeled value, not as a control.** The label must still be connected to the value in code. The persona must be able to copy the value. A read-only field follows different accessibility rules from every editable field.
 
@@ -124,7 +124,7 @@ Never set or override the connection between the label and the value. The read-o
 - `recursica-skill-label` — the label component, the label's placement variant, and the room a label makes for an edit icon.
 - `recursica-skill-selection-controls` — disabled versus read-only, and when a value should not be a form control at all.
 - `recursica-skill-tables` — the table to use instead for read-only values that repeat for several objects.
-- `recursica-skill-system-conventions` — the accessibility baseline every component follows.
+- `recursica-skill-design-system-conventions` — the accessibility baseline every component follows.
 
 ### Only if used on the same screen
 

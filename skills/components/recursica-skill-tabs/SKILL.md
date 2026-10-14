@@ -73,14 +73,14 @@ Tabs that do not fit mean the screen is organized wrong. `recursica-skill-naviga
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, including the focus ring, which every Recursica component follows.
 
 A wrong role or a wrong connection in the tab set's markup makes the tab set's content impossible to reach. In most other components, the same mistake only makes the content awkward to use.
 
 ### Screen readers
 
 - **Give the tab list, each tab, and each tab panel the correct role for each part.** Each tab panel must be connected to the tab that controls the tab panel. Without the connection, a persona using a screen reader cannot tell that the panel content changed. The persona also cannot tell which tab changed the panel content.
-- **Announce only the selected tab as selected.** Show which tab is selected by more than color or font weight, as `recursica-skill-system-conventions` requires.
+- **Announce only the selected tab as selected.** Show which tab is selected by more than color or font weight, as `recursica-skill-design-system-conventions` requires.
 - **Each tab's accessible name (the name a screen reader reads out for a control) is the tab's visible label.** If the label is cut off on screen, the full label must still be announced.
 - **A counter on a tab must be part of the tab's announcement**, as in "Members, 12". Never leave the number as a separate item that a screen reader reads apart from the tab, or skips.
 - **A leading icon on a tab is decorative, and must be hidden from screen readers.** The tab label gives the meaning.
@@ -104,7 +104,7 @@ A wrong role or a wrong connection in the tab set's markup makes the tab set's c
 - `recursica-skill-forms` — the stepper, which is the correct alternative to a form split across tabs.
 - `recursica-skill-working-memory` — the reason for the 7 ± 2 limit on tabs.
 - `recursica-skill-badges-chips` — the counter on a tab.
-- `recursica-skill-system-conventions` — the accessibility baseline every component follows.
+- `recursica-skill-design-system-conventions` — the accessibility baseline every component follows.
 
 ## Open questions
 

@@ -133,7 +133,7 @@ Look up the name the code uses for each of the four settings with the Recursica 
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, including the focus ring, which every Recursica component follows.
 
 **A panel is never modal, so build every part of a panel as non-modal.** Almost every accessibility failure in a panel comes from a panel built partly as a modal. Such a panel looks as if the page stays usable. But the panel traps focus like a dialog, or hides the page from assistive technology while the page stays clickable. The page behind a panel stays usable, readable, and reachable.
 
@@ -184,7 +184,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
   - the button that opens the panel
   - one primary action per region that holds content, such as a page, panel, or modal
   - the placement of footer buttons
-- `recursica-skill-system-conventions` — the accessibility baseline every component follows.
+- `recursica-skill-design-system-conventions` — the accessibility baseline every component follows.
 
 ### Only if used on the same screen
 

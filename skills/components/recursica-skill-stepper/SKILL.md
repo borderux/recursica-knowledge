@@ -23,16 +23,16 @@ A stepper leads the persona through one process that has several steps. For exam
 
 ## When not to use a stepper
 
-| Situation                                                           | Use instead                                                                                         |
-| ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| The steps can be done in any order                                  | One page. When the persona marks tasks done, use a checkbox group. See `recursica-skill-checkbox`.  |
-| A short form that fits on one page                                  | One page, in a single column. See `recursica-skill-forms`.                                          |
-| An answer changes only the field right below the answer             | Progressive disclosure on one page. See `recursica-skill-forms`.                                    |
-| Sections of one whole that the persona switches between             | Tabs, each tab with its own route. See `recursica-skill-tabs`.                                      |
-| Primary or secondary navigation for the application                 | Navigation. A stepper is not navigation. See `recursica-skill-navigation`.                          |
-| A record of events that already happened, with timestamps           | A timeline. See `recursica-skill-timeline`.                                                         |
-| Progress of a single operation, with no known end                   | A loader, or the submit button's loading look. See `recursica-skill-loader`.                        |
-| Splitting a long form into steps only to make the form feel shorter | Nothing. Fix the form, and confirm the fix with the user. See `recursica-skill-system-conventions`. |
+| Situation                                                           | Use instead                                                                                                |
+| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| The steps can be done in any order                                  | One page. When the persona marks tasks done, use a checkbox group. See `recursica-skill-checkbox`.         |
+| A short form that fits on one page                                  | One page, in a single column. See `recursica-skill-forms`.                                                 |
+| An answer changes only the field right below the answer             | Progressive disclosure on one page. See `recursica-skill-forms`.                                           |
+| Sections of one whole that the persona switches between             | Tabs, each tab with its own route. See `recursica-skill-tabs`.                                             |
+| Primary or secondary navigation for the application                 | Navigation. A stepper is not navigation. See `recursica-skill-navigation`.                                 |
+| A record of events that already happened, with timestamps           | A timeline. See `recursica-skill-timeline`.                                                                |
+| Progress of a single operation, with no known end                   | A loader, or the submit button's loading look. See `recursica-skill-loader`.                               |
+| Splitting a long form into steps only to make the form feel shorter | Nothing. Fix the form, and confirm the fix with the user. See `recursica-skill-design-system-conventions`. |
 
 ## Variants
 
@@ -43,7 +43,7 @@ Each option below is described by role, such as "the smaller size". A name from 
 - **The stepper has two sizes, a larger size and a smaller size.** In the standard UI kit, the size variant is `sizes`, with the options `large` and `small`.
 - **The stepper has two orientations, horizontal and vertical.** In the standard UI kit, the orientation variant is `orientation`, with the options `horizontal` and `vertical`.
 - **Each step has a step label, and may have a step description.** The step label is the step's name, such as "Payment". The step description is a second line of short text, such as "Card or bank transfer". Never put a paragraph in the step description.
-- **A connector (the line between two steps) shows which steps are finished and which steps are upcoming.** A finished step's connector and an upcoming step's connector differ in thickness, and the stepper also uses color. A line's thickness and a color are a single visual channel (color, shape, position or text, each a separate signal). Progress must not rely on the connector's thickness and color alone. See "Accessibility" and `recursica-skill-system-conventions`.
+- **A connector (the line between two steps) shows which steps are finished and which steps are upcoming.** A finished step's connector and an upcoming step's connector differ in thickness, and the stepper also uses color. A line's thickness and a color are a single visual channel (color, shape, position or text, each a separate signal). Progress must not rely on the connector's thickness and color alone. See "Accessibility" and `recursica-skill-design-system-conventions`.
 - **The design-system website shows three step statuses: done, current and upcoming.** If the theme has a step-status variant, use the theme's step-status variant. Otherwise, the application supplies each step's status as data, not as a variant. In both cases, put each step's status into what assistive technology reads, such as "Shipping, complete".
 - **If the theme has an error, warning, skipped or optional step state, use the theme's step state.** When a step fails validation, the step's text must say that the step failed validation. The step's text says so with or without one of the four step states.
 - **A step indicator is the mark for one step on the stepper.** The design-system website shows a step number and a checkmark inside the step indicator. If the theme has a step number or a checkmark inside the step indicator, use the theme's version. See the open questions.
@@ -85,13 +85,13 @@ Never put labels side by side in one step and stacked in another step.
 
 **Never put the step's content, or any part of the form, inside a card.** See `recursica-skill-card`.
 
-**If a horizontal stepper does not fit, use fewer steps or switch to the vertical orientation.** Do not switch to the smaller size to fit more steps. Do not make the stepper scroll horizontally. `recursica-skill-system-conventions` forbids working around a structural problem with a smaller size or a horizontal scroll.
+**If a horizontal stepper does not fit, use fewer steps or switch to the vertical orientation.** Do not switch to the smaller size to fit more steps. Do not make the stepper scroll horizontally. `recursica-skill-design-system-conventions` forbids working around a structural problem with a smaller size or a horizontal scroll.
 
 **Keep the step count in the label text accurate.** "Step 3 of 5" must be true. When an answer adds or removes steps partway through the process, tell the persona that the step count changed. For example, an answer that adds a step changes "Step 2 of 4" to "Step 2 of 5".
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, including the focus ring, which every Recursica component follows.
 
 **Put every fact a sighted persona sees on the stepper at a glance into what assistive technology reads.** The stepper shows the current step and the progress with the step indicator, color, and the thickness of the connector. A screen reader reads none of the step indicator, the color, or the connector's thickness. A persona using a screen reader is most likely to lose track of the current step when the step changes.
 
@@ -132,7 +132,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
   - the rule of one save mode
 - `recursica-skill-navigation` — the ban on spreading a form across tabs, and what counts as a location with a route.
 - `recursica-skill-buttons-links` — Next and Back as actions, label wording, and placement in the footer.
-- `recursica-skill-system-conventions` — never show meaning in only one channel, and fix the screen's structure instead of shrinking controls to fit.
+- `recursica-skill-design-system-conventions` — never show meaning in only one channel, and fix the screen's structure instead of shrinking controls to fit.
 
 ### Only if used on the same screen
 

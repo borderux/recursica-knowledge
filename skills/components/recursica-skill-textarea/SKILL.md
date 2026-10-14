@@ -102,7 +102,7 @@ The text belongs to the persona.
 
 **The error message must restate the rule.** For example, write "Enter at least 20 characters", not "Invalid input".
 
-**Never show the error state with color alone.** Pair the error state with an icon or with the error message. `recursica-skill-system-conventions` sets this rule.
+**Never show the error state with color alone.** Pair the error state with an icon or with the error message. `recursica-skill-design-system-conventions` sets this rule.
 
 **Do not add spacing around a textarea to make up for the textarea's height.** A textarea is the tallest field in a form, and the difference in height is expected. The theme sets the spacing between fields and between form sections. `recursica-skill-forms` sets this rule.
 
@@ -117,7 +117,7 @@ The text belongs to the persona.
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, which every Recursica component follows.
 
 The textarea component connects the label to the input and shows the focus ring. The app must add the behavior in the two lists below. Enter and Tab behave differently inside a textarea, so the keyboard rules matter more than for a single-line field.
 
@@ -157,7 +157,7 @@ The textarea component connects the label to the input and handles the keys insi
 - `recursica-skill-forms` — label placement and one placement per form, single-column layout, and the rule against custom spacing. The skill also covers when to validate, microcopy, save mode, and the rule against form controls inside a card.
 - `recursica-skill-label` — the label component, the label-placement variant, and marking a field as required or optional.
 - `recursica-skill-assistive-element` — the help text and error text below the field, and why the error message replaces the help text.
-- `recursica-skill-system-conventions` — showing meaning in more than one way.
+- `recursica-skill-design-system-conventions` — showing meaning in more than one way.
 
 ### Only if used on the same screen
 

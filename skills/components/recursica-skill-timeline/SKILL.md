@@ -31,7 +31,7 @@ A timeline lists events that already happened, in order. Each event has a timest
 | The dates are unknown or approximate                                                             | A grouped list. A grouped list makes no claim about the order of events.                            |
 | The design needs to separate repeating objects of the same kind visually, such as rows in a list | A card, if the objects pass the tests in `recursica-skill-card`, or a table.                        |
 
-**Group a very long history instead of making the timeline longer.** Group the events by month or by quarter, or split the timeline into pages with `recursica-skill-pagination`. A screen that shows a thousand events at once has a problem with the screen's structure. `recursica-skill-system-conventions` says to fix the structure instead of working around the problem.
+**Group a very long history instead of making the timeline longer.** Group the events by month or by quarter, or split the timeline into pages with `recursica-skill-pagination`. A screen that shows a thousand events at once has a problem with the screen's structure. `recursica-skill-design-system-conventions` says to fix the structure instead of working around the problem.
 
 ## Variants
 
@@ -64,7 +64,7 @@ The rules below describe each part and option by role, such as "the selected sta
 
 **Use the title to name the event, and the description to give the event's details.** For example, the title is "Order shipped" and the description is "Sent by ground delivery". Never put the timestamp in the title. The timestamp has a separate place in the timeline item.
 
-**Treat the bullet as decoration.** An avatar bullet or an icon bullet can help show who or what an entry is about. The title and the description must still say who or what, as in "Person A approved the order". `recursica-skill-system-conventions` forbids showing a meaning in only one channel (color, shape, position or text, each a separate signal). The bullet is the weakest channel in the timeline. An avatar bullet must also follow the rules in `recursica-skill-avatar`.
+**Treat the bullet as decoration.** An avatar bullet or an icon bullet can help show who or what an entry is about. The title and the description must still say who or what, as in "Person A approved the order". `recursica-skill-design-system-conventions` forbids showing a meaning in only one channel (color, shape, position or text, each a separate signal). The bullet is the weakest channel in the timeline. An avatar bullet must also follow the rules in `recursica-skill-avatar`.
 
 **Use one bullet type in the whole timeline.** Use a different bullet type only where text also states what the difference means. Without the text, the persona has to guess what each icon means.
 
@@ -76,7 +76,7 @@ The rules below describe each part and option by role, such as "the selected sta
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, including the focus ring, which every Recursica component follows.
 
 **Give each visual cue in a timeline a match in code that assistive technology can read.** Nearly all of the cues that make a timeline easy to read are visual. A timeline has four visual cues:
 
@@ -123,7 +123,7 @@ Every rule in this section also applies to the timeline bullet. Never set or ove
   - the format of a duration
 - `recursica-skill-tables` — the table to use instead of a timeline when the number of records is large. Also use a table when the persona must sort, filter, or compare the records.
 - `recursica-skill-avatar` — the rules an avatar bullet must also follow.
-- `recursica-skill-system-conventions` — never showing a meaning in only one channel. The skill also says to fix the screen structure instead of showing a history with no limit on length.
+- `recursica-skill-design-system-conventions` — never showing a meaning in only one channel. The skill also says to fix the screen structure instead of showing a history with no limit on length.
 
 ### Only if used on the same screen
 

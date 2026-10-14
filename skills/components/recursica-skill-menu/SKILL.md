@@ -26,7 +26,7 @@ A menu is a temporary list of choices or actions. The trigger is the button that
 | The action is the primary action on a page, panel, modal or row. Examples of a row are a table row and a list row. | A visible button. Each page, panel, or modal has one primary action, shown in view, outside any menu. See `recursica-skill-buttons-links`. |
 | Primary or secondary navigation                                                                                    | Navigation that stays on screen. See `recursica-skill-navigation`.                                                                         |
 | The navigation items do not fit the space                                                                          | Fewer, shorter navigation items. **Never use an overflow menu to make the navigation fit.** See `recursica-skill-navigation`.              |
-| The menu has grown too long to show every menu item                                                                | Fewer menu items, or a different structure. See `recursica-skill-system-conventions`.                                                      |
+| The menu has grown too long to show every menu item                                                                | Fewer menu items, or a different structure. See `recursica-skill-design-system-conventions`.                                               |
 | The content is a form or a multi-step flow                                                                         | A modal or a panel. See `recursica-skill-modal` or `recursica-skill-panel`.                                                                |
 | The value must stay visible in a field                                                                             | A dropdown. See `recursica-skill-dropdown`.                                                                                                |
 | The content is rich detail that the persona cannot act on                                                          | A hover card or a popover. See `recursica-skill-hover-card-popover`.                                                                       |
@@ -83,7 +83,7 @@ The keyboard rules under "Accessibility" also forbid opening a menu on hover, fo
 - Never show a disabled menu item in place of the hidden menu item.
 - Never show, in place of the hidden menu item, a menu item that fails when used.
 
-**A long menu is a sign that the structure of the menu is wrong.** Group the menu items, or cut the number of menu items. `recursica-skill-system-conventions` requires fixing the structure instead of adding a workaround. A scrolling list is a workaround. A scrolling menu causes two problems:
+**A long menu is a sign that the structure of the menu is wrong.** Group the menu items, or cut the number of menu items. `recursica-skill-design-system-conventions` requires fixing the structure instead of adding a workaround. A scrolling list is a workaround. A scrolling menu causes two problems:
 
 - The scrolling menu hides the length of the menu, so the persona cannot see how many options exist.
 - Keyboard navigation has to scroll the menu to follow focus.
@@ -96,7 +96,7 @@ Above about nine items, a persona can no longer scan a list easily. See `recursi
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, including the focus ring, which every Recursica component follows.
 
 **Most menu accessibility rules are about where keyboard focus goes.** The list of menu items is easy to build. Menus fail most often in three places:
 
@@ -111,7 +111,7 @@ A menu that opens on hover fails in all three places at once.
 - **The trigger must announce that the trigger opens a menu, and whether the menu is open.** Without the open state, the persona cannot tell whether pressing the trigger opened the menu.
 - **Give the trigger a real accessible name.** A screen reader reads nothing for an icon-only ellipsis trigger with no accessible name. In a table, the trigger's accessible name must name the object in the table row, as in "More actions for invoice 1043". Otherwise, the persona hears the same announcement on every table row.
 - **A screen reader announces the menu as a menu, and each menu item as an item of the menu.** The persona then learns how many menu items the menu holds before moving through the menu items.
-- **The code must mark which menu item is selected.** A checkmark or a filled background alone shows the selected state in one visual channel. `recursica-skill-system-conventions` forbids showing a meaning in one channel only.
+- **The code must mark which menu item is selected.** A checkmark or a filled background alone shows the selected state in one visual channel. `recursica-skill-design-system-conventions` forbids showing a meaning in one channel only.
 - **Give an icon-only menu item a real accessible name.** A screen reader has nothing to read out for an icon alone.
 - **An unavailable menu item must stay perceivable on screen and to assistive technology. Otherwise, the menu must not show the menu item at all.** A disabled menu item stays in the accessibility tree (the version of the page that assistive technology reads). A screen reader announces the disabled menu item as disabled. If the persona can never use a menu item, do not show the menu item. Never show a menu item on screen while hiding the menu item from assistive technology.
 - **Make the supporting text part of what a screen reader reads for the menu item.** Do not put the supporting text in a separate element beside the label. A screen reader skips a second line that is not linked to the menu item.
@@ -159,7 +159,7 @@ A menu that opens on hover fails in all three places at once.
   - the number of navigation items
   - permissions
 - `recursica-skill-tables` — the row-action menu, the column-visibility gear button, and why a table row with a menu cannot be clickable.
-- `recursica-skill-system-conventions` — the system-wide rules:
+- `recursica-skill-design-system-conventions` — the system-wide rules:
   - fixing the structure instead of scrolling a long list
   - never showing a meaning in one channel only
   - unadvertised affordances, and the keyboard requirement for an unadvertised affordance

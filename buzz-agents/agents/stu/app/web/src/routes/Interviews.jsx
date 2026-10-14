@@ -51,7 +51,7 @@ export function Interviews({ revision }) {
       header: 'Tagged lines',
       // Was two columns, `Lines` and `Untagged lines`, which made the reader subtract to learn
       // the one thing the column is for: how much of the interview the analysis rests on. One
-      // column with the arithmetic done — `recursica-skill-naming-terminology`, "a label that
+      // column with the arithmetic done — `recursica-skill-names-and-terms`, "a label that
       // will not compress is usually two labels". Still not a percentage: 11 / 34 and 110 / 340
       // are the same percentage and are not the same situation.
       width: COLUMN_WIDTH.ratio,

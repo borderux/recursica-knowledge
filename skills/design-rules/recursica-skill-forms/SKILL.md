@@ -182,7 +182,7 @@ Beyond the difference between enabled and disabled, leave the choice of heavy or
 **Pre-fill when the value is low-risk and obvious:**
 
 - Today's date, when today's date is what the form records.
-- The name of the persona filling in the form, when the system knows who the persona is.
+- The name of the persona filling in the form, when the application knows who the persona is.
 
 **NEVER pre-fill a value the persona has to understand before the persona can check the value.** Such values include a value that needs one of the following before the persona knows the default is right:
 

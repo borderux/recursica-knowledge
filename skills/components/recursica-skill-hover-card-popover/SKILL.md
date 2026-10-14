@@ -83,7 +83,7 @@ Only a persona using a pointer can reach a button inside a hover card.
 - an action
 - an explanation the persona needs to move forward
 
-**Never make a hover card or popover the only place a piece of information exists.** For example, when a hover card shows a customer's email address, the page shows the email address too. `recursica-skill-system-conventions` forbids meaning that depends on a single channel (color, shape, position or text, each a separate signal). A card that appears only on hover is the narrowest channel of all.
+**Never make a hover card or popover the only place a piece of information exists.** For example, when a hover card shows a customer's email address, the page shows the email address too. `recursica-skill-design-system-conventions` forbids meaning that depends on a single channel (color, shape, position or text, each a separate signal). A card that appears only on hover is the narrowest channel of all.
 
 **Do not put a form, a form section, or a single form control inside a hover card or popover.** `recursica-skill-forms` forbids all three in a hover card or popover, with no exception.
 
@@ -109,7 +109,7 @@ Only a persona using a pointer can reach a button inside a hover card.
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, including the focus ring, which every Recursica component follows.
 
 **Name whether the build is a hover card or a popover, then meet every requirement for the named component.** No build halfway between the two is safe. A build that meets half the requirements of each leaves content that only a pointer can reach.
 
@@ -120,7 +120,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - **If a hover card's content has any meaning at all, connect the content to the trigger as a description.** A screen reader reads unconnected content beside a trigger as unrelated text, or does not read the content at all.
 - **The design must still work when a hover card's content goes unread.** A hover card's content might go unread, so a hover card may hold no content the persona needs. Put content the persona must read in a popover.
 - **Every control in a popover needs a real accessible name**, exactly as on the page.
-- **Never put meaning in a hover card or popover that exists nowhere else.** `recursica-skill-system-conventions` requires a second channel for any meaning the persona must receive.
+- **Never put meaning in a hover card or popover that exists nowhere else.** `recursica-skill-design-system-conventions` requires a second channel for any meaning the persona must receive.
 - **Do not announce a hover card or popover as an alert.** The card shows content the persona asked for, and does not interrupt the persona.
 - **An image in a hover card or popover needs alternative text**, or must be marked as decorative. Otherwise, a profile preview made only of an avatar tells a persona using a screen reader nothing.
 
@@ -146,7 +146,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 ## Related skills
 
 - `recursica-skill-discoverability` — progressive disclosure, and the three cases where hiding content is not safe. `recursica-skill-discoverability` also says progressive disclosure never justifies a dark pattern.
-- `recursica-skill-system-conventions` — never show meaning in a single channel, and a hidden affordance must stay reachable by keyboard and by assistive technology.
+- `recursica-skill-design-system-conventions` — never show meaning in a single channel, and a hidden affordance must stay reachable by keyboard and by assistive technology.
 
 ### Only if used on the same screen
 

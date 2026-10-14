@@ -67,7 +67,7 @@ With a real `href`, assistive technology also announces the link as a link.
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, which every Recursica component follows.
 
 Every Recursica link already shows the underline, the color, and the focus ring. The app's code writes the HTML markup for each link. A link built from the wrong HTML element fails with every kind of assistive technology.
 
@@ -78,7 +78,7 @@ Every Recursica link already shows the underline, the color, and the focus ring.
 - **Two links with the same name must go to the same destination.** Some links to different destinations share a label, such as "View" in every row of an orders table. The accessible name or the context of the row holding the link must tell those links apart. For example, the accessible name of each "View" link names the order, such as "Order 1042".
 - **An icon inside a link must be hidden from screen readers, unless the icon is the link's only content.** The hidden icon is decorative. An icon that is the link's only content must have the link's accessible name.
 - **If a link opens in a new tab or downloads a file, state the new tab or the download.** For example, write "Help center (opens in a new tab)". Put the statement in the accessible name or in text right next to the link. A persona using a screen reader has no visual sign that the window changed. A new tab or a download that nobody announces confuses that persona.
-- **Never mark an external link by color or icon alone.** `recursica-skill-system-conventions` requires a second channel (color, shape, position or text, each a separate signal).
+- **Never mark an external link by color or icon alone.** `recursica-skill-design-system-conventions` requires a second channel (color, shape, position or text, each a separate signal).
 
 ### Keyboard and non-mouse navigation
 
@@ -97,7 +97,7 @@ Every Recursica link already shows the underline, the color, and the focus ring.
 
 - `recursica-skill-buttons-links` — link versus button, label wording, links in table rows, new tabs, and buttons that open a modal.
 - `recursica-skill-navigation` — routes, browser history, permissions, and where links go in the app shell.
-- `recursica-skill-system-conventions` — never show a meaning in only one way.
+- `recursica-skill-design-system-conventions` — never show a meaning in only one way.
 
 ## Open questions
 

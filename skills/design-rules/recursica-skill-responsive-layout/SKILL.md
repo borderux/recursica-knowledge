@@ -1,13 +1,13 @@
 ---
-name: recursica-skill-responsive-behavior
-description: House rules below desktop — tablet and small breakpoints, the 1200 content width, responsive reflow versus adaptive removal, what may be dropped, navigation patterns, panels and modals becoming pages, no native mobile patterns, and tables below tablet. Use when a layout must work on tablets, phones, or narrow screens. Not for panel, modal, or page at desktop — see recursica-skill-panels-modals.
+name: recursica-skill-responsive-layout
+description: House rules for layouts narrower than desktop — tablet and small breakpoints, the 1200 content width, responsive reflow versus adaptive removal, what may be dropped, navigation patterns, panels and modals becoming pages, no native mobile patterns, and tables below tablet. Use when a layout must work on tablets, phones, or narrow screens. Not for panel, modal, or page at desktop — see recursica-skill-panels-modals.
 license: MIT
 metadata:
   author: hi@borderux.com
   version: 0.1.0
 ---
 
-# Responsive behavior below desktop
+# Responsive layout below desktop
 
 Treat each house rule as a constraint. The house rules below cover layouts as a viewport gets narrower than desktop size. The house rules are opinions, not neutral best practices.
 
@@ -154,9 +154,9 @@ See `recursica-skill-screen-scaffolding`.
 
 **Recursica components handle touch the same way Recursica components handle every other kind of input.** Touch handling is built into the components. The screen design does not need to handle touch.
 
-**Decide for each design whether touch targets get bigger on smaller devices.** The touch target decision is not a system rule.
+**Decide for each design whether touch targets get bigger on smaller devices.** The touch target decision is not a rule of the Recursica design system.
 
-**An interaction that depends on hover must have a way to work without hover.** A touch device has no hover at all. `recursica-skill-system-conventions` makes the hover rule absolute: no part of the interface may be reachable by hover alone.
+**An interaction that depends on hover must have a way to work without hover.** A touch device has no hover at all. `recursica-skill-design-system-conventions` makes the hover rule absolute: no part of the interface may be reachable by hover alone.
 
 ## Navigation below desktop
 

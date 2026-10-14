@@ -122,11 +122,11 @@ export const ROUTES = {
 export const ALWAYS = [
   "recursica-skill-screen-scaffolding",
   "recursica-skill-screen-priority",
-  "recursica-skill-system-conventions",
+  "recursica-skill-design-system-conventions",
   "recursica-skill-typography-semantics",
-  "recursica-skill-naming-terminology",
+  "recursica-skill-names-and-terms",
   "recursica-skill-layers",
-  "recursica-skill-responsive-behavior",
+  "recursica-skill-responsive-layout",
   "recursica-skill-screen-starting-state",
   "recursica-skill-icon-semantics",
   // What the application is structured around — which objects get a place in the navigation, and

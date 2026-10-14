@@ -105,7 +105,7 @@ See `recursica-skill-dates-and-currency`.
 
 **The error message must restate the rule.** For example, "Enter a time after 9:00 AM" is an error message. "Invalid time" is not an error message.
 
-**Pair the error state with a signal that is not color**, either an icon or the error message. `recursica-skill-system-conventions` requires the second signal.
+**Pair the error state with a signal that is not color**, either an icon or the error message. `recursica-skill-design-system-conventions` requires the second signal.
 
 **A disabled time picker and a read-only field are different components, not two styles of one component.**
 
@@ -114,7 +114,7 @@ See `recursica-skill-dates-and-currency`.
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, which every Recursica component follows.
 
 **Follow the rules below for the three parts of a time picker that the application builds:**
 
@@ -174,7 +174,7 @@ The time picker's width is fixed.
 - `recursica-skill-label` — the label component, the label-placement variant, and the rule of one label for a control made of several inputs.
 - `recursica-skill-assistive-element` — the help text and error text below the field, and why the error text replaces the help text.
 - `recursica-skill-selection-controls` — when a list of preset times replaces free entry, and a disabled control versus a read-only field.
-- `recursica-skill-system-conventions` — showing meaning in more than one way, such as color and an icon.
+- `recursica-skill-design-system-conventions` — showing meaning in more than one way, such as color and an icon.
 
 ### Only if used on the same screen
 

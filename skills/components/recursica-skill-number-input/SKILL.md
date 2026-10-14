@@ -94,7 +94,7 @@ See `recursica-skill-dates-and-currency`.
 
 **The error message must restate the rule.** Write "Enter a whole number between 1 and 99", not "Invalid number".
 
-**Pair the error state with a signal that is not color**, either an icon or the error message. `recursica-skill-system-conventions` requires a signal that is not color.
+**Pair the error state with a signal that is not color**, either an icon or the error message. `recursica-skill-design-system-conventions` requires a signal that is not color.
 
 **Never quietly correct the value the persona typed, or force the typed value into the allowed range.** For example, when the maximum is 99 and the persona types 150, do not change 150 to 99. Show the error, and let the persona fix the value. Rewriting a value when the field loses focus destroys the persona's input without telling the persona.
 
@@ -105,7 +105,7 @@ See `recursica-skill-dates-and-currency`.
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, which every Recursica component follows.
 
 The number input component connects the label to the input and shows the focus ring. The application provides the unit, the limits, and every control inside the field.
 
@@ -154,7 +154,7 @@ The number input component connects the label to the input and shows the focus r
   - the rule that no form control goes inside a card
 - `recursica-skill-label` — the label component, the label-placement variant, and required and optional markers.
 - `recursica-skill-assistive-element` — the help text and error text below the field, and why the error text replaces the help text.
-- `recursica-skill-system-conventions` — showing every meaning in more than one way.
+- `recursica-skill-design-system-conventions` — showing every meaning in more than one way.
 
 ### Only if used on the same screen
 

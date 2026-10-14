@@ -88,7 +88,7 @@ Never use the icon style as the usual picture for a known persona.
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, including the focus ring, which every Recursica component follows.
 
 **An avatar is either a picture or a control.** Each kind of avatar fails a persona using a screen reader in a different way.
 
@@ -104,7 +104,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - **An icon avatar must be silent.** An icon avatar shows no identity, so a screen reader has nothing to announce. A screen reader must not announce an icon avatar as "image" or "graphic".
 - **Give a control avatar a real accessible name that says what using the avatar does.** Examples are "Account menu", or the persona's name and what the avatar opens. The picture is not the accessible name. A control with no accessible name is announced only as "button".
 - **A control avatar counts as an icon-only control.** Give a control avatar a tooltip for sighted personas using a mouse. Separately, give the control avatar an accessible name. `recursica-skill-buttons-links` requires both.
-- **Never make the avatar the only way to tell whose table or list row, comment, or assignment the persona sees.** An avatar alone puts meaning in a single visual channel (color, shape, position or text, each a separate signal). `recursica-skill-system-conventions` forbids meaning in a single channel.
+- **Never make the avatar the only way to tell whose table or list row, comment, or assignment the persona sees.** An avatar alone puts meaning in a single visual channel (color, shape, position or text, each a separate signal). `recursica-skill-design-system-conventions` forbids meaning in a single channel.
 - **Do not add a hidden screen-reader copy of the name while the visible name stays in the reading order.** The reading order is the order in which a screen reader reads the page. A persona using a screen reader hears the name twice.
 
 ### Keyboard and non-mouse navigation
@@ -124,7 +124,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - `recursica-skill-navigation` — keeping the account menu out of primary navigation, what counts as a location, and showing the persona's current location.
 - `recursica-skill-buttons-links` — the tooltip and accessible name an icon-only control needs, and when to use a button or a link.
 - `recursica-skill-tables` — whether a person column in a dense table shows a picture, and which fields get a column.
-- `recursica-skill-system-conventions` — never showing a meaning in a single channel.
+- `recursica-skill-design-system-conventions` — never showing a meaning in a single channel.
 
 ### Only if used on the same screen
 

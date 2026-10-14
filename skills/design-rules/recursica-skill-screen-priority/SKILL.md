@@ -119,7 +119,7 @@ Base density on the use case, not on a threshold.
 
 ## Hierarchy without color
 
-**Do not use color to show hierarchy.** Meaning never depends on color alone, as `recursica-skill-system-conventions` says. For example, a section title stands out as a larger heading, not as blue text. Show hierarchy with the following tools:
+**Do not use color to show hierarchy.** Meaning never depends on color alone, as `recursica-skill-design-system-conventions` says. For example, a section title stands out as a larger heading, not as blue text. Show hierarchy with the following tools:
 
 - **Typography**, meaning the correct heading levels and type sizes. See `recursica-skill-typography-semantics`.
 - **The balance of the layout.**
@@ -203,7 +203,7 @@ Usability testing on a long credit-card application found that the single long f
 
 **The application has one scrollbar.** The persona scrolls the browser with the pointer at any point on the page. The sticky regions stay in place.
 
-**NEVER build an inner scrolling region.** An inner scrolling region forces the persona to point inside one area before the scroll wheel moves the content. For example, a list that scrolls inside a card moves only while the pointer is over the card. The one-scrollbar rule prevents the failure. See convention 4 in `recursica-skill-system-conventions`. `recursica-skill-dashboards` also forbids inner scrolling on dashboards.
+**NEVER build an inner scrolling region.** An inner scrolling region forces the persona to point inside one area before the scroll wheel moves the content. For example, a list that scrolls inside a card moves only while the pointer is over the card. The one-scrollbar rule prevents the failure. See convention 4 in `recursica-skill-design-system-conventions`. `recursica-skill-dashboards` also forbids inner scrolling on dashboards.
 
 **The one possible exception is a table that fills the full width and height of the viewport.** Even the full-viewport table is only a "maybe." In general, build no inner scrolling of any kind.
 
@@ -222,8 +222,8 @@ With one message for both states, the persona cannot tell whether to change the 
 
 **Look for two kinds of mismatch:**
 
-1. **The same concept called by two different names** in two places. See `recursica-skill-naming-terminology`.
-2. **Different workflows for the same kind of task.** For example, one section submits a form with one submit button. Another section saves each change inline, as the persona makes the change. See `recursica-skill-system-conventions` on one behavioral mode per system.
+1. **The same concept called by two different names** in two places. See `recursica-skill-names-and-terms`.
+2. **Different workflows for the same kind of task.** For example, one section submits a form with one submit button. Another section saves each change inline, as the persona makes the change. See `recursica-skill-design-system-conventions` on one behavioral mode per application.
 
 **Run alignment as a review pass, after the design is otherwise complete.** Do not check alignment all the time while building.
 

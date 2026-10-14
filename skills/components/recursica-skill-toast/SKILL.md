@@ -54,7 +54,7 @@ The rules below describe each option by role, such as "the success style". The n
 
 ## Rules
 
-**Put the meaning in the toast's text, and use the style only to support the text.** For example, write "Could not save — the invoice was changed by someone else." An error toast that reads "Something went wrong" in red tells a persona using a screen reader nothing. In black and white, the same toast tells no persona what happened. `recursica-skill-system-conventions` requires this rule.
+**Put the meaning in the toast's text, and use the style only to support the text.** For example, write "Could not save — the invoice was changed by someone else." An error toast that reads "Something went wrong" in red tells a persona using a screen reader nothing. In black and white, the same toast tells no persona what happened. `recursica-skill-design-system-conventions` requires this rule.
 
 **Put a success confirmation in a toast, never on a field.** The rule has no exception. Never add a green check mark to an input, or a "Saved" note to each field.
 
@@ -86,7 +86,7 @@ The rules below describe each option by role, such as "the success style". The n
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, which every Recursica component follows.
 
 **The toast is the riskiest component in the system.** A toast appears without the persona asking, and disappears with no action from the persona. A toast shows every message away from where the persona is looking. Three mistakes follow from those facts:
 
@@ -134,7 +134,7 @@ The theme also sets which icon each toast style shows. Never change the icon a s
 - `recursica-skill-undo` — when an action gets an undo instead of a confirmation, and where the undo goes.
 - `recursica-skill-buttons-links` — the wording of action labels.
 - `recursica-skill-forms` — errors on fields, and the status message that must stay on screen when each field saves separately. The forms skill also holds the rule against any status when the form saves all changes at once.
-- `recursica-skill-system-conventions` — showing meaning in more than one way. The system-conventions rule is why the style is never the whole message.
+- `recursica-skill-design-system-conventions` — showing meaning in more than one way. The design-system-conventions rule is why the style is never the whole message.
 - `recursica-skill-live-regions` — what the app must announce along with a toast, and how to announce changes the persona did not cause.
 
 ### Only if used on the same screen

@@ -90,7 +90,7 @@ The filter chip and the filter control share one state.
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, including the focus ring, which every Recursica component follows.
 
 **A chip group must behave like every other form control.** A chip group is a form control laid out horizontally. The most common failure is a group of clickable `div` elements with a colored selected state. A persona not using a mouse cannot find or use chips built as clickable `div` elements with a colored selected state.
 
@@ -98,7 +98,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 - **A screen reader must announce a selectable chip group as a group of checkboxes.** A selectable chip group is a group of checkboxes. Give the chip group an accessible name (the name a screen reader reads out for a control). Each chip announces the chip's label and whether the chip is selected.
 - **Give the chip group a label, such as "Categories".** Without a label, the persona hears a list of options and does not know what the options are for.
-- **Mark the selected state in the code, not only by color on the screen.** A persona using a screen reader cannot tell selected chips from unselected chips by fill color alone. `recursica-skill-system-conventions` forbids showing the selected state only by color.
+- **Mark the selected state in the code, not only by color on the screen.** A persona using a screen reader cannot tell selected chips from unselected chips by fill color alone. `recursica-skill-design-system-conventions` forbids showing the selected state only by color.
 - **Give the close control of a removable chip an accessible name that includes the chip's value**, such as "Remove Marketing". Never name the close control "Remove" alone, and never leave the accessible name empty. A row of five close controls that are each named "Remove" cannot be used.
 - **Announce each chip removal.** After a chip is removed, the persona needs to know that the chip is gone and which chips are left. For example, announce that the "Marketing" chip was removed and that "Design" and "Research" are left. Without an announcement, a persona using a screen reader cannot tell a removal from a click that failed.
 - **Keep the leading icon (an optional icon before the label) silent to a screen reader.** The leading icon is decorative, and the chip label gives the meaning.
@@ -123,7 +123,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - `recursica-skill-forms` — the form's save mode, and how to show the chip group's validation error.
 - `recursica-skill-assistive-element` — the element below the chip group that shows the chip group's validation error, and the wording of the error.
 - `recursica-skill-working-memory` — the research behind the limits on the number of options.
-- `recursica-skill-system-conventions` — the accessibility baseline every component follows.
+- `recursica-skill-design-system-conventions` — the accessibility baseline every component follows.
 
 ## Open questions
 

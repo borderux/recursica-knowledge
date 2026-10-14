@@ -34,7 +34,7 @@ Do not ship a control, such as a menu, whose value cannot be changed. See `recur
 
 **Do not build an affordance (a visible cue that a control can be used, such as the underline on a link) for changing the application's defaults, unless someone has asked for that affordance.** For example, do not add a "Make this my default" link next to a field.
 
-- The application sets the system default. The persona does not get to change the system default.
+- The application sets the default. The persona does not get to change the application's default.
 - The persona changes the persona's own value, for this one time.
 
 ## Default tab
@@ -99,7 +99,7 @@ A value must pass two tests before the value is pre-selected.
 
 **Test 2: the later-consequences veto.** NEVER pre-select an option that has major effects later in the workflow, however likely the option is. For example, never pre-select a billing plan when the plan sets what the account pays later. The persona may not notice that a default made a choice. A decision with later consequences is not a decision to make quietly for the persona.
 
-**Take the most care with a pre-selected radio button.** A pre-selected radio button is the riskiest default in the system. A pre-selected radio button can fail in three ways, and the persona notices none of the three:
+**Take the most care with a pre-selected radio button.** A pre-selected radio button is the riskiest default in an application. A pre-selected radio button can fail in three ways, and the persona notices none of the three:
 
 1. **The persona does not know how to clear the radio button.** A radio button is hard to clear.
 2. **The persona does not realize that a different option was available.**

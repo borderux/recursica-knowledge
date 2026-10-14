@@ -42,7 +42,7 @@ The house rules assume **complex enterprise web applications** built on a Recurs
 - **The navigation raised to layer 1, with the main content left on layer 0**, or
 - **The main content raised to layer 1, with the navigation left on layer 0.**
 
-**Either pattern is correct. Choose one pattern for the whole application, not one per screen.** See convention 1, "One behavioral mode per system", in `recursica-skill-system-conventions`.
+**Either pattern is correct. Choose one pattern for the whole application, not one per screen.** See convention 1, "One behavioral mode per application", in `recursica-skill-design-system-conventions`.
 
 **Do not raise both the navigation and the main content to layer 1.** When every region is contained, no region stands out. The extra level then separates no region from another region.
 
@@ -61,13 +61,13 @@ The application shell is the header, the rail, the footer and the titles. `recur
 | **2** | **Rare.** Needs a stated reason: a container nested inside a layer 1 region that still needs a container |
 | **3** | **Almost never.** Treat a need for layer 3 as a sign that the screen's structure is wrong                |
 
-**Use space first, always.** Most regions need no separate layer. Show grouping with white space and type hierarchy. For example, try space and a heading between two groups of form fields before trying a layer. See `recursica-skill-screen-scaffolding`, and convention 5, "Group with space, not boxes", in `recursica-skill-system-conventions`.
+**Use space first, always.** Most regions need no separate layer. Show grouping with white space and type hierarchy. For example, try space and a heading between two groups of form fields before trying a layer. See `recursica-skill-screen-scaffolding`, and convention 5, "Group with space, not boxes", in `recursica-skill-design-system-conventions`.
 
 **Open a new layer when space has failed to separate neighboring regions, and the regions still blur together.**
 
 **Do not go down a level each time one container sits inside another in the markup.** A layer is a region that holds content and has a meaning, such as the navigation. A generic wrapper element in the markup is not a layer. The depth limits in the table above exist to prevent one mistake. The mistake is nesting three layers only because the components sit three containers deep in the markup.
 
-**If a screen seems to need more than four layers, change the structure of the screen.** The nesting is too deep. See convention 4, "Fix the structure, do not engineer around the symptom", in `recursica-skill-system-conventions`.
+**If a screen seems to need more than four layers, change the structure of the screen.** The nesting is too deep. See convention 4, "Fix the structure, do not engineer around the symptom", in `recursica-skill-design-system-conventions`.
 
 ## Layer properties from the theme
 
@@ -121,7 +121,7 @@ The layer tokens come in two groups, `properties_*` and `elements_*`.
 
 **Make text less prominent with the low-emphasis token, not with a second gray.** For example, a date under a name in a table row uses `text-low-emphasis`. High and low emphasis are levels of transparency, not colors. Each emphasis level is a number multiplied against `text-color`.
 
-**Take each alert, warning or success color from the layer under the element that uses the color.** For example, an error message on layer 1 uses the `text-alert` token of layer 1. Each layer has separate alert, warning and success colors. The same red does not appear on every layer. `recursica-skill-system-conventions` sets which signals show an alert, a warning or a success. Color alone is never enough.
+**Take each alert, warning or success color from the layer under the element that uses the color.** For example, an error message on layer 1 uses the `text-alert` token of layer 1. Each layer has separate alert, warning and success colors. The same red does not appear on every layer. `recursica-skill-design-system-conventions` sets which signals show an alert, a warning or a success. Color alone is never enough.
 
 **No layer has a separate disabled token.** The theme shows a disabled look for interactive elements on each layer. The disabled color comes from the global state token. Do not look for a `layer_N` disabled color.
 
@@ -199,7 +199,7 @@ In the table, plurality (the number of items) means how many layers or cards app
 - **Which regions that hold content sit at which level by default.** No source states the layer of a panel, a modal, a table or a dashboard widget. The available sources state only that each of those components has colors for each layer.
 - **Whether a modal or panel opens a new layer scope**, or takes on the layer beneath the modal or panel.
 - **Whether KPI tiles sit on layers or in cards.** The question is still open in `recursica-skill-screen-scaffolding`.
-- **What a layer does below the tablet breakpoint** — see `recursica-skill-responsive-behavior`.
+- **What a layer does below the tablet breakpoint** — see `recursica-skill-responsive-layout`.
 
 ## Pre-flight checklist
 

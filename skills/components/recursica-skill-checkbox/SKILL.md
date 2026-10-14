@@ -96,7 +96,7 @@ Each option below is described by role, such as "the checked state". A name from
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, which every Recursica component follows.
 
 The checkbox component pairs each box with the item label, and provides the focus ring. Each app must:
 
@@ -111,7 +111,7 @@ Apps most often miss the behavior in the two lists.
 - **Set a real label on every checkbox item (`checkbox-item`).** The item label is the accessible name (the name a screen reader reads out for a control). Text placed beside a box is not a label, and leaves the checkbox with no accessible name.
 - **Set a separate label on the checkbox group (`checkbox-group`).** A screen reader must announce the group label when focus enters the group. A group label that only sits above the group in the reading order is not enough. Without the group label, the persona hears a list of options with no question.
 - **The group label and the item labels do different jobs.** For example, the group label asks "How can we contact you?", and each item label names one answer, such as "Email". Never use the group label to do an item label's job. Never use an item label to do the group label's job. See `recursica-skill-label`.
-- **Make the checked state available in code.** Never show the checked state only by a fill color or a check mark. A persona who cannot see the box must still hear "checked" or "not checked". The rule comes from `recursica-skill-system-conventions`.
+- **Make the checked state available in code.** Never show the checked state only by a fill color or a check mark. A persona who cannot see the box must still hear "checked" or "not checked". The rule comes from `recursica-skill-design-system-conventions`.
 - **Make the indeterminate state available in code as a mixed state**, not as a dash that exists only on screen. A persona using a screen reader hears "partially checked" from a mixed state, and hears nothing from a dash.
 - **A select-all control must name what the control selects**, as in "Select all rows". Never use a bare "Select all" in a table header.
 - **In a table, each row checkbox must name the table row.** Name the table row in one of two ways:
@@ -166,7 +166,7 @@ Apps most often miss the behavior in the two lists.
 - `recursica-skill-assistive-element` — the help text and error text below the group, and the wording rules for both.
 - `recursica-skill-working-memory` — the reason for the 7 ± 2 limit. The skill also sets the line between recognizing an option and comparing options. The line decides when a long list is acceptable.
 - `recursica-skill-tables` — the table structure around row selection and the header checkbox.
-- `recursica-skill-system-conventions` — two system conventions:
+- `recursica-skill-design-system-conventions` — two design system conventions:
   - never showing a meaning in only one way
   - fixing the screen's structure instead of adding a mechanism, such as select all, to cope with a bad structure
 

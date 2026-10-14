@@ -96,7 +96,7 @@ The exception is not ideal. The exception exists because secondary modals, such 
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, including the focus ring, which every Recursica component follows.
 
 **Build and test most of the rules below as behavior, such as where focus goes, not as styling.** Accessibility failures are more serious in a modal than in any other component. Wrong focus handling fails a persona using a keyboard or a screen reader in one of two ways:
 
@@ -109,7 +109,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - **Use the modal's title as the modal's accessible name** (the name a screen reader reads out for a control). Connect the title to the dialog. Do not leave the dialog without a name, and do not name the dialog "Dialog".
 - **Every element behind the modal must be inert.** Then no persona can reach, read, or tab to the page behind the modal. If the page behind the modal is not inert, a persona using a screen reader can move into the page. The persona then has no way to know the persona has left the dialog.
 - **A screen reader must announce the content of the modal when the modal opens.** Moving focus inside the modal makes the screen reader announce the content. Do not rely on how the modal looks to tell the persona that an event happened.
-- **A destructive confirmation must say in words that the action is destructive.** Color and icons tell a screen reader nothing. `recursica-skill-system-conventions` requires a second channel (color, shape, position or text, each a separate signal). When the theme has no severity variant, the text is the only second channel. An example of the words is "All 40 files in this folder will be deleted."
+- **A destructive confirmation must say in words that the action is destructive.** Color and icons tell a screen reader nothing. `recursica-skill-design-system-conventions` requires a second channel (color, shape, position or text, each a separate signal). When the theme has no severity variant, the text is the only second channel. An example of the words is "All 40 files in this folder will be deleted."
 - **Give a close control a real name**, such as "Close", or better, the name of what the close control closes. An example of the better name is "Close invoice details". A screen reader announces nothing for an icon-only close button with no label.
 
 ### Keyboard and non-mouse navigation
@@ -139,7 +139,7 @@ Never restyle the overlay behind the modal. Never change when the scroll divider
 - `recursica-skill-undo` — offering an undo instead of a confirmation.
 - `recursica-skill-navigation` — routes and browser history, including the exception for a modal built on purpose for linking.
 - `recursica-skill-forms` — the save mode and validation of any form inside the modal.
-- `recursica-skill-system-conventions` — the accessibility baseline every component follows.
+- `recursica-skill-design-system-conventions` — the accessibility baseline every component follows.
 
 ### Only if used on the same screen
 

@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-undo
-description: House rules for undo — when an action gets an undo instead of a confirmation, where the undo goes (on the page, in place, or in a toast), when a toast is needed at all, and the Undo button's accessible name. Use whenever an action can be reversed, or when choosing between an undo and a confirmation. Not for the confirmation modal itself — see recursica-skill-buttons-links.
+description: House rules for undo — when an action gets an undo instead of a confirmation, where the undo goes (on the page, in place, or in a toast), when a toast is needed at all, and the Undo button's accessible name. Use whenever an action can be reversed, or when choosing between an undo and a confirmation. Not for building the toast that holds an Undo button — see recursica-skill-toast. Not for the confirmation modal — see recursica-skill-buttons-links.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -56,7 +56,7 @@ The house rules in this skill say when an action gets an undo, and where the und
 - **The confirmation modal**: `recursica-skill-buttons-links` and `recursica-skill-modal`.
 - **The toast component and toast timing**: `recursica-skill-toast` and `recursica-skill-feedback-messaging`.
 - **Undo inside a table row waiting for a decision**: `recursica-skill-tables`.
-- **A control with two outcomes, which no undo can reverse**: `recursica-skill-system-conventions`.
+- **A control with two outcomes, which no undo can reverse**: `recursica-skill-design-system-conventions`.
 
 ## Open questions
 

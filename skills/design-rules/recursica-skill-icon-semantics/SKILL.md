@@ -75,7 +75,7 @@ For the same reason, a navigation rail made only of icons fails worst in busines
 
 **Only an icon built into a component may skip both the label and the tooltip.** An icon placed separately on a screen gets no exemption.
 
-**If a built-in indicator shows a state, such as open or closed, the code must also hold the state.** The state must not be shown by the icon alone. Software such as a screen reader can read a state held in the code. For example, a screen reader can announce that an accordion item is open. `recursica-skill-system-conventions` and each component skill own this rule.
+**If a built-in indicator shows a state, such as open or closed, the code must also hold the state.** The state must not be shown by the icon alone. Software such as a screen reader can read a state held in the code. For example, a screen reader can announce that an accordion item is open. `recursica-skill-design-system-conventions` and each component skill own this rule.
 
 ## Fixed meanings
 
@@ -121,7 +121,7 @@ A landmarking icon makes each page look different and shows the persona where th
 
 **Status icons help personas scan.** On a dense screen made almost entirely of text, reading even more text to find a status is hard work. An icon is faster to spot than text, most of all when the icon and the text appear together.
 
-**Color never shows the status by itself.** `recursica-skill-system-conventions` requires that any meaning the persona must receive survives when one channel (color, shape, position or text, each a separate signal) fails. An icon and a color are two channels, but both channels are still only visual. A status icon therefore needs an accessible name (the name a screen reader reads out for a control) that says the status, such as "Overdue".
+**Color never shows the status by itself.** `recursica-skill-design-system-conventions` requires that any meaning the persona must receive survives when one channel (color, shape, position or text, each a separate signal) fails. An icon and a color are two channels, but both channels are still only visual. A status icon therefore needs an accessible name (the name a screen reader reads out for a control) that says the status, such as "Overdue".
 
 **In a table cell, pair a status icon with text.** See "Icons in tables" below.
 
@@ -144,7 +144,7 @@ A landmarking icon makes each page look different and shows the persona where th
 - **Whether a control is a button or a link, and where the control sits** — `recursica-skill-buttons-links`. The buttons-and-links skill also decides between icon-only and text controls in table rows.
 - **Tooltip content, placement, and behavior** — `recursica-skill-tooltip`.
 - **Navigation made only of icons**, which is forbidden outright — `recursica-skill-navigation`.
-- **What a status is called** — `recursica-skill-naming-terminology`.
+- **What a status is called** — `recursica-skill-names-and-terms`.
 - **Whether a badge may hold an icon** — `recursica-skill-badges-chips`, which lists the question as open.
 - **Motion.** No Recursica skill decides whether an icon may animate.
 

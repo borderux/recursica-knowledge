@@ -104,7 +104,7 @@ The persona then sees which option added the fields.
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, which every Recursica component follows.
 
 The group, item and radio button components provide three behaviors:
 
@@ -123,7 +123,7 @@ The application provides three parts of the radio group:
 - **Give every option a real label, set on the item.** The item label is the option's accessible name. Text placed beside a radio button is not a label.
 - **Give the radio group a label, set on the group.** A screen reader must announce the group label when focus enters the radio group. Text placed above the group in the reading order is not enough. Without a group label, the persona hears the options without the question the options answer. For example, the persona hears "Standard, Express, Overnight" but never hears "Shipping speed". A missing group label is the worst failure a radio group can have.
 - **A screen reader must announce the radio group as a group, with the option's position in the group**, as in "option 2 of 5". The announcement tells the persona that the options are alternatives, not separate fields.
-- **The selected state must be available in code**, never shown only by a fill color or a dot. A persona who cannot see the radio button must still hear "selected" or "not selected". `recursica-skill-system-conventions` requires the selected state in code.
+- **The selected state must be available in code**, never shown only by a fill color or a dot. A persona who cannot see the radio button must still hear "selected" or "not selected". `recursica-skill-design-system-conventions` requires the selected state in code.
 - **A screen reader announces a pre-selected option as the current answer.** A persona using a screen reader hears the pre-selected option as a decision the persona made. The pre-selection caution under "Rules" exists for that reason.
 - **State that an option reveals more fields before the persona chooses the option.** Put the statement in the item label or in the group's assistive text. For example, the assistive text says that "Ship to my address" asks for an address.
 
@@ -171,7 +171,7 @@ Never set or override the styling of the radio group or the radio items either.
   - the required and optional markers
 - `recursica-skill-assistive-element` — the help text and error text below the group, and the wording rules for both.
 - `recursica-skill-working-memory` — the research behind the 7 ± 2 limit, and the difference between recognizing an option and comparing options.
-- `recursica-skill-system-conventions` — never convey meaning in only one way.
+- `recursica-skill-design-system-conventions` — never convey meaning in only one way.
 
 ### Only if used on the same screen
 

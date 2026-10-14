@@ -1,15 +1,15 @@
 ---
-name: recursica-skill-system-conventions
-description: Conventions that recur across all the Recursica rules, for decisions no topic skill covers — one behavior per system, the unadvertised affordance, never one channel for meaning, fixing structure not symptoms, grouping with space not boxes, one control one outcome — plus the accessibility baseline every component follows. Load this skill with the owning skill, which always wins.
+name: recursica-skill-design-system-conventions
+description: House rules that apply across the whole Recursica design system, for decisions no topic skill covers — one behavior per application, the unadvertised affordance, never one channel for meaning, fixing structure not symptoms, grouping with space not boxes, one control one outcome — plus the accessibility baseline every component follows. Load this skill with the owning skill, which always wins.
 license: MIT
 metadata:
   author: hi@borderux.com
   version: 0.1.0
 ---
 
-# System conventions
+# Design system conventions
 
-The Recursica design rules repeat six conventions. The team stated each convention more than once, in different recordings. Each time, the statement was about a different page, panel, modal or other region that holds content. The repetition across recordings makes each of the six rules a convention, not a one-off rule.
+The rules of the Recursica design system repeat six conventions. Each convention applies across the whole design system, to every screen. The team stated each convention more than once, in different recordings. Each time, the statement was about a different page, panel, modal or other region that holds content. The repetition across recordings makes each of the six rules a convention, not a one-off rule.
 
 **This skill collects rules from other skills, and was not recorded from the team.** Each convention lists the rules the convention comes from, and the skill that owns each rule. The rules in the owning skills are the authority. This skill describes the pattern that the owning skills' rules share.
 
@@ -17,7 +17,7 @@ The Recursica design rules repeat six conventions. The team stated each conventi
 
 **This skill is mainly for a new page, panel, modal or other region.** A topic skill is a skill such as the forms skill or the tables skill. When no topic skill covers a decision, the six conventions are the house position. Apply the six conventions instead of inventing an answer or borrowing a convention from another source.
 
-## 1. One behavioral mode per system
+## 1. One behavioral mode per application
 
 **When a behavior can work two reasonable ways, choose one way for the whole application.** For example, a form can save each field as the field changes, or save a batch of fields at once. Each way is a behavioral mode. When the persona cannot tell by looking which mode is active, use the same mode everywhere in the application.
 

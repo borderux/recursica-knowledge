@@ -66,7 +66,7 @@ The rules below describe each option by role, such as "the label beside the fiel
 
 **On error, replace the assistive text with the error message.** Do not add the error message to the assistive text. Replacing the assistive text keeps the field the same height, so the form below the field does not move. The error message must restate the rule that the value broke, such as "At least 8 characters". "Invalid input" is not an error message.
 
-**Show the error state with an icon or the message text, as well as color.** `recursica-skill-system-conventions` requires more than color to show an error.
+**Show the error state with an icon or the message text, as well as color.** `recursica-skill-design-system-conventions` requires more than color to show an error.
 
 **Put a prefix or a suffix inside the field, never as part of the value.** A prefix or a suffix is text fixed to the start or the end of the field. For example, an email domain such as "@acme.com" goes after the value.
 
@@ -86,7 +86,7 @@ The rules below describe each option by role, such as "the label beside the fiel
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, which every Recursica component follows.
 
 The app must add the behavior in the two lists below. Apps most often miss the behavior in the two lists. The text field connects the label to the input and shows the focus ring. The text field also responds to keys pressed inside the field.
 
@@ -130,7 +130,7 @@ Never set or override how the label connects to the input or how keys work insid
   - the rule that no form control goes inside a card
 - `recursica-skill-selection-controls` — when a control with fixed options replaces free-form entry, and disabled versus read-only.
 - `recursica-skill-dates-and-currency` — date, time, currency, and numeric formatting inside the field.
-- `recursica-skill-system-conventions` — never show meaning in only one way.
+- `recursica-skill-design-system-conventions` — never show meaning in only one way.
 - `recursica-skill-label` — the label rules:
   - label copy that names the object and makes sense without the context around the field
   - the required and optional markers

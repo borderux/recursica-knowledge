@@ -1,5 +1,5 @@
 ---
-name: recursica-skill-naming-terminology
+name: recursica-skill-names-and-terms
 description: House rules for names and terms — whose vocabulary wins, how navigation labels, page titles, and column headers relate, singular or plural, object labels in navigation, shortening and acronyms, and matching an integration's names. Use when choosing any name or term, or when different places use different names for the same meaning. Not for capitalization — see recursica-skill-typography-semantics.
 license: MIT
 metadata:
@@ -7,7 +7,7 @@ metadata:
   version: 0.1.0
 ---
 
-# Naming and terminology
+# Names and terms
 
 Treat each house rule for naming as a constraint. The house rules are opinions, not neutral best practices. The house rules cover two questions:
 

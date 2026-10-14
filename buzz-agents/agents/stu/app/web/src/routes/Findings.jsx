@@ -439,7 +439,7 @@ function optionsFrom(rows, extract) {
 /**
  * The confidence meter beside a finding's metadata row: five segments, filled proportionally
  * (90% fills 4.5 of them) alongside the number itself. `aria-hidden` throughout — the number is
- * the one channel a screen reader needs, and `recursica-skill-system-conventions` forbids the
+ * the one channel a screen reader needs, and `recursica-skill-design-system-conventions` forbids the
  * segments from being the only place the value lives, which the visible number already prevents.
  */
 function ConfidenceMeter({ value }) {

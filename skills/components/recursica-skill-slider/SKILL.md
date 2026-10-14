@@ -70,7 +70,7 @@ Each option below is described by role, such as "the error state". A name from t
 
 A number with no unit, such as "40", does not say what the number measures.
 
-**The slider's purpose decides when a change to the slider is saved.** Apply convention 1 of `recursica-skill-system-conventions`. Convention 1 tests whether the persona can see which save mode applies. The two purposes below are two different situations:
+**The slider's purpose decides when a change to the slider is saved.** Apply convention 1 of `recursica-skill-design-system-conventions`. Convention 1 tests whether the persona can see which save mode applies. The two purposes below are two different situations:
 
 - A slider whose effect is visible right away, such as volume, zoom or brightness, is a live control. A live control saves each change, because the persona sees the change.
 - A slider that stores a value in a form is a form field. The form field follows the form's one save mode, whichever save mode the form uses.
@@ -79,7 +79,7 @@ Neither purpose adds a second save mode. Neither purpose conflicts with the one-
 
 **Use the label component for the slider's label.** Put the unit, the range and the step size in the assistive element's help text, such as "0 to 100%, in steps of 5". See `recursica-skill-label` and `recursica-skill-assistive-element`.
 
-**Pair the error state with a signal that is not color.** Use either the assistive element's icon or the error message. `recursica-skill-system-conventions` requires a signal that is not color.
+**Pair the error state with a signal that is not color.** Use either the assistive element's icon or the error message. `recursica-skill-design-system-conventions` requires a signal that is not color.
 
 **Never disable a slider to show a value.** A disabled slider tells the persona that a different action first would make the slider usable. If the persona can never set the value where the value is shown, use `recursica-skill-read-only-field`, not a form control.
 
@@ -87,7 +87,7 @@ Neither purpose adds a second save mode. Neither purpose conflicts with the one-
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, which every Recursica component follows.
 
 The application must add every behavior in the two lists below. The slider component includes the thumb and the focus ring, and responds to the keyboard inside the track. Sliders most often fail the rules in the two lists, because most sliders that teams build work only by dragging.
 
@@ -124,7 +124,7 @@ The application must add every behavior in the two lists below. The slider compo
   - save mode
   - the rule against form controls in a card
 - `recursica-skill-selection-controls` — when a control with separate options replaces a range, and disabled versus read-only.
-- `recursica-skill-system-conventions` — showing meaning in more than one channel.
+- `recursica-skill-design-system-conventions` — showing meaning in more than one channel.
 
 ### Only if used on the same screen
 

@@ -120,7 +120,7 @@ An announcement has one of two priority levels:
 - **Each component skill covers the component's accessible name, keyboard behavior and focus handling.**
 - **Whether a message shows as a toast, a banner or an inline message.** See `recursica-skill-feedback-messaging`.
 - **Semantic markup, headings and reading order.** See `recursica-skill-typography-semantics`.
-- **Showing the change on screen.** An announcement adds to the visible change and never replaces the visible change. See `recursica-skill-system-conventions` on never relying on a single channel (color, shape, position or text, each a separate signal) for meaning.
+- **Showing the change on screen.** An announcement adds to the visible change and never replaces the visible change. See `recursica-skill-design-system-conventions` on never relying on a single channel (color, shape, position or text, each a separate signal) for meaning.
 
 ## Open questions
 

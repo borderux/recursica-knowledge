@@ -62,7 +62,7 @@ Split rules let the persona find each rule at a glance.
 
 **Make the error text the whole message.** Put every detail the persona still needs in the error text. If the persona still needs the rule from the help text, put the rule in the error text.
 
-**Pair the error with a signal that is not color.** The signal is the assistive element's icon, or the words of the error message. `recursica-skill-system-conventions` requires a signal that is not color.
+**Pair the error with a signal that is not color.** The signal is the assistive element's icon, or the words of the error message. `recursica-skill-design-system-conventions` requires a signal that is not color.
 
 **Place the assistive element under the field the text describes.** Text placed midway between two fields does not show which field the text describes.
 
@@ -80,7 +80,7 @@ Every assistive element in a form follows that one label placement. The assistiv
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, which every Recursica component follows.
 
 The assistive element helps only when the code connects the assistive element to the field. Tabbing from input to input is the usual way to move through a form. A persona using a screen reader who tabs into an input never hears unconnected text near the input.
 
@@ -111,7 +111,7 @@ The assistive element helps only when the code connects the assistive element to
 
 - `recursica-skill-forms` — when to validate, how errors show across a form, and microcopy. The forms skill also puts preventing an error before catching an error. The forms skill also sets one label placement per form, and that label placement sets the assistive element's position.
 - `recursica-skill-label` — the field's name, and which text belongs in the label instead of the assistive element.
-- `recursica-skill-system-conventions` — showing every meaning in more than one channel.
+- `recursica-skill-design-system-conventions` — showing every meaning in more than one channel.
 
 ## Open questions
 

@@ -26,7 +26,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 - **`Name`, not `Search`.** The persona is not filtering a field called "search". The persona is filtering by name.
 - **`Status`, `Department`, `Requested`.** Each label uses the same name for the field as the table uses.
 
-**A filter's label must match the header of the column the filter narrows.** For example, a filter labeled `Requested` narrows the column headed `Requested`. When the filter label and the column header differ, the persona cannot tell which field the filter narrows. One of the two names is then wrong. See `recursica-skill-naming-terminology`.
+**A filter's label must match the header of the column the filter narrows.** For example, a filter labeled `Requested` narrows the column headed `Requested`. When the filter label and the column header differ, the persona cannot tell which field the filter narrows. One of the two names is then wrong. See `recursica-skill-names-and-terms`.
 
 **A placeholder is not a label, and a placeholder never does the label's job.** When the label is a noun that names the field, the placeholder shows what kind of value the filter accepts. For example, a filter labeled `Name` with the placeholder `New hire or requester` is clear. A filter labeled `Search` with the same placeholder is not clear.
 
@@ -48,7 +48,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 **Avoid two bare date inputs.** For example, `Start date on/after` and `Start date on/before` are two empty inputs for one range. Nothing on the screen shows that the two inputs belong together. The persona has to work out that the two inputs form one range.
 
-**Name a date field for the event the date records.** For example, a column that holds the date a request was raised is named `Requested` or `Request date`, not `Start date`. Every filter built on a `Start date` column with that date repeats the wrong name. See `recursica-skill-naming-terminology`.
+**Name a date field for the event the date records.** For example, a column that holds the date a request was raised is named `Requested` or `Request date`, not `Start date`. Every filter built on a `Start date` column with that date repeats the wrong name. See `recursica-skill-names-and-terms`.
 
 ## Filter controls
 
@@ -104,14 +104,14 @@ The three kinds of control are not filters. A disabled action control among the 
 
 - **The look and spacing of the filter controls, and the wrapping of the filter bar.** The components and the layout set the look, the spacing and the wrapping.
 - **The table's columns.** `recursica-skill-tables` sets the columns.
-- **The debounce delay, and the choice to run a typed filter while the persona types or on submit.** The debounce delay and the typed-filter behavior follow the rule "One behavioral mode per system" in `recursica-skill-system-conventions`.
+- **The debounce delay, and the choice to run a typed filter while the persona types or on submit.** The debounce delay and the typed-filter behavior follow the rule "One behavioral mode per application" in `recursica-skill-design-system-conventions`.
 
 ## Out of scope
 
 - **The table, the table's columns, sorting and pagination** — `recursica-skill-tables`.
 - **Which control a form field gets** — `recursica-skill-selection-controls`. Filtering is not a form.
 - **The typed lookup field** — `recursica-skill-autocomplete`.
-- **Naming and terminology** — `recursica-skill-naming-terminology`.
+- **Names and terms** — `recursica-skill-names-and-terms`.
 - **Building queries, indexing and performance.** Queries, indexing and performance are not interface concerns.
 
 ## Open questions

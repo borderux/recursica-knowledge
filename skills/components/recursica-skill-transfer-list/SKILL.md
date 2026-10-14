@@ -69,7 +69,7 @@ Moving many items at once is the reason a transfer list exists.
 
 - Use the filter to work with a long list, and keep the filter.
 - A list so long that a move-all control seems necessary is a sign that the screen is built wrong.
-- Raise that problem with the user instead of adding a move-all control, as `recursica-skill-system-conventions` says.
+- Raise that problem with the user instead of adding a move-all control, as `recursica-skill-design-system-conventions` says.
 
 `recursica-skill-selection-controls` treats a need for select-all as a sign to reconsider the control.
 
@@ -85,22 +85,22 @@ Moving many items at once is the reason a transfer list exists.
 
 For example, one selection rule is "At least two must be included". Put the rule under the transfer list, not in a validation message after the persona makes a mistake. See `recursica-skill-label` and `recursica-skill-assistive-element`.
 
-**Pair the error state with a signal that is not color, such as an icon or error text.** `recursica-skill-system-conventions` requires the second signal.
+**Pair the error state with a signal that is not color, such as an icon or error text.** `recursica-skill-design-system-conventions` requires the second signal.
 
-**If a list needs long scrolling inside the fixed height, the problem is how the screen is built.** A scrolling area inside the transfer list works around the problem and does not fix the problem. See `recursica-skill-system-conventions` and the open questions.
+**If a list needs long scrolling inside the fixed height, the problem is how the screen is built.** A scrolling area inside the transfer list works around the problem and does not fix the problem. See `recursica-skill-design-system-conventions` and the open questions.
 
 **Never disable a transfer list to show which items are included.** If the persona cannot change the included items in the current context, show the included items as read-only content.
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, including the focus ring, which every Recursica component follows.
 
 The app must add every behavior listed under "Screen readers" and "Keyboard and non-mouse navigation". A transfer list with arrow buttons often works only with a mouse.
 
 ### Screen readers
 
 - **Give each list a separate accessible name** (the name a screen reader reads out for a control). Without an accessible name, a persona using a screen reader hears a list of items. The persona cannot tell which list holds the items and cannot use the transfer list.
-- **Set the selected state in code, not by color.** Assistive technology does not treat an item with only a tinted background as selected. `recursica-skill-system-conventions` sets this rule.
+- **Set the selected state in code, not by color.** Assistive technology does not treat an item with only a tinted background as selected. `recursica-skill-design-system-conventions` sets this rule.
 - **Name each move button with what moves and where**, such as "Move selected to included" or "Remove selected from included". A name like "Right arrow" or ">" does not say what moves where. Two arrow buttons with no labels cannot be told apart.
 - **After a move, announce the result.** Announce the items that moved, and how many items each list now holds. The persona cannot see both lists change at once.
 - **When the filter changes a list, announce how many items the list shows**, such as "3 of 120 shown". Without the count, a persona using a screen reader hears a list that seems to empty for no reason.
@@ -140,7 +140,7 @@ The app must add every behavior listed under "Screen readers" and "Keyboard and 
   - the rule against a form control inside a card
 - `recursica-skill-label` — the transfer list's label, and the label for a group of fields.
 - `recursica-skill-assistive-element` — the help text for the selection rules, and the error message.
-- `recursica-skill-system-conventions` — the screen-wide rules:
+- `recursica-skill-design-system-conventions` — the screen-wide rules:
   - showing meaning in more than one way
   - fixing the screen's structure instead of adding a feature to work around a problem in the structure
 
@@ -148,7 +148,7 @@ The app must add every behavior listed under "Screen readers" and "Keyboard and 
 
 - **Where the transfer list fits among the selection controls.** Past the option limit, `recursica-skill-selection-controls` sends a choice of any number of options, including none, to a multi-select dropdown. `recursica-skill-selection-controls` never mentions a transfer list. No rule says at how many options a transfer list replaces the multi-select dropdown.
 - **Checkboxes on each item.** Only the design-system website shows a checkbox on every item. Nobody has settled whether the items are rows with checkboxes or items in a selectable listbox. Confirm with the user before relying on a checkbox on each item. Skip that confirmation when the theme has a checkbox option for an item.
-- **Overflow.** The height is fixed, so a long list must scroll inside the transfer list. `recursica-skill-system-conventions` treats a scrolling area inside a control as a failure. No rule says what a list does when the items do not fit the height.
+- **Overflow.** The height is fixed, so a long list must scroll inside the transfer list. `recursica-skill-design-system-conventions` treats a scrolling area inside a control as a failure. No rule says what a list does when the items do not fit the height.
 - **Narrow containers.** The label placement variant moves only the label, and the lists have a fixed width. An earlier house note said to avoid the transfer list on small screens. However, the transfer list has no responsive behavior.
 - **Empty states.** No rule sets an empty state for either list, including the starting state where every item is in one list. Confirm with the user only when the theme has no empty state.
 - **Ordering.** No rule says whether items are sorted alphabetically, keep the original order, or can be reordered by the persona.

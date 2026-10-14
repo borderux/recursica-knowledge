@@ -82,7 +82,7 @@ See `recursica-skill-screen-priority`.
 
 For example, a dashboard shows 3 pending and 18 overdue, and overdue items are a subset of pending items. The pair of counts reports an impossible result, not a labeling problem. The persona then stops trusting every number on the screen.
 
-`recursica-skill-naming-terminology` owns naming. `recursica-skill-screen-scaffolding` owns the layout of a group of numbers.
+`recursica-skill-names-and-terms` owns naming. `recursica-skill-screen-scaffolding` owns the layout of a group of numbers.
 
 **Before putting any chart on a dashboard, confirm that the application has a charting library.** Recursica does not provide charts. A chart needs a separate charting library.
 
@@ -104,7 +104,7 @@ See `recursica-skill-data-visualization`.
 - Build a fixed layout from the design system's layout structures, type hierarchy and white space.
 - Place cards inside the fixed layout.
 
-A card is for repeating peer objects (objects of the same kind, such as rows in a list). A page made entirely of cards is chaotic. A grid of cards that all look equally important has no hierarchy. A dashboard needs a clear order of importance. See `recursica-skill-card`, and the convention to group with space in `recursica-skill-system-conventions`.
+A card is for repeating peer objects (objects of the same kind, such as rows in a list). A page made entirely of cards is chaotic. A grid of cards that all look equally important has no hierarchy. A dashboard needs a clear order of importance. See `recursica-skill-card`, and the convention to group with space in `recursica-skill-design-system-conventions`.
 
 **Do not show competing visualizations on the screen at the same time.** Confirm with the user which visualizations on the dashboard compete.
 
@@ -158,7 +158,7 @@ The whole screen must not shift.
 **Where customization is required anyway, follow two rules:**
 
 - **Keep each persona's individual arrangement across sessions.** The persona sets the arrangement once. The system does not rearrange the arrangement.
-- **Do not advertise customization.** Offer an entry point to settings or configuration, such as a "Customize" item in a menu. Do not draw attention to the entry point. Let personas find the entry point, or learn about the entry point from colleagues. An unadvertised entry point follows the unadvertised affordance convention in `recursica-skill-system-conventions`. See `recursica-skill-discoverability` for why the convention works.
+- **Do not advertise customization.** Offer an entry point to settings or configuration, such as a "Customize" item in a menu. Do not draw attention to the entry point. Let personas find the entry point, or learn about the entry point from colleagues. An unadvertised entry point follows the unadvertised affordance convention in `recursica-skill-design-system-conventions`. See `recursica-skill-discoverability` for why the convention works.
 
 ## Empty and first-run states
 

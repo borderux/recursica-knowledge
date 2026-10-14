@@ -49,7 +49,7 @@ A property, a filtered view or an action is not an object. A property, a filtere
 
 - In the request, look for the nouns the request keeps returning to.
 - In the interview, look for the domain model (the core objects, how the objects relate, and what identifies each object).
-- When the personas call an object by a different word than the request uses, use the personas' word. See `recursica-skill-naming-terminology`.
+- When the personas call an object by a different word than the request uses, use the personas' word. See `recursica-skill-names-and-terms`.
 - When a concept might be an object or might be a property of an object, confirm with the user. For example, a shipping address might be an object or a property of an order.
 
 **Choose the kind of screen by how many objects the screen shows: one or many.**
@@ -99,7 +99,7 @@ A short table is enough for the object map:
 - how many top-level items there may be
 - how deep the items may nest
 
-`recursica-skill-naming-terminology` decides the name of each item.
+`recursica-skill-names-and-terms` decides the name of each item.
 
 ## An object with several parents
 
@@ -122,7 +122,7 @@ Some sections are not objects, such as an approvals queue, reports or settings.
 - Do not invent a section built around a task to organize the work.
 - Do not force work that the request describes as a task into an object's list. For example, keep an approvals queue the request describes out of the Invoices table.
 
-Name a section that is not an object with a noun, as in `Approvals`, never `Approve requests`. See `recursica-skill-naming-terminology`.
+Name a section that is not an object with a noun, as in `Approvals`, never `Approve requests`. See `recursica-skill-names-and-terms`.
 
 ## Future additions
 
@@ -137,7 +137,7 @@ Name a section that is not an object with a noun, as in `Approvals`, never `Appr
 ## Set by the theme or the component
 
 - **The sections that are not objects.** The product owner decides which sections exist, through the request.
-- **The name of each object and section.** The personas' words decide the names. See `recursica-skill-naming-terminology`.
+- **The name of each object and section.** The personas' words decide the names. See `recursica-skill-names-and-terms`.
 
 ## Out of scope
 
@@ -154,7 +154,7 @@ Name a section that is not an object with a noun, as in `Approvals`, never `Appr
 - **The order of items within a level.** The order could follow how often people use each item, the alphabet, or the workflow. The order of items is also an open question in `recursica-skill-navigation`.
 - **An object that exists only once per account**, such as the organization's own profile. No rule says whether such an object is top level, a setting, or in another place.
 - **How deep objects may nest** before the deepest object needs a separate place. For example, adjustments sit inside a line item, and the line item sits inside an order.
-- **Whether the structure may differ by role.** `recursica-skill-naming-terminology` covers different words for different roles. No skill covers different structures for different roles.
+- **Whether the structure may differ by role.** `recursica-skill-names-and-terms` covers different words for different roles. No skill covers different structures for different roles.
 - **What happens to routes when the object map changes after launch.** No rule says whether old routes redirect, or what happens to a section that is removed.
 
 ## Pre-flight checklist

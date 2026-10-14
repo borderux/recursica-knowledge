@@ -30,7 +30,7 @@ An accordion is a list of sections that open and close, such as the questions on
 | The content is on the critical path (the steps the persona must take to finish the task). The persona must read the content to act. | The page, with the content not collapsed.                                                                                    |
 | The content is a short text label for an icon-only control                                                                          | A tooltip. See `recursica-skill-tooltip`.                                                                                    |
 | The content is too complex or too deep for the available space                                                                      | A page or a panel. An accordion's content panel is narrow and shallow.                                                       |
-| The page has more sections than the page has room for                                                                               | Fewer sections, not smaller sections. See `recursica-skill-system-conventions`.                                              |
+| The page has more sections than the page has room for                                                                               | Fewer sections, not smaller sections. See `recursica-skill-design-system-conventions`.                                       |
 
 **Progressive disclosure is for rarely needed content, never for content the persona would want to reach.** Progressive disclosure means showing rarely needed content only when the persona asks for the content. For example, a product page can collapse the shipping policy, but never the price.
 
@@ -92,7 +92,7 @@ The one exception is a decision, confirmed with the user, that only one item ope
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, including the focus ring, which every Recursica component follows.
 
 The accordion shows the header and the chevron. The app that uses the accordion does two more jobs:
 
@@ -106,7 +106,7 @@ Apps get the two jobs wrong more often than any other accordion rule.
 - **The header must be a real button**, never a `div`, a `span`, or a bare heading with a click handler. Only a real button is announced as a button and responds to Enter and Space automatically. Any other element needs custom code to be announced as a button and to respond to Enter and Space.
 - **Each header must announce whether the header's item is expanded or collapsed.** For example, a screen reader reads "Shipping, button, collapsed". The announcement must change the moment the item opens or closes. A header that always announces "collapsed" is worse than a header that announces nothing.
 - **Each header must be connected in code to the header's content panel.** A persona who hears "expanded" can then get to the open content panel.
-- **Never show the open or closed state with the chevron alone.** A rotating chevron is a single visual channel (color, shape, position or text, each a separate signal). `recursica-skill-system-conventions` forbids a single channel for any meaning the persona must receive.
+- **Never show the open or closed state with the chevron alone.** A rotating chevron is a single visual channel (color, shape, position or text, each a separate signal). `recursica-skill-design-system-conventions` forbids a single channel for any meaning the persona must receive.
 - **The header's accessible name (the name a screen reader reads out for a control) is the section title.** The section title must make sense without the other headers. For example, "Returns" makes sense with no other header, but "Part 2" does not. A screen reader announces the accessible name with no neighboring headers for context.
 - **If the header sits inside a heading, put the button inside the heading**, not the heading inside the button. A button wrapped around a heading loses the heading level. The heading then disappears from a screen reader's list of headings.
 - **Content inside a closed item must be unreachable, not only invisible.** Zero height, zero opacity, or moving the content off the screen leaves the text in the accessibility tree (the version of the page that assistive technology reads). A persona using a screen reader then reads a section that a sighted persona cannot see. Remove a closed item's content from the accessibility tree.
@@ -136,7 +136,7 @@ Apps get the two jobs wrong more often than any other accordion rule.
   - why a top-level item with no children stays a link
 - `recursica-skill-discoverability` — progressive disclosure, and the three cases where hiding content is not safe.
 - `recursica-skill-working-memory` — 7 ± 2 as the most items a persona can scan at a glance, and what the 7 ± 2 limit does not claim.
-- `recursica-skill-system-conventions` — two conventions:
+- `recursica-skill-design-system-conventions` — two conventions:
   - never show a meaning in a single channel
   - fix the structure instead of collapsing content to work around the structure
 

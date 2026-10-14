@@ -66,13 +66,13 @@ The choice between a tree and an accordion is settled. Every case is one or the 
 
 **Do not calculate indentation by hand.** The theme sets how far each level of the tree is indented.
 
-**Never show depth with indentation alone.** Indentation is one visual channel (color, shape, position or text, each a separate signal). `recursica-skill-system-conventions` requires a second channel. In a tree, the second channel is each node's level, set in the code.
+**Never show depth with indentation alone.** Indentation is one visual channel (color, shape, position or text, each a separate signal). `recursica-skill-design-system-conventions` requires a second channel. In a tree, the second channel is each node's level, set in the code.
 
 **In a tree used for navigation, make every node a link with a real URL.** The tree follows `recursica-skill-navigation`, including the rule that a sub-level opens on click, never on hover.
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, including the focus ring, which every Recursica component follows.
 
 The tree has the most specific keyboard rules of any component, and the keyboard rules most often ignored. A persona using a keyboard or a screen reader cannot use a tree of clickable nested `div` elements. A tree built that way has no level, no expand state, and no keyboard access.
 
@@ -111,7 +111,7 @@ The tree has the most specific keyboard rules of any component, and the keyboard
   - routing when the tree is navigation
   - permissions
 - `recursica-skill-working-memory` — the reason for the limit on visible nodes at each level.
-- `recursica-skill-system-conventions` — never show meaning in only one channel.
+- `recursica-skill-design-system-conventions` — never show meaning in only one channel.
 
 ### Only if used on the same screen
 
@@ -125,7 +125,7 @@ The tree has the most specific keyboard rules of any component, and the keyboard
 - **A maximum depth.** No rule sets a maximum number of levels. A tree with no limit on levels is a real usability problem.
 - **Selecting a parent node.** No rule says whether a parent node can be selected, or only a node with no children.
 - **Loading children only when a node opens**, and what the node shows while the children load. When the theme has a loading state, confirm with the user only whether children load when a node opens.
-- **Dragging to reorder nodes or move a node to a new parent.** If dragging is allowed, `recursica-skill-system-conventions` also requires a way to reorder and move nodes without dragging.
+- **Dragging to reorder nodes or move a node to a new parent.** If dragging is allowed, `recursica-skill-design-system-conventions` also requires a way to reorder and move nodes without dragging.
 - **The empty state of the tree**, and what an expanded node with no children shows.
 - **Treat every open question above as a question nobody has answered.** Never treat an open question as a decision that someone forgot to write down. The design-system website adds nothing about the tree. Unlike most component skills, the tree skill has the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) as the only source.
 

@@ -70,13 +70,13 @@ Neither component may hold content the persona needs to complete a task. Neither
 
 **Do not use a tooltip to show a validation message or an error.** An error must stay on screen and be connected to the field the error is about. For example, "Enter a valid email address" is the Email field's error text, not a tooltip. See `recursica-skill-forms`.
 
-**When text is cut off again and again, change the column widths or the layout.** For example, when most names in a Customer column end in "…", widen the Customer column. Do not cut the text off and add a tooltip in place of new column widths or a new layout. A tooltip does not fix a column that is too narrow. See `recursica-skill-tables` and `recursica-skill-system-conventions`.
+**When text is cut off again and again, change the column widths or the layout.** For example, when most names in a Customer column end in "…", widen the Customer column. Do not cut the text off and add a tooltip in place of new column widths or a new layout. A tooltip does not fix a column that is too narrow. See `recursica-skill-tables` and `recursica-skill-design-system-conventions`.
 
 **Do not use the browser's `title` attribute as a tooltip.** Text in the `title` attribute does not appear on keyboard focus and cannot be dismissed. Screen readers do not reliably read the `title` attribute. Use the tooltip component.
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, including the focus ring, which every Recursica component follows.
 
 Give every tooltip every behavior in the two lists below. A tooltip is the component most often used in place of a missing accessible name. A tooltip cannot replace an accessible name.
 
@@ -85,7 +85,7 @@ Give every tooltip every behavior in the two lists below. A tooltip is the compo
 - **Connect each tooltip to the tooltip's control in the code.** A screen reader then announces the tooltip text as the control's description. Tooltip text in a separate element next to the control is announced as unrelated text, or not at all.
 - **A tooltip never stands in for the accessible name of a control with no label.** The control needs an accessible name of the control's own. An icon-only button gets both an accessible name and a tooltip. If the button has only one of the two, the button must have the accessible name, not the tooltip. For example, a trash-can button has the accessible name "Delete invoice" and the tooltip "Delete invoice".
 - **The accessible name should match the tooltip text.** A persona who controls the screen by voice must be able to activate the control by saying the tooltip text. For example, the persona says "Click Delete invoice".
-- **Never put a meaning only in a tooltip.** A tooltip is a single channel (color, shape, position or text, each a separate signal). `recursica-skill-system-conventions` forbids showing any meaning the persona must receive in only one channel.
+- **Never put a meaning only in a tooltip.** A tooltip is a single channel (color, shape, position or text, each a separate signal). `recursica-skill-design-system-conventions` forbids showing any meaning the persona must receive in only one channel.
 - **No content inside a tooltip is announced as a control**, because a tooltip contains no controls.
 - **Text that is cut off must be available in full in the code**, not only in the tooltip. A persona using a screen reader does not see where the text is cut off. The persona must not hear a cut-off value.
 - **The tooltip must not be announced as a live region** (an area of the page that a screen reader announces automatically when the area's content changes). A tooltip is a description, which a screen reader reads when the persona reaches the control. A tooltip is not an alert that interrupts the persona.
@@ -112,7 +112,7 @@ The tooltip's beak is part of the tooltip component. Do not draw a separate beak
   - which controls must have a tooltip
   - which controls may have a tooltip
   - the rule that a tooltip never makes up for a weak label
-- `recursica-skill-system-conventions` — the screen-wide rules for tooltips:
+- `recursica-skill-design-system-conventions` — the screen-wide rules for tooltips:
   - never showing a meaning in only one channel
   - changing the screen's structure instead of cutting text off and adding a tooltip
 

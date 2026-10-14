@@ -44,7 +44,7 @@ export const config = {
   // Skill text sent with each chunk: these sections only, capped. The checklist item itself
   // always goes in full. Lower = cheaper; too low and items like "outside the inventory above"
   // lose their referent.
-  // "Accessibility baseline for every component" is in recursica-skill-system-conventions: the
+  // "Accessibility baseline for every component" is in recursica-skill-design-system-conventions: the
   // rules each component's own Accessibility section used to repeat, now stated once. Without
   // it here, that skill's brief falls back to its first skillChars characters and the baseline,
   // near its end, is cut off.

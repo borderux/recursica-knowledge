@@ -103,7 +103,7 @@ The calendar speeds up entering a date. The calendar never replaces typing.
 
 **On error, replace the help text with the error message. Do not add the error message to the help text.** Replacing the help text keeps the field the same height, so the form below the field does not shift. The error message must restate the rule, as in "Enter a date on or after Jan 7, 2026", not "Invalid date".
 
-**Pair the error state with a signal that is not color**, either an icon or the error message. `recursica-skill-system-conventions` requires the second signal.
+**Pair the error state with a signal that is not color**, either an icon or the error message. `recursica-skill-design-system-conventions` requires the second signal.
 
 **A disabled date picker and a read-only field are different components, not two styles of one component.**
 
@@ -112,7 +112,7 @@ The calendar speeds up entering a date. The calendar never replaces typing.
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, which every Recursica component follows.
 
 The application builds the calendar trigger (the control that opens the calendar) and the calendar popover. Date pickers most often fail at the calendar trigger and the calendar popover. Follow the rules below for the calendar trigger and the calendar popover. The date picker component connects the label to the input and shows the focus ring.
 
@@ -160,7 +160,7 @@ The application builds the calendar trigger (the control that opens the calendar
   - the rule that no form control goes inside a card
 - `recursica-skill-label` — the label component, the label-placement variant, and marking a field as required or optional.
 - `recursica-skill-assistive-element` — the help text and error text below the field, and why the error text replaces the help text.
-- `recursica-skill-system-conventions` — showing meaning in more than one way.
+- `recursica-skill-design-system-conventions` — showing meaning in more than one way.
 
 ### Only if used on the same screen
 

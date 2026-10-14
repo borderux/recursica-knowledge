@@ -86,13 +86,13 @@ A zero only repeats what the persona can already see. A zero also makes the butt
 
 **While a submit action runs, show the submit button as a disabled button with a spinner.** `recursica-skill-forms` requires a disabled button with a spinner. If the theme has a loading state, use the loading state. Otherwise, build the disabled button with a spinner from the disabled state and an icon, with or without a label. Every UI kit has the disabled state and the icon. Animate the icon. Keep the button the same size and in the same place. A button that moves or resizes is no longer under the persona's pointer.
 
-**Never use the smaller size to fit more side-by-side buttons**, in a toolbar, a footer, or a table row. Change the screen's structure instead of shrinking the buttons. Too many buttons side by side means the screen offers too many actions. See `recursica-skill-system-conventions`.
+**Never use the smaller size to fit more side-by-side buttons**, in a toolbar, a footer, or a table row. Change the screen's structure instead of shrinking the buttons. Too many buttons side by side means the screen offers too many actions. See `recursica-skill-design-system-conventions`.
 
 **Hide a button the persona has no permission to use.** Never show the button disabled instead. For example, a persona who cannot delete invoices sees no "Delete invoice" button. See `recursica-skill-navigation`.
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, which every Recursica component follows.
 
 The button component shows the focus ring. The button component also responds to a press by click and by keyboard. The application must add every behavior in the two lists below.
 
@@ -106,7 +106,7 @@ The button component shows the focus ring. The button component also responds to
 - **The count is the one allowed case where the accessible name and the label differ.** The count still follows the rule that the accessible name must contain the label. The accessible name keeps the label words. A persona using voice control can still say "Apply status".
 - **Update the accessible name as the count changes.** With no item selected, the accessible name is `Apply status`, with no count. Do not announce every increase in the count while the persona selects items. The accessible name must be correct by the time the persona reaches the button.
 - **Use a real `button` element**, never a `div` or a `span` with a click handler. A screen reader announces only a real `button` element as a button. Only a real `button` element responds to Enter and Space by default.
-- **Put the meaning in the accessible name, not only in the icon.** A screen reader announces the accessible name of an icon-only button and nothing about the icon. `recursica-skill-system-conventions` requires every meaning to be shown in more than one way.
+- **Put the meaning in the accessible name, not only in the icon.** A screen reader announces the accessible name of an icon-only button and nothing about the icon. `recursica-skill-design-system-conventions` requires every meaning to be shown in more than one way.
 - **Mark a loading button as busy, and hide the animated icon from screen readers.** The animation is visual only. Without the busy state, a persona using a screen reader hears nothing and presses the button again.
 - **Keep the accessible name while the button is busy**, or change the accessible name to another useful name, such as "Saving". Never leave the accessible name empty.
 
@@ -131,7 +131,7 @@ The button component shows the focus ring. The button component also responds to
 - `recursica-skill-buttons-links` — button versus link, label wording, button hierarchy and placement. The skill also covers confirming destructive actions, toggles, row actions, bulk actions, and buttons that open a modal.
 - `recursica-skill-undo` — when an action gets an undo, and where the Undo button goes.
 - `recursica-skill-forms` — what submit and cancel buttons do, the form's save mode, and where the form footer goes.
-- `recursica-skill-system-conventions` — showing meaning in more than one way, and changing the screen's structure instead of shrinking controls to fit.
+- `recursica-skill-design-system-conventions` — showing meaning in more than one way, and changing the screen's structure instead of shrinking controls to fit.
 
 ## Open questions
 

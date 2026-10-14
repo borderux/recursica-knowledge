@@ -60,7 +60,7 @@ For example, a left rail with a separate background sits on layer 1, and the mai
 
 **Put the page title in the page, not in the header.**
 
-**Let the page title repeat the navigation label.** For example, the Orders link in the navigation opens a page titled Orders. A page title that matches the navigation label is not a defect. `recursica-skill-naming-terminology` decides how far the page title and the navigation label may differ.
+**Let the page title repeat the navigation label.** For example, the Orders link in the navigation opens a page titled Orders. A page title that matches the navigation label is not a defect. `recursica-skill-names-and-terms` decides how far the page title and the navigation label may differ.
 
 **Show a breadcrumb once the persona is below the top level of the application's page hierarchy.** Landing pages and dashboards do not need a breadcrumb. Every sub-section reached from a landing page or a dashboard needs a breadcrumb.
 
@@ -91,7 +91,7 @@ For example, keep the line `Newest first. Append-only: nothing here is ever rewr
 
 **Apply the reasoning about a heading's optional text to every setting for optional text.** Examples include a field description, a card subtitle and a paragraph in an empty state. When a component offers a place for an explanation, someone will write an explanation there.
 
-**Fix a heading that cannot be understood without an explanation.** A heading that needs an explanation is the wrong heading. `recursica-skill-naming-terminology` says how to fix the heading. The naming skill has a rule against defining a term right next to the term. The naming rule covers page titles and section headings, not only field labels.
+**Fix a heading that cannot be understood without an explanation.** A heading that needs an explanation is the wrong heading. `recursica-skill-names-and-terms` says how to fix the heading. The naming skill has a rule against defining a term right next to the term. The naming rule covers page titles and section headings, not only field labels.
 
 ## The primary action
 
@@ -129,7 +129,7 @@ For example, keep the line `Newest first. Append-only: nothing here is ever rewr
 
 ## Maximum width
 
-**Keep content at the page level within the maximum width that the design system's layout rule sets.** Do not set a different maximum width. The house default is 1200. `recursica-skill-responsive-behavior` sets the maximum width. The same skill also sets the tablet and small-device breakpoints.
+**Keep content at the page level within the maximum width that the design system's layout rule sets.** Do not set a different maximum width. The house default is 1200. `recursica-skill-responsive-layout` sets the maximum width. The same skill also sets the tablet and small-device breakpoints.
 
 **The maximum width applies to the main content area only, not to the chrome (the header, navigation and footer around the content).** Headers, footers and other sticky chrome may stretch across the full viewport. A left rail or a header stretches across the full viewport.
 
@@ -144,7 +144,7 @@ For example, keep the line `Newest first. Append-only: nothing here is ever rewr
 - **Center the main content in the space left over beside the chrome.** The left rail keeps the left edge. The main content is centered in the remaining width.
 - **Center the main content in the whole viewport, ignoring the left rail.** The main content lands on the true center of the display. The left rail overlaps the empty space to the left of the content.
 
-**Pick one way of centering for the whole application, and use the same way on every page.** Neither way is a compromise, and neither way needs a reason. Two screens in one application that center the content differently do need a reason. See convention 1 in `recursica-skill-system-conventions`.
+**Pick one way of centering for the whole application, and use the same way on every page.** Neither way is a compromise, and neither way needs a reason. Two screens in one application that center the content differently do need a reason. See convention 1 in `recursica-skill-design-system-conventions`.
 
 **Expect a gap between the left rail and the content on a very wide display, with either way of centering.** The gap means the maximum width is working, not that the layout failed. The gap is not a reason to stretch the content.
 
@@ -256,7 +256,7 @@ See `recursica-skill-layers`.
 
 **Give every tile in a row of KPI tiles the same treatment.** A row of KPI tiles is a set of peers (objects of the same kind, such as rows in a list).
 
-**Name each KPI tile with a noun phrase that says what the tile counts.** Write `Pending requests`, not `Total pending requests`. Write `Overdue requests`, not `Overdue`. See `recursica-skill-naming-terminology`.
+**Name each KPI tile with a noun phrase that says what the tile counts.** Write `Pending requests`, not `Total pending requests`. Write `Overdue requests`, not `Overdue`. See `recursica-skill-names-and-terms`.
 
 **KPI tiles shown together must agree with each other.** The persona compares two counts shown side by side. A tile that counts a subset must clearly look like a subset. A screen that reports a mathematically impossible result loses the persona's trust in every number on the screen. For example, `Overdue requests: 14` beside `Open requests: 9` is impossible when only an open request can be overdue.
 

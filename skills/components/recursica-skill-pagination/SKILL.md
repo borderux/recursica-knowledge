@@ -28,7 +28,7 @@ Pagination moves the persona between pages of one list of records. Pagination is
 | The persona needs to know the current location in the app             | `recursica-skill-breadcrumb`                                                                                                               |
 | A process moves through ordered steps                                 | `recursica-skill-stepper`                                                                                                                  |
 
-**Choose pagination or infinite scroll once for the whole system, not for each screen.** On every screen, full-size tables scroll and interior tables paginate. `recursica-skill-system-conventions` requires one behavior for the whole application. When tables mix the two behaviors, the persona cannot predict how any table behaves.
+**Choose pagination or infinite scroll once for the whole system, not for each screen.** On every screen, full-size tables scroll and interior tables paginate. `recursica-skill-design-system-conventions` requires one behavior for the whole application. When tables mix the two behaviors, the persona cannot predict how any table behaves.
 
 ## Variants
 
@@ -97,18 +97,18 @@ Use the same form on the first page and on the last page. Use the same form in e
 
 **If a paginated table shows totals, the footer labels must say what each total covers.** A footer label says whether the total covers the current page or every record in the table. Personas confuse a total for the current page with a total for every record. `recursica-skill-tables` prefers infinite scroll for full-size tables for that reason.
 
-**Never shrink the pagination controls or make the controls scroll to fit the footer.** If the list of page numbers is too long for the footer, fix the structure instead. Confirm the new structure with the user. See `recursica-skill-system-conventions`.
+**Never shrink the pagination controls or make the controls scroll to fit the footer.** If the list of page numbers is too long for the footer, fix the structure instead. Confirm the new structure with the user. See `recursica-skill-design-system-conventions`.
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, including the focus ring, which every Recursica component follows.
 
 Pagination is a row of small controls that all look alike. Without names added in code, a screen reader announces nothing useful for any pagination control. For example, a screen reader reads a page number as a bare "3". Every accessibility failure in pagination is a failure of naming or of focus.
 
 ### Screen readers
 
 - **Make the pagination controls a navigation region with a name**, such as "Pagination". A page with several navigation regions must name each navigation region, such as "Invoice pages". Otherwise, a persona using a screen reader cannot tell the navigation regions apart in a landmark list (the list of labeled page regions a screen reader can jump between).
-- **The current page must be announced as current.** On screen, color shows which page is current. Color is a single visual channel (color, shape, position or text, each a separate signal), and `recursica-skill-system-conventions` forbids color as the only way to show meaning. Mark the current page as current in code as well.
+- **The current page must be announced as current.** On screen, color shows which page is current. Color is a single visual channel (color, shape, position or text, each a separate signal), and `recursica-skill-design-system-conventions` forbids color as the only way to show meaning. Mark the current page as current in code as well.
 - **Give every control a name that says where the control goes**, such as "Page 3", "Next page" or "Previous page". A bare "3" is not a name. A bare chevron has no name at all.
 - **Give the previous control and the next control a tooltip and an accessible name** (the name a screen reader reads out for a control). The previous and next controls show only an icon. The tooltip is for sighted personas using a mouse. `recursica-skill-buttons-links` requires both the tooltip and the accessible name.
 - **After a page change, announce that new table rows arrived**, as in "Page 3 of 20, 10 invoices". The table rows change out of the persona's sight. Without the announcement, nothing tells the persona that the control worked.
@@ -139,7 +139,7 @@ The theme also sets the focus ring and the area that responds to a click or a ta
 - `recursica-skill-tables` — whether a table paginates at all, and the five-to-ten row count for an interior table. The tables skill also sets the ban on scrolling inside a table, and the fixed header and footer. The tables skill also sets the default sort, and what totals cover on a paginated table.
 - `recursica-skill-buttons-links` — when a control is a link or a button, the tooltip on an icon-only control, and disabled controls.
 - `recursica-skill-navigation` — what counts as a location, routing and browser history, and semantic list markup for navigation.
-- `recursica-skill-system-conventions` — one behavior for the whole system, and never showing meaning in only one way.
+- `recursica-skill-design-system-conventions` — one behavior for the whole system, and never showing meaning in only one way.
 - `recursica-skill-live-regions` — announcing the new page and the new range of table rows after a page change.
 
 ### Only if used on the same screen

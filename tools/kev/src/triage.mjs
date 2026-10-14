@@ -29,7 +29,7 @@ export async function triage(screenFiles, { root } = {}) {
   // 1. Which design-rules skills does this screen actually touch? Component skills were matched
   //    by an import, so they always apply. Everything else is asked once per unit, all skills in
   //    one request, and kept if any unit says yes.
-  const always = (process.env.KEV_ALWAYS ?? "defaults,responsive-behavior,working-memory,system-conventions,screen-priority,naming-terminology,typography-semantics").split(",").map((x) => `recursica-skill-${x.trim()}`);
+  const always = (process.env.KEV_ALWAYS ?? "screen-starting-state,responsive-layout,working-memory,design-system-conventions,screen-priority,names-and-terms,typography-semantics").split(",").map((x) => `recursica-skill-${x.trim()}`);
   const gated = skills.filter((s) => !m.componentsFor[s.slug]?.length && !always.includes(s.slug));
   const applies = Object.fromEntries(skills.map((s) => [s.slug, 1]));
   if (gated.length) {

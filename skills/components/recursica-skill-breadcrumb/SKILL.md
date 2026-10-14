@@ -73,11 +73,11 @@ When the label matches the heading, the persona who arrives sees that the trail 
 
 **Never build a breadcrumb item that is only an icon, even when the theme has an icon-only option.** An icon alone cannot name the destination page. For example, a house icon alone does not say which page the icon opens. If the theme has an icon-with-label content option, use text or an icon with a label. Otherwise, use text.
 
-**Never put the trail in a scrolling strip, and never shrink the trail to make the trail fit.** A trail too long for the space means the page hierarchy is too deep. Raise the depth of the page hierarchy as a problem, instead of hiding the depth with layout. See `recursica-skill-system-conventions`.
+**Never put the trail in a scrolling strip, and never shrink the trail to make the trail fit.** A trail too long for the space means the page hierarchy is too deep. Raise the depth of the page hierarchy as a problem, instead of hiding the depth with layout. See `recursica-skill-design-system-conventions`.
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, including the focus ring, which every Recursica component follows.
 
 A breadcrumb is a short line of links. Assistive technology, such as a screen reader, recognizes a trail only when the markup marks the breadcrumb as a trail. Three mistakes cause nearly all breadcrumb problems:
 
@@ -115,7 +115,7 @@ The breadcrumb's styling includes the separator's look, wherever the separator c
 
 - `recursica-skill-navigation` — what counts as a location, routing and browser history, and list markup for navigation. `recursica-skill-navigation` also covers showing location with the selected navigation item, headings and breadcrumbs, and the ban on horizontal scrolling.
 - `recursica-skill-buttons-links` — link versus button, link label wording, and the tooltip an icon-only control needs.
-- `recursica-skill-system-conventions` — never showing meaning in only one way, and fixing the structure instead of adding a workaround for a structure problem.
+- `recursica-skill-design-system-conventions` — never showing meaning in only one way, and fixing the structure instead of adding a workaround for a structure problem.
 
 ### Only if used on the same screen
 

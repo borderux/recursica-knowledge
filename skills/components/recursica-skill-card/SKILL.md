@@ -105,7 +105,7 @@ The rules below describe each option by the option's role, not by the option's n
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, including the focus ring, which every Recursica component follows.
 
 **A screen reader must announce a card set as one list of objects.** The two failures below matter:
 
@@ -138,7 +138,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 ## Related skills
 
-- `recursica-skill-system-conventions` — the general convention to group content with space, not with boxes.
+- `recursica-skill-design-system-conventions` — the general convention to group content with space, not with boxes.
 - `recursica-skill-tables` — the alternative whenever a list has a high plurality or holds only data, and the rule for clickable table rows.
 - `recursica-skill-dashboards` — why a grid of equally weighted cards has no hierarchy, and what to build instead.
 - `recursica-skill-forms` — form layout, and the spacing the field components include.

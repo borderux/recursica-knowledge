@@ -112,7 +112,7 @@ See `recursica-skill-assistive-element`. Do not put the field's rules in the pla
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, which every Recursica component follows.
 
 The app decides what a screen reader announces while the persona types and picks an option. The filtered list changes on every keystroke. A persona using a screen reader hears none of the changes unless the app announces the changes. Getting the announcements right is the hardest part of any control in the design system.
 
@@ -132,7 +132,7 @@ The autocomplete does four jobs without extra work from the app:
 - **Announce "no results" clearly.** A persona cannot tell silence after typing apart from a broken field.
 - **Announce the active option (the option the arrow keys point to) as the persona moves through the list.** The announcement includes the option's position in the list and whether the option is selected.
 - **Do not announce every keystroke.** Do not announce the list on every typed character when the count has not changed. Too many announcements make the field as unusable as silence does.
-- **The selected option must be marked in code, never shown by a highlight or a checkmark alone.** `recursica-skill-system-conventions` sets this rule.
+- **The selected option must be marked in code, never shown by a highlight or a checkmark alone.** `recursica-skill-design-system-conventions` sets this rule.
 - **The chosen value must be readable in the field after the persona selects the value.** The chosen value must be announced as the field's value. Never show the chosen value only as visible text that is not the field's value.
 - **On error, the error message is the only text announced**, because the error message has replaced the assistive text. The error message must state the rule. "Invalid input" is not an error message.
 - **Give the trailing indicator no separate announcement.** The trailing indicator is part of the field, not a second control.
@@ -194,7 +194,7 @@ Do not change the space between the label and the field, or the space between fi
   - the help text and error text below the field
   - why the error text replaces the help text instead of joining the help text
 - `recursica-skill-working-memory` — recognition versus recall, the difference that decides between an autocomplete and a dropdown.
-- `recursica-skill-system-conventions` — never showing meaning in only one way.
+- `recursica-skill-design-system-conventions` — never showing meaning in only one way.
 - `recursica-skill-live-regions` — announcing the result count as the list filters, and when the app must make the announcement.
 
 ### Only if used on the same screen

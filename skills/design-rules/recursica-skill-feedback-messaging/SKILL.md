@@ -123,7 +123,7 @@ A partial success should not reach the interface. For that reason, the channel t
 
 **If one operation produces many errors, show one message about that operation, not many messages.** For example, an import with 40 bad rows shows one error message about the import.
 
-**Where duplicate messages pile up, fix the cause.** An error that keeps repeating is a structural problem. The message is only a sign of the structural problem. See `recursica-skill-system-conventions`.
+**Where duplicate messages pile up, fix the cause.** An error that keeps repeating is a structural problem. The message is only a sign of the structural problem. See `recursica-skill-design-system-conventions`.
 
 ## Waiting
 

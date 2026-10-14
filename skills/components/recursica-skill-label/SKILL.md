@@ -94,7 +94,7 @@ Mixing the two placements in one form causes three problems:
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, which every Recursica component follows.
 
 A persona using a screen reader can use a field only when the field has a label. The label component connects a label to a form control.
 
@@ -103,7 +103,7 @@ A persona using a screen reader can use a field only when the field has a label.
 - **The label must be connected in code to the form control the label names.** Each Recursica field component makes the connection. Give each field component the field's label, so the field component has a label to connect. A field with no label has no accessible name (the name a screen reader reads out for a control).
 - **Never replace a label with text that is only visual.** Text placed next to an input is not a label. If the field component takes a label, use the field component's label.
 - **The label must make sense when read alone**, out of order and out of context. A persona using a screen reader can hear a label with no text around the label. The rule to name exactly what the field holds exists for that reason.
-- **The required state must be available in code, not only shown by an indicator.** The asterisk or the bold weight is the visual channel (color, shape, position or text, each a separate signal). The field must also mark in code that the field is required. `recursica-skill-system-conventions` forbids relying on a single channel.
+- **The required state must be available in code, not only shown by an indicator.** The asterisk or the bold weight is the visual channel (color, shape, position or text, each a separate signal). The field must also mark in code that the field is required. `recursica-skill-design-system-conventions` forbids relying on a single channel.
 - **An optional marker must also be available in code.** If a word marks a field as optional, the word must be part of the label the screen reader announces. For example, the screen reader announces "Phone number, optional". The word must not be a separate fragment of text.
 - **Do not hide the label visually.** Sighted personas using a keyboard and personas using voice control need the visible label too. A visible label is a house requirement.
 - **A group label must be announced when focus enters the group.** For example, the screen reader announces "Delivery speed" when focus enters a group of radio buttons. Placing the group label before the group in the reading order is not enough. Without the announcement, the persona hears the options without the question the options answer.
@@ -132,7 +132,7 @@ A persona using a screen reader can use a field only when the field has a label.
   - label wording
   - marking a whole group as optional
 - `recursica-skill-assistive-element` — the help text and error text below the field.
-- `recursica-skill-system-conventions` — showing every meaning in more than one channel.
+- `recursica-skill-design-system-conventions` — showing every meaning in more than one channel.
 
 ## Open questions
 

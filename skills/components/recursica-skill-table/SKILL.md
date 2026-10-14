@@ -61,7 +61,7 @@ The rules below describe each part and option by role, such as "the header row".
 
 - `recursica-skill-tables` owns this rule. Read `recursica-skill-tables` for the full rule, including the text, the italics, and the neutral-500 color.
 - The table skill repeats the rule only because the rule affects accessibility.
-- `recursica-skill-system-conventions` extends the rule to every region that holds content, such as a page, panel, or modal.
+- `recursica-skill-design-system-conventions` extends the rule to every region that holds content, such as a page, panel, or modal.
 - If `recursica-skill-tables` differs from this paragraph, follow `recursica-skill-tables`.
 
 **Give every table a default sort, and always show the sort indicator on the sorted column.** For example, an Orders table opens sorted by date, and the Date column header shows the sort indicator.
@@ -92,7 +92,7 @@ If the persona cannot see the order of the table rows, the persona has to guess 
 
 **Make a table row clickable only when no other element in the table row is clickable.** If a table row holds a link, a button, or a checkbox, the table row is not a click target. For example, a table row with a selection checkbox does not open the record when clicked.
 
-**Turn inline editing on everywhere in the application, or nowhere.** `recursica-skill-system-conventions` requires one behavioral mode per system.
+**Turn inline editing on everywhere in the application, or nowhere.** `recursica-skill-design-system-conventions` requires one behavioral mode per application.
 
 **Do not put a card in a cell, and do not wrap the table in a card.**
 
@@ -106,7 +106,7 @@ If the persona cannot see the order of the table rows, the persona has to guess 
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, which every Recursica component follows.
 
 **A persona who cannot see a data table can use the table only when the table is a real table.** In a grid of `div` elements, a persona using a screen reader cannot tell which column holds a value. A table's meaning is the link between each value and the value's column.
 
@@ -134,7 +134,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 ### Keyboard and non-mouse navigation
 
 - **Every control in the table can be reached in visual order.** The table's controls include the header sort controls, row checkboxes, links, and row actions.
-- **Sorting by more than one column with a long-press must have a keyboard equivalent.** `recursica-skill-system-conventions` requires a second way to do every drag or long-press. A keyboard cannot press and hold. Sorting by more than one column needs an explicit control or a modifier key.
+- **Sorting by more than one column with a long-press must have a keyboard equivalent.** `recursica-skill-design-system-conventions` requires a second way to do every drag or long-press. A keyboard cannot press and hold. Sorting by more than one column needs an explicit control or a modifier key.
 - **A column-visibility gear must be a real control that a keyboard can reach.** A column-visibility gear is a gear icon that lets the persona show or hide columns. The gear is an unadvertised affordance, and an unadvertised affordance must still be accessible.
 - **Reordering columns must work without dragging.**
 - **A clickable table row must be a single, real control with an accessible name.** A click handler on a `tr` element does not make a clickable table row. If one control for the whole table row is awkward, make a link in one cell the click target. A link in one cell is usually the better choice, such as an invoice number that links to the invoice.
@@ -153,7 +153,7 @@ Never set or override the styling of the header row, the body cells or the foote
 
 - `recursica-skill-tables` — the owning design-rules skill. The tables skill covers table versus cards, column widths and alignment, truncation versus wrapping, and cells with two values. The tables skill also covers pagination versus infinite scroll, fixed header and footer, and default sort. The tables skill also covers sorting by more than one column, column visibility, and frozen columns. The tables skill also covers clickable table rows, inline editing, and totals.
 - `recursica-skill-dates-and-currency` — currency alignment and precision, date format, and the currency symbol in the column header.
-- `recursica-skill-system-conventions` — one behavioral mode per system, and never showing meaning in only one way. The system-conventions skill also covers unadvertised affordances and the keyboard way to use an unadvertised affordance.
+- `recursica-skill-design-system-conventions` — one behavioral mode per application, and never showing meaning in only one way. The design-system-conventions skill also covers unadvertised affordances and the keyboard way to use an unadvertised affordance.
 - `recursica-skill-live-regions` — announcing a row count or result count that changes when the table is filtered, sorted, or refreshed.
 - `recursica-skill-filters` — narrowing the table: the filter bar, search, date ranges, noun labels, and showing which filters are applied.
 

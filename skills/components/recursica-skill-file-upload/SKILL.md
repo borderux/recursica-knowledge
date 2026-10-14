@@ -67,7 +67,7 @@ Each option below is described by role, such as "the error state". A name from t
 
 **Also limit the file picker to the accepted file types.** The help text tells the persona which files the file upload accepts. The limit in the file picker keeps the persona from selecting other file types. For example, when the help text says "PDF or DOCX", the file picker lets the persona select only PDF and DOCX files. Use both the help text and the limit in the file picker.
 
-**Never make drag and drop the required way to add a file.** The button inside the upload area, such as "Browse files", is the required way to add a file. The button must work. The upload area may also accept a dropped file, as an extra way to add a file. `recursica-skill-system-conventions` requires a way other than dragging for every drag action.
+**Never make drag and drop the required way to add a file.** The button inside the upload area, such as "Browse files", is the required way to add a file. The button must work. The upload area may also accept a dropped file, as an extra way to add a file. `recursica-skill-design-system-conventions` requires a way other than dragging for every drag action.
 
 **Show the name of every added file, with a remove control for that one file.** For example, a list item shows "quarterly-report.pdf" with a Remove button next to the file name. The persona uses the file names to check the list, and the remove controls to take out a wrong file. An editable list of added files is the reason to use a file upload instead of a file input.
 
@@ -91,7 +91,7 @@ This rule is settled. This rule agrees with the rule in `recursica-skill-forms` 
 
 **On error, an error message replaces the help text.** Do not add the error message to the help text. The error message restates the broken rule. For example, write "Each file must be under 25 MB", not "Upload failed".
 
-**Pair the error state with a signal that is not color, such as an icon.** `recursica-skill-system-conventions` requires the second signal.
+**Pair the error state with a signal that is not color, such as an icon.** `recursica-skill-design-system-conventions` requires the second signal.
 
 **Keep the list of added files in the order the persona added the files.** The persona can then find the file the persona picked last.
 
@@ -101,7 +101,7 @@ This rule is settled. This rule agrees with the rule in `recursica-skill-forms` 
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, including the focus ring, which every Recursica component follows.
 
 The application must add every behavior in the two lists below. A drop zone (an area that accepts dropped files) is the most common mouse-only control in an enterprise application.
 
@@ -147,7 +147,7 @@ The application must add every behavior in the two lists below. A drop zone (an 
   - the save mode
   - the ban on overlays that block the screen
   - when to ask for confirmation
-- `recursica-skill-system-conventions` — showing meaning in more than one way, and a way other than dragging for every drag action.
+- `recursica-skill-design-system-conventions` — showing meaning in more than one way, and a way other than dragging for every drag action.
 
 ### Only if used on the same screen
 

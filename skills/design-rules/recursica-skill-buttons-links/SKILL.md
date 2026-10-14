@@ -17,7 +17,7 @@ Treat the house rules for clickable controls as constraints. The house rules are
 
 The rules assume **complex enterprise web applications, designed for desktop first**, built on the Recursica design system.
 
-**Write a button label as a verb plus an object, as in `Save form`. Write a navigation label as the object alone, as in `Forms`.** The verb is the only difference in wording between the two kinds of label. `recursica-skill-naming-terminology` owns the naming side of the split between button labels and navigation labels.
+**Write a button label as a verb plus an object, as in `Save form`. Write a navigation label as the object alone, as in `Forms`.** The verb is the only difference in wording between the two kinds of label. `recursica-skill-names-and-terms` owns the naming side of the split between button labels and navigation labels.
 
 **A control's label must name what happens.** For example, a control labeled `View` that opens editable content is mislabeled. `View` promises reading, but the control gives the persona editing.
 
@@ -32,7 +32,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 - change the route
 - change a filter
 
-See convention 6 in `recursica-skill-system-conventions`.
+See convention 6 in `recursica-skill-design-system-conventions`.
 
 ## Governing principles
 

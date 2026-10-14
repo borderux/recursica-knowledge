@@ -89,7 +89,7 @@
   },
   {
     "request": "Should we call these objects Requests or Tickets across the app?",
-    "skill": "recursica-skill-naming-terminology"
+    "skill": "recursica-skill-names-and-terms"
   },
   {
     "request": "Our page has two H1 headings \u2014 is that a problem?",
@@ -117,7 +117,7 @@
   },
   {
     "request": "How should this screen behave on a tablet?",
-    "skill": "recursica-skill-responsive-behavior"
+    "skill": "recursica-skill-responsive-layout"
   },
   {
     "request": "There is too much on this screen \u2014 how do we decide what to remove?",
@@ -133,7 +133,7 @@
   },
   {
     "request": "No skill covers this new kind of surface \u2014 is there a general house convention?",
-    "skill": "recursica-skill-system-conventions"
+    "skill": "recursica-skill-design-system-conventions"
   },
   {
     "request": "Two house rules seem to contradict each other \u2014 which one wins?",

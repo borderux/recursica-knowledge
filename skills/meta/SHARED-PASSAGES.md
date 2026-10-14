@@ -132,5 +132,5 @@ UI kit
 Passage:
 
 ```text
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`{, including the focus ring|}, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`{, including the focus ring|}, which every Recursica component follows.
 ```

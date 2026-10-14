@@ -31,9 +31,9 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 When one click has two of the outcomes above, the control's label can honestly describe only one outcome.
 
-**If a destination must open already filtered, make the filtered view a separate destination with a separate route.** For example, a "Late orders" view gets a route separate from the Orders page. A "Late orders" link goes to that route, and the link itself applies no filter. See convention 6 in `recursica-skill-system-conventions`.
+**If a destination must open already filtered, make the filtered view a separate destination with a separate route.** For example, a "Late orders" view gets a route separate from the Orders page. A "Late orders" link goes to that route, and the link itself applies no filter. See convention 6 in `recursica-skill-design-system-conventions`.
 
-**Make each navigation label name an object, not an action.** Write `Forms`, never `View forms`. `recursica-skill-naming-terminology` decides three questions about each navigation label:
+**Make each navigation label name an object, not an action.** Write `Forms`, never `View forms`. `recursica-skill-names-and-terms` decides three questions about each navigation label:
 
 - what each item is called
 - whether a name is singular or plural
@@ -174,7 +174,7 @@ Hidden navigation is not a compromise. For navigation the persona rarely touches
 - Beyond a handful of icons, nobody remembers what each icon means.
 - Without a hover state, an icon has no affordance (a visible cue that a control can be used, such as the underline on a link).
 
-One published design system shows the real-world extreme: a rail of fifteen icons. When the rail collapses, the rail shrinks the icons down to bare dots. The persona must hover over each dot to identify the dot. See `recursica-skill-responsive-behavior` and `recursica-skill-icon-semantics`.
+One published design system shows the real-world extreme: a rail of fifteen icons. When the rail collapses, the rail shrinks the icons down to bare dots. The persona must hover over each dot to identify the dot. See `recursica-skill-responsive-layout` and `recursica-skill-icon-semantics`.
 
 **Below desktop size, collapse global navigation into a hamburger menu.** The menu that slides in shows both the icon and the text of each navigation item.
 
@@ -184,7 +184,7 @@ One published design system shows the real-world extreme: a rail of fifteen icon
 
 **Use a drawer or a sidebar for the application's navigation, never both at the same time.** A drawer and a sidebar are both valid choices. Do not add an option to pin the drawer open as a sidebar. Show the navigation or hide the navigation, and keep the choice that simple.
 
-**Confirm with the user whether the application runs on a tablet or a phone before choosing the navigation pattern.** Do not add room for tablet or phone use to the navigation after the navigation pattern is chosen. `recursica-skill-responsive-behavior` sets this rule.
+**Confirm with the user whether the application runs on a tablet or a phone before choosing the navigation pattern.** Do not add room for tablet or phone use to the navigation after the navigation pattern is chosen. `recursica-skill-responsive-layout` sets this rule.
 
 ## Overflow
 

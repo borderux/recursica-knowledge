@@ -166,7 +166,7 @@ A region that holds content, such as a page, panel or modal, sits on a layer (a 
 | 4   | The page's layout. Whether part of the page needs a separate region that holds content, such as a page, panel or modal                                                   | `recursica-skill-screen-scaffolding`               |
 | 5   | Which layer each region that holds content sits on, starting from layer 0 on the root element. Examples of regions are a page, panel and modal                           | `recursica-skill-layers`                           |
 | 6   | What matters most on the screen, what to cut, and whether the screen is finished                                                                                         | `recursica-skill-screen-priority`                  |
-| 7   | Whether the app supports any screen smaller than desktop, and at which breakpoint tier. Confirm with the user before choosing a navigation pattern                       | `recursica-skill-responsive-behavior`              |
+| 7   | Whether the app supports any screen smaller than desktop, and at which breakpoint tier. Confirm with the user before choosing a navigation pattern                       | `recursica-skill-responsive-layout`                |
 | 8   | The type of content. Many objects of one type go in a table. One object's properties go in a detail view or a form view                                                  | `recursica-skill-tables` / `recursica-skill-forms` |
 | 9   | Where the task happens: a panel beside the page, a modal over the page, or a separate page                                                                               | `recursica-skill-panels-modals`                    |
 | 10  | Narrowing a collection, such as a table or a list: the filter bar, search and date ranges                                                                                | `recursica-skill-filters`                          |
@@ -182,7 +182,7 @@ A region that holds content, such as a page, panel or modal, sits on a layer (a 
 | 20  | What the application tells the persona back: success, failure, waiting, and a banner versus a toast                                                                      | `recursica-skill-feedback-messaging`               |
 | 21  | Whether an action gets an undo, and where the Undo button goes                                                                                                           | `recursica-skill-undo`                             |
 | 22  | Announcing a change to assistive technology, such as a screen reader, when content updates in place                                                                      | `recursica-skill-live-regions`                     |
-| 23  | What every object, navigation item, title and column is called                                                                                                           | `recursica-skill-naming-terminology`               |
+| 23  | What every object, navigation item, title and column is called                                                                                                           | `recursica-skill-names-and-terms`                  |
 | 24  | Which icon shows which meaning, and whether an icon may appear without a label                                                                                           | `recursica-skill-icon-semantics`                   |
 | 25  | Headings, emphasis, abbreviations, and the markup under the visual hierarchy                                                                                             | `recursica-skill-typography-semantics`             |
 | 26  | Empty, loading, error and partial states                                                                                                                                 | **No skill yet — ask**                             |
@@ -226,9 +226,9 @@ Apply the precedence rules below in order. The first precedence rule that settle
 
 ## Conventions to check before asking
 
-**When no topic skill covers a decision, check `recursica-skill-system-conventions` before treating the decision as unowned.** The system conventions are the house position on a subject nobody has designed before. `recursica-skill-system-conventions` holds six conventions drawn from across the topic skills:
+**When no topic skill covers a decision, check `recursica-skill-design-system-conventions` before treating the decision as unowned.** The design system conventions are the house position on a subject nobody has designed before. `recursica-skill-design-system-conventions` holds six conventions drawn from across the topic skills:
 
-- One behavioral mode per system.
+- One behavioral mode per application.
 - The unadvertised affordance (a control that works but is not shown in the main interface, such as a keyboard shortcut).
 - Never carry meaning in a single channel (color, shape, position or text, each a separate signal).
 - Fix the structure instead of the symptom.
@@ -289,7 +289,7 @@ Check every item before starting, and again before declaring the work done.
 - [ ] Each decision follows the decision's owning skill, read for the current screen, not recalled from memory.
 - [ ] Each conflict between rules was settled by the precedence rules or by the user.
 - [ ] A conflict between rules was never settled by preference or by averaging, and no conflict was ignored.
-- [ ] No gap was filled by an invented answer or another design system's convention. The owning skill's open questions and `recursica-skill-system-conventions` were checked first.
+- [ ] No gap was filled by an invented answer or another design system's convention. The owning skill's open questions and `recursica-skill-design-system-conventions` were checked first.
 - [ ] Every open question went to the user before building, with options.
 - [ ] Each answer from the user was offered as an addition to the owning skill.
 - [ ] Empty, loading, error and partial states are handled, or the user was told no skill covers those states yet.

@@ -11,7 +11,7 @@ metadata:
 
 Use the house rules below to decide where a task goes. A task goes in a panel beside the page, in a modal over the page, or on a separate page. Treat every rule as a constraint. The rules are the team's opinions, not neutral best practices.
 
-The rules are written for **complex enterprise web applications, designed for desktop first**. The applications are built on a design system with accessible components. The components set how a page, a panel and a modal look, and the rules below do not.
+The rules are written for **complex enterprise web applications, designed for desktop first**. The applications are built on the Recursica design system, whose components are accessible. The components set how a page, a panel and a modal look, and the rules below do not.
 
 ## The three governing principles
 
@@ -185,7 +185,7 @@ A panel exists to sit beside the page the panel depends on. On a screen too narr
 - **A small workflow, a form, or editing details in a modal becomes a page** below the tablet breakpoint.
 - **A confirmation modal stays a modal** at every width. "Are you sure you want to delete this?" is not work.
 
-**An application MUST NOT replace a page, panel or modal with a pattern native to one platform.** The iOS sheet (a panel that slides up from the bottom on iPhones) is the most likely substitute, and the iOS sheet is forbidden. Android does not use the iOS sheet. A persona who does not use iOS finds the sheet confusing rather than familiar. Keep the interaction patterns the desktop application uses. See `recursica-skill-responsive-behavior`.
+**An application MUST NOT replace a page, panel or modal with a pattern native to one platform.** The iOS sheet (a panel that slides up from the bottom on iPhones) is the most likely substitute, and the iOS sheet is forbidden. Android does not use the iOS sheet. A persona who does not use iOS finds the sheet confusing rather than familiar. Keep the interaction patterns the desktop application uses. See `recursica-skill-responsive-layout`.
 
 ## Focus and navigation priority
 

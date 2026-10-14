@@ -115,7 +115,7 @@ Do not put the selection rule in a validation message. The persona sees a valida
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, which every Recursica component follows.
 
 **Make each app meet every item in the two lists below.** The items include what a screen reader announces when the persona opens the list and selects an option. The dropdown component links the label to the field and shows the focus ring. The dropdown component also opens the list of options and selects the option the persona picks. A dropdown is the control most likely to work with a mouse and fail with a keyboard or screen reader.
 
@@ -127,7 +127,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - **The code must tell assistive technology whether the list is expanded or collapsed.** A rotating chevron is only a visual cue. The persona must hear that the list opened, and hear that the list closed.
 - **When the list opens, the code must tell assistive technology how many options the list holds.** The announcement can be "5 of 40" or a similar phrase. The persona then knows how long the list is. The open list is a listbox (a list the persona picks one or more options from).
 - **As the persona moves through the open list, a screen reader must announce the active option (the highlighted option).** The announcement must include the option's position in the list and whether the option is selected. A highlight that moves with no announcement makes the list unusable without sight.
-- **The selected option must be marked in code, never shown by a checkmark or a highlight alone.** `recursica-skill-system-conventions` sets this rule.
+- **The selected option must be marked in code, never shown by a checkmark or a highlight alone.** `recursica-skill-design-system-conventions` sets this rule.
 - **When the dropdown shows an error, the error message is the only text announced.** The error message has replaced the assistive text. The error message must state the rule. "Invalid input" is not an error message.
 - **Give the expand indicator (the arrow at the end of the closed field) no separate announcement.** The expand indicator is part of the field, not a second control. A screen reader must never find the expand indicator as an unlabeled graphic or as a separate button.
 - **When choosing an option shows more fields, say that more fields will appear.** Put the notice in the label or in the assistive text, before the persona chooses an option.
@@ -179,7 +179,7 @@ Do not set or override the parts the dropdown component provides:
 - `recursica-skill-label` — label text that names the object and makes sense without the text around the label. The skill also covers the required and optional markers.
 - `recursica-skill-assistive-element` — the help text and error text below the field. The skill also explains why the error text replaces the help text instead of joining the help text.
 - `recursica-skill-working-memory` — the basis for 7 ± 2, and the difference between recognizing and comparing that decides when a long list is acceptable.
-- `recursica-skill-system-conventions` — never showing meaning in only one way. The skill also covers fixing a screen's structure instead of adding a mechanism to work around a bad structure.
+- `recursica-skill-design-system-conventions` — never showing meaning in only one way. The skill also covers fixing a screen's structure instead of adding a mechanism to work around a bad structure.
 
 ### Only if used on the same screen
 

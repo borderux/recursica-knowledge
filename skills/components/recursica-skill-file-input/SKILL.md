@@ -87,7 +87,7 @@ This upload rule is settled. This upload rule does not conflict with the rule in
 
 **The error message must restate the rule the file broke**, as in "File must be under 10 MB", not "Invalid file".
 
-**Pair the error state with a signal that is not color.** `recursica-skill-system-conventions` sets this rule.
+**Pair the error state with a signal that is not color.** `recursica-skill-design-system-conventions` sets this rule.
 
 **Truncate a long file name. Do not let the field grow to fit the file name.** A file input is one line high. A file name that ends in an ellipsis (…) is better than a field that grows and moves nearby content. Assistive technology must still get the full file name.
 
@@ -95,7 +95,7 @@ This upload rule is settled. This upload rule does not conflict with the rule in
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, including the focus ring, which every Recursica component follows.
 
 The app must add every behavior in the two lists below. A file input is a form field and follows the same rules as every other form field. Most failures come from a control that works only with a mouse or another pointer.
 
@@ -139,7 +139,7 @@ Do not change the space between the label and the file input. Do not change the 
   - when validation runs
   - the form's save mode
   - the rule against form controls in a card
-- `recursica-skill-system-conventions` — the conventions a file input follows:
+- `recursica-skill-design-system-conventions` — the conventions a file input follows:
   - never giving meaning through only one signal
   - a second way to do any action that needs a drag or a long press
 

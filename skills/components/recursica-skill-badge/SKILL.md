@@ -57,7 +57,7 @@ Which status gets which intent is not decided, and is listed under the open ques
 - Let the badge text name the status.
 - Never use color to tell "Ordered" apart from "Shipped".
 
-`recursica-skill-system-conventions` requires the badge text, not color, to tell statuses apart.
+`recursica-skill-design-system-conventions` requires the badge text, not color, to tell statuses apart.
 
 **Do not invent an intent that the theme does not list.** For example, do not create an "on hold" intent for an "On hold" status. An unlisted intent has no badge style to choose. Making a new intent means working around the badge component. A color for an unlisted intent is not a missing token to report. The standard UI kit keeps the number of styles small on purpose. See `recursica-skill-design-router` on style overrides.
 
@@ -79,7 +79,7 @@ A badge looks like positive information about an object. "Error" in a badge look
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, which every Recursica component follows.
 
 A badge is text, not a control. For most components, the accessibility risk is that a persona cannot reach the control. For a badge, the risk is the opposite. A screen reader can announce the badge apart from the badge's object, or not announce the badge at all.
 
@@ -87,7 +87,7 @@ A badge is text, not a control. For most components, the accessibility risk is t
 
 - **Announce the badge as part of the object the badge describes**, not as a separate item. For example, a screen reader says "Members, 12" or "Invoice 1043, overdue". A "12" heard alone is not useful.
 - **Announce a count with the unit**, as in "3 unread messages", not "3". When a screen reader reads the page in order, the persona cannot see the object that makes the number clear.
-- **Never rely on the style to show the meaning.** The word in the badge must state the whole meaning, as `recursica-skill-system-conventions` requires. The success style and the problem style are colors, and a persona using a screen reader hears only the text.
+- **Never rely on the style to show the meaning.** The word in the badge must state the whole meaning, as `recursica-skill-design-system-conventions` requires. The success style and the problem style are colors, and a persona using a screen reader hears only the text.
 - **Never use a badge that shows only an icon.** A badge with no text gives a screen reader nothing to announce.
 - **If a badge changes while the persona is on the page, announce the change politely or not at all.** A polite announcement waits for a pause instead of interrupting. A count that updates often, such as an unread count, must never interrupt the persona. The count must never be announced on every increase.
 - **Do not add a second, screen-reader copy of the badge text while both copies stay in the reading order.** The persona hears the badge text twice, as in "Overdue, overdue".
@@ -106,7 +106,7 @@ A badge is text, not a control. For most components, the accessibility risk is t
 ## Related skills
 
 - `recursica-skill-badges-chips` — when a badge is the right component, and how many badges are allowed. The skill also covers badge placement in tables, cards, tabs, headings, and navigation.
-- `recursica-skill-system-conventions` — showing every meaning in more than one way, such as color and text.
+- `recursica-skill-design-system-conventions` — showing every meaning in more than one way, such as color and text.
 
 ## Open questions
 

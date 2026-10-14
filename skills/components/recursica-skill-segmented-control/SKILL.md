@@ -68,7 +68,7 @@ The rules below describe each option by role, such as "the horizontal orientatio
 
 **Keep one option selected at all times.** A segmented control never shows with no option selected. The control is a single-select field with a default option. Choose the default option by the pre-selection rules in `recursica-skill-selection-controls`.
 
-**Save segmented control changes in the same mode as every other part of the application.** See `recursica-skill-system-conventions`.
+**Save segmented control changes in the same mode as every other part of the application.** See `recursica-skill-design-system-conventions`.
 
 - If the application saves selection changes immediately, save the segmented control's changes immediately too.
 - If the application saves all changes together, save the segmented control's changes with all the other changes.
@@ -88,7 +88,7 @@ The rules below describe each option by role, such as "the horizontal orientatio
 
 ## Accessibility
 
-The rules below add to the accessibility baseline in `recursica-skill-system-conventions`, including the focus ring, which every Recursica component follows.
+The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, including the focus ring, which every Recursica component follows.
 
 **Build a segmented control as a radio group.** The most common mistake is a row of buttons where only color marks the selected button. A row of buttons fails in two ways:
 
@@ -99,7 +99,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 - **A screen reader must announce the segmented control as a group of radio options with exactly one option selected.** A screen reader must not announce the segmented control as a group of buttons.
 - **Give the group an accessible name** (the name a screen reader reads out for a control) that says what the persona is choosing, such as "View" or "Date range". Without the accessible name, a persona using a screen reader hears the options but not what the options are for.
-- **A screen reader announces each segment's label, and whether the segment is selected.** The selected state must be available in code. `recursica-skill-system-conventions` forbids showing the selected state by color alone.
+- **A screen reader announces each segment's label, and whether the segment is selected.** The selected state must be available in code. `recursica-skill-design-system-conventions` forbids showing the selected state by color alone.
 - **An icon-only segment must have an explicit accessible name.** A screen reader does not announce the icon.
 - **A screen reader must not announce a leading icon beside a label.** The leading icon is decorative.
 - **If a selection changes the screen content, a persona using a screen reader must be able to perceive the change.** A persona using a screen reader who hears nothing after a selection cannot know the view changed.
@@ -123,7 +123,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 
 - `recursica-skill-selection-controls` — when to use a segmented control, the rules shared with radio groups, pre-selection, and when a change is saved.
 - `recursica-skill-working-memory` — the research basis for the limits on the number of options.
-- `recursica-skill-system-conventions` — one behavior mode for the whole system, and never showing meaning in only one way.
+- `recursica-skill-design-system-conventions` — one behavior mode for the whole system, and never showing meaning in only one way.
 - `recursica-skill-forms` — label placement and validation when the segmented control is a form field.
 
 ## Open questions
