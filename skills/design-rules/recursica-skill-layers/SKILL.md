@@ -50,7 +50,7 @@ The application shell is the header, the rail, the footer and the titles. `recur
 
 ## The four levels and nesting depth
 
-**Recursica has exactly four layer levels: 0, 1, 2 and 3.** Layer 4 does not exist.
+**The theme has four layers: 0, 1, 2 and 3.** There are never more than four.
 
 **Choose how deep to nest from the table below.**
 
@@ -67,7 +67,7 @@ The application shell is the header, the rail, the footer and the titles. `recur
 
 **Do not go down a level each time one container sits inside another in the markup.** A layer is a region that holds content and has a meaning, such as the navigation. A generic wrapper element in the markup is not a layer. The depth limits in the table above exist to prevent one mistake. The mistake is nesting three layers only because the components sit three containers deep in the markup.
 
-**If a screen seems to need a fifth level, change the structure of the screen.** A fifth level would be layer 4, which does not exist. A need for a fifth level means the nesting is too deep. See convention 4, "Fix the structure, do not engineer around the symptom", in `recursica-skill-system-conventions`.
+**If a screen seems to need more than four layers, change the structure of the screen.** The nesting is too deep. See convention 4, "Fix the structure, do not engineer around the symptom", in `recursica-skill-system-conventions`.
 
 ## Layer properties from the theme
 
@@ -211,7 +211,7 @@ In the table, plurality (the number of items) means how many layers or cards app
 - [ ] Only levels 0 to 3 are used.
 - [ ] Layer 2 has a stated reason.
 - [ ] Every use of layer 3 was questioned as a sign of a structural problem.
-- [ ] No region needed a fourth level.
+- [ ] The screen uses only layers 0, 1, 2 and 3.
 - [ ] Every region was tried with space and type hierarchy first. A layer appears only where regions still blurred together.
 - [ ] No layer is opened only because the markup nests.
 - [ ] No background or background color (the `surface` property), border, radius, padding, shadow, or elevation is set on a layer.
