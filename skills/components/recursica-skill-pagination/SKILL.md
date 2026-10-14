@@ -97,7 +97,7 @@ Use the same form on the first page and on the last page. Use the same form in e
 
 **If a paginated table shows totals, the footer labels must say what each total covers.** A footer label says whether the total covers the current page or every record in the table. Personas confuse a total for the current page with a total for every record. `recursica-skill-tables` prefers infinite scroll for full-size tables for that reason.
 
-**Never shrink the pagination controls or make the controls scroll to fit the footer.** If the list of page numbers is too long for the footer, fix the structure instead. Confirm the new structure with the user. See `recursica-skill-design-system-conventions`.
+**Never shrink the pagination controls or make the controls scroll to fit the footer.** A long list of page numbers is normal. For example, an Orders table may have 40 pages. Shorten the list with the theme's ellipsis, as in "1 2 3 … 40". If the theme has no ellipsis, follow the steps under "Missing components" in `recursica-skill-design-router`.
 
 ## Accessibility
 
@@ -120,11 +120,7 @@ Pagination is a row of small controls that all look alike. Without names added i
 ### Keyboard and non-mouse navigation
 
 - **Every control is a tab stop (a place the Tab key lands), in the order the controls appear on screen.** The order is the previous control, then the page numbers in order, then the next control.
-- **After a page change, choose where focus goes.**
-  - If the control the persona activated still exists, keep focus on that control. For example, focus stays on the page number the persona clicked, or on the next control. The persona can then page again right away.
-  - Never move focus to the top of the document.
-  - Never let focus fall to the page body because the table rows that held focus were replaced.
-- **If focus was in a table row, move focus into the new table rows.** Put focus on the table or on the first table row. Never move focus past the whole page.
+- **After a page change, focus stays on the pagination control the persona activated.** For example, focus stays on the page number the persona clicked, or on the next control. The persona can then page again right away. Never move focus anywhere else.
 - **The previous and next controls are never disabled links on the first page and the last page.** "Rules" above says how to handle the previous and next controls on the first page and the last page.
 - **Never add custom key handling inside the pagination component.** The component library the code uses handles keyboard behavior inside each component. See `recursica-skill-navigation`.
 
@@ -161,6 +157,7 @@ The theme also sets the focus ring and the area that responds to a click or a ta
 - [ ] The table is an interior table. Full-size tables use infinite scroll instead.
 - [ ] The choice between scrolling and paginating matches every other screen in the application.
 - [ ] The pagination controls sit in the table's fixed footer, and the table does not scroll.
+- [ ] A long list of page numbers uses the theme's ellipsis. The controls never shrink or scroll.
 - [ ] The table sets the number of table rows, five or ten, not the pagination.
 - [ ] The footer has no rows-per-page select and no results readout, unless the theme has the control. A requirement for either one was flagged as a gap.
 - [ ] No pagination controls are shown when the table has only one page.
@@ -171,7 +168,7 @@ The theme also sets the focus ring and the area that responds to a click or a ta
 - [ ] A page change is announced politely, names the new page, and says that new table rows arrived.
 - [ ] On the first page and the last page, the code says when the previous or next control cannot be used. Gray alone is not enough.
 - [ ] The previous and next controls are never disabled links. On the first page and the last page, the controls are missing or cannot be used. The handling is the same on both pages and in every table in the application.
-- [ ] Every control is a tab stop in on-screen order. After a page change, focus goes to a chosen place, never the top of the document.
+- [ ] Every control is a tab stop in on-screen order. After a page change, focus stays on the pagination control the persona activated.
 - [ ] The pagination component has no custom key handling.
 - [ ] Changing pages did not change the default sort, and each total says what the total covers.
 - [ ] Every variant, state and control is one the theme's UI kit lists. No variant, state, first-page or last-page control, or ellipsis is invented.

@@ -92,7 +92,7 @@ The exception is not ideal. The exception exists because secondary modals, such 
 
 - Give the modal a cancel action in the footer.
 - Make the Escape key close the modal.
-- Do not build a modal that the persona can leave only by finishing the task. The one exception is a modal whose state cannot be abandoned.
+- Do not build a modal that the persona can leave only by finishing the task. The one exception is a modal the persona must finish before using the application at all. For example, the persona signs in again after a session ends. Confirm the exception with the user.
 
 ## Accessibility
 
@@ -165,6 +165,7 @@ Never restyle the overlay behind the modal. Never change when the scroll divider
 - [ ] Focus moves into the modal when the modal opens, and stays trapped while the modal is open.
 - [ ] Focus returns to the element that opened the modal when the modal closes.
 - [ ] Escape closes the modal and acts as cancel, and closing the modal is never pointer-only.
+- [ ] Every modal has a cancel action. The one exception is a modal the persona must finish before using the application, and the user confirmed that exception.
 - [ ] The close control has a real accessible name, and the focus ring is intact.
 - [ ] The destructive consequence is stated in words, not shown by color.
 - [ ] No styling is set or overridden on the modal.
