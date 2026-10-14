@@ -85,9 +85,9 @@ Apply the routing and history rules equally to moving through primary navigation
 **Choose between a top bar and a sidebar by answering the two questions below, in this order.** Neither pattern is right for every application.
 
 1. **How wide are the screens the application supports?** At the tablet breakpoint or wider, a top bar or a sidebar both work. A sidebar is often preferred, because a wide screen has more width than height. Below the tablet breakpoint, never use a sidebar. A sidebar there leaves almost no width for the content. Use a hamburger menu instead.
-2. **How many top-level items are there, and will the number grow?** If the number of top-level items is known and fixed, pick either pattern. If the number of top-level items is expected to grow over time, prefer a vertical sidebar. A horizontal top bar becomes a problem as the number of items grows.
+2. **How many top-level items are there, and will the number grow?** A top bar fits only a few items, about three or four, that will not grow. For example, Home, Orders and Reports fit a top bar. More items, or items expected to grow, get a sidebar. A sidebar has room to stack the items, and a top bar runs out of width.
 
-When growth is expected, do not treat the choice of top bar or sidebar as a matter of taste. Expected growth is the one case where the two questions decide the answer.
+Treat three or four items as a default, not a hard limit. If the choice is not obvious, confirm the choice with the user.
 
 ## Global tools
 
@@ -180,7 +180,7 @@ One published design system shows the real-world extreme: a rail of fifteen icon
 
 **NEVER use a bottom navigation bar.** A bottom navigation bar is not a house pattern at any width. Below the tablet breakpoint, use a hamburger menu instead.
 
-**A drawer is a panel that holds navigation and slides in.** A drawer is the same kind of control as a hamburger menu. A sidebar is the permanent navigation down the left side of the page. A sidebar is the wide-screen alternative to a top navigation bar. See `recursica-skill-panels-modals`.
+**The navigation drawer is the menu a hamburger button opens, and the drawer is not a panel.** The drawer slides in like a panel, but holds the navigation. The panel rules do not apply to the drawer. A sidebar is the permanent navigation down the left side of the page. A sidebar is the wide-screen alternative to a top navigation bar. See `recursica-skill-panels-modals`.
 
 **Use a drawer or a sidebar for the application's navigation, never both at the same time.** A drawer and a sidebar are both valid choices. Do not add an option to pin the drawer open as a sidebar. Show the navigation or hide the navigation, and keep the choice that simple.
 
@@ -229,11 +229,9 @@ Show the blocked item disabled, and enable the item once the persona makes the c
 
 **Open the first tab in reading order by default.** In a locale that reads left to right, the first tab is the leftmost tab. The eye starts on the left in such a locale. `recursica-skill-screen-starting-state` sets this rule.
 
-**MUST NOT spread a form across tabs.** Tabs divide content into sections. Tabs never break up data entry. Give a form with several parts a stepper component (which walks the persona through numbered steps), not tabs. Do not put several forms, or the fields of one form, on separate tabs.
+**MUST NOT spread a form across tabs.** Tabs divide content into sections. Tabs never break up data entry. Give a form with several parts a stepper component (which walks the persona through numbered steps), not tabs. Never put the fields of one form, with one save button, on separate tabs. Each tab may hold the tab's own complete form, with the form's own save button.
 
 **Use the tab component, keep the tab component's behavior, and do not add custom key handling.** The code library under the Recursica tab component decides how the keyboard works inside a set of tabs. For example, the code library decides whether the arrow keys or the Tab key move focus between tabs.
-
-**If forms on several tabs cannot be avoided, the screen MUST ask the persona about unsaved changes.** The unsaved-changes prompt is most likely a modal that opens when the persona clicks a tab. Treat the prompt as a last resort, not as a supported pattern. The prompt combines choosing a tab and handling unsaved changes into one interaction. That combination is the clearest sign that tabs were the wrong container.
 
 ## Open questions
 
@@ -262,7 +260,7 @@ Check every item below before treating the navigation as done.
 - [ ] No modal or panel creates a history entry. The exception is a modal or panel deliberately built to be linked to, with a shareable URL.
 - [ ] No tab state is kept as remembered UI state in place of a route.
 - [ ] Each tab has its own sub-path under the route of the view that holds the tabs.
-- [ ] Horizontal or vertical navigation follows the screen widths the application supports and whether top-level items will grow. No sidebar appears below the tablet breakpoint.
+- [ ] A top bar holds only a few items, about three or four, that will not grow. More items, or items expected to grow, get a sidebar. No sidebar appears below the tablet breakpoint.
 - [ ] The navigation is vertical where top-level items will grow.
 - [ ] Each level holds 7 ± 2 items: closer to 5 for complex subjects, up to 9 for simple subjects.
 - [ ] The item count holds for each role, after permissions hide items.
@@ -284,8 +282,7 @@ Check every item below before treating the navigation as done.
 - [ ] Items blocked by a condition the persona controls are disabled, and become enabled once the condition is fixed.
 - [ ] Horizontal navigation does not wrap, does not scroll, and does not sit in a separate scrolling area.
 - [ ] There is no overflow control, unless the persona can customize the navigation and chose to hide items.
-- [ ] Tabs hold parts of one whole, with no form fields and no forms spread across tabs.
+- [ ] Tabs hold parts of one whole. No form spreads across tabs, and each form on a tab has the form's own save button.
 - [ ] Tab sets have no custom keyboard handling.
 - [ ] Forms with several parts use a stepper.
-- [ ] Where forms on tabs cannot be avoided, switching tabs asks about unsaved changes.
 - [ ] Open questions were asked about, not decided: the order of items, the maximum depth, and where a dashboard goes.

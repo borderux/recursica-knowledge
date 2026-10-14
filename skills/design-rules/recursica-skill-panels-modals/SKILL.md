@@ -67,7 +67,7 @@ A panel keeps the page in view, so the persona keeps track of the work on the pa
 
 ### Terminology
 
-- **Drawer and panel are two names for one component.** A drawer is a panel, a region that slides in. A navigation drawer is a panel that holds navigation. A navigation drawer is the same kind of component as a hamburger menu.
+- **Drawer and panel are two names for one component.** A drawer is a panel, a region that slides in. The navigation drawer is not a panel. The navigation drawer is the menu a hamburger button opens. The drawer slides in like a panel, but holds the navigation and follows `recursica-skill-navigation`.
 - **A sidebar is not a drawer.** A sidebar stays on screen at all times. A sidebar runs down the left side, and is the wide-screen alternative to a top navigation. See `recursica-skill-navigation`.
 - **In this skill, modal and dialog are two names for one component.** A modal and a dialog box both put the persona in a mode.
 

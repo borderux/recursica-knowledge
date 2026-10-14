@@ -180,9 +180,9 @@ One real case is extreme: a rail of fifteen icons collapses to bare dots. Each d
 
 **Icons for specialized business concepts do not work.** For example, no icon clearly means "Reconciliation" or "Purchase order". Because business-concept icons do not work, an icon rail fails worst in enterprise software. See `recursica-skill-icon-semantics`.
 
-**A drawer is a panel.** The words "drawer" and "panel" name the same component: an area that slides in.
+**A drawer is a panel, except for the navigation drawer.** The words "drawer" and "panel" name the same component: an area that slides in.
 
-- A navigation drawer is a panel that holds navigation. A navigation drawer is no different in kind from a hamburger menu.
+- The navigation drawer, the menu a hamburger button opens, is not a panel. The drawer slides in like a panel, but holds the navigation and follows `recursica-skill-navigation`.
 - A sidebar is not a drawer. A sidebar stays on the screen permanently, down the left side. A sidebar is the wide-screen alternative to a top navigation.
 
 **Knowing that mobile use is coming should change which navigation pattern is chosen at the start.** The knowledge should change not only how the navigation collapses at the end.

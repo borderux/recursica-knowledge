@@ -13,7 +13,7 @@ A breadcrumb shows where the current page sits in the page hierarchy. A breadcru
 
 ## When to use a breadcrumb
 
-- The application's pages are nested, and the current page is more than one level down. `recursica-skill-navigation` calls for breadcrumbs where the pages are nested deep enough to need breadcrumbs.
+- The application has a deep page hierarchy, more than one level below the home page. `recursica-skill-layouts-and-templates` sets this rule.
 - The page must answer "Where am I?" by itself, without the navigation on screen. Headings and breadcrumbs answer the question.
 - The persona moves through several levels or categories, such as Products, then Shoes, then Running shoes. The persona needs to keep track of the current page's place along that deep path.
 
@@ -21,7 +21,7 @@ A breadcrumb shows where the current page sits in the page hierarchy. A breadcru
 
 | Situation                                                      | Use instead                                                                                                      |
 | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| The application is only one or two levels deep                 | Headings. A clear heading hierarchy shows the persona's location. See `recursica-skill-navigation`.              |
+| The application only ever has one level below the home page    | Headings. A clear heading hierarchy shows the persona's location. See `recursica-skill-navigation`.              |
 | The breadcrumb would be the only way back to the parent page   | Real navigation: a sidebar or a top bar. A breadcrumb is an extra aid for finding the way, not the main way.     |
 | The heading and the navigation already make the location clear | No breadcrumb. A breadcrumb that repeats a location the persona can already see is clutter.                      |
 | The persona moves through ordered steps in a process           | A stepper. See `recursica-skill-stepper`.                                                                        |
@@ -127,7 +127,6 @@ The breadcrumb's styling includes the separator's look, wherever the separator c
 - **The separator.** No one has decided which character the separator is, or whether the separator is an icon. If the theme has a separator, use the theme's separator. Otherwise, confirm with the user.
 - **Long trails.** No one has decided whether a deep trail drops the middle levels, shortens the labels, or wraps. Horizontal scrolling is not an option.
 - **The content variant.** Only the design-system website shows a content variant with Label only, Icon + Label, Icon only and Mixed options. Only the website shows separate styles for read-only items and clickable items. If the theme has the content variant or the item styles, use the theme's version. Otherwise, do not rely on either one without confirming with the user.
-- **The depth at which a breadcrumb becomes required.** `recursica-skill-navigation` calls for breadcrumbs "where the depth of the page calls for breadcrumbs", but gives no number. `recursica-skill-navigation` also lists the maximum depth of the page hierarchy as an open question.
 - **The start of the trail.** No rule says whether the trail starts at the application's home page or at the section's landing page.
 - **A level with no landing page.** No rule says how the trail handles a level with no landing page. The level exists in the hierarchy above the current page, but has no route to link to. For example, a Settings group may hold pages but have no page of the group's own.
 
@@ -152,4 +151,4 @@ The breadcrumb's styling includes the separator's look, wherever the separator c
 - [ ] No separator token is invented.
 - [ ] No styling is set or overridden on the breadcrumb.
 - [ ] No container or spacer is added to change the breadcrumb's look.
-- [ ] Open questions were asked about, not decided: the separator, long trails, the content variant, the depth at which a breadcrumb becomes required, the start of the trail, and a level with no landing page.
+- [ ] Open questions were asked about, not decided: the separator, long trails, the content variant, the start of the trail, and a level with no landing page.

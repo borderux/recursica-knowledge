@@ -96,7 +96,7 @@ Examples:
 | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
 | Too many navigation items for the space        | Change the design. Switch to vertical navigation, or shorten the labels. Never wrap, scroll, or overflow the navigation | `recursica-skill-navigation`         |
 | A table too wide for the screen                | Fewer columns, a drill-down, or stacked text in the table cells. Horizontal scrolling means the table design failed     | `recursica-skill-tables`             |
-| A form spread across tabs                      | Use a stepper. Tabs that hold forms are an invalid structure                                                            | `recursica-skill-navigation`         |
+| A form spread across tabs                      | Use a stepper. Tabs that split one form are an invalid structure                                                        | `recursica-skill-navigation`         |
 | A need for select-all across twenty checkboxes | Reconsider the choice of control before adding select-all                                                               | `recursica-skill-selection-controls` |
 | A chart with a large amount of missing data    | Do not visualize the data                                                                                               | `recursica-skill-data-visualization` |
 | No one can say what matters on the dashboard   | Do not build a dashboard                                                                                                | `recursica-skill-dashboards`         |

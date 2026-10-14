@@ -17,7 +17,7 @@ A stepper leads the persona through one process that has several steps. For exam
   - The persona thinks of the parts as separate stages, such as Shipping and Payment.
   - The form has a very large number of fields.
   - An answer makes a _later_ step clearly different. For example, choosing "Pick up in store" changes the Delivery step.
-- **A form would otherwise be split across tabs.** Never split a form across tabs. Use a stepper in place of the tabs. The stepper exists because of the ban on forms in tabs. `recursica-skill-navigation` sets the ban, and names the stepper as the replacement.
+- **A form would otherwise be split across tabs.** Never split a form across tabs. Use a stepper in place of the tabs. The stepper exists because of the ban on spreading one form across tabs. `recursica-skill-navigation` sets the ban, and names the stepper as the replacement.
 - **A setup flow for first-time use, or an onboarding flow, must be done in order.**
 - **The screen shows the status of a step-by-step workflow with fixed stages in order**, such as Processing, Shipped, Delivered.
 

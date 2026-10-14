@@ -49,14 +49,9 @@ For example, a left rail with a separate background sits on layer 1, and the mai
 
 ### Top navigation or left rail
 
-**Choose between a top navigation bar and a left rail by the number of navigation items.**
-
-- **A few navigation items → a top navigation bar.** For example, Home, Orders and Reports fit a top navigation bar.
-- **More than about three or four navigation items → a left rail.** A left rail has room to stack the items. A desktop viewport is wider than the viewport is tall, so vertical space for navigation is the scarcer resource. A left rail gives up horizontal width to get more vertical room.
+**Choose between a top navigation bar and a left rail as `recursica-skill-navigation` says.** A top bar fits only a few items, about three or four, that will not grow. More items, or items expected to grow, get a left rail.
 
 **Below the tablet breakpoint, use neither. Move the navigation into a hamburger menu.** See "How a template changes with the screen width".
-
-**Treat three or four items as a default, not a hard limit.** The default can change to fit the product's needs. If the choice is not obvious, confirm the choice with the user before picking either option. See `recursica-skill-design-router`.
 
 ## Layout templates
 
@@ -113,7 +108,7 @@ The regions in the table have these meanings:
 
 **Let the page title repeat the navigation label.** For example, the Orders link in the navigation opens a page titled Orders. A page title that matches the navigation label is not a defect. `recursica-skill-names-and-terms` decides how far the page title and the navigation label may differ.
 
-**Show a breadcrumb once the persona is below the top level of the application's page hierarchy.** Never show a breadcrumb on a top-level page, such as a landing page or a dashboard. A breadcrumb there has only one item, the page itself. Every sub-section reached from a landing page or a dashboard needs a breadcrumb.
+**Decide on breadcrumbs by the depth and complexity of the application.** A shallow application, with only ever one level below the home page, needs no breadcrumbs. An application with a deep page hierarchy shows a breadcrumb on pages below the top level. If the choice is not obvious, confirm with the user. Never show a breadcrumb on a top-level page, such as a landing page or a dashboard. A breadcrumb there has only one item, the page itself.
 
 **A breadcrumb shows the persona where the persona is in the application.** The breadcrumb also shows where the persona came from and how to get back up the page hierarchy. A breadcrumb matters most after a deep link (a link that opens a page deep inside the application). A link in an email is one example. A persona who follows a deep link lands several levels below a dashboard. The persona then has no idea where the page sits in the application.
 
@@ -351,12 +346,12 @@ The list runs in order, from the strongest sign to the weakest.
 - [ ] Any layout template used is a starting point, not a requirement. Every region in the template passed the region's own rules.
 - [ ] The user confirmed which devices, screen sizes and orientations the application supports.
 - [ ] At the tablet breakpoint or wider, side regions stay. Below the tablet breakpoint, the navigation is in a hamburger menu, and side columns stack under the main content.
-- [ ] The app shell matches the number of navigation items. A few items get a top navigation bar. More than about three or four items get a left rail. Where the choice was not obvious, the user chose.
+- [ ] The app shell follows `recursica-skill-navigation`. A few items that will not grow get a top navigation bar. More items, or items expected to grow, get a left rail. Where the choice was not obvious, the user chose.
 - [ ] A left rail puts navigation at the top, and the profile and settings at the bottom.
 - [ ] Every page has a footer, or a reason for leaving the footer out is provided.
 - [ ] The page title sits in the page. A page title that repeats the navigation label is left unchanged.
 - [ ] Every line under a page title or section heading passes the subtraction test. Each line gives an order, a limit, a consequence, or a state that the heading cannot. No optional text under a heading is filled in only because the setting exists. If the defect appeared in several places in the code, the setting itself is removed. Removing only the text in the setting is not enough.
-- [ ] A breadcrumb appears on every page below the top level, and on no page at the top level.
+- [ ] Breadcrumbs follow the depth of the application. A shallow application has none. A deep application shows breadcrumbs below the top level. No top-level page has a breadcrumb.
 - [ ] The primary action sits at the bottom right, unless the user moved the primary action.
 - [ ] Filters are placed by the width of the content the filters act on, not by a breakpoint. No filter rail is merged with the navigation rail.
 - [ ] Regions are divided by space and headings, with a horizontal rule only where space was not enough. No region is divided by cards.
