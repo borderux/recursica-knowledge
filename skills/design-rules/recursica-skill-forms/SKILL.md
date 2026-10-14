@@ -118,10 +118,9 @@ Group fields in the following order of preference:
 
 **If the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes) has a loading variant for a button, use the loading variant.** Otherwise, build the loading state from the button's disabled look. Use the disabled look with an icon alone or an icon with a label, and animate the icon. See `recursica-skill-button`.
 
-Three more rules apply to the submit button:
+Two more rules apply to the submit button:
 
 - Keep the submit button the same size and in the same place.
-- Keep the submit button able to receive focus, so that focus stays where the persona pressed Enter.
 - Tell assistive technology that the submit button is busy. Do not rely on the animation to show the busy state.
 
 **NEVER show a blocking spinner or overlay on submit.**

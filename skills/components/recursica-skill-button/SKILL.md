@@ -117,9 +117,7 @@ The button component shows the focus ring. The button component also responds to
 - **Never show an action, label, or value the persona needs only on hover.** Show every action, or put the action in a menu the persona can reach. A hover action appears only while the pointer is over a table row or list item. Personas using a keyboard or touch cannot reach a hover action.
 - **When a button opens a modal or a menu, move focus into the modal or menu.** When the modal or menu closes, return focus to the button. If focus is not returned, focus can go to the top of the page. A persona using a keyboard then has to tab through the whole page to get back to the button.
 - **When a button does not open a modal or a menu, leave focus on the button after a press.** The persona can then press the button again.
-- **Keep a loading button in the tab order.** A disabled control leaves the tab order, and focus falls back to the top of the page. Use one of two fixes:
-  - Show the disabled look, and keep the button in the tab order.
-  - Move focus to the next element the persona needs.
+- **A loading button is disabled.** A disabled button cannot receive focus and leaves the tab order. Nothing has focus while the action runs.
 - **The animated icon follows the persona's reduced-motion preference** (a setting that asks for less animation).
 
 ## Styling set by tokens
@@ -154,7 +152,7 @@ The button component shows the focus ring. The button component also responds to
 - [ ] Every row action names the object, or gets the object from the row.
 - [ ] Focus returns to the button when a modal or menu that the button opened closes.
 - [ ] A loading button shows the theme's loading state, or the disabled look with an animated icon. The loading button has no spinner beside the button, no new label and no new state. The loading button does not move or resize.
-- [ ] A loading button is marked busy, keeps the accessible name and stays in the tab order.
+- [ ] A loading button is disabled, marked busy, and keeps the accessible name.
 - [ ] A loading button follows the persona's reduced-motion preference.
 - [ ] Every variant, size, and state is one the theme's UI kit lists, and no variant or option is invented.
 - [ ] No styling is set or overridden on the button.

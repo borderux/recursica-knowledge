@@ -128,10 +128,10 @@ The autocomplete does four jobs without extra work from the app:
 - **Give the autocomplete a real label.** The label is the accessible name (the name a screen reader reads out for a control). The label must make sense without the text around the field, as in "Country", not "Select one". Never let the placeholder be the accessible name. A screen reader does not announce the placeholder as a label, and the placeholder disappears on the first keystroke.
 - **A screen reader must announce the field as a combobox** (a text field paired with a list of options), not as a plain text field. The persona has to know that typing shows options, and that the arrow keys move through the options.
 - **The code must tell assistive technology whether the filtered list is expanded (open) or collapsed (closed).** The persona must hear that the results opened, and hear that the results closed.
-- **A screen reader must announce the number of filtered results after each filter**, politely, without interrupting the typing: "8 results", then "2 results", then "no results". Give the autocomplete the count. If the autocomplete does not announce the count, add a live region that does. The result count is the requirement missed most often. A sighted persona watches the list shrink. A persona using a screen reader hears nothing about the change.
+- **A screen reader must announce the number of filtered results once the persona pauses typing.** Debounce the announcement (wait until the typing stops), and announce politely, as in "2 results" or "no results". Give the autocomplete the count. If the autocomplete does not announce the count, add a live region that does. The result count is the requirement missed most often. A sighted persona watches the list shrink. A persona using a screen reader hears nothing about the change.
 - **Announce "no results" clearly.** A persona cannot tell silence after typing apart from a broken field.
 - **Announce the active option (the option the arrow keys point to) as the persona moves through the list.** The announcement includes the option's position in the list and whether the option is selected.
-- **Do not announce every keystroke.** Do not announce the list on every typed character when the count has not changed. Too many announcements make the field as unusable as silence does.
+- **Never announce on every keystroke.** Announce one count after the typing stops. Too many announcements make the field as unusable as silence does.
 - **The selected option must be marked in code, never shown by a highlight or a checkmark alone.** `recursica-skill-design-system-conventions` sets this rule.
 - **The chosen value must be readable in the field after the persona selects the value.** The chosen value must be announced as the field's value. Never show the chosen value only as visible text that is not the field's value.
 - **On error, the error message is the only text announced**, because the error message has replaced the assistive text. The error message must state the rule. "Invalid input" is not an error message.
@@ -226,7 +226,7 @@ Do not change the space between the label and the field, or the space between fi
 - [ ] Any default is correct for nearly everyone.
 - [ ] On error, an error message that restates the rule replaces the assistive text, with a signal that is not color.
 - [ ] The filtered list is not cut off by the viewport, a panel, a modal, or any scrolling ancestor.
-- [ ] A screen reader announces the expanded state and the filtered result count after each change. The screen reader also announces "no results", the active option, and the chosen value. The screen reader gets no more announcements than the persona needs.
+- [ ] A screen reader announces the expanded state, and the filtered result count once the typing stops. The screen reader also announces "no results", the active option, and the chosen value. The screen reader gets no more announcements than the persona needs.
 - [ ] The field is one tab stop. The arrow keys move the active option, Enter selects, and Escape closes the list and returns focus to the input.
 - [ ] Home and End still move the caret in the input.
 - [ ] The autocomplete's built-in key handling and filtering are unchanged, and real focus never moves into the list.

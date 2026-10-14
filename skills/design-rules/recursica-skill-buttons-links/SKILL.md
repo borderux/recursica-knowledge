@@ -147,7 +147,7 @@ A link also has less visual weight than a button, and less visual weight matters
 
 **Show an unavailable action as a plain disabled button.** If the current state of the table row's object makes an action unavailable, disable the button. A plain disabled button is enough. For example, `Cancel order` is disabled in the table row of an order that has shipped.
 
-**Give each table row one primary action.**
+**Give each table row one main action.** The main action is an icon-only button or a text button, never the primary style. The page keeps one primary-style button.
 
 - Put every other action for the table row in a menu of secondary actions.
 - Do not crowd many actions onto a table row, especially actions that change from one object to the next.
@@ -224,6 +224,10 @@ A destructive action deletes an object, a value, or any other data, or cannot ea
 
 **Follow `recursica-skill-undo` for when an action gets an undo, and where the undo goes.**
 
+## Actions in progress
+
+**The button that starts any action shows the loading state while the action runs.** The rule covers every action, not only Submit. For example, an Export button shows the loading state until the file is ready. Use the theme's loading state. Without a loading state, use the disabled look with a spinner, as `recursica-skill-button` describes.
+
 ## Toggle actions
 
 **Use a button for a toggle, never a link.**
@@ -253,7 +257,6 @@ The house rule admits the positive label is slightly a dark pattern.
 **Confirm with the user instead of choosing.** No house rule covers the topics below yet. See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit one of the topics.
 
 - **Split buttons.** No rule says whether split buttons are allowed at all.
-- **Loading and pending states on actions other than submit.** `recursica-skill-forms` covers the submit button. No skill owns the loading state for `Export` and `Recalculate`.
 - **The point at which actions move into an overflow menu.** The toolbar rule says "rarely used", but gives no count.
 - **Keyboard shortcuts for frequent actions.**
 
@@ -285,7 +288,7 @@ Before treating a set of buttons and links as done, check each item:
 - [ ] The affirmative action is at the bottom right, with true alternatives right beside the affirmative action. Rarely used extra functions are at the bottom left.
 - [ ] No link in a table row is disabled.
 - [ ] Table row actions that are unavailable are plain disabled buttons.
-- [ ] Each table row has one primary action, and any other table row actions are in an ellipsis menu.
+- [ ] Each table row has one main action, never in the primary style. Any other table row actions are in an ellipsis menu.
 - [ ] Table row actions whose label is the same on every table row are icon-only with tooltips. Table row actions whose label changes are text.
 - [ ] A single bulk action appears on the first selection. Several bulk actions are always visible, and disabled until a row is selected.
 - [ ] The bulk action area holds only controls. The bulk action area has no list of the selected records. No clear or deselect-all control competes with the checkbox in the table header. The bulk action area has no "nothing selected" placeholder and no action on a single record.
@@ -295,4 +298,5 @@ Before treating a set of buttons and links as done, check each item:
 - [ ] Toggles are buttons, labeled with the positive state reached, never with a negative like "Unfollow".
 - [ ] Rarely used toolbar functions sit in an overflow menu, and standard sets of functions follow convention.
 - [ ] Controls that open a modal or a panel on the same page are buttons.
-- [ ] Open questions were asked about, not decided: split buttons, loading states on actions other than submit, when to move actions into an overflow menu, and keyboard shortcuts.
+- [ ] The button that starts any action, such as Export, shows the loading state while the action runs.
+- [ ] Open questions were asked about, not decided: split buttons, when to move actions into an overflow menu, and keyboard shortcuts.

@@ -119,7 +119,7 @@ A partial success should not reach the interface. For that reason, the channel t
 
 **Never stack duplicate messages. Combine repeats of the same message into one message.** For example, show one "Connection lost" toast, not twelve. Ten or twelve identical toasts from one repeating error show that the application failed to handle the underlying problem. A stack of identical toasts is not a notification strategy.
 
-**Never show many messages at the same time.** A screen with several messages at once confuses the persona. The persona cannot tell which message to read, which message to act on, or where to start.
+**Never let messages pile up.** A screen full of messages confuses the persona. The persona cannot tell which message to read, which message to act on, or where to start. Different messages about different events may stack briefly, one toast for each event. `recursica-skill-toast` covers stacking.
 
 **If one operation produces many errors, show one message about that operation, not many messages.** For example, an import with 40 bad rows shows one error message about the import.
 
@@ -175,7 +175,7 @@ A partial success should not reach the interface. For that reason, the channel t
 - [ ] No field-level save shows an inline message that appears and disappears.
 - [ ] No partial-success message and no list of results for each item appear. Every partial result is raised as a backend problem with how the backend groups changes.
 - [ ] Repeats of the same message are combined into one message, and no messages stack.
-- [ ] No screen shows several messages at the same time, and a repeating error is treated as a cause to fix.
+- [ ] Messages never pile up. Duplicates combine, and many messages about one operation become one message. A repeating error is treated as a cause to fix.
 - [ ] The toast duration, the toast persistence and the undo time are the code library's defaults.
 - [ ] A changed duration, persistence or undo time was asked for by the user.
 - [ ] The persona can dismiss every toast.

@@ -128,7 +128,7 @@ A spinner is only animation. A persona using a screen reader knows a spinner is 
 - `recursica-skill-design-system-conventions` — never showing meaning in a single channel, and one behavioral mode per application.
 - `recursica-skill-dashboards` — the ban on shipping an empty dashboard. The dashboards skill covers text on how up to date each component's data is, for components on different refresh schedules.
 - `recursica-skill-tables` — a loading table shows the loader by default. The tables skill lists error states for a table, including partial failure, as a topic no skill owns.
-- `recursica-skill-buttons-links` — lists a pending state on an action other than submit as a topic no skill owns.
+- `recursica-skill-buttons-links` — the button that starts any action shows the loading state while the action runs.
 - `recursica-skill-live-regions` — announcing that loading started and finished, and what the app must cover beyond the loader's own announcement.
 
 ### Only if used on the same screen
@@ -142,7 +142,6 @@ A spinner is only animation. A persona using a screen reader knows a spinner is 
 - **Whether the three adapter loader types may be used.** Oval, Bars, and Dots are the three values of a type setting in both adapters. The question covers how each type looks and when to use each type. Only the design-system website shows a progress track. Confirm with the user before relying on a type other than the default. Confirm with the user only when the theme has no type variant.
 - **When a spinner for the whole page is called for, instead of an empty page.** The threshold for showing a loader is about three seconds. The clearest case for a spinner is one region still loading on a page that has otherwise loaded. No rule says where a region ends and the whole page begins.
 - **Loading and error states for a table**, including partial failure. `recursica-skill-tables` settles the loading state: a loading table shows the loader by default. `recursica-skill-tables` lists error states for a table as a topic no skill owns.
-- **A pending state on an action other than submit.** `recursica-skill-buttons-links` lists the pending state as a topic no skill owns.
 - **Whether the loader itself is delayed.** The 3-second threshold decides whether a wait needs a loader at all. No rule says whether the spinner also waits 3 seconds before appearing. No rule says whether the spinner appears at once for an operation expected to take longer.
 - **Which size to use in which region that holds content.** A page, a panel, and a modal are each a region that holds content. No rule says whether a wait across the whole screen uses the largest size, or a different choice entirely. The largest size is `large` in the standard UI kit.
 
@@ -165,4 +164,4 @@ A spinner is only animation. A persona using a screen reader knows a spinner is 
 - [ ] Every loader size is one the theme's UI kit lists, such as `small`, `default`, or `large` in the standard UI kit. No type, label, track, skeleton screen, or determinate variant is invented.
 - [ ] No styling is set or overridden on the loader. No container or spacer is added to change the loader's look.
 - [ ] The spinner's animation is not changed.
-- [ ] Open questions were asked about, not decided: showing progress, a label on the loader, the three adapter loader types, a spinner for the whole page, loading and error states for a table, a pending state on an action other than submit, delaying the loader, and which size to use in which region that holds content.
+- [ ] Open questions were asked about, not decided: showing progress, a label on the loader, the three adapter loader types, a spinner for the whole page, loading and error states for a table, delaying the loader, and which size to use in which region that holds content.
