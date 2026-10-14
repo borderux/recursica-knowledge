@@ -54,7 +54,7 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 ## Breakpoints
 
-A breakpoint is the screen width at which the layout changes. Recursica has three breakpoints: **desktop, tablet and small device.** The theme sets the width of each breakpoint. The theme's grid sets the columns that content lines up to.
+A breakpoint is the screen width at which the layout changes. Recursica has exactly three breakpoints: **desktop, tablet and small device.** The theme sets the width of each breakpoint. The theme's grid sets the columns that content lines up to.
 
 | Breakpoint       | What the breakpoint is                                                                                    |
 | ---------------- | --------------------------------------------------------------------------------------------------------- |

@@ -168,7 +168,7 @@ A panel may be _covered_ by another panel, but a panel may never _contain_ anoth
 
 **A route change closes the open panel.** Navigating away closes any open panel. For example, clicking a link to the Customers page closes an open order panel.
 
-**The exception is a route change whose only purpose is to open another panel or modal.** That route change leaves the open panel open. The exception includes a panel or modal built on purpose for linking. The exception lets a URL open a stacked panel.
+**The exception is a route change whose only purpose is to open another panel or modal.** That route change leaves the open panel open. For example, opening a second panel's address leaves the first panel open, so a URL can open stacked panels.
 
 ## Below the tablet breakpoint
 

@@ -105,7 +105,7 @@ A value must pass two tests before the value is pre-selected.
 2. **The persona does not realize that a different option was available.**
 3. **The choice has later consequences** that the persona never chose on purpose.
 
-`recursica-skill-selection-controls` gives the pre-selection rules for each control. One of those rules is that a checkbox group may be pre-checked freely.
+**Apply both tests to every option, including a checkbox.** `recursica-skill-selection-controls` applies the tests to each control.
 
 ## Remembered state
 
