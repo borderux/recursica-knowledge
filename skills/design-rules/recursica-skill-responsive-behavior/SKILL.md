@@ -130,11 +130,11 @@ See `recursica-skill-screen-scaffolding`.
 
 **Avoid horizontal scrolling wherever possible**, at every width.
 
-**A carousel is the one component with a valid reason to scroll horizontally.** A carousel is a row of items the persona swipes or clicks through horizontally. Carousels are used far more on mobile than on desktop.
+**Only two components may scroll horizontally: a carousel, and a table as a last resort.** A carousel is a row of items the persona swipes or clicks through. Carousels are used far more on mobile than on desktop.
 
 **If content runs past the edge, the layout MUST show that more content is hidden.** Show items partly cut off at the side, so the persona can see more items to scroll to. For example, a carousel shows two full cards and part of a third card. The partly cut-off items, sometimes called scent, show the persona that the content scrolls sideways. When content stops exactly at the edge, the persona cannot see that more content exists.
 
-**A table may also scroll horizontally, but only as a last resort, when nothing else works.** See `recursica-skill-tables`. No other case was found to need horizontal scrolling.
+**Scroll a table horizontally only when nothing else works.** See `recursica-skill-tables`. No other case was found to need horizontal scrolling.
 
 ## Tables
 
