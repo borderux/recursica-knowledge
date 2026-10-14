@@ -20,7 +20,7 @@ The house rules assume **complex enterprise web applications, designed for deskt
 3. **Give each table row one way to interact, and use the same way in every table of the application.**
 
    - Make a whole table row clickable only when no other element in the table row can be clicked.
-   - Turn on inline editing in every table, or in no table.
+   - Give every editable cell the same cue that the cell is editable, in every table.
 
    The persona cannot see which mode a cell is in.
 
@@ -305,11 +305,15 @@ One click cannot both switch the sort direction and open multi-sort.
 
 ## Inline editing
 
-**Prefer editing the whole record on a page over editing cells in place.** Editing data in a table cell raises the same problems as editing data in a form. When a lot of data is saved at once, editing one cell at a time is the wrong choice.
+**Do not make table cells editable. Edit a record on the record's page or in a panel.** A persona rarely needs to see other records to change one field.
 
-**The main problem with inline editing is that a cell does not show what a click will do.** A cell shows no cue that tells the persona whether clicking the cell will edit, navigate, or select.
+**One exception: a small edit to one cell, where editing in place is faster.** For example, changing one order's priority. Allow the exception only when a mistake costs little. The persona can undo the edit, or change the value again.
 
-**Inline editing MUST be consistent across the application.** Either every table supports inline editing, or no table does. A mix of tables with and without inline editing leaves personas unable to predict what a click will do.
+**An editable cell saves the change right away, for that one field, like a switch.** Never edit several cells and save the cells together.
+
+**An editable cell MUST look editable.** For example, the cell shows a form field. A plain cell gives no cue whether a click will edit, open the record, or select the row.
+
+**Every editable cell in the application shows the same cue, in every table.** A table with no editable cells needs no cue. A mix of cues leaves personas unable to predict what a click will do.
 
 ## Totals and the footer
 
@@ -328,7 +332,7 @@ One click cannot both switch the sort direction and open multi-sort.
 - Put a fairly hidden control on the table, such as a settings or gear icon.
 - The control opens a screen where the persona chooses which columns are visible, and in what order.
 
-**Drag-and-drop reordering is not preferred.** Drag and drop overloads the interaction, and drag and drop cannot be used without a mouse. If the table offers dragging, the table MUST also offer another way to reorder and show or hide columns.
+**Drag-and-drop reordering is not preferred, because drag and drop cannot be used without a mouse.** If the table offers dragging, the table MUST also offer another way to reorder and show or hide columns.
 
 ## Grouped rows
 
@@ -388,7 +392,8 @@ Check every item before treating a table as done.
 - [ ] A record opens from the record's identifying value, the whole table row, or a separate row action. One of the three is chosen once for the whole application. Selecting a record triggers no action on that single record.
 - [ ] The add control is at the table header, on the right, never below the table. A short form that adds a record opens in a modal or panel. A long form opens on a separate page. Neither sits inline on the page.
 - [ ] The bulk action area holds only controls. The bulk action area has no list of the selected records. The bulk action area has no separate clear control competing with the header checkbox.
-- [ ] Inline editing matches across the application: every table has inline editing, or no table does.
+- [ ] No cell is editable, except a small edit to one cell where a mistake costs little.
+- [ ] An editable cell shows a form field, saves the change right away, and looks the same in every table.
 - [ ] Totals sit in the fixed table footer. On a paginated table, each total says whether the total covers the page or the whole set of records.
 - [ ] Showing and reordering columns sits behind an unadvertised settings control, with a way to show and reorder columns without dragging.
 - [ ] The table has no grouped rows. Extra detail uses one level of expand and collapse.

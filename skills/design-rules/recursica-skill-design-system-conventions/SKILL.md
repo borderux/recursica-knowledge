@@ -23,11 +23,11 @@ The rules of the Recursica design system repeat six conventions. Each convention
 
 Examples:
 
-| Behavior                 | The rule                                                                 | Owner                                |
-| ------------------------ | ------------------------------------------------------------------------ | ------------------------------------ |
-| Saving                   | Field-level everywhere or batch everywhere, never mixed                  | `recursica-skill-forms`              |
-| When a switch commits    | Immediately or on submit, but the same for every switch                  | `recursica-skill-selection-controls` |
-| Inline editing in tables | Every table supports inline editing, or no table supports inline editing | `recursica-skill-tables`             |
+| Behavior              | The rule                                                | Owner                                |
+| --------------------- | ------------------------------------------------------- | ------------------------------------ |
+| Saving                | Field-level everywhere or batch everywhere, never mixed | `recursica-skill-forms`              |
+| When a switch commits | Immediately or on submit, but the same for every switch | `recursica-skill-selection-controls` |
+| Editable table cells  | Every editable cell shows the same cue, in every table  | `recursica-skill-tables`             |
 
 **The convention covers more behaviors than the three examples.** The persona builds one mental model (what a person expects, based on the tools and work the person already knows) of the whole application. The persona does not build a separate mental model for each view. When modes are mixed, the persona stops trusting the mental model. The persona then cannot predict any behavior, not only the behavior on one screen.
 
@@ -143,6 +143,8 @@ With no similar items beside the border, the border is decoration and tells the 
 - applying a filter
 - changing a mode
 - switching a tab
+
+**Different interactions on one control may each have their own outcome.** For example, a column header may sort when clicked and move when dragged. The problem is one interaction doing two things at once.
 
 Examples:
 

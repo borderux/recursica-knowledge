@@ -92,7 +92,7 @@ If the persona cannot see the order of the table rows, the persona has to guess 
 
 **Make a table row clickable only when no other element in the table row is clickable.** If a table row holds a link, a button, or a checkbox, the table row is not a click target. For example, a table row with a selection checkbox does not open the record when clicked.
 
-**Turn inline editing on everywhere in the application, or nowhere.** `recursica-skill-design-system-conventions` requires one behavioral mode per application.
+**Give every editable cell the same cue that the cell is editable, in every table.** For example, the cell shows a form field. `recursica-skill-tables` sets when a cell may be editable.
 
 **Do not put a card in a cell, and do not wrap the table in a card.**
 
@@ -186,7 +186,7 @@ Never set or override the styling of the header row, the body cells or the foote
 - [ ] Currency uses the `currency-style` token. The currency format comes from `recursica-skill-dates-and-currency` and `recursica-skill-tables`, not from this skill. The currency format is right-aligned, with the symbol in the column header and two decimals.
 - [ ] Totals sit in the footer row.
 - [ ] A clickable table row is a single real control, and the only control in that table row.
-- [ ] Inline editing can be started and left from the keyboard. Inline editing is on everywhere in the application, or nowhere.
+- [ ] Inline editing can be started and left from the keyboard. Every editable cell shows the same cue, in every table.
 - [ ] Every repeated row action names the record or other item the action acts on. Nothing is revealed on hover.
 - [ ] Every sort, filter, and page change announces the result.
 - [ ] The table has no invented density variant, selected-row state, or hover state.

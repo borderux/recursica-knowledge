@@ -62,7 +62,7 @@ For example, a left rail with a separate background sits on layer 1, and the mai
 
 **Let the page title repeat the navigation label.** For example, the Orders link in the navigation opens a page titled Orders. A page title that matches the navigation label is not a defect. `recursica-skill-names-and-terms` decides how far the page title and the navigation label may differ.
 
-**Show a breadcrumb once the persona is below the top level of the application's page hierarchy.** Landing pages and dashboards do not need a breadcrumb. Every sub-section reached from a landing page or a dashboard needs a breadcrumb.
+**Show a breadcrumb once the persona is below the top level of the application's page hierarchy.** Never show a breadcrumb on a top-level page, such as a landing page or a dashboard. A breadcrumb there has only one item, the page itself. Every sub-section reached from a landing page or a dashboard needs a breadcrumb.
 
 **A breadcrumb shows the persona where the persona is in the application.** The breadcrumb also shows where the persona came from and how to get back up the page hierarchy. A breadcrumb matters most after a deep link (a link that opens a page deep inside the application). A link in an email is one example. A persona who follows a deep link lands several levels below a dashboard. The persona then has no idea where the page sits in the application.
 
