@@ -18,7 +18,7 @@ The house rules assume **complex enterprise web applications, designed for deskt
 1. **Never make the persona decode or calculate.** Show each value in a form the persona can read at a glance. For example:
    - The date `01/07/2026` makes the persona work out which number is the month.
    - The time `2:23 p.m.` makes the persona subtract from the current time to learn how long ago the event was.
-2. **Consistency matters more than the specific choice.** Use the same alignment, the same precision, and the same format across rows, columns, states, and screens. For example, a rule below says "right-aligned", but an existing screen is left-aligned throughout. Keep that screen uniform, because uniformity matters more than the rule. Currency is the exception. Right-align currency unless the user explicitly says otherwise.
+2. **Consistency matters more than the specific choice.** Use the same alignment, the same precision, and the same format across rows, columns, states, and screens. For example, a rule below says "right-aligned", but an existing screen is left-aligned throughout. Confirm with the user whether to keep the screen uniform or right-align every number on the screen. Never mix the two alignments on one screen. Currency is the exception. Right-align currency unless the user explicitly says otherwise.
 3. **Say when a value is not in the persona's own terms.** Say so when a value is:
 
    - in a different time zone

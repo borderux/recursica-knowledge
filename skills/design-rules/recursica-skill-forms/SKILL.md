@@ -84,7 +84,7 @@ Mixing the two placements in one form causes three problems, and none of the thr
 
 **Prefer one long form when information refers back and forth across the form.** In some forms, completing one form section depends on checking or remembering another form section. In such a form, a stepper is actively worse than one long form. Moving forward and back to re-read costs more than scrolling does. Decide by how much of the form has to stay in view, not by how many fields the form has. In usability testing of a long credit-card application, the single form did better than the stepper. The single form won because the persona wanted to confirm at once that the application was correct and complete. See `recursica-skill-screen-priority`.
 
-**Use progressive disclosure for a small, local change, and stay on one page.** Examples of a small, local change are a field or a form section that appears right below the answer. Choosing `Other`, for instance, shows an `Other reason` field right below the choice. When an answer leads to a _clearly different later step_, use multiple steps. Do not use multiple steps to handle small conditional fields.
+**Use progressive disclosure for a small, local change, and stay on one page.** Examples of a small, local change are a field or a form section that appears right below the answer. Choosing `Other`, for instance, shows an `Other reason` field right below the choice. A field that only exists for one answer is hidden until that answer is picked. A field the persona should know is there shows disabled until the persona takes the step that enables the field. When an answer leads to a _clearly different later step_, use multiple steps. Do not use multiple steps to handle small conditional fields.
 
 ## Grouping
 
@@ -149,11 +149,11 @@ The loading state inside the submit button is enough. With no overlay, the perso
 **NEVER show an error state with color alone.** Show every error with both of the following cues:
 
 - A visual change to the field: the field's background color, border color, or line weight.
-- **Plus** a separate indicator that is not color: an icon, a flag, or a message.
+- **Plus** a separate indicator that is not color: an icon or a message.
 
-**Turn a field's help text into the field's error message where the change makes sense.** For example, the help text "8 or more characters" stays in view as the error. The error message should still state the rule the persona broke, not a bare "Invalid input". The persona needs the rule in view to fix the error.
+**Let the error replace the help text, and restate the rule in the error.** For example, the help text "8 or more characters" becomes the error "Use 8 or more characters". The error message should still state the rule the persona broke, not a bare "Invalid input". The persona needs the rule in view to fix the error.
 
-**Show each error on the field that has the error.** In a dense form, flags are a good way to show errors. A flag sits over the page and is pinned to a field with an error. Flags make the place of every error impossible to miss. A flag is a component. If the theme has no flag component, follow "Missing components" in `recursica-skill-design-router`.
+**Show each error on the field that has the error, below the field, in the assistive element.** The rule holds in a dense form too. See `recursica-skill-assistive-element`.
 
 ## Microcopy
 
@@ -237,7 +237,12 @@ A legally binding submission with no way back is the clearest valid case.
 
 **In batch mode, do not show an unsaved state** (a sign that changes are not yet saved). For example, show no "Unsaved changes" label. The only signal the persona needs is the submit button becoming enabled once every editable control is valid.
 
-**If the application can save drafts automatically, always save drafts.** Entered data should survive a page refresh and a return visit, with no action from the persona. Saving drafts is a field-level behavior. Draft saving therefore needs the status message that field-level mode requires.
+**Save drafts when losing the entered data would cost the persona real rework.** For example, a persona fills in a long form, gets distracted, and the session times out. A saved draft brings the work back. Use judgment:
+
+- Save drafts for a long form, or for edits that take real effort.
+- Skip drafts for a short form, or for small edits that cost little to redo. There, drafts cost more to build than they save.
+
+A form that saves drafts shows a small draft status, such as "Draft saved", in either save mode.
 
 **Always keep a submit button**, even with autosave. A form with no submit button is confusing, even when autosave makes the submit button technically unnecessary.
 

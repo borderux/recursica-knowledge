@@ -114,7 +114,7 @@ A value must pass two tests before the value is pre-selected.
 **Avoid a long form that loses every entry.** An error, a refresh or signing out halfway through the form erases the persona's entries.
 
 - Design the form so the persona's entries survive. `recursica-skill-forms` states how.
-- If saving drafts automatically is technically possible, always save drafts.
+- Save drafts when losing the entered data would cost the persona real rework, as `recursica-skill-forms` says.
 
 **For state other than a long form's entries, the screen and the persona's task decide whether to remember or reset.** No single rule decides. Resetting is the right outcome for some screens.
 

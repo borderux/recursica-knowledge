@@ -77,7 +77,7 @@ Examples:
 
 | Meaning                                    | Required backup                                                                                                           | Owner                                |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| A field's error state                      | A visual change **plus** a separate indicator: an icon, a flag, or a message                                              | `recursica-skill-forms`              |
+| A field's error state                      | A visual change **plus** a separate indicator: an icon or a message                                                       | `recursica-skill-forms`              |
 | Which series is which in a chart           | A pattern as well as a color. The chart still works when printed in black and white                                       | `recursica-skill-data-visualization` |
 | An empty value versus zero in a table cell | An explicit "NA". Not an empty cell, and not a `0` that looks like a real value                                           | `recursica-skill-tables`             |
 | An object's status                         | An icon as well as a color, and an accessible name (the name a screen reader reads out for a control) as well as the icon | `recursica-skill-icon-semantics`     |

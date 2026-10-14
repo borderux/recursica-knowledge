@@ -112,7 +112,7 @@ The text belongs to the persona.
 
 **A disabled textarea and a read-only field are different components, not two styles of one component.**
 
-- **Disabled textarea.** A disabled textarea still looks like an input, but the persona cannot use the textarea right now. Use a disabled textarea when the persona could make the textarea usable by taking another step first. For example, the persona picks `Other` in a dropdown above, and the `Other reason` textarea turns on.
+- **Disabled textarea.** A disabled textarea still looks like an input, but the persona cannot use the textarea right now. Use a disabled textarea when the persona could make the textarea usable by taking another step first. For example, a "Delivery notes" textarea stays disabled until the persona checks "Schedule delivery". A field that only exists for one answer, such as `Other reason`, is hidden instead, and appears when the persona picks `Other`. See `recursica-skill-forms`.
 - **Read-only field.** A read-only field is a different component that shows a label and text, with no input. Use a read-only field when the persona viewing the value never edits the value where the value is shown.
 
 ## Accessibility

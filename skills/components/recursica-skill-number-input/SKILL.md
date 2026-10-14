@@ -65,7 +65,7 @@ Each option below is described by role, such as "the error state". A name from t
 
 **Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form. Short fields like this one that would fit side by side follow the result too. A form may change placement at a breakpoint. A form never mixes placements at one breakpoint. A form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
-**Right-align the value.** Right-align every number, whether or not the number is currency. Every number then lines up the same way. Use a different alignment only when the user explicitly asks for a different alignment.
+**Right-align the value.** Right-align every number, whether or not the number is currency. Every number then lines up the same way. Use a different alignment only when the user explicitly asks for a different alignment. On an existing screen that is left-aligned throughout, confirm with the user which alignment the whole screen uses.
 
 **Keep the number of decimal places fixed.**
 
