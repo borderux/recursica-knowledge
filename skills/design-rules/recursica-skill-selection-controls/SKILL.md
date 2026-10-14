@@ -34,7 +34,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
    - Keep the number of options within working memory (how much a person can hold in mind at once).
    - Put options inside a dropdown only when the list is predictable enough that the persona knows the options in advance. A list of US states is an example.
 
-3. **Give each form one save point.** By default, every field in a form saves together when the persona clicks the submit button. In one system, never mix fields that save on change with fields that save later, such as on submit. The persona needs one reliable answer to the question "Is my work saved?"
+3. **Give each form one save point.** By default, every field in a form saves together when the persona clicks the submit button. In one application, never mix fields that save on change with fields that save later, such as on submit. The persona needs one reliable answer to the question "Is my work saved?"
 
 ## Choosing the control
 
@@ -172,10 +172,10 @@ A segmented control and selectable chips both show where each option begins and 
 
 **Avoid saving to the server immediately in any form with more than one field.**
 
-**Save a switch at the same point as every other field in the system.**
+**Save a switch at the same point as every other field in the application.**
 
-- In a system that saves on change, a switch saves immediately.
-- In a system that saves on submit, a switch saves with the form.
+- In an application that saves on change, a switch saves immediately.
+- In an application that saves on submit, a switch saves with the form.
 
 A switch never saves at a different point from the fields around the switch. A switch in a form that saves on submit is allowed, but not ideal. The switch then acts like a checkbox and saves with the other fields.
 
@@ -186,7 +186,7 @@ A switch never saves at a different point from the fields around the switch. A s
 - **Batch save, on submit → no save status, and no sign of unsaved changes.** A sign of unsaved changes is very rarely worth showing. The submit button becomes enabled once every editable control is valid. That enabled submit button is the only signal the persona needs.
 - **Field-level or instant save → a save status message that stays on the page is required.** If the server saves on every field change, the save status must stay visible on the page at all times.
 
-Never mix the two save modes within a system. See `recursica-skill-forms` for the full table of save modes.
+Never mix the two save modes within an application. See `recursica-skill-forms` for the full table of save modes.
 
 ## Progressive disclosure
 
@@ -248,7 +248,7 @@ Check every item before treating a set of selection controls as done:
 - [ ] No table row holds a switch, unless the user confirmed the switch.
 - [ ] Checkboxes and radio buttons are stacked vertically, never horizontally. Where a horizontal arrangement is needed, a segmented control is used for single select, or selectable chips for multi-select.
 - [ ] The form saves every field together when the persona clicks a submit button. No field in the form saves instantly.
-- [ ] Switches save at the same point everywhere in the system.
+- [ ] Switches save at the same point everywhere in the application.
 - [ ] The form shows no sign of unsaved changes. The enabled submit button is the only signal.
 - [ ] Revealed fields submit together with the selection control that revealed the fields.
 - [ ] Choices that are unavailable for now are disabled. Values that are permanently not editable use the read-only control, or are not in a form control at all.

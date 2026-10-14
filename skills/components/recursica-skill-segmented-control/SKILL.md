@@ -68,7 +68,7 @@ The rules below describe each option by role, such as "the horizontal orientatio
 
 **Keep one option selected at all times.** A segmented control never shows with no option selected. The control is a single-select field with a default option. Choose the default option by the pre-selection rules in `recursica-skill-selection-controls`.
 
-**Save segmented control changes in the same mode as every other part of the system.** See `recursica-skill-system-conventions`.
+**Save segmented control changes in the same mode as every other part of the application.** See `recursica-skill-system-conventions`.
 
 - If the application saves selection changes immediately, save the segmented control's changes immediately too.
 - If the application saves all changes together, save the segmented control's changes with all the other changes.
@@ -138,7 +138,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 - [ ] Exactly one option can be chosen, and one option is always selected.
 - [ ] The segmented control has 2 to 5 options, each with a label of one or two words.
 - [ ] A choice with more than five options uses a vertical radio group or a dropdown, not tabs.
-- [ ] The segmented control saves changes in the same mode as every other part of the system.
+- [ ] The segmented control saves changes in the same mode as every other part of the application.
 - [ ] Switching is quick, and selecting an option causes no slow reload and no destructive change.
 - [ ] A screen reader announces the group as a radio group with an accessible name and one option selected.
 - [ ] The selected state is available in code and is not shown by color alone.

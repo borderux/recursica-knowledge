@@ -104,7 +104,7 @@ Do not put the selection rule in a validation message. The persona sees a valida
 - Show the new fields immediately.
 - The form still submits every field together.
 
-**In a form that saves every field together, never save when the persona selects an option.** Every field in the whole system uses one save mode. Either every field saves when the field changes, or every field saves on submit.
+**In a form that saves every field together, never save when the persona selects an option.** Every field in the whole application uses one save mode. Either every field saves when the field changes, or every field saves on submit.
 
 **Do not use a dropdown to shorten a long form by hiding options the persona needs to compare.** Moving a group of options into a dropdown to save space is fine. Moving the group so the persona cannot see the options the persona is choosing between is not fine.
 
@@ -214,5 +214,5 @@ Do not set or override the parts the dropdown component provides:
 - [ ] A disabled dropdown is used only for a field that is unavailable for now. A value that can never be edited is in a read-only field.
 - [ ] Every variant, size, and state is one the theme's UI kit lists. No field without focus looks disabled.
 - [ ] No styling is set or overridden on the dropdown. No container or spacer is added to change the dropdown's look.
-- [ ] The dropdown saves with the form, in the same save mode as every other field in the system.
+- [ ] The dropdown saves with the form, in the same save mode as every other field in the application.
 - [ ] Open questions were asked about, not decided: multi-select, the open menu, the autocomplete threshold, clearing, grouped options, and an empty list of options.

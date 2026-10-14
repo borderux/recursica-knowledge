@@ -15,7 +15,7 @@ A switch turns one setting on or off, such as "Email notifications". Each switch
 
 - **The binary-inverse test passes.** The opposite of the value must be binary, known, and unique. On and off, yes and no, and true and false pass the test. The value "Black" fails the test, because _not black_ could be gray, pink, or any other value.
 - **The label test passes.** The label alone names what the switch controls, with no competing values. For example, "Email notifications" passes, because the only values are on and off. A switch has one label, and the label implies the value of the switch. A radio group has one label with several values, such as "Delivery speed" with Standard and Express.
-- **The switch saves at the same point as every other switch in the system.** "Rules" explains the two save modes. If one control must save at a different point from the system's other switches, use a checkbox for that control.
+- **The switch saves at the same point as every other switch in the application.** "Rules" explains the two save modes. If one control must save at a different point from the application's other switches, use a checkbox for that control.
 - **The persona must see at a glance whether the setting is on or off**, including on a touch screen. A switch has a larger area to tap and a clearer on and off look. The larger area and the clearer look both help on a touch screen.
 - **The field is the one lone binary field in a form**, such as "Subscribe to the newsletter" in a sign-up form. Confirm with the user whether the field is a switch or a checkbox. A single checkbox that stands alone looks odd, and a switch often looks better. A lone binary field is the one case where appearance may decide. Appearance may decide because a checkbox and a switch behave the same for a lone binary field.
 
@@ -73,16 +73,16 @@ The switch itself shows whether the setting is on or off.
 
 **Do not use a switch where turning the switch on or off by accident could have serious consequences.** A setting that is destructive, cannot be undone, or is high-risk gets a checkbox with a confirmation. For example, "Delete old messages automatically" is destructive. A different safeguard may replace the checkbox and the confirmation.
 
-**Every switch in the system saves in the same save mode.** `recursica-skill-selection-controls` allows two save modes for a switch:
+**Every switch in the application saves in the same save mode.** `recursica-skill-selection-controls` allows two save modes for a switch:
 
 - The switch saves right away, the moment the persona turns the switch on or off. This mode feels slightly more natural for a switch.
-- The switch waits for Save, and saves on submit with the other fields in the form. This mode is not ideal for a switch. This mode is allowed as long as every switch in the system also waits for Save. The switch then acts like a checkbox.
+- The switch waits for Save, and saves on submit with the other fields in the form. This mode is not ideal for a switch. This mode is allowed as long as every switch in the application also waits for Save. The switch then acts like a checkbox.
 
-The application chooses one save mode once, for the whole system. A switch that waits for Save is not, by itself, a reason to use a checkbox.
+Choose one save mode once, for the whole application. A switch that waits for Save is not, by itself, a reason to use a checkbox.
 
-**If the system's switches save right away, the page must show a save status that stays on the page.** An example is "All changes saved". Saving each field as the field changes requires the save status. When every field saves together on submit, the page must show no save status and no sign of unsaved changes. See the save-mode table in `recursica-skill-forms`.
+**If the application's switches save right away, the page must show a save status that stays on the page.** An example is "All changes saved". Saving each field as the field changes requires the save status. When every field saves together on submit, the page must show no save status and no sign of unsaved changes. See the save-mode table in `recursica-skill-forms`.
 
-**Never mix the two save modes.** Either every change saves when the change happens, or every change saves on submit. The rule covers the whole system, not only one form. For example, the Settings page saves each switch right away. A switch on the Profile form then must not wait for Save.
+**Never mix the two save modes.** Either every change saves when the change happens, or every change saves on submit. The rule covers the whole application, not only one form. For example, the Settings page saves each switch right away. A switch on the Profile form then must not wait for Save.
 
 **Put assistive text below the switch.** The assistive text states the rule that governs the switch, or the consequence of turning the switch on or off. For example, below "Email notifications", write "Sends an email when an order ships."
 
@@ -167,9 +167,9 @@ On screen, a switch shows the on or off state only by the thumb's position and t
 - [ ] No switch controls a setting where turning the switch on or off by accident could have serious consequences.
 - [ ] No switch controls a setting that is destructive, cannot be undone, or is high-risk.
 - [ ] No switch is in a table row, unless the switch was confirmed with the user.
-- [ ] Every switch saves at the same point as every other switch in the system.
+- [ ] Every switch saves at the same point as every other switch in the application.
 - [ ] When switches save right away, the page shows a save status that stays on the page.
-- [ ] The system never mixes switches that save right away with switches that wait for Save.
+- [ ] The application never mixes switches that save right away with switches that wait for Save.
 - [ ] `switch`, `switch-item`, and `switch-group` are used together, and the switches in each group are stacked vertically.
 - [ ] Label placement matches every other field in the same form. Each form has one placement at each breakpoint, with no mixing between fields or form sections.
 - [ ] Each switch has assistive text below the switch, built with the assistive element.

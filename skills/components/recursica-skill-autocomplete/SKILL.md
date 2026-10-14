@@ -93,7 +93,7 @@ See `recursica-skill-assistive-element`. Do not put the field's rules in the pla
 
 **The filtered list must not be cut off by the viewport, or by any scrolling ancestor** (a container further up the page that scrolls). Check the filtered list near the bottom of the page, inside a panel, and inside a modal.
 
-**Never save when the persona selects an option in a form that saves every field together.** Every form in the system saves the same way. Either every field saves as soon as the field changes, or every field saves when the persona submits the form.
+**Never save when the persona selects an option in a form that saves every field together.** Every form in the application saves the same way. Either every field saves as soon as the field changes, or every field saves when the persona submits the form.
 
 **Choosing an autocomplete option may show more fields.** For example, choosing "Canada" in a Country field may show a Province field. Put the new fields right below the autocomplete. Show the new fields immediately. The form still submits every field together.
 
@@ -236,5 +236,5 @@ Do not change the space between the label and the field, or the space between fi
 - [ ] Every variant, size, and state is one the theme's UI kit lists. The built-in connection between the label and the input is unchanged. The space between the label and the field, and the space between fields, are unchanged. Every field without focus looks editable, not disabled.
 - [ ] No styling is set or overridden on the autocomplete.
 - [ ] No container or spacer is added to change the autocomplete's look.
-- [ ] The field saves with the form, in the same save mode as every other field in the system.
+- [ ] The field saves with the form, in the same save mode as every other field in the application.
 - [ ] Open questions were asked about, not decided: the replacement threshold, free text, how many characters to type, match order, no results, loading, multi-select, and list details.

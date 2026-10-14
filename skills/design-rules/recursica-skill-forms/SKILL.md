@@ -229,7 +229,7 @@ A legally binding submission with no way back is the clearest valid case.
 | **Field-level / instant** | On each field change, immediately, to the server | **Required.** Show a status that stays on the page and says the change was saved as a draft, and when |
 | **Batch save**            | On submit, all at once                           | **None.** Show no status message and no indicator of unsaved changes                                  |
 
-**MUST NOT mix the two modes.** Within a system, either every change saves field by field, or every change saves on submit. For example, one settings page never saves on each change while the next settings page waits for submit. Mixing the two modes is a serious failure. The persona can no longer tell when the persona's work is saved.
+**MUST NOT mix the two modes.** Within an application, either every change saves field by field, or every change saves on submit. For example, one settings page never saves on each change while the next settings page waits for submit. Mixing the two modes is a serious failure. The persona can no longer tell when the persona's work is saved.
 
 **Use batch save by default.** The persona must be able to change a decision. Saving once also writes one clean log entry, instead of one write for each field. `recursica-skill-selection-controls` gives the full reasoning.
 
