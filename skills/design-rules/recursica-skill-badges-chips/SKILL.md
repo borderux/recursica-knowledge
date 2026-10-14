@@ -215,7 +215,7 @@ Check every item below before treating status and metadata as done.
 - [ ] Only chips the persona added can be dismissed, and toggled chips behave like checkboxes.
 - [ ] A status column exists only where most table rows have a status.
 - [ ] In a table, the status column is the second or third column, beside the information that identifies the object.
-- [ ] In a table, the first column is left for bulk selection.
+- [ ] If the table has bulk selection, the first column holds the checkbox.
 - [ ] Each badge sits right after the badge's object, on the same line. No badge is stacked, except where space is too tight to fit the badge beside the object.
 - [ ] No object has competing status elements above and below the object. For example, no heading has a badge above and a chip below.
 - [ ] Each badge on a card uses the card component's upper-right position.
