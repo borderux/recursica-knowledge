@@ -60,7 +60,7 @@ The rules assume **complex enterprise web applications**, where the persona does
 
 **Put the persona's actual workflow ahead of any stakeholder.** For example, a stakeholder wants a promotion banner above the order table. The order table the persona works in comes first.
 
-**A stakeholder may still overrule the designer, even where the stakeholder's decision harms the workflow.** A stakeholder's override is a real outcome, not a failure of the rule. Still argue from the persona's point of view, as good user-centered design requires.
+**The user may still overrule the agent, even where the user's decision harms the workflow.** The user's override is a real outcome, not a failure of the rule. Still argue from the persona's point of view, as good user-centered design requires.
 
 **Treat the requirements of different business units as parts that fit together.** Business units rarely have competing requirements, only different requirements. For example, finance needs the invoice total and shipping needs the delivery date. One order screen can show both fields.
 
@@ -233,7 +233,7 @@ With one message for both states, the persona cannot tell whether to change the 
 
 - **Type styles, spacing tokens, and the layout grid.** The design system sets the type styles, spacing tokens and layout grid.
 - **The page's structure:** the header, navigation rail, footer, title and breadcrumb. `recursica-skill-screen-scaffolding` sets the page's structure.
-- **Whether a stakeholder's override is accepted.** Argue from the persona's point of view. The stakeholder makes the decision.
+- **Whether a stakeholder's override is accepted.** Argue from the persona's point of view. The user makes the decision.
 
 ## Out of scope
 

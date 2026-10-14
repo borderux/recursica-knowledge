@@ -124,7 +124,7 @@ A value must pass two tests before the value is pre-selected.
 
 ## No safe default
 
-**If no default is obviously safe, have a stakeholder set the default as part of defining the user flow.** For example, a new account's alert setting must start on or off, and neither value may be obviously safe. Neither the agent nor the designer decides the default. Raise the question. See `recursica-skill-design-router`.
+**If no default is obviously safe, confirm the default with the user as part of defining the user flow.** For example, a new account's alert setting must start on or off, and neither value may be obviously safe. The agent never decides the default alone. See `recursica-skill-design-router`.
 
 ## Defaults that suit most personas
 
@@ -134,8 +134,8 @@ The trade-off is not a yes-or-no question. The fact that most personas benefit d
 
 ## Set by the theme or the component
 
-- **Which default applies where no safe default exists.** A stakeholder decides, as part of the user flow.
-- **Whether a default that serves the majority is worth the cost to the minority.** No way exists to measure the cost. Escalate the question.
+- **Which default applies where no safe default exists.** The user decides, as part of the user flow.
+- **Whether a default that serves the majority is worth the cost to the minority.** No way exists to measure the cost. Confirm with the user.
 - **The default sort order and rows per page on a table.** `recursica-skill-tables` settles both.
 - **Whether saving drafts automatically is technically possible.** If saving drafts automatically is possible, the app saves drafts automatically.
 
@@ -151,7 +151,7 @@ The trade-off is not a yes-or-no question. The fact that most personas benefit d
 ## Open questions
 
 - **Which remembered states should last across sessions, and which should not.** The team was asked directly and answered "I don't know." Do not decide by guessing.
-- **How to weigh a minority's inconvenience against a majority's benefit.** The team stated that no rule exists. Escalate every case.
+- **How to weigh a minority's inconvenience against a majority's benefit.** The team stated that no rule exists. Confirm every case with the user.
 - **Anti-patterns specific to initial state, meaning what a screen shows before the persona acts.** The team was asked directly and named no anti-pattern beyond the pre-selected radio button. Do not assume that the house rules forbid a common anti-pattern.
 - **Defaults on any region of the screen that holds content and that this skill does not name.** A page, a panel and a modal are such regions. The undecided defaults include:
   - which accordion section starts open
@@ -174,6 +174,6 @@ The trade-off is not a yes-or-no question. The fact that most personas benefit d
 - [ ] Each pre-selected radio button was then checked against all three ways a pre-selected radio button can fail.
 - [ ] The screen keeps the persona's place and the data the persona entered after an error, a refresh, or signing out.
 - [ ] No tab or layout state is stored as a remembered preference in place of a route.
-- [ ] Where no safe default exists, a stakeholder made the choice.
+- [ ] Where no safe default exists, the user made the choice.
 - [ ] Where a default has a cost for a minority of personas, the trade-off went to the user to decide.
 - [ ] Open questions were asked about, not decided: which remembered states last across sessions, weighing a minority's inconvenience against a majority's benefit, anti-patterns specific to initial state, defaults on regions of the screen that hold content and that this skill does not name, defaults that vary by persona or role or are learned, and the house set of relative date ranges.

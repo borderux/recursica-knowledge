@@ -80,7 +80,7 @@ Use an accordion when the sections are of the same kind and at one level. A tree
 - saves
 - opens a second item
 
-The one exception is an explicit team decision that only one item opens at a time. A single-open option in the theme counts as that decision. Closing an item the persona is reading loses the persona's place on the page. If focus was inside the item's content panel, focus is lost too.
+The one exception is a decision, confirmed with the user, that only one item opens at a time. A single-open option in the theme counts as that decision. Closing an item the persona is reading loses the persona's place on the page. If focus was inside the item's content panel, focus is lost too.
 
 **Nothing on the critical path goes inside a content panel.** Never collapse content the persona must read to move forward. For example, never collapse the delivery date or the total on a checkout page.
 
