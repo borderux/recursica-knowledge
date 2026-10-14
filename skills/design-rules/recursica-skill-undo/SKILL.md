@@ -45,7 +45,7 @@ The house rules in this skill say when an action gets an undo, and where the und
 
 **Give the Undo button an accessible name (the name a screen reader reads out for a control) that includes the item.** For example, name the button "Undo delete of invoice 1043", not "Undo". By the time the persona reaches the button, the context around the button is gone.
 
-**A persona using a keyboard must be able to reach the Undo button.** Reaching the button means leaving the current field, tabbing to the toast, and pressing the button. A toast that closes by itself can close before the persona gets there. The open questions cover how to keep the button in reach.
+**Use the code library's timing and behavior for a toast with an Undo button.** The code library behind the toast sets how long the toast stays and how the toast behaves. Change either only when the user asks.
 
 ## Timing
 
@@ -60,7 +60,7 @@ The house rules in this skill say when an action gets an undo, and where the und
 
 ## Open questions
 
-- **How an Undo button in a toast stays reachable by keyboard.** A toast that closes by itself can close before a persona using a keyboard reaches the button. One fix keeps a toast with an Undo button open until the persona closes the toast. Another fix also puts the undo on the page. Confirm with the user which fix to use.
+No open questions remain.
 
 ## Pre-flight checklist
 
@@ -72,4 +72,3 @@ The house rules in this skill say when an action gets an undo, and where the und
 - [ ] An undo appears in both a toast and on the page only rarely.
 - [ ] The Undo button's accessible name includes the item the undo affects.
 - [ ] The undo time is the code library's default, unless the user asked for a change.
-- [ ] Open questions were asked about, not decided: how an Undo button in a toast stays reachable by keyboard.

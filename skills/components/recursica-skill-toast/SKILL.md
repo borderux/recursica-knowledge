@@ -109,7 +109,7 @@ The rules below add to the accessibility baseline in `recursica-skill-system-con
 ### Keyboard and non-mouse navigation
 
 - **Never move focus to the toast when the toast appears.** A focus move pulls the text cursor out of a field in the middle of a word. A focus move also puts the persona in a place the persona did not ask to go.
-- **A persona using a keyboard must be able to reach a toast's action before the toast closes.** Reaching the action means leaving the current field, tabbing to the toast, and pressing the action. `recursica-skill-undo` covers how an Undo button stays in reach.
+- **The code library sets how long a toast stays and how the toast behaves.** `recursica-skill-undo` covers an Undo button in a toast.
 - **The toast must be in the tab order while the toast is visible.** The toast's place in the tab order must be predictable, not after every other element on the page.
 - **If the toast's timer pauses on hover, the timer must also pause on focus.** Otherwise the pause helps only personas using a mouse.
 - **Closing a toast must work from the keyboard, not only with a pointer.** Every toast has a dismiss control, and the dismiss control works from the keyboard.
