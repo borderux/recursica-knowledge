@@ -194,7 +194,7 @@ A default the persona cannot check is worse than an empty field, because the def
 
 **Always open a form that edits an existing object filled in with the object's current values.** For example, the form that edits an order opens with the order's current address. A form that edits an object is a separate case from the pre-fill rules above. The persona is editing the object, not starting over. The rule for a form that edits an object always applies.
 
-`recursica-skill-defaults` sets the rule for a form that edits an object. `recursica-skill-defaults` also sets two more rules:
+`recursica-skill-screen-starting-state` sets the rule for a form that edits an object. `recursica-skill-screen-starting-state` also sets two more rules:
 
 - the 90 percent threshold for pre-selecting an option
 - the rule against pre-selecting any choice with later consequences

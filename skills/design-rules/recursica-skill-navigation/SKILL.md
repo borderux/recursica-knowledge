@@ -227,7 +227,7 @@ Show the blocked item disabled, and enable the item once the persona makes the c
 
 **Use tabs only when the content is parts of one whole.** The persona switches between tabs while looking at the same material. For example, an order's Details, Items and History tabs all describe one order.
 
-**Open the first tab in reading order by default.** In a locale that reads left to right, the first tab is the leftmost tab. The eye starts on the left in such a locale. `recursica-skill-defaults` sets this rule.
+**Open the first tab in reading order by default.** In a locale that reads left to right, the first tab is the leftmost tab. The eye starts on the left in such a locale. `recursica-skill-screen-starting-state` sets this rule.
 
 **MUST NOT spread a form across tabs.** Tabs divide content into sections. Tabs never break up data entry. Give a form with several parts a stepper component (which walks the persona through numbered steps), not tabs. Do not put several forms, or the fields of one form, on separate tabs.
 

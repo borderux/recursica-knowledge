@@ -38,7 +38,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 **NEVER mix conventions.** For example, a filter bar where some filters show `All` and other filters are empty mixes two conventions. Both conventions mean the filter narrows nothing. The mix makes the filters look as if the filters behave differently, when the filters behave the same. A mix of conventions is the most common filter-bar mistake, and avoiding the mix costs nothing.
 
-**Every filter starts off when the page loads.** The persona sees the full list first. A persona may not notice a filter that is already on, and may think data is missing. One exception is allowed: a filter almost every persona wants, such as "Open orders only", may start on. A filter that starts on must show as on, so the persona can turn the filter off. `recursica-skill-defaults` sets this rule.
+**Every filter starts off when the page loads.** The persona sees the full list first. A persona may not notice a filter that is already on, and may think data is missing. One exception is allowed: a filter almost every persona wants, such as "Open orders only", may start on. A filter that starts on must show as on, so the persona can turn the filter off. `recursica-skill-screen-starting-state` sets this rule.
 
 **A default that filters must be visible as a filter.** When the collection loads already narrowed, the filter doing the narrowing must show as applied. For example, when the Orders page loads with open orders only, the Status filter shows `Open`. Never show a screen that quietly hides rows while every filter shows the neutral state. Set a default filter. Never filter the data itself.
 

@@ -127,7 +127,7 @@ export const ALWAYS = [
   "recursica-skill-naming-terminology",
   "recursica-skill-layers",
   "recursica-skill-responsive-behavior",
-  "recursica-skill-defaults",
+  "recursica-skill-screen-starting-state",
   "recursica-skill-icon-semantics",
   // What the application is structured around — which objects get a place in the navigation, and
   // where a child object is reached. No import signals it, and a wrong structure shows on every

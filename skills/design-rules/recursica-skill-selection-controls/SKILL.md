@@ -91,7 +91,7 @@ Use a switch only when both the value and the setting the label names are binary
 
 **Be very careful about selecting a radio button in advance.** Most personas do not know how to deselect a radio button after one is selected. A radio button selected in advance quietly becomes the persona's answer. A pre-selected radio button is the riskiest default in the system.
 
-**Pre-select an option only where about 90 percent of personas would choose that option anyway.** Never pre-select an option that has major consequences later in the workflow, however likely the option is. `recursica-skill-defaults` sets both tests.
+**Pre-select an option only where about 90 percent of personas would choose that option anyway.** Never pre-select an option that has major consequences later in the workflow, however likely the option is. `recursica-skill-screen-starting-state` sets both tests.
 
 ## Option counts and dropdowns
 

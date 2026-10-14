@@ -77,7 +77,7 @@
   },
   {
     "request": "Which tab should be open when the page first loads?",
-    "skill": "recursica-skill-defaults"
+    "skill": "recursica-skill-screen-starting-state"
   },
   {
     "request": "Design the home page that shows our key KPIs at a glance",

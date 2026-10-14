@@ -52,7 +52,7 @@ The rules below describe each option by role, such as "the vertical orientation"
 
 `recursica-skill-navigation` states the preference for a route per tab.
 
-**Open the first tab in reading order by default.** For example, in a horizontal tab set in English, open the leftmost tab. `recursica-skill-defaults` sets this rule.
+**Open the first tab in reading order by default.** For example, in a horizontal tab set in English, open the leftmost tab. `recursica-skill-screen-starting-state` sets this rule.
 
 **Label each tab with a noun that names the tab's content**, not a verb and not a step number. Use labels such as "Overview", "Members" and "Billing", never "Step 2".
 
