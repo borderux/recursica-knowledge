@@ -249,5 +249,5 @@ A designed narrow layout shows two good signs. A narrow layout with neither sign
 - [ ] Below the tablet breakpoint, the main navigation sits in a hamburger menu. The menu shows the icon and the text of each item.
 - [ ] Below the tablet breakpoint, no sidebar remains. Side columns stack under the main content. A secondary navigation sidebar becomes a bar under the header.
 - [ ] No icon-only rail and no bottom navigation bar appear at any width.
-- [ ] Cards stack or turn into a carousel, and no fixed-width content fails to reflow.
+- [ ] Content areas reflow, and cards, if any, stack or turn into a carousel. No fixed-width content fails to reflow.
 - [ ] Open questions were asked about, not decided: an icon rail on tablet, which components have a defined look below desktop, whether a carousel exists, separate tablet or small-device designs.

@@ -93,16 +93,18 @@ See `recursica-skill-data-visualization`.
 
 **Put at most four charts on a dashboard.** With more than four charts, the persona is doing analysis, not glancing.
 
-**Show as many cards as the data needs, and never more than eight.** Order the page so the content that is fastest to read comes first. A single number is read in a second. A table takes much longer to read.
+**Show as many items as the data needs, and never more than eight.** An item is one thing the dashboard shows, such as a number, a chart or a short list. Order the page so the content that is fastest to read comes first. A single number is read in a second. A table takes much longer to read.
 
 **Prefer a number to a chart.** If a percentage, a count or a quantity gives the information, show the number in a larger type size. Show the number instead of a chart. For example, show "92% on time" instead of a pie chart of on-time orders. A chart that repeats a number right next to the chart adds nothing.
 
 **Prefer fewer data points.** Judge a dashboard by how clear the dashboard's few insights are, and how easily the persona acts on the insights. Do not judge a dashboard by how much data the dashboard shows.
 
+**Put each dashboard item in a container with a layer, not in a card.** A dashboard's items are different kinds of thing, so the items fail the card tests in `recursica-skill-card`. Use cards only for a set of items that passes the card tests. For example, several charts of the same kind may sit side by side as cards.
+
 **Never make the whole page out of cards.**
 
-- Build a fixed layout from the design system's layout structures, type hierarchy and white space.
-- Place cards inside the fixed layout.
+- Build a fixed layout from the theme's layout, type hierarchy and white space.
+- Place the items inside the fixed layout.
 
 A card is for repeating peer objects (objects of the same kind, such as rows in a list). A page made entirely of cards is chaotic. A grid of cards that all look equally important has no hierarchy. A dashboard needs a clear order of importance. See `recursica-skill-card`, and the convention to group with space in `recursica-skill-design-system-conventions`.
 
@@ -126,7 +128,7 @@ A screen that shows a full table is no longer a dashboard.
 
 **Give the whole dashboard one call to action, or at most two.** A call to action (CTA) is a button or link that prompts the persona's next step, such as "Reorder products". Make every other element on the dashboard support the calls to action.
 
-**Aim for zero or one interactive element per card**, such as one "View orders" link.
+**Aim for zero or one interactive element per item**, such as one "View orders" link.
 
 **Keep the interaction pattern to look, then click.** When action buttons such as "Approve" start to appear, the dashboard is doing too much.
 
@@ -194,7 +196,7 @@ The whole screen must not shift.
 
 **A dashboard MUST have a maximum width.** A dashboard stretched across a very large monitor cannot be used. Do not fill space only because the space is available.
 
-**NEVER use inner scrolling areas, in the dashboard or inside a card.** Let the whole dashboard scroll as one page. Ten cards that each have a separate scrolling area are clearly wrong.
+**NEVER use inner scrolling areas, in the dashboard or inside an item.** Let the whole dashboard scroll as one page. Ten items that each have a separate scrolling area are clearly wrong.
 
 **Use the design system's layouts and tokens (named design values, such as colors or sizes, set by the design system) for grids, gutters, breakpoints, type styles, elevation (the shadow that makes a layer, card, menu, popover, panel or modal look raised), and spacing.** Do not change the grids, gutters, breakpoints, type styles, elevation or spacing. Do not change the layouts or the tokens. Separate the groups of content on the dashboard with plenty of white space.
 
@@ -231,13 +233,14 @@ Check every item before treating a dashboard as done.
 - [ ] The team can say what matters on the dashboard. No element on the dashboard is there to cover for not knowing what matters.
 - [ ] The dashboard answers "what needs attention right now", and does not announce that nothing needs attention.
 - [ ] Each status shows the status's threshold and trend, not only the current state.
-- [ ] The dashboard has at most four charts. The dashboard never has more than eight cards.
+- [ ] The dashboard has at most four charts. The dashboard never has more than eight items.
+- [ ] Each item sits in a container with a layer. Cards appear only for a set of items that passes the card tests.
 - [ ] Simple metrics are shown as numbers in larger type, not as charts that repeat the numbers.
 - [ ] The layout is fixed and has a real hierarchy. The layout is not a grid made only of equally weighted cards.
 - [ ] Content runs from broad to detailed, and no essential content sits below the fold.
 - [ ] The dashboard has no full data table. Rollups with a way to click through to the detail replace the full table.
 - [ ] The dashboard has one or two calls to action in total.
-- [ ] Each card has zero or one interactive element.
+- [ ] Each item has zero or one interactive element.
 - [ ] The dashboard has no filtering, sorting, or view controls.
 - [ ] The navigation is not rebuilt out of cards.
 - [ ] The dashboard has no AI summary widget.
