@@ -60,7 +60,7 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 Two tables with the same columns were always one table.
 
-**One table also keeps the row count correct.** Sections by status count an item with two statuses twice. Sections by status also drop an item with no status, without any notice. The persona can see neither mistake. `recursica-skill-screen-scaffolding` has the rule that figures shown together agree with each other.
+**One table also keeps the row count correct.** Sections by status count an item with two statuses twice. Sections by status also drop an item with no status, without any notice. The persona can see neither mistake. `recursica-skill-layouts-and-templates` has the rule that figures shown together agree with each other.
 
 ### A table row awaiting a decision
 
@@ -126,7 +126,7 @@ The icon goes beside the name because the name gives the icon context.
 
 **Never put unrelated data in one column.** For example, never put a customer's name and the order total in one column. If combining unrelated values is the only way to fit all the data, the table has too many columns. Horizontal scrolling is then the only option left.
 
-**Never show a complex data table below the tablet breakpoint.** A complex data table holds too much data for a narrow screen. Leaving the table out solves the problem of a narrow table. Making the table swipeable never solves the problem. `recursica-skill-responsive-layout` owns this rule.
+**Below the tablet breakpoint, show a table only when all of the table's columns fit the screen width.** A table that would need sideways scrolling holds too much data for a narrow screen. Leaving that table out solves the problem of a narrow table. Making the table swipeable never solves the problem. `recursica-skill-responsive-layout` owns this rule.
 
 ## Column widths
 
@@ -276,9 +276,9 @@ One click cannot both switch the sort direction and open multi-sort.
 
 ## Adding a record
 
-**Put the add control, the control for adding a record, at the table header, on the right. NEVER put the add control below the table.** An "Add order" button is an example of an add control.
+**Put the add control, the control for adding a record, directly above the table, on the right. NEVER put the add control below the table.** An "Add order" button is an example of an add control.
 
-**The bottom of a table moves, because a table has an unknown number of table rows.** The area under the last table row can be one screen down on a short table. On a long table, the area under the last table row can be twenty screens down. A persona unaware of the add control has no reason to scroll to the end of a list. Content below a list of changing length may never be seen at all. The table header is the one part of a table with a fixed position. The eye already starts at the table header.
+**The bottom of a table moves, because a table has an unknown number of table rows.** The area under the last table row can be one screen down on a short table. On a long table, the area under the last table row can be twenty screens down. A persona unaware of the add control has no reason to scroll to the end of a list. Content below a list of changing length may never be seen at all. The top of a table is the one part of a table with a fixed position. The eye already starts at the top of the table.
 
 **A form that changes the table rows MUST NOT sit inline on the page.** A form that adds a record is one example.
 
@@ -390,7 +390,7 @@ Check every item before treating a table as done.
 - [ ] The table has no invented row density variant.
 - [ ] A table row is clickable only if the table row holds no other interactive element.
 - [ ] A record opens from the record's identifying value, the whole table row, or a separate row action. One of the three is chosen once for the whole application. Selecting a record triggers no action on that single record.
-- [ ] The add control is at the table header, on the right, never below the table. A short form that adds a record opens in a modal or panel. A long form opens on a separate page. Neither sits inline on the page.
+- [ ] The add control is directly above the table, on the right, never below the table. A short form that adds a record opens in a modal or panel. A long form opens on a separate page. Neither sits inline on the page.
 - [ ] The bulk action area holds only controls. The bulk action area has no list of the selected records. The bulk action area has no separate clear control competing with the header checkbox.
 - [ ] No cell is editable, except a small edit to one cell where a mistake costs little.
 - [ ] An editable cell shows a form field, saves the change right away, and looks the same in every table.

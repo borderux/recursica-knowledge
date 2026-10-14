@@ -53,7 +53,7 @@ A panel keeps the page in view, so the persona keeps track of the work on the pa
 
 **Use a modal for the form, unless the persona needs information from the page to fill in the form.** In that case, use a panel, so the page stays in view beside the form. For example, the persona picks table rows to combine, or compares a new record with the existing records.
 
-**Put the control that opens the form in the table header, on the right.** `recursica-skill-tables` sets the rule for that control, not the panels-and-modals skill. `recursica-skill-screen-priority` explains why a form used now and then gets no permanent space on the page.
+**Put the control that opens the form directly above the table, on the right.** `recursica-skill-tables` sets the rule for that control, not the panels-and-modals skill. `recursica-skill-screen-priority` explains why a form used now and then gets no permanent space on the page.
 
 ## Panel mode and shading
 
@@ -68,7 +68,7 @@ A panel keeps the page in view, so the persona keeps track of the work on the pa
 ### Terminology
 
 - **Drawer and panel are two names for one component.** A drawer is a panel, a region that slides in. A navigation drawer is a panel that holds navigation. A navigation drawer is the same kind of component as a hamburger menu.
-- **A sidebar is not a drawer.** A sidebar stays on screen at all times. A sidebar runs down the left side, and is the desktop alternative to a top navigation. See `recursica-skill-navigation`.
+- **A sidebar is not a drawer.** A sidebar stays on screen at all times. A sidebar runs down the left side, and is the wide-screen alternative to a top navigation. See `recursica-skill-navigation`.
 - **In this skill, modal and dialog are two names for one component.** A modal and a dialog box both put the persona in a mode.
 
 ## Scrolling

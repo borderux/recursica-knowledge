@@ -1,15 +1,15 @@
 ---
-name: recursica-skill-screen-scaffolding
-description: House rules for composing a page — header, left rail, and footer, top navigation versus rail, page title and breadcrumb, KPI tiles, the primary action, filter placement, dividing regions with space, maximum content width, loading, and when a region needs a container. Use when laying out a page or the header, navigation and footer around the page. Not for whether a card is right — see recursica-skill-card.
+name: recursica-skill-layouts-and-templates
+description: House rules for laying out a page, with eight reference layout templates — header, left rail, and footer, top navigation versus rail, page title and breadcrumb, KPI tiles, the primary action, filter placement, dividing regions with space, maximum content width, loading, and when a region needs a container. Use when laying out a page or choosing a starting layout. Not for whether a card is right — see recursica-skill-card.
 license: MIT
 metadata:
   author: hi@borderux.com
   version: 0.1.0
 ---
 
-# Screen scaffolding
+# Layouts and templates
 
-Treat every rule below as a constraint. The rules are house opinions, not neutral best practices. The rules cover how a page is put together. The rules also cover the container, if any, that each region of the page sits on.
+Treat every rule below as a constraint. The rules are house opinions, not neutral best practices. The rules cover how a page is put together. The rules also cover the container, if any, that each region of the page sits on. Eight layout templates show common page layouts at four screen sizes.
 
 ## The three governing principles
 
@@ -54,7 +54,58 @@ For example, a left rail with a separate background sits on layer 1, and the mai
 - **A few navigation items → a top navigation bar.** For example, Home, Orders and Reports fit a top navigation bar.
 - **More than about three or four navigation items → a left rail.** A left rail has room to stack the items. A desktop viewport is wider than the viewport is tall, so vertical space for navigation is the scarcer resource. A left rail gives up horizontal width to get more vertical room.
 
+**Below the tablet breakpoint, use neither. Move the navigation into a hamburger menu.** See "How a template changes with the screen width".
+
 **Treat three or four items as a default, not a hard limit.** The default can change to fit the product's needs. If the choice is not obvious, confirm the choice with the user before picking either option. See `recursica-skill-design-router`.
+
+## Layout templates
+
+**The eight layout templates below are references, not requirements.** Each template shows a common arrangement of page regions. Start from a template when one fits the application. Use no template when none fits. Not every template fits every application.
+
+**Every region in a template still follows the region's own rules.** For example, template 5 shows a row of KPI tiles. A page shows KPI tiles only when the tiles pass the three tests under "KPI tiles".
+
+**Confirm with the user which devices, screen sizes and orientations the application supports.** The answer is specific to each application. Each template shows four sizes:
+
+- desktop
+- a tablet held sideways
+- a tablet held upright
+- a phone
+
+The images are in this skill's `templates/` folder. Each template has a folder with four images: `desktop.png`, `tablet-landscape.png`, `tablet-portrait.png` and `phone.png`.
+
+| Template                                              | Regions at desktop width                                                                               | Folder                                        |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | --------------------------------------------- |
+| 1. Sidebar navigation with a side column              | Header, sidebar navigation, main content, side column, footer                                          | `templates/sidebar-navigation-side-column/`   |
+| 2. Top navigation with a side column                  | Header, navigation bar, main content, side column, footer                                              | `templates/top-navigation-side-column/`       |
+| 3. Top navigation with a secondary navigation bar     | Header, navigation bar, secondary navigation bar, main content, footer                                 | `templates/top-navigation-secondary-bar/`     |
+| 4. Sidebar navigation with a secondary navigation bar | Header, sidebar navigation, secondary navigation bar, main content, footer                             | `templates/sidebar-navigation-secondary-bar/` |
+| 5. Table with KPI tiles and a side column             | Header, sidebar navigation, KPI tiles, data table, side column, footer                                 | `templates/table-kpi-tiles/`                  |
+| 6. Table with filters and actions                     | Header, sidebar navigation, secondary navigation bar, table filters, table actions, data table, footer | `templates/table-filters-actions/`            |
+| 7. Landing page with a hero and a call to action      | Header, hero, call to action, main content, footer                                                     | `templates/landing-page-hero/`                |
+| 8. Top navigation with a secondary navigation sidebar | Header, navigation bar, secondary navigation sidebar, main content, footer                             | `templates/top-navigation-secondary-sidebar/` |
+
+The regions in the table have these meanings:
+
+- **A side column** sits to the right of the main content. A side column holds content less important than the main content.
+- **Secondary navigation** moves between the pages inside one section.
+- **A hero** is a large banner at the top of a page.
+- **Table filters** sit above the data table, on the left.
+- **Table actions** sit above the data table, on the right.
+
+### How a template changes with the screen width
+
+**At the tablet breakpoint or wider, every template keeps the template's side regions.** A side region is a sidebar navigation, a secondary navigation sidebar or a side column. For example, a tablet held sideways keeps a sidebar.
+
+**Below the tablet breakpoint, every template changes the same way:**
+
+- The main navigation moves into a hamburger menu in the header. A navigation bar moves there too.
+- A side column stacks under the main content.
+- A secondary navigation sidebar becomes a bar under the header.
+- A data table stays only if all of the table's columns fit the screen width.
+
+**On a phone, table filters and table actions stack, one above the other.**
+
+`recursica-skill-responsive-layout` sets the rules below the tablet breakpoint. The theme sets the width of each breakpoint.
 
 ## Titles and breadcrumbs
 
@@ -129,7 +180,7 @@ For example, keep the line `Newest first. Append-only: nothing here is ever rewr
 
 ## Maximum width
 
-**Keep content at the page level within the maximum width that the design system's layout rule sets.** Do not set a different maximum width. The house default is 1200. `recursica-skill-responsive-layout` sets the maximum width. The same skill also sets the tablet and small-device breakpoints.
+**Keep content at the page level within the maximum width that the theme's layout sets.** Do not set a different maximum width. The theme also sets the breakpoints and the layout grid.
 
 **The maximum width applies to the main content area only, not to the chrome (the header, navigation and footer around the content).** Headers, footers and other sticky chrome may stretch across the full viewport. A left rail or a header stretches across the full viewport.
 
@@ -278,27 +329,28 @@ The list runs in order, from the strongest sign to the weakest.
 
 ## Set by the theme or the component
 
-- **The spacing and gutter token values, the maximum content width, and the layout grid.** All three come from the design system.
+- **The spacing and gutter token values, the maximum content width, the breakpoints, and the layout grid.** The theme sets all four.
 - **The look of the background of every layer or card**: elevation, border and padding.
 - **Type styles and capitalization** — `recursica-skill-typography-semantics`.
 
 ## Out of scope
 
 - **What gets the strongest position, how much a screen may hold, and what to cut** — `recursica-skill-screen-priority`.
-- **The layout grid**, the number of columns in the grid, and how the grid behaves. The layout grid is left to a separate skill.
 - **Whether a task belongs on this page** — `recursica-skill-panels-modals`.
 - **Navigation structure and routes** — `recursica-skill-navigation`.
 - **The filter controls** — `recursica-skill-filters`.
 
 ## Open questions
 
-- **The layout grid.** This skill names an eight- or twelve-column grid as the grid pages should line up to. This skill leaves the grid to a separate skill. Until a layout-grid skill exists, lining up elements is a stated requirement with no stated grid.
 - **Empty states where data exists but is zero.** This skill does not cover the case.
 - **Where global notifications or alerts sit in the page structure.** This skill does not cover the case. See `recursica-skill-feedback-messaging`.
 - **What may go in a footer** beyond a copyright notice. The footer question also covers when a footer stays fixed in place instead of appearing when the persona scrolls down.
 
 ## Pre-flight checklist
 
+- [ ] Any layout template used is a starting point, not a requirement. Every region in the template passed the region's own rules.
+- [ ] The user confirmed which devices, screen sizes and orientations the application supports.
+- [ ] At the tablet breakpoint or wider, side regions stay. Below the tablet breakpoint, the navigation is in a hamburger menu, and side columns stack under the main content.
 - [ ] The app shell matches the number of navigation items. A few items get a top navigation bar. More than about three or four items get a left rail. Where the choice was not obvious, the user chose.
 - [ ] A left rail puts navigation at the top, and the profile and settings at the bottom.
 - [ ] Every page has a footer, or a reason for leaving the footer out is provided.
@@ -318,5 +370,5 @@ The list runs in order, from the strongest sign to the weakest.
 - [ ] Every KPI tile passed all three tests. The dataset is too large to take in at a glance, the number changes, and the tile guides an action. No KPI tile is always zero by nature. No KPI tile only repeats the row count of a table below the tile. Where no KPI tile passed, the page has no row of KPI tiles.
 - [ ] The KPI tiles share one treatment, are named as noun phrases, and agree with each other.
 - [ ] A row of KPI tiles sits in one container with a layer. No KPI tile is a card.
-- [ ] White space is even, every heading has room above the heading, and elements line up to a grid.
-- [ ] Open questions were asked about, not decided: the layout grid, empty states where data exists but is zero, where global notifications or alerts sit, and what may go in a footer.
+- [ ] White space is even, every heading has room above the heading, and elements line up to the theme's grid.
+- [ ] Open questions were asked about, not decided: empty states where data exists but is zero, where global notifications or alerts sit, and what may go in a footer.

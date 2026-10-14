@@ -257,7 +257,7 @@
   },
   {
     "request": "Where do the page title, breadcrumb and main action go on the Orders page?",
-    "skill": "recursica-skill-screen-scaffolding"
+    "skill": "recursica-skill-layouts-and-templates"
   },
   {
     "request": "Show the full name when a long project name is cut off in the sidebar",

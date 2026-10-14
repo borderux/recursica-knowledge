@@ -20,7 +20,7 @@ A segmented control is a horizontal radio group. The persona selects exactly one
   - a filter bar
   - a toolbar
 
-  In application chrome, show icons in the segmented control instead of text labels. The standard example is a control that switches between light mode and dark mode. See `recursica-skill-screen-scaffolding` for where application chrome sits.
+  In application chrome, show icons in the segmented control instead of text labels. The standard example is a control that switches between light mode and dark mode. See `recursica-skill-layouts-and-templates` for where application chrome sits.
 
 - **The choice has 2 to 5 options**, with short labels.
 - **The choice switches a view or a mode**, such as list or grid, or daily or weekly. The options are closely tied to the content on the screen.

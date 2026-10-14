@@ -98,6 +98,23 @@ function frontmatter(body) {
   return out
 }
 
+const IMAGE_TYPES = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml' }
+
+/**
+ * The images a skill ships beside its SKILL.md, as paths relative to the skill's folder. The
+ * layout templates are pictures, and a skill that names an image the agent cannot reach is a
+ * rule with its example missing.
+ */
+function skillImages(dir, prefix = '') {
+  const out = []
+  for (const entry of fs.readdirSync(path.join(dir, prefix), { withFileTypes: true })) {
+    const rel = prefix ? `${prefix}/${entry.name}` : entry.name
+    if (entry.isDirectory()) out.push(...skillImages(dir, rel))
+    else if (IMAGE_TYPES[path.extname(entry.name).toLowerCase()]) out.push(rel)
+  }
+  return out.sort()
+}
+
 /**
  * A skill as served. `body` is the text after the frontmatter: the frontmatter's description is
  * for choosing a skill, and once one is chosen it is about 250 tokens of repetition per skill —
@@ -117,6 +134,7 @@ function readSkill(slug) {
     description: meta.description ?? null,
     loadTheseToo: links.needs,
     seeAlso: links.ifUsed,
+    images: skillImages(path.dirname(where)),
     body: text.replace(/^---\n[\s\S]*?\n---\n+/, ''),
   }
 }
@@ -169,6 +187,9 @@ function contract(skill) {
 /** What a skill_family entry carries, at the requested detail. */
 function served(skill, detail) {
   const base = { slug: skill.slug, category: skill.category, path: skill.path, seeAlso: skill.seeAlso }
+  // Named, not inlined: thirty-two images in every family that includes the skill would bury
+  // the rules. The paths are relative to the skill's folder; skill_image returns one.
+  if (skill.images?.length) base.images = skill.images
   if (detail === 'contract') return { ...base, sections: headings(skill.body), contract: contract(skill) }
   return { ...base, body: skill.body }
 }
@@ -440,6 +461,36 @@ const TOOLS = [
     },
   },
   {
+    name: 'skill_image',
+    description:
+      'One image a skill ships, such as a layout template, returned as an image. A served skill ' +
+      'lists its images under `images`, as paths relative to the skill\'s folder.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        slug: { type: 'string', description: 'Skill slug, e.g. recursica-skill-layouts-and-templates.' },
+        image: { type: 'string', description: 'The path exactly as the skill lists it under `images`, e.g. templates/table-kpi-tiles/desktop.png.' },
+      },
+      required: ['slug', 'image'],
+      additionalProperties: false,
+    },
+    handler({ slug, image }) {
+      const skill = readSkill(slug)
+      if (!skill) throw new Error(`no skill on disk named ${slug}. Call list_skills for the real names.`)
+      // Only a listed image, so no path can reach outside the skill's folder.
+      if (!skill.images.includes(image)) {
+        throw new Error(`${slug} has no image "${image}". It has: ${skill.images.join('; ') || 'none'}`)
+      }
+      const file = path.join(ROOT, path.dirname(skill.path), image)
+      return {
+        content: [
+          { type: 'text', text: `${slug}/${image}` },
+          { type: 'image', data: fs.readFileSync(file).toString('base64'), mimeType: IMAGE_TYPES[path.extname(image).toLowerCase()] },
+        ],
+      }
+    },
+  },
+  {
     name: 'list_skills',
     description:
       'Every skill on disk with its slug, category and one-line description. For finding the ' +
@@ -544,7 +595,9 @@ async function handleRequest(msg) {
       }
       try {
         const result = await tool.handler(params.arguments || {})
-        respond(id, { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] })
+        // A tool that returns MCP content blocks itself, such as skill_image, is passed through.
+        if (Array.isArray(result?.content)) respond(id, { content: result.content })
+        else respond(id, { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] })
       } catch (err) {
         logf(`tool ${tool.name} failed:`, err.message)
         // A tool error, not a protocol error, so the agent sees it and can correct course.

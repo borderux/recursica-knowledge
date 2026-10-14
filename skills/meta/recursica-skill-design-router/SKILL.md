@@ -163,7 +163,7 @@ A region that holds content, such as a page, panel or modal, sits on a layer (a 
 | 1   | The object the screen is about, and whether the screen is about one object or many                                                                                       | `recursica-skill-information-architecture`         |
 | 2   | Whether the content being designed is a location. A location needs a unique route, a URL, and a history entry                                                            | `recursica-skill-navigation`                       |
 | 3   | Where the screen sits in the app shell: the navigation pattern, the navigation item, breadcrumbs and the page heading                                                    | `recursica-skill-navigation`                       |
-| 4   | The page's layout. Whether part of the page needs a separate region that holds content, such as a page, panel or modal                                                   | `recursica-skill-screen-scaffolding`               |
+| 4   | The page's layout. Whether part of the page needs a separate region that holds content, such as a page, panel or modal                                                   | `recursica-skill-layouts-and-templates`            |
 | 5   | Which layer each region that holds content sits on, starting from layer 0 on the root element. Examples of regions are a page, panel and modal                           | `recursica-skill-layers`                           |
 | 6   | What matters most on the screen, what to cut, and whether the screen is finished                                                                                         | `recursica-skill-screen-priority`                  |
 | 7   | Whether the app supports any screen smaller than desktop, and at which breakpoint tier. Confirm with the user before choosing a navigation pattern                       | `recursica-skill-responsive-layout`                |
@@ -246,7 +246,7 @@ Apply the precedence rules below in order. The first precedence rule that settle
 
 - **Empty, loading, error and partial states.** Four parts are settled:
 
-  - A loading page shows nothing, and skeleton screens are forbidden (`recursica-skill-screen-scaffolding`).
+  - A loading page shows nothing, and skeleton screens are forbidden (`recursica-skill-layouts-and-templates`).
   - A loading table shows the loader by default (`recursica-skill-tables`).
   - "No rows returned" and "could not fetch" get different messages (`recursica-skill-screen-priority`).
   - A filter that returns zero results is a different state from never having had data (`recursica-skill-filters`).
@@ -256,7 +256,7 @@ Apply the precedence rules below in order. The first precedence rule that settle
 - **Motion.** No skill owns motion beyond one rule: do not animate a badge when the badge's status changes. `recursica-skill-icon-semantics` also leaves open whether an icon may animate.
 - **Alignment across sections.** Alignment means separate areas of an application use the same names for the same concepts, and the same workflows. For example, every area calls an order an "order" and edits an order the same way. `recursica-skill-screen-priority` gives the criteria for a breach of alignment. The skill also says that alignment is a review pass run after design. The skill family still needs a skill for alignment, possibly run by a dedicated agent.
 - **Scan patterns and eye-tracking research.** The research is marked as belonging in `skills/psychology/`, with citations. Nobody has gathered the research yet.
-- **The layout grid.** The open parts are eight or twelve columns, the gutters, and what elements line up to. `recursica-skill-screen-scaffolding` requires lining up to a grid, and openly leaves the grid to a skill that does not exist yet. `recursica-skill-layers` owns layers, and layers are settled. The layout grid is not settled.
+- **The layout grid.** The open parts are eight or twelve columns, the gutters, and what elements line up to. `recursica-skill-layouts-and-templates` requires lining up to a grid, and openly leaves the grid to a skill that does not exist yet. `recursica-skill-layers` owns layers, and layers are settled. The layout grid is not settled.
 
 ## Strength of rule words
 

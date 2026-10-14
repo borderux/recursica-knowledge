@@ -82,7 +82,7 @@ See `recursica-skill-screen-priority`.
 
 For example, a dashboard shows 3 pending and 18 overdue, and overdue items are a subset of pending items. The pair of counts reports an impossible result, not a labeling problem. The persona then stops trusting every number on the screen.
 
-`recursica-skill-names-and-terms` owns naming. `recursica-skill-screen-scaffolding` owns the layout of a group of numbers.
+`recursica-skill-names-and-terms` owns naming. `recursica-skill-layouts-and-templates` owns the layout of a group of numbers.
 
 **Before putting any chart on a dashboard, confirm that the application has a charting library.** Recursica does not provide charts. A chart needs a separate charting library.
 

@@ -16,7 +16,7 @@ import { History } from './routes/History.jsx'
 const STORAGE_KEY = 'stu.identity'
 
 // Seven destinations. recursica-skill-navigation puts complex subject matter at about five items
-// per level, and recursica-skill-screen-scaffolding sends anything past three or four to a left
+// per level, and recursica-skill-layouts-and-templates sends anything past three or four to a left
 // rail. Both point the same way, so the rail is not a preference here.
 //
 // `People` sits directly under `Interviews` because it is the same subject matter one level up:
@@ -61,7 +61,7 @@ export default function App() {
     )
   }
 
-  // recursica-skill-screen-scaffolding: a page that is loading shows nothing, then shows the
+  // recursica-skill-layouts-and-templates: a page that is loading shows nothing, then shows the
   // content. No spinner, no skeleton. This wait is a local socket, well under the three seconds
   // that would earn one.
   if (!config) return null

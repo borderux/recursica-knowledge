@@ -112,7 +112,7 @@ A possessive points to a difference only when the same screen also shows another
 
 The most common breach is not a label. The most common breach is text directly below a page heading or a section heading. The text repeats the heading. For example, a section heading reads Tags, and the text below reads "The labels used to group records."
 
-The page scaffolding has a setting that adds a space below a heading for exactly that kind of text. `recursica-skill-screen-scaffolding` owns what may go in the space below a heading. Because of the rule against defining a term next to the term, the space below a heading is usually empty.
+The page layout has a setting that adds a space below a heading for exactly that kind of text. `recursica-skill-layouts-and-templates` owns what may go in the space below a heading. Because of the rule against defining a term next to the term, the space below a heading is usually empty.
 
 ## Object labels in navigation
 

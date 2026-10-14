@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-screen-priority
-description: House rules for ranking what matters on a screen and turning the ranking into a layout — no cap on information, the inverted triangle, the top-left position, workflow then physicality then simplicity, the removal test, hierarchy without color, sticky regions, and no inner scrolling. Use when deciding what goes where or what to cut. Not for page structure — see recursica-skill-screen-scaffolding.
+description: House rules for ranking what matters on a screen and turning the ranking into a layout — no cap on information, the inverted triangle, the top-left position, workflow then physicality then simplicity, the removal test, hierarchy without color, sticky regions, and no inner scrolling. Use when deciding what goes where or what to cut. Not for page structure — see recursica-skill-layouts-and-templates.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -232,12 +232,12 @@ With one message for both states, the persona cannot tell whether to change the 
 ## Set by the theme or the component
 
 - **Type styles, spacing tokens, and the layout grid.** The design system sets the type styles, spacing tokens and layout grid.
-- **The page's structure:** the header, navigation rail, footer, title and breadcrumb. `recursica-skill-screen-scaffolding` sets the page's structure.
+- **The page's structure:** the header, navigation rail, footer, title and breadcrumb. `recursica-skill-layouts-and-templates` sets the page's structure.
 - **Whether a stakeholder's override is accepted.** Argue from the persona's point of view. The user makes the decision.
 
 ## Out of scope
 
-- **The page structure and layering** — `recursica-skill-screen-scaffolding`.
+- **The page structure and layering** — `recursica-skill-layouts-and-templates`.
 - **Which component a piece of content uses.** Each component skill decides.
 - **Limits specific to dashboards**, such as how many charts and cards a dashboard holds — `recursica-skill-dashboards`.
 - **The difference between a dashboard and a workbench** — `recursica-skill-dashboards`.

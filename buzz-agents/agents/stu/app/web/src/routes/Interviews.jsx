@@ -88,7 +88,7 @@ export function Interviews({ revision }) {
     <Page title="Interviews">
       {/* `Interviews` used to lead this row and it was the row count of the table directly below —
           the reader can already see how many interviews there are, so the box restated the table's
-          own length in a bigger font. `recursica-skill-screen-scaffolding` now gates a figure on
+          own length in a bigger font. `recursica-skill-layouts-and-templates` now gates a figure on
           the content not already showing its shape.
 
           The four that remain are sums across rows, which a table of per-row values genuinely does

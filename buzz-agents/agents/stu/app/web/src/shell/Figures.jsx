@@ -1,4 +1,4 @@
-// A group of summary figures. `recursica-skill-screen-scaffolding` treats them as a set of peers
+// A group of summary figures. `recursica-skill-layouts-and-templates` treats them as a set of peers
 // with one consistent treatment, each named by a noun phrase saying what is counted —
 // `Tagged lines`, not `Total tagged`.
 //

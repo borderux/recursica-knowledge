@@ -46,7 +46,7 @@ The house rules assume **complex enterprise web applications** built on a Recurs
 
 **Do not raise both the navigation and the main content to layer 1.** When every region is contained, no region stands out. The extra level then separates no region from another region.
 
-The application shell is the header, the rail, the footer and the titles. `recursica-skill-screen-scaffolding` sets the structure of the application shell.
+The application shell is the header, the rail, the footer and the titles. `recursica-skill-layouts-and-templates` sets the structure of the application shell.
 
 ## The four levels and nesting depth
 
@@ -61,7 +61,7 @@ The application shell is the header, the rail, the footer and the titles. `recur
 | **2** | **Rare.** Needs a stated reason: a container nested inside a layer 1 region that still needs a container |
 | **3** | **Almost never.** Treat a need for layer 3 as a sign that the screen's structure is wrong                |
 
-**Use space first, always.** Most regions need no separate layer. Show grouping with white space and type hierarchy. For example, try space and a heading between two groups of form fields before trying a layer. See `recursica-skill-screen-scaffolding`, and convention 5, "Group with space, not boxes", in `recursica-skill-design-system-conventions`.
+**Use space first, always.** Most regions need no separate layer. Show grouping with white space and type hierarchy. For example, try space and a heading between two groups of form fields before trying a layer. See `recursica-skill-layouts-and-templates`, and convention 5, "Group with space, not boxes", in `recursica-skill-design-system-conventions`.
 
 **Open a new layer when space has failed to separate neighboring regions, and the regions still blur together.**
 
@@ -94,7 +94,7 @@ The application shell is the header, the rail, the footer and the titles. `recur
 - The region is taller than the viewport by the layer's padding, at the top and at the bottom.
 - The page then scrolls by exactly the amount of the padding.
 
-Subtract the padding by reading the layer's padding token. `recursica-skill-screen-scaffolding` gives the rule and the reason, under application chrome (the header, navigation and footer around the content) and the single scrollbar.
+Subtract the padding by reading the layer's padding token. `recursica-skill-layouts-and-templates` gives the rule and the reason, under application chrome (the header, navigation and footer around the content) and the single scrollbar.
 
 **Never fake a layer.** A fake layer is a background color and a border set with style values written into the code. A fake layer fails in three ways:
 
@@ -160,7 +160,7 @@ In the table, plurality (the number of items) means how many layers or cards app
 
 **Needing containment does not make a region one of a set of peers.** Put a region that needs separating but has no peers on a layer. Make a region that needs a container into a card only when the region passes the card tests in `recursica-skill-card`.
 
-**NEVER use a layer to divide a page into regions.** A card may never divide a page either. The ban in `recursica-skill-screen-scaffolding` on dividing regions with containers applies to layers too. Divide a page with space and headings.
+**NEVER use a layer to divide a page into regions.** A card may never divide a page either. The ban in `recursica-skill-layouts-and-templates` on dividing regions with containers applies to layers too. Divide a page with space and headings.
 
 **Never put form fields inside a card. Form fields may sit on a layer.** A layer is a region that holds content, not the container of one object.
 
@@ -176,7 +176,7 @@ In the table, plurality (the number of items) means how many layers or cards app
 
 **A design must not depend on how any two layers happen to differ in the current theme.** For example, two neighboring levels may share a background color. Two neighboring levels may also differ in the border rather than the fill. The theme author decides how the levels differ. A separation that matters has to stay visible when the theme changes.
 
-**Put a theme control in the application chrome, not in the page content.** See `recursica-skill-screen-scaffolding`.
+**Put a theme control in the application chrome, not in the page content.** See `recursica-skill-layouts-and-templates`.
 
 ## Set by the theme or the component
 
@@ -188,7 +188,7 @@ In the table, plurality (the number of items) means how many layers or cards app
 ## Out of scope
 
 - **Whether repeating objects belong in cards** — `recursica-skill-card`.
-- **How a page is put together, where the application chrome goes, and the maximum content width** — `recursica-skill-screen-scaffolding`.
+- **How a page is put together, where the application chrome goes, and the maximum content width** — `recursica-skill-layouts-and-templates`.
 - **Whether a task belongs in a panel, a modal, or a page** — `recursica-skill-panels-modals`.
 - **Which content takes the strongest position on a screen** — `recursica-skill-screen-priority`.
 - **Type styles and heading levels** — `recursica-skill-typography-semantics`.

@@ -84,7 +84,7 @@ Apply the routing and history rules equally to moving through primary navigation
 
 **Choose between a top bar and a sidebar by answering the two questions below, in this order.** Neither pattern is right for every application.
 
-1. **Does the layout need to work below desktop size?** An application used only on desktop can use either a top bar or a sidebar. An application that must also work on a tablet or a phone has a narrower choice.
+1. **How wide are the screens the application supports?** At the tablet breakpoint or wider, a top bar or a sidebar both work. A sidebar is often preferred, because a wide screen has more width than height. Below the tablet breakpoint, never use a sidebar. A sidebar there leaves almost no width for the content. Use a hamburger menu instead.
 2. **How many top-level items are there, and will the number grow?** If the number of top-level items is known and fixed, pick either pattern. If the number of top-level items is expected to grow over time, prefer a vertical sidebar. A horizontal top bar becomes a problem as the number of items grows.
 
 When growth is expected, do not treat the choice of top bar or sidebar as a matter of taste. Expected growth is the one case where the two questions decide the answer.
@@ -176,15 +176,15 @@ Hidden navigation is not a compromise. For navigation the persona rarely touches
 
 One published design system shows the real-world extreme: a rail of fifteen icons. When the rail collapses, the rail shrinks the icons down to bare dots. The persona must hover over each dot to identify the dot. See `recursica-skill-responsive-layout` and `recursica-skill-icon-semantics`.
 
-**Below desktop size, collapse global navigation into a hamburger menu.** The menu that slides in shows both the icon and the text of each navigation item.
+**Below the tablet breakpoint, collapse global navigation into a hamburger menu.** The menu that slides in shows both the icon and the text of each navigation item.
 
-**NEVER use a bottom navigation bar.** A bottom navigation bar is not a house pattern at any width. Below desktop size, use a hamburger menu instead.
+**NEVER use a bottom navigation bar.** A bottom navigation bar is not a house pattern at any width. Below the tablet breakpoint, use a hamburger menu instead.
 
-**A drawer is a panel that holds navigation and slides in.** A drawer is the same kind of control as a hamburger menu. A sidebar is the permanent navigation down the left side of the page. A sidebar is the desktop alternative to a top navigation bar. See `recursica-skill-panels-modals`.
+**A drawer is a panel that holds navigation and slides in.** A drawer is the same kind of control as a hamburger menu. A sidebar is the permanent navigation down the left side of the page. A sidebar is the wide-screen alternative to a top navigation bar. See `recursica-skill-panels-modals`.
 
 **Use a drawer or a sidebar for the application's navigation, never both at the same time.** A drawer and a sidebar are both valid choices. Do not add an option to pin the drawer open as a sidebar. Show the navigation or hide the navigation, and keep the choice that simple.
 
-**Confirm with the user whether the application runs on a tablet or a phone before choosing the navigation pattern.** Do not add room for tablet or phone use to the navigation after the navigation pattern is chosen. `recursica-skill-responsive-layout` sets this rule.
+**Confirm with the user which devices, screen sizes and orientations the application supports before choosing the navigation pattern.** Do not add room for tablet or phone use to the navigation after the navigation pattern is chosen. `recursica-skill-responsive-layout` sets this rule.
 
 ## Overflow
 
@@ -262,7 +262,7 @@ Check every item below before treating the navigation as done.
 - [ ] No modal or panel creates a history entry. The exception is a modal or panel deliberately built to be linked to, with a shareable URL.
 - [ ] No tab state is kept as remembered UI state in place of a route.
 - [ ] Each tab has its own sub-path under the route of the view that holds the tabs.
-- [ ] Horizontal or vertical navigation follows whether the application must work below desktop size and whether top-level items will grow.
+- [ ] Horizontal or vertical navigation follows the screen widths the application supports and whether top-level items will grow. No sidebar appears below the tablet breakpoint.
 - [ ] The navigation is vertical where top-level items will grow.
 - [ ] Each level holds 7 ± 2 items: closer to 5 for complex subjects, up to 9 for simple subjects.
 - [ ] The item count holds for each role, after permissions hide items.

@@ -154,7 +154,7 @@ export function People({ identity, revision, onChanged }) {
     <Page title="People">
       {/* No figure group. Four counts sat here and three of them read zero on real data —
           `Consolidated`, `People`, `Suggested merges` — while the fourth, `Speaker records`, was the
-          row count of the table directly below. `recursica-skill-screen-scaffolding` now gates a
+          row count of the table directly below. `recursica-skill-layouts-and-templates` now gates a
           figure on the dataset being large enough that the content does not already show its shape,
           on the number moving, and on it guiding an action. With eleven rows none of the four
           passes, so there is no figure group rather than a padded one. */}

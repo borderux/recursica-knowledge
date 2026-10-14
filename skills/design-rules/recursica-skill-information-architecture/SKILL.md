@@ -141,10 +141,10 @@ Name a section that is not an object with a noun, as in `Approvals`, never `Appr
 
 ## Out of scope
 
-- **The display of related objects on a detail page**, as tabs, sections or tables. See `recursica-skill-tabs`, `recursica-skill-screen-scaffolding` and `recursica-skill-tables`.
+- **The display of related objects on a detail page**, as tabs, sections or tables. See `recursica-skill-tabs`, `recursica-skill-layouts-and-templates` and `recursica-skill-tables`.
 - **The choice between a page and a panel for a detail view.** See `recursica-skill-panels-modals`.
 - **The navigation pattern, item counts, nesting depth, overflow, breadcrumbs and routing.** See `recursica-skill-navigation`.
-- **Page composition and the content that ranks highest on a screen.** See `recursica-skill-screen-scaffolding` and `recursica-skill-screen-priority`.
+- **Page composition and the content that ranks highest on a screen.** See `recursica-skill-layouts-and-templates` and `recursica-skill-screen-priority`.
 - **Search, filters and sorting within a list.** See `recursica-skill-filters` and `recursica-skill-tables`.
 - **Database design.** The object map describes the objects the persona works with. How the database stores the objects is not a UI concern.
 

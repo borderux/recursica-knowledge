@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-responsive-layout
-description: House rules for layouts narrower than desktop — tablet and small breakpoints, the 1200 content width, responsive reflow versus adaptive removal, what may be dropped, navigation patterns, panels and modals becoming pages, no native mobile patterns, and tables below tablet. Use when a layout must work on tablets, phones, or narrow screens. Not for panel, modal, or page at desktop — see recursica-skill-panels-modals.
+description: House rules for layouts narrower than desktop — tablet and small breakpoints, the maximum content width, responsive reflow versus adaptive removal, what may be dropped, navigation patterns, panels and modals becoming pages, no native mobile patterns, and tables below tablet. Use when a layout must work on tablets, phones, or narrow screens. Not for panel, modal, or page at desktop — see recursica-skill-panels-modals.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -29,7 +29,7 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 **Confirm the answer to each question below with the user at the start, not during review.** Get the answers before choosing the navigation pattern. The answers change which navigation pattern fits. Answers that arrive later mean fixing the navigation pattern afterward.
 
-1. **How likely is a tablet or a phone to be a main way people use the product?** Desktop is assumed. If tablet or phone use is real, build tablet or phone support in from the beginning.
+1. **Which devices, screen sizes and orientations does the product support?** The answer is specific to each application. Desktop is assumed. For example, a tablet held sideways is wider than a tablet held upright. If tablet or phone use is real, build tablet or phone support in from the beginning.
 2. **What does "responsive" mean to this client?** The word "responsive" hides three different promises. One promise cannot be swapped for another:
 
    - **The layout does not break.** Content reflows, but nothing beyond the reflow was checked.
@@ -54,22 +54,32 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 ## Breakpoints
 
-A breakpoint is the screen width at which the layout changes. Recursica has three breakpoint tiers, and only three: **desktop, tablet, small device.**
+A breakpoint is the screen width at which the layout changes. Recursica has three breakpoints: **desktop, tablet and small device.** The theme sets the width of each breakpoint. The theme's grid sets the columns that content lines up to.
 
-| Tier             | Default width | What the tier is                                                                                  |
-| ---------------- | ------------- | ------------------------------------------------------------------------------------------------- |
-| **Desktop**      | 1200          | The largest breakpoint, and **the maximum content width of the main content area**                |
-| **Tablet**       | 1024          | The width below which panels become pages and tables disappear                                    |
-| **Small device** | 400           | A phone. The 400 width is set on purpose, replacing the looser range of 330 to 360 used elsewhere |
+| Breakpoint       | What the breakpoint is                                                                                     |
+| ---------------- | ---------------------------------------------------------------------------------------------------------- |
+| **Desktop**      | The widest breakpoint. The theme's layout also sets the maximum width of the main content area             |
+| **Tablet**       | The width below which sidebars and side columns go, panels become pages, and a table stays only if it fits |
+| **Small device** | A phone                                                                                                    |
 
-**Apply the 1200 maximum to the main content area, not to the whole page.** Viewports wider than 1200 are normal. On a viewport wider than 1200:
+**At the tablet breakpoint or wider, keep sidebars and side columns.** A wide screen has more width than height. For example, a tablet held sideways keeps a sidebar.
+
+**Below the tablet breakpoint, change the layout in three ways:**
+
+- Move the main navigation into a hamburger menu.
+- Stack a side column under the main content.
+- Turn a secondary navigation sidebar into a bar under the header.
+
+The layout templates in `recursica-skill-layouts-and-templates` show each change at four sizes.
+
+**Apply the maximum content width to the main content area, not to the whole page.** Viewports wider than the maximum content width are normal. On a wider viewport:
 
 - Do not stretch the main content to fill the wider viewport.
-- Headers, footers, and other sticky chrome (the header, navigation and footer around the content) are not limited by the 1200 maximum. The chrome may stretch across the full viewport.
+- Headers, footers, and other sticky chrome (the header, navigation and footer around the content) are not limited by the maximum content width. The chrome may stretch across the full viewport.
 
-See `recursica-skill-screen-scaffolding`.
+See `recursica-skill-layouts-and-templates`.
 
-**The three breakpoint widths are defaults, and changing a default is very rare.** The defaults are standard enough that a change needs a stated decision.
+**The theme's breakpoint widths are defaults, and changing a default is very rare.** The defaults are standard enough that a change needs a stated decision.
 
 - A change to one default should be a stated decision, made with the user at design time.
 - A breakpoint should never change without telling the user.
@@ -93,7 +103,7 @@ See `recursica-skill-screen-scaffolding`.
 
 **No part of the interface is fixed in advance as droppable or as protected from being dropped.** The team was asked whether any type of information must never be dropped, in any context. The answer was no.
 
-**Always confirm with the user what a narrow screen drops. NEVER decide alone what a narrow screen loses.** For example, confirm with the user before a phone layout leaves out an Export button. Raise each part a narrow screen would drop as a question, as `recursica-skill-design-router` says. An agent that quietly drops a feature at 400px has invented a house rule.
+**Always confirm with the user what a narrow screen drops. NEVER decide alone what a narrow screen loses.** For example, confirm with the user before a phone layout leaves out an Export button. Raise each part a narrow screen would drop as a question, as `recursica-skill-design-router` says. An agent that quietly drops a feature on a phone has invented a house rule.
 
 **If an element cannot be shown well at the narrow size, a narrow layout may hide the element completely.** A table is the standard example.
 
@@ -138,7 +148,7 @@ See `recursica-skill-screen-scaffolding`.
 
 ## Tables
 
-**Do not show a complex data table below tablet size.** A complex data table has too much data for the space.
+**Below the tablet breakpoint, show a table only when all of the table's columns fit the screen width.** A table that would need sideways scrolling has too much data for the space. Leave that table off the screen.
 
 **Solve a narrow table by leaving the table off the screen, not by making the table swipeable.** For example, a phone layout of the Orders page leaves out the orders table. The table is not on the screen, so horizontal scrolling never comes up for a table below tablet size. At tablet size and above, `recursica-skill-tables` allows horizontal scrolling in a table only as a last resort, when nothing else works.
 
@@ -158,9 +168,9 @@ See `recursica-skill-screen-scaffolding`.
 
 **An interaction that depends on hover must have a way to work without hover.** A touch device has no hover at all. `recursica-skill-design-system-conventions` makes the hover rule absolute: no part of the interface may be reachable by hover alone.
 
-## Navigation below desktop
+## Navigation below the tablet breakpoint
 
-**On a small device, collapse global navigation into a hamburger menu.** The hamburger menu is the default. A hamburger menu exists to hold a collapsed global navigation.
+**Below the tablet breakpoint, move the main navigation into a hamburger menu. Never show a sidebar there.** A sidebar on a narrow screen leaves almost no width for the content. At the tablet breakpoint or wider, a sidebar works, and is often preferred.
 
 **In the navigation that slides in, show both the icon and the text of each navigation item.** For example, show the Orders icon next to the word "Orders". A hidden navigation exists so the navigation items are clear once the navigation opens. See `recursica-skill-navigation`, which forbids collapsing a navigation down to icons alone.
 
@@ -178,7 +188,7 @@ One real case is extreme: a rail of fifteen icons collapses to bare dots. Each d
 **A drawer is a panel.** The words "drawer" and "panel" name the same component: an area that slides in.
 
 - A navigation drawer is a panel that holds navigation. A navigation drawer is no different in kind from a hamburger menu.
-- A sidebar is not a drawer. A sidebar stays on the screen permanently, down the left side. A sidebar is the desktop alternative to a top navigation.
+- A sidebar is not a drawer. A sidebar stays on the screen permanently, down the left side. A sidebar is the wide-screen alternative to a top navigation.
 
 **Knowing that mobile use is coming should change which navigation pattern is chosen at the start.** The knowledge should change not only how the navigation collapses at the end.
 
@@ -196,36 +206,33 @@ A designed narrow layout shows two good signs. A narrow layout with neither sign
 - **What gets dropped on a narrow screen.** Confirm each drop with the user, every time.
 - **Whether the application is built around touch.** The main input method is set once for the whole application, at the start.
 - **How a component handles touch.** Touch handling is built into the component.
-- **The breakpoint values**, once set. The breakpoint values are defaults. A change to a breakpoint value is a stated decision made with the user.
-- **The maximum content width.** The design system's layout rule sets the maximum content width, with a default of 1200.
+- **The breakpoint widths and the layout grid.** The theme sets both. A change to a breakpoint width is a stated decision made with the user.
+- **The maximum content width.** The theme's layout sets the maximum content width.
 
 ## Out of scope
 
 - **Choosing a panel, a modal, or a page at desktop width** — `recursica-skill-panels-modals`.
 - **Navigation structure, item counts, and overflow at desktop** — `recursica-skill-navigation`.
 - **Table columns, alignment, and which fields get a column** — `recursica-skill-tables`.
-- **The page scaffold, where the chrome goes, and layering** — `recursica-skill-screen-scaffolding`.
+- **The page layout, the layout templates, where the chrome goes, and layering** — `recursica-skill-layouts-and-templates`.
 - **Which icon means what** — `recursica-skill-icon-semantics`.
 - **Designing native applications.** Recursica is aimed at web applications.
-- **The layout grid**, and how grid columns behave across tiers. No skill owns the layout grid yet.
 
 ## Open questions
 
 - **An icon rail on tablet specifically.** An icon rail on tablet was suggested as a middle option, and the team pushed back. The ban on icon-only navigation stands. The team has not approved a tablet rail.
-- **How the layout grid behaves across tiers**, and how many columns the layout grid has at tablet and small-device sizes.
 - **Which components have a defined look below desktop at all.** Only the panel, the table, and the swap from cards to a carousel were named.
 - **Whether a carousel exists in the component inventory.** The carousel is named as the approved horizontally scrolling component, and as the mobile replacement for cards. Confirm the carousel exists before planning around a carousel.
-- **What tablet behavior looks like between the two thresholds.** The rules above cover layouts below tablet size and small devices. The tablet tier itself is mostly not described.
 - **Whether the tablet and small-device tiers each get a separate design**, or one narrow design serves both.
 
 ## Pre-flight checklist
 
 - [ ] Support below desktop is a decision, not an assumption.
 - [ ] The team knows which of the three promises of "responsive" applies.
-- [ ] The user confirmed how likely a tablet or phone is to be a main way of using the product.
+- [ ] The user confirmed which devices, screen sizes and orientations the product supports.
 - [ ] The navigation pattern was chosen after the user's answer about tablet and phone use.
 - [ ] The business's range of viewports and the business's main input method come from asking, not assuming.
-- [ ] The breakpoints are the house defaults — 1200, 1024, 400 — or the user agreed to a stated change to the breakpoints.
+- [ ] The breakpoints are the theme's breakpoints, or the user agreed to a stated change to the breakpoints.
 - [ ] The main content area stops at the maximum content width. The chrome may stretch wider.
 - [ ] The narrow layout is adaptive as well as responsive. At least one element is replaced or removed, not only rewrapped.
 - [ ] Every dropped part of the interface was raised first.
@@ -236,10 +243,11 @@ A designed narrow layout shows two good signs. A narrow layout with neither sign
 - [ ] The layout has no iOS or Android pattern, and no interaction pattern exists only below desktop.
 - [ ] Horizontal scrolling appears only in a carousel, or in a table as a last resort when nothing else works.
 - [ ] Content that runs past the edge shows items partly cut off at the side.
-- [ ] No complex data table appears below tablet size.
+- [ ] Below the tablet breakpoint, a table appears only when all of the table's columns fit the screen width.
 - [ ] One main input method applies across the whole application.
 - [ ] No part of the interface is reachable by hover alone.
-- [ ] Global navigation collapses into a hamburger menu that shows the icon and the text of each item.
+- [ ] Below the tablet breakpoint, the main navigation sits in a hamburger menu. The menu shows the icon and the text of each item.
+- [ ] Below the tablet breakpoint, no sidebar remains. Side columns stack under the main content. A secondary navigation sidebar becomes a bar under the header.
 - [ ] No icon-only rail and no bottom navigation bar appear at any width.
 - [ ] Cards stack or turn into a carousel, and no fixed-width content fails to reflow.
-- [ ] Open questions were asked about, not decided: an icon rail on tablet, the layout grid across tiers, which components have a defined look below desktop, whether a carousel exists, tablet behavior between the thresholds, separate tablet or small-device designs.
+- [ ] Open questions were asked about, not decided: an icon rail on tablet, which components have a defined look below desktop, whether a carousel exists, separate tablet or small-device designs.

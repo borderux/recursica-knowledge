@@ -102,7 +102,7 @@ test("a name matching nothing and having no route surfaces in uncovered", () => 
 test("a layout primitive resolves to a design-rules skill rather than being dropped", () => {
   const r = resolveImport("Stack");
   assert.equal(r.kind, "design");
-  assert.deepEqual(r.skills, ["recursica-skill-screen-scaffolding"]);
+  assert.deepEqual(r.skills, ["recursica-skill-layouts-and-templates"]);
 });
 
 test("an unknown import is reported as unmapped, never silently skipped", () => {
@@ -170,7 +170,7 @@ test("the always-on skills are present even for a screen importing nothing", () 
   fs.writeFileSync(file, `export function Empty() { return null }\n`);
   const slugs = manifest([file]).skills.map((s) => s.slug);
   // These are the rules about the screen itself, which no import can ever signal.
-  for (const s of ["recursica-skill-screen-scaffolding", "recursica-skill-screen-priority"]) {
+  for (const s of ["recursica-skill-layouts-and-templates", "recursica-skill-screen-priority"]) {
     assert.ok(slugs.includes(s), s);
   }
   fs.rmSync(dir, { recursive: true, force: true });
