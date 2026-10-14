@@ -78,17 +78,14 @@ const ANGULAR_ONLY_COMPONENTS = [
 export const ROUTES = {
   // Layout primitives. No component skill by design — how regions are divided is a composition
   // question, so the rules live in the design-rules layer.
-  Group: { kind: "design", skills: ["recursica-skill-screen-scaffolding"] },
-  Stack: { kind: "design", skills: ["recursica-skill-screen-scaffolding"] },
-  Flex: { kind: "design", skills: ["recursica-skill-screen-scaffolding"] },
-  Container: { kind: "design", skills: ["recursica-skill-screen-scaffolding"] },
+  Group: { kind: "design", skills: ["recursica-skill-layouts-and-templates"] },
+  Stack: { kind: "design", skills: ["recursica-skill-layouts-and-templates"] },
+  Flex: { kind: "design", skills: ["recursica-skill-layouts-and-templates"] },
+  Container: { kind: "design", skills: ["recursica-skill-layouts-and-templates"] },
 
-  // `Grid` also lands on scaffolding, but note that the layout grid itself is on that skill's
-  // own "uncovered — ask, do not invent" list: eight or twelve columns is named as the thing
-  // pages must align to and explicitly deferred to a skill that does not exist yet. So this
-  // route is the closest owner rather than a complete answer, and a screen leaning on the grid
-  // is a question for a person.
-  Grid: { kind: "design", skills: ["recursica-skill-screen-scaffolding"] },
+  // `Grid` lands on the layouts skill. The layout grid itself, its columns and its breakpoints,
+  // are set by the theme, so the skill says to line up to the theme's grid and sets no numbers.
+  Grid: { kind: "design", skills: ["recursica-skill-layouts-and-templates"] },
 
   // A layer is its own system with four levels and token-owned properties.
   Layer: { kind: "design", skills: ["recursica-skill-layers"] },
@@ -120,14 +117,14 @@ export const ROUTES = {
  * never check any of them, and the defects found by hand on this app were mostly here.
  */
 export const ALWAYS = [
-  "recursica-skill-screen-scaffolding",
+  "recursica-skill-layouts-and-templates",
   "recursica-skill-screen-priority",
-  "recursica-skill-system-conventions",
+  "recursica-skill-design-system-conventions",
   "recursica-skill-typography-semantics",
-  "recursica-skill-naming-terminology",
+  "recursica-skill-names-and-terms",
   "recursica-skill-layers",
-  "recursica-skill-responsive-behavior",
-  "recursica-skill-defaults",
+  "recursica-skill-responsive-layout",
+  "recursica-skill-screen-starting-state",
   "recursica-skill-icon-semantics",
   // What the application is structured around — which objects get a place in the navigation, and
   // where a child object is reached. No import signals it, and a wrong structure shows on every

@@ -84,7 +84,7 @@ test('the handshake advertises every tool', async () => {
   assert.equal(init.result.serverInfo.name, 'recursica-knowledge')
   assert.match(init.result.instructions, /router/)
   const names = list.result.tools.map((t) => t.name).sort()
-  assert.deepEqual(names, ['component_api', 'list_skills', 'router', 'skill_family', 'skill_section', 'skills_for_screen'])
+  assert.deepEqual(names, ['component_api', 'list_skills', 'router', 'skill_family', 'skill_image', 'skill_section', 'skills_for_screen'])
 })
 
 test('router returns the design router itself', async () => {
@@ -227,4 +227,27 @@ test('skill_section returns one section, and names the real ones when asked for 
   assert.ok(text.length > 0)
   assert.ok(!/^## /m.test(text), 'the section ran on into the next one')
   assert.throws(() => tool.handler({ slug: 'recursica-skill-table', heading: 'Nope' }), /It has: .*Rules/)
+})
+
+test('a skill with images lists them, and skill_image returns one as an image', async () => {
+  const skill = readSkill('recursica-skill-layouts-and-templates')
+  assert.equal(skill.images.length, 32)
+  assert.ok(skill.images.includes('templates/table-kpi-tiles/desktop.png'))
+  assert.deepEqual(served(skill, 'full').images, skill.images)
+  // A skill without images does not grow an empty field.
+  assert.equal(served(readSkill('recursica-skill-tables'), 'full').images, undefined)
+
+  const replies = await rpc([
+    { jsonrpc: '2.0', id: 1, method: 'initialize', params: {} },
+    { jsonrpc: '2.0', id: 2, method: 'tools/call', params: { name: 'skill_image', arguments: { slug: 'recursica-skill-layouts-and-templates', image: 'templates/table-kpi-tiles/phone.png' } } },
+    // A path that is not listed is refused, so nothing outside the skill's folder can be read.
+    { jsonrpc: '2.0', id: 3, method: 'tools/call', params: { name: 'skill_image', arguments: { slug: 'recursica-skill-layouts-and-templates', image: '../recursica-skill-tables/SKILL.md' } } },
+  ])
+  // Replies arrive in the order the handlers finish, not the order they were sent.
+  const ok = replies.find((r) => r.id === 2)
+  const outside = replies.find((r) => r.id === 3)
+  const image = ok.result.content.find((c) => c.type === 'image')
+  assert.equal(image.mimeType, 'image/png')
+  assert.equal(Buffer.from(image.data, 'base64').subarray(1, 4).toString(), 'PNG')
+  assert.equal(outside.result.isError, true)
 })

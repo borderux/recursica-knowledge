@@ -1,7 +1,7 @@
 # The knowledge MCP server
 
 Serves this repository's skills to the agents that build, review and maintain them — Betty, Barb,
-Alan — so none of them has to hold the corpus in context. There are 64 skill files totalling
+Alan — so none of them has to hold the corpus in context. There are 66 skill files totalling
 roughly a quarter of a million tokens, which does not fit alongside an application.
 
 **It holds no copy of the skills.** It reads `skills/` in the checkout it runs from. An earlier
@@ -33,6 +33,7 @@ looking like it helped. **There is deliberately no search tool here.**
 | `skills_for_screen` | Which skills apply to real files, computed from their adapter imports rather than judged. |
 | `skill_family` | The rules themselves — always as a family. `detail: "contract"` returns only each skill's checklist, open questions and, for a component, its inventory and "When not to use …" table, at about a quarter of the size — for when the full family will not fit (see below). |
 | `skill_section` | One section of one skill, for the reasoning behind a contract item. |
+| `skill_image` | One image a skill ships, such as a layout template. A served skill lists its images under `images`. |
 | `list_skills` | Slugs, categories and one-line descriptions, for when there are no files to compute from. |
 | `component_api` | Real prop types from the adapter version a given project installs. |
 

@@ -51,7 +51,7 @@ export function Interviews({ revision }) {
       header: 'Tagged lines',
       // Was two columns, `Lines` and `Untagged lines`, which made the reader subtract to learn
       // the one thing the column is for: how much of the interview the analysis rests on. One
-      // column with the arithmetic done — `recursica-skill-naming-terminology`, "a label that
+      // column with the arithmetic done — `recursica-skill-names-and-terms`, "a label that
       // will not compress is usually two labels". Still not a percentage: 11 / 34 and 110 / 340
       // are the same percentage and are not the same situation.
       width: COLUMN_WIDTH.ratio,
@@ -88,7 +88,7 @@ export function Interviews({ revision }) {
     <Page title="Interviews">
       {/* `Interviews` used to lead this row and it was the row count of the table directly below —
           the reader can already see how many interviews there are, so the box restated the table's
-          own length in a bigger font. `recursica-skill-screen-scaffolding` now gates a figure on
+          own length in a bigger font. `recursica-skill-layouts-and-templates` now gates a figure on
           the content not already showing its shape.
 
           The four that remain are sums across rows, which a table of per-row values genuinely does

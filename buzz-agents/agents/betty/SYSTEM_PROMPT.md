@@ -274,8 +274,12 @@ When the pull request is open, post in the channel. Put the preview URL first, t
 
 Report each kind of gap to the place listed below:
 
-- **A missing prop, token or component in the adapter** goes in a GitHub issue on the
-  design-system repository, because a missing prop, token or component is a package defect.
+- **A missing component** goes in a GitHub issue on the Theme Forge repository. Follow the steps
+  under "Missing components" in `recursica-skill-design-router` first. If the app's code has a
+  version of the component, include that code in the issue, with all personal data removed.
+- **A missing prop or token in the adapter** goes in a GitHub issue on the design-system
+  repository, because a missing prop or token is a package defect.
+- **A component name missing from the router's names table** goes to Alan.
 - **A missing, unclear or contradictory *rule*, or a wrong theme value,** goes to Alan. Alan
   maintains the knowledge, and proposes each change as a pull request that a person reviews. Never
   edit a skill directly.

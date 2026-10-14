@@ -1,7 +1,7 @@
 // The page scaffold every screen uses, so location is answerable from the page itself and not
 // only from the rail — `recursica-skill-navigation`, "indicating location".
 //
-// Composition rules being applied here, all from `recursica-skill-screen-scaffolding`:
+// Composition rules being applied here, all from `recursica-skill-layouts-and-templates`:
 //   - the page title lives in the page, not in the chrome
 //   - a breadcrumb appears once you are below the top level, and nowhere above it
 //   - regions are divided by space and headings, never by cards
@@ -15,7 +15,7 @@ import { Breadcrumb, Link, Stack, Text, Title } from '@recursica/mantine-adapter
  * There is deliberately no prose slot under the title, and adding one back is a decision for the
  * owner rather than a convenience for the next screen.
  *
- * `recursica-skill-screen-scaffolding` carries the rule — the slot's default state is empty, and a
+ * `recursica-skill-layouts-and-templates` carries the rule — the slot's default state is empty, and a
  * line that only restates the heading is the heading again in smaller type. That rule was already
  * in the skill, was read, and still lost at fourteen call sites across this app, because writing a
  * sentence into an available string prop is easier than remembering not to. So the prop is gone:
@@ -36,7 +36,7 @@ import { Breadcrumb, Link, Stack, Text, Title } from '@recursica/mantine-adapter
  *               no one can predict and no reader scrolls to the end of a list to look for a button.
  *
  *               This is deliberately not the bottom-right primary action slot in
- *               `recursica-skill-screen-scaffolding`. That rule calls itself a starting position
+ *               `recursica-skill-layouts-and-templates`. That rule calls itself a starting position
  *               rather than a law; the table rule is specific about this case, so it wins.
  */
 export function Page({ title, trail = [], action, children }) {

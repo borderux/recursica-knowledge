@@ -113,7 +113,7 @@ export function formatCount(value) {
 
 /**
  * Part of a whole, as one value — `11 / 34`. Two columns the reader would otherwise subtract
- * become one with the arithmetic done, per `recursica-skill-naming-terminology`. Both halves are
+ * become one with the arithmetic done, per `recursica-skill-names-and-terms`. Both halves are
  * grouped; the divisor is a quantity too.
  */
 export function formatRatio(part, whole) {

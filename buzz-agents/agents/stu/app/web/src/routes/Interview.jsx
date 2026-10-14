@@ -46,7 +46,7 @@ export function Interview({ identity, revision, onChanged }) {
 
   const lines = data?.lines ?? []
 
-  // Filters arrive unapplied and stay visible. `recursica-skill-defaults` forbids a default that
+  // Filters arrive unapplied and stay visible. `recursica-skill-screen-starting-state` forbids a default that
   // silently narrows the collection: a filtered transcript reads as a short interview, which is
   // exactly the misreading this tool exists to prevent.
   const visible = useMemo(() => {

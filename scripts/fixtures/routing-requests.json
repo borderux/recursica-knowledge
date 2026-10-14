@@ -24,7 +24,7 @@
     "skill": "recursica-skill-date-picker"
   },
   {
-    "request": "Our table scrolls sideways because it has too many columns — what do we cut?",
+    "request": "Our table scrolls sideways because it has too many columns \u2014 what do we cut?",
     "skill": "recursica-skill-tables"
   },
   {
@@ -77,7 +77,7 @@
   },
   {
     "request": "Which tab should be open when the page first loads?",
-    "skill": "recursica-skill-defaults"
+    "skill": "recursica-skill-screen-starting-state"
   },
   {
     "request": "Design the home page that shows our key KPIs at a glance",
@@ -89,10 +89,10 @@
   },
   {
     "request": "Should we call these objects Requests or Tickets across the app?",
-    "skill": "recursica-skill-naming-terminology"
+    "skill": "recursica-skill-names-and-terms"
   },
   {
-    "request": "Our page has two H1 headings — is that a problem?",
+    "request": "Our page has two H1 headings \u2014 is that a problem?",
     "skill": "recursica-skill-typography-semantics"
   },
   {
@@ -117,10 +117,10 @@
   },
   {
     "request": "How should this screen behave on a tablet?",
-    "skill": "recursica-skill-responsive-behavior"
+    "skill": "recursica-skill-responsive-layout"
   },
   {
-    "request": "There is too much on this screen — how do we decide what to remove?",
+    "request": "There is too much on this screen \u2014 how do we decide what to remove?",
     "skill": "recursica-skill-screen-priority"
   },
   {
@@ -132,11 +132,11 @@
     "skill": "recursica-skill-discoverability"
   },
   {
-    "request": "No skill covers this new kind of surface — is there a general house convention?",
-    "skill": "recursica-skill-system-conventions"
+    "request": "No skill covers this new kind of surface \u2014 is there a general house convention?",
+    "skill": "recursica-skill-design-system-conventions"
   },
   {
-    "request": "Two house rules seem to contradict each other — which one wins?",
+    "request": "Two house rules seem to contradict each other \u2014 which one wins?",
     "skill": "recursica-skill-design-router"
   },
   {
@@ -176,7 +176,7 @@
     "skill": "recursica-skill-menu"
   },
   {
-    "request": "Page numbers under an interior table",
+    "request": "Page numbers under an inset table",
     "skill": "recursica-skill-pagination"
   },
   {
@@ -220,7 +220,7 @@
     "skill": "recursica-skill-button"
   },
   {
-    "request": "A page has Approve, Reject and Export actions — which one is primary, and which go in an overflow menu?",
+    "request": "A page has Approve, Reject and Export actions \u2014 which one is primary, and which go in an overflow menu?",
     "skill": "recursica-skill-buttons-links"
   },
   {
@@ -240,7 +240,7 @@
     "skill": "recursica-skill-modal"
   },
   {
-    "request": "Make the delivery speed choice — standard, express or overnight — work with the arrow keys",
+    "request": "Make the delivery speed choice \u2014 standard, express or overnight \u2014 work with the arrow keys",
     "skill": "recursica-skill-radio-button"
   },
   {
@@ -252,15 +252,19 @@
     "skill": "recursica-skill-tabs"
   },
   {
-    "request": "The app has nine sections — should they go in a top bar or a left sidebar?",
+    "request": "The app has nine sections \u2014 should they go in a top bar or a left sidebar?",
     "skill": "recursica-skill-navigation"
   },
   {
     "request": "Where do the page title, breadcrumb and main action go on the Orders page?",
-    "skill": "recursica-skill-screen-scaffolding"
+    "skill": "recursica-skill-layouts-and-templates"
   },
   {
     "request": "Show the full name when a long project name is cut off in the sidebar",
     "skill": "recursica-skill-tooltip"
+  },
+  {
+    "request": "After someone archives a project, where should the Undo button go?",
+    "skill": "recursica-skill-undo"
   }
 ]

@@ -142,7 +142,7 @@ body {
  * build rather than emitting a colour that silently fell back to inherited text.
  *
  * The meaning never rests on the colour: the glyph carries it and the accessible name carries the
- * words, which is what `recursica-skill-system-conventions` requires. */
+ * words, which is what `recursica-skill-design-system-conventions` requires. */
 .stu-flag {
   color: var(--recursica_brand_layer_0_elements_text_warning);
   cursor: help;
