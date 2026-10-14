@@ -67,12 +67,9 @@ Each option below is described by role, such as "the error state". A name from t
 
 A number with no unit, such as "40", does not say what the number measures.
 
-**The slider's purpose decides when a change to the slider is saved.** Apply convention 1 of `recursica-skill-design-system-conventions`. Convention 1 tests whether the persona can see which save mode applies. The two purposes below are two different situations:
+**A slider that is not part of a form saves right away. A slider in a form saves with the form.** `recursica-skill-forms` sets this rule.
 
-- A slider whose effect is visible right away, such as volume, zoom or brightness, is a live control. A live control saves each change, because the persona sees the change.
-- A slider that stores a value in a form is a form field. The form field follows the form's one save mode, whichever save mode the form uses.
-
-Neither purpose adds a second save mode. Neither purpose conflicts with the one-save-mode rule in `recursica-skill-forms`.
+**Save a slider that is not part of a form when the persona finishes moving the thumb.** Do not save at every step of a drag. One drag changes the value many times.
 
 **Use the label component for the slider's label.** Put the range and the step size in the assistive element's help text, such as "0 to 100%, in steps of 5". See `recursica-skill-label` and `recursica-skill-assistive-element`.
 
@@ -144,7 +141,7 @@ The application must add every behavior in the two lists below. The slider compo
 - [ ] A slider with steps shows step indicators, and the unit is stated in the label.
 - [ ] The slider's label comes from the label component.
 - [ ] The slider's label placement (`layouts` in the standard UI kit) matches every other field in the same form. Each form has one placement, as `recursica-skill-forms` requires.
-- [ ] The save timing follows the slider's purpose. A live control with an effect visible right away saves each change. A slider in a form follows the form's one save mode.
+- [ ] A slider that is not part of a form saves right away, when the persona finishes moving the thumb. A slider in a form saves with the form.
 - [ ] The help text states the unit, range and step, and the error message restates the rule the value broke.
 - [ ] The error state has a signal that is not color.
 - [ ] The slider is announced as a slider, with the current value, the minimum, the maximum and the unit.

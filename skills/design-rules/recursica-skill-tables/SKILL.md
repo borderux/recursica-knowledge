@@ -305,7 +305,7 @@ One click cannot both switch the sort direction and open multi-sort.
 
 **One exception: a small edit to one cell, where editing in place is faster.** For example, changing one order's priority. Allow the exception only when a mistake costs little. The persona can undo the edit, or change the value again.
 
-**An editable cell saves the change right away, for that one field, like a switch.** Never edit several cells and save the cells together.
+**An editable cell is not part of a form, so the cell saves right away.** The cell saves only that one field. Never edit several cells and save the cells together.
 
 **An editable cell MUST look editable.** For example, the cell shows a form field. A plain cell gives no cue whether a click will edit, open the record, or select the row.
 

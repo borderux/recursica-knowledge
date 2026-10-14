@@ -23,11 +23,11 @@ The rules of the Recursica design system repeat six conventions. Each convention
 
 Examples:
 
-| Behavior              | The rule                                                | Owner                                |
-| --------------------- | ------------------------------------------------------- | ------------------------------------ |
-| Saving                | Field-level everywhere or batch everywhere, never mixed | `recursica-skill-forms`              |
-| When a switch commits | Immediately or on submit, but the same for every switch | `recursica-skill-selection-controls` |
-| Editable table cells  | Every editable cell shows the same cue, in every table  | `recursica-skill-tables`             |
+| Behavior              | The rule                                                                                                                 | Owner                                |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------ |
+| Saving                | In forms, field-level everywhere or batch everywhere, never mixed. A control that is not part of a form saves right away | `recursica-skill-forms`              |
+| When a switch commits | A switch in a form commits with the form. A switch on the switch's own commits right away                                | `recursica-skill-selection-controls` |
+| Editable table cells  | Every editable cell shows the same cue, in every table                                                                   | `recursica-skill-tables`             |
 
 **The convention covers more behaviors than the three examples.** The persona builds one mental model (what a person expects, based on the tools and work the person already knows) of the whole application. The persona does not build a separate mental model for each view. When modes are mixed, the persona stops trusting the mental model. The persona then cannot predict any behavior, not only the behavior on one screen.
 

@@ -87,11 +87,9 @@ Use a switch only when both the value and the setting the label names are binary
 
 ## Defaults and pre-selection
 
-**Pre-select checkboxes freely.** A checkbox group may start with no checkboxes, some checkboxes or every checkbox checked. No house rule limits checkbox defaults either way.
-
 **Be very careful about selecting a radio button in advance.** Most personas do not know how to deselect a radio button after one is selected. A radio button selected in advance quietly becomes the persona's answer. A pre-selected radio button is the riskiest default in an application.
 
-**Pre-select an option only where about 90 percent of personas would choose that option anyway.** Never pre-select an option that has major consequences later in the workflow, however likely the option is. `recursica-skill-screen-starting-state` sets both tests.
+**Pre-select an option only where about 90 percent of personas would choose that option anyway.** The rule covers checkboxes, radio buttons and every other option. Never pre-select an option that has major consequences later in the workflow, however likely the option is. `recursica-skill-screen-starting-state` sets both tests.
 
 ## Option counts and dropdowns
 
@@ -172,7 +170,9 @@ A segmented control and selectable chips both show where each option begins and 
 
 **Avoid saving to the server immediately in any form with more than one field.**
 
-**Save a switch at the same point as every other field in the application.**
+**A control that is not part of a form saves right away.** `recursica-skill-forms` sets this rule.
+
+**Save a switch inside a form at the same point as every other field in the application.** A switch on the switch's own, not part of a form, saves right away.
 
 - In an application that saves on change, a switch saves immediately.
 - In an application that saves on submit, a switch saves with the form.
@@ -240,7 +240,7 @@ Check every item before treating a set of selection controls as done:
 - [ ] A checkbox group is used wherever the persona can select zero to many options.
 - [ ] Each group holds 7 ± 2 options, and fewer where the options are different from each other or need specialist knowledge.
 - [ ] A list of options above the limit uses a dropdown. The list is predictable enough that the persona knows the options before opening the dropdown.
-- [ ] No radio button is selected in advance unless the default is right for nearly everyone.
+- [ ] A checkbox or radio button starts selected only when about 90 percent of personas would choose the option. The option also has no major later consequences.
 - [ ] A select-all control appears only where the checkbox group is long, and the checkbox group shows an indeterminate state.
 - [ ] Row selection in a table uses a checkbox in the leftmost cell of the table row. Every table that has row checkboxes has a header checkbox.
 - [ ] A click on an indeterminate header checkbox selects every table row.

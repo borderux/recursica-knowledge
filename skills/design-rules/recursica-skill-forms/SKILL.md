@@ -224,6 +224,8 @@ A legally binding submission with no way back is the clearest valid case.
 
 **Use exactly one save mode for the whole application.** Every other rule in this section follows from the application's save mode.
 
+**A control that is not part of a form saves right away when the value changes.** For example, a lone switch on a settings page saves right away. So does an editable table cell. The one save mode covers forms. A control inside a form saves with the form.
+
 | Mode                      | When the change is saved                         | Status message                                                                                        |
 | ------------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
 | **Field-level / instant** | On each field change, immediately, to the server | **Required.** Show a status that stays on the page and says the change was saved as a draft, and when |
@@ -298,7 +300,8 @@ Check every item before treating a form as done:
 - [ ] Enabled fields look enabled, and disabled fields look clearly different.
 - [ ] Pre-filled values are only values the persona does not have to understand to check.
 - [ ] Revealed content sits directly below, and right next to, the control that reveals the content.
-- [ ] The application uses exactly one save mode: field-level everywhere, or batch everywhere.
+- [ ] The application uses exactly one save mode for forms: field-level everywhere, or batch everywhere.
+- [ ] A control that is not part of a form saves right away when the value changes.
 - [ ] Field-level mode shows a save status that stays on the page. Batch mode shows no status and no unsaved-changes indicator.
 - [ ] A submit button is present in either save mode.
 - [ ] Tab order matches the visual order.

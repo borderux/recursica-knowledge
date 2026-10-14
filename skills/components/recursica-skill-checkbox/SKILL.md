@@ -70,7 +70,7 @@ Each option below is described by role, such as "the checked state". A name from
 
 **Label placement is one decision per form, not per field.** This group uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form. Short fields that would fit side by side follow the result too. A form may change placement at a breakpoint. A form never mixes placements at one breakpoint. A form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 
-**A checkbox group may start with any number of options checked.** The group may start with no options, some options, or all options checked. No house rule limits pre-selection in a checkbox group. The radio group's pre-selection rule is the opposite.
+**Check an option in advance only when the option passes both tests in `recursica-skill-screen-starting-state`.** About 90 percent of personas would choose the option. The option has no major effects later in the workflow. For example, never check "Subscribe to marketing emails" in advance.
 
 **Put a selection rule in assistive text, not in a validation message.** The persona sees a validation message only after breaking the rule. For example, put "At least two options required" under the group. Show the assistive text with the assistive element. See `recursica-skill-assistive-element`.
 
