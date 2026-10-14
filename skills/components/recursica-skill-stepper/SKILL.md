@@ -54,9 +54,9 @@ Each option below is described by role, such as "the smaller size". A name from 
 
 **Label each step with the name of the stage**, such as "Shipping". Use the step description only for a short fragment that clarifies the step label, such as "Address and delivery date". `recursica-skill-forms` bans sentences in microcopy. Use the shortest text that gives the information.
 
-**Make Next and Back buttons, not links.** Next and Back act on the process, not on a page or URL. `recursica-skill-buttons-links` and `recursica-skill-button` both state the rule that Next and Back are buttons. A Back button that changes the URL is navigation, not a step.
+**Make Next and Back buttons, not links.** Next and Back act on the process, not on a page or URL. `recursica-skill-button` states the rule that Next and Back are buttons. A Back button that changes the URL is navigation, not a step.
 
-**Make Next the primary button at the bottom right, and put Back in the secondary style directly left of Next.** The primary button uses the primary style, `solid` in the standard UI kit. On the last step, the primary button is the submit button. The submit button changes to the disabled look with an animated icon, as `recursica-skill-button` describes. The submit button never changes to a blocking spinner or a blocking overlay.
+**Make Next the primary button at the bottom right, and put Back in the secondary style directly left of Next.** The primary button uses the primary style, `solid` in the standard UI kit. On the last step, the primary button is the submit button. The submit button shows the theme's loading state. Without a loading state, the submit button shows the disabled look with a spinner, as `recursica-skill-button` describes. The submit button never changes to a blocking spinner or a blocking overlay.
 
 **Keep each step's primary action disabled until the step is complete and valid.** For example, Next on the Shipping step stays disabled until the address is complete and valid. `recursica-skill-forms` forbids an enabled button that shows validation errors when clicked. The forms rule applies to each step.
 
@@ -111,7 +111,7 @@ The rules below add to the accessibility baseline in `recursica-skill-design-sys
 - **When the step changes, move focus on purpose to the start of the new step's content.** The start is the new step's heading or the new step's first field. Do not leave focus on the Next button. Focus left on Next causes two problems:
   - The next Tab from a persona using a keyboard lands in an unexpected place.
   - A persona using a screen reader cannot tell that the page changed.
-- **Never move ahead automatically.** Finishing the last field of a step does not move the persona to the next step. The persona presses Next. `recursica-skill-forms` forbids moving focus for the persona.
+- **Never move ahead automatically.** Finishing the last field of a step does not move the persona to the next step. The persona presses Next.
 - **A step indicator the persona cannot use to move between steps is not a tab stop** (a place the Tab key lands). The step indicator has no `tabindex`, no click handler, and no styling that makes the step indicator look focusable.
 - **A step indicator the persona can use to move between steps is a real button.** The button is reachable by Tab in visual order, and Enter and Space press the button. Do not add a custom roving tabindex (where the arrow keys move between items that share one tab stop) to the step indicators.
 - **The tab order within a step follows the visual order.** The order is the step's fields from top to bottom, then Back and Next in the footer. The single-column form layout keeps the tab order and the visual order the same.
@@ -131,7 +131,7 @@ The rules below add to the accessibility baseline in `recursica-skill-design-sys
   - submit behavior
   - the rule of one save mode
 - `recursica-skill-navigation` — the ban on spreading a form across tabs, and what counts as a location with a route.
-- `recursica-skill-buttons-links` — Next and Back as actions, label wording, and placement in the footer.
+- `recursica-skill-buttons-links` — label wording, and placement in the footer.
 - `recursica-skill-design-system-conventions` — never show meaning in only one channel, and fix the screen's structure instead of shrinking controls to fit.
 
 ### Only if used on the same screen
@@ -160,9 +160,9 @@ The rules below add to the accessibility baseline in `recursica-skill-design-sys
 - [ ] Every size, orientation, and state is one the theme's UI kit lists. No error state, skipped state, or other state is invented.
 - [ ] Each step label names the stage, and each step description is a short fragment, not a sentence.
 - [ ] Next and Back are buttons, and neither button exists to change the URL.
-- [ ] Next is the primary button at the bottom right, with Back in the secondary style beside Next. The final submit uses the button's disabled look with an animated icon, and no blocking overlay.
+- [ ] Next is the primary button at the bottom right, with Back in the secondary style beside Next. The final submit uses the theme's loading state, or the disabled look with a spinner, and no blocking overlay.
 - [ ] The primary action stays disabled until the step is complete and valid.
-- [ ] One save mode runs across the whole flow. By default, all fields save together at the final submit, with no status message and no unsaved-changes indicator. The flow saves field by field only if the whole system does. A flow that saves field by field shows a save status that stays on the page.
+- [ ] One save mode runs across the whole flow. By default, all fields save together at the final submit, with no status message and no unsaved-changes indicator. The flow saves field by field only if the application does. A flow that saves field by field shows a save status that stays on the page.
 - [ ] Each step's content is in a single column, and not inside a card.
 - [ ] One label placement runs across the whole form at each breakpoint: every field side by side, or every field stacked. The label placement is decided once, not for each step, and not for each field.
 - [ ] "Step N of M" is in what assistive technology reads, not only on screen.

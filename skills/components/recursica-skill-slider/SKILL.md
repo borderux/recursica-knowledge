@@ -63,10 +63,7 @@ Each option below is described by role, such as "the error state". A name from t
 
 **A slider that moves in fixed steps must show the steps.** If the value moves in fixed amounts, turn on the step indicators. A slider that jumps between values without showing the steps is worse than a slider that moves freely. The persona cannot tell why the value jumped.
 
-**State the unit, such as percent or degrees.**
-
-- Put the unit in the label or the assistive text, as in "Opacity (%)".
-- Show the unit with the value in the number input, as in "40%".
+**State the unit, such as percent or degrees, in the label by default.** For example, label the slider "Opacity (%)". Show the unit beside the value only when the user asks.
 
 A number with no unit, such as "40", does not say what the number measures.
 
@@ -77,7 +74,7 @@ A number with no unit, such as "40", does not say what the number measures.
 
 Neither purpose adds a second save mode. Neither purpose conflicts with the one-save-mode rule in `recursica-skill-forms`.
 
-**Use the label component for the slider's label.** Put the unit, the range and the step size in the assistive element's help text, such as "0 to 100%, in steps of 5". See `recursica-skill-label` and `recursica-skill-assistive-element`.
+**Use the label component for the slider's label.** Put the range and the step size in the assistive element's help text, such as "0 to 100%, in steps of 5". See `recursica-skill-label` and `recursica-skill-assistive-element`.
 
 **Pair the error state with a signal that is not color.** Use either the assistive element's icon or the error message. `recursica-skill-design-system-conventions` requires a signal that is not color.
 
@@ -136,7 +133,7 @@ The application must add every behavior in the two lists below. The slider compo
 - **Smooth versus stepped, as documented types.** Only the design-system website shows a smooth type and a stepped type. The standard UI kit has step indicator properties, but no rule says what switches a slider between smooth and stepped. Do not rely on smooth and stepped types without confirming with the user. Confirm with the user only when the theme has no type variant for smooth and stepped.
 - **A hover state.** Only the design-system website shows a hover state. Do not rely on a hover state without confirming with the user. Confirm with the user only when the theme has no hover state.
 - **What `read-only-value` means.** The read-only value style could mark a number the persona cannot edit, beside a track the persona can use. The style could also mark a read-only slider as a whole.
-- **Whether the number input is required or optional**, and whether the answer differs by device or by screen. The house guidance calls the number input "highly recommended", and "highly recommended" is not a rule.
+- **Whether the number input is required or optional on some devices or screens.** The rule above requires the number input, with one exception. No rule says whether the answer differs by device or by screen.
 - **Value labels other than the minimum and maximum**, including a label that moves with the thumb.
 - **Vertical orientation.** Confirm a vertical slider with the user only when the theme has no vertical orientation.
 
@@ -144,7 +141,7 @@ The application must add every behavior in the two lists below. The slider compo
 
 - [ ] The range has fixed ends, and the slider's minimum and maximum labels (`min-max-label` in the standard UI kit) show both ends.
 - [ ] The number input is shown with the track, except for an approximate value whose effect is visible right away.
-- [ ] A slider with steps shows step indicators, and the unit is stated in the label or the assistive text.
+- [ ] A slider with steps shows step indicators, and the unit is stated in the label.
 - [ ] The slider's label comes from the label component.
 - [ ] The slider's label placement (`layouts` in the standard UI kit) matches every other field in the same form. Each form has one placement, as `recursica-skill-forms` requires.
 - [ ] The save timing follows the slider's purpose. A live control with an effect visible right away saves each change. A slider in a form follows the form's one save mode.

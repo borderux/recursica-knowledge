@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-switch
-description: Rules for the Recursica switch — the tests a value must pass for a switch, when a switch saves under the application's save mode, avoiding switches in table rows, no switches for high-stakes settings, and disabled versus read-only. Use for on/off settings and toggles. Not for one setting that saves at a different time from the other switches — see recursica-skill-checkbox. To choose between controls, see recursica-skill-selection-controls.
+description: Rules for the Recursica switch — the tests a value must pass for a switch, when a switch saves under the application's save mode, avoiding switches in table rows, no switches for high-stakes settings, and disabled versus read-only. Use for on/off settings and toggles. Not for several options set together — see recursica-skill-checkbox. To choose between controls, see recursica-skill-selection-controls.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -15,18 +15,17 @@ A switch turns one setting on or off, such as "Email notifications". Each switch
 
 - **The binary-inverse test passes.** The opposite of the value must be binary, known, and unique. On and off, yes and no, and true and false pass the test. The value "Black" fails the test, because _not black_ could be gray, pink, or any other value.
 - **The label test passes.** The label alone names what the switch controls, with no competing values. For example, "Email notifications" passes, because the only values are on and off. A switch has one label, and the label implies the value of the switch. A radio group has one label with several values, such as "Delivery speed" with Standard and Express.
-- **The switch saves at the same point as every other switch in the application.** "Rules" explains the two save modes. If one control must save at a different point from the application's other switches, use a checkbox for that control.
+- **The switch saves at the same point as every other switch in the application.** "Rules" explains the two save modes.
 - **The persona must see at a glance whether the setting is on or off**, including on a touch screen. A switch has a larger area to tap and a clearer on and off look. The larger area and the clearer look both help on a touch screen.
 - **The field is the one lone binary field in a form**, such as "Subscribe to the newsletter" in a sign-up form. Confirm with the user whether the field is a switch or a checkbox. A single checkbox that stands alone looks odd, and a switch often looks better. A lone binary field is the one case where appearance may decide. Appearance may decide because a checkbox and a switch behave the same for a lone binary field.
 
-**Use a switch only inside a form.** Outside a form, use a segmented control instead of a switch, for every value. For example, a "Show archived" control in a filter bar is a segmented control, not a switch. Places outside a form include chrome (the header, navigation and footer around the content), a filter bar, a toolbar, and a header. See `recursica-skill-segmented-control`. `recursica-skill-selection-controls` sets this rule.
+**Use a switch only inside a form.** Outside a form, use a segmented control instead of a switch, for every value. For example, a control in a filter bar that shows archived records is a segmented control, not a switch. Places outside a form include chrome (the header, navigation and footer around the content), a filter bar, a toolbar, and a header. See `recursica-skill-segmented-control`. `recursica-skill-selection-controls` sets this rule.
 
 ## When not to use a switch
 
 | Situation                                                                        | Use instead                                                                                                           |
 | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | The opposite of the value is not binary, known, and unique                       | A checkbox. See `recursica-skill-checkbox`.                                                                           |
-| One control must save at a different point from every other switch               | A checkbox. See `recursica-skill-checkbox`. Never mix save modes across switches.                                     |
 | One label has several possible values                                            | A radio group. See `recursica-skill-radio-button`.                                                                    |
 | The persona sets several independent on-or-off options together                  | Checkboxes. See `recursica-skill-checkbox`. Checkboxes work in groups, and switches do not.                           |
 | The control is in a table row                                                    | A checkbox. A switch is bulky, and wastes space in a dense table row.                                                 |
@@ -140,13 +139,13 @@ On screen, a switch shows the on or off state only by the thumb's position and t
 
 ## Related skills
 
-- `recursica-skill-selection-controls` — the binary-inverse test, the label test, switch versus checkbox, and the lone binary field. The skill also covers avoiding switches in table rows, and when a change saves across the whole system.
+- `recursica-skill-selection-controls` — the binary-inverse test, the label test, switch versus checkbox, and the lone binary field. The skill also covers avoiding switches in table rows, and when a change saves across the whole application.
 - `recursica-skill-forms` — the save-mode table and the save status each save mode requires, and single-column layout. The skill also covers label placement, one placement per form, and progressive disclosure.
 - `recursica-skill-label` — label text that names the object and makes sense out of context, and the required and optional markers.
 - `recursica-skill-assistive-element` — the help text and error text below the switch, and the wording rules for both.
 - `recursica-skill-buttons-links` — confirmation for changes with serious consequences.
 - `recursica-skill-undo` — offering an undo for a change.
-- `recursica-skill-design-system-conventions` — one mode of behavior per system, and never showing a meaning in only one way.
+- `recursica-skill-design-system-conventions` — one mode of behavior per application, and never showing a meaning in only one way.
 
 ### Only if used on the same screen
 

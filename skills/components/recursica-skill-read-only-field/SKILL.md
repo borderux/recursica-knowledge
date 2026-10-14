@@ -15,20 +15,20 @@ A read-only field shows a label and a value inside a form, such as "Account ID" 
 
 - **A form shows a value that the persona viewing the screen cannot edit.** Examples are a profile page or a settings page in view mode.
 - **A confirmation step sums up the values the persona entered**, so the persona can review the values before submitting.
-- **The system created the value**, such as an account ID, a created date or a calculated total.
+- **The application created the value**, such as an account ID, a created date or a calculated total.
 - **The value belongs to the object the form is about**, such as the order number on an order form. The value also needs the same label-and-value layout as the fields around the value.
 
 ## When not to use a read-only field
 
 In each situation below, use the listed component instead of changing a read-only field to fit.
 
-| Situation                                               | Use instead                                                                                         |
-| ------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| The persona can edit the value on this screen           | The matching input, such as `recursica-skill-text-field` or `recursica-skill-number-input`          |
-| The persona cannot edit the value now, but could later  | The disabled state of the component that edits the value. See `recursica-skill-selection-controls`. |
-| Nobody ever edits the data                              | Plain text. The frame of a form control suggests that the data is part of a form.                   |
-| The content is not a pair of a label and a value        | Standard text elements, such as headings and body text                                              |
-| Several repeating objects each have the same properties | A table. Each table row is one object, and each column is one field. See `recursica-skill-tables`.  |
+| Situation                                                  | Use instead                                                                                         |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| The persona can edit the value on this screen              | The matching input, such as `recursica-skill-text-field` or `recursica-skill-number-input`          |
+| The persona cannot edit the value now, but could later     | The disabled state of the component that edits the value. See `recursica-skill-selection-controls`. |
+| Nobody ever edits the data, and the data is outside a form | Plain text. The frame of a form control suggests that the data is part of a form.                   |
+| The content is not a pair of a label and a value           | Standard text elements, such as headings and body text                                              |
+| Several repeating objects each have the same properties    | A table. Each table row is one object, and each column is one field. See `recursica-skill-tables`.  |
 
 **If the value cannot be edited, use a read-only field, not a disabled input.** A disabled input still looks like an input. A disabled input tells the persona that the input cannot be used now. The persona then expects that another action first, such as checking a box, could reasonably make the input usable. A read-only field does not suggest that the value can become editable.
 
@@ -76,7 +76,9 @@ The most common mistake is a light gray background on editable fields. The light
 
 **Align read-only values the same way as the editable values on the same screen.** One mismatch is read-only values aligned left to sit near the labels, beside editable values aligned right. The mismatch makes one screen look like two different design systems.
 
-**Put the time zone and the unit in the value's text**, such as the "kg" in "12 kg". A persona who copies the value then gets the time zone and the unit with the value. A persona who hears the value read aloud also hears the time zone and the unit.
+**Put the time zone in the value's text**, such as the "PT" in "9:00 AM PT". A persona who copies the value then gets the time zone with the value. A persona who hears the value read aloud also hears the time zone.
+
+**Name the unit or the currency in the label by default, as in "Weight (kg)".** Use the same label as the input that edits the value. See `recursica-skill-number-input`.
 
 **If the persona can edit the value in another flow, open that flow from a named control that stays visible.** For example, name the control "Edit email address", not "Edit". Never use a control that appears on hover. Read the open questions before adding an edit control.
 
@@ -148,7 +150,7 @@ Never set or override the connection between the label and the value. The read-o
 - [ ] No state is set or faked on the read-only field: no error, no disabled and no focus styling.
 - [ ] The value uses the display format. Dates have a spelled-out month, numbers have a fixed number of decimal places, and durations have unit labels.
 - [ ] The read-only values are aligned the same way as the editable values on the same screen.
-- [ ] The time zone and the unit are in the value's text.
+- [ ] The time zone is in the value's text. The label names the unit or the currency, as the input's label does.
 - [ ] The read-only field shows no input, and a screen reader does not announce the read-only field as an input.
 - [ ] The label is connected to the value in code, not only visually.
 - [ ] The value is real text that can be selected and copied, never an image.

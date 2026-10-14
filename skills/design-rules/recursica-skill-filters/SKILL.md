@@ -66,7 +66,7 @@ For example, "Open orders only" may start on when both conditions are true. A fi
 
 See `recursica-skill-selection-controls` and `recursica-skill-dropdown`.
 
-**A single on/off control in a filter bar is a filter on one field.** For example, "Show archived" filters on the Status field.
+**A single on/off control in a filter bar is a filter on one field.** For example, a control that shows archived rows filters on the Status field.
 
 - Label the control with the field's name, like every other filter.
 - Show the field as a column in the table, so the persona can see what the control changed.
@@ -85,7 +85,7 @@ See `recursica-skill-selection-controls` and `recursica-skill-dropdown`.
 - Polite means the screen reader finishes speaking first.
 - Debounced means the announcement waits until the persona pauses, not on every keystroke.
 
-`recursica-skill-autocomplete` sets the same polite, debounced announcement requirement for a typed filter.
+`recursica-skill-autocomplete` also announces the result count politely, without interrupting the typing.
 
 **Filtering down to zero results is not an empty collection.** "No results for these filters" and "nothing here yet" are different states, with different next steps.
 
@@ -133,6 +133,7 @@ The three kinds of control are not filters. A disabled action control among the 
 - [ ] Every filter label is a noun that names the field, never a verb, and matches the column the filter narrows.
 - [ ] No placeholder does a label's job, and no control is identified only by ellipsis text inside the control.
 - [ ] Every filter in the filter bar uses the same neutral-state convention. The filter bar never mixes `All` with empty filters.
+- [ ] Every filter starts off. A filter starts on only when both conditions under "Defaults and the neutral state" are true.
 - [ ] Any default that narrows the collection is visible in the filter control that sets the default.
 - [ ] Dates use a relative-range control with a Custom option, not a pair of bare date inputs.
 - [ ] Every date field is named for the event the date records.

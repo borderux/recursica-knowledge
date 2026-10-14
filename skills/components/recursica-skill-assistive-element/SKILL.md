@@ -18,13 +18,14 @@ The assistive element is the text below a form field. One component shows both h
 
 ## When not to use an assistive element
 
-| Situation                                                  | Use instead                                      |
-| ---------------------------------------------------------- | ------------------------------------------------ |
-| The text names the field                                   | A label. See `recursica-skill-label`.            |
-| The text shows what a value looks like, inside the field   | The field's placeholder                          |
-| The text reports a failure of the whole form or the server | A form-level error. See `recursica-skill-forms`. |
-| The text confirms a success                                | A toast. See `recursica-skill-toast`.            |
-| The text explains a whole section                          | Section-level copy. See `recursica-skill-forms`. |
+| Situation                                                | Use instead                                                                       |
+| -------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| The text names the field                                 | A label. See `recursica-skill-label`.                                             |
+| The text shows what a value looks like, inside the field | The field's placeholder                                                           |
+| The text reports a failure on the server                 | A toast or a banner. See `recursica-skill-feedback-messaging`.                    |
+| The text sums up the errors of the whole form            | No rule yet. See the open question on error summaries in `recursica-skill-forms`. |
+| The text confirms a success                              | `recursica-skill-feedback-messaging` decides whether a success gets any message.  |
+| The text explains a whole section                        | Section-level copy, not an assistive element.                                     |
 
 ## Variants
 
@@ -76,7 +77,7 @@ Every assistive element in a form follows that one label placement. The assistiv
 
 **Do not use the assistive element for marketing, reassurance, or filler text.** For example, never write "Trusted by 10,000 teams" or "Almost done!" below a field. A persona reads every line of help text and error text each time the persona goes through the form.
 
-**Never show a success message or a success mark on a field.** For example, never show a check mark below a valid email address. A success confirmation goes in a toast. See `recursica-skill-toast`.
+**Never show a success message or a success mark on a field.** For example, never show a check mark below a valid email address. `recursica-skill-feedback-messaging` decides whether a success gets any message.
 
 ## Accessibility
 
@@ -94,7 +95,7 @@ The assistive element helps only when the code connects the assistive element to
 - **The error message must make sense when read alone**, because the error message has replaced the help text. Restating the rule in the error text is not repetition. The error text is the only channel (color, shape, position or text, each a separate signal) left that states the rule.
 - **The assistive element's icon is decorative, and a screen reader must not announce the icon.** The icon is a second visual signal, after color. The words of the message give the meaning.
 - **Do not announce the same text twice.** If the assistive element's message is connected to the field, do not also repeat the message in a live region (an area of the page that a screen reader announces automatically when the area's content changes).
-- **Use the assistive element to announce only the results of the persona's own actions.** For example, show "Email is already in use" after the persona enters an email address, not when the page loads. A screen reader can read the whole form in order. A message under a field that the persona did not cause then confuses the persona.
+- **Use the assistive element to announce only the results of the persona's own actions.** For example, show "Email is already in use" after the persona leaves the email field, not when the page loads. A screen reader can read the whole form in order. A message under a field that the persona did not cause then confuses the persona.
 
 ### Keyboard and non-mouse navigation
 

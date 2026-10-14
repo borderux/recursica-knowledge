@@ -106,7 +106,7 @@ No chart type is always right. Pick bars, columns, lines or areas for each chart
 
 ## Axes and scale
 
-**The value axis (the axis that shows the amounts) MUST start at zero.** A value axis that starts above zero exaggerates the variation. Values between one and five million that vary by one percent look wildly unstable on an axis starting at 900,000. A value axis that starts above zero is the most common way an honest chart becomes a dishonest one.
+**The value axis (the axis that shows the amounts) MUST start at zero.** A value axis that starts above zero exaggerates the variation. Values near one million that vary by one percent look wildly unstable on an axis starting at 900,000. A value axis that starts above zero is the most common way an honest chart becomes a dishonest one.
 
 **The scale MUST be linear. NEVER use a logarithmic scale.** On a logarithmic scale, each step up the axis multiplies the value by the same amount, such as ten. Personas do not read the steps of a logarithmic scale as evenly spaced. A logarithmic scale misleads by design, and makes the chart harder for everyone to read.
 
@@ -202,9 +202,14 @@ Encoding is how the data becomes visual marks: position, length, color and patte
 
 ## Filtering and default views
 
-**Prefer filters that the persona applies.**
+**A chart's filters start off.** A filter may start on only when both conditions are true:
 
-**If the chart's data is filtered by default, say clearly that the data is filtered.** For example, a chart that opens on the last 30 days says "Showing the last 30 days". The persona must know that the chart shows only part of the data.
+- The filter is so obviously right that the filter must be the default view.
+- The persona would probably never turn the filter off.
+
+`recursica-skill-filters` sets this rule.
+
+**A filter that starts on shows as on, and the chart says clearly that the data is filtered.** For example, a chart that opens on the last 30 days says "Showing the last 30 days". The persona must know that the chart shows only part of the data.
 
 ## Annotations and outliers
 
@@ -264,7 +269,7 @@ Check each item below before treating a chart as done.
 - [ ] Time is on the horizontal axis wherever the data has a time dimension.
 - [ ] No data points are skipped, and no natural sequence is rearranged.
 - [ ] Gridlines are present, spaced so the gridlines are easy to read.
-- [ ] Both axes are labeled, values are shown, and each bar's value sits at the end of the bar.
+- [ ] Both axes are labeled and values are shown. Each bar's value sits at the end of the bar where the chart has room.
 - [ ] Labels are short, but not abbreviated where the persona may not know the terms of the persona's line of work.
 - [ ] Numbers are rounded to a precision the persona can read.
 - [ ] Thresholds or reference ranges are present wherever a value can be "good" or "bad".
@@ -277,7 +282,7 @@ Check each item below before treating a chart as done.
 - [ ] Missing data is left out and labeled, never implied, and data with large gaps is not charted.
 - [ ] Projections are dashed or see-through, and cannot be mistaken for recorded data.
 - [ ] A live chart either refreshes while the persona is told the chart is live, or waits behind a refresh control.
-- [ ] A chart whose data is filtered by default says clearly that the data is filtered.
+- [ ] A chart's filters start off, unless both conditions for starting on hold. A filter that starts on shows as on, and the chart says that the data is filtered.
 - [ ] Notes sit beside the chart, not on top of the chart.
 - [ ] Overlapping series use different techniques, not only different point shapes.
 - [ ] At smaller sizes, the chart adapts instead of shrinking, and any information left out is pointed out.

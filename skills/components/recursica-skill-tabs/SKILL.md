@@ -21,7 +21,7 @@ Tabs split the content about one subject into sections, and show one section at 
 
 | Instead of tabs                                        | Use                                                                                                                                                           |
 | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The steps must be done in order                        | A stepper — see `recursica-skill-forms`                                                                                                                       |
+| The steps must be done in order                        | A stepper — see `recursica-skill-stepper`                                                                                                                     |
 | A form is too long for one screen                      | A stepper. A tab set never holds a form                                                                                                                       |
 | The sections are different areas of the app            | Navigation — see `recursica-skill-navigation`                                                                                                                 |
 | The persona needs to compare content across sections   | One view that shows all the content being compared at the same time. Tabs show one section at a time, so the persona cannot see the compared content together |
@@ -63,9 +63,9 @@ The rules below describe each option by role, such as "the vertical orientation"
 - Switch to a vertical tab set.
 - Shorten the tab labels.
 
-Tabs that do not fit mean the screen is organized wrong. `recursica-skill-navigation` sets this rule.
+Tabs that do not fit mean the screen is organized wrong.
 
-**Use a vertical tab set as a normal option, without confirming with the user first.** A vertical tab set is an approved house pattern. `recursica-skill-navigation` names a vertical tab set as the fix for tabs that do not fit. The arrow keys follow the orientation, as described under "Keyboard and non-mouse navigation" below.
+**Use a vertical tab set as a normal option, without confirming with the user first.** A vertical tab set is an approved house pattern. A vertical tab set is the fix for tabs that do not fit. The arrow keys follow the orientation, as described under "Keyboard and non-mouse navigation" below.
 
 **Never set or override the keyboard behavior inside the tab set.** The tab set responds to key presses on the tabs, such as the arrow keys. Do not add custom code that responds to key presses inside the tab set. Custom code for key presses can break the tab set's keyboard behavior.
 
@@ -100,8 +100,8 @@ A wrong role or a wrong connection in the tab set's markup makes the tab set's c
 
 ## Related skills
 
-- `recursica-skill-navigation` — what tabs may contain, tab routes and history, the ban on tabs that do not fit, active states, and breadcrumbs.
-- `recursica-skill-forms` — the stepper, which is the correct alternative to a form split across tabs.
+- `recursica-skill-navigation` — what tabs may contain, tab routes and history, active states, and breadcrumbs.
+- `recursica-skill-stepper` — the stepper, which is the correct alternative to a form split across tabs.
 - `recursica-skill-working-memory` — the reason for the 7 ± 2 limit on tabs.
 - `recursica-skill-badges-chips` — the counter on a tab.
 - `recursica-skill-design-system-conventions` — the accessibility baseline every component follows.

@@ -11,7 +11,7 @@ metadata:
 
 A date picker records one calendar date. The persona types the date or picks the date from a calendar.
 
-> **The date picker is built in the Mantine adapter only.** The UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has) has 34 date picker tokens (named design values, such as colors or sizes, set by the design system). The Mantine adapter applies 31 of the 34 tokens. The MUI adapter has an empty style file for the date picker, and applies none of the 34 tokens. On MUI, the date picker appears unstyled, and no error appears. The rules below are correct for the UI kit. Confirm which adapter the application uses before relying on how the date picker looks.
+> **The date picker is styled in the Mantine adapter only.** The MUI adapter applies none of the date picker's styles. On MUI, the date picker appears unstyled, and no error appears. The rules below are correct for the UI kit (the token file, `recursica_ui-kit.json`, that says which variants and states each component has). Confirm which adapter the application uses. Where the adapter has no styled date picker, follow "Missing components" in `recursica-skill-design-router`.
 
 ## When to use a date picker
 
@@ -72,7 +72,7 @@ Each option below is described by role, such as "the error state". The names in 
 
 **Always give the date picker a visible label, set in the date picker component.** Name exactly what the field holds, as in "Start date", not "Date". A persona using a screen reader hears the label alone, without the headings, text, or layout around the field. Write the label in sentence case, with no colon at the end.
 
-**A date and a time together are one control with one label.** A date picker, a time entry, and an AM/PM choice may share one line of a form. The three inputs share one label, such as "Meeting start". The three inputs hold one value. No other inputs share one line of a form. `recursica-skill-forms` sets this rule.
+**A date and a time together are one control with one label.** A date picker, a time entry, and an AM/PM choice may share one line of a form. The three inputs share one label, such as "Meeting start". The three inputs hold one value. Only a compound control (small, closely tied inputs that make up one value) shares one line of a form. `recursica-skill-forms` sets this rule.
 
 **Label placement is one decision per form, not per field.** This field uses the same label placement as every other field in the form. Apply the container-width test once, to the whole form. The result sets the placement of every field in the form. Short fields like this one that would fit side by side follow the result too. A form may change placement at a breakpoint. A form never mixes placements at one breakpoint. A form section never gets a separate placement. `recursica-skill-forms` sets this rule.
 

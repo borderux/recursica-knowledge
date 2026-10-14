@@ -36,9 +36,9 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 1. First, work toward agreement between the business and the personas.
 2. When the business and the personas do not agree, the people who use the product get the final say.
 
-**Use the data model's term only when the persona does not already know the term from everyday use.** When a persona meets a concept without understanding the concept, the system's term can be the right term to teach. Everywhere else, keep the data model's field names out of the interface.
+**Use the data model's term only when the persona does not already know the term from everyday use.** When a persona meets a concept without understanding the concept, the application's term can be the right term to teach. Everywhere else, keep the data model's field names out of the interface.
 
-**When a client insists on a term the agent or the user thinks is wrong, use the client's term. Then test the client's term with usability testing.** Few other options exist. The test turns the disagreement into evidence instead of opinion.
+**When the user insists on a term the agent thinks is wrong, use the user's term. Then test the user's term with usability testing.** Few other options exist. The test turns the disagreement into evidence instead of opinion.
 
 **When two roles use different words for the same object, first check whether the two roles share a screen.** For example, buyers say "Vendors" and accountants say "Suppliers".
 
@@ -51,7 +51,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 **A label may get longer on a deeper page.** To reach a deeper page, the persona clicked through the shorter labels above the page. The persona understood the shorter labels well enough to go further. The deeper page can use the extra words that make the full idea clear.
 
-**Stop making a label longer when the extra words neither add accuracy nor keep the label concise.** Concision matters most, and accuracy comes a close second. Leave out a word that neither makes the label more accurate nor keeps the label concise. For example, Purchase orders is more accurate than Orders. Purchase orders list adds length and no accuracy.
+**Stop making a label longer once the extra words add no accuracy.** Concision matters most, and accuracy comes a close second. Leave out a word that does not make the label more accurate. For example, Purchase orders is more accurate than Orders. Purchase orders list adds length and no accuracy.
 
 **NEVER let an object lose the object's name as the persona moves through the application.** For example, a navigation item reads Shipments, but the screen the item leads to never says "shipment".
 
@@ -185,7 +185,7 @@ The page layout has a setting that adds a space below a heading for exactly that
 - [ ] No label, heading, or page title has a definition next to the name. The line under a page title or a section heading holds no definition of the title or heading.
 - [ ] Every object is named in the personas' vocabulary, not the business's or the data model's.
 - [ ] The data model's term appears only where the persona does not already know the concept from everyday use.
-- [ ] Any term the client insisted on is used as the client asked and flagged for usability testing. The term is not corrected without notice.
+- [ ] Any term the user insisted on is used as the user asked and flagged for usability testing. The term is not corrected without notice.
 - [ ] Where two roles share a screen, one term is chosen. Where two roles do not share a screen, each role keeps the role's own term.
 - [ ] The navigation label, the page title, and the column header can be recognized as the same object. A label gets longer on deeper pages only while the extra words add accuracy.
 - [ ] No object's name disappears on the screen that the object's label leads to.

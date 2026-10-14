@@ -86,7 +86,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 **Put the selection rule in the assistive text, the help text below the dropdown.** See `recursica-skill-assistive-element`. A selection rule can be any of the following:
 
-- a sentence such as "You can only select one option"
+- a fragment such as "One option only"
 - a minimum
 - a limit
 
@@ -187,9 +187,9 @@ Do not set or override the parts the dropdown component provides:
 
 ## Open questions
 
-- **Multi-select.** `recursica-skill-selection-controls` requires a multi-select dropdown in two places. The dropdown in the shipped adapter (the Recursica component library for one framework, such as Mantine or Angular Material) selects a single value. A missing multi-select variant is no reason to build a multi-select dropdown out of other parts. Do not put a checkbox group inside a dropdown. Do not substitute a transfer list without confirming with the user. When the persona must filter by several values, one build test used separate single-value filters that AND together (a row appears only if the row matches every filter). The workaround succeeded. Confirm with the user only when the theme has no multi-select variant.
+- **Multi-select.** `recursica-skill-selection-controls` requires a multi-select dropdown in two places. The dropdown in the shipped adapter (the Recursica component library for one framework, such as Mantine or Angular Material) selects a single value. If the theme has no multi-select variant, follow "Missing components" in `recursica-skill-design-router`. Never build a multi-select dropdown out of other parts, such as a checkbox group inside a dropdown. Do not substitute a transfer list without confirming with the user. When the persona must filter by several values, one build test used separate single-value filters that AND together (a row appears only if the row matches every filter). The workaround succeeded. Confirm with the user only when the theme has no multi-select variant.
 - **The open menu.** Confirm with the user before showing group headers, or icons or descriptions inside an option.
-- **The autocomplete threshold.** The dropdown skill says to consider an autocomplete for a long list of options that the persona knows well. `recursica-skill-selection-controls` records the threshold as not set. Do not pick a number.
+- **The autocomplete threshold.** "When not to use a dropdown" above says to use an autocomplete for a long list of options that the persona knows well. `recursica-skill-selection-controls` records the threshold as not set. Do not pick a number.
 - **Clearing.** No rule says whether the persona may clear a dropdown back to no value after choosing a value. No rule says whether an explicit "None" option is allowed.
 - **Grouped options and dependent dropdowns.** No rule covers options grouped into sections, or dependent dropdowns. With dependent dropdowns, the value chosen in one dropdown filters the options in another dropdown. For example, the "Country" dropdown sets which states the "State" dropdown lists. Confirm grouped options with the user only when the theme has no variant that groups options.
 - **An empty list of options.** No rule says what a dropdown with no options shows.
@@ -203,7 +203,7 @@ Do not set or override the parts the dropdown component provides:
 - [ ] Where no default exists, the dropdown shows placeholder text, and the placeholder holds no required information.
 - [ ] The dropdown has a real label that makes sense without the text around the dropdown. The placeholder is not used as the label.
 - [ ] Label placement is side by side, unless the form's container is too narrow.
-- [ ] Label placement matches every other field in the same form. Each form has one placement at each breakpoint, with no mixing between fields or form sections. Label placement is set explicitly on the field, to `side-by-side` unless the form's container is too narrow. A field with no label placement set shows the label above the field (`stacked`), which breaks the house rule. The name of the label placement setting in code is not `layouts`.
+- [ ] Label placement matches every other field in the same form. Each form has one placement at each breakpoint, with no mixing between fields or form sections. Label placement is set explicitly on the field, to `side-by-side` unless the form's container is too narrow. A field with no label placement set shows the label above the field (`stacked`), which breaks the house rule. The label placement setting uses the name the code uses, looked up with `recursica_get_component_doc`.
 - [ ] The open menu is not cut off by the viewport, a panel, a modal, or any scrolling ancestor.
 - [ ] Selection rules are in the assistive text. On error, an error message that restates the rule replaces the assistive text, with a signal that is not color.
 - [ ] A screen reader announces the expanded state, the number of options, the active option, and the selected value.

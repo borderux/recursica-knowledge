@@ -22,13 +22,13 @@ A table shows many records of one type, such as the orders on an Orders page. Th
 
 ## When not to use a table
 
-| Situation                                                                        | Use instead                                                   |
-| -------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| A few items, in a list with a fixed end, where each item has a chart or an image | `recursica-skill-card`                                        |
-| The properties of one object, such as one order                                  | A detail view or a form                                       |
-| A list of names of one kind, with no other values for each name                  | A list                                                        |
-| The data has a parent-child hierarchy, such as folders inside folders            | `recursica-skill-tree`                                        |
-| Laying out a page                                                                | A layout. A table is for data, never for positioning content. |
+| Situation                                                                 | Use instead                                                   |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| A small set of items that passes the five tests in `recursica-skill-card` | `recursica-skill-card`                                        |
+| The properties of one object, such as one order                           | A detail view or a form                                       |
+| A list of names of one kind, with no other values for each name           | A list                                                        |
+| The data has a parent-child hierarchy, such as folders inside folders     | `recursica-skill-tree`                                        |
+| Laying out a page                                                         | A layout. A table is for data, never for positioning content. |
 
 **When a table is too wide for the screen, change the table's structure instead of adding scrolling.** Use any of the following changes:
 
@@ -61,7 +61,6 @@ The rules below describe each part and option by role, such as "the header row".
 
 - `recursica-skill-tables` owns this rule. Read `recursica-skill-tables` for the full rule, including the text, the italics, and the neutral-500 color.
 - The table skill repeats the rule only because the rule affects accessibility.
-- `recursica-skill-design-system-conventions` extends the rule to every region that holds content, such as a page, panel, or modal.
 - If `recursica-skill-tables` differs from this paragraph, follow `recursica-skill-tables`.
 
 **Give every table a default sort, and always show the sort indicator on the sorted column.** For example, an Orders table opens sorted by date, and the Date column header shows the sort indicator.
@@ -96,7 +95,11 @@ If the persona cannot see the order of the table rows, the persona has to guess 
 
 **Do not put a card in a cell, and do not wrap the table in a card.**
 
-**A table has at most one frozen column** (a column that stays in place while the other columns scroll horizontally). `recursica-skill-tables` owns this rule.
+**A table has at most three frozen columns** (columns that stay in place while the other columns scroll horizontally). `recursica-skill-tables` owns this rule.
+
+**A loading table shows the loader by default, and never shows skeleton rows.** `recursica-skill-tables` owns this rule.
+
+**Below the tablet breakpoint, show a table only when all of the table's columns fit the screen width.** Otherwise, leave the table off. `recursica-skill-responsive-layout` owns this rule.
 
 **Do not use the body cell's `max-width` token to fix a column that is too wide.** Set a column's width by the column's data type, as `recursica-skill-tables` describes.
 
@@ -165,14 +168,12 @@ Never set or override the styling of the header row, the body cells or the foote
 
 ## Open questions
 
-- **How a selected table row looks.** The design rules require row selection. Confirm with the user only when the theme has no selected-row state.
+- **How a selected table row looks.** The question applies only to a table with row selection. Confirm with the user only when the theme has no selected-row state.
 - **Row hover.** A clickable table row needs a visible cue that the row can be clicked. Confirm with the user only when the theme has no row hover state.
 - **Table rows that expand, and nested detail.** No rule covers an expanding table row or nested detail. Confirm the tokens for an expanding table row with the user only when the theme has no expanded-row state.
 - **What the disabled state means on a cell, a header, or a footer.** The disabled state may mean a value that is unavailable or a column that cannot be sorted. The disabled state may also have a different meaning.
 - **A supported way to mark one value as missing.** The missing-value style is settled: `recursica-skill-tables` sets the literal text `NA`, in italics, in neutral 500. In the standard UI kit, a cell's disabled state applies to the whole cell. A component that shows only the value cannot change the cell around the value. If the theme or the code has a way to apply the missing-value style, use that way. Otherwise, take the color from the neutral palette token. Do not use the cell's disabled color, which is a different value.
 - **The empty state**, and the difference between "no records yet" and "no results for these filters". `recursica-skill-design-router` lists the empty state as a topic that no skill owns.
-- **Loading.** See `recursica-skill-loader`.
-- **Behavior below desktop size.** `recursica-skill-design-router` lists behavior below desktop size as a topic that no skill owns.
 
 ## Pre-flight checklist
 
@@ -193,4 +194,5 @@ Never set or override the styling of the header row, the body cells or the foote
 - [ ] No styling is set or overridden on the table, the header row, the body cells or the footer row. No container or spacer is added to change the table's look.
 - [ ] No cell's value is wrapped in a text component. Every column of the table shows in the same typeface, size, and weight. The type was checked by comparing the columns on screen, not by reading the markup.
 - [ ] A column that was too wide is fixed with a width set by data type, not with the cell's `max-width` token.
-- [ ] Open questions were asked about, not decided: how a selected table row looks, row hover, table rows that expand and nested detail, the meaning of the disabled state on a cell, a supported way to mark a missing value, the empty state, loading, and behavior below desktop size.
+- [ ] A loading table shows the loader by default, never skeleton rows. Below the tablet breakpoint, a table appears only when all the table's columns fit the screen width.
+- [ ] Open questions were asked about, not decided: how a selected table row looks, row hover, table rows that expand and nested detail, the meaning of the disabled state on a cell, a supported way to mark a missing value, and the empty state.

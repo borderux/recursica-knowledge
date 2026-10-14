@@ -149,7 +149,7 @@ Never set or override how the label connects to the input or how keys work insid
 - [ ] The value cannot come from a fixed list of options.
 - [ ] The text field has a visible label, and the label makes sense without the context around the field.
 - [ ] Label placement is side by side, unless the form's container is too narrow.
-- [ ] Label placement is set explicitly to the side-by-side option, unless the form's container is too narrow. A field with no label placement set shows the label above the field, not the house default. The setting uses the name the code uses, not the UI kit name `layouts`.
+- [ ] Label placement is set explicitly to the side-by-side option, unless the form's container is too narrow. A field with no label placement set shows the label above the field, not the house default. The setting uses the name the code uses, looked up with `recursica_get_component_doc`.
 - [ ] Label placement matches every other field in the same form. Each form has one placement at each breakpoint, with no mixing between fields or form sections.
 - [ ] The placeholder text holds no required information.
 - [ ] The assistive text states the field's rule. On error, an error message that restates the rule replaces the assistive text.

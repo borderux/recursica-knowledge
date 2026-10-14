@@ -55,7 +55,7 @@ Do not set a variant, state or content option that the MCP server does not list 
 
 When the label matches the heading, the persona who arrives sees that the trail led to the right page.
 
-**Never make a breadcrumb the only sign of the persona's location.** A breadcrumb is one of three location signs. `recursica-skill-navigation` requires all three signs:
+**Never make a breadcrumb the only sign of the persona's location.** A breadcrumb is one of three location signs. `recursica-skill-navigation` requires more than the selected state: headings, breadcrumbs, or both. The three signs are:
 
 - the selected item in the navigation, such as Orders highlighted in the sidebar
 - a clear heading hierarchy

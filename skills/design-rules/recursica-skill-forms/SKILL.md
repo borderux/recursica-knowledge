@@ -153,7 +153,7 @@ The loading state inside the submit button is enough. With no overlay, the perso
 
 **Turn a field's help text into the field's error message where the change makes sense.** For example, the help text "8 or more characters" stays in view as the error. The error message should still state the rule the persona broke, not a bare "Invalid input". The persona needs the rule in view to fix the error.
 
-**Show each error on the field that has the error.** In a dense form, flags are a good way to show errors. A flag sits over the page and is pinned to a field with an error. Flags make the place of every error impossible to miss.
+**Show each error on the field that has the error.** In a dense form, flags are a good way to show errors. A flag sits over the page and is pinned to a field with an error. Flags make the place of every error impossible to miss. A flag is a component. If the theme has no flag component, follow "Missing components" in `recursica-skill-design-router`.
 
 ## Microcopy
 
@@ -222,7 +222,7 @@ A legally binding submission with no way back is the clearest valid case.
 
 ## Persistence and autosave
 
-**Put each form in exactly one save mode.** Every other rule in this section follows from the form's save mode.
+**Use exactly one save mode for the whole application.** Every other rule in this section follows from the application's save mode.
 
 | Mode                      | When the change is saved                         | Status message                                                                                        |
 | ------------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
@@ -235,7 +235,7 @@ A legally binding submission with no way back is the clearest valid case.
 
 **In batch mode, do not show an unsaved state** (a sign that changes are not yet saved). For example, show no "Unsaved changes" label. The only signal the persona needs is the submit button becoming enabled once every editable control is valid.
 
-**If the product's technology can save drafts automatically, always save drafts.** Entered data should survive a page refresh and a return visit, with no action from the persona. Saving drafts is a field-level behavior. Draft saving therefore needs the status message that field-level mode requires.
+**If the application can save drafts automatically, always save drafts.** Entered data should survive a page refresh and a return visit, with no action from the persona. Saving drafts is a field-level behavior. Draft saving therefore needs the status message that field-level mode requires.
 
 **Always keep a submit button**, even with autosave. A form with no submit button is confusing, even when autosave makes the submit button technically unnecessary.
 
@@ -266,12 +266,12 @@ A CAPTCHA is a test that tells a person apart from a program.
 **Confirm with the user instead of choosing.** No house rule covers the following questions yet. See the never-guess rule in `recursica-skill-design-router`. Do not stretch a house rule for forms to fit an open question.
 
 - **Validation across the steps of a multi-step flow.** No rule says whether a step validates when the persona leaves the step. No rule says what going back to an earlier step does to the data the persona entered.
-- **Search and filter inputs.** No rule says whether search and filter inputs follow the form rules. Search and filter inputs might instead be a different kind of region that holds content. Examples of such a region are a page, a panel or a modal.
 - **Error summaries for the whole form.** The rules cover validation on each field. No rule covers a summary of errors at the top of the form.
 
 ## Out of scope
 
 - **Choosing the type of control**: a dropdown, radio, checkbox, or toggle. `recursica-skill-selection-controls` covers the choice.
+- **Search and filter inputs.** Filtering saves nothing, so filtering is not a form. `recursica-skill-filters` covers search and filter inputs.
 - **Keeping, archiving, and logging submitted entries.** Keeping submitted entries is data logging, not form design. Logging submissions is a separate backend requirement.
 
 ## Pre-flight checklist
@@ -298,10 +298,10 @@ Check every item before treating a form as done:
 - [ ] Enabled fields look enabled, and disabled fields look clearly different.
 - [ ] Pre-filled values are only values the persona does not have to understand to check.
 - [ ] Revealed content sits directly below, and right next to, the control that reveals the content.
-- [ ] The form is in exactly one save mode: field-level everywhere, or batch everywhere.
+- [ ] The application uses exactly one save mode: field-level everywhere, or batch everywhere.
 - [ ] Field-level mode shows a save status that stays on the page. Batch mode shows no status and no unsaved-changes indicator.
 - [ ] A submit button is present in either save mode.
 - [ ] Tab order matches the visual order.
 - [ ] Any toggle that shows the password has an accessible name, and the form has no challenge CAPTCHA.
 - [ ] The form has no confirmation dialog, unless the action cannot be undone and no way to recover exists.
-- [ ] Open questions were asked about, not decided: validation across steps, filter and search inputs, and error summaries.
+- [ ] Open questions were asked about, not decided: validation across steps, and error summaries.

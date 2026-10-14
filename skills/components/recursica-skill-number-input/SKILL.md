@@ -175,7 +175,7 @@ The number input component connects the label to the input and shows the focus r
 - [ ] The value is a quantity, not an identifier, a length of time, or a position on a range.
 - [ ] The field has a visible label. The label names the object, and names the unit when the object does not make the unit obvious.
 - [ ] Label placement is side by side, unless the container is too narrow.
-- [ ] Label placement is set explicitly on every field, to side by side unless the form's container is too narrow. The setting uses the names the code uses, not `layouts`. A field with no setting gets the label above the field (`stacked`), not the house rule.
+- [ ] Label placement is set explicitly on every field, to side by side unless the form's container is too narrow. The setting uses the names the code uses, looked up with `recursica_get_component_doc`. A field with no setting gets the label above the field (`stacked`), not the house rule.
 - [ ] Label placement matches every other field in the same form. Each form has one placement at each breakpoint, with no mixing between fields or form sections.
 - [ ] The value is right-aligned, and the alignment matches the read-only values on the same screen.
 - [ ] Precision is fixed, and the same across every value shown together. Currency has two decimal places.

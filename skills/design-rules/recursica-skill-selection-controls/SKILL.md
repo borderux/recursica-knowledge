@@ -74,7 +74,7 @@ Use a switch only when both the value and the setting the label names are binary
 
 **A checkbox marks one specific value as true or false.** For example, in a "Contact me by" group, the "Email" checkbox marks Email as chosen or not chosen. A checkbox can stand for any value. For that reason, checkboxes work in a group, and switches do not.
 
-**A lone binary field is the one case where the look may decide between a checkbox and a switch.** A lone binary field is a checkbox group that holds only one checkbox. A checkbox and a switch work the same way for a lone binary field. A lone checkbox looks odd, and a switch often looks better. Confirm the choice with the user.
+**A lone binary field is the one case where the look may decide between a checkbox and a switch.** A lone binary field is one yes-or-no field with no others beside the field. A checkbox and a switch work the same way for a lone binary field. A lone checkbox looks odd, and a switch often looks better. Confirm the choice with the user.
 
 ## Checkbox vs. radio
 
@@ -89,7 +89,7 @@ Use a switch only when both the value and the setting the label names are binary
 
 **Pre-select checkboxes freely.** A checkbox group may start with no checkboxes, some checkboxes or every checkbox checked. No house rule limits checkbox defaults either way.
 
-**Be very careful about selecting a radio button in advance.** Most personas do not know how to deselect a radio button after one is selected. A radio button selected in advance quietly becomes the persona's answer. A pre-selected radio button is the riskiest default in the system.
+**Be very careful about selecting a radio button in advance.** Most personas do not know how to deselect a radio button after one is selected. A radio button selected in advance quietly becomes the persona's answer. A pre-selected radio button is the riskiest default in an application.
 
 **Pre-select an option only where about 90 percent of personas would choose that option anyway.** Never pre-select an option that has major consequences later in the workflow, however likely the option is. `recursica-skill-screen-starting-state` sets both tests.
 
@@ -144,7 +144,7 @@ For example, a table offers `Correct this name` when one table row is selected a
 
 ## Layout
 
-**MUST arrange checkboxes and radio buttons vertically. NEVER arrange checkboxes or radio buttons horizontally.** A horizontal row of checkboxes or radio buttons is hard to scan. In a horizontal row, the persona cannot easily tell which control belongs to which label. The pairing between each control and the control's value stops being clear. The system should never produce a horizontal checkbox group or radio group.
+**MUST arrange checkboxes and radio buttons vertically. NEVER arrange checkboxes or radio buttons horizontally.** A horizontal row of checkboxes or radio buttons is hard to scan. In a horizontal row, the persona cannot easily tell which control belongs to which label. The pairing between each control and the control's value stops being clear. Never build a horizontal checkbox group or radio group.
 
 **When the layout needs a horizontal arrangement, change the control instead of laying out the group in a row:**
 
@@ -247,9 +247,9 @@ Check every item before treating a set of selection controls as done:
 - [ ] Row checkboxes only choose table rows for bulk actions. Selecting one table row triggers no action on that single record. No separate clear or deselect-all control sits beside the header checkbox.
 - [ ] No table row holds a switch, unless the user confirmed the switch.
 - [ ] Checkboxes and radio buttons are stacked vertically, never horizontally. Where a horizontal arrangement is needed, a segmented control is used for single select, or selectable chips for multi-select.
-- [ ] The form saves every field together when the persona clicks a submit button. No field in the form saves instantly.
+- [ ] The form uses the application's one save mode. By default, every field saves together when the persona clicks a submit button.
 - [ ] Switches save at the same point everywhere in the application.
-- [ ] The form shows no sign of unsaved changes. The enabled submit button is the only signal.
+- [ ] With batch save, the form shows no sign of unsaved changes, and the enabled submit button is the only signal. With instant save, a save status stays on the page.
 - [ ] Revealed fields submit together with the selection control that revealed the fields.
 - [ ] Choices that are unavailable for now are disabled. Values that are permanently not editable use the read-only control, or are not in a form control at all.
 - [ ] Selection rules (minimums and maximums) appear as assistive text under the control.

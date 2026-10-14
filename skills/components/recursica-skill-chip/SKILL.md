@@ -22,7 +22,7 @@ A chip is one of several short values the persona can see, select, or remove, su
 
 | Situation                                                         | Use instead                                                                                                                                      |
 | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| One read-only value that the system sets                          | A badge. See `recursica-skill-badge`.                                                                                                            |
+| One read-only value that the application sets                     | A badge. See `recursica-skill-badge`.                                                                                                            |
 | One choice that rules out every other option                      | A segmented control for options laid out horizontally, or radio buttons for options stacked vertically. See `recursica-skill-segmented-control`. |
 | A status of any kind                                              | A badge. See `recursica-skill-badge`. Never show a status in any element the persona can act on.                                                 |
 | Space is tight, as in a table row                                 | A badge. See `recursica-skill-badge`. A chip takes more room, with an icon and a close control (the control that removes the chip).              |
@@ -56,7 +56,7 @@ This skill describes the error state only so that an agent recognizes the error 
 
 **Keep a chip group to 7 ± 2 options**, and use fewer options when the choice is complex. See `recursica-skill-working-memory`.
 
-**Let the persona remove a chip only when the persona added the chip.** The persona must not remove a value the system set. For example, the persona can remove a tag the persona added, but not a category the system assigned.
+**Let the persona remove a chip only when the persona added the chip.** The persona must not remove a value the application set. For example, the persona can remove a tag the persona added, but not a category the application assigned.
 
 **Never show an error as a chip, and never use a chip to report an error.** For example, never show "Upload failed" as a chip. `recursica-skill-badges-chips` forbids an error condition as the content of a chip. A chip never tells the persona about a problem.
 

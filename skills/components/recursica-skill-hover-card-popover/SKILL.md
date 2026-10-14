@@ -85,7 +85,7 @@ Only a persona using a pointer can reach a button inside a hover card.
 
 **Never make a hover card or popover the only place a piece of information exists.** For example, when a hover card shows a customer's email address, the page shows the email address too. `recursica-skill-design-system-conventions` forbids meaning that depends on a single channel (color, shape, position or text, each a separate signal). A card that appears only on hover is the narrowest channel of all.
 
-**Do not put a form, a form section, or a single form control inside a hover card or popover.** `recursica-skill-forms` forbids all three in a hover card or popover, with no exception.
+**Do not put a form, a form section, or a single form control inside a hover card or popover.** The rule has no exception.
 
 **Do not wrap the content of a hover card or popover in a card.** The hover card or popover is the container. See `recursica-skill-card`.
 
@@ -102,7 +102,7 @@ Only a persona using a pointer can reach a button inside a hover card.
 
 **Choose between a tooltip and a hover card or popover by the content, not by the look.** The standard UI kit has two different components, `tooltip` and `hover-card-popover`, and the two look almost the same.
 
-- A tooltip is a short text label for a control with no visible label. For example, the tooltip on a trash-can icon button says "Delete".
+- A tooltip is a short text label for a control with no visible label. For example, the tooltip on a trash-can icon button says "Delete invoice".
 - A hover card or popover holds richer content, such as a mini profile.
 - Neither component may hold content the persona needs to finish a task.
 - Neither component may be the only place a piece of information exists.
@@ -118,7 +118,7 @@ The rules below add to the accessibility baseline in `recursica-skill-design-sys
 - **A popover's trigger must announce that the trigger opens a popover, and whether the popover is open now.** Without the open state, pressing the trigger seems to do nothing.
 - **A popover needs an accessible name** (the name a screen reader reads out for a control). Use the popover's heading, or the name of the trigger that opened the popover. The accessible name tells a persona who lands in the popover which popover the persona is in.
 - **If a hover card's content has any meaning at all, connect the content to the trigger as a description.** A screen reader reads unconnected content beside a trigger as unrelated text, or does not read the content at all.
-- **The design must still work when a hover card's content goes unread.** A hover card's content might go unread, so a hover card may hold no content the persona needs. Put content the persona must read in a popover.
+- **The design must still work when a hover card's content goes unread.** A hover card's content might go unread, so a hover card may hold no content the persona needs. Put content the persona must read on the page.
 - **Every control in a popover needs a real accessible name**, exactly as on the page.
 - **Never put meaning in a hover card or popover that exists nowhere else.** `recursica-skill-design-system-conventions` requires a second channel for any meaning the persona must receive.
 - **Do not announce a hover card or popover as an alert.** The card shows content the persona asked for, and does not interrupt the persona.

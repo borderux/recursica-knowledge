@@ -43,7 +43,7 @@ Check every change that happens without a page reload against the following tabl
 
 **Use only the table above to decide whether to announce a change.**
 
-- Announce the change when either of the first two table rows is true.
+- Announce the change when any of the first three table rows is true, unless the change is only visual.
 - Do not announce the change when the change touches neither the content text nor an interactive element.
 
 **Announce a change the persona did not start**, such as a table that updates by itself. The persona has no reason to expect the change. The persona needs to know that a significant change happened.
@@ -135,7 +135,7 @@ An announcement has one of two priority levels:
 
 - [ ] Every change that happens without a page reload is announced if the change adds new content or new interactive elements.
 - [ ] A change that is only visual, such as a hover effect, is not announced.
-- [ ] Every change the persona did not cause is announced.
+- [ ] Every change the persona did not cause is announced, unless the change is only visual.
 - [ ] Each component announces for itself, and each component is given the information the component needs to announce.
 - [ ] The application announces every change that no component announces.
 - [ ] A flow that succeeds, shows no message and goes to another page is announced by the application.

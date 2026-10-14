@@ -9,11 +9,11 @@ metadata:
 
 # Badge
 
-A badge shows one read-only value about an object, such as a status or a count. For example, an order row shows "Shipped", and a Members tab shows "12". The badge sits on the object. The system sets the value, and the persona never acts on the badge.
+A badge shows one read-only value about an object, such as a status or a count. For example, an order row shows "Shipped", and a Members tab shows "12". The badge sits on the object. The application sets the value, and the persona never acts on the badge.
 
 ## When to use a badge
 
-- **One value describes the object.** The value is a status the system owns, such as "Approved", a count, or one short attribute.
+- **One value describes the object.** The value is a status the application owns, such as "Approved", a count, or one short attribute.
 - **The badge sits on the object the badge describes.** Examples are a table row, a list item, a heading, a tab, a navigation item and a card. A badge never stands alone.
 - **Space on the screen is tight.** A badge is small and uses small text, so a badge suits a crowded screen.
 
@@ -119,7 +119,7 @@ A badge is text, not a control. For most components, the accessibility risk is t
 
 ## Pre-flight checklist
 
-- [ ] Every badge value is read-only, set by the system, and one value.
+- [ ] Every badge value is read-only, set by the application, and one value.
 - [ ] No persona can act on a badge. No badge can receive focus or be dismissed.
 - [ ] No badge shows an error, and no badge uses the warning style or the problem style on a guess.
 - [ ] Every badge sits right after the badge's object, on the same line, and is never stacked.

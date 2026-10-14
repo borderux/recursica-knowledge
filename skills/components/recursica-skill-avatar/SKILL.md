@@ -21,7 +21,7 @@ An avatar is a small picture that stands for a person or an entity. The picture 
 
 | Situation                                                                                      | Use instead                                                                                                                                                                                                              |
 | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| The name alone identifies the record, and the layout has little room                           | Plain text. In a dense table, a name column works better than a picture. See `recursica-skill-tables`.                                                                                                                   |
+| The name alone identifies the record, and the layout has little room                           | Plain text. In a dense table, a name column works better than a picture.                                                                                                                                                 |
 | The screen must show status, presence, or a count                                              | A badge beside the name. See `recursica-skill-badge`.                                                                                                                                                                    |
 | Several people must appear as one overlapping group of avatars                                 | An avatar group variant, if the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes) has one. See "Avatar groups" in the open questions. |
 | The picture stands for an idea, not a person                                                   | An icon. An avatar shows who a person or entity is. An avatar is not an ornament.                                                                                                                                        |
@@ -123,7 +123,7 @@ The rules below add to the accessibility baseline in `recursica-skill-design-sys
 
 - `recursica-skill-navigation` — keeping the account menu out of primary navigation, what counts as a location, and showing the persona's current location.
 - `recursica-skill-buttons-links` — the tooltip and accessible name an icon-only control needs, and when to use a button or a link.
-- `recursica-skill-tables` — whether a person column in a dense table shows a picture, and which fields get a column.
+- `recursica-skill-tables` — which fields get a column.
 - `recursica-skill-design-system-conventions` — never showing a meaning in a single channel.
 
 ### Only if used on the same screen
@@ -135,7 +135,7 @@ The rules below add to the accessibility baseline in `recursica-skill-design-sys
 
 - **Two sets of styles that do not agree.** Only the design-system website shows styles named Image, Primary, Background, and Ghost. Only the design-system website shows a Border variant that is true or false. The UI kit defines the `text`, `icon`, and `image` styles. The UI kit gives the `text` and `icon` styles the `solid`, `outline`, and `ghost` types. Of the website's styles, only Ghost matches the UI kit, as the `ghost` type. Nobody has settled which set of styles is the authority. Confirm with the user before relying on either set of styles.
 - **Avatar groups.** Only the design-system website shows overlapping avatars in a group. Unless the theme has a group variant, do not build an avatar group. Do not rely on the website's group without confirming with the user.
-- **Which size belongs in which layout.** No rule says where the smaller size, the default size, and the larger size each apply.
+- **Which size belongs in which layout.** The rules above place the smaller size and the larger size. No rule says where the default size applies.
 - **How initials are chosen.** No rule says whether initials use one letter or two, or how to handle a one-word, hyphenated, or non-Latin name.
 - **Avatars for an entity that is not a person.** No rule says whether an avatar may stand for an entity that is not a person. Examples are a company, a team, or a system. No rule says which fallback such an avatar uses.
 - **Presence and status.** No rule says how to show presence.

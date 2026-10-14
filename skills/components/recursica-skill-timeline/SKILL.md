@@ -25,13 +25,13 @@ A timeline lists events that already happened, in order. Each event has a timest
 | The order of the entries does not matter                                                         | A list. A timeline shows an order of events, and an order that does not exist misleads the persona. |
 | A large number of records, or records the persona will sort, filter, or compare                  | A table. See `recursica-skill-tables`.                                                              |
 | Tabular data only, with the same fields in every entry                                           | A table. See `recursica-skill-tables`.                                                              |
-| Entries arrive in a stream that updates fast, such as chat messages or live logs                 | A table or an activity view built for a large number of entries, not a timeline.                    |
+| Entries arrive in a stream that updates fast, such as chat messages or live logs                 | A table, not a timeline. See `recursica-skill-tables`.                                              |
 | Each entry needs long text, media, or controls that belong to the entry                          | An accordion, or a page for each entry. See `recursica-skill-accordion`.                            |
 | The events branch, or the events depend on one another                                           | No linear component. A timeline shows only one sequence of events.                                  |
 | The dates are unknown or approximate                                                             | A grouped list. A grouped list makes no claim about the order of events.                            |
 | The design needs to separate repeating objects of the same kind visually, such as rows in a list | A card, if the objects pass the tests in `recursica-skill-card`, or a table.                        |
 
-**Group a very long history instead of making the timeline longer.** Group the events by month or by quarter, or split the timeline into pages with `recursica-skill-pagination`. A screen that shows a thousand events at once has a problem with the screen's structure. `recursica-skill-design-system-conventions` says to fix the structure instead of working around the problem.
+**Group a very long history instead of making the timeline longer.** Group the events by month or by quarter, or load more entries with a "Load more" button. A screen that shows a thousand events at once has a problem with the screen's structure. `recursica-skill-design-system-conventions` says to fix the structure instead of working around the problem.
 
 ## Variants
 
@@ -56,7 +56,7 @@ The rules below describe each part and option by role, such as "the selected sta
 **Format every timestamp by the rules in `recursica-skill-dates-and-currency`:**
 
 - **Use relative time for recent events**, such as `15 minutes ago` or `yesterday`. Relative time saves the persona from working out how long ago the event happened.
-- **After the switchover point (the point where relative time switches to an absolute date), show the absolute date**, such as `Jan 7, 2026`.
+- **After the switchover point (the point where relative time switches to an absolute date), show the absolute date**, such as `Jan 7, 2026`. `recursica-skill-dates-and-currency` sets the switchover point at one week.
 - **Never use a date in numbers with slashes or hyphens.** The numeric form appears only inside an input that has focus.
 - **State the time zone whenever the time is not in the persona's time zone.** Also state the time zone when the persona's time zone is unknown.
 - **When the place of the event matters, show the time in the time zone where the event happened.** For example, a flight's departure shows the local time at the departure airport. Label the time zone, and do not convert the time. Give the persona a way to convert the time.
@@ -139,7 +139,6 @@ Every rule in this section also applies to the timeline bullet. Never set or ove
 - **Whether a timeline item may be selected, be a link, or have an action.** No rule says how a persona interacts with a timeline item.
 - **The default sort direction**, newest first or oldest first.
 - **When to group a long history, by what time period, and at how many timeline items.**
-- **The switchover point, where relative time switches to an absolute date.** `recursica-skill-dates-and-currency` calls the switchover point a product decision.
 - **Whether the alternative icon bullet has a different meaning from the icon bullet**, or only a different look.
 - **The empty state of a timeline**, for an object with no events yet.
 
@@ -166,4 +165,4 @@ Every rule in this section also applies to the timeline bullet. Never set or ove
 - [ ] A timeline item that only shows information is not a tab stop. A timeline item the persona can select is a real control with an accessible name. A selectable timeline item holds no second click target.
 - [ ] Any control that loads more entries is reachable by keyboard. The control does not move focus, lose focus, or change focus in any other way. The focus ring is not hidden.
 - [ ] No styling is set or overridden on the timeline or the timeline bullet. No container or spacer is added to change the timeline's look.
-- [ ] Open questions were asked about, not decided: alignment, the connecting line, two-track or comparing timelines, what the selected state means, whether a timeline item may be selected, be a link, or have an action, the default sort direction, when and how to group a long history, the switchover point from relative time to an absolute date, whether the alternative icon bullet differs from the icon bullet, and the empty state.
+- [ ] Open questions were asked about, not decided: alignment, the connecting line, two-track or comparing timelines, what the selected state means, whether a timeline item may be selected, be a link, or have an action, the default sort direction, when and how to group a long history, whether the alternative icon bullet differs from the icon bullet, and the empty state.

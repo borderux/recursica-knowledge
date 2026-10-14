@@ -38,10 +38,10 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
    Confirm with the user which promise applies. Do not assume the designed, checked experience because that promise sounds the most professional.
 
-3. **What range of viewports does the business have?** For example, a factory floor of very old desktops limited to 1024 pixels differs from screens guaranteed to be 1440 pixels.
+3. **What range of viewports does the business have?** For example, a factory floor of old, narrow desktops differs from screens guaranteed to be wide.
 
-   - On the old desktops limited to 1024 pixels, responsive design is about getting narrower.
-   - On screens guaranteed to be 1440 pixels, responsive design is about what happens as the viewport gets wider.
+   - On the old, narrow desktops, responsive design is about getting narrower.
+   - On screens guaranteed to be wide, responsive design is about what happens as the viewport gets wider.
 
 4. **What is the main way people give input?** Mouse and keyboard is assumed. Touch is possible even on desktop. Real applications also have stranger input methods than touch:
 
@@ -78,11 +78,6 @@ The layout templates in `recursica-skill-layouts-and-templates` show each change
 - Headers, footers, and other sticky chrome (the header, navigation and footer around the content) are not limited by the maximum content width. The chrome may stretch across the full viewport.
 
 See `recursica-skill-layouts-and-templates`.
-
-**The theme's breakpoint widths are defaults, and changing a default is very rare.** The defaults are standard enough that a change needs a stated decision.
-
-- A change to one default should be a stated decision, made with the user at design time.
-- A breakpoint should never change without telling the user.
 
 ## Responsive and adaptive layouts
 
@@ -203,10 +198,8 @@ A designed narrow layout shows two good signs. A narrow layout with neither sign
 
 ## Set by the theme or the component
 
-- **What gets dropped on a narrow screen.** Confirm each drop with the user, every time.
-- **Whether the application is built around touch.** The main input method is set once for the whole application, at the start.
 - **How a component handles touch.** Touch handling is built into the component.
-- **The breakpoint widths and the layout grid.** The theme sets both. A change to a breakpoint width is a stated decision made with the user.
+- **The breakpoint widths and the layout grid.** The theme sets both.
 - **The maximum content width.** The theme's layout sets the maximum content width.
 
 ## Out of scope
@@ -228,11 +221,11 @@ A designed narrow layout shows two good signs. A narrow layout with neither sign
 ## Pre-flight checklist
 
 - [ ] Support below desktop is a decision, not an assumption.
-- [ ] The team knows which of the three promises of "responsive" applies.
+- [ ] The user confirmed which of the three promises of "responsive" applies.
 - [ ] The user confirmed which devices, screen sizes and orientations the product supports.
 - [ ] The navigation pattern was chosen after the user's answer about tablet and phone use.
 - [ ] The business's range of viewports and the business's main input method come from asking, not assuming.
-- [ ] The breakpoints are the theme's breakpoints, or the user agreed to a stated change to the breakpoints.
+- [ ] The breakpoints are the theme's breakpoints.
 - [ ] The main content area stops at the maximum content width. The chrome may stretch wider.
 - [ ] The narrow layout is adaptive as well as responsive. At least one element is replaced or removed, not only rewrapped.
 - [ ] Every dropped part of the interface was raised first.

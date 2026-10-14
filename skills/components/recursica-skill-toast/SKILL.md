@@ -27,7 +27,7 @@ A toast reports what just happened, without interrupting the persona's work.
 | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | Asking the persona to confirm an action that can be reversed                                   | Perform the action and offer an undo. See `recursica-skill-undo`.                      |
 | A validation error on a specific field                                                         | The field's error state. See `recursica-skill-forms` and `recursica-skill-text-field`. |
-| Undoing the delete of one row in a table or a list, or of one item                             | An undo button in place of the delete button. See `recursica-skill-undo`.              |
+| Undoing the delete of one row or item that stays in view                                       | An undo button in place of the delete button. See `recursica-skill-undo`.              |
 | Destroying a whole object, when the delete cannot be undone and the object is hard to recreate | A confirmation before the action. See `recursica-skill-modal`.                         |
 | A decision the persona must make before continuing                                             | A modal. See `recursica-skill-modal`.                                                  |
 | Information the persona will need to refer to later                                            | The page. A toast disappears.                                                          |
@@ -36,7 +36,7 @@ A toast reports what just happened, without interrupting the persona's work.
 
 **A toast reports an event that just happened. A banner reports a condition that has not happened yet.** For example, "Invoice sent" is a toast, and "Maintenance will start at 6 p.m." is a banner. Check the tense of the message before choosing a channel (the form a message takes: a toast, a banner or a modal). `recursica-skill-feedback-messaging` sets this tense rule.
 
-**Do not put a message the persona must not miss in a toast.** A toast appears away from where the persona is looking, and the toast closes by itself. A critical alert that needs action right away is not a toast. The tense rule calls for a banner instead.
+**Do not put a message the persona must not miss in a toast.** A toast appears away from where the persona is looking, and the toast closes by itself. A critical alert that needs action right away is not a toast. See the open question on warnings and critical alerts.
 
 **If the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes) has a banner component, use the banner component.** Otherwise, do not build a banner or another alert that stays on screen by hand. For a missing banner, follow the steps under "Missing components" in `recursica-skill-design-router`. Do not use a toast for a critical alert. Confirm the critical alert with the user, as the open questions describe.
 
@@ -49,7 +49,7 @@ The rules below describe each option by role, such as "the success style". The n
 - **Style.** In the standard UI kit, a toast has a default style, a success style, and an error style, named `default`, `success`, and `error`. Only the design-system website calls the default style "Information". "Default" and "Information" are two names for one style.
 - **Warning.** If the theme has a warning style, use the warning style. Never use the error style as a warning, because the error style says that a failure happened.
 - **Color and icon.** The toast styles differ only in color and icon. The toast's text says what happened, and the style only supports the text.
-- **Parts.** In the standard UI kit, a toast shows an icon and text. If the theme has a style for an action button or a close control, use the theme's style. Check the open questions before building a timer, an action button or a close control the theme does not define.
+- **Parts.** In the standard UI kit, a toast shows an icon and text. If the theme has a style for an action button or a close control, use the theme's style. Check the open questions before building an action button the theme does not define.
 - **Size and position.** If the theme has a size variant or a position variant, use the theme's variant.
 
 ## Rules
@@ -88,7 +88,7 @@ The rules below describe each option by role, such as "the success style". The n
 
 The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, which every Recursica component follows.
 
-**The toast is the riskiest component in the system.** A toast appears without the persona asking, and disappears with no action from the persona. A toast shows every message away from where the persona is looking. Three mistakes follow from those facts:
+**The toast is the riskiest component in the Recursica design system.** A toast appears without the persona asking, and disappears with no action from the persona. A toast shows every message away from where the persona is looking. Three mistakes follow from those facts:
 
 - A persona using a screen reader never learns about a toast that is not announced.
 - A toast that takes focus interrupts typing.
@@ -153,7 +153,7 @@ The theme also sets which icon each toast style shows. Never change the icon a s
 ## Pre-flight checklist
 
 - [ ] Each toast message is short-lived and safe to miss. No critical message and no information needed later is in a toast. No alert component that does not exist is named as the alternative.
-- [ ] Errors on a field stay on the field. The undo for a single item stays in place. A delete that cannot be undone is confirmed before the action instead.
+- [ ] Errors on a field stay on the field. The undo for a single item that stays in view stays in place. A delete that cannot be undone is confirmed before the action instead.
 - [ ] Every toast style is one the theme's UI kit lists, such as `default`, `success`, or `error` in the standard UI kit. No warning style or other style is invented.
 - [ ] The toast's text names what happened. The style and the icon only support the text, and are never the only way the message is shown.
 - [ ] The success confirmation is a toast, not a check mark on a field.

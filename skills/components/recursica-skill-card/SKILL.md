@@ -43,18 +43,18 @@ A card separates one repeating object from the object's peers (objects of the sa
 
 ## When not to use a card
 
-| Instead of a card                                                          | Use                                                                   |
-| -------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| A high plurality of items, a list with no fixed end, or a list that grows  | **A table**, with no exception. See `recursica-skill-tables`.         |
-| Only data, meaning text and numbers with no graphic                        | **A table**, or cards chosen on purpose under the aesthetic exception |
-| The properties of one object                                               | A detail view or a form                                               |
-| A form, a form section, or a single form control                           | No container. **Never a card.** See "Forms in cards" below.           |
-| A region of a page that needs to look like one unit                        | White space and type hierarchy, with no box                           |
-| A chart or a table, wrapped in a card only "to contain" the chart or table | No container. The chart or the table is an object.                    |
-| A list of names or files that are all alike                                | A list                                                                |
-| An object too complex to summarize                                         | A separate page for the object, not a taller card                     |
+| Instead of a card                                                          | Use                                                                                                    |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| A high plurality of items, a list with no fixed end, or a list that grows  | **A table**, with no exception. See `recursica-skill-tables`.                                          |
+| Only data, meaning text and numbers with no graphic                        | **A table**, or cards chosen on purpose under the aesthetic exception                                  |
+| The properties of one object                                               | A detail view or a form                                                                                |
+| A form, a form section, or a single form control                           | No container. **Never a card.** See "Forms in cards" below.                                            |
+| A region of a page that needs to look like one unit                        | White space and type hierarchy, with no box                                                            |
+| A chart or a table, wrapped in a card only "to contain" the chart or table | Not a card. Use no container, or a container with a layer when the region needs a separate background. |
+| A list of names or files that are all alike                                | A list                                                                                                 |
+| An object too complex to summarize                                         | A separate page for the object, not a taller card                                                      |
 
-**Never nest a card inside a card, and never build a whole screen out of cards.** A dashboard is a fixed layout with an order of importance. Cards may be placed in a dashboard's layout. A dashboard is not a grid of equally weighted boxes. See `recursica-skill-dashboards`.
+**Never nest a card inside a card, and never build a whole screen out of cards.** A dashboard is a fixed layout with an order of importance. Each dashboard item sits in a container with a layer. Use cards only for a set of items that passes the five tests. A dashboard is not a grid of equally weighted boxes. See `recursica-skill-dashboards`.
 
 ## Forms in cards
 
@@ -149,7 +149,7 @@ The rules below add to the accessibility baseline in `recursica-skill-design-sys
 
 - **When the raised style applies, and when the outlined style applies.** The website calls the two styles Elevation and Outline. No rule says where to use either style. Confirm with the user before relying on either style.
 - **How many cards count as a "small and finite" card set.** The limit is a judgment, not a number.
-- **Card layout across breakpoints**, meaning how many cards fit across the screen, and what happens below desktop size. `recursica-skill-design-router` names card layout across breakpoints as a topic with no owner.
+- **Card layout across breakpoints**, meaning how many cards fit across the screen, and what happens below desktop size.
 - **Whether a persona may select a card** as part of a multi-select, and what the selected state looks like. Confirm with the user only when the theme has no selected state.
 - **The empty state of a card set**, meaning what a card set shows with one card or no cards.
 - **Whether the header button and the footer may both be used** in the same card.

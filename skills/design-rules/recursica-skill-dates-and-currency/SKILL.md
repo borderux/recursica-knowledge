@@ -97,7 +97,7 @@ Relative time follows principle 1: never make the persona decode or calculate. A
 - Within the last week, show relative time: `now`, `5 minutes ago`, `16 hours ago`, `yesterday`, `3 days ago`.
 - At a week and beyond, show the absolute date, as in `Jun 24, 2026`.
 
-A product may change the cutoff with a stated reason. Without a stated reason, a week is the house rule, not a decision to reopen on each screen.
+A week is the house rule, not a decision to reopen on each screen.
 
 **Use the platform's relative-time formatter, not hand-written strings.** In a browser, use the browser's built-in relative-time formatter. Set the formatter to write `yesterday` instead of `1 day ago`. The formatter writes `yesterday` in every locale. A hand-written string covers only the one language the string was written in.
 
@@ -125,7 +125,7 @@ A product may change the cutoff with a stated reason. Without a stated reason, a
 
 **Negative values may use accounting parentheses**, as in `(45.00)`. If negative values use accounting parentheses, pad the values so the decimal points stay lined up. A closing parenthesis must not push the number inside the parentheses out of line.
 
-**Zero is `0` or `0.00`, depending on the locale. Zero is not null.** Null means the value is missing. For values that are truly missing, see the null-cell rule in `recursica-skill-tables`.
+**Zero is `0.00`, with the locale's decimal separator. Zero is not null.** Null means the value is missing. For values that are truly missing, see the null-cell rule in `recursica-skill-tables`.
 
 ## Numeric values
 
@@ -245,4 +245,4 @@ Do not extend a rule above to cover one of these open questions. A persona will 
 - [ ] Durations use unit labels (`3h 20m`), never a clock format. A duration extends to days only after the duration passes one day.
 - [ ] Seconds appear only for values under a minute across a set of objects. Once seconds appear, every value in that set shows seconds.
 - [ ] Alignment is uniform across read-only values and editable values on the same screen.
-- [ ] Open questions were asked about, not decided: week, quarter, or fiscal conventions, or a duration that passes one day.
+- [ ] Open questions were asked about, not decided: week, quarter, or fiscal conventions, a duration that passes one day, and seconds outside a set of compared values.

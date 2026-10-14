@@ -73,7 +73,7 @@ The Recursica knowledge server loads skills in three ways:
 
 ## Names from other design systems
 
-**Translate every name from another design system to the Recursica component, and build the Recursica component.** For example, a request for a snackbar gets a toast. Recursica has one name for each component. Other design systems use other names for the same components. A request, a design file or a stakeholder may use another system's name. Never treat another system's name as a component Recursica lacks.
+**Translate every name from another design system to the Recursica component, and build the Recursica component.** For example, a request for a snackbar gets a toast. Recursica has one name for each component. Other design systems use other names for the same components. A request, a design file or the user may use another system's name. Never treat another system's name as a component Recursica lacks.
 
 | Name in another design system     | Recursica component                               |
 | --------------------------------- | ------------------------------------------------- |
@@ -162,7 +162,7 @@ A region that holds content, such as a page, panel or modal, sits on a layer (a 
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------- |
 | 1   | The object the screen is about, and whether the screen is about one object or many                                                                                       | `recursica-skill-information-architecture`         |
 | 2   | Whether the content being designed is a location. A location needs a unique route, a URL, and a history entry                                                            | `recursica-skill-navigation`                       |
-| 3   | Where the screen sits in the app shell: the navigation pattern, the navigation item, breadcrumbs and the page heading                                                    | `recursica-skill-navigation`                       |
+| 3   | Where the screen sits in the app shell: the navigation pattern, the navigation item, breadcrumbs and the page heading. Choose the pattern after decision 7               | `recursica-skill-navigation`                       |
 | 4   | The page's layout. Whether part of the page needs a separate region that holds content, such as a page, panel or modal                                                   | `recursica-skill-layouts-and-templates`            |
 | 5   | Which layer each region that holds content sits on, starting from layer 0 on the root element. Examples of regions are a page, panel and modal                           | `recursica-skill-layers`                           |
 | 6   | What matters most on the screen, what to cut, and whether the screen is finished                                                                                         | `recursica-skill-screen-priority`                  |
@@ -185,7 +185,7 @@ A region that holds content, such as a page, panel or modal, sits on a layer (a 
 | 23  | What every object, navigation item, title and column is called                                                                                                           | `recursica-skill-names-and-terms`                  |
 | 24  | Which icon shows which meaning, and whether an icon may appear without a label                                                                                           | `recursica-skill-icon-semantics`                   |
 | 25  | Headings, emphasis, abbreviations, and the markup under the visual hierarchy                                                                                             | `recursica-skill-typography-semantics`             |
-| 26  | Empty, loading, error and partial states                                                                                                                                 | **No skill yet — ask**                             |
+| 26  | Empty, loading, error and partial states                                                                                                                                 | **No skill yet — confirm with the user**           |
 
 **Follow two ordering rules:**
 
@@ -251,12 +251,11 @@ Apply the precedence rules below in order. The first precedence rule that settle
   - "No rows returned" and "could not fetch" get different messages (`recursica-skill-screen-priority`).
   - A filter that returns zero results is a different state from never having had data (`recursica-skill-filters`).
 
-  The layout, the wording, and whether an empty state may include an action are still open. The open parts include the difference between "no data yet" and "no results for these filters". Dashboards are the exception. `recursica-skill-dashboards` forbids an empty dashboard and requires a first-run element the persona can dismiss.
+  The layout, the wording, and whether an empty state may include an action are still open. The open parts include the difference between "no data yet" and "no results for these filters". Dashboards are the exception. `recursica-skill-dashboards` forbids an empty dashboard. The dashboards skill allows an onboarding element only when the requirements call for one.
 
 - **Motion.** No skill owns motion beyond one rule: do not animate a badge when the badge's status changes. `recursica-skill-icon-semantics` also leaves open whether an icon may animate.
 - **Alignment across sections.** Alignment means separate areas of an application use the same names for the same concepts, and the same workflows. For example, every area calls an order an "order" and edits an order the same way. `recursica-skill-screen-priority` gives the criteria for a breach of alignment. The skill also says that alignment is a review pass run after design. The skill family still needs a skill for alignment, possibly run by a dedicated agent.
 - **Scan patterns and eye-tracking research.** The research is marked as belonging in `skills/psychology/`, with citations. Nobody has gathered the research yet.
-- **The layout grid.** The open parts are eight or twelve columns, the gutters, and what elements line up to. `recursica-skill-layouts-and-templates` requires lining up to a grid, and openly leaves the grid to a skill that does not exist yet. `recursica-skill-layers` owns layers, and layers are settled. The layout grid is not settled.
 
 ## Strength of rule words
 

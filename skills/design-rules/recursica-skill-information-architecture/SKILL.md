@@ -115,7 +115,7 @@ An object with several parents still gets no top-level navigation item unless pe
 
 Some sections are not objects, such as an approvals queue, reports or settings.
 
-**Take each section that is not an object from the request.** The product owner may describe the work as an approvals queue, reports, settings or a similar section. In that case, make the work a section. Record each section that is not an object in the object map, with where the section came from.
+**Take each section that is not an object from the request.** The request may describe the work as an approvals queue, reports, settings or a similar section. In that case, make the work a section. Record each section that is not an object in the object map, with where the section came from.
 
 **If the request says nothing about a section, confirm with the user.**
 
@@ -136,7 +136,6 @@ Name a section that is not an object with a noun, as in `Approvals`, never `Appr
 
 ## Set by the theme or the component
 
-- **The sections that are not objects.** The product owner decides which sections exist, through the request.
 - **The name of each object and section.** The personas' words decide the names. See `recursica-skill-names-and-terms`.
 
 ## Out of scope

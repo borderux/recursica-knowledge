@@ -19,7 +19,7 @@ Follow each house rule below for type, and for the HTML markup that holds the te
    - Pick each element for what the content means, not for how the element looks.
    - Make the markup match what is on the screen.
    - Never use the wrong element to get a visual effect. For example, never pick an H4 only for the H4's small size.
-2. **Always take type styles from tokens.** The design system defines the type styles, and the code applies the type styles. A custom type value, such as a custom font size, is a defect. The one exception is text that has no type style.
+2. **Always take type styles from tokens.** The theme defines the type styles, and the code applies the type styles. A custom type value, such as a custom font size, is a defect. The one exception is text that has no type style.
 3. **Choose easy to understand over short.** When text cannot be both short and easy to understand, make the text easy to understand. The persona should not have to hover over an item on the screen to learn what the item means. An abbreviation is one example of such an item.
 
 ## Real HTML elements
@@ -259,7 +259,7 @@ A correct structure with a long readout is better than a clever structure with a
 
 ## Out of scope
 
-- **Announcing content that updates on the page to assistive technology.** The team explicitly moved the topic out of typography and semantics. `recursica-skill-feedback-messaging` records that no skill owns the topic yet.
+- **Announcing content that updates on the page to assistive technology.** The team explicitly moved the topic out of typography and semantics. `recursica-skill-live-regions` owns the topic.
 - **The wording of labels, and labels that stand alone without surrounding context** — `recursica-skill-forms`.
 - **The details of table markup, how sorting is announced, and rules for cell content** — `recursica-skill-table` and `recursica-skill-tables`.
 - **Each component's accessible name (the name a screen reader reads out for a control), focus order, and keyboard behavior.** Each component skill sets the component's accessible name, focus order, and keyboard behavior.
@@ -269,7 +269,6 @@ A correct structure with a long readout is better than a clever structure with a
 
 - **The `c_font` value for a specific typeface.** The typeface classes above cover the common cases. A typeface with unusual proportions needs a ratio measured for that typeface, not an estimated ratio.
 - **Text wrapping and truncation.** The team explicitly set the topic aside when the team recorded the typography rules. `recursica-skill-tables` covers truncation inside a table cell. Every other part of text wrapping and truncation is open.
-- **Live regions and `aria-live`.** This skill set the topic aside, and no other skill covers the topic. Each component skill states what the component must announce to assistive technology. No policy covers every region that holds content, such as a page, panel, or modal.
 - **Which heading level a page's sections start at**, given that the single H1 may be hidden.
 - **Whether `abbr` markup is used** for the later, abbreviated uses. Plain text may be enough once the term has been written out.
 - **Whether every type style includes a capitalization setting.** The typography token controls capitalization. If a type style seems not to include capitalization, report the missing capitalization.
@@ -298,4 +297,4 @@ A correct structure with a long readout is better than a clever structure with a
 - [ ] No text block fills a wide container to the container's edge.
 - [ ] The line-length check produced only a width, and changed no font size, line height, or letter-spacing value.
 - [ ] Any `h1` or `h2` long enough to wrap is reported as a wording problem, with no measure computed for the `h1` or `h2`.
-- [ ] Open questions were asked about, not decided: text wrapping and truncation.
+- [ ] Open questions were asked about, not decided: the `c_font` value for a specific typeface, text wrapping and truncation, which heading level a page's sections start at, whether `abbr` markup is used, and whether every type style includes a capitalization setting.

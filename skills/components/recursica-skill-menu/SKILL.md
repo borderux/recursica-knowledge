@@ -88,8 +88,6 @@ The keyboard rules under "Accessibility" also forbid opening a menu on hover, fo
 - The scrolling menu hides the length of the menu, so the persona cannot see how many options exist.
 - Keyboard navigation has to scroll the menu to follow focus.
 
-Above about nine items, a persona can no longer scan a list easily. See `recursica-skill-working-memory` for what the limit of about nine items claims.
-
 **Never put the only way to finish a task in a menu.** A gear button that opens the column-visibility menu is a valid unadvertised affordance (a control that works but is not shown in the main interface, such as a keyboard shortcut). See `recursica-skill-discoverability`.
 
 **Never make a row clickable when the row has a menu.** The rule covers a table row, a list row, and every other kind of row. For example, clicking an invoice row with a "…" menu must not open the invoice. With two click targets in one row, the persona cannot predict what a click will do. See `recursica-skill-tables`.
@@ -159,7 +157,7 @@ A menu that opens on hover fails in all three places at once.
   - the number of navigation items
   - permissions
 - `recursica-skill-tables` — the row-action menu, the column-visibility gear button, and why a table row with a menu cannot be clickable.
-- `recursica-skill-design-system-conventions` — the system-wide rules:
+- `recursica-skill-design-system-conventions` — the rules that apply across the whole design system:
   - fixing the structure instead of scrolling a long list
   - never showing a meaning in one channel only
   - unadvertised affordances, and the keyboard requirement for an unadvertised affordance

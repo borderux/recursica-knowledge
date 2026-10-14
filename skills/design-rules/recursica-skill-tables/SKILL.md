@@ -28,11 +28,7 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 ## Table or cards
 
-**Show a group of objects of the same kind, such as orders, in a table by default.** Cards are the narrow exception. Use cards only when all three conditions hold:
-
-- The group of objects is small and finite.
-- Every object holds the same kinds of information.
-- Each object contains a chart, an image or a photograph.
+**Show a group of objects of the same kind, such as orders, in a table by default.** Cards are the narrow exception. Use cards only when all five tests in `recursica-skill-card` pass.
 
 **Use cards for a group that is small, finite, and graphic.** For example, show a team's five members, each with a photo, as cards. See `recursica-skill-card`.
 
@@ -74,7 +70,7 @@ Two tables with the same columns were always one table.
 
 `recursica-skill-panels-modals` decides which of the three to use.
 
-**The table row MUST keep the same expansion, panel or modal after approval, with undo inside.** After approval, the expansion, panel or modal that showed the proposal shows the result. Put undo where the persona made the decision, as `recursica-skill-buttons-links` says. Approval does not end the persona's interest in the combined records. The persona most needs to check the combined records right after approval. If approval removes the only view of what happened, nobody can audit the decision.
+**The table row MUST keep the same expansion, panel or modal after approval, with undo inside.** After approval, the expansion, panel or modal that showed the proposal shows the result. Approval does not end the persona's interest in the combined records. The persona most needs to check the combined records right after approval. If approval removes the only view of what happened, nobody can audit the decision.
 
 ## Which fields get a column
 
@@ -86,7 +82,7 @@ Two tables with the same columns were always one table.
 
 **Mark an exception beside the object's identifying value instead, such as the object's name.** For example, show a warning icon beside a customer's name. A marker beside the identifying value states a fact about one table row. The marker does not look like a field that every table row was meant to have.
 
-**Make the exception marker an icon, not a badge.** A badge is a filled, bordered, colored box that holds a word. A few badges scattered down a table pull the eye away from the data. Use a badge only where an exception needs the visual weight of a badge. `recursica-skill-badges-chips` owns this rule, and `recursica-skill-icon-semantics` covers the exception icon.
+**Make the exception marker an icon, not a badge.** A badge is a filled, bordered, colored box that holds a word. A few badges scattered down a table pull the eye away from the data. `recursica-skill-badges-chips` owns this rule, and `recursica-skill-icon-semantics` covers the exception icon.
 
 **Put the icon in the same cell as the identifying value, not alone in a separate cell.** A column of icons with no other information breaks two rules:
 
@@ -373,7 +369,7 @@ Check every item before treating a table as done.
 - [ ] A table row waiting for a decision shows the proposed result with a pending status. The table row shows what went into the result through one expansion, panel, or modal. The same expansion, panel or modal stays after approval, with undo inside.
 - [ ] Every column serves either acting on the records or understanding the records. Data that serves neither moved to an expansion, a panel, or a detail page.
 - [ ] Every column is filled in for most table rows. No column exists for an exception: warnings, errors, flags and conflicts. Each exception is an icon beside the object's identifying value, not a badge. The exception icon is never alone in a separate cell.
-- [ ] The table fits the main desktop sizes. Where horizontal scrolling must be used, a reason is provided.
+- [ ] The table fits the main desktop sizes. Horizontal scrolling is used only after the user confirmed that horizontal scrolling is unavoidable, and the reason is stated.
 - [ ] No cell holds more than two values, and the column header explains both.
 - [ ] No column combines unrelated values.
 - [ ] Column widths are set by data type. Every narrow column has an explicit width: counts, dates, statuses, currency and short terms. The sentence column has no width and takes the leftover width. Column widths are defined once for the whole application, not for each table.
@@ -389,7 +385,7 @@ Check every item before treating a table as done.
 - [ ] Multi-sort, if present, is behind a long-press. A plain click switches the sort direction, and data types that cannot be sorted are left out.
 - [ ] The table has no invented row density variant.
 - [ ] A table row is clickable only if the table row holds no other interactive element.
-- [ ] A record opens from the record's identifying value, the whole table row, or a separate row action. One of the three is chosen once for the whole application. Selecting a record triggers no action on that single record.
+- [ ] A record opens from the record's identifying value or from the whole table row. One of the two is chosen once for the whole application. A separate row action is used only for editing, or when the object has no single identifying value. Selecting a record triggers no action on that single record.
 - [ ] The add control is directly above the table, on the right, never below the table. A short form that adds a record opens in a modal or panel. A long form opens on a separate page. Neither sits inline on the page.
 - [ ] The bulk action area holds only controls. The bulk action area has no list of the selected records. The bulk action area has no separate clear control competing with the header checkbox.
 - [ ] No cell is editable, except a small edit to one cell where a mistake costs little.

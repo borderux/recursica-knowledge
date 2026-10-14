@@ -35,7 +35,7 @@ A segmented control is a horizontal radio group. The persona selects exactly one
 | The labels are long or complex                                         | A vertical radio group. Long labels do not fit the compact layout of a segmented control. |
 | The options are parts of one whole, and each part has separate content | Tabs, which give each part a separate URL. See `recursica-skill-tabs`.                    |
 | Switching to another option causes a heavy reload or changes data      | A control with an explicit submit action, such as an "Apply" button, and feedback.        |
-| The choice is on or off                                                | A switch or a checkbox. See `recursica-skill-selection-controls`.                         |
+| The choice is on or off, inside a form                                 | A switch or a checkbox. See `recursica-skill-selection-controls`.                         |
 
 **Never switch to tabs when a segmented control grows past five options.** Use a vertical radio group or a dropdown instead.
 
@@ -131,7 +131,7 @@ The rules below add to the accessibility baseline in `recursica-skill-design-sys
 - **When to use fill width.** No rule says where a segmented control with fill width on is used.
 - **A disabled segment.** No rule says whether a single segment may be disabled, or how a disabled segment looks. Confirm with the user only when the theme has no disabled state.
 - **A segmented control as a form field.** No rule says whether a segmented control may be a labeled form field instead of a view switcher. No rule says where the label goes if a segmented control may be a form field.
-- **Screens narrower than desktop size.** Five short labels may not fit on a narrow screen. `recursica-skill-design-router` names behavior below desktop size as a topic with no owner.
+- **Screens narrower than desktop size.** Five short labels may not fit on a narrow screen. `recursica-skill-responsive-layout` sets the rules below the tablet breakpoint. No rule says what a segmented control does when the labels do not fit.
 
 ## Pre-flight checklist
 

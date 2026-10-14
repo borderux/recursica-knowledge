@@ -44,16 +44,16 @@ The message's timing, such as how long a toast stays, comes from the code librar
 
 ## Choosing the channel
 
-| The situation                                                                   | The channel                                                                           |
-| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| A normal action succeeded                                                       | **No message.** No confirmation                                                       |
-| An event or condition **just happened**                                         | A **toast**                                                                           |
-| An event or condition **has not happened yet**                                  | A **banner**, a notification on the page                                              |
-| The system failed to complete an action, such as a save that did not go through | A **toast**                                                                           |
-| A broader or system-wide condition                                              | A notification channel, if the application has a notification channel                 |
-| An action is in progress                                                        | The loading state of the button that started the action. See `recursica-skill-button` |
-| A decision must be made before continuing                                       | A modal. See `recursica-skill-modal`                                                  |
-| A field's value is invalid                                                      | The field's assistive element. See `recursica-skill-forms`                            |
+| The situation                                                                        | The channel                                                                           |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
+| A normal action succeeded                                                            | **No message.** No confirmation                                                       |
+| An event or condition **just happened**                                              | A **toast**                                                                           |
+| An event or condition **has not happened yet**                                       | A **banner**, a notification on the page                                              |
+| The application failed to complete an action, such as a save that did not go through | A **toast**                                                                           |
+| A broader or system-wide condition                                                   | A notification channel, if the application has a notification channel                 |
+| An action is in progress                                                             | The loading state of the button that started the action. See `recursica-skill-button` |
+| A decision must be made before continuing                                            | A modal. See `recursica-skill-modal`                                                  |
+| A field's value is invalid                                                           | The field's assistive element. See `recursica-skill-forms`                            |
 
 A toast is a short message that appears briefly and then disappears. A modal is a window that blocks every other part of the page until the persona closes the modal.
 
@@ -95,7 +95,7 @@ The ban on inline messages covers brief status and success messages placed in th
 
 - **The action moved the persona away from the place where the persona acted.** The previous page no longer has a place on screen to show a message.
 - **Saving happens bit by bit while the persona works, and a message in the form would interrupt more than reassure.**
-- **The system failed.** Report a save that did not go through in a toast.
+- **The application failed.** Report a save that did not go through in a toast.
 
 **Use the toast duration (how long the toast stays on screen) that the code library behind the toast component sets.** Change the duration only when the user asks. Do not build a separate timing scheme for each message.
 
@@ -129,7 +129,7 @@ A partial success should not reach the interface. For that reason, the channel t
 
 **Show a loading indicator when an operation will take more than about 3 seconds.** For a shorter operation, an indicator that appears and disappears is a distraction.
 
-**The button that starts an action is the loading indicator for that action.** On submit, the button switches to the disabled look with an animated icon. For example, a form's Submit button shows the animated icon after the persona clicks the Submit button. `recursica-skill-forms` owns this rule, and `recursica-skill-button` describes how to build the loading button.
+**The button that starts an action is the loading indicator for that action.** On submit, the button shows the theme's loading state. Without a loading state, the button shows the disabled look with an animated icon. For example, a form's Submit button shows the animated icon after the persona clicks the Submit button. `recursica-skill-forms` owns this rule, and `recursica-skill-button` describes how to build the loading button.
 
 **Never put a blocking spinner or overlay over the page on submit.** `recursica-skill-forms` owns this rule.
 
@@ -153,13 +153,13 @@ A partial success should not reach the interface. For that reason, the channel t
 - **Undo policy, meaning when an action gets an undo and where the undo goes**: `recursica-skill-undo`.
 - **The toast component's variants, states and accessibility details**: `recursica-skill-toast`.
 - **Loader variants, and what a spinner can and cannot tell the persona**: `recursica-skill-loader`.
+- **Which changes are announced to assistive technology, and how urgently**: `recursica-skill-live-regions`.
 - **Error logging, retry policy, and how the backend classifies a failure.** These topics are not interface decisions.
 - **Transaction boundaries, meaning which changes the backend saves together.** Whether an operation saves all at once is a backend requirement, not a design decision. See the all-or-none rule under "No partial success" above. The all-or-none rule is the reason the interface has no partial-success messages and no lists of results for each item.
 
 ## Open questions
 
 - **What a banner looks like and where a banner sits.** The tense rule above says when to use a banner. No rule says what a banner looks like or where a banner sits on the page. No rule says whether the persona can dismiss a banner, or whether several banners may appear at once.
-- **Live regions.** Nobody has decided which updates are announced to assistive technology, or how urgently. The team openly put the question off when recording the typography rules, and this skill does not answer the question. Individual component skills state the announcement requirements for each skill's component, but no policy covers the whole application.
 - **The notification channel.** The team named a notification channel as the place for global or system-wide conditions, "if one exists". Whether a notification channel exists, and what belongs in a notification channel instead of a banner, is not settled.
 - **Toast titles and how long an error toast lasts.** Nobody has decided whether a toast may have a title as well as a message. Nobody has decided whether an error toast lasts a different length of time from a success toast.
 - **Banner versus modal.** The team named banner versus modal as not covered, at the end of the session that recorded these rules.
@@ -183,4 +183,4 @@ A partial success should not reach the interface. For that reason, the channel t
 - [ ] The submit button is the loading indicator for the submit action.
 - [ ] No blocking spinner or overlay appears on submit.
 - [ ] A long-running operation waits with no extra message by default. Any "taking longer than usual" message is deliberate, stated as non-standard, and appears no earlier than about 10 seconds.
-- [ ] Open questions were asked about, not decided: what a banner looks like and where a banner sits, live regions, the notification channel, toast titles, how long an error toast lasts, and banner versus modal.
+- [ ] Open questions were asked about, not decided: what a banner looks like and where a banner sits, the notification channel, toast titles, how long an error toast lasts, and banner versus modal.

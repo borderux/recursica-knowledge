@@ -13,7 +13,7 @@ Pagination moves the persona between pages of one list of records. Pagination is
 
 ## When to use pagination
 
-- **An interior table holds more records than the table's fixed number of table rows.** An interior table is a smaller table set inside a container, beside other elements. For example, a "Recent invoices" table in a card on a customer page is an interior table. `recursica-skill-tables` gives an interior table a fixed five or ten table rows. Paginate an interior table with more records than those table rows. For example, an interior table with ten table rows and 45 records needs pagination.
+- **An interior table holds more records than the table's fixed number of table rows.** An interior table is a smaller table set inside a container, beside other elements. For example, a "Recent invoices" table in a container with a layer on a customer page is an interior table. `recursica-skill-tables` gives an interior table a fixed five or ten table rows. Paginate an interior table with more records than those table rows. For example, an interior table with ten table rows and 45 records needs pagination.
 - **The interior table must not scroll**, up and down or side to side. Every table row shows without scrolling. The persona reaches the records that do not fit in the visible table rows through pagination.
 - **The persona needs to come back later to a specific place in an ordered list of records.** For example, a persona stops on page 7 of a list of invoices sorted by date. The next day, the persona returns to page 7. Continuous scrolling does not keep the persona's place.
 
@@ -22,13 +22,13 @@ Pagination moves the persona between pages of one list of records. Pagination is
 | Situation                                                             | Use instead                                                                                                                                |
 | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | A full-size table fills the width and height of the table's container | Infinite scroll. `recursica-skill-tables` prefers infinite scroll, because pagination makes the persona click through records page by page |
-| A feed built for continuous browsing                                  | Infinite scroll, chosen once for the whole system                                                                                          |
+| A feed built for continuous browsing                                  | Infinite scroll, chosen once for the whole application                                                                                     |
 | Every record fits on one page                                         | No pagination. Never show pagination controls for a single page                                                                            |
 | One continuous document runs long                                     | A different structure for the document. Confirm the structure with the user. Never paginate running text                                   |
 | The persona needs to know the current location in the app             | `recursica-skill-breadcrumb`                                                                                                               |
 | A process moves through ordered steps                                 | `recursica-skill-stepper`                                                                                                                  |
 
-**Choose pagination or infinite scroll once for the whole system, not for each screen.** On every screen, full-size tables scroll and interior tables paginate. `recursica-skill-design-system-conventions` requires one behavior for the whole application. When tables mix the two behaviors, the persona cannot predict how any table behaves.
+**Choose pagination or infinite scroll once for the whole application, not for each screen.** On every screen, full-size tables scroll and interior tables paginate. `recursica-skill-design-system-conventions` requires one behavior for the whole application. When tables mix the two behaviors, the persona cannot predict how any table behaves.
 
 ## Variants
 
@@ -60,7 +60,7 @@ Both questions are listed under "Open questions".
 - an ellipsis, as in "1 2 3 … 20"
 - a way to shorten a long list of page numbers
 
-The design-system website is the only source that shows the four items. The website describes each item as a behavior. The questions are listed under "Open questions".
+The design-system website is the only source that shows the four items. The website describes each item as a behavior. "Rules" below settles the ellipsis. The first-page and last-page controls are listed under "Open questions".
 
 ## Rules
 
@@ -135,7 +135,7 @@ The theme also sets the focus ring and the area that responds to a click or a ta
 - `recursica-skill-tables` — whether a table paginates at all, and the five-to-ten row count for an interior table. The tables skill also sets the ban on scrolling inside a table, and the fixed header and footer. The tables skill also sets the default sort, and what totals cover on a paginated table.
 - `recursica-skill-buttons-links` — when a control is a link or a button, the tooltip on an icon-only control, and disabled controls.
 - `recursica-skill-navigation` — what counts as a location, routing and browser history, and semantic list markup for navigation.
-- `recursica-skill-design-system-conventions` — one behavior for the whole system, and never showing meaning in only one way.
+- `recursica-skill-design-system-conventions` — one behavior for the whole application, and never showing meaning in only one way.
 - `recursica-skill-live-regions` — announcing the new page and the new range of table rows after a page change.
 
 ### Only if used on the same screen
@@ -145,12 +145,11 @@ The theme also sets the focus ring and the area that responds to a click or a ta
 ## Open questions
 
 - **Whether the previous and next controls are missing, or present but unusable, on the first page and the last page.** The rule that the previous and next controls are never disabled links is settled, under "Rules". No rule says which of the two other forms the house wants. Confirm with the user, and apply the answer everywhere.
-- **First-page and last-page controls.** Only the design-system website shows first-page and last-page controls. Do not assume the theme has first-page and last-page controls. The same goes for an ellipsis, and for shortening a long list of page numbers. Do not build any of the controls without confirming with the user. Confirm each control, and shortening the list, with the user only when the theme has no such control.
-- **Whether a page of a table is a real route with a history entry.** The answer decides whether a page number can be a link with an `href` at all. No rule says whether a table's pages are routes.
+- **First-page and last-page controls.** Only the design-system website shows first-page and last-page controls. Do not assume the theme has first-page and last-page controls. Do not build either control without confirming with the user. Confirm each control with the user only when the theme has no such control.
 - **Rows per page as the persona's choice.** No rule says whether the persona may change the number of table rows on each page. Confirm with the user only when the theme has no rows-per-page select.
 - **A results readout**, such as "Showing 1–10 of 200". No rule says whether a results readout is required, or where the readout sits next to the pagination controls. Confirm with the user only when the theme has no results readout.
 - **Where pagination sits in the footer.** No rule says which side of the footer pagination takes. No rule says how pagination fits beside the totals the footer also shows.
-- **Loading and error states between pages.** `recursica-skill-tables` says no skill owns table loading states yet.
+- **Error states between pages.** `recursica-skill-tables` sets the loading state: a loading table shows the loader by default. No rule covers an error between pages.
 
 ## Pre-flight checklist
 
@@ -173,4 +172,4 @@ The theme also sets the focus ring and the area that responds to a click or a ta
 - [ ] Changing pages did not change the default sort, and each total says what the total covers.
 - [ ] Every variant, state and control is one the theme's UI kit lists. No variant, state, first-page or last-page control, or ellipsis is invented.
 - [ ] No styling is set or overridden on the pagination. No container or spacer is added to change the pagination's look.
-- [ ] Open questions were asked about, not decided: missing or unusable controls on the first page and the last page, first-page and last-page controls, the ellipsis, whether a page is a real route, rows per page, a results readout, where pagination sits in the footer, and loading and error states between pages.
+- [ ] Open questions were asked about, not decided: missing or unusable controls on the first page and the last page, first-page and last-page controls, rows per page, a results readout, where pagination sits in the footer, and error states between pages.

@@ -13,7 +13,7 @@ A loader shows that work is still in progress. A loader cannot show how much of 
 
 ## When to use a loader
 
-- The persona waits for an operation of unknown length, such as loading data, a submit action, or a recalculation.
+- The persona waits for an operation of unknown length, such as loading data or a recalculation. A submit action shows the wait in the submit button instead. See `recursica-skill-button`.
 - One region of a page is still loading, and every other region of the page has loaded. The most common example is a dashboard whose widgets load at different speeds. A spinner is most useful in this case:
 
   - Show the content that has arrived.
@@ -28,7 +28,7 @@ A loader shows that work is still in progress. A loader cannot show how much of 
 | Situation                                              | Use instead                                                                                                                                                                                                                                                                                                                                                          |
 | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | The amount of work or the percentage done is known     | If the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes) has a determinate variant (one that shows how much is done), use the determinate variant. Otherwise, show nothing in place of the loader. Report that the screen needs a progress indicator, and see the open questions. |
-| The operation finishes in well under a second          | Show no loading indicator. A spinner that flashes on and off distracts the persona more than the wait does.                                                                                                                                                                                                                                                          |
+| The operation finishes in under about 3 seconds        | Show no loading indicator. A spinner that flashes on and off distracts the persona more than the wait does.                                                                                                                                                                                                                                                          |
 | The wait is over, and the screen must state the result | Text in the place where the result appears, or a toast for a global result. See `recursica-skill-toast`.                                                                                                                                                                                                                                                             |
 | No data exists, and no data ever existed               | An empty state with content in the empty state, never a blank area. A dashboard never shows an empty state. See `recursica-skill-dashboards`.                                                                                                                                                                                                                        |
 | A skeleton screen shown before the content             | **Nothing. Skeleton screens and ghost text are forbidden outright.** See "Variants" below.                                                                                                                                                                                                                                                                           |
@@ -65,7 +65,7 @@ Each option below is described by role, such as "the largest size". The names in
 
 **Show the loader only over the region that is loading.** Do not cover the whole screen while one card loads. Use a loader across the whole screen only for a wait that affects the whole screen.
 
-**Do not show a loader for a wait under about 3 seconds.** Delay the loader, or leave the loader out. A spinner that appears and disappears at once distracts the persona. The spinner also makes a fast operation feel slower than the operation was. `recursica-skill-feedback-messaging` sets the 3-second threshold. An earlier version of this skill gave 300ms. The 300ms figure was never a recorded house rule and has been corrected.
+**Do not show a loader for a wait under about 3 seconds.** Delay the loader, or leave the loader out. A spinner that appears and disappears at once distracts the persona. The spinner also makes a fast operation feel slower than the operation was. `recursica-skill-feedback-messaging` sets the 3-second threshold.
 
 **Never let the spinning motion be the only signal.** `recursica-skill-design-system-conventions` forbids showing meaning in a single channel (color, shape, position or text, each a separate signal). The persona loses the animation more easily than any other channel:
 
@@ -98,12 +98,12 @@ A spinner is only animation. A persona using a screen reader knows a spinner is 
 
 - **Announce that loading has started, and announce that the content has arrived.** Both announcements are required. Apps most often skip the announcement that the content has arrived. When a spinner appears and disappears with no announcement, the persona never learns there was a wait or a result.
 - **Say what is loading, and what arrived.** Announce "Loading invoices", then "24 invoices loaded". Do not announce only "Loading" or "Loader".
-- **Each announcement must be polite, never assertive.** A polite announcement waits for a pause instead of interrupting. The announcement must not interrupt what the persona is reading or typing. The persona does not need to know at once that a wait started or finished. See `recursica-skill-live-regions`.
+- **Announce the start and the end of loading politely, never assertively.** A polite announcement waits for a pause instead of interrupting. The announcement must not interrupt what the persona is reading or typing. The persona does not need to know at once that a wait started or finished. See `recursica-skill-live-regions`.
 - **Put the live region (an area of the page that a screen reader announces automatically when the area's content changes) on the page before the loader appears.** The live region makes the announcement. A screen reader often never announces a live region added at the same moment as the live region's message.
 - **Never announce progress that is not known.** Without a determinate variant, the app has no percentage, no step count, and no time estimate to report. Do not make up a percentage, a step count, or a time estimate.
 - **The spinning motion tells assistive technology nothing.** The motion is a single visual channel. `recursica-skill-design-system-conventions` requires a second channel, which for a loader is the text and the announcement.
 - **Do not announce every check, retry, or refresh.** A region that reloads on a schedule must not announce each reload. Announce only the changes the persona needs to know about.
-- **If a load fails, announce the failure.** When a spinner disappears with no message, the persona assumes the load succeeded.
+- **If a load fails, announce the failure.** When a spinner disappears with no message, the persona assumes the load succeeded. `recursica-skill-live-regions` sets the priority of a failure announcement.
 
 ### Keyboard and non-mouse navigation
 
@@ -127,7 +127,7 @@ A spinner is only animation. A persona using a screen reader knows a spinner is 
 
 - `recursica-skill-design-system-conventions` — never showing meaning in a single channel, and one behavioral mode per application.
 - `recursica-skill-dashboards` — the ban on shipping an empty dashboard. The dashboards skill covers text on how up to date each component's data is, for components on different refresh schedules.
-- `recursica-skill-tables` — lists loading and error states for a table, including partial failure, as a topic no skill owns.
+- `recursica-skill-tables` — a loading table shows the loader by default. The tables skill lists error states for a table, including partial failure, as a topic no skill owns.
 - `recursica-skill-buttons-links` — lists a pending state on an action other than submit as a topic no skill owns.
 - `recursica-skill-live-regions` — announcing that loading started and finished, and what the app must cover beyond the loader's own announcement.
 
@@ -141,7 +141,7 @@ A spinner is only animation. A persona using a screen reader knows a spinner is 
 - **Whether the loader may have a label.** Without a label slot, the app places the text beside the loader. No rule says where the text goes relative to the spinner. Confirm with the user only when the theme has no label slot.
 - **Whether the three adapter loader types may be used.** Oval, Bars, and Dots are the three values of a type setting in both adapters. The question covers how each type looks and when to use each type. Only the design-system website shows a progress track. Confirm with the user before relying on a type other than the default. Confirm with the user only when the theme has no type variant.
 - **When a spinner for the whole page is called for, instead of an empty page.** The threshold for showing a loader is about three seconds. The clearest case for a spinner is one region still loading on a page that has otherwise loaded. No rule says where a region ends and the whole page begins.
-- **Loading and error states for a table**, including partial failure. `recursica-skill-tables` lists loading and error states for a table as a topic no skill owns.
+- **Loading and error states for a table**, including partial failure. `recursica-skill-tables` settles the loading state: a loading table shows the loader by default. `recursica-skill-tables` lists error states for a table as a topic no skill owns.
 - **A pending state on an action other than submit.** `recursica-skill-buttons-links` lists the pending state as a topic no skill owns.
 - **Whether the loader itself is delayed.** The 3-second threshold decides whether a wait needs a loader at all. No rule says whether the spinner also waits 3 seconds before appearing. No rule says whether the spinner appears at once for an operation expected to take longer.
 - **Which size to use in which region that holds content.** A page, a panel, and a modal are each a region that holds content. No rule says whether a wait across the whole screen uses the largest size, or a different choice entirely. The largest size is `large` in the standard UI kit.

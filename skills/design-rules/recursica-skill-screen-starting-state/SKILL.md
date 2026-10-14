@@ -47,7 +47,7 @@ Do not ship a control, such as a menu, whose value cannot be changed. See `recur
 
 - a tab's importance
 - how often personas open a tab
-- which tab a stakeholder considers the highlight
+- which tab the user considers the highlight
 
 **Reopening the tab the persona last used is a separate question from the default tab.** The default-tab rule covers which tab opens _first_. Returning the persona to the last tab comes from routing, such as the tab's URL and the back button. Returning the persona to the last tab does not come from remembered state. See `recursica-skill-navigation`.
 
@@ -134,10 +134,7 @@ The trade-off is not a yes-or-no question. The fact that most personas benefit d
 
 ## Set by the theme or the component
 
-- **Which default applies where no safe default exists.** The user decides, as part of the user flow.
-- **Whether a default that serves the majority is worth the cost to the minority.** No way exists to measure the cost. Confirm with the user.
 - **The default sort order and rows per page on a table.** `recursica-skill-tables` settles both.
-- **Whether saving drafts automatically is technically possible.** If saving drafts automatically is possible, the app saves drafts automatically.
 
 ## Out of scope
 
@@ -155,9 +152,8 @@ The trade-off is not a yes-or-no question. The fact that most personas benefit d
 - **Anti-patterns specific to initial state, meaning what a screen shows before the persona acts.** The team was asked directly and named no anti-pattern beyond the pre-selected radio button. Do not assume that the house rules forbid a common anti-pattern.
 - **Defaults on any region of the screen that holds content and that this skill does not name.** A page, a panel and a modal are such regions. The undecided defaults include:
   - which accordion section starts open
-  - which date range a dashboard starts on
   - a stepper's starting value
-- **Whether a default may differ per persona, be learned, or depend on the persona's role.** The other option is one system value for every persona.
+- **Whether a default may differ per persona, be learned, or depend on the persona's role.** The other option is one application value for every persona.
 - **The house set of relative date ranges, and which range is the default.** `recursica-skill-filters` records the question as open.
 
 ## Pre-flight checklist

@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-checkbox
-description: Rules for the Recursica checkbox and checkbox group — zero-to-many selection, option counts, select-all and the indeterminate state, table row selection, and disabled versus read-only. Use for checkboxes, checklists, and row selection. Not for one choice — see recursica-skill-radio-button; not for instant on/off settings — see recursica-skill-switch.
+description: Rules for the Recursica checkbox and checkbox group — zero-to-many selection, option counts, select-all and the indeterminate state, table row selection, and disabled versus read-only. Use for checkboxes, checklists, and row selection. Not for one choice — see recursica-skill-radio-button; not for one on/off setting that passes the switch tests — see recursica-skill-switch.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -16,14 +16,13 @@ A checkbox turns one specific value on or off, such as "Remember me". A checkbox
 - **Use a checkbox when the persona may select zero, one, or many options.** For example, "How can we contact you?" may offer Email, Phone and Text message. The options are independent. Selecting one option never rules out another option.
 - **Use a checkbox when the persona should see every option at once.** The persona should see the options in a stacked list that is easy to scan. The persona should not have to open a control, such as a dropdown, to see which options are available.
 - **Use a checkbox when the options have a parent-child relationship.** For example, a parent checkbox sums up a list of child checkboxes. An "All regions" checkbox above one checkbox per region is one case. The indeterminate state (the partly selected state, shown as a dash, when some but not all items are selected) exists for parent and child checkboxes.
-- **A change to a checkbox saves with the form.** The change saves when the persona submits the form, not the moment the persona checks the checkbox.
+- **A change to a checkbox saves under the application's save mode**, like every other field in the form. In a form that saves on submit, the change saves when the persona submits the form.
 
 ## When not to use a checkbox
 
 | Situation                                                                           | Use instead                                                                                                             |
 | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | Selecting one option rules out the other options, and the persona picks exactly one | A radio group. See `recursica-skill-radio-button`. Never use checkboxes when the persona picks exactly one option.      |
-| The change must take effect the moment the persona turns the setting on or off      | A switch. See `recursica-skill-switch`.                                                                                 |
 | There is one lone yes-or-no field, with no others beside the field                  | A switch or a checkbox. Confirm the choice with the user. See `recursica-skill-switch`.                                 |
 | A checkbox group needs more options than the 7 ± 2 limit in the rules below         | A multi-select dropdown. See `recursica-skill-dropdown`. A multi-select dropdown is a checkbox group inside a dropdown. |
 | The options must sit side by side in a horizontal row                               | Selectable chips. See `recursica-skill-chip`. Never lay out a checkbox group in a horizontal row.                       |

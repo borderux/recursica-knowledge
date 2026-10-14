@@ -16,7 +16,7 @@ A radio group has one group label and several options. Exactly one option may be
 - **Use a radio group when the options rule each other out, and the persona must choose exactly one option.** For example, an order ships at one speed, never two. Radio buttons are the only correct control for a choice of exactly one option.
 - **Use a radio group when the persona should see every option at once.** The options sit in a stacked list that is easy to scan. The persona should not have to open a control, such as a dropdown, to find out which options exist.
 - **Use a radio group when the options are few enough to compare on the screen**, within the 7 ± 2 limit under "Rules".
-- **Use a radio group when a form saves the chosen option on submit**, together with the form's other fields.
+- **A radio group saves the chosen option under the application's save mode**, like every other field in the form.
 
 ## When not to use a radio button
 

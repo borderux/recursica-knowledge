@@ -16,7 +16,7 @@ The rules assume **complex enterprise web applications**, where the persona does
 ## The three governing principles
 
 1. **Set no limit on how much information competes for attention on a screen.** An enterprise screen correctly holds dozens or hundreds of pieces of information. Prioritizing sets the order of the information, not the amount. A rule that starts by capping the amount of information misunderstands the product.
-2. **Rank the persona's workflow above every factor that can be changed.** The workflow wins over stakeholders, business units and taste. Legal limits, compliance limits and hard technical limits win over the workflow.
+2. **Rank the persona's workflow above every factor that can be changed.** The workflow wins over a business unit's request and over taste. The user may still overrule the agent. Legal limits, compliance limits and hard technical limits win over the workflow.
 3. **Simplify last, never first.** Understand the workflow first. Then connect the elements, pages and screens. Only then remove the content the persona does not need.
 
 ## No limit on the amount of information
@@ -50,15 +50,15 @@ The rules assume **complex enterprise web applications**, where the persona does
 
 ## The top-left position
 
-**Put the client's logo in the top-left corner of the screen in almost every case.** The logo shows and reinforces the brand of the product being built. The top-left corner is therefore not available for content.
+**Put the product's logo in the top-left corner of the screen in almost every case.** The logo shows and reinforces the brand of the product being built. The top-left corner is therefore not available for content.
 
 **The logo may instead sit in the top-right corner, with the profile information in the top-left corner.**
 
-**A screen with no logo is a rare exception.** A client who does not care about reinforcing the brand may hide the logo.
+**A screen with no logo is a rare exception.** The user may hide the logo when reinforcing the brand does not matter.
 
 ## Ranking competing requirements
 
-**Put the persona's actual workflow ahead of any stakeholder.** For example, a stakeholder wants a promotion banner above the order table. The order table the persona works in comes first.
+**Put the persona's actual workflow ahead of any request.** For example, the user wants a promotion banner above the order table. The order table the persona works in comes first.
 
 **The user may still overrule the agent, even where the user's decision harms the workflow.** The user's override is a real outcome, not a failure of the rule. Still argue from the persona's point of view, as good user-centered design requires.
 
@@ -70,7 +70,7 @@ The rules assume **complex enterprise web applications**, where the persona does
 
 **Let a legal limit, a compliance limit or a hard technical limit override the persona's mental model.** For example, a regulation may require a second approval before a payment goes out. A legal, compliance or hard technical limit cannot be worked around. The persona's mental model has to change to fit the limit. Legal, compliance and hard technical limits are the only requirements that outrank the persona.
 
-**If stakeholders want every item on the screen, stack-rank the items.**
+**If the user wants every item on the screen, stack-rank the items.**
 
 - Put every item in strict order, from most important to least important.
 - Find the most important item, and make the most important item clear.
@@ -82,7 +82,7 @@ Density is how tightly content is packed together.
 
 **Choose density by what the persona comes to do every day, not by a preference.**
 
-- **A screen for reviewing information and exploring the information in detail can handle more density.** An example is a dashboard a persona opens every morning.
+- **A screen for reviewing information and exploring the information in detail can handle more density.** An example is a reconciliation screen a persona works in every morning.
 - **Use less density on a screen for starting a flow,** such as the first screen of a return request. The persona arrives at the screen to do a task.
 
 Base density on the use case, not on a threshold.
@@ -136,7 +136,7 @@ Base density on the use case, not on a threshold.
 
 **Rank content by how often the persona needs the content, not by how much the content matters.** An occasional task can matter a lot when the persona needs the task. The task can still go without a permanent region on the screen. For example, a monthly export gets a button, not a region of the page. Importance is a reason to make the task easy to find. A well-placed trigger makes the task easy to find.
 
-**A rarely used form MUST NOT be kept permanently on the screen.** Three kinds of form are each occasional and each large:
+**A rarely used form MUST NOT be kept permanently on the screen.** Three kinds of form are each occasional:
 
 - a form that adds a record
 - a form for importing
@@ -145,7 +145,9 @@ Base density on the use case, not on a threshold.
 A form for adding a record, importing or configuring takes up space on every visit. Almost no visit needs the form's task.
 
 - Keep the trigger for the form visible, such as an "Add customer" button.
-- Open the form in a modal or a panel when the persona asks for the form. See `recursica-skill-panels-modals`.
+- Open the form when the persona asks for the form. See `recursica-skill-panels-modals`.
+- Open a short form that adds a record in a modal or a panel. A short form has fewer than five fields. Open a long form that adds a record on a separate page. `recursica-skill-tables` states the same rule.
+- Open a form for importing or configuring in a modal or a panel.
 
 **A screen breaks the frequency ranking when the frequent task has to share space with a rare task.** For example, a form that adds a customer sits permanently below the Customers table the persona came for. The form gives the rare task the same permanent space as the common task.
 
@@ -205,6 +207,8 @@ Usability testing on a long credit-card application found that the single long f
 
 **NEVER build an inner scrolling region.** An inner scrolling region forces the persona to point inside one area before the scroll wheel moves the content. For example, a list that scrolls inside a card moves only while the pointer is over the card. The one-scrollbar rule prevents the failure. See convention 4 in `recursica-skill-design-system-conventions`. `recursica-skill-dashboards` also forbids inner scrolling on dashboards.
 
+**Only two components may scroll horizontally: a carousel, and a table as a last resort.** Confirm with the user before a table scrolls horizontally. See `recursica-skill-responsive-layout` and `recursica-skill-tables`.
+
 **The one possible exception is a table that fills the full width and height of the viewport.** Even the full-viewport table is only a "maybe." In general, build no inner scrolling of any kind.
 
 ## Empty states and error states
@@ -231,15 +235,15 @@ With one message for both states, the persona cannot tell whether to change the 
 
 ## Set by the theme or the component
 
-- **Type styles, spacing tokens, and the layout grid.** The design system sets the type styles, spacing tokens and layout grid.
+- **Type styles, spacing tokens, and the layout grid.** The theme sets the type styles, spacing tokens and layout grid.
 - **The page's structure:** the header, navigation rail, footer, title and breadcrumb. `recursica-skill-layouts-and-templates` sets the page's structure.
-- **Whether a stakeholder's override is accepted.** Argue from the persona's point of view. The user makes the decision.
 
 ## Out of scope
 
-- **The page structure and layering** — `recursica-skill-layouts-and-templates`.
+- **The page structure** — `recursica-skill-layouts-and-templates`.
+- **Layers** — `recursica-skill-layers`.
 - **Which component a piece of content uses.** Each component skill decides.
-- **Limits specific to dashboards**, such as how many charts and cards a dashboard holds — `recursica-skill-dashboards`.
+- **Limits specific to dashboards**, such as how many charts and items a dashboard holds — `recursica-skill-dashboards`.
 - **The difference between a dashboard and a workbench** — `recursica-skill-dashboards`.
 - **Table columns, sorting, and pinning** — `recursica-skill-tables`.
 - **Working-memory limits on how many options to show** — `recursica-skill-working-memory`. Working-memory limits govern controls, not how much information a screen may show.
@@ -258,8 +262,8 @@ With one message for both states, the persona cannot tell whether to change the 
 - [ ] No limit caps how much information the screen shows, and the idea of "primary attention" did not shape the layout.
 - [ ] The screen supports the investigations and actions the persona came to do.
 - [ ] Content runs from broadest and largest at the top, to most specific and role-dependent at the bottom.
-- [ ] The top-left corner holds the brand, unless the client has a reason otherwise.
-- [ ] The persona's workflow outranked every stakeholder request. Only a legal, compliance, or hard technical limit overrode the persona's workflow.
+- [ ] The top-left corner holds the brand, unless the user has a reason otherwise.
+- [ ] The persona's workflow outranked every request from the user or a business unit. Only a legal, compliance, or hard technical limit overrode the persona's workflow.
 - [ ] Density matches what the persona comes to do every day.
 - [ ] The three tenets were applied in order: workflow, then physicality, then simplicity.
 - [ ] Every element passed the removal test, and every element with an uncertain answer is reduced instead of cut.
@@ -267,11 +271,11 @@ With one message for both states, the persona cannot tell whether to change the 
 - [ ] Hierarchy is shown by typography, position, white space, and width, never by color alone.
 - [ ] The screen has no playful or decorative content.
 - [ ] No rarely used element holds permanent space on the screen.
-- [ ] Occasional forms for creating, importing and configuring open from a visible trigger into a modal or a panel.
+- [ ] Occasional forms for creating, importing and configuring open from a visible trigger. Forms for importing and configuring, and a short form that adds a record, open in a modal or a panel. A long form that adds a record opens on a separate page.
 - [ ] No content the persona must find sits below a region of changing length, such as a table or a list.
 - [ ] Progressive disclosure uses an existing component, and a long form replaces a stepper where the information refers back and forth.
 - [ ] Beyond the header, footer, and navigation rail, the screen has at most one sticky element.
-- [ ] The application has one scrollbar, and no inner scrolling region.
+- [ ] The application has one scrollbar, and no inner scrolling region. Only a carousel, or a table as a last resort the user confirmed, scrolls horizontally.
 - [ ] Empty and error states have different messages.
 - [ ] An alignment pass against the other sections is complete.
 - [ ] Every mismatch went to the user to decide, and no mismatch was resolved without telling the user.

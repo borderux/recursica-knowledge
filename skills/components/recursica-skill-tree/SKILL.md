@@ -68,7 +68,7 @@ The choice between a tree and an accordion is settled. Every case is one or the 
 
 **Never show depth with indentation alone.** Indentation is one visual channel (color, shape, position or text, each a separate signal). `recursica-skill-design-system-conventions` requires a second channel. In a tree, the second channel is each node's level, set in the code.
 
-**In a tree used for navigation, make every node a link with a real URL.** The tree follows `recursica-skill-navigation`, including the rule that a sub-level opens on click, never on hover.
+**In a tree used for navigation, make every node that has a page a link with a real URL.** A parent node with no page expands in place, as `recursica-skill-navigation` says. The tree follows `recursica-skill-navigation`, including the rule that a sub-level opens on click, never on hover.
 
 ## Accessibility
 

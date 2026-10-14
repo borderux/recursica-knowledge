@@ -30,7 +30,7 @@ An app shell is the header, the left rail and the footer around the page content
 - the primary navigation toward the top
 - the profile and settings toward the bottom
 
-**Put a footer on every page.** A footer can be as simple as a copyright notice, or hold more content. Both footer positions are acceptable:
+**Put a footer on every page, unless a reason for leaving the footer out is stated.** A footer can be as simple as a copyright notice, or hold more content. Both footer positions are acceptable:
 
 - fixed at the bottom of the screen
 - shown when the persona scrolls down
@@ -245,7 +245,7 @@ For example, keep the line `Newest first. Append-only: nothing here is ever rewr
 
 **Every component takes the component's colors from the layer the component sits on.**
 
-**Never set a layer property.** Every layer property comes from the theme in Theme Forge. Background color (the `surface` property), border, radius, padding and shadow are all layer properties.
+**Never set a layer property.** Every layer property comes from the theme in Theme Forge. Background color (the `surface` property), border, radius and padding are all layer properties.
 
 **Layers 0 and 1 cover nearly every region.** Layer 2 needs a stated reason. Layer 3 is almost always a sign that the page structure is wrong.
 
@@ -323,14 +323,14 @@ The list runs in order, from the strongest sign to the weakest.
 
 1. **Uneven white space between elements.** The spacing shows no grouping of the elements that belong together and the elements that do not. Elements stack one after another, with no thought for how a person groups a page by eye.
 2. **Not enough white space above headings and subheadings.** No heading groups the content that follows the heading.
-3. **No layout grid under the page.** Elements that do not line up to an eight- or twelve-column grid are obvious, and so are gutters that vary.
+3. **No layout grid under the page.** Elements that do not line up to the theme's grid are obvious, and so are gutters that vary.
 4. **Lines of text that are long for no reason.**
 5. **Explanatory text in place of a good heading or label.** The most common case is a line that only repeats the page title or section heading above the line.
 
 ## Set by the theme or the component
 
 - **The spacing and gutter token values, the maximum content width, the breakpoints, and the layout grid.** The theme sets all four.
-- **The look of the background of every layer or card**: elevation, border and padding.
+- **The look of the background of every layer or card**: border and padding. Elevation has separate tokens.
 - **Type styles and capitalization** — `recursica-skill-typography-semantics`.
 
 ## Out of scope

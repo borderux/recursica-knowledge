@@ -149,7 +149,6 @@ Never restyle the overlay behind the modal. Never change when the scroll divider
 
 - **Whether clicking the overlay closes the modal.** No rule says either way.
 - **A loading state inside a modal**, while an action is still running. Confirm with the user only when the theme has no loading state.
-- **Whether a modal that cannot be closed is ever allowed**, such as a forced acknowledgment with no cancel.
 - **Confirming inside a modal.** No rule says how to confirm a destructive action from inside a modal, given the ban on stacking modals.
 
 ## Pre-flight checklist
@@ -171,4 +170,4 @@ Never restyle the overlay behind the modal. Never change when the scroll divider
 - [ ] No styling is set or overridden on the modal.
 - [ ] No container or spacer is added to change the modal's look.
 - [ ] The overlay behind the modal is not restyled.
-- [ ] Open questions were asked about, not decided: whether clicking the overlay closes the modal, a loading state inside a modal, whether a modal that cannot be closed is allowed, and confirming inside a modal.
+- [ ] Open questions were asked about, not decided: whether clicking the overlay closes the modal, a loading state inside a modal, and confirming inside a modal.

@@ -102,7 +102,7 @@ See `recursica-skill-assistive-element`. Do not put the field's rules in the pla
 - **Disabled autocomplete.** Use a disabled autocomplete when the persona could make the field usable by taking a different action first. For example, a City field stays disabled until the persona picks a country. A disabled autocomplete is still a field and still clearly an input. The persona cannot use the disabled autocomplete right now.
 - **Read-only field.** A read-only field is a different component, with no input. Use a read-only field when the persona viewing the field never changes the value where the value is shown.
 
-**An autocomplete that filters a collection of items, instead of setting a form value, saves nothing.** A table or a list of records is an example of a collection of items. For example, a customer field above the Orders table narrows the table to one customer's orders. An autocomplete that filters a collection of items does not use the form's save mode. See `recursica-skill-forms`.
+**An autocomplete that filters a collection of items, instead of setting a form value, saves nothing.** A table or a list of records is an example of a collection of items. For example, a customer field above the Orders table narrows the table to one customer's orders. An autocomplete that filters a collection of items does not use the form's save mode. See `recursica-skill-filters`.
 
 **Show the clear control only when the field has a value.** Clearing the field empties the field and takes the filter off the collection. The collection then shows every item again. Clearing never empties the text while a filter stays applied.
 
@@ -114,7 +114,7 @@ See `recursica-skill-assistive-element`. Do not put the field's rules in the pla
 
 The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, which every Recursica component follows.
 
-The app decides what a screen reader announces while the persona types and picks an option. The filtered list changes on every keystroke. A persona using a screen reader hears none of the changes unless the app announces the changes. Getting the announcements right is the hardest part of any control in the design system.
+The filtered list changes on every keystroke. A persona using a screen reader hears none of the changes unless something announces the changes. Give the autocomplete every piece of information a screen reader needs, such as the result count. Add a live region only for a change the autocomplete does not announce. See `recursica-skill-live-regions`. Getting the announcements right is the hardest part of any control in the design system.
 
 The autocomplete does four jobs without extra work from the app:
 
@@ -128,7 +128,7 @@ The autocomplete does four jobs without extra work from the app:
 - **Give the autocomplete a real label.** The label is the accessible name (the name a screen reader reads out for a control). The label must make sense without the text around the field, as in "Country", not "Select one". Never let the placeholder be the accessible name. A screen reader does not announce the placeholder as a label, and the placeholder disappears on the first keystroke.
 - **A screen reader must announce the field as a combobox** (a text field paired with a list of options), not as a plain text field. The persona has to know that typing shows options, and that the arrow keys move through the options.
 - **The code must tell assistive technology whether the filtered list is expanded (open) or collapsed (closed).** The persona must hear that the results opened, and hear that the results closed.
-- **The app must announce the number of filtered results after each filter**, politely, without interrupting the typing: "8 results", then "2 results", then "no results". The result count is the requirement missed most often. A sighted persona watches the list shrink. A persona using a screen reader hears nothing about the change.
+- **A screen reader must announce the number of filtered results after each filter**, politely, without interrupting the typing: "8 results", then "2 results", then "no results". Give the autocomplete the count. If the autocomplete does not announce the count, add a live region that does. The result count is the requirement missed most often. A sighted persona watches the list shrink. A persona using a screen reader hears nothing about the change.
 - **Announce "no results" clearly.** A persona cannot tell silence after typing apart from a broken field.
 - **Announce the active option (the option the arrow keys point to) as the persona moves through the list.** The announcement includes the option's position in the list and whether the option is selected.
 - **Do not announce every keystroke.** Do not announce the list on every typed character when the count has not changed. Too many announcements make the field as unusable as silence does.

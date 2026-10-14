@@ -71,7 +71,7 @@ The fallback presents the three failures as a feature. Do not clutter a screen t
 
 ## Amount of content
 
-**Never use inner scrolling (a region that scrolls separately from the page) on any screen in the application.** The ban covers every screen, not only dashboards.
+**Never use inner scrolling (a region that scrolls separately from the page) on any screen in the application.** The ban covers every screen, not only dashboards. `recursica-skill-screen-priority` names the horizontal-scrolling exceptions.
 
 - Give the application one scrollbar, plus sticky regions that stay in place.
 - Do not make the persona hover over a region before the region scrolls.
@@ -159,7 +159,7 @@ The whole screen must not shift.
 
 **Where customization is required anyway, follow two rules:**
 
-- **Keep each persona's individual arrangement across sessions.** The persona sets the arrangement once. The system does not rearrange the arrangement.
+- **Keep each persona's individual arrangement across sessions.** The persona sets the arrangement once. The application does not rearrange the arrangement.
 - **Do not advertise customization.** Offer an entry point to settings or configuration, such as a "Customize" item in a menu. Do not draw attention to the entry point. Let personas find the entry point, or learn about the entry point from colleagues. An unadvertised entry point follows the unadvertised affordance convention in `recursica-skill-design-system-conventions`. See `recursica-skill-discoverability` for why the convention works.
 
 ## Empty and first-run states
@@ -198,11 +198,13 @@ The whole screen must not shift.
 
 **NEVER use inner scrolling areas, in the dashboard or inside an item.** Let the whole dashboard scroll as one page. Ten items that each have a separate scrolling area are clearly wrong.
 
-**Use the design system's layouts and tokens (named design values, such as colors or sizes, set by the design system) for grids, gutters, breakpoints, type styles, elevation (the shadow that makes a layer, card, menu, popover, panel or modal look raised), and spacing.** Do not change the grids, gutters, breakpoints, type styles, elevation or spacing. Do not change the layouts or the tokens. Separate the groups of content on the dashboard with plenty of white space.
+**Use the theme's layout grid, breakpoints and tokens (named design values, such as colors or sizes, set by the design system) for grids, gutters, breakpoints, type styles, elevation (the shadow that makes a layer, card, menu, popover, panel or modal look raised), and spacing.** Do not change the grids, gutters, breakpoints, type styles, elevation or spacing. Do not change the tokens. Separate the groups of content on the dashboard with plenty of white space.
 
 ## Smaller viewports
 
-**Adapt the dashboard to smaller viewports. Do not force one dashboard to stretch from phone to desktop.** A persona checking in on a phone has a different task than a persona working at a desk all day.
+**Confirm with the user which devices, screen sizes and orientations the application supports.** See `recursica-skill-responsive-layout`.
+
+**If the application supports screens below desktop, adapt the dashboard to the smaller viewports. Do not force one dashboard to stretch from phone to desktop.** A persona checking in on a phone has a different task than a persona working at a desk all day.
 
 - Learn how personas use the dashboard in each setting, such as on a phone or at a desk.
 - Decide which content to remove.
@@ -221,7 +223,7 @@ The whole screen must not shift.
 
 - **The inside of a chart**, meaning the chart's type, variants, labels and thresholds. `recursica-skill-data-visualization` covers the inside of a chart.
 - **The anatomy of an individual card.** `recursica-skill-card` covers the anatomy of a card.
-- **Grid column counts, gutters, widget shapes, and minimum sizes.** The design system's layouts set the grid column counts, gutters, widget shapes and minimum sizes.
+- **Grid column counts, gutters, widget shapes, and minimum sizes.** The theme sets the grid column counts, gutters, widget shapes and minimum sizes.
 - **Table structure.**
 
 ## Pre-flight checklist
@@ -252,5 +254,5 @@ Check every item before treating a dashboard as done.
 - [ ] The dashboard says how up to date the data is, for each part where the refresh schedules differ.
 - [ ] No unrelated data, and no data on different scales, is placed side by side.
 - [ ] The dashboard has a maximum width, and the screen has no inner scrolling area of any kind.
-- [ ] Smaller viewports get an adapted design, not a squeezed version of the desktop design.
+- [ ] The user confirmed which screen sizes the application supports. Each supported smaller viewport gets an adapted design, not a squeezed version of the desktop design.
 - [ ] Open questions were asked about, not decided: the main position when nothing needs attention, calls to action for several roles, the dashboard's place in the navigation, and loading behavior.

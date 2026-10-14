@@ -171,7 +171,7 @@ The application must add every behavior in the two lists below. A drop zone (an 
 
 ## Pre-flight checklist
 
-- [ ] Uploading files is the main task of the page, panel, modal, or part of a page holding the file upload. Because uploading is the main task, a compact file input was ruled out.
+- [ ] The file upload meets one reason under "When to use a file upload": the main task, several files, or a list that stays in place. A compact file input was ruled out.
 - [ ] The file upload has a real, visible label. The label placement (`layouts` in the standard UI kit) matches every other field in the same form. Each form has one placement, as `recursica-skill-forms` requires.
 - [ ] The help text states the accepted file types and the size limit before the persona picks a file. The file picker allows only the accepted file types.
 - [ ] The add control is a real file input element, in the tab order, and works with Enter or Space.
@@ -184,7 +184,7 @@ The application must add every behavior in the two lists below. A drop zone (an 
 - [ ] The list of added files keeps the order the persona added the files in. The number of files in the list is available.
 - [ ] On error, an error message replaces the help text and restates the broken rule. The error message has a signal that is not color.
 - [ ] No upload starts as a side effect of choosing a file. An upload starts when the persona clearly asks to upload. When the form saves all fields together, the upload finishes before the form is submitted. The screen is never blocked while an upload runs.
-- [ ] The tab order runs from the label to the add control, then down the list. The focus ring is intact. The focus ring looks different from the highlight that shows where to drop a file.
+- [ ] The tab order runs from the label to the add control, then down the list. The focus ring is intact. If the focus ring looks like the highlight that shows where to drop a file, the gap is reported.
 - [ ] The file upload sits in the form's single column, not inside a card.
 - [ ] Every variant, size, and state is one the Recursica MCP server lists for the theme. No variant or option is invented. The list of added files comes from the file upload component, with no hand-built list, chips, or list rows.
 - [ ] No styling is set or overridden on the file upload. No container or spacer is added to change the file upload's look.

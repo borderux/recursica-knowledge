@@ -46,7 +46,7 @@ The house rules assume **complex enterprise web applications** built on a Recurs
 
 **Do not raise both the navigation and the main content to layer 1.** When every region is contained, no region stands out. The extra level then separates no region from another region.
 
-The application shell is the header, the rail, the footer and the titles. `recursica-skill-layouts-and-templates` sets the structure of the application shell.
+The application shell is the header, the rail and the footer. `recursica-skill-layouts-and-templates` sets the structure of the application shell.
 
 ## The four levels and nesting depth
 
@@ -77,7 +77,6 @@ The application shell is the header, the rail, the footer and the titles. `recur
 - **border size and border color**
 - **corner radius**
 - **padding**
-- **shadow or elevation** (the shadow that makes a layer, card, menu, popover, panel or modal look raised)
 
 **The theme sets every layer property, and the application reads each layer property from the theme.** The theme author can configure each layer property in Theme Forge (the Recursica tool where themes are written). Every layer property has a token. The agent building the screen reads the layer tokens and never writes the layer tokens.
 
@@ -160,7 +159,7 @@ In the table, plurality (the number of items) means how many layers or cards app
 
 **Needing containment does not make a region one of a set of peers.** Put a region that needs separating but has no peers on a layer. Make a region that needs a container into a card only when the region passes the card tests in `recursica-skill-card`.
 
-**NEVER use a layer to divide a page into regions.** A card may never divide a page either. The ban in `recursica-skill-layouts-and-templates` on dividing regions with containers applies to layers too. Divide a page with space and headings.
+**Divide a page into regions with space and headings first.** Give a region a layer only when space cannot set the region apart. A card never divides a page. `recursica-skill-layouts-and-templates` bans dividing regions with cards.
 
 **Never put form fields inside a card. Form fields may sit on a layer.** A layer is a region that holds content, not the container of one object.
 
@@ -198,7 +197,7 @@ In the table, plurality (the number of items) means how many layers or cards app
 
 - **Which regions that hold content sit at which level by default.** No source states the layer of a panel, a modal, a table or a dashboard widget. The available sources state only that each of those components has colors for each layer.
 - **Whether a modal or panel opens a new layer scope**, or takes on the layer beneath the modal or panel.
-- **What a layer does below the tablet breakpoint** — see `recursica-skill-responsive-layout`.
+- **What a layer does below the tablet breakpoint.** No skill covers the case yet.
 
 ## Pre-flight checklist
 
@@ -221,7 +220,7 @@ In the table, plurality (the number of items) means how many layers or cards app
 - [ ] Less prominent text uses the low-emphasis token, not a second gray.
 - [ ] Alert, warning, and success colors come from the layer the element sits on.
 - [ ] No layer level stands for rank, status, importance, or any other meaning.
-- [ ] No layer divides a page into regions.
+- [ ] Space and headings divide the page. A layer appears only where space could not set a region apart.
 - [ ] No card has been swapped for a layer, and no layer has been swapped for a card.
 - [ ] The contents of every newly opened layer have been checked, not only the container.
 - [ ] Open questions were asked about, not decided: which regions that hold content sit at which level by default, whether a modal or panel opens a new layer scope, and what a layer does below the tablet breakpoint.

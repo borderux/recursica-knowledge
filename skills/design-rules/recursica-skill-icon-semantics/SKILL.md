@@ -11,7 +11,7 @@ metadata:
 
 **Treat every house rule below as a constraint.** The house rules are the team's opinions, not neutral best practices. The rules decide which icon stands for which meaning. The rules also decide when an icon may appear with no text label.
 
-The rules assume **complex enterprise web applications** built on a configured icon set. The rules do not decide which icon set the system uses or how the icons are drawn.
+The rules assume **complex enterprise web applications** built on a configured icon set. The rules do not decide which icon set the theme uses or how the icons are drawn.
 
 ## The three governing principles
 
@@ -27,11 +27,11 @@ The rules assume **complex enterprise web applications** built on a configured i
 
 ## One icon set, one style
 
-**Pick one icon set for the whole system, and use only icons from that set.**
+**Use only icons from the theme's icon set.**
 
 **NEVER mix icon styles on the same screen.** An icon library draws each icon in several styles, such as filled (also called solid), outline and thin. Styles also differ in corner roundness and line thickness. Mixed styles are the clearest sign that a screen was put together from parts rather than designed.
 
-**Use one icon style across the whole system, with no exception.**
+**Use one icon style across the whole application, with no exception.**
 
 **If the configured set has no icon for a meaning, do not bring in an icon from outside the set.** For example, when the set has no archive icon, do not add an archive icon from another library. Raise the missing icon as a gap, and leave the gap unfilled. See `recursica-skill-design-router`.
 
@@ -48,7 +48,7 @@ The rules assume **complex enterprise web applications** built on a configured i
 - a table row with several actions, such as edit and delete
 - the "more" button, an ellipsis that opens a menu of more functions
 
-**Every icon-only button MUST have a tooltip.** For example, a trash can button in a table row shows the tooltip "Delete". The team said the tooltip rule never stops applying. No context, no lack of space and no well-known pattern makes an exception. `recursica-skill-tooltip` sets what a tooltip says and how a tooltip behaves. `recursica-skill-buttons-links` decides whether a control needs a tooltip at all, and states the same rule for buttons.
+**Every icon-only button MUST have a tooltip.** For example, a trash can button in a table row shows the tooltip "Delete invoice". The team said the tooltip rule never stops applying. No context, no lack of space and no well-known pattern makes an exception. `recursica-skill-tooltip` sets what a tooltip says and how a tooltip behaves. `recursica-skill-buttons-links` decides whether a control needs a tooltip at all, and states the same rule for buttons.
 
 ## When a text label is required
 
@@ -135,7 +135,7 @@ A landmarking icon makes each page look different and shows the persona where th
 
 ## Set by the theme or the component
 
-- **The icon set the system uses.** The system always has a default icon set. The icon set a designer chooses is configured in the development tools. Use the configured icon set.
+- **The icon set the theme uses.** The theme always has a default icon set. A designer may choose a different icon set in the theme. Use the theme's icon set.
 - **The look of each icon.** Every icon inherits the line thickness, corner roundness, fill, size and color.
 - **The icon that comes with a component**, such as the indicator on a dropdown or an accordion. Do not add another icon on top of a built-in icon.
 

@@ -46,7 +46,7 @@ The rules below describe each option by role, such as "the primary style". The n
 - **Disabled state.** How to turn on the disabled state is an open question.
 - **Destructive action.** If the theme has a destructive style, use the destructive style. Color alone cannot mark a destructive action (an action that deletes data or cannot be undone).
   - Name the destructive action in the label, as in "Delete invoice".
-  - Confirm any action that cannot be undone. See `recursica-skill-buttons-links`.
+  - Confirm an action only when the action is massively destructive, hard to recreate, and cannot be undone. See `recursica-skill-undo`.
 - **Loading.** A loading button is a button whose action is still running, such as "Save invoice" while the save runs. If the theme has a loading state, use the loading state. Otherwise, show the loading button in the disabled look. Give the loading button an animated icon, with or without a label.
   - Never add a spinner beside the button.
   - Never change the label.
@@ -84,7 +84,7 @@ A zero only repeats what the persona can already see. A zero also makes the butt
 
 **Label a toggle button with the button's current state.** "Follow" becomes "Following" after the persona presses Follow.
 
-**While a submit action runs, show the submit button as a disabled button with a spinner.** `recursica-skill-forms` requires a disabled button with a spinner. If the theme has a loading state, use the loading state. Otherwise, build the disabled button with a spinner from the disabled state and an icon, with or without a label. Every UI kit has the disabled state and the icon. Animate the icon. Keep the button the same size and in the same place. A button that moves or resizes is no longer under the persona's pointer.
+**While a submit action runs, show the submit button as a disabled button with a spinner.** `recursica-skill-forms` requires a disabled button with a spinner. If the theme has a loading state, use the loading state. Otherwise, build the disabled button with a spinner from the disabled state and an icon, with or without a label. Animate the icon. Keep the button the same size and in the same place. A button that moves or resizes is no longer under the persona's pointer.
 
 **Never use the smaller size to fit more side-by-side buttons**, in a toolbar, a footer, or a table row. Change the screen's structure instead of shrinking the buttons. Too many buttons side by side means the screen offers too many actions. See `recursica-skill-design-system-conventions`.
 

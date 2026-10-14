@@ -24,7 +24,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 - If the content the control opens can change data, the label must say so, as in `Edit` or `Manage`.
 - To check a label, open the content the control opens. Confirm that the label describes the content.
 
-**Use a button to open a panel or a modal. Do not use a link to open a panel or a modal.** Opening a panel or a modal is an action. Use a button for an action, even where a link would look lighter. Use a link to go to a different location, such as another page, another object, or a different URL.
+**Use a button to open a panel or a modal. Do not use a link to open a panel or a modal.** The one exception is a modal with a URL of the modal's own. See "Modal triggers" below. Opening a panel or a modal is an action. Use a button for an action, even where a link would look lighter. Use a link to go to a different location, such as another page, another object, or a different URL.
 
 **Give each control one outcome.** A control that opens a panel, a modal, or another region that holds content does not also:
 
@@ -40,7 +40,7 @@ See convention 6 in `recursica-skill-design-system-conventions`.
 2. **Use one primary action per page, panel, modal, or other region that holds content.** The primary action is the main action the region asks the persona to take. For example, `Save` is the primary action of a form that edits a record.
 
    - Choose a single primary action in a row, a panel, a page, or a dialog.
-   - Move every other action into a menu of secondary actions.
+   - Give every other action a less prominent style, or move the action into a menu of secondary actions.
 
    A region with no single primary action holds too many tasks.
 

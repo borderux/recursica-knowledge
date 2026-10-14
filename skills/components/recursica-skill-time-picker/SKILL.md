@@ -32,7 +32,7 @@ A time picker is a form field that records a time of day, such as "Start time: 9
 
 **A date and a time together are one control on one line of the form.** For example, "Meeting starts" is one label for a date and a time.
 
-- Put a date picker, the time picker and an AM/PM select on one line of the form.
+- Put a date picker and the time picker on one line of the form. With a 12-hour clock, the AM/PM control goes on the same line.
 - Give the line one label.
 - Never build a separate component that combines a date and a time.
 
@@ -60,7 +60,7 @@ The rules below describe each option by role, such as "the error state". The nam
 
 - **The time picker has an error state and a disabled state.** In the standard UI kit, the state variant is `states`, with the options `error` and `disabled`.
 - **The clock format is not a variant.** The persona's preference sets a 12-hour clock, as in 2:30 PM, or a 24-hour clock, as in 14:30. The rules below say how.
-- **If the theme has a seconds variant, use the seconds variant.** Otherwise, never add a seconds variant.
+- **When seconds must show, use the theme's seconds variant.** The seconds rule under "Rules" says when seconds show. If the theme has no seconds variant, never add one.
 - **A time range is one control that takes a start time and an end time**, such as 9:00 AM to 5:00 PM. If the theme has a range variant, use the range variant. Otherwise, confirm with the user before building a range control.
 - **Show a read-only time with the read-only field component, never with a read-only state of the time picker.** A value nobody can edit does not belong in a form control. The read-only field has the same label-placement variant as the time picker, and no input.
 
@@ -130,7 +130,7 @@ A time picker most often fails accessibility at the three parts the application 
 - **Name the clock icon when the icon is a control**, as in "Choose time". Hide a decorative clock icon from screen readers. A screen reader announces an unlabeled clickable icon without saying what the icon does.
 - **State the expected format in the help text.** The help text must say whether the field expects `9:00 AM` or `09:00`, and whether the field accepts seconds. A persona using a screen reader gets nothing from a visual mask.
 - **State the time zone in text**, such as "9:00 AM PT", not by position or color. A persona cannot learn a time zone that the screen only implies. Without a time zone label, a converted time or a non-local time shows the persona the wrong time. The persona sees no sign that the time is wrong.
-- **Name the unit in the help text when the unit is not obvious.** For example, name the unit when the field takes a duration, or a 24-hour time in a 12-hour locale.
+- **Name the unit in the help text when the unit is not obvious.** For example, name the unit when the field takes a 24-hour time in a 12-hour locale.
 - **The error message is the text a screen reader announces.** The error message replaces the help text, and becomes the only text the screen reader reads. The error message must state the rule, including the format.
 
 ### Keyboard and non-mouse navigation

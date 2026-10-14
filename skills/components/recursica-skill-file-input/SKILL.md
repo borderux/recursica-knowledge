@@ -169,7 +169,7 @@ Do not change the space between the label and the file input. Do not change the 
 - [ ] A drop zone is never the only way to add a file. Any drag and drop is an extra way to add a file.
 - [ ] Each clear or remove control is a tab stop, with an accessible name that includes the file name.
 - [ ] Removed files and rejected files are announced. After a removal, focus is moved on purpose.
-- [ ] The field's icon is silent, and the required state is set in code.
+- [ ] The field's icon is silent. The required state follows `recursica-skill-label`.
 - [ ] Choosing a file does not start an upload. The upload starts when the persona clearly asks for the upload. When the form saves every field together, the upload finishes before the form submits.
 - [ ] Every variant, size, and state is one the theme's UI kit lists, and no variant or option is invented.
 - [ ] No styling is set or overridden on the file input.

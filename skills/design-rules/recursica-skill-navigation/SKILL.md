@@ -165,7 +165,7 @@ A screen can show the persona's location in three ways. On every screen, use mor
 
 Hidden navigation is not a compromise. For navigation the persona rarely touches, hiding the navigation is correct.
 
-**If the persona moves back and forth between sections, keep the navigation visible at all times.** For example, a persona who switches between Orders and Customers all day needs the navigation in view. How often the persona uses the navigation decides whether to hide the navigation, not the size of the screen.
+**If the persona moves back and forth between sections, keep the navigation visible at all times.** For example, a persona who switches between Orders and Customers all day needs the navigation in view. At the tablet breakpoint or wider, how often the persona uses the navigation decides whether to hide the navigation.
 
 **NEVER collapse a vertical navigation into a rail of icons only.** A rail of icons is a narrow strip showing icons without labels. When space is needed, hide the navigation behind a hamburger menu that opens with the text labels still in place. A rail of icons has no real benefit. Fully hidden navigation that opens with clear labels beats always-visible navigation the persona has to decode.
 
@@ -248,7 +248,7 @@ Show the blocked item disabled, and enable the item once the persona makes the c
 - **All color, visual design, and styling.** The Recursica components handle color, visual design and styling.
 - **Keyboard interaction inside a component**: tab sets, trees and menus. The code library under each Recursica component decides the keyboard interaction.
 - **Where global tools go and how global tools behave.** The global tools are search, notifications and the account menu. This skill rules only that global tools stay out of primary navigation.
-- **Form layout, validation, saving, and steppers.** `recursica-skill-forms` covers form layout, validation, saving and steppers. This skill decides _that_ a form with several parts uses a stepper. `recursica-skill-forms` decides how the stepper behaves.
+- **Form layout, validation, saving, and steppers.** `recursica-skill-forms` covers form layout, validation, saving and steppers. This skill decides _that_ a form with several parts uses a stepper. `recursica-skill-stepper` decides how the stepper behaves.
 - **Storing navigation state as a preference saved for the persona.** Routing covers the navigation state that needs restoring. Any approach beyond routing is a question of how the code is built.
 
 ## Pre-flight checklist

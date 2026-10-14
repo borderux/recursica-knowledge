@@ -78,7 +78,7 @@ A persona using a screen reader hears the label alone, without the text around t
 
 **Never put required information in the placeholder.** The placeholder disappears when the persona types the first character. Use the placeholder only to show the expected format of the answer.
 
-**Put the rules for the answer in the help text.** For example, "Include the order number and what went wrong. Up to 500 characters." The help text states each rule for the answer:
+**Put the rules for the answer in the help text.** For example, "Order number and what went wrong, up to 500 characters". The help text states each rule for the answer:
 
 - what to include
 - any minimum

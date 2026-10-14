@@ -11,7 +11,7 @@ metadata:
 
 Read this skill before overriding a count limit, such as the limit on options in a radio group. When asked where a count limit came from, cite this skill.
 
-Every limit on item counts in the Recursica design rules rests on research about working memory (how much a person can hold in mind at once). This skill explains where the number in each limit comes from, and when the limit does not apply. The cases where the limit does not apply matter as much as the number.
+Every 7 ± 2 limit on item counts in the Recursica design rules rests on research about working memory (how much a person can hold in mind at once). This skill explains where the number in each limit comes from, and when the limit does not apply. The cases where the limit does not apply matter as much as the number.
 
 ## The house rule
 
@@ -20,13 +20,16 @@ Every limit on item counts in the Recursica design rules rests on research about
 - If the items are similar, easy to tell apart and familiar, allow the high end of the range, up to 9. For example, navigation links named Orders, Customers and Invoices.
 - If the items differ from each other, are hard to think about or need expert knowledge, use fewer items. Aim closer to 5.
 
-Today the house rule applies to the three parts of the interface in the table below. The skill named in each table row owns that rule and states the rule.
+Today the house rule applies to the four parts of the interface in the table below. The skill named in each table row owns that rule and states the rule.
 
 | Part of the interface                | Rule                                                                          | Skill that owns the rule             |
 | ------------------------------------ | ----------------------------------------------------------------------------- | ------------------------------------ |
 | Navigation items per level           | 7 ± 2; nearer 5 for complex subject matter, up to 9 for simple subject matter | `recursica-skill-navigation`         |
 | Options in a radio or checkbox group | 7 ± 2 scaled by cognitive load; above the limit, convert to a dropdown        | `recursica-skill-selection-controls` |
 | Chips in a group or filter bar       | 7 ± 2 scaled by cognitive load, as a checkbox group                           | `recursica-skill-badges-chips`       |
+| Options in a segmented control       | 2–5, tighter than 7 ± 2 because the control is horizontal and compact         | `recursica-skill-segmented-control`  |
+
+**Some count limits do not rest on working memory.** `recursica-skill-dashboards` limits the charts and the items on a dashboard. That skill owns those limits and states the reasons.
 
 **No house limit has been set for table columns, toolbar actions or steps in a flow.** Treat each of those three counts as an open question.
 
@@ -97,7 +100,7 @@ A long list does not always break the limit.
 - **Choosing a control type.** See `recursica-skill-selection-controls`.
 - **Whether a feature should be easy to find or promoted.** See `recursica-skill-discoverability`, the other psychology skill.
 - **Navigation structure, grouping, and what happens when there are too many items.** See `recursica-skill-navigation`.
-- **Any count limit not listed in the table above.** No house rule exists yet for a count outside the table. Say that no rule exists, instead of inventing a limit.
+- **Any count limit not listed in the table above or set by another skill.** No house rule exists yet for such a count. Say that no rule exists, instead of inventing a limit.
 
 ## Pre-flight checklist
 
@@ -108,5 +111,5 @@ Check each item below whenever a decision about how many items to show comes up.
 - [ ] The limit was applied only to sets the persona compares.
 - [ ] The limit was not applied to lists the persona recognizes items from, such as reference data in alphabetical order.
 - [ ] Every list left long passes the predictability test: the persona knows what is in the list before opening the list.
-- [ ] No count limit was invented for a part of the interface the table above does not cover.
+- [ ] No count limit was invented for a part of the interface that neither the table above nor another skill covers.
 - [ ] Every claim about the research is accurate: 7 ± 2 is a convention for easy scanning, not a finding about memory capacity.

@@ -82,7 +82,7 @@ Examples:
 | An empty value versus zero in a table cell | An explicit "NA". Not an empty cell, and not a `0` that looks like a real value                                           | `recursica-skill-tables`             |
 | An object's status                         | An icon as well as a color, and an accessible name (the name a screen reader reads out for a control) as well as the icon | `recursica-skill-icon-semantics`     |
 
-**The convention covers more meanings than the four examples.** Each of the four rules was written about an unrelated page, panel, modal or other region. All four rules guard against the same failure. A meaning shown in only one channel is lost when that channel fails. The color palette belongs to the design system. The agent or the user designing the screen chooses which channels show each meaning.
+**The convention covers more meanings than the four examples.** Each of the four rules was written about an unrelated page, panel, modal or other region. All four rules guard against the same failure. A meaning shown in only one channel is lost when that channel fails. The theme sets the color palette. The agent or the user designing the screen chooses which channels show each meaning.
 
 **On a new page, panel, modal or other region, name the channel each meaning depends on now.** For example, a status shown only as a colored dot depends on color. Then picture a persona who cannot perceive that channel, and check what the persona would see. If the persona would see nothing, add a second channel.
 
@@ -112,7 +112,13 @@ Examples:
 
 ## 5. Group with space, not boxes
 
-**By default, show grouping with space. Draw a card, a box or a bordered region only to separate repeated peers (objects of the same kind, such as rows in a list) from each other.** For example, a small set of product cards, each with an image, separates one product from the next. A group of content does not always need a visible container.
+**By default, show grouping with space. Give each region one of three treatments.**
+
+- **No container.** The default. Space and type hierarchy group the content.
+- **A container with a layer,** for a region that needs a separate background but has no peers.
+- **A card for each object,** only to separate repeated peers (objects of the same kind, such as rows in a list) that pass the card tests in `recursica-skill-card`.
+
+For example, a small set of product cards, each with an image, separates one product from the next. A group of content does not always need a visible container. `recursica-skill-layouts-and-templates` states the same three treatments.
 
 Examples:
 
@@ -124,7 +130,7 @@ Examples:
 | A dashboard layout                                                                                   | A fixed layout that uses type hierarchy and white space. Each item sits in a container with a layer. Never a screen made of cards                                                                                      | `recursica-skill-dashboards`                     |
 | Spacing between form fields and between form sections                                                | The form components include the spacing. Do not add wrappers or spacer elements                                                                                                                                        | `recursica-skill-forms`                          |
 | A form, a form section, or a single form control                                                     | **Never inside a card**, with no exception. Group with headings and the spacing built into the components                                                                                                              | `recursica-skill-forms`, `recursica-skill-card`  |
-| A region that needs a separate background but has no peers                                           | A layer (a numbered background level, 0 to 3, that sets the colors of the components on that level), at the shallowest level that works. Never a card, and never hand-written styles                                   | `recursica-skill-layers`                         |
+| A region that needs a separate background but has no peers                                           | A container with a layer (a numbered background level, 0 to 3, that sets the colors of the components on that level), at the shallowest level that works. Never a card, and never hand-written styles                  | `recursica-skill-layers`                         |
 
 **The convention covers more situations than the seven examples.** A border tells the persona two facts:
 
@@ -133,7 +139,7 @@ Examples:
 
 With no similar items beside the border, the border is decoration and tells the persona nothing. A decorative border takes up padding and width, and uses up a level of hierarchy. Boxes inside boxes on a generated screen are the most common sign of decorative borders.
 
-**Before drawing a container on a new page, panel, modal or other region, name the container's peer.** The peer is the item that the container separates the content from. For example, the peer of one product card is the next product card. If the container has no peer, remove the container and use spacing instead.
+**Before drawing a card or a bordered container on a new page, panel, modal or other region, name the peer.** The peer is the item that the container separates the content from. For example, the peer of one product card is the next product card. If the container has no peer, remove the container and use spacing instead. A region with no peer that needs a separate background gets a container with a layer.
 
 ## 6. One control, one outcome
 
@@ -217,7 +223,7 @@ If one use of the control causes more than one change of state, the control is h
 - [ ] A form control's help text, error text and rule text are set on the control's component. The required state is set in code, not by an asterisk alone.
 - [ ] Focus is never moved for the persona except where a component skill says when to move focus. Icons that are controls have an accessible name, and decorative icons are hidden from screen readers.
 - [ ] No workaround, such as an overflow menu or a scroll area inside the page, hides a broken structure. Where a limit cannot be changed, a reason is provided.
-- [ ] Every visible container separates the container's content from a peer. A region with no peer is grouped with space.
+- [ ] Every region has one of three treatments. No container is the default. A region with no peers that needs a separate background has a container with a layer. A card for each object separates peers that pass the card tests.
 - [ ] Repeating objects are shown in a table, with two exceptions. The first exception is a small, finite set where each object has a graphic. The second exception is the aesthetic exception, used with a reason provided.
 - [ ] No form, form section, or form control sits inside a card.
 - [ ] Where a topic skill covers a decision, the topic skill's rule is followed, not the general convention in this skill.
