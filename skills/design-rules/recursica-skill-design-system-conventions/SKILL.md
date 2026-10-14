@@ -46,9 +46,9 @@ The persona cannot see the active mode in any of the following cases:
 
 ## 2. The unadvertised affordance
 
-**Do not promote a feature that few personas need and that the Recursica team has an opinion against.** Keep the feature in the application. For example, sorting by more than one column starts with a long-press on a column header.
+**Do not promote a feature that few personas need and that the Recursica team has an opinion against.** Keep the feature in the application. For example, sorting by more than one column opens from the column header's menu.
 
-- The feature's affordance is a real entry point, such as a settings control, a gear icon or a long-press. An affordance is a visible cue that tells personas an element of the screen can be acted on.
+- The feature's affordance is a real, recognizable entry point, such as a settings control or a gear icon. A long-press may be a shortcut, never the only way in. An affordance is a visible cue that tells personas an element of the screen can be acted on.
 - Add no callout, tour or banner that teaches personas about the feature.
 
 Examples:
@@ -57,7 +57,7 @@ Examples:
 | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ---------------------------- |
 | Dashboard configuration                       | A settings entry point that does not draw attention. The dashboard keeps the persona's layout across visits | `recursica-skill-dashboards` |
 | Showing, hiding, and reordering table columns | A gear or settings icon on the table. The icon opens a configuration screen                                 | `recursica-skill-tables`     |
-| Sorting by more than one column               | A long-press on a column header. A plain click on the header still flips the sort direction                 | `recursica-skill-tables`     |
+| Sorting by more than one column               | An item in the column header's menu. A plain click on the header still flips the sort direction             | `recursica-skill-tables`     |
 
 **The convention covers more features than the three examples.** A persona who needs the feature will look for the feature, ask a colleague, or find the feature while exploring. Personas who find the feature themselves feel a sense of ownership. A persona who does not need the feature never has to deal with a control the persona will never use. See `recursica-skill-discoverability` for the research behind this convention, and for the limits of the research.
 
@@ -194,7 +194,7 @@ If one use of the control causes more than one change of state, the control is h
 
   Focus and selection are different facts. A persona must be able to tell focus from selection at a glance.
 
-- **Never show an element the persona needs only on hover.** The rule covers every control, action, label, value and count. A persona using a keyboard and a persona using touch never hover.
+- **Never show an element the persona needs only on hover.** The rule covers every control, action, label, value and count. A persona using a keyboard and a persona using touch never hover. An explanation behind a control is fine, when the control also opens on keyboard focus and on a tap.
 - **Make the tab order follow the visual order.**
 - **Set a form control's help text, error text and rule text on the control's component.** For a group, such as a checkbox group, set the text on the group component. Never place the text as a separate element beside the control. Only the component can connect the text to the control. Text that is not connected is invisible to a persona who tabs straight into the field.
 - **Set the required state in code. Never show the required state with an asterisk alone.** An asterisk is a visual convention, not an accessible way of saying "required".

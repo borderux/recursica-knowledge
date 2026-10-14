@@ -160,6 +160,8 @@ Encoding is how the data becomes visual marks: position, length, color and patte
 
 **At a minimum, the data table must be available.** The data table lets a persona using a screen reader reach the chart's values.
 
+**On a dashboard, never show the data table beside the chart.** Keep the data table available instead. A screen reader can reach the table, and the click-through to the detail page shows the table in full. `recursica-skill-dashboards` bans a full data table on a dashboard.
+
 ## Tooltips and interaction
 
 **Tooltip content MUST be extra detail only.** Put any information needed to understand the story in the chart itself.

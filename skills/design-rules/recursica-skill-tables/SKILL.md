@@ -188,7 +188,7 @@ A value with no spaces, such as the filename `q3_sales_report_final.xlsx`, does 
 
 **A full-size table and an inset table behave differently.** An inset table is a smaller grid set inside a container beside other elements. For example, a list of recent orders on a customer's page is an inset table.
 
-**Make a full-size table fill the width and height of the container the table sits in.** The container size sets how many table rows are visible. Use infinite scroll, and load more table rows as the persona scrolls. Pagination splits the table rows into separate pages, and pagination is a clunky way to move through records.
+**Make a full-size table fill the width and height of the container the table sits in.** The table stays fixed in position on the page, and only the table's rows scroll. No other part of the page scrolls. The container size sets how many table rows are visible. Use infinite scroll, and load more table rows as the persona scrolls. Pagination splits the table rows into separate pages, and pagination is a clunky way to move through records.
 
 **Give an inset table a fixed number of table rows, usually five or ten, and then paginate.**
 
@@ -233,7 +233,8 @@ Show the sort indicator on one column. The sort indicator is part of the column 
 **Sorting by more than one column is allowed, behind a hidden control.**
 
 - A plain click on a column header switches that column between ascending and descending.
-- A long-press, with a mouse or by touch, opens multi-sort.
+- A recognizable control opens multi-sort. Examples are "Sort by more columns" in the column header's menu, and a gear icon on the table.
+- A long-press may also open multi-sort, as a shortcut, never as the only way in.
 
 One click cannot both switch the sort direction and open multi-sort.
 
@@ -382,7 +383,7 @@ Check every item before treating a table as done.
 - [ ] The table header and table footer stay in place, and only the table rows scroll.
 - [ ] Null cells show the literal string `NA`, in italics, in neutral 500. The string is the same in every column, and the string is real text rather than styling. No null value is shown as a real value or a zero.
 - [ ] The default sort is on the primary content column, in the direction the data suggests.
-- [ ] Multi-sort, if present, is behind a long-press. A plain click switches the sort direction, and data types that cannot be sorted are left out.
+- [ ] Multi-sort, if present, opens from a control the persona can recognize. A long-press is only a shortcut. A plain click switches the sort direction, and data types that cannot be sorted are left out.
 - [ ] The table has no invented row density variant.
 - [ ] A table row is clickable only if the table row holds no other interactive element.
 - [ ] A record opens from the record's identifying value or from the whole table row. One of the two is chosen once for the whole application. A separate row action is used only for editing, or when the object has no single identifying value. Selecting a record triggers no action on that single record.

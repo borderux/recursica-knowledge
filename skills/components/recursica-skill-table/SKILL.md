@@ -70,7 +70,7 @@ The rules below describe each part and option by role, such as "the header row".
 
 If the persona cannot see the order of the table rows, the persona has to guess the order. `recursica-skill-tables` owns this rule.
 
-**Clicking a column header reverses the sort direction.** For example, clicking the sorted Date header switches the table rows from newest first to oldest first. The persona sorts by more than one column with a long-press. The long-press is an unadvertised affordance (a control that works but is not shown in the main interface, such as a keyboard shortcut). Sorting by more than one column also needs a keyboard equivalent, described under "Keyboard and non-mouse navigation".
+**Clicking a column header reverses the sort direction.** For example, clicking the sorted Date header switches the table rows from newest first to oldest first. The persona sorts by more than one column from a recognizable control. An example is an item in the column header's menu. A long-press may be a shortcut, never the only way in. `recursica-skill-tables` sets this rule.
 
 **Right-align currency, show two decimal places on every value, and show the currency symbol in the column header.** For example, the column header reads `Debits (USD $)`, and each cell shows a plain amount, such as `250.00`.
 
@@ -137,7 +137,7 @@ The rules below add to the accessibility baseline in `recursica-skill-design-sys
 ### Keyboard and non-mouse navigation
 
 - **Every control in the table can be reached in visual order.** The table's controls include the header sort controls, row checkboxes, links, and row actions.
-- **Sorting by more than one column with a long-press must have a keyboard equivalent.** `recursica-skill-design-system-conventions` requires a second way to do every drag or long-press. A keyboard cannot press and hold. Sorting by more than one column needs an explicit control or a modifier key.
+- **The control that opens multi-column sort must work by keyboard.** A keyboard cannot press and hold, so a long-press shortcut never stands alone.
 - **A column-visibility gear must be a real control that a keyboard can reach.** A column-visibility gear is a gear icon that lets the persona show or hide columns. The gear is an unadvertised affordance, and an unadvertised affordance must still be accessible.
 - **Reordering columns must work without dragging.**
 - **A clickable table row must be a single, real control with an accessible name.** A click handler on a `tr` element does not make a clickable table row. If one control for the whole table row is awkward, make a link in one cell the click target. A link in one cell is usually the better choice, such as an invoice number that links to the invoice.
@@ -182,7 +182,7 @@ Never set or override the styling of the header row, the body cells or the foote
 - [ ] Horizontal scrolling appears only after fewer columns, a drill-down and stacked text all failed to fit the table.
 - [ ] Null cells show `NA` in the style `recursica-skill-tables` sets: italics, neutral 500, and the same text in every column. No cell is empty, and no zero stands in for a missing value.
 - [ ] A deliberate default sort is set. The sorted column shows the sort indicator, even when the sort is fixed. The sort state is announced on the column header, not only styled.
-- [ ] Sorting by more than one column has a keyboard equivalent. The column-visibility gear can be reached by keyboard, and columns can be reordered without dragging.
+- [ ] Sorting by more than one column opens from a recognizable control that works by keyboard. The column-visibility gear can be reached by keyboard, and columns can be reordered without dragging.
 - [ ] Each row checkbox names the checkbox's table row. The select-all checkbox has a name and makes the indeterminate state available to assistive technology.
 - [ ] Currency uses the `currency-style` token. The currency format comes from `recursica-skill-dates-and-currency` and `recursica-skill-tables`, not from this skill. The currency format is right-aligned, with the symbol in the column header and two decimals.
 - [ ] Totals sit in the footer row.

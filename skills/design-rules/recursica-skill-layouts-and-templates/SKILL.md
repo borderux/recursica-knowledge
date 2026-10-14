@@ -116,6 +116,8 @@ The regions in the table have these meanings:
 
 **Leave the line under a page title or a section heading empty by default.** A page title and a section heading each have room for a line of text below the heading. A well-named heading already says what the region is. A line that repeats the heading is the heading again in smaller type. The repeated line adds no context, and every persona spends time on the repeated line on every visit.
 
+**Never put an explanation on the page.** An explanation of a term, a feature or a rule goes behind a control. Examples are a tooltip on an info icon, a popover, or a link to help. The line under a heading never holds an explanation.
+
 **Use the line under a heading only for information the heading cannot hold:**
 
 - an order
@@ -350,6 +352,7 @@ The list runs in order, from the strongest sign to the weakest.
 - [ ] A left rail puts navigation at the top, and the profile and settings at the bottom.
 - [ ] Every page has a footer, or a reason for leaving the footer out is provided.
 - [ ] The page title sits in the page. A page title that repeats the navigation label is left unchanged.
+- [ ] No explanation sits on the page. Each explanation is behind a control, such as a tooltip, a popover or a link to help.
 - [ ] Every line under a page title or section heading passes the subtraction test. Each line gives an order, a limit, a consequence, or a state that the heading cannot. No optional text under a heading is filled in only because the setting exists. If the defect appeared in several places in the code, the setting itself is removed. Removing only the text in the setting is not enough.
 - [ ] Breadcrumbs follow the depth of the application. A shallow application has none. A deep application shows breadcrumbs below the top level. No top-level page has a breadcrumb.
 - [ ] The primary action sits at the bottom right, unless the user moved the primary action.

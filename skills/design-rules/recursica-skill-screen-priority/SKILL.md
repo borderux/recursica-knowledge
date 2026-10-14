@@ -211,7 +211,7 @@ Usability testing on a long credit-card application found that the single long f
 
 **Only two components may scroll horizontally: a carousel, and a table as a last resort.** Confirm with the user before a table scrolls horizontally. See `recursica-skill-responsive-layout` and `recursica-skill-tables`.
 
-**The one possible exception is a table that fills the full width and height of the viewport.** Even the full-viewport table is only a "maybe." In general, build no inner scrolling of any kind.
+**A full-size table that fills the container is the one exception.** The table's rows scroll inside the table, and the table header and footer stay fixed. The table itself stays fixed in position on the page, and no other part of the page scrolls. Otherwise, build no inner scrolling of any kind.
 
 ## Empty states and error states
 
@@ -277,7 +277,8 @@ With one message for both states, the persona cannot tell whether to change the 
 - [ ] No content the persona must find sits below a region of changing length, such as a table or a list.
 - [ ] Progressive disclosure uses an existing component, and a long form replaces a stepper where the information refers back and forth.
 - [ ] Beyond the header, footer, and navigation rail, the screen has at most one sticky element.
-- [ ] The application has one scrollbar, and no inner scrolling region. Only a control built to scroll, such as a transfer list, scrolls inside the control. Only a carousel, or a table as a last resort the user confirmed, scrolls horizontally.
+- [ ] The application has one scrollbar, and no inner scrolling region. Only a control built to scroll, such as a transfer list, scrolls inside the control.
+- [ ] A full-size table's rows may scroll inside the table. The table stays fixed in position, and no other part of the page scrolls. Only a carousel, or a table as a last resort the user confirmed, scrolls horizontally.
 - [ ] Empty and error states have different messages.
 - [ ] An alignment pass against the other sections is complete.
 - [ ] Every mismatch went to the user to decide, and no mismatch was resolved without telling the user.

@@ -116,7 +116,7 @@ A card is for repeating peer objects (objects of the same kind, such as rows in 
 
 **All content below the fold (the part of the page visible only after scrolling) is optional.** The persona must never have to scroll to learn what is going on.
 
-**Never put a full data table on a dashboard.** Show rollups instead, with a way to click through to the detail.
+**Never put a full data table on a dashboard.** Show rollups instead, with a way to click through to the detail. A chart's data table stays available but hidden, as `recursica-skill-data-visualization` says.
 
 - A rollup is a count, a percentage or a total that the persona can act on directly.
 - For example, show "12 late orders", with a link to the late orders.

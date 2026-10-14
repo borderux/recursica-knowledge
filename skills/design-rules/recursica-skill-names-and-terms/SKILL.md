@@ -85,9 +85,8 @@ A lost object name is the first naming defect that shows up in a review. A lost 
 
 **Write a label as a noun phrase, not a sentence about the noun.** For example, write `Corrected lines`, not `Lines you have corrected`.
 
-- Use two or three words.
-- Use one qualifier (a word that says which one, such as _Overdue_) at most.
-- Write the label as an adjective plus a noun.
+- Use at most three words, as few as the meaning allows. For example, `Orders` alone is fine.
+- Add one qualifier (a word that says which one, such as _Overdue_) only when the noun alone is unclear. For example, `Overdue orders` says which orders.
 
 | Instead of                   | Write                   | What was cut                                                                 |
 | ---------------------------- | ----------------------- | ---------------------------------------------------------------------------- |
@@ -105,7 +104,8 @@ A possessive points to a difference only when the same screen also shows another
 
 **NEVER define a term right next to the term.** A label followed by an explanation of the label shows that the label is unclear. For example, `Overdue — past the start date` shows that `Overdue` is unclear. Fix the label.
 
-- If an idea needs more explanation than a good name gives, put the explanation in a tooltip or help content.
+- If an idea needs more explanation than a good name gives, put the explanation behind a control. Use a tooltip for one short phrase, a popover for more, or a link to help.
+- Never put an explanation on the page. Field rules, such as a format or a limit, still go in the help text below the field.
 - Never put the explanation in a subtitle under the term the subtitle defines.
 
 **The rule against defining a term next to the term covers every name on the screen, not only field labels.** The rule covers a page title, a section heading, a column header, and a navigation item.
@@ -180,8 +180,9 @@ The page layout has a setting that adds a space below a heading for exactly that
 
 - [ ] Every label is a noun, with the noun present. No label other than a button label holds a verb. No label is an adjective standing alone.
 - [ ] No label holds a filler word. Every word in a label makes the label more accurate.
-- [ ] Every label and table header is a noun phrase of two or three words, with one qualifier at most. No label or table header holds a relative clause or a sentence. No label or table header holds `Your`, `you` or `my`, unless the same screen shows another party's items and names the other party.
+- [ ] Every label and table header is a noun phrase of at most three words. A qualifier appears only when the noun alone is unclear. No label or table header holds a relative clause or a sentence. No label or table header holds `Your`, `you` or `my`, unless the same screen shows another party's items and names the other party.
 - [ ] Where the persona would otherwise subtract one column from another, one combined column does the math. The two columns are not kept with longer headings.
+- [ ] No explanation sits on the page. Each explanation is behind a control, such as a tooltip, a popover or a link to help.
 - [ ] No label, heading, or page title has a definition next to the name. The line under a page title or a section heading holds no definition of the title or heading.
 - [ ] Every object is named in the personas' vocabulary, not the business's or the data model's.
 - [ ] The data model's term appears only where the persona does not already know the concept from everyday use.
