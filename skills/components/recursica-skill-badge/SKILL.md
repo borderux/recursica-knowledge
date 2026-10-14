@@ -9,11 +9,11 @@ metadata:
 
 # Badge
 
-A badge shows one read-only value about an object, such as a status or a count. For example, an order row shows "Shipped", and a Members tab shows "12". The badge sits on the object. The application sets the value, and the persona never acts on the badge.
+A badge shows one read-only value about an object. Examples are a status, and a count on a tab or a navigation item. For example, an order row shows "Shipped", and a Members tab shows "12". The badge sits on the object. The application sets the value, and the persona never acts on the badge.
 
 ## When to use a badge
 
-- **One value describes the object.** The value is a status the application owns, such as "Approved", a count, or one short attribute.
+- **One value describes the object.** The value is a status the application owns, such as "Approved", a count on a tab, or one short attribute. A count that is a value of a record goes in a column or in plain text.
 - **The badge sits on the object the badge describes.** Examples are a table row, a list item, a heading, a tab, a navigation item and a card. A badge never stands alone.
 - **Space on the screen is tight.** A badge is small and uses small text, so a badge suits a crowded screen.
 
@@ -22,7 +22,7 @@ A badge shows one read-only value about an object, such as a status or a count. 
 | Situation                                                      | Use instead                                                                                        |
 | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | The persona selects, toggles, or dismisses the value           | A chip. See `recursica-skill-chip`.                                                                |
-| The object has several values                                  | Chips. A badge holds one value.                                                                    |
+| The field could hold more than one value                       | Chips. A badge holds a value that is only ever single.                                             |
 | The value is an error or a failure, such as "Failed"           | An icon, or a treatment built for errors. See the rule on errors under "Rules".                    |
 | The text is long, or is a phrase                               | Plain text. A badge never holds a sentence.                                                        |
 | The text labels a page or a section                            | A heading. A badge describes an object, not a page, a section, or any other view.                  |
@@ -61,13 +61,13 @@ Which status gets which intent is not decided, and is listed under the open ques
 
 **Do not invent an intent that the theme does not list.** For example, do not create an "on hold" intent for an "On hold" status. An unlisted intent has no badge style to choose. Making a new intent means working around the badge component. A color for an unlisted intent is not a missing token to report. The standard UI kit keeps the number of styles small on purpose. See `recursica-skill-design-router` on style overrides.
 
-**Use one badge per object.** Two values side by side mean the object has more than one value. Use chips for more than one value.
+**Use one badge per object.** Two values side by side mean the field can hold more than one value. Use chips for that field.
 
 **Never use a badge to show an error**, such as "Error" or "Failed". Use an icon, or a stronger treatment built for errors.
 
 A badge looks like positive information about an object. "Error" in a badge looks like an achievement. The ban holds even though the warning style and the problem style exist. What the warning style and the problem style are for is an open question, listed below.
 
-**Put the badge right after the object the badge describes, on the same line.** For example, an "Overdue" badge sits right after "Invoice 1043". Never stack the badge above or below the object.
+**Put the badge right after the object the badge describes, on the same line.** For example, an "Overdue" badge sits right after "Invoice 1043". On a card, the badge goes where the card component puts the badge, in the upper-right corner. Never stack the badge above or below the object. The one exception is below the tablet breakpoint, when one line cannot fit both. Then the badge may sit below the object.
 
 **Give every count a unit.** For example, a "12" badge on a Members tab counts members. Put the unit in the badge text, in the object, or in another place, such as a column header. Make the badge part of the object, not a separate element placed beside the object. A badge that shows "12" has a meaning only because of the object the badge sits on.
 
@@ -122,7 +122,7 @@ A badge is text, not a control. For most components, the accessibility risk is t
 - [ ] Every badge value is read-only, set by the application, and one value.
 - [ ] No persona can act on a badge. No badge can receive focus or be dismissed.
 - [ ] No badge shows an error, and no badge uses the warning style or the problem style on a guess.
-- [ ] Every badge sits right after the badge's object, on the same line, and is never stacked.
+- [ ] Every badge sits right after the badge's object, on the same line. A badge on a card sits in the card's upper-right corner. A badge sits below the object only below the tablet breakpoint, when one line cannot fit both.
 - [ ] The badge text alone states the full meaning, and no meaning depends on color.
 - [ ] No badge is the title of a region, a group, or a section. A heading is the title.
 - [ ] Every badge's intent agrees with the sentiment of the badge's value, and no positive value uses the problem style.

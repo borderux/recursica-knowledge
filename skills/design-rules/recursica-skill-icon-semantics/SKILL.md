@@ -69,11 +69,11 @@ For the same reason, a navigation rail made only of icons fails worst in busines
 
 ## Icons inside established components
 
-**An icon may stand alone, with no label, when the icon is part of a well-known control.** Personas already know what the indicator on a dropdown or an accordion means. Personas also know what a navigation toggle means. An icon built into a component therefore needs no tooltip.
+**An icon inside a labeled control needs no label and no tooltip of the icon's own.** For example, the arrow on a dropdown sits inside a labeled control. So does the chevron on an accordion.
 
 **Give the close icon on a modal or a panel a tooltip, such as "Close".** The close pattern is well known, but a tooltip on the close icon does no harm.
 
-**Only an icon built into a component may skip both the label and the tooltip.** An icon placed separately on a screen gets no exemption.
+**Every icon-only button gets a tooltip, even when the button comes with a component.** For example, the hamburger button and the X that removes a chip each get a tooltip. Only an icon inside a labeled control may skip the tooltip.
 
 **If a built-in indicator shows a state, such as open or closed, the code must also hold the state.** The state must not be shown by the icon alone. Software such as a screen reader can read a state held in the code. For example, a screen reader can announce that an accordion item is open. `recursica-skill-design-system-conventions` and each component skill own this rule.
 

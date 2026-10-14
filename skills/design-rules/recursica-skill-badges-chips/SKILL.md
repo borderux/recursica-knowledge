@@ -25,7 +25,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
    - A status is a fact the application reports, such as an order's "Shipped" status.
    - A selection is a choice the persona makes, such as a "Shipped" filter.
    - A status the persona can click is not a design variation. A status the persona can click uses the wrong component.
-2. **A badge holds one value, and chips hold several values.** One object has at most one badge. When an object has more than one value, use chips.
+2. **A badge holds a value that is only ever single. Chips hold a field that could have more than one value.** Use chips for that field even when the field holds one value now. One object has at most one badge.
 3. **Place each badge or chip so the persona sees which object the badge or chip belongs to.** Put the object first and the object's status right after the object, on the same line. Keep the object and the status close together, so the persona reads the pair like a sentence.
 4. **Prefer an icon to a badge.** A badge draws a lot of attention, and a badge is not the default. Use a badge only where the information needs that much attention. Choose between an icon and a badge first. Then choose between a badge and a chip.
 
@@ -33,7 +33,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 **A badge shows a status or metadata.**
 
-- A badge shows a status, a count, or a short label.
+- A badge shows a status, a count on a tab or a navigation item, or a short label.
 - **A badge MUST NOT be interactive.** A badge is never selectable and never dismissible. A badge is text for the persona to read, for information only.
 - The application updates a badge when the object the badge describes changes. For example, the badge on an order changes from "Processing" to "Shipped" when the order ships. The persona never changes the badge to change the status.
 
@@ -42,16 +42,16 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 - A selectable chip takes the place of a checkbox. Use selectable chips for filters, for variables, and for turning options on and off, usually several at once.
 - A static chip is a chip the persona cannot act on. A static chip is also valid. Use a chip for a tag.
 
-**Count the values on the object to choose fastest.**
+**Ask whether the field could ever hold more than one value.**
 
-| Values on the object | Component |
-| -------------------- | --------- |
-| One                  | Badge     |
-| More than one        | Chips     |
+| Values the field can hold | Component |
+| ------------------------- | --------- |
+| Only ever one             | Badge     |
+| More than one             | Chips     |
 
 **MUST NOT place more than one badge on one object.** For example, an account's status is the one badge on the account's row. Several metadata values on a card are chips.
 
-**When the badge and the chip would both be static and unselectable, choose either one by style.** A static badge and a static chip differ only in looks. The rules above apply whenever the persona can act on the component or the number of values matters.
+**Let the number of values the field can hold decide, even when nothing can be clicked.** Never choose between a badge and a chip by looks. A value the persona can select or remove is always a chip, even when the field holds only one value.
 
 ## Icon or badge
 
@@ -76,7 +76,7 @@ Use one badge per object, as principle 2 requires.
 
 - a rare exception or warning
 - a role or type that is an ordinary field value, such as "Admin" in a Role field
-- a count, such as the number of comments on an order
+- a count that is a value of a record, such as the number of comments on an order
 - any value that appears on most rows
 
 Each value in the list above should be an icon, a column, or plain text.
@@ -115,6 +115,8 @@ Every rule in this skill applies to the chip or the badge without change.
 
 ## Placement in table rows
 
+**A field that could hold several values shows chips in a table cell.** Every chip in the cell holds the same type of value, such as tags. Never mix types in one cell.
+
 **Give a status a separate column only when most table rows have a status.** Before adding a status column, check how many table rows have a status.
 
 - `recursica-skill-tables` rejects a column that is empty for most table rows. A rare exception therefore never gets a column.
@@ -138,7 +140,7 @@ The status must sit where a persona sees at once which object the status belongs
 
 **Show the object first, then the object's status.** The object and the badge must sit close together, side by side. The pair then forms a sentence: _the heading has the status of `<badge>`_.
 
-**NEVER stack a badge above or below the badge's object.** Stack a badge only for a real lack of space, as on mobile or in a similarly compact layout. A stacked badge makes the eye scan in a different pattern. The persona can then no longer tell which object the badge belongs to.
+**Never stack a badge above or below the badge's object.** The one exception is below the tablet breakpoint, when one line cannot fit both. Then the badge may sit below the object. A stacked badge makes the eye scan in a different pattern. The persona can then no longer tell which object the badge belongs to.
 
 **Do not put a badge above a heading and a chip below the heading.** The layout is an anti-pattern called competing status. The badge and the chip compete to be the object's main status. The persona cannot tell which one is the main status.
 
@@ -165,7 +167,7 @@ A filter bar is a chip group. `recursica-skill-working-memory` gives the reasoni
 
 **Never use a chip to show an error.**
 
-**A badge for an error is an exception at best.** Badges show extra metadata, not problems. A persona easily mistakes a badge that says "Error" for a positive marker.
+**Never use a badge to show an error.** Badges show extra metadata, not problems. A persona easily mistakes a badge that says "Error" for a positive marker.
 
 **Prefer a stronger treatment designed to show an error**, such as an icon or another visual treatment that draws attention. If a design needs an error state on an object, design the error state instead of using a badge.
 
@@ -205,10 +207,11 @@ The Recursica badge and chip components provide the keyboard behavior below. Bot
 Check every item below before treating status and metadata as done.
 
 - [ ] Every badge on the screen shows a main status. The persona's next decision depends on the status, and an icon would not be enough.
-- [ ] No rare exception, no role or type that is a field value, and no count is shown as a badge.
+- [ ] No rare exception and no role or type that is a field value is shown as a badge.
+- [ ] No count that is a value of a record is a badge. A count on a tab or a navigation item may be a badge.
 - [ ] Every icon that replaces a badge sits beside the value that identifies the object. No such icon is alone in a cell or in a column that is empty for most table rows.
 - [ ] No badge is interactive, selectable, or dismissible.
-- [ ] Each object has at most one badge. When an object has more than one value, the values are chips.
+- [ ] Each object has at most one badge. A field that could hold more than one value shows chips, even with one value now.
 - [ ] No status is shown as a chip the persona can act on.
 - [ ] Tags are chips, not badges.
 - [ ] Every "pill" in the spec is built as a chip or a badge.
@@ -216,13 +219,13 @@ Check every item below before treating status and metadata as done.
 - [ ] A status column exists only where most table rows have a status.
 - [ ] In a table, the status column is the second or third column, beside the information that identifies the object.
 - [ ] If the table has bulk selection, the first column holds the checkbox.
-- [ ] Each badge sits right after the badge's object, on the same line. No badge is stacked, except where space is too tight to fit the badge beside the object.
+- [ ] Each badge sits right after the badge's object, on the same line. A badge sits below the object only below the tablet breakpoint, when one line cannot fit both.
 - [ ] No object has competing status elements above and below the object. For example, no heading has a badge above and a chip below.
 - [ ] Each badge on a card uses the card component's upper-right position.
 - [ ] Chips on a card sit in the card's content area.
 - [ ] Labels on sidebar navigation items are badges, not chips.
 - [ ] Chip groups hold 7 ± 2 chips, adjusted for cognitive load.
-- [ ] No chip shows an error state. No badge shows an error state without an explicit exception.
+- [ ] No chip and no badge shows an error state.
 - [ ] Dense data views use badges, not chips.
 - [ ] Badges cannot receive focus. Chips the persona can act on can receive focus.
 - [ ] When a status updates, the badge is swapped with no animation.

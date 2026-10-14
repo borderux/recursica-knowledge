@@ -13,21 +13,21 @@ A chip is one of several short values the persona can see, select, or remove, su
 
 ## When to use a chip
 
-- **Use chips for several values, not one.** For example, use chips for several tags, several categories, or several applied filters on one object.
+- **Use chips for a field that could hold more than one value.** For example, use chips for tags, categories, or applied filters on one object. Use chips even when the field holds one value now.
 - **Use selectable chips when the persona picks several options laid out side by side in a row.** For example, the chips "Email", "SMS" and "Push" let the persona pick any of the three. Never lay out a checkbox group in a horizontal row.
 - **Use chips when the persona filters or narrows down the content on the screen by turning options on and off.** For example, the chips "In stock" and "On sale" narrow a product list.
 - **Use chips when the persona added the values, and may remove the values again.** For example, the persona adds tags to a document and can remove each tag later.
 
 ## When not to use a chip
 
-| Situation                                                         | Use instead                                                                                                                                      |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| One read-only value that the application sets                     | A badge. See `recursica-skill-badge`.                                                                                                            |
-| One choice that rules out every other option                      | A segmented control for options laid out horizontally, or radio buttons for options stacked vertically. See `recursica-skill-segmented-control`. |
-| A status of any kind                                              | A badge. See `recursica-skill-badge`. Never show a status in any element the persona can act on.                                                 |
-| Space is tight, as in a table row                                 | A badge. See `recursica-skill-badge`. A chip takes more room, with an icon and a close control (the control that removes the chip).              |
-| More options than one row of chips can hold                       | A dropdown or an autocomplete. See `recursica-skill-selection-controls`.                                                                         |
-| Primary navigation, or a label such as "New" on a navigation item | Links for navigation, and a badge for the label on a navigation item.                                                                            |
+| Situation                                                               | Use instead                                                                                                                                      |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| One read-only value that the application sets                           | A badge. See `recursica-skill-badge`.                                                                                                            |
+| One choice that rules out every other option                            | A segmented control for options laid out horizontally, or radio buttons for options stacked vertically. See `recursica-skill-segmented-control`. |
+| A status of any kind                                                    | A badge. See `recursica-skill-badge`. Never show a status in any element the persona can act on.                                                 |
+| A value that is only ever single, and space is tight, as in a table row | A badge. See `recursica-skill-badge`. A chip takes more room, with an icon and a close control (the control that removes the chip).              |
+| More options than one row of chips can hold                             | A dropdown or an autocomplete. See `recursica-skill-selection-controls`.                                                                         |
+| Primary navigation, or a label such as "New" on a navigation item       | Links for navigation, and a badge for the label on a navigation item.                                                                            |
 
 **Never show a status as a chip.** Watch for a status shown as a chip. For example, show the status "Shipped" on an order as a badge, not as a chip. A chip looks like a control the persona can click. A status is not for the persona to change.
 
@@ -52,7 +52,9 @@ This skill describes the error state only so that an agent recognizes the error 
 
 ## Rules
 
-**Show chips in groups.** Never show a single chip alone. A single chip either belongs in a badge or is a mistake in the design.
+**Give every chip in one group the same type of value.** For example, a Tags cell in a table holds only tags. Never mix types, such as a tag and a category, in one group of chips.
+
+**Use a badge, not a chip, for a value that is only ever single.** A single chip is fine when the field could hold more values. A value the persona can select or remove is always a chip.
 
 **Keep a chip group to 7 ± 2 options**, and use fewer options when the choice is complex. See `recursica-skill-working-memory`.
 
@@ -100,6 +102,7 @@ The rules below add to the accessibility baseline in `recursica-skill-design-sys
 - **Give the chip group a label, such as "Categories".** Without a label, the persona hears a list of options and does not know what the options are for.
 - **Mark the selected state in the code, not only by color on the screen.** A persona using a screen reader cannot tell selected chips from unselected chips by fill color alone. `recursica-skill-design-system-conventions` forbids showing the selected state only by color.
 - **Give the close control of a removable chip an accessible name that includes the chip's value**, such as "Remove Marketing". Never name the close control "Remove" alone, and never leave the accessible name empty. A row of five close controls that are each named "Remove" cannot be used.
+- **Give the close control of a removable chip a tooltip**, such as "Remove Marketing". Every icon-only button gets a tooltip. See `recursica-skill-icon-semantics`.
 - **Announce each chip removal.** After a chip is removed, the persona needs to know that the chip is gone and which chips are left. For example, announce that the "Marketing" chip was removed and that "Design" and "Research" are left. Without an announcement, a persona using a screen reader cannot tell a removal from a click that failed.
 - **Keep the leading icon (an optional icon before the label) silent to a screen reader.** The leading icon is decorative, and the chip label gives the meaning.
 - **If a chip shows no count of matching results, do not announce that count as part of the chip.** For example, a "Marketing" chip with no count on the screen is read as "Marketing", not "Marketing, 12 results".
@@ -134,7 +137,8 @@ The rules below add to the accessibility baseline in `recursica-skill-design-sys
 
 ## Pre-flight checklist
 
-- [ ] Chips show several values, and no chip stands alone.
+- [ ] Every chip in a group holds the same type of value, with no mixed types in one table cell.
+- [ ] Chips show a field that could hold more than one value. A value that is only ever single, and that the persona cannot act on, is a badge.
 - [ ] No status, and no error condition, is shown as a chip.
 - [ ] A required chip group's validation error appears in the assistive element below the chip group.
 - [ ] No chip reports the chip group's validation error.
