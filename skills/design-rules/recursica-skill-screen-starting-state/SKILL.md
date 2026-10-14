@@ -75,7 +75,7 @@ For example, "Open orders only" may start on when open orders are obviously the 
 - **A default filter** is a filter control that starts in a non-neutral state. A neutral state is the state of a filter that narrows nothing. For example, a default filter might set the Status filter to "Open" when the page loads. The default filter is visible as a filter. The persona can remove the default filter like any other filter.
 - **A default on the data** narrows the collection quietly, and nothing on the screen shows the narrowing. NEVER set a default on the data.
 
-`recursica-skill-filters` says "a default that filters must be visible as a filter." A default filter is what that rule means. `recursica-skill-filters` leaves open which defaults are appropriate. The defaults skill sets which defaults are appropriate.
+`recursica-skill-filters` says "a default that filters must be visible as a filter." A default filter is what that rule means. `recursica-skill-filters` leaves open which defaults are appropriate. This skill sets which defaults are appropriate.
 
 ## Pre-filled forms
 
