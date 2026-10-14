@@ -71,7 +71,7 @@ The fallback presents the three failures as a feature. Do not clutter a screen t
 
 ## Amount of content
 
-**Never use inner scrolling (a region that scrolls separately from the page) on any screen in the application.** The ban covers every screen, not only dashboards. `recursica-skill-screen-priority` names the horizontal-scrolling exceptions.
+**Never use inner scrolling (a region that scrolls separately from the page) on any screen in the application.** The ban covers every screen, not only dashboards. A control built to scroll, such as a transfer list, is not inner scrolling. `recursica-skill-screen-priority` names the horizontal-scrolling exceptions.
 
 - Give the application one scrollbar, plus sticky regions that stay in place.
 - Do not make the persona hover over a region before the region scrolls.

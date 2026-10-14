@@ -14,6 +14,7 @@ A tree shows items inside other items, such as folders inside folders. A parent 
 ## When to use a tree
 
 - **The data is a true hierarchy.** The meaning of a node (one item in the tree) depends on the node's parent. For example, a folder sits inside a folder, or a category sits inside a category. A "2026" folder inside "Invoices" holds the invoices from 2026.
+- **The hierarchy goes deeper than two levels, or the depth varies.** A hierarchy that is only ever two levels deep is an accordion.
 - **The depth of the hierarchy varies, and the persona needs to see where an item sits in the hierarchy.** For example, the persona needs to know that a file sits in "Invoices", then "2026". Knowing only that an item exists is not enough for the persona.
 - **The persona is exploring, not comparing.** A tree helps the persona find one item. A table helps the persona compare many items.
 - **Content must show and hide at more than one level.** For example, a section opens to show subsections, and a subsection opens to show pages. `recursica-skill-navigation` states that an accordion has one level unless the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes) has a nesting option. When the content has several levels, use a tree.
@@ -26,7 +27,7 @@ A tree shows items inside other items, such as folders inside folders. A parent 
 | Sections of content are stacked at one level, such as the questions on a help page                                | An accordion. See `recursica-skill-accordion`.                                                                                                                 |
 | The persona moves between areas of the application, such as Orders and Settings                                   | Navigation. See `recursica-skill-navigation`.                                                                                                                  |
 | The persona chooses one value in a form, and the values form a hierarchy, such as product categories              | A dropdown or an autocomplete, unless the hierarchy itself is the point of the choice. Confirm with the user whether the hierarchy is the point of the choice. |
-| The hierarchy is only two levels deep                                                                             | A grouped list, or navigation with sub-items.                                                                                                                  |
+| The hierarchy is only ever two levels deep                                                                        | An accordion. See `recursica-skill-accordion`.                                                                                                                 |
 | The persona moves items between two sets                                                                          | A transfer list. See `recursica-skill-transfer-list`.                                                                                                          |
 
 **When no item has children, the data is not a tree.** Flat data shown in a tree is a list with indentation that means nothing.
@@ -48,7 +49,7 @@ The rules below describe each variant and option by role, such as "the selected 
 - `recursica-skill-navigation` sets the collapsed-by-default rule for trees and accordions.
 - Opening every node adds no value, because the parent node labels then have no reason to exist.
 
-**Keep the number of visible nodes at each level within 7 ± 2.** For example, a folder that shows 30 subfolders at once breaks the limit. A tree is built for many levels. But every visible node at one level adds to the load on working memory (how much a person can hold in mind at once). See `recursica-skill-working-memory`.
+**Let the data set how many nodes each level shows.** Sort the nodes at each level so the persona can scan them. A tree is for finding one item, and the 7 ± 2 limit does not apply to finding. A level that grows very long can be grouped one level deeper. See chunking in `recursica-skill-working-memory`.
 
 **Label a node with what the node is, not where the node sits.** Do not label a node "Level 2". Name what the node is instead, such as "Invoices". Do not add numbers that repeat the node's place in the nesting, such as "2.3.1".
 
@@ -133,7 +134,7 @@ The tree has the most specific keyboard rules of any component, and the keyboard
 
 - [ ] The data is a true hierarchy. No flat list is shown indented as a tree.
 - [ ] Nodes are collapsed by default, and only the nodes the persona needs for the current task are open.
-- [ ] The number of visible nodes at each level is within 7 ± 2.
+- [ ] The nodes at each level are sorted so the persona can scan them.
 - [ ] Each node label names what the node is. Each node label is clear enough to choose the node while the node is collapsed.
 - [ ] A real hierarchy uses a tree, and sections at one level use an accordion, as in `recursica-skill-accordion`. No accordion is nested to look like a tree, and no form, table, or card is inside a node.
 - [ ] A screen reader announces the tree as a tree, with an accessible name. Each node reports the node's level, position, and expanded state.

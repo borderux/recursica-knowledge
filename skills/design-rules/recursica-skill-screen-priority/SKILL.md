@@ -207,6 +207,8 @@ Usability testing on a long credit-card application found that the single long f
 
 **NEVER build an inner scrolling region.** An inner scrolling region forces the persona to point inside one area before the scroll wheel moves the content. For example, a list that scrolls inside a card moves only while the pointer is over the card. The one-scrollbar rule prevents the failure. See convention 4 in `recursica-skill-design-system-conventions`. `recursica-skill-dashboards` also forbids inner scrolling on dashboards.
 
+**A control built to scroll is not an inner scrolling region.** For example, each list in a transfer list scrolls inside the control's fixed height. Scrolling a long list is the control's purpose. The ban covers regions of the page, such as a list inside a card.
+
 **Only two components may scroll horizontally: a carousel, and a table as a last resort.** Confirm with the user before a table scrolls horizontally. See `recursica-skill-responsive-layout` and `recursica-skill-tables`.
 
 **The one possible exception is a table that fills the full width and height of the viewport.** Even the full-viewport table is only a "maybe." In general, build no inner scrolling of any kind.
@@ -275,7 +277,7 @@ With one message for both states, the persona cannot tell whether to change the 
 - [ ] No content the persona must find sits below a region of changing length, such as a table or a list.
 - [ ] Progressive disclosure uses an existing component, and a long form replaces a stepper where the information refers back and forth.
 - [ ] Beyond the header, footer, and navigation rail, the screen has at most one sticky element.
-- [ ] The application has one scrollbar, and no inner scrolling region. Only a carousel, or a table as a last resort the user confirmed, scrolls horizontally.
+- [ ] The application has one scrollbar, and no inner scrolling region. Only a control built to scroll, such as a transfer list, scrolls inside the control. Only a carousel, or a table as a last resort the user confirmed, scrolls horizontally.
 - [ ] Empty and error states have different messages.
 - [ ] An alignment pass against the other sections is complete.
 - [ ] Every mismatch went to the user to decide, and no mismatch was resolved without telling the user.
