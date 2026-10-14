@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-number-input
-description: Rules for the Recursica number input — quantity versus digit string, right alignment and fixed precision, units and currency as affixes, stating limits up front, and numeric-field accessibility. Use for quantities and amounts. Not for free text — see recursica-skill-text-field; formatting rules live in recursica-skill-dates-and-currency.
+description: Rules for the Recursica number input — quantity versus digit string, right alignment and fixed precision, units and currency in the label or as affixes, stating limits up front, and numeric-field accessibility. Use for quantities and amounts. Not for free text — see recursica-skill-text-field; formatting rules live in recursica-skill-dates-and-currency.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -76,10 +76,9 @@ With a fixed number of decimal places, the decimal points of right-aligned numbe
 
 **Read-only values and editable values on the same screen must use the same alignment.** A left-aligned read-only value next to a right-aligned editable value looks like the two values come from two different systems.
 
-**Show a currency symbol or a unit as an affix (text attached to the start or end of the field).** For example, a price field shows "$" at the start, and a weight field shows "kg" at the end.
+**Name the unit or the currency in the label by default, as in "Weight (kg)".** Show the unit as an affix only when the user asks for an affix. An affix is text attached to the start or end of the field, such as "$" or "kg".
 
-- Put the currency symbol before the value, and the unit after the value.
-- Keep the currency symbol or unit out of the label wording.
+- With an affix, put the currency symbol before the value, and the unit after the value.
 - Do not join the currency symbol or unit onto the value.
 - If several amounts appear in one column, put the currency symbol in the column header instead.
 
@@ -180,7 +179,8 @@ The number input component connects the label to the input and shows the focus r
 - [ ] Label placement matches every other field in the same form. Each form has one placement at each breakpoint, with no mixing between fields or form sections.
 - [ ] The value is right-aligned, and the alignment matches the read-only values on the same screen.
 - [ ] Precision is fixed, and the same across every value shown together. Currency has two decimal places.
-- [ ] Any currency symbol or unit is an affix. The label or the help text also states the currency or the unit.
+- [ ] The label names the unit or the currency, unless the user asked for an affix.
+- [ ] An affix unit or currency is also stated in the label or the help text.
 - [ ] The help text states the minimum, the maximum, the step, and the expected format.
 - [ ] The field is not pre-filled with `0` to avoid an empty field. The field holds no default the persona would have to understand to check.
 - [ ] Help text and error text are set through the number input component. The error text replaces the help text, and restates the rule and the limits.

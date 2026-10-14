@@ -68,11 +68,12 @@ The rules below describe each option by role, such as "the label beside the fiel
 
 **Show the error state with an icon or the message text, as well as color.** `recursica-skill-system-conventions` requires more than color to show an error.
 
-**Put a prefix or a suffix inside the field, not in the label and not as part of the value.** A prefix or a suffix is text fixed to the start or the end of the field.
+**Put a prefix or a suffix inside the field, never as part of the value.** A prefix or a suffix is text fixed to the start or the end of the field. For example, an email domain such as "@acme.com" goes after the value.
+
+**Name a unit or a currency in the label by default, as in "Weight (kg)".** Use a prefix or a suffix for a unit or a currency only when the user asks for one.
 
 - A currency symbol, such as "$", goes before an amount.
 - A unit, such as "kg", goes after the value.
-- An email domain, such as "@acme.com", goes after the value.
 
 **A disabled text field and a read-only field are different components, not two styles of one component.**
 
