@@ -128,7 +128,7 @@ The icon goes beside the name because the name gives the icon context.
 
 **Set each column's width by the column's data type, so that text rarely needs to be cut short.** Dates, currency and statuses are narrow. Sentences, such as a description, need room. A fixed width for each data type keeps a table steady as the data changes.
 
-**The design system sets a maximum column width.** A value that reaches the maximum width is truncated. The design system sets the exact character count or pixel limit. The limit varies by implementation and is not a design decision.
+**The theme sets a maximum column width, but the token alone does not hold a column in the browser.** Hold each column with the width set by data type, as above. A value longer than the column's width is truncated. `recursica-skill-table` explains why the token alone fails.
 
 **Give every narrow column a set width, and give the sentence column no width.** The sentence column is the column that holds sentences, such as a Description column.
 
@@ -186,13 +186,13 @@ A value with no spaces, such as the filename `q3_sales_report_final.xlsx`, does 
 
 ## Rows, scrolling, and pagination
 
-**A full-size table and an interior table behave differently.** An interior table is a smaller grid set inside a container beside other elements. For example, a list of recent orders on a customer's page is an interior table.
+**A full-size table and an inset table behave differently.** An inset table is a smaller grid set inside a container beside other elements. For example, a list of recent orders on a customer's page is an inset table.
 
-**Make a full-size table fill the width and height of the container the table sits in.** The container size sets how many table rows are visible. Prefer infinite scroll. Pagination splits the table rows into separate pages, and pagination is a clunky way to move through records.
+**Make a full-size table fill the width and height of the container the table sits in.** The container size sets how many table rows are visible. Use infinite scroll, and load more table rows as the persona scrolls. Pagination splits the table rows into separate pages, and pagination is a clunky way to move through records.
 
-**Give an interior table a fixed number of table rows, usually five or ten, and then paginate.**
+**Give an inset table a fixed number of table rows, usually five or ten, and then paginate.**
 
-**An interior table MUST NOT scroll, vertically or horizontally.** Every table row on the current page is visible, and pagination shows the next table rows.
+**An inset table MUST NOT scroll, vertically or horizontally.** Every table row on the current page is visible, and pagination shows the next table rows.
 
 ## Fixed header and footer
 
@@ -353,7 +353,7 @@ One click cannot both switch the sort direction and open multi-sort.
 
 ## Out of scope
 
-- **The design system owns the maximum column widths and the points at which text is cut short. The design system also owns table row padding and the table footer component.**
+- **The theme owns the maximum column widths and the points at which text is cut short. The theme also owns table row padding and the table footer component.**
 - **`recursica-skill-buttons-links` covers row action buttons and links, how bulk actions look, and menus on table rows.**
 - **`recursica-skill-selection-controls` covers row selection checkboxes, and the indeterminate behavior of the header checkbox.**
 - **`recursica-skill-badges-chips` covers how status and metadata are shown in a table row.**
@@ -374,11 +374,11 @@ Check every item before treating a table as done.
 - [ ] No column combines unrelated values.
 - [ ] Column widths are set by data type. Every narrow column has an explicit width: counts, dates, statuses, currency and short terms. The sentence column has no width and takes the leftover width. Column widths are defined once for the whole application, not for each table.
 - [ ] Wrapping is allowed to break inside a word, and the word break is set for every cell. A value with no spaces wraps inside the value's column instead of running across the next column.
-- [ ] Truncation follows the design system's maximum, not an invented limit.
+- [ ] Each column's width is set by data type, within the theme's maximum, not an invented limit.
 - [ ] Currency is right-aligned, text is left-aligned, and icons, checkboxes, and buttons are centered.
 - [ ] Cells with secondary text truncate. Cells without secondary text prefer wrapping onto a second line. No value longer than two lines is in the table at all.
-- [ ] Full-size tables fill the container and use infinite scroll. Interior tables show five to ten table rows and paginate.
-- [ ] No interior table scrolls in either direction.
+- [ ] Full-size tables fill the container and use infinite scroll. Inset tables show five to ten table rows and paginate.
+- [ ] No inset table scrolls in either direction.
 - [ ] The table header and table footer stay in place, and only the table rows scroll.
 - [ ] Null cells show the literal string `NA`, in italics, in neutral 500. The string is the same in every column, and the string is real text rather than styling. No null value is shown as a real value or a zero.
 - [ ] The default sort is on the primary content column, in the direction the data suggests.

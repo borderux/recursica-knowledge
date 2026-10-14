@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-switch
-description: Rules for the Recursica switch — the tests a value must pass for a switch, when a switch saves under the application's save mode, avoiding switches in table rows, no switches for high-stakes settings, and disabled versus read-only. Use for on/off settings and toggles. Not for several options set together — see recursica-skill-checkbox. To choose between controls, see recursica-skill-selection-controls.
+description: Rules for the Recursica switch — the tests a value must pass for a switch, when a switch saves under the application's save mode, a switch in a table row, no switches for high-stakes settings, and disabled versus read-only. Use for on/off settings and toggles. Not for several options set together — see recursica-skill-checkbox. To choose between controls, see recursica-skill-selection-controls.
 license: MIT
 metadata:
   author: hi@borderux.com
@@ -28,7 +28,7 @@ A switch turns one setting on or off, such as "Email notifications". Each switch
 | The opposite of the value is not binary, known, and unique                       | A checkbox. See `recursica-skill-checkbox`.                                                                           |
 | One label has several possible values                                            | A radio group. See `recursica-skill-radio-button`.                                                                    |
 | The persona sets several independent on-or-off options together                  | Checkboxes. See `recursica-skill-checkbox`. Checkboxes work in groups, and switches do not.                           |
-| The control is in a table row                                                    | A checkbox. A switch is bulky, and wastes space in a dense table row.                                                 |
+| The value is in a table row, and the edit is not small or a mistake costs a lot  | The record's page. A switch in a table row follows the editable-cell rule in `recursica-skill-tables`.                |
 | Turning the switch on or off could have serious consequences                     | A checkbox plus a confirmation. See `recursica-skill-buttons-links`.                                                  |
 | The persona performs an action, such as "Send invoice", rather than sets a state | A button. See `recursica-skill-button`.                                                                               |
 | The persona viewing the value can never edit the value                           | A read-only field, which shows the label and the value as text, with no input. See `recursica-skill-read-only-field`. |
@@ -141,7 +141,7 @@ On screen, a switch shows the on or off state only by the thumb's position and t
 
 ## Related skills
 
-- `recursica-skill-selection-controls` — the binary-inverse test, the label test, switch versus checkbox, and the lone binary field. The skill also covers avoiding switches in table rows, and when a change saves across the whole application.
+- `recursica-skill-selection-controls` — the binary-inverse test, the label test, switch versus checkbox, and the lone binary field. The skill also covers a switch in a table row, and when a change saves across the whole application.
 - `recursica-skill-forms` — the save-mode table and the save status each save mode requires, and single-column layout. The skill also covers label placement, one placement per form, and progressive disclosure.
 - `recursica-skill-label` — label text that names the object and makes sense out of context, and the required and optional markers.
 - `recursica-skill-assistive-element` — the help text and error text below the switch, and the wording rules for both.
@@ -168,7 +168,7 @@ On screen, a switch shows the on or off state only by the thumb's position and t
 - [ ] The label names what the switch controls, never the state. The label does not change when the switch turns on or off.
 - [ ] No switch controls a setting where turning the switch on or off by accident could have serious consequences.
 - [ ] No switch controls a setting that is destructive, cannot be undone, or is high-risk.
-- [ ] No switch is in a table row, unless the switch was confirmed with the user.
+- [ ] A switch in a table row passes the editable-cell rule in `recursica-skill-tables` and saves right away.
 - [ ] A switch on the switch's own saves right away. A switch in a form saves with the form, in the application's one save mode for forms.
 - [ ] When a switch saves right away, the page shows a save status that stays on the page.
 - [ ] No two forms in the application use different save modes.

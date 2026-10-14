@@ -21,7 +21,7 @@ A checker that has just read a rule expects to see the rule broken, and the chec
 Then answer these four questions, in order:
 
 1. **Does the cited line say what the finding claims?** Look for a wrong line number, a stale quote, or a prop read from the wrong component. A cited line that does not match the claim is the most common failure and the cheapest to check.
-2. **Does the rule apply to the case?** Most rules have a scope, and several rules state exceptions. A rule about full-size tables does not govern an interior table, and a case may fall inside an exception the rule states.
+2. **Does the rule apply to the case?** Most rules have a scope, and several rules state exceptions. A rule about full-size tables does not govern an inset table, and a case may fall inside an exception the rule states.
 3. **Does a place the finding did not look at already meet the rule?** What the rule asks for may be inherited from a wrapper, set by a default, handled by the shared component instead of the call site, or set by a token instead of the code. Something that does not appear in the file the finding names can meet the rule.
 4. **Does a more specific rule cover the case?** When two rules cover a case, the design router states which rule wins. On composition, a design-rules skill beats a component skill. A finding that cites the losing rule is refuted.
 

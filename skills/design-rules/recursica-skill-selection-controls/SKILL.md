@@ -138,7 +138,7 @@ For example, a table offers `Correct this name` when one table row is selected a
 - A click on a fully checked header checkbox makes the header checkbox fully unchecked. A click on a fully unchecked header checkbox makes the header checkbox fully checked.
 - The header checkbox becomes indeterminate **only** when the persona selects or deselects individual table rows. A click on the header checkbox never makes the header checkbox indeterminate.
 
-**Avoid switches in table rows.** Prefer a checkbox or a radio button in the table row, and handle the on or off setting another way. A switch is bulky and fits awkwardly in a dense table row. A checkbox takes far less space. If the design still calls for a switch in a table row, confirm with the user.
+**An on/off value in a table row follows the editable-cell rule in `recursica-skill-tables`.** A switch may sit in the cell when the edit is small and a mistake costs little. The switch saves right away. Otherwise, change the value on the record's page. Never use a checkbox for the value, because a row checkbox only selects the row.
 
 ## Layout
 
@@ -220,7 +220,6 @@ The read-only control shows the field label with the field's values, and the rea
 **Confirm with the user instead of choosing.** No house rule covers the following questions yet. See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule in this skill to fit an open question.
 
 - **When autocomplete or typeahead replaces a dropdown.** A dropdown handles many options. No rule sets the point at which searching works better than scanning.
-- **Radio buttons inside a table row.** The "Avoid switches in table rows" rule names a radio button in a table row as an alternative to a switch. Radio buttons in a table row are not an established pattern.
 - **Limits on multi-select.** No rule says whether a form may limit the persona to selecting _n_ options out of many.
 
 ## Out of scope
@@ -245,7 +244,7 @@ Check every item before treating a set of selection controls as done:
 - [ ] Row selection in a table uses a checkbox in the leftmost cell of the table row. Every table that has row checkboxes has a header checkbox.
 - [ ] A click on an indeterminate header checkbox selects every table row.
 - [ ] Row checkboxes only choose table rows for bulk actions. Selecting one table row triggers no action on that single record. No separate clear or deselect-all control sits beside the header checkbox.
-- [ ] No table row holds a switch, unless the user confirmed the switch.
+- [ ] A switch in a table row passes the editable-cell rule and saves right away. No row checkbox stands for an on/off value.
 - [ ] Checkboxes and radio buttons are stacked vertically, never horizontally. Where a horizontal arrangement is needed, a segmented control is used for single select, or selectable chips for multi-select.
 - [ ] The form uses the application's one save mode. By default, every field saves together when the persona clicks a submit button.
 - [ ] Switches save at the same point everywhere in the application.
@@ -253,4 +252,4 @@ Check every item before treating a set of selection controls as done:
 - [ ] Revealed fields submit together with the selection control that revealed the fields.
 - [ ] Choices that are unavailable for now are disabled. Values that are permanently not editable use the read-only control, or are not in a form control at all.
 - [ ] Selection rules (minimums and maximums) appear as assistive text under the control.
-- [ ] Open questions were asked about, not decided: when autocomplete replaces a dropdown, radio buttons in rows, and limits on selection.
+- [ ] Open questions were asked about, not decided: when autocomplete replaces a dropdown, and limits on selection.

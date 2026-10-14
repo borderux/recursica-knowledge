@@ -13,9 +13,8 @@ Pagination moves the persona between pages of one list of records. Pagination is
 
 ## When to use pagination
 
-- **An interior table holds more records than the table's fixed number of table rows.** An interior table is a smaller table set inside a container, beside other elements. For example, a "Recent invoices" table in a container with a layer on a customer page is an interior table. `recursica-skill-tables` gives an interior table a fixed five or ten table rows. Paginate an interior table with more records than those table rows. For example, an interior table with ten table rows and 45 records needs pagination.
-- **The interior table must not scroll**, up and down or side to side. Every table row shows without scrolling. The persona reaches the records that do not fit in the visible table rows through pagination.
-- **The persona needs to come back later to a specific place in an ordered list of records.** For example, a persona stops on page 7 of a list of invoices sorted by date. The next day, the persona returns to page 7. Continuous scrolling does not keep the persona's place.
+- **An inset table holds more records than the table's fixed number of table rows.** An inset table is a smaller table set inside a container, beside other elements. For example, a "Recent invoices" table in a container with a layer on a customer page is an inset table. `recursica-skill-tables` gives an inset table a fixed five or ten table rows. Paginate an inset table with more records than those table rows. For example, an inset table with ten table rows and 45 records needs pagination.
+- **The inset table must not scroll**, up and down or side to side. Every table row shows without scrolling. The persona reaches the records that do not fit in the visible table rows through pagination.
 
 ## When not to use pagination
 
@@ -28,7 +27,7 @@ Pagination moves the persona between pages of one list of records. Pagination is
 | The persona needs to know the current location in the app             | `recursica-skill-breadcrumb`                                                                                                               |
 | A process moves through ordered steps                                 | `recursica-skill-stepper`                                                                                                                  |
 
-**Choose pagination or infinite scroll once for the whole application, not for each screen.** On every screen, full-size tables scroll and interior tables paginate. `recursica-skill-design-system-conventions` requires one behavior for the whole application. When tables mix the two behaviors, the persona cannot predict how any table behaves.
+**Choose pagination or infinite scroll once for the whole application, not for each screen.** On every screen, full-size tables scroll and inset tables paginate. `recursica-skill-design-system-conventions` requires one behavior for the whole application. When tables mix the two behaviors, the persona cannot predict how any table behaves.
 
 ## Variants
 
@@ -66,7 +65,7 @@ The design-system website is the only source that shows the four items. The webs
 
 **Put pagination in the table's footer.** The design system provides the table footer as a fixed element. See `recursica-skill-tables`. Never place pagination as a separate control below the table.
 
-**The table decides how many table rows each page shows, never the pagination.** An interior table shows a fixed number of table rows, usually five or ten.
+**The table decides how many table rows each page shows, never the pagination.** An inset table shows a fixed number of table rows, usually five or ten.
 
 **Never give the persona a rows-per-page control, unless the theme has a rows-per-page select.** Never build a rows-per-page control from other components.
 
@@ -84,14 +83,12 @@ If a page of the table has no URL, the page number cannot have a real `href`. Fi
 - Never build a first-page control, a last-page control or a jump-to-page control from other components.
 - Never build an ellipsis from other components to shorten the list of page numbers.
 
-**Never show the previous control or the next control as a disabled link.** `recursica-skill-buttons-links` and `recursica-skill-link` both forbid disabling a link, and pagination is navigation. On the first page, the previous control has no page to go to. On the last page, the next control has no page to go to. Each of the two controls then takes one of two forms:
+**On the first page, Previous has no page to go to. On the last page, Next has no page to go to.** Handle the control by what the control is:
 
-- The control is missing.
-- The control is present but cannot be used.
+- **A link:** leave the control out. Never disable a link. `recursica-skill-link` forbids a disabled link.
+- **A button:** show the button disabled.
 
-A disabled control is not one of the two forms. Never show a control that looks available but cannot be used. A control that looks usable but does nothing, with no notice, is worse than a missing control.
-
-Use the same form on the first page and on the last page. Use the same form in every table in the application. No rule yet says whether the house prefers a missing control or a control that cannot be used. The question is listed under "Open questions".
+Use the same handling in every table in the application.
 
 **Changing pages never re-sorts the table.** The table keeps the default sort, which `recursica-skill-tables` sets on the primary content column. For example, a Customers table sorted by name stays sorted by name on page 2.
 
@@ -113,7 +110,7 @@ Pagination is a row of small controls that all look alike. Without names added i
 - **Give the previous control and the next control a tooltip and an accessible name** (the name a screen reader reads out for a control). The previous and next controls show only an icon. The tooltip is for sighted personas using a mouse. `recursica-skill-buttons-links` requires both the tooltip and the accessible name.
 - **After a page change, announce that new table rows arrived**, as in "Page 3 of 20, 10 invoices". The table rows change out of the persona's sight. Without the announcement, nothing tells the persona that the control worked.
 - **The announcement must be polite.** The announcement must not play on every click while the persona pages quickly.
-- **The persona must be able to tell when the previous or next control cannot be used.** If the previous control cannot be used on the first page, the code must say the control cannot be used. A lighter gray alone is not enough.
+- **Mark a disabled Previous or Next button as disabled in code.** A lighter gray alone is not enough.
 - **Mark up the pagination controls as a list**, as `recursica-skill-navigation` requires for all navigation. The list markup lets the persona hear how many pages there are.
 - **If the theme has a truncation indicator, mark the indicator as decorative and hide the indicator from screen readers.** A truncation indicator is a mark between page numbers, such as the ellipsis in "1 2 3 … 20". An ellipsis read aloud between page numbers adds nothing.
 
@@ -121,7 +118,7 @@ Pagination is a row of small controls that all look alike. Without names added i
 
 - **Every control is a tab stop (a place the Tab key lands), in the order the controls appear on screen.** The order is the previous control, then the page numbers in order, then the next control.
 - **After a page change, focus stays on the pagination control the persona activated.** For example, focus stays on the page number the persona clicked, or on the next control. The persona can then page again right away. Never move focus anywhere else.
-- **The previous and next controls are never disabled links on the first page and the last page.** "Rules" above says how to handle the previous and next controls on the first page and the last page.
+- **Previous and Next are never disabled links.** "Rules" above says how to handle the two controls on the first page and the last page.
 - **Never add custom key handling inside the pagination component.** The component library the code uses handles keyboard behavior inside each component. See `recursica-skill-navigation`.
 
 ## Styling set by tokens
@@ -132,7 +129,7 @@ The theme also sets the focus ring and the area that responds to a click or a ta
 
 ## Related skills
 
-- `recursica-skill-tables` — whether a table paginates at all, and the five-to-ten row count for an interior table. The tables skill also sets the ban on scrolling inside a table, and the fixed header and footer. The tables skill also sets the default sort, and what totals cover on a paginated table.
+- `recursica-skill-tables` — whether a table paginates at all, and the five-to-ten row count for an inset table. The tables skill also sets the ban on scrolling inside a table, and the fixed header and footer. The tables skill also sets the default sort, and what totals cover on a paginated table.
 - `recursica-skill-buttons-links` — when a control is a link or a button, the tooltip on an icon-only control, and disabled controls.
 - `recursica-skill-navigation` — what counts as a location, routing and browser history, and semantic list markup for navigation.
 - `recursica-skill-design-system-conventions` — one behavior for the whole application, and never showing meaning in only one way.
@@ -144,7 +141,6 @@ The theme also sets the focus ring and the area that responds to a click or a ta
 
 ## Open questions
 
-- **Whether the previous and next controls are missing, or present but unusable, on the first page and the last page.** The rule that the previous and next controls are never disabled links is settled, under "Rules". No rule says which of the two other forms the house wants. Confirm with the user, and apply the answer everywhere.
 - **First-page and last-page controls.** Only the design-system website shows first-page and last-page controls. Do not assume the theme has first-page and last-page controls. Do not build either control without confirming with the user. Confirm each control with the user only when the theme has no such control.
 - **Rows per page as the persona's choice.** No rule says whether the persona may change the number of table rows on each page. Confirm with the user only when the theme has no rows-per-page select.
 - **A results readout**, such as "Showing 1–10 of 200". No rule says whether a results readout is required, or where the readout sits next to the pagination controls. Confirm with the user only when the theme has no results readout.
@@ -153,7 +149,7 @@ The theme also sets the focus ring and the area that responds to a click or a ta
 
 ## Pre-flight checklist
 
-- [ ] The table is an interior table. Full-size tables use infinite scroll instead.
+- [ ] The table is an inset table. Full-size tables use infinite scroll instead.
 - [ ] The choice between scrolling and paginating matches every other screen in the application.
 - [ ] The pagination controls sit in the table's fixed footer, and the table does not scroll.
 - [ ] A long list of page numbers uses the theme's ellipsis. The controls never shrink or scroll.
@@ -165,11 +161,11 @@ The theme also sets the focus ring and the area that responds to a click or a ta
 - [ ] The current page is marked as current in code, not only by the current-page style.
 - [ ] Every control has a name that says where the control goes. The previous and next controls have tooltips as well as names.
 - [ ] A page change is announced politely, names the new page, and says that new table rows arrived.
-- [ ] On the first page and the last page, the code says when the previous or next control cannot be used. Gray alone is not enough.
-- [ ] The previous and next controls are never disabled links. On the first page and the last page, the controls are missing or cannot be used. The handling is the same on both pages and in every table in the application.
+- [ ] A disabled Previous or Next button is marked disabled in code, not only shown in gray.
+- [ ] On the first and last page, a Previous or Next link is left out. A Previous or Next button is disabled instead. Every table handles both the same way.
 - [ ] Every control is a tab stop in on-screen order. After a page change, focus stays on the pagination control the persona activated.
 - [ ] The pagination component has no custom key handling.
 - [ ] Changing pages did not change the default sort, and each total says what the total covers.
 - [ ] Every variant, state and control is one the theme's UI kit lists. No variant, state, first-page or last-page control, or ellipsis is invented.
 - [ ] No styling is set or overridden on the pagination. No container or spacer is added to change the pagination's look.
-- [ ] Open questions were asked about, not decided: missing or unusable controls on the first page and the last page, first-page and last-page controls, rows per page, a results readout, where pagination sits in the footer, and error states between pages.
+- [ ] Open questions were asked about, not decided: first-page and last-page controls, rows per page, a results readout, where pagination sits in the footer, and error states between pages.
