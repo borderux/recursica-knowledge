@@ -117,7 +117,7 @@ Pagination is a row of small controls that all look alike. Without names added i
 ### Keyboard and non-mouse navigation
 
 - **Every control is a tab stop (a place the Tab key lands), in the order the controls appear on screen.** The order is the previous control, then the page numbers in order, then the next control.
-- **After a page change, focus stays on the pagination control the persona activated.** For example, focus stays on the page number the persona clicked, or on the next control. The persona can then page again right away. Never move focus anywhere else.
+- **After a page change, focus stays on the pagination control the persona activated.** For example, focus stays on the page number the persona clicked, or on the next control. The persona can then page again right away. Never move focus to another control.
 - **Previous and Next are never disabled links.** "Rules" above says how to handle the two controls on the first page and the last page.
 - **Never add custom key handling inside the pagination component.** The component library the code uses handles keyboard behavior inside each component. See `recursica-skill-navigation`.
 

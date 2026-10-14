@@ -114,7 +114,7 @@ See `recursica-skill-assistive-element`. Do not put the field's rules in the pla
 
 The rules below add to the accessibility baseline in `recursica-skill-design-system-conventions`, which every Recursica component follows.
 
-The filtered list changes on every keystroke. A persona using a screen reader hears none of the changes unless something announces the changes. Give the autocomplete every piece of information a screen reader needs, such as the result count. Add a live region only for a change the autocomplete does not announce. See `recursica-skill-live-regions`. Getting the announcements right is the hardest part of any control in the design system.
+The filtered list changes on every keystroke. A persona using a screen reader hears none of the changes without an announcement. The autocomplete or a live region announces the changes. Give the autocomplete every piece of information a screen reader needs, such as the result count. Add a live region only for a change the autocomplete does not announce. See `recursica-skill-live-regions`. Getting the announcements right is the hardest part of any control in the design system.
 
 The autocomplete does four jobs without extra work from the app:
 

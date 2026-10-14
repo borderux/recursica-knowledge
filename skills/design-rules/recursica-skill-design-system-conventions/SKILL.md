@@ -150,7 +150,7 @@ With no similar items beside the border, the border is decoration and tells the 
 - changing a mode
 - switching a tab
 
-**Different interactions on one control may each have their own outcome.** For example, a column header may sort when clicked and move when dragged. The problem is one interaction doing two things at once.
+**Different interactions on one control may each have a separate outcome.** For example, a column header may sort when clicked and move when dragged. The problem is one interaction doing two actions at once.
 
 Examples:
 

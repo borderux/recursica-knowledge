@@ -147,7 +147,7 @@ Apps get the two jobs wrong more often than any other accordion rule.
 
 ## Open questions
 
-- **Whether opening one item closes the other items.** The rule above keeps each item open until the persona closes it. If the theme has a single-open option, confirm with the user before using it.
+- **Whether opening one item closes the other items.** The rule above keeps each item open until the persona closes the item. If the theme has a single-open option, confirm with the user before using the option.
 - **Whether the divider between items can be hidden.** Only the design-system website mentions hiding the divider. The website says the divider "can be hidden if accordion is the last child in a list or accordion group". If the theme has an option to hide the divider, use the option. Otherwise, do not hide the divider without confirming with the user.
 - **How to show an item the persona cannot open right now.** `recursica-skill-navigation` says to disable an item the persona can unlock. If the theme has a disabled look for the header, use the disabled look. Otherwise, confirm with the user.
 - **Animation for opening and closing an item.** No duration or easing is defined.

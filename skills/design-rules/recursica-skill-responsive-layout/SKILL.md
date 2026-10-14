@@ -56,11 +56,11 @@ The house rules assume **complex enterprise web applications, designed for deskt
 
 A breakpoint is the screen width at which the layout changes. Recursica has three breakpoints: **desktop, tablet and small device.** The theme sets the width of each breakpoint. The theme's grid sets the columns that content lines up to.
 
-| Breakpoint       | What the breakpoint is                                                                                     |
-| ---------------- | ---------------------------------------------------------------------------------------------------------- |
-| **Desktop**      | The widest breakpoint. The theme's layout also sets the maximum width of the main content area             |
-| **Tablet**       | The width below which sidebars and side columns go, panels become pages, and a table stays only if it fits |
-| **Small device** | A phone                                                                                                    |
+| Breakpoint       | What the breakpoint is                                                                                    |
+| ---------------- | --------------------------------------------------------------------------------------------------------- |
+| **Desktop**      | The widest breakpoint. The theme's layout also sets the maximum width of the main content area            |
+| **Tablet**       | The width below which sidebars and side columns go, panels become pages, and only a table that fits stays |
+| **Small device** | A phone                                                                                                   |
 
 **At the tablet breakpoint or wider, keep sidebars and side columns.** A wide screen has more width than height. For example, a tablet held sideways keeps a sidebar.
 

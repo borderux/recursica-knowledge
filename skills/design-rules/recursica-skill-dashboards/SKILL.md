@@ -93,13 +93,13 @@ See `recursica-skill-data-visualization`.
 
 **Put at most four charts on a dashboard.** With more than four charts, the persona is doing analysis, not glancing.
 
-**Show as many items as the data needs, and never more than eight.** An item is one thing the dashboard shows, such as a number, a chart or a short list. Order the page so the content that is fastest to read comes first. A single number is read in a second. A table takes much longer to read.
+**Show as many items as the data needs, and never more than eight.** An item is one element the dashboard shows, such as a number, a chart or a short list. Order the page so the content that is fastest to read comes first. A single number is read in a second. A table takes much longer to read.
 
 **Prefer a number to a chart.** If a percentage, a count or a quantity gives the information, show the number in a larger type size. Show the number instead of a chart. For example, show "92% on time" instead of a pie chart of on-time orders. A chart that repeats a number right next to the chart adds nothing.
 
 **Prefer fewer data points.** Judge a dashboard by how clear the dashboard's few insights are, and how easily the persona acts on the insights. Do not judge a dashboard by how much data the dashboard shows.
 
-**Put each dashboard item in a container with a layer, not in a card.** A dashboard's items are different kinds of thing, so the items fail the card tests in `recursica-skill-card`. Use cards only for a set of items that passes the card tests. For example, several charts of the same kind may sit side by side as cards.
+**Put each dashboard item in a container with a layer, not in a card.** A dashboard's items are different kinds of element, so the items fail the card tests in `recursica-skill-card`. Use cards only for a set of items that passes the card tests. For example, several charts of the same kind may sit side by side as cards.
 
 **Never make the whole page out of cards.**
 

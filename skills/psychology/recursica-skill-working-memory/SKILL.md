@@ -26,7 +26,7 @@ Today the house guideline applies to the four parts of the interface in the tabl
 | Part of the interface                | Guideline                                                                     | Skill that owns the rule             |
 | ------------------------------------ | ----------------------------------------------------------------------------- | ------------------------------------ |
 | Navigation items per level           | 7 ± 2; nearer 5 for complex subject matter, up to 9 for simple subject matter | `recursica-skill-navigation`         |
-| Options in a radio or checkbox group | 7 ± 2 scaled by cognitive load; well above it, consider a dropdown            | `recursica-skill-selection-controls` |
+| Options in a radio or checkbox group | 7 ± 2 scaled by cognitive load; well above 7 ± 2, consider a dropdown         | `recursica-skill-selection-controls` |
 | Chips in a group                     | 7 ± 2 scaled by cognitive load, as a checkbox group                           | `recursica-skill-badges-chips`       |
 | Options in a segmented control       | 2–5, tighter than 7 ± 2 because the control is horizontal and compact         | `recursica-skill-segmented-control`  |
 

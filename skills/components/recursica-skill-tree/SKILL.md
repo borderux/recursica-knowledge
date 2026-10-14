@@ -49,7 +49,7 @@ The rules below describe each variant and option by role, such as "the selected 
 - `recursica-skill-navigation` sets the collapsed-by-default rule for trees and accordions.
 - Opening every node adds no value, because the parent node labels then have no reason to exist.
 
-**Let the data set how many nodes each level shows.** Sort the nodes at each level so the persona can scan them. A tree is for finding one item, and the 7 ± 2 guideline does not apply to finding. A level that grows very long can be grouped one level deeper. See chunking in `recursica-skill-working-memory`.
+**Let the data set how many nodes each level shows.** Sort the nodes at each level so the persona can scan the nodes. A tree is for finding one item, and the 7 ± 2 guideline does not apply to finding. A level that grows very long can be grouped one level deeper. See chunking in `recursica-skill-working-memory`.
 
 **Label a node with what the node is, not where the node sits.** Do not label a node "Level 2". Name what the node is instead, such as "Invoices". Do not add numbers that repeat the node's place in the nesting, such as "2.3.1".
 
@@ -134,7 +134,7 @@ The tree has the most specific keyboard rules of any component, and the keyboard
 
 - [ ] The data is a true hierarchy. No flat list is shown indented as a tree.
 - [ ] Nodes are collapsed by default, and only the nodes the persona needs for the current task are open.
-- [ ] The nodes at each level are sorted so the persona can scan them.
+- [ ] The nodes at each level are sorted so the persona can scan the nodes.
 - [ ] Each node label names what the node is. Each node label is clear enough to choose the node while the node is collapsed.
 - [ ] A real hierarchy uses a tree, and sections at one level use an accordion, as in `recursica-skill-accordion`. No accordion is nested to look like a tree, and no form, table, or card is inside a node.
 - [ ] A screen reader announces the tree as a tree, with an accessible name. Each node reports the node's level, position, and expanded state.

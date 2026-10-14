@@ -224,7 +224,7 @@ For example, keep the line `Newest first. Append-only: nothing here is ever rewr
 
 **Give a region a separate background when the persona cannot tell the region apart from the neighboring region.** When neighboring regions have no separation, and the persona cannot see the boundary between the regions, the spacing has failed. The region then needs a separate layer.
 
-**A layer and a card are different things.** A layer is a style applied to a container. The layer sets the container's background and the colors of the components inside the container. A card is a component. Every card sits on a layer, but a layer never needs a card.
+**A layer and a card are not the same.** A layer is a style applied to a container. The layer sets the container's background and the colors of the components inside the container. A card is a component. Every card sits on a layer, but a layer never needs a card.
 
 **Give each region one of three treatments.** A peer is an object of the same kind as the objects around the peer. A row in a list is one example of a peer.
 

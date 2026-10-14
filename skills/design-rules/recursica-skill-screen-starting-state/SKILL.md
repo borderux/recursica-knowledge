@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-screen-starting-state
-description: House rules for what a screen shows when the screen first opens, before the persona does anything — which tab is open, whether any filter is on, which form fields are filled in, which options are already selected, and what the screen remembers from the last visit. Use when deciding how a screen, form or filter bar first looks. Not for which control a field gets — see recursica-skill-selection-controls.
+description: House rules for what a screen shows when the screen first opens, before the persona acts — which tab is open, whether any filter is on, which form fields are filled in, which options are already selected, and what the screen remembers from the last visit. Use when deciding how a screen, form or filter bar first looks. Not for which control a field gets — see recursica-skill-selection-controls.
 license: MIT
 metadata:
   author: hi@borderux.com

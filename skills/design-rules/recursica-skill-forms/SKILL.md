@@ -239,7 +239,7 @@ A legally binding submission with no way back is the clearest valid case.
 **Save drafts when losing the entered data would cost the persona real rework.** For example, a persona fills in a long form, gets distracted, and the session times out. A saved draft brings the work back. Use judgment:
 
 - Save drafts for a long form, or for edits that take real effort.
-- Skip drafts for a short form, or for small edits that cost little to redo. There, drafts cost more to build than they save.
+- Skip drafts for a short form, or for small edits that cost little to redo. There, drafts cost more to build than drafts save.
 
 A form that saves drafts shows a small draft status, such as "Draft saved", in either save mode.
 

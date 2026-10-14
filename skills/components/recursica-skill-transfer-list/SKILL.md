@@ -15,7 +15,7 @@ A transfer list shows two lists of options side by side. An item is one option i
 
 ## When to use a transfer list
 
-- **The list of options is vast, and the persona picks only a few.** For example, the persona picks 3 of 100 options. In a checkbox group, the 3 checked options are hard to find. The transfer list shows the selected options in a list of their own, so the persona never searches for them. A short list, such as 10 options, needs only a checkbox group.
+- **The list of options is vast, and the persona picks only a few.** For example, the persona picks 3 of 100 options. In a checkbox group, the 3 checked options are hard to find. The transfer list shows the selected options in a separate list, so the persona never searches for the selected options. A short list, such as 10 options, needs only a checkbox group.
 - **The items not chosen matter as much as the items chosen.** Examples are assigning people to a group, picking the columns of a report, and choosing which options a setup includes. The persona needs to see the items left out, not only the items chosen.
 - **Each item is either included or excluded.** Two lists show at a glance which items are included. Checkmarks spread through one long checkbox group do not show the included items at a glance.
 - **The persona moves many items at once.** The persona selects several items, then moves all the selected items in one action.
@@ -155,7 +155,7 @@ The app must add every behavior listed under "Screen readers" and "Keyboard and 
 
 ## Pre-flight checklist
 
-- [ ] The list of options is vast, and the persona picks only a few. The selected options show in a list of their own. A checkbox group and a dropdown were ruled out for those reasons.
+- [ ] The list of options is vast, and the persona picks only a few. The selected options show in a separate list. A checkbox group and a dropdown were ruled out for those reasons.
 - [ ] Both lists have visible names that tell the two lists apart, and each list has an accessible name.
 - [ ] A filter is present, and the filter announces how many items a filtered list shows.
 - [ ] Selecting an item does not move the item. Items move through the move buttons.

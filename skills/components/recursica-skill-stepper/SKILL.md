@@ -22,17 +22,17 @@ A stepper leads the persona through one process that has several steps. For exam
 
 ## When not to use a stepper
 
-| Situation                                                             | Use instead                                                                                                |
-| --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| The steps can be done in any order                                    | One page. When the persona marks tasks done, use a checkbox group. See `recursica-skill-checkbox`.         |
-| A short form that fits on one page                                    | One page, in a single column. See `recursica-skill-forms`.                                                 |
-| An answer changes only the field right below the answer               | Progressive disclosure on one page. See `recursica-skill-forms`.                                           |
-| Sections of one whole that the persona switches between               | Tabs, each tab with its own route. See `recursica-skill-tabs`.                                             |
-| Primary or secondary navigation for the application                   | Navigation. A stepper is not navigation. See `recursica-skill-navigation`.                                 |
-| A record of events that already happened, with timestamps             | A timeline. See `recursica-skill-timeline`.                                                                |
-| Showing how far along something is, such as an order that has shipped | A timeline. See `recursica-skill-timeline`.                                                                |
-| Progress of a single operation, with no known end                     | A loader, or the submit button's loading look. See `recursica-skill-loader`.                               |
-| Splitting a long form into steps only to make the form feel shorter   | Nothing. Fix the form, and confirm the fix with the user. See `recursica-skill-design-system-conventions`. |
+| Situation                                                            | Use instead                                                                                                |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| The steps can be done in any order                                   | One page. When the persona marks tasks done, use a checkbox group. See `recursica-skill-checkbox`.         |
+| A short form that fits on one page                                   | One page, in a single column. See `recursica-skill-forms`.                                                 |
+| An answer changes only the field right below the answer              | Progressive disclosure on one page. See `recursica-skill-forms`.                                           |
+| Sections of one whole that the persona switches between              | Tabs, each tab with the tab's own route. See `recursica-skill-tabs`.                                       |
+| Primary or secondary navigation for the application                  | Navigation. A stepper is not navigation. See `recursica-skill-navigation`.                                 |
+| A record of events that already happened, with timestamps            | A timeline. See `recursica-skill-timeline`.                                                                |
+| Showing how far along an order is, such as an order that has shipped | A timeline. See `recursica-skill-timeline`.                                                                |
+| Progress of a single operation, with no known end                    | A loader, or the submit button's loading look. See `recursica-skill-loader`.                               |
+| Splitting a long form into steps only to make the form feel shorter  | Nothing. Fix the form, and confirm the fix with the user. See `recursica-skill-design-system-conventions`. |
 
 ## Variants
 
