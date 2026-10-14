@@ -23,7 +23,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 Read this section first.
 
-**No Recursica component shows a chart, and no chart component is planned.** A chart comes from a third-party charting library. For any screen that needs a chart, first check whether the application has a charting library at all. Decide how to build the chart after that check.
+**Always draw a chart with a dedicated charting library.** No Recursica component shows a chart, and no chart component is planned. For any screen that needs a chart, first check whether the application has a charting library at all. Decide how to build the chart after that check.
 
 ### Steps before building a chart
 
@@ -34,7 +34,7 @@ Read this section first.
    - Present open-source charting libraries that suit the application's architecture, with the tradeoffs of each library.
    - Let the user choose.
    - See `recursica-skill-design-router` on confirming with the user instead of guessing.
-4. **Never build a chart by hand out of basic layout components.** For example, a build test made a bar chart from layout and text components, with badges as the bars. The bar chart worked, but a chart built that way is not allowed. A badge is not a bar. Custom styling is for a missing setting or token (a named design value, such as a color or a size, set by the design system), never for a missing component.
+4. **Never build a chart, or any part of a chart, out of components.** For example, never use badges as the bars of a bar chart. A badge is not a bar. The charting library draws every part of the chart. Custom styling is for a missing setting or token (a named design value, such as a color or a size, set by the design system), never for a missing component.
 
 ### Criteria for a charting library
 
@@ -94,7 +94,7 @@ Judge each charting library by how well the library fits the application, not by
 - A line or an area shows the rate of change. The steepness of the line or area has meaning. For example, a steep line of monthly orders shows fast growth.
 - A bar or a column shows a value at a single moment. The persona must work out the slope from one bar to the next.
 
-The choice between bars and columns, or lines and areas, is not all-or-nothing.
+No chart type is always right. Pick bars, columns, lines or areas for each chart by the story the chart tells.
 
 **Never use a line chart for nominal categories (categories with no natural order).** Apples, oranges and bananas are an example. If reordering the categories does not change the meaning, the chart has no slope between the categories to draw. A line suggests a connection between neighboring points, and nominal categories have no such connection. Time, and any sequence with a natural order, does connect neighboring points. That connection makes time and ordered sequences suitable for a line.
 
@@ -102,7 +102,7 @@ The choice between bars and columns, or lines and areas, is not all-or-nothing.
 
 **NEVER use 3D.** Every chart is two-dimensional. A third data dimension may be shown as the size of a dot or bubble, never as depth or volume.
 
-**Use a third data dimension only when the third dimension adds value.** Confirm that the third dimension adds value before using the third dimension. Size draws attention and changes what the persona looks at first. Bubble size and clustering are valid.
+**Use a third data dimension only when the third dimension adds value.** Confirm with the user that the third dimension adds value before using the third dimension. Size draws attention and changes what the persona looks at first. Bubble size and clustering are valid.
 
 ## Axes and scale
 
@@ -139,6 +139,8 @@ The choice between bars and columns, or lines and areas, is not all-or-nothing.
 ## Encoding, color, and accessibility
 
 Encoding is how the data becomes visual marks: position, length, color and pattern.
+
+**Take a chart's colors from a palette in the theme.** Recursica tokens set the colors through the charting library's theme.
 
 **NEVER rely on color alone to tell series apart.** Use a pattern in addition to color. For example, show one series as solid bars and the other series as striped bars. Where an icon in the legend helps, add the icon too. The rule applies even to a two-color donut chart.
 
@@ -227,7 +229,6 @@ Encoding is how the data becomes visual marks: position, length, color and patte
 
 - **A house-standard charting library, if any.** The selection criteria above are settled. The process is settled too. Check for a declared charting library. If the code declares none, confirm with the user that a charting library should be added to the code. No library has been chosen. Each code base currently makes the choice.
 - **Connecting a chosen library's theme to Recursica tokens.** Recursica tokens must set the chart's theme, and that requirement is clear. How to connect the two is not clear. No adapter exists to connect a charting library to Recursica tokens.
-- **Category colors when the palette runs out.** In the build test, a badge in the standard UI kit (the unchanged UI kit in the official Recursica release) had four colors, each with a meaning. Four colors could not show five or more categories. The shortage of colors forced one fill color for every category. The rule against a single channel called for one fill color anyway. The build test reached one fill color by accident, not by design.
 
 **Confirm with the user instead of choosing.** No house rule covers the topics below yet. See the never-guess rule in `recursica-skill-design-router`. Do not stretch a rule above to fit the topics below.
 
@@ -248,7 +249,8 @@ Encoding is how the data becomes visual marks: position, length, color and patte
 - [ ] The chart uses the charting library the code declares.
 - [ ] If the code declared no charting library, work stopped there. The agent confirmed with the user that a charting library should be added to the code.
 - [ ] If the code declared no charting library, the confirmation listed real open-source options, with the tradeoffs of each option.
-- [ ] No chart is built by hand out of basic layout components. No component is used as part of a chart.
+- [ ] Every chart is drawn by a dedicated charting library. No component is used as a chart or as part of a chart.
+- [ ] Every chart takes the chart's colors from a palette in the theme.
 
 Check each item below before treating a chart as done.
 
@@ -256,7 +258,7 @@ Check each item below before treating a chart as done.
 - [ ] No pie or donut chart appears, except one with two clearly different segments, or rarely three, that add up to 100%.
 - [ ] No donut hole repeats a value the chart already shows.
 - [ ] No line chart runs across nominal categories that could be rearranged freely.
-- [ ] No chart uses 3D. Any third dimension is shown as size, and adds value.
+- [ ] No chart uses 3D. Any third dimension is shown as size, and the user confirmed that the third dimension adds value.
 - [ ] No part of the screen is styled as an infographic.
 - [ ] The value axis starts at zero, and the scale is linear.
 - [ ] Time is on the horizontal axis wherever the data has a time dimension.

@@ -100,7 +100,7 @@ If a name is not in the table, find the Recursica component whose skill describe
 
 **Before overriding a style, check whether a setting or a token (a named design value, such as a color or a size, set by the design system) exists for the property being changed.**
 
-- **A setting or token exists: the override is forbidden.** The override changes a property the component controls. Stop, and use the setting. Every component skill lists the properties the component controls under "Styling set by tokens".
+- **A setting or token exists: the override is forbidden.** The override changes a property the component controls. Stop, and use the setting. The theme sets every visual property of a component.
 - **No setting or token exists: the override fills in for the missing setting or token.** A missing setting or token is the normal reason for a style override. The missing setting or token is a gap in the design system. The gap must be reported, and reporting the gap is the most important step. A style override made without a report hides the gap from everyone, and the gap becomes permanent.
 
 **Beside every style override in the code, say where the problem is: in the approach or in the design system.** Every style override means a problem exists.
