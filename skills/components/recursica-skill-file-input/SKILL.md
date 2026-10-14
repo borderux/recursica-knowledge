@@ -15,9 +15,9 @@ A file input is a single-line field where the persona picks a file from the pers
 >
 > Until the file input is built:
 >
-> - Use `recursica-skill-text-field` and a native `<input type="file">`.
-> - For the missing file input, follow the steps under "Missing components" in `recursica-skill-design-router`.
-> - Do not work around the missing file input.
+> - Use the browser's own file picker, a native `<input type="file">`, as the code's version. Give the picker a label and help text, as `recursica-skill-label` and `recursica-skill-assistive-element` say.
+> - Report the missing file input, following the steps under "Missing components" in `recursica-skill-design-router`.
+> - Never build a styled stand-in for the file input from other components.
 >
 > The rules below describe the file input as intended. The rules are correct about what the UI kit defines.
 

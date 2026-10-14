@@ -19,20 +19,20 @@ A stepper leads the persona through one process that has several steps. For exam
   - An answer makes a _later_ step clearly different. For example, choosing "Pick up in store" changes the Delivery step.
 - **A form would otherwise be split across tabs.** Never split a form across tabs. Use a stepper in place of the tabs. The stepper exists because of the ban on spreading one form across tabs. `recursica-skill-navigation` sets the ban, and names the stepper as the replacement.
 - **A setup flow for first-time use, or an onboarding flow, must be done in order.**
-- **The screen shows the status of a step-by-step workflow with fixed stages in order**, such as Processing, Shipped, Delivered.
 
 ## When not to use a stepper
 
-| Situation                                                           | Use instead                                                                                                |
-| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| The steps can be done in any order                                  | One page. When the persona marks tasks done, use a checkbox group. See `recursica-skill-checkbox`.         |
-| A short form that fits on one page                                  | One page, in a single column. See `recursica-skill-forms`.                                                 |
-| An answer changes only the field right below the answer             | Progressive disclosure on one page. See `recursica-skill-forms`.                                           |
-| Sections of one whole that the persona switches between             | Tabs, each tab with its own route. See `recursica-skill-tabs`.                                             |
-| Primary or secondary navigation for the application                 | Navigation. A stepper is not navigation. See `recursica-skill-navigation`.                                 |
-| A record of events that already happened, with timestamps           | A timeline. See `recursica-skill-timeline`.                                                                |
-| Progress of a single operation, with no known end                   | A loader, or the submit button's loading look. See `recursica-skill-loader`.                               |
-| Splitting a long form into steps only to make the form feel shorter | Nothing. Fix the form, and confirm the fix with the user. See `recursica-skill-design-system-conventions`. |
+| Situation                                                             | Use instead                                                                                                |
+| --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| The steps can be done in any order                                    | One page. When the persona marks tasks done, use a checkbox group. See `recursica-skill-checkbox`.         |
+| A short form that fits on one page                                    | One page, in a single column. See `recursica-skill-forms`.                                                 |
+| An answer changes only the field right below the answer               | Progressive disclosure on one page. See `recursica-skill-forms`.                                           |
+| Sections of one whole that the persona switches between               | Tabs, each tab with its own route. See `recursica-skill-tabs`.                                             |
+| Primary or secondary navigation for the application                   | Navigation. A stepper is not navigation. See `recursica-skill-navigation`.                                 |
+| A record of events that already happened, with timestamps             | A timeline. See `recursica-skill-timeline`.                                                                |
+| Showing how far along something is, such as an order that has shipped | A timeline. See `recursica-skill-timeline`.                                                                |
+| Progress of a single operation, with no known end                     | A loader, or the submit button's loading look. See `recursica-skill-loader`.                               |
+| Splitting a long form into steps only to make the form feel shorter   | Nothing. Fix the form, and confirm the fix with the user. See `recursica-skill-design-system-conventions`. |
 
 ## Variants
 

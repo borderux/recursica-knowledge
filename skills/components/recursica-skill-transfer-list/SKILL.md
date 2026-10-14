@@ -15,7 +15,7 @@ A transfer list shows two lists of options side by side. An item is one option i
 
 ## When to use a transfer list
 
-- **The list of options is long, well past the 7 ± 2 limit where a checkbox group stops working.** See `recursica-skill-working-memory`.
+- **The list of options is vast, and the persona picks only a few.** For example, the persona picks 3 of 100 options. In a checkbox group, the 3 checked options are hard to find. The transfer list shows the selected options in a list of their own, so the persona never searches for them. A short list, such as 10 options, needs only a checkbox group.
 - **The items not chosen matter as much as the items chosen.** Examples are assigning people to a group, picking the columns of a report, and choosing which options a setup includes. The persona needs to see the items left out, not only the items chosen.
 - **Each item is either included or excluded.** Two lists show at a glance which items are included. Checkmarks spread through one long checkbox group do not show the included items at a glance.
 - **The persona moves many items at once.** The persona selects several items, then moves all the selected items in one action.
@@ -87,7 +87,7 @@ For example, one selection rule is "At least two must be included". Put the rule
 
 **Pair the error state with a signal that is not color, such as an icon or error text.** `recursica-skill-design-system-conventions` requires the second signal.
 
-**If a list needs long scrolling inside the fixed height, the problem is how the screen is built.** A scrolling area inside the transfer list works around the problem and does not fix the problem. See `recursica-skill-design-system-conventions` and the open questions.
+**Let each list scroll inside the transfer list's fixed height.** A long list always scrolls. The filter narrows a long list.
 
 **Never disable a transfer list to show which items are included.** If the persona cannot change the included items in the current context, show the included items as read-only content.
 
@@ -148,7 +148,6 @@ The app must add every behavior listed under "Screen readers" and "Keyboard and 
 
 - **Where the transfer list fits among the selection controls.** Past the option limit, `recursica-skill-selection-controls` sends a choice of any number of options, including none, to a multi-select dropdown. `recursica-skill-selection-controls` never mentions a transfer list. No rule says at how many options a transfer list replaces the multi-select dropdown.
 - **Checkboxes on each item.** Only the design-system website shows a checkbox on every item. Nobody has settled whether the items are rows with checkboxes or items in a selectable listbox. Confirm with the user before relying on a checkbox on each item. Skip that confirmation when the theme has a checkbox option for an item.
-- **Overflow.** The height is fixed, so a long list must scroll inside the transfer list. `recursica-skill-design-system-conventions` treats a scrolling area inside a control as a failure. No rule says what a list does when the items do not fit the height.
 - **Narrow containers.** The label placement variant moves only the label, and the lists have a fixed width. The transfer list has no responsive behavior. `recursica-skill-responsive-layout` sets what a narrow screen may leave off.
 - **Empty states.** No rule sets an empty state for either list, including the starting state where every item is in one list. Confirm with the user only when the theme has no empty state.
 - **Ordering.** No rule says whether items are sorted alphabetically, keep the original order, or can be reordered by the persona.
@@ -156,7 +155,7 @@ The app must add every behavior listed under "Screen readers" and "Keyboard and 
 
 ## Pre-flight checklist
 
-- [ ] The list of options is long, and the persona needs to see the excluded items. A checkbox group and a dropdown were ruled out for those reasons.
+- [ ] The list of options is vast, and the persona picks only a few. The selected options show in a list of their own. A checkbox group and a dropdown were ruled out for those reasons.
 - [ ] Both lists have visible names that tell the two lists apart, and each list has an accessible name.
 - [ ] A filter is present, and the filter announces how many items a filtered list shows.
 - [ ] Selecting an item does not move the item. Items move through the move buttons.
@@ -175,4 +174,4 @@ The app must add every behavior listed under "Screen readers" and "Keyboard and 
 - [ ] The transfer list is in the form's single column, and not inside a card.
 - [ ] Every variant, size, and state is one the theme's UI kit lists, and no variant or option is invented. No header, filter, or wrapper is built by hand.
 - [ ] No styling is set or overridden on the transfer list. No container or spacer is added to change the transfer list's look.
-- [ ] Open questions were asked about, not decided: item checkboxes, overflow, ordering.
+- [ ] Open questions were asked about, not decided: item checkboxes, ordering.
