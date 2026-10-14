@@ -84,10 +84,7 @@ The rules below describe each option by role, such as "the success style". The n
 
 **Leave how long an immediate undo lasts unchanged, unless the user asks for a change.** The code library also sets how long an undo stays available.
 
-**An undo must never exist only inside a toast, because the toast closes by itself.**
-
-- Put the toast's undo action in a part of the page that stays on screen.
-- Have the toast point to the undo action on the page.
+**A toast may have its own Undo button.** For example, "Comment deleted" with an Undo button. The undo must never exist only inside the toast, because the toast closes by itself. Also put the undo in a part of the page that stays on screen.
 
 A persona using a keyboard has to leave the current field, tab to the toast, and press the undo. All three steps have to happen before the code library's timer closes the toast.
 

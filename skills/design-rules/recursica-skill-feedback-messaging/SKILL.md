@@ -103,7 +103,7 @@ The ban on inline messages covers brief status and success messages placed in th
 
 **The code library also sets how long an undo lasts, including how long an immediate undo stays available.** Change how long an undo lasts only when the user asks.
 
-**Do not make a toast's duration longer to keep the toast's action, such as Undo, within reach.** Where an undo matters, the undo must also exist in a place that stays on the screen. The toast points to that undo, and the toast is not the only way to reach the undo. See `recursica-skill-toast`.
+**Do not make a toast's duration longer to keep the toast's action, such as Undo, within reach.** A toast may have its own Undo button. Where an undo matters, the undo must also exist in a place that stays on the screen. See `recursica-skill-toast`.
 
 ## No partial success
 
