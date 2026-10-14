@@ -176,15 +176,17 @@ For example, keep the line `Newest first. Append-only: nothing here is ever rewr
 
 **Give a region a separate background when the persona cannot tell the region apart from the neighboring region.** When neighboring regions have no separation, and the persona cannot see the boundary between the regions, the spacing has failed. The region then needs a separate layer.
 
-**A region has three container options, and no option can replace another.** A peer is an object of the same kind as the objects around the peer. A row in a list is one example of a peer.
+**A layer and a card are different things.** A layer is a style applied to a container. The layer sets the container's background and the colors of the components inside the container. A card is a component. Every card sits on a layer, but a layer never needs a card.
 
-| Option           | Use                                                                | Owner                                             |
-| ---------------- | ------------------------------------------------------------------ | ------------------------------------------------- |
-| **No container** | The default. Space and type hierarchy group the content            | `recursica-skill-layers`, and this skill          |
-| **A layer**      | A region that needs a separate background but has no peers         | `recursica-skill-layers`                          |
-| **A card**       | A small, finite set of repeating peer objects, each with a graphic | `recursica-skill-card`, and the card's five tests |
+**Give each region one of three treatments.** A peer is an object of the same kind as the objects around the peer. A row in a list is one example of a peer.
 
-**A layer is the middle option, and the option most often missed.** An agent that knows only "a card or nothing" puts every region in a container, or puts no region in a container. Give a layer to a region that needs separation but has no peers. A chart with the chart's labels, or a row of KPI tiles, is a region of that kind.
+| What the region needs                                                              | Treatment                                                         | Owner                                             |
+| ---------------------------------------------------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------- |
+| Grouping only                                                                      | No container. The default. Space and type hierarchy group content | `recursica-skill-layers`, and this skill          |
+| A separate background, with no peers                                               | A container with a layer                                          | `recursica-skill-layers`                          |
+| A boundary around each object in a small, finite set of peers, each with a graphic | A card for each object                                            | `recursica-skill-card`, and the card's five tests |
+
+**A container with a layer is the treatment most often missed.** An agent that knows only "a card or nothing" puts every region in a card, or puts no region in a container. Give a layer to a region that needs a separate background but has no peers. A chart with the chart's labels, or a row of KPI tiles, is a region of that kind.
 
 **A layer does not excuse a region from the card tests.** Needing a separate background does not make a region a peer.
 
@@ -256,6 +258,8 @@ See `recursica-skill-layers`.
 
 **Give every tile in a row of KPI tiles the same treatment.** A row of KPI tiles is a set of peers (objects of the same kind, such as rows in a list).
 
+**Put a row of KPI tiles in one container with a layer. Never make a KPI tile a card.** A KPI tile holds a number, not a chart or an image, so a KPI tile fails the card tests.
+
 **Name each KPI tile with a noun phrase that says what the tile counts.** Write `Pending requests`, not `Total pending requests`. Write `Overdue requests`, not `Overdue`. See `recursica-skill-names-and-terms`.
 
 **KPI tiles shown together must agree with each other.** The persona compares two counts shown side by side. A tile that counts a subset must clearly look like a subset. A screen that reports a mathematically impossible result loses the persona's trust in every number on the screen. For example, `Overdue requests: 14` beside `Open requests: 9` is impossible when only an open request can be overdue.
@@ -292,7 +296,6 @@ The list runs in order, from the strongest sign to the weakest.
 - **Empty states where data exists but is zero.** This skill does not cover the case.
 - **Where global notifications or alerts sit in the page structure.** This skill does not cover the case. See `recursica-skill-feedback-messaging`.
 - **What may go in a footer** beyond a copyright notice. The footer question also covers when a footer stays fixed in place instead of appearing when the persona scrolls down.
-- **Whether KPI tiles sit on layers or in cards.**
 
 ## Pre-flight checklist
 
@@ -314,5 +317,6 @@ The list runs in order, from the strongest sign to the weakest.
 - [ ] Application chrome sits in the header or the rail, never in the content area.
 - [ ] Every KPI tile passed all three tests. The dataset is too large to take in at a glance, the number changes, and the tile guides an action. No KPI tile is always zero by nature. No KPI tile only repeats the row count of a table below the tile. Where no KPI tile passed, the page has no row of KPI tiles.
 - [ ] The KPI tiles share one treatment, are named as noun phrases, and agree with each other.
+- [ ] A row of KPI tiles sits in one container with a layer. No KPI tile is a card.
 - [ ] White space is even, every heading has room above the heading, and elements line up to a grid.
-- [ ] Open questions were asked about, not decided: the layout grid, empty states where data exists but is zero, where global notifications or alerts sit, what may go in a footer, and whether KPI tiles sit on layers or in cards.
+- [ ] Open questions were asked about, not decided: the layout grid, empty states where data exists but is zero, where global notifications or alerts sit, and what may go in a footer.

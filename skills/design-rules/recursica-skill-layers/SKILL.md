@@ -198,7 +198,6 @@ In the table, plurality (the number of items) means how many layers or cards app
 
 - **Which regions that hold content sit at which level by default.** No source states the layer of a panel, a modal, a table or a dashboard widget. The available sources state only that each of those components has colors for each layer.
 - **Whether a modal or panel opens a new layer scope**, or takes on the layer beneath the modal or panel.
-- **Whether KPI tiles sit on layers or in cards.** The question is still open in `recursica-skill-screen-scaffolding`.
 - **What a layer does below the tablet breakpoint** — see `recursica-skill-responsive-layout`.
 
 ## Pre-flight checklist
@@ -225,4 +224,4 @@ In the table, plurality (the number of items) means how many layers or cards app
 - [ ] No layer divides a page into regions.
 - [ ] No card has been swapped for a layer, and no layer has been swapped for a card.
 - [ ] The contents of every newly opened layer have been checked, not only the container.
-- [ ] Open questions were asked about, not decided: which regions that hold content sit at which level by default, whether a modal or panel opens a new layer scope, whether KPI tiles sit on layers or in cards, and what a layer does below the tablet breakpoint.
+- [ ] Open questions were asked about, not decided: which regions that hold content sit at which level by default, whether a modal or panel opens a new layer scope, and what a layer does below the tablet breakpoint.
