@@ -38,7 +38,7 @@ A toast reports what just happened, without interrupting the persona's work.
 
 **Do not put a message the persona must not miss in a toast.** A toast appears away from where the persona is looking, and the toast closes by itself. A critical alert that needs action right away is not a toast. The tense rule calls for a banner instead.
 
-**If the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes) has a banner component, use the banner component.** Otherwise, do not build a banner or another alert that stays on screen by hand. Do not point the persona to a component the theme does not have. For a missing banner, follow the steps under "Missing components" in `recursica-skill-design-router`. Do not use a toast for a critical alert. Confirm the critical alert with the user, as the open questions describe.
+**If the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes) has a banner component, use the banner component.** Otherwise, do not build a banner or another alert that stays on screen by hand. For a missing banner, follow the steps under "Missing components" in `recursica-skill-design-router`. Do not use a toast for a critical alert. Confirm the critical alert with the user, as the open questions describe.
 
 ## Variants
 
