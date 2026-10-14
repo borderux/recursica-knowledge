@@ -76,7 +76,7 @@ Each option below is described by role, such as "the label beside the field". A 
 
 A persona using a screen reader hears the label alone, without the text around the field.
 
-**Never put required information in the placeholder.** The placeholder disappears when the persona types the first character. Use the placeholder only to show the expected format of the answer.
+**Never put required information in the placeholder.** The placeholder disappears when the persona types the first character. Choose the placeholder by what the field does and the kind of data the field takes. Show a format example only when the value must follow that format, such as "name@acme.com". Otherwise, a generic hint, such as "Search", is fine.
 
 **Put the rules for the answer in the help text.** For example, "Order number and what went wrong, up to 500 characters". The help text states each rule for the answer:
 

@@ -54,7 +54,7 @@ The rules below describe each option by role, such as "the label beside the fiel
 - Write the label in sentence case, with no colon at the end.
 - Keep the label short enough to fit on one line.
 
-**Never put required information in the placeholder.** The placeholder disappears when the persona types the first character. Use the placeholder only to show the format of the expected value, such as "name@acme.com".
+**Never put required information in the placeholder.** The placeholder disappears when the persona types the first character. Choose the placeholder by what the field does and the kind of data the field takes. Show a format example only when the value must follow that format, such as "name@acme.com". Otherwise, a generic hint, such as "Search", is fine.
 
 **Put the rule for the field's value in the assistive text** (the help text below the field). The persona then reads the rule before typing a value that breaks the rule. The rule can be one of the following:
 

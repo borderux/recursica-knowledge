@@ -38,9 +38,9 @@ The section "Time where an event happened" below gives the one exception.
 
 ## Date format
 
-**MUST use a three-letter month abbreviation, a day of one or two digits, and a four-digit year**, as in `Jan 7, 2026` or `Jun 24, 2026`.
+**MUST show three parts: a three-letter month abbreviation, a day of one or two digits, and a four-digit year.** Put the parts in the order the persona's locale uses. For example, a persona in the US sees `Jan 7, 2026`, and a persona in the UK sees `7 Jan 2026`.
 
-Use this one format for every date shown on a screen. A persona in any region reads this format correctly.
+Use these parts for every date shown on a screen. A persona in any region reads these parts correctly, because the month is spelled out.
 
 **NEVER display a date as numbers separated by slashes or hyphens, except inside an input that has focus.** `01/07/2026` is January 7 in the US and July 1 in the UK. When both numbers could be either the month or the day, the persona cannot tell which is which. A spelled-out month removes the doubt completely, so a numeric date serves no purpose.
 
@@ -223,7 +223,7 @@ Do not extend a rule above to cover one of these open questions. A persona will 
 
 ## Pre-flight checklist
 
-- [ ] Dates use a three-letter month, a day of one or two digits, and a four-digit year.
+- [ ] Dates use a three-letter month, a day of one or two digits, and a four-digit year. The parts follow the order of the persona's locale.
 - [ ] No read-only date appears as numbers separated by slashes or hyphens.
 - [ ] Every displayed date and time is built by a formatter, in the persona's locale and time zone. No value is cut out of a machine serialization, and no date cut from a UTC timestamp reaches a screen.
 - [ ] Each formatter is created once and shared. No formatter is defined separately in each place that uses a formatter, or created for each row.

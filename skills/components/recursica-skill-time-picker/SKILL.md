@@ -61,7 +61,7 @@ The rules below describe each option by role, such as "the error state". The nam
 - **The time picker has an error state and a disabled state.** In the standard UI kit, the state variant is `states`, with the options `error` and `disabled`.
 - **The clock format is not a variant.** The persona's preference sets a 12-hour clock, as in 2:30 PM, or a 24-hour clock, as in 14:30. The rules below say how.
 - **When seconds must show, use the theme's seconds variant.** The seconds rule under "Rules" says when seconds show. If the theme has no seconds variant, never add one.
-- **A time range is one control that takes a start time and an end time**, such as 9:00 AM to 5:00 PM. If the theme has a range variant, use the range variant. Otherwise, confirm with the user before building a range control.
+- **A time range with a required start and a required end is one control**, such as 9:00 AM to 5:00 PM. When the end time is optional, use two separate fields. If the theme has a range variant, use the range variant. Otherwise, confirm with the user before building a range control.
 - **Show a read-only time with the read-only field component, never with a read-only state of the time picker.** A value nobody can edit does not belong in a form control. The read-only field has the same label-placement variant as the time picker, and no input.
 
 ## Rules

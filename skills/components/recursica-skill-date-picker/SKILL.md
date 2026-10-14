@@ -65,6 +65,7 @@ Each option below is described by role, such as "the error state". The names in 
 **Never build a focus state or a placeholder state.** Every Recursica field already shows the focus border and the placeholder text.
 
 - **The date picker has an error state and a disabled state.** In the standard UI kit, the variant is `states`, with the options `error` and `disabled`.
+- **Use one range control when both the start and the end are required.** When the start is required and the end is not, use two separate fields. For example, a trip's first and last days are one range control. A project's start date, with an optional end date, is two fields.
 - **If the theme has a range variant, use the range variant for a date range.** A range variant takes a start date and an end date, such as a trip's first and last days. If the theme has no range variant, confirm with the user before building a control for a date range.
 - **Show a read-only date with the read-only field component, never with a read-only state of the date picker.** A value nobody can edit does not belong in a form control. The read-only field has the same label-placement variant as the date picker, and no input.
 
@@ -168,7 +169,7 @@ The application builds the calendar trigger (the control that opens the calendar
 
 ## Open questions
 
-- **Date ranges.** No rule says whether a date range is two date pickers or one control. No rule says how the start date and the end date are checked against each other.
+- **Date ranges.** No rule says how the start date and the end date are checked against each other.
 - **What the calendar popover contains.** The design-system website shows a month-and-year dropdown, navigation arrows, and Cancel and Confirm buttons in the calendar popover. No rule says whether clicking a date saves the date, or whether the persona must press Confirm. Do not rely on any content in the calendar popover without confirming with the user.
 - **Whether the calendar opens on focus**, or only when the persona activates the calendar trigger.
 - **The earliest and latest dates the persona can pick, and dates that are unavailable inside the calendar.**

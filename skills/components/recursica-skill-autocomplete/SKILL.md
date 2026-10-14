@@ -106,7 +106,7 @@ See `recursica-skill-assistive-element`. Do not put the field's rules in the pla
 
 **Show the clear control only when the field has a value.** Clearing the field empties the field and takes the filter off the collection. The collection then shows every item again. Clearing never empties the text while a filter stays applied.
 
-**Make the placeholder name what the field searches, as in "Search invoices".** The placeholder tells the persona which items the typed text narrows. The placeholder never replaces the label.
+**Choose the placeholder by what the field does and the kind of data the field searches.** A generic hint, such as "Search", is fine. Show a format example only when the value must follow that format. The placeholder never replaces the label.
 
 **Never make an autocomplete the only way to reach the content the autocomplete searches.** A persona who does not know the right word must still be able to reach the content. For example, a persona who forgets an invoice number can still find the invoice by browsing the list of invoices.
 

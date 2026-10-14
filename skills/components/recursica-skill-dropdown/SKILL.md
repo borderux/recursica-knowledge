@@ -130,7 +130,7 @@ The rules below add to the accessibility baseline in `recursica-skill-design-sys
 - **The selected option must be marked in code, never shown by a checkmark or a highlight alone.** `recursica-skill-design-system-conventions` sets this rule.
 - **When the dropdown shows an error, the error message is the only text announced.** The error message has replaced the assistive text. The error message must state the rule. "Invalid input" is not an error message.
 - **Give the expand indicator (the arrow at the end of the closed field) no separate announcement.** The expand indicator is part of the field, not a second control. A screen reader must never find the expand indicator as an unlabeled graphic or as a separate button.
-- **When choosing an option shows more fields, say that more fields will appear.** Put the notice in the label or in the assistive text, before the persona chooses an option.
+- **When choosing an option shows more fields, say that more fields will appear.** Put the notice in the assistive text, not the label, so the persona reads the notice before choosing. See `recursica-skill-label`.
 
 ### Keyboard and non-mouse navigation
 

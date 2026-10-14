@@ -81,7 +81,7 @@ This upload rule is settled. This upload rule does not conflict with the rule in
 
 **Show the file the persona picked.** The name of the picked file is the field's value. For example, after the persona picks `quarterly-report.pdf`, the field shows `quarterly-report.pdf`. A field that looks empty after the persona picks a file looks as if the pick failed.
 
-**Never put a field rule in the placeholder.** For example, "PDF or PNG, up to 10 MB" goes in the help text, not the placeholder. The placeholder disappears as soon as the field has a value. Use the placeholder only to show the format the field expects.
+**Never put a field rule in the placeholder.** For example, "PDF or PNG, up to 10 MB" goes in the help text, not the placeholder. The placeholder disappears as soon as the field has a value. Choose the placeholder by what the field does and the kind of data the field takes. Show a format example only when the value must follow that format, such as "name@acme.com". Otherwise, a generic hint, such as "Search", is fine.
 
 **On error, replace the help text with the error message.** Do not show the error message in addition to the help text. Replacing the help text keeps the field the same height, so the fields below the file input stay in place.
 
