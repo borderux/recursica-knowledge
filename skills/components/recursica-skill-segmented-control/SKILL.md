@@ -14,7 +14,7 @@ A segmented control is a horizontal radio group. The persona selects exactly one
 ## When to use a segmented control
 
 - **The persona selects exactly one option, and the options sit side by side in a row.** A segmented control is the house component for a horizontal single-select. Never lay out radio buttons in a horizontal row.
-- **The screen needs a toggle outside a form.** A switch belongs only in a form. Use a segmented control for every two-state control in these places:
+- **The screen needs a toggle outside the page's content.** A switch belongs only in the page's content. Use a segmented control for every two-state control in these places:
 
   - application chrome (the header, navigation and footer around the content)
   - a filter bar
@@ -35,7 +35,7 @@ A segmented control is a horizontal radio group. The persona selects exactly one
 | The labels are long or complex                                         | A vertical radio group. Long labels do not fit the compact layout of a segmented control. |
 | The options are parts of one whole, and each part has separate content | Tabs, which give each part a separate URL. See `recursica-skill-tabs`.                    |
 | Switching to another option causes a heavy reload or changes data      | A control with an explicit submit action, such as an "Apply" button, and feedback.        |
-| The choice is on or off, inside a form                                 | A switch or a checkbox. See `recursica-skill-selection-controls`.                         |
+| The choice is on or off, in the page's content                         | A switch or a checkbox. See `recursica-skill-selection-controls`.                         |
 
 **Never switch to tabs when a segmented control grows past five options.** Use a vertical radio group or a dropdown instead.
 

@@ -224,7 +224,7 @@ Show the blocked item disabled, and enable the item once the persona makes the c
 
 **Open the first tab in reading order by default.** In a locale that reads left to right, the first tab is the leftmost tab. The eye starts on the left in such a locale. `recursica-skill-screen-starting-state` sets this rule.
 
-**MUST NOT spread a form across tabs.** Tabs divide content into sections. Tabs never break up data entry. Give a form with several parts a stepper component (which walks the persona through numbered steps), not tabs. Never put the fields of one form, with one save button, on separate tabs. Each tab may hold the tab's own complete form, with the form's own save button.
+**MUST NOT spread a form across tabs.** Tabs divide content into sections. Tabs never break up data entry. Give a form with several parts a stepper component (which walks the persona through numbered steps), not tabs. Never put the fields of one form, with one save button, on separate tabs. Each tab may hold the tab's own complete form, with the form's own save button. If a tab's form has unsaved changes, confirm with the persona before switching tabs. A panel asks the same way before closing.
 
 **Use the tab component, keep the tab component's behavior, and do not add custom key handling.** The code library under the Recursica tab component decides how the keyboard works inside a set of tabs. For example, the code library decides whether the arrow keys or the Tab key move focus between tabs.
 
@@ -278,6 +278,7 @@ Check every item below before treating the navigation as done.
 - [ ] Horizontal navigation does not wrap, does not scroll, and does not sit in a separate scrolling area.
 - [ ] There is no overflow control, unless the persona can customize the navigation and chose to hide items.
 - [ ] Tabs hold parts of one whole. No form spreads across tabs, and each form on a tab has the form's own save button.
+- [ ] Switching away from a tab with unsaved changes asks the persona first.
 - [ ] Tab sets have no custom keyboard handling.
 - [ ] Forms with several parts use a stepper.
 - [ ] Open questions were asked about, not decided: the order of items, the maximum depth, and where a dashboard goes.

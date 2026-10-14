@@ -28,7 +28,7 @@ Tabs split the content about one subject into sections, and show one section at 
 | The sections are long reference content                | An accordion — see `recursica-skill-accordion`                                                                                                                |
 | There are more sections than the tab list has room for | Fewer sections, or a different structure. A vertical tab set needs no confirmation. Confirm any other structure with the user. Never scroll or wrap tabs      |
 
-**Never spread a form across tabs.** Use a stepper instead. Each tab may hold the tab's own complete form, with the form's own save button. A half-filled form behind an unselected tab hides both the work left to do and the validation errors. `recursica-skill-navigation` also lists a form split across tabs as a misuse of tabs.
+**Never spread a form across tabs.** Use a stepper instead. Each tab may hold the tab's own complete form, with the form's own save button. If a tab's form has unsaved changes, confirm with the persona before switching tabs. A panel asks the same way before closing. A half-filled form behind an unselected tab hides both the work left to do and the validation errors. `recursica-skill-navigation` also lists a form split across tabs as a misuse of tabs.
 
 ## Variants
 

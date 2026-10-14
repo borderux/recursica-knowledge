@@ -19,7 +19,7 @@ A switch turns one setting on or off, such as "Email notifications". Each switch
 - **The persona must see at a glance whether the setting is on or off**, including on a touch screen. A switch has a larger area to tap and a clearer on and off look. The larger area and the clearer look both help on a touch screen.
 - **The field is the one lone binary field in a form**, such as "Subscribe to the newsletter" in a sign-up form. Confirm with the user whether the field is a switch or a checkbox. A single checkbox that stands alone looks odd, and a switch often looks better. A lone binary field is the one case where appearance may decide. Appearance may decide because a checkbox and a switch behave the same for a lone binary field.
 
-**Use a switch only inside a form.** Outside a form, use a segmented control instead of a switch, for every value. For example, a control in a filter bar that shows archived records is a segmented control, not a switch. Places outside a form include chrome (the header, navigation and footer around the content), a filter bar, a toolbar, and a header. See `recursica-skill-segmented-control`. `recursica-skill-selection-controls` sets this rule.
+**Use a switch only in the page's content, in a form or on the switch's own.** In chrome (the header, navigation and footer around the content), a filter bar, a toolbar or a page header, use a segmented control instead. For example, a control in a filter bar that shows archived records is a segmented control, not a switch. See `recursica-skill-segmented-control`. `recursica-skill-selection-controls` sets this rule.
 
 ## When not to use a switch
 
@@ -162,7 +162,7 @@ On screen, a switch shows the on or off state only by the thumb's position and t
 
 ## Pre-flight checklist
 
-- [ ] Every switch is inside a form. No switch appears in chrome, a toolbar, or a filter bar.
+- [ ] Every switch is in the page's content. No switch appears in chrome, a toolbar, a filter bar or a page header.
 - [ ] The binary-inverse test passes. The opposite state is known, unique, and binary.
 - [ ] The label test passes. The label alone names what the switch controls, with no competing values.
 - [ ] The label names what the switch controls, never the state. The label does not change when the switch turns on or off.

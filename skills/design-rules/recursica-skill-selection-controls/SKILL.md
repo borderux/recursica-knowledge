@@ -52,7 +52,7 @@ The option limit is set under "Option counts and dropdowns" below.
 
 ## Switch vs. checkbox
 
-**Use a switch only inside a form.** Check whether the value is inside a form before the tests below. Outside a form, use a segmented control for a toggle, not a switch. Places outside a form include:
+**Use a switch only in the page's content.** A switch may sit in a form, or on the switch's own, as on a settings page. Check where the value sits before the tests below. In the following places, use a segmented control for a toggle, not a switch:
 
 - application chrome (the header, navigation and footer around the content)
 - a filter bar
@@ -61,7 +61,7 @@ The option limit is set under "Option counts and dropdowns" below.
 
 See `recursica-skill-segmented-control`.
 
-**Inside a form, use a checkbox unless the value passes the switch tests below.** A switch has a deliberately narrow use.
+**In the page's content, use a checkbox unless the value passes the switch tests below.** A switch has a deliberately narrow use.
 
 **Every switch MUST pass the binary-inverse test.** The opposite of the switch's value must be binary, known, and unique. True or false, yes or no, and on or off pass the test. A choice between two qualities, such as black or white, fails the test. "Black" is not a valid switch value, because _not black_ is not always white. _Not black_ could be gray, pink or any other color. If the opposite of the value is not the single, obvious other state, do not use a switch.
 
@@ -232,7 +232,7 @@ The read-only control shows the field label with the field's values, and the rea
 
 Check every item before treating a set of selection controls as done:
 
-- [ ] Every switch is inside a form, and every toggle outside a form is a segmented control.
+- [ ] Every switch is in the page's content. Every toggle in chrome, a filter bar, a toolbar or a page header is a segmented control.
 - [ ] Options that rule each other out use a radio group, never checkboxes.
 - [ ] Every switch passes the binary-inverse test: the opposite state is known, unique, and binary.
 - [ ] Every switch passes the label test: the switch label alone names the setting the switch controls, with no competing values.
