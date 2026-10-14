@@ -37,7 +37,7 @@ The rules assume **complex enterprise web applications, designed for desktop fir
 
 ## What counts as an object
 
-**An object has its own identity and its own properties, and more than one instance of the object exists.** An instance is one item of the object's kind, such as order 1042. Test whether a persona would point at one instance and say "that one", by the instance's name, number or title.
+**An object has a separate identity and separate properties, and more than one instance of the object exists.** An instance is one item of the object's kind, such as order 1042. Test whether a persona would point at one instance and say "that one", by the instance's name, number or title.
 
 A property, a filtered view or an action is not an object. A property, a filtered view or an action must not get a separate place in the structure. A navigation item and a section are examples of places in the structure.
 
@@ -160,7 +160,7 @@ Name a section that is not an object with a noun, as in `Approvals`, never `Appr
 ## Pre-flight checklist
 
 - [ ] An object map was written and confirmed with the user as part of the brief, before any code was written.
-- [ ] Every object on the object map has its own identity and more than one instance.
+- [ ] Every object on the object map has a separate identity and more than one instance.
 - [ ] No property, filtered view or action is on the object map as an object.
 - [ ] The objects and groupings come from the personas' work. The sources are the personas' field terms, how the work is done outside software, and products the personas already use. The objects and groupings do not come from the database or the team's shorthand.
 - [ ] Every object is reachable where the object map says. Nothing the persona can reach is missing from the object map.

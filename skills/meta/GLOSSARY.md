@@ -84,7 +84,7 @@ A guard believed to be total is worse than one known to be partial, so here is w
 | token                     |                  | a named design value, such as a color or a size, set by the design system                                                    |                                                                                          |
 | tokens                    |                  | named design values, such as colors or sizes, set by the design system                                                       |                                                                                          |
 | unadvertised affordance   |                  | a control that works but is not shown in the main interface, such as a keyboard shortcut                                     |                                                                                          |
-| viewport breakpoint       |                  | the screen width at which the whole layout changes                                                                           | Where it is contrasted with a container's width — `forms`                                |
+| viewport breakpoint       |                  | the screen width at which the whole layout changes                                                                           | Where the viewport breakpoint is contrasted with a container's width — `forms`           |
 | working memory            |                  | how much a person can hold in mind at once                                                                                   |                                                                                          |
 
 ## Not defined

@@ -1,6 +1,6 @@
 ---
 name: recursica-skill-buttons-links
-description: House rules for clickable controls — button versus link, table row actions, icon-only buttons and their tooltips, disabled states, bulk actions, primary and secondary hierarchy, labels, destructive-action confirmation, and toolbar overflow. Use when placing, labeling, or reviewing any button or link. Not for the form submit flow — see recursica-skill-forms.
+description: House rules for clickable controls — button versus link, table row actions, icon-only buttons and the buttons' tooltips, disabled states, bulk actions, primary and secondary hierarchy, labels, destructive-action confirmation, and toolbar overflow. Use when placing, labeling, or reviewing any button or link. Not for the form submit flow — see recursica-skill-forms.
 license: MIT
 metadata:
   author: hi@borderux.com
