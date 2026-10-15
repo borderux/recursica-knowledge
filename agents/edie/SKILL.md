@@ -49,7 +49,10 @@ Rewrite the whole sentence when swapping words would leave the sentence unclear.
 npm run -s writing:check
 npm run -s writing:flags -- --all <each file Edie rewrote>
 npm run -s skills:check
+npm run -s skills:versions
 ```
+
+`skills:versions` writes a file that records a version bump for each skill Edie changed. Commit the file. A person checks each bump before the release.
 
 The vague-word report is the output of `writing:flags`. The vague-word report lists every sentence in the file that holds a pronoun or a vague word, such as "it", "these", "something" or "everything". Without `--all`, the vague-word report reads only the lines changed since `main`.
 

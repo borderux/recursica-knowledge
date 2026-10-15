@@ -112,6 +112,16 @@ jobs:
           git fetch --no-tags --depth=1 origin "$BASE_REF"
           node scripts/review-skill-diff.mjs --base "origin/$BASE_REF"
 
+      # A failure: a skill changed with no version bump recorded. `npm run skills:versions` writes
+      # the bumps, a person checks them, and the release applies them to each skill's frontmatter.
+      - name: Every changed skill has a version bump
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git fetch --no-tags --depth=1 origin "$BASE_REF"
+          node scripts/skill-versions.mjs check --base "origin/$BASE_REF"
+
       # Warnings, never a failure: every pronoun and vague word a pull request adds to a skill or
       # an agent, for a person to read for "which one?" (WRITING.md rule 3).
       - name: Pronouns and vague words to review

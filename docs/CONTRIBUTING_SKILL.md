@@ -15,7 +15,7 @@ To add a new skill to the registry:
    Copy the [template/](../template/) directory to `skills/<category>/recursica-skill-<your-skill-name>`.
 2. **Configure metadata**:
    Set `name`, `description`, `license`, and `metadata.author` in the new `SKILL.md` frontmatter. The `name` **must** match the directory name and be prefixed with `recursica-skill-`, and `description` **must** be 1024 characters or fewer — skills over that limit are rejected at install time.
-   If the skill also carries a `package.json` (the template includes one), keep those fields in sync there; `package.json` wins whenever [sync-skill-versions.js](../scripts/sync-skill-versions.js) runs.
+   Leave `metadata.version` at the template's `0.1.0`. The release sets every later version.
 3. **Register in Marketplace**:
    Add the skill path (e.g., `"./skills/<category>/recursica-skill-<your-skill-name>"`) to the `skills` array inside [.claude-plugin/marketplace.json](../.claude-plugin/marketplace.json).
 4. **Run Setup**:
@@ -55,23 +55,28 @@ When writing the body of your `SKILL.md` file:
 
 ## 🔄 Versioning & Changesets
 
-We use **Changesets** to version the repository and each individual skill package.
+**Changesets** versions the package, `@recursica/knowledge`. A script versions each skill.
 
-### How to Create a Version Bump
+### The package
 
-1. When you make changes to a skill (or root files), create a new changeset by running:
-   ```bash
-   npx changeset
-   ```
-2. Follow the interactive CLI prompts:
-   - Select which packages (e.g., `recursica-my-new-skill` or the root `@recursica/knowledge`) require a version bump.
-   - Choose whether the change is a `patch`, `minor`, or `major` version bump.
-   - Write a summary of the change.
-3. Commit the generated `.changeset/*.md` file along with your PR.
+1. When a change should appear in the release notes, run `npx changeset` and choose a `patch`, `minor`, or `major` bump for `@recursica/knowledge`.
+2. Write a summary of the change. The summary becomes the release notes.
+3. Commit the generated `.changeset/*.md` file with the pull request.
 
-### How Versions are Applied
+### Each skill
 
-When versions are released (by running `npm run version`):
+1. After changing a skill, run `npm run skills:versions`. The script compares each changed `SKILL.md` with `main` and writes `.changeset/skill-bumps-<branch>.json`, with a bump and a reason for each skill:
+   - **major**: the skill was renamed, a checklist item was removed, or the skill has fewer rule words ("must", "never", "only" and the rest). Each can mean a rule was removed or weakened.
+   - **minor**: a checklist item was added, the description changed, a heading or table row changed, or a rule word moved or was added.
+   - **patch**: wording only.
+2. Read each bump and change any that is wrong. The script judges from signals, and a reworded rule can look like a removed one. Running the script again keeps the edits.
+3. Commit the file with the pull request. CI fails when a changed skill has no bump.
 
-- Changesets will increment the version in the package's `package.json` and generate/append entries to `CHANGELOG.md` in the package's directory.
-- An automation script ([sync-skill-versions.js](../scripts/sync-skill-versions.js)) will automatically parse the new `package.json` versions and synchronize them into the YAML frontmatter inside the corresponding `SKILL.md` files.
+Never edit a skill's `version` by hand.
+
+### How versions are applied
+
+When the release runs `npm run version`:
+
+- Changesets bumps `package.json` and adds the summary to `CHANGELOG.md`.
+- `scripts/skill-versions.mjs apply` takes the largest bump for each skill across every skill-bumps file, writes the new version into the skill's frontmatter, and deletes the files.

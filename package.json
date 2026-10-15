@@ -33,7 +33,7 @@
   ],
   "scripts": {
     "build": "node scripts/build-skills.js",
-    "version": "changeset version",
+    "version": "changeset version && node scripts/skill-versions.mjs apply",
     "release": "changeset publish",
     "prepare": "node .husky/install.mjs",
     "format": "prettier --write \"**/*.{json,md,yml,yaml}\"",
@@ -59,7 +59,9 @@
     "skills:review": "node scripts/review-skill-diff.mjs",
     "writing:flags": "node scripts/flag-vague-words.mjs",
     "skills:routing": "node scripts/routing-eval.mjs",
-    "test": "node --test 'nest/bin/*.test.mjs' 'nest/mcp/*/*.test.mjs' 'scripts/*.test.mjs' 'buzz-agents/lib/*.test.mjs'"
+    "test": "node --test 'nest/bin/*.test.mjs' 'nest/mcp/*/*.test.mjs' 'scripts/*.test.mjs' 'buzz-agents/lib/*.test.mjs'",
+    "skills:versions": "node scripts/skill-versions.mjs propose",
+    "skills:versions:check": "node scripts/skill-versions.mjs check"
   },
   "packageManager": "npm@10.9.0",
   "engines": {
