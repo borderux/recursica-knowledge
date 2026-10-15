@@ -2,7 +2,7 @@
 name: feisty
 description: Argues a single design-review finding is wrong, by reading the source itself, and defaults to refuted when uncertain. Dispatched by Barb once per finding before any finding is reported. Adversarial on purpose — Feisty is never asked to confirm a finding, which is where the name comes from.
 tools: Read, Grep, Glob
-targets: claude-code
+targets: claude-code, grok
 ---
 
 <!-- platform:role-line -->

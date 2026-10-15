@@ -22,9 +22,12 @@
  *
  *   claude-code   → portable/claude-code/agents/<name>.md
  *   opencode      → portable/opencode/agents/<name>.md
+ *   grok          → portable/grok/agents/<name>.md
  *                   Committed rather than generated into a gitignored dist/, because the
  *                   whole point is that somebody browsing the public repo can copy the file
  *                   straight into their own project without installing anything of ours.
+ *                   The grok agents ship inside the Grok marketplace plugin that
+ *                   .grok-plugin/plugin.json declares, with this repo as the plugin.
  *
  * Subagents live at agents/<name>/subagents/<sub>/ and build to two places:
  *
@@ -34,6 +37,7 @@
  *                   build output is invisible to it.
  *
  *   claude-code   → portable/claude-code/agents/<sub>.md
+ *   grok          → portable/grok/agents/<sub>.md
  *
  * A `pinned` target — the Buzz prompt, the nest template — is asserted byte-identical to what
  * is already committed unless --accept is passed. A refactor that changes what is already
@@ -68,7 +72,7 @@ if (argv.includes("--help") || argv.includes("-h")) {
   --accept    allow the Buzz prompt to change (it is asserted identical by default)
   --help
 
-Targets: buzz, claude-code, opencode, circlechat (optional per agent). See the header of this file for where each lands.`);
+Targets: buzz, claude-code, opencode, grok, circlechat (optional per agent). See the header of this file for where each lands.`);
   process.exit(0);
 }
 
@@ -83,6 +87,14 @@ const TARGETS = {
   buzz: { fragments: "buzz.md", out: (n) => `buzz-agents/agents/${n}/SYSTEM_PROMPT.md`, frontmatter: false, pinned: true },
   "claude-code": { fragments: "session.md", out: (n) => `portable/claude-code/agents/${n}.md`, frontmatter: "claude-code" },
   opencode: { fragments: "session.md", out: (n) => `portable/opencode/agents/${n}.md`, frontmatter: "opencode" },
+  // Grok reads Claude Code's tool names in an agent's `tools:` line, so the tool list comes from
+  // runtime/claude-code.json rather than a second copy. The plugin is installed from a
+  // marketplace, so no install step fills a token in; the knowledge repo's name is fixed here.
+  //
+  // `optIn`: an agent with no `targets:` line is NOT built for grok. The Grok plugin is public
+  // and installs every agent it holds, so an agent joins it only by naming grok on purpose.
+  grok: { fragments: "grok.md", out: (n) => `portable/grok/agents/${n}.md`, frontmatter: "grok", runtime: "claude-code", optIn: true,
+    values: { KNOWLEDGE_REPO_NAME: "recursica-knowledge" } },
   circlechat: { fragments: "circlechat.md", out: (n) => `portable/circlechat/agents/${n}/SOUL.md`, frontmatter: false, optional: true,
     // CircleChat has no install step to swap tokens back in, so the values are fixed here. They
     // are paths inside the agent container, identical on every CircleChat install.
@@ -103,6 +115,9 @@ const TARGETS = {
 const SUBAGENT_TARGETS = {
   nest: { fragments: "nest.md", out: (n) => `nest/mcp/templates/agents/${n}.md.tmpl`, pinned: true },
   "claude-code": { fragments: "session.md", out: (n) => `portable/claude-code/agents/${n}.md` },
+  // `optIn` for the same reason as the grok agent target. Claire's subagents declare no
+  // `targets:` line, and a client's subagent must never reach a public plugin by default.
+  grok: { fragments: "session.md", out: (n) => `portable/grok/agents/${n}.md`, optIn: true },
 };
 
 let changed = 0;
@@ -162,6 +177,20 @@ function renderFrontmatter(kind, meta, runtime) {
     if (runtime?.tools?.length) lines.push(`tools: ${runtime.tools.join(", ")}`);
     return `---\n${lines.join("\n")}\n---\n\n`;
   }
+  /**
+   * grok: the same keys as claude-code minus `model:`, whose values (`opus`, `sonnet`) name
+   * Claude models. Grok resolves the Claude tool names in `tools:` to its own tools.
+   *
+   * One Grok behavior makes the tool list fragile: a name Grok does not recognize makes Grok
+   * keep the agent's whole toolset, Write and Edit included, rather than fail. A typo in Barb's
+   * list would silently hand the reviewer write access. build-agents.test.mjs checks every
+   * name against the names Grok resolves, so the build fails instead.
+   */
+  if (kind === "grok") {
+    const lines = [`name: ${meta.name}`, `description: ${meta.description}`];
+    if (runtime?.tools?.length) lines.push(`tools: ${runtime.tools.join(", ")}`);
+    return `---\n${lines.join("\n")}\n---\n\n`;
+  }
   // opencode: `mode` is required to say this is a primary agent rather than a subagent,
   // and it has no `name` key at all — the filename is the identifier.
   return `---\ndescription: ${meta.description}\nmode: primary\n---\n\n`;
@@ -217,9 +246,9 @@ function buildArtifact({ source, base, target, spec, outName, label }) {
   }
   for (const [k, v] of Object.entries(spec.values ?? {})) out = out.split(`{{${k}}}`).join(v);
   if (spec.frontmatter) {
-    // Only claude-code reads a runtime file here, and only for the two keys its front matter
+    // Only claude-code and grok read a runtime file here, and only for the keys their front matter
     // has. `$`-prefixed keys in those files are commentary for a human and are ignored.
-    const runtimeFile = path.join(base, "runtime", `${target}.json`);
+    const runtimeFile = path.join(base, "runtime", `${spec.runtime ?? target}.json`);
     const runtime = fs.existsSync(runtimeFile) ? JSON.parse(fs.readFileSync(runtimeFile, "utf8")) : null;
     out = renderFrontmatter(spec.frontmatter, source.meta, runtime) + out;
   }
@@ -312,7 +341,7 @@ for (const name of names) {
    * that with. Shipping an artifact that quietly drops a boundary is worse than shipping no
    * artifact, so the omission is declared here rather than left to whoever reads the diff.
    */
-  const wanted = meta.targets ? meta.targets.split(/[\s,]+/).filter(Boolean) : Object.keys(TARGETS);
+  const wanted = meta.targets ? meta.targets.split(/[\s,]+/).filter(Boolean) : Object.keys(TARGETS).filter((t) => !TARGETS[t].optIn);
   const unknown = wanted.filter((t) => !(t in TARGETS));
   if (unknown.length) { bad(`unknown target${unknown.length > 1 ? "s" : ""} in front matter: ${unknown.join(", ")}`); continue; }
   for (const skipped of Object.keys(TARGETS).filter((t) => !wanted.includes(t))) {
@@ -361,7 +390,7 @@ for (const name of names) {
         + fm[1].replace(/^targets:[ \t]*.*\n?/m, "").replace(/\n+$/, "")
         + raw.slice(fm.index + 4 + fm[1].length);
 
-    const wantedSubs = declared ? declared.split(/[\s,]+/).filter(Boolean) : Object.keys(SUBAGENT_TARGETS);
+    const wantedSubs = declared ? declared.split(/[\s,]+/).filter(Boolean) : Object.keys(SUBAGENT_TARGETS).filter((t) => !SUBAGENT_TARGETS[t].optIn);
     const unknownSubs = wantedSubs.filter((t) => !(t in SUBAGENT_TARGETS));
     console.log(`  \x1b[1m${sub}\x1b[0m`);
     if (unknownSubs.length) {

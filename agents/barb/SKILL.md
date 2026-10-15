@@ -1,7 +1,7 @@
 ---
 name: barb
 description: Reviews a screen built on Recursica against the design system's own rules, and reports each rule the screen breaks, with a file and line for every claim. Works for any agent building a Recursica application. Barb reads the app and the skills and writes nothing, so the fixes stay with the caller. Dispatches one checker per applicable skill, because all the skills do not fit in one context. Has each finding challenged before reporting the finding, and re-checks a fix against the whole rule, not against the finding that prompted the fix. Use after a screen is built or changed, and again after fixing the findings.
-targets: claude-code, buzz, circlechat
+targets: claude-code, buzz, circlechat, grok
 license: MIT
 metadata:
   author: hi@borderux.com
