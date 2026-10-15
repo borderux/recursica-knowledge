@@ -50,6 +50,14 @@ and guessing them would be wrong.
 | `KNOWLEDGE_REPO_NAME` | Bare name of this repository's checkout — where `skills/`, `scripts/screen-skill-manifest.mjs` and the name checker live. |
 | `WORKSPACE_ROOT` | The directory the checkouts sit under. Session targets only; the Buzz prompt hard-codes `~/.buzz/REPOS`. |
 
+## On Grok Build
+
+Betty ships in the Grok marketplace plugin as `recursica:betty`, and dispatches `recursica:barb`.
+The plugin is installed from a marketplace, so no install step fills in `{{WORKSPACE_ROOT}}`.
+`platform/grok.md` points her at the plugin's install folder for the knowledge checkout, and at
+the session's working directory for the target repository. The plugin starts the
+`recursica-knowledge` and `recursica-mcp` MCP servers for her.
+
 ## What she is not given, on purpose
 
 - **No write access to this repository.** Betty builds against the standard; she never edits

@@ -4,7 +4,7 @@ build substitutes each block into the matching <!-- platform:NAME --> marker in 
 
 These fragments differ from session.md only where Grok differs: where the knowledge checkout is,
 and the plugin prefix on subagent names. Barb's `tools:` line keeps Write and Edit out on Grok
-too. Grok gives an agent its whole toolset when the list names a tool Grok does not know, so
+too. Grok gives an agent the agent's whole toolset when the list names a tool Grok does not know, so
 build-agents.test.mjs checks every name.
 -->
 
