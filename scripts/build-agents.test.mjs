@@ -227,3 +227,142 @@ test("every manifest source exists where the manifest says it does", () => {
     );
   }
 });
+
+// ---------------------------------------------------------------- the Grok plugin
+
+const grokDir = path.join(repoRoot, "portable", "grok", "agents");
+const grokFiles = () =>
+  fs.readdirSync(grokDir).filter((f) => f.endsWith(".md"));
+
+/**
+ * The names Grok Build resolves in a `tools:` allowlist, copied from Grok's own table in
+ * xai-org/grok-build, crates/codegen/xai-grok-tools/src/types/claude_alias.rs (checked against
+ * Grok 1.0.52). `Agent` and `Task` are spawn directives, and any `mcp__` name is always allowed.
+ *
+ * The list matters because Grok fails open: one name Grok does not recognize makes Grok keep
+ * the agent's whole toolset, Write and Edit included. A typo in Barb's tool list would hand the
+ * reviewer write access with no warning anywhere, so an unknown name fails this test instead.
+ * When Grok adds a name, add it here from that file.
+ */
+const GROK_TOOL_NAMES = new Set([
+  "Read",
+  "Write",
+  "Edit",
+  "MultiEdit",
+  "NotebookEdit",
+  "Bash",
+  "PowerShell",
+  "Grep",
+  "Glob",
+  "LS",
+  "LSP",
+  "WebSearch",
+  "WebFetch",
+  "DeployApp",
+  "TodoWrite",
+  "AskUserQuestion",
+  "TaskOutput",
+  "BashOutput",
+  "BashOutputTool",
+  "AgentOutputTool",
+  "TaskStop",
+  "KillShell",
+  "KillBash",
+  "Skill",
+  "ToolSearch",
+  "Agent",
+  "Task",
+]);
+const WRITE_TOOLS = ["Write", "Edit", "MultiEdit", "NotebookEdit"];
+
+test("the Grok plugin holds exactly Betty, Barb and Barb's two checkers", () => {
+  // The grok target is opt-in, so an agent with no targets line, such as Alan, or one of
+  // Claire's client subagents, never reaches the public plugin by default.
+  assert.deepEqual(grokFiles().sort(), [
+    "barb.md",
+    "betty.md",
+    "checker.md",
+    "feisty.md",
+  ]);
+});
+
+test("every name in a Grok agent's tool list is one Grok resolves", () => {
+  for (const file of grokFiles()) {
+    const tools = toolsOf(path.join(grokDir, file));
+    assert.ok(
+      tools.length,
+      `${file} has no tools line, so Grok would give it every tool`,
+    );
+    const unknown = tools.filter(
+      (t) => !t.startsWith("mcp__") && !GROK_TOOL_NAMES.has(t),
+    );
+    assert.deepEqual(
+      unknown,
+      [],
+      `${file}: Grok does not resolve ${unknown.join(", ")}, so Grok would give the agent every tool`,
+    );
+  }
+});
+
+test("Barb and her checkers hold no write tool on Grok", () => {
+  for (const name of ["barb", "checker", "feisty"]) {
+    const tools = toolsOf(path.join(grokDir, `${name}.md`));
+    assert.deepEqual(
+      tools.filter((t) => WRITE_TOOLS.includes(t)),
+      [],
+      `${name} holds a write tool on Grok`,
+    );
+  }
+});
+
+test("the Grok plugin manifest points at every skill folder, the agents and both MCP servers", () => {
+  const manifest = JSON.parse(
+    fs.readFileSync(path.join(repoRoot, ".grok-plugin", "plugin.json"), "utf8"),
+  );
+  const categories = fs
+    .readdirSync(path.join(repoRoot, "skills"), { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .map((d) => `./skills/${d.name}`)
+    .sort();
+  assert.deepEqual(
+    [...manifest.skills].sort(),
+    categories,
+    "a skills category folder is missing from .grok-plugin/plugin.json",
+  );
+  assert.ok(
+    fs.existsSync(path.join(repoRoot, manifest.agents)),
+    `${manifest.agents} does not exist`,
+  );
+  const knowledge = manifest.mcpServers["recursica-knowledge"];
+  const server = knowledge.args[0].replace("${GROK_PLUGIN_ROOT}", repoRoot);
+  assert.ok(
+    fs.existsSync(server),
+    `the knowledge server ${knowledge.args[0]} does not exist`,
+  );
+  assert.ok(
+    manifest.mcpServers["recursica-mcp"],
+    "recursica-mcp is missing; Barb's and Betty's tool lists name it",
+  );
+});
+
+test("the Grok marketplace lists the plugin by this repository's git URL", () => {
+  // Grok refuses an index entry that points at the marketplace's own root ("./"), so the entry
+  // points back at this repository by URL and Grok clones the repository as the plugin.
+  const index = JSON.parse(
+    fs.readFileSync(
+      path.join(repoRoot, ".grok-plugin", "marketplace.json"),
+      "utf8",
+    ),
+  );
+  const manifest = JSON.parse(
+    fs.readFileSync(path.join(repoRoot, ".grok-plugin", "plugin.json"), "utf8"),
+  );
+  const entry = index.plugins.find((p) => p.name === manifest.name);
+  assert.ok(entry, `the marketplace has no entry named ${manifest.name}`);
+  assert.equal(entry.source.source, "url");
+  assert.equal(
+    entry.source.url,
+    "https://github.com/borderux/recursica-knowledge.git",
+  );
+  assert.equal(entry.source.ref, "main");
+});

@@ -37,6 +37,35 @@ Claire, Stu and Loki are not installed this way: they work with client data, and
 
 ---
 
+## ⚡ Using Recursica in Grok Build
+
+[Grok Build](https://x.ai/news/grok-build-cli), xAI's coding agent, installs Recursica as one marketplace plugin. The plugin holds all 66 skills, Betty and Barb with Barb's helpers Checker and Feisty, and two MCP servers: the Recursica knowledge server and `@recursica/mcp`. You need Grok Build and Node 20 or newer.
+
+1. Add this repository as a marketplace. Nothing installs yet:
+
+   ```bash
+   grok plugin marketplace add borderux/recursica-knowledge
+   ```
+
+2. Install the plugin. `--trust` lets the plugin start its MCP servers:
+
+   ```bash
+   grok plugin install recursica --trust
+   ```
+
+3. Let Betty's review reach Barb's checkers. Grok allows one level of subagents by default, and Betty dispatches Barb, who dispatches her checkers. Add these lines to `~/.grok/config.toml`. A plugin cannot set them for you:
+
+   ```toml
+   [subagents]
+   max_depth = 2
+   ```
+
+4. Start a new Grok session. Run `grok inspect` to see the skills, the agents and the MCP servers the plugin added.
+
+In Grok the agents carry the plugin's name, so Betty is `recursica:betty` and Barb is `recursica:barb`. Update the plugin with `grok plugin update recursica`. Alan and Edie maintain this repository and run in Claude Code only. Claire, Stu and Loki work with client data and are never in the plugin.
+
+---
+
 ## 🐝 Running the Buzz agents
 
 This repository is also the durable record of the Buzz agents built around this knowledge — Claire, Stu, Janice, Betty, Barb and Alan — and of the runtime tooling they need. Nothing here is loaded when you install the design-system plugin; it is a separate stack with its own install path.

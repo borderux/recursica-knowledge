@@ -70,6 +70,26 @@ reason Claire is not built for opencode.
    `tools:` lines, and those lines are the boundary. If the platform ignores per-subagent tools and
    grants them the parent's set, or the session's, they can write. Check rather than assume.
 
+## On Grok Build
+
+Barb ships in the Grok marketplace plugin as `recursica:barb`, with `recursica:checker` and
+`recursica:feisty`. Grok reads Claude Code tool names in a `tools:` line and keeps only those
+tools, so her list keeps `Write` and `Edit` out on Grok too. The two leaks above still apply.
+
+**One Grok behavior can undo the property with no warning.** When a `tools:` line names a tool
+Grok does not recognize, Grok gives the agent the agent's whole toolset, `Write` and `Edit` included,
+rather than fail. A typo in her list would hand her write access. `scripts/build-agents.test.mjs`
+checks every name against the names Grok resolves, so the build fails instead. Grok also keeps
+every MCP tool the session has under any `tools:` line, so an MCP server that can write is a
+third path.
+
+Grok allows one level of subagents by default. Run as the main agent, with
+`grok --agent recursica:barb`, she dispatches her checkers. Dispatched by Betty, she needs
+`[subagents] max_depth = 2` in `~/.grok/config.toml`.
+
+The plugin's install folder is her knowledge checkout. `grok plugin details recursica` prints the install
+folder's path.
+
 ## On Buzz, where there is no tool allowlist at all
 
 She is deployable with the rest — `buzz-agents/agents/barb/` holds her prompt and settings, and

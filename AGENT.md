@@ -434,6 +434,12 @@ matter narrows which artifacts get built; absent means all of them. Declare it r
 shipping an artifact that quietly drops a boundary the platform cannot express — Claire is not
 built for opencode, because opencode has no per-tool allowlist to keep her subagents apart.
 
+**The `grok` target is opt-in.** An agent or subagent with no `targets:` line is not built for it,
+because everything in `portable/grok/agents/` ships in the public Grok marketplace plugin that
+`.grok-plugin/plugin.json` declares. Today that is Betty, Barb, Checker and Feisty. Grok gives an
+agent its whole toolset when a `tools:` line names a tool Grok does not recognize, so
+`scripts/build-agents.test.mjs` checks every name against the names Grok resolves.
+
 **Subagents take `targets:` too**, and it is stripped from the artifact rather than shipped in it —
 a subagent's front matter _is_ the artifact, so a build instruction has no business in the file a
 runtime reads. Claire's subagents build to the nest template the deploy renders per client; Barb's

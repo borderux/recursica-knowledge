@@ -2,7 +2,7 @@
 name: checker
 description: Checks one screen against exactly one Recursica skill, walking that skill's pre-flight checklist item by item and returning a verdict per item with a file and line. Dispatched by Barb, one instance per applicable skill, because the skills corpus does not fit in a single context. Never told what to look for.
 tools: Read, Grep, Glob
-targets: claude-code
+targets: claude-code, grok
 ---
 
 <!-- platform:role-line -->
