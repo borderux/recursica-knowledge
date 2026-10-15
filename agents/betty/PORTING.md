@@ -58,6 +58,10 @@ The plugin is installed from a marketplace, so no install step fills in `{{WORKS
 the session's working directory for the target repository. The plugin starts the
 `recursica-knowledge` and `recursica-mcp` MCP servers for her.
 
+**Grok allows one level of subagents by default.** Betty dispatches Barb, and Barb dispatches her
+checkers, so the chain needs two levels. Set `[subagents] max_depth = 2` in `~/.grok/config.toml`.
+Grok reads this setting only from the user's own config, so the plugin cannot set the depth.
+
 ## What she is not given, on purpose
 
 - **No write access to this repository.** Betty builds against the standard; she never edits

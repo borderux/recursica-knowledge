@@ -53,7 +53,14 @@ Claire, Stu and Loki are not installed this way: they work with client data, and
    grok plugin install recursica --trust
    ```
 
-3. Start a new Grok session. Run `grok inspect` to see the skills, the agents and the MCP servers the plugin added.
+3. Let Betty's review reach Barb's checkers. Grok allows one level of subagents by default, and Betty dispatches Barb, who dispatches her checkers. Add these lines to `~/.grok/config.toml`. A plugin cannot set them for you:
+
+   ```toml
+   [subagents]
+   max_depth = 2
+   ```
+
+4. Start a new Grok session. Run `grok inspect` to see the skills, the agents and the MCP servers the plugin added.
 
 In Grok the agents carry the plugin's name, so Betty is `recursica:betty` and Barb is `recursica:barb`. Update the plugin with `grok plugin update recursica`. Alan and Edie maintain this repository and run in Claude Code only. Claire, Stu and Loki work with client data and are never in the plugin.
 

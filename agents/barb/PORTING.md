@@ -83,6 +83,10 @@ checks every name against the names Grok resolves, so the build fails instead. G
 every MCP tool the session has under any `tools:` line, so an MCP server that can write is a
 third path.
 
+Grok allows one level of subagents by default. Run as the main agent, with
+`grok --agent recursica:barb`, she dispatches her checkers. Dispatched by Betty, she needs
+`[subagents] max_depth = 2` in `~/.grok/config.toml`.
+
 The plugin's install folder is her knowledge checkout. `grok plugin details recursica` prints the install
 folder's path.
 
