@@ -4,7 +4,7 @@ description: House rules for Recursica layers, the numbered levels 0 to 3 that s
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.1.0
+  version: 0.2.0
 ---
 
 # Layers

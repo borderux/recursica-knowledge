@@ -4,7 +4,7 @@ description: House rules for showing and entering dates, times, currency, and nu
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.1.0
+  version: 0.2.0
 ---
 
 # Dates, currency, and numbers

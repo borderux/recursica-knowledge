@@ -4,7 +4,7 @@ description: Rules for the Recursica chip — when to use chips, the selected an
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.1.0
+  version: 0.2.0
 ---
 
 # Chip

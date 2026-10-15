@@ -4,7 +4,7 @@ description: House rules for telling the persona what happened — whether a suc
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.1.0
+  version: 0.2.0
 ---
 
 # Feedback and messaging

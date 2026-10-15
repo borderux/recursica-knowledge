@@ -4,7 +4,7 @@ description: House rules that apply across the whole Recursica design system, fo
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.1.0
+  version: 1.0.0
 ---
 
 # Design system conventions

@@ -4,7 +4,7 @@ description: House rules for what a screen shows when the screen first opens, be
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.1.0
+  version: 1.0.0
 ---
 
 # Screen starting state

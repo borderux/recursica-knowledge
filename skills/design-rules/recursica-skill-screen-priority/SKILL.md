@@ -4,7 +4,7 @@ description: House rules for ranking what matters on a screen and turning the ra
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.1.0
+  version: 0.2.0
 ---
 
 # Prioritizing a screen

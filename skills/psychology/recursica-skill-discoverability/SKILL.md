@@ -4,7 +4,7 @@ description: The research behind Recursica's rule that rarely needed settings ge
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.1.0
+  version: 0.2.0
 ---
 
 # Discoverability and the cost of configuration

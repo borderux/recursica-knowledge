@@ -4,7 +4,7 @@ description: House rules for layouts narrower than desktop — tablet and small 
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.1.0
+  version: 1.0.0
 ---
 
 # Responsive layout below desktop

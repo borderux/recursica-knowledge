@@ -4,7 +4,7 @@ description: House rules for names and terms — whose vocabulary wins, how navi
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.1.0
+  version: 1.0.0
 ---
 
 # Names and terms

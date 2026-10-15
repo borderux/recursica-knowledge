@@ -4,7 +4,7 @@ description: House rules for laying out a page, with eight reference layout temp
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.1.0
+  version: 1.0.0
 ---
 
 # Layouts and templates
