@@ -97,7 +97,7 @@ When feedback contradicts the skills, propose the change as a pull request that 
 
 **When adding a rule, add a pre-flight checklist item for the new rule.** A reviewer cannot test a rule that has no checklist item. A rule with no checklist item is documentation rather than a standard. Builders break an untested rule as often as builders broke the rule that prompted the change.
 
-**Run two checks before pushing: `npm run skills:check` and `npm run skills:review`.** `npm run skills:review` lists every edit that tends to change a rule rather than the rule's wording. Each item on that list should be a deliberate change.
+**Run three commands before pushing: `npm run skills:check`, `npm run skills:review` and `npm run skills:versions`.** `npm run skills:review` lists every edit that tends to change a rule rather than the rule's wording. Each item on that list should be a deliberate change. `npm run skills:versions` writes a file that records a version bump for each changed skill. Commit the file, and say in the pull request which bumps are major.
 
 **A new or renamed skill must be connected to the agents in the same pull request.** A connected skill is packaged, routed to by the design router, covered by a routing request, and reachable by Barb and Kev. `npm run skills:check` fails until the skill is connected. When the change alters what Betty should ask for or check, change Betty's instructions too. No agent applies the rules in a skill that no agent reaches.
 

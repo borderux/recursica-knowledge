@@ -27,7 +27,7 @@ Recursica is an adapter-based design system. It allows developers to write clean
 - `docs/open-questions.md` — A maintainer record of the places where the token inventory, the website, and the recorded rules disagree, and what still needs a human decision. Read by people, not by build agents.
 - `docs/CONTRIBUTING_SKILL.md`, `docs/CONTRIBUTING_COMPONENT.md` — How to add a skill or a component spec.
 - `template/` — Starting point for a new skill.
-- `scripts/` — `build-skills.js` packages each skill into `dist/`; `sync-skill-versions.js` syncs `package.json` metadata into `SKILL.md` frontmatter.
+- `scripts/` — `build-skills.js` packages each skill into `dist/`; `skill-versions.mjs` records a version bump for each changed skill and writes the new versions at release.
 - `.claude-plugin/marketplace.json` — Registers the repository as a plugin marketplace and lists every available skill.
 
 ---

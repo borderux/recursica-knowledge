@@ -42,6 +42,8 @@ jobs:
         id: changesets
         uses: changesets/action@v1
         with:
+          # `npm run version` also writes each skill's new version from the skill-bumps files.
+          version: npm run version
           publish: npm run release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
