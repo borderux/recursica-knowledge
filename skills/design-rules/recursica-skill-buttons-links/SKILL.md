@@ -4,7 +4,7 @@ description: House rules for clickable controls — button versus link, table ro
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.1.0
+  version: 0.2.0
 ---
 
 # Buttons and links

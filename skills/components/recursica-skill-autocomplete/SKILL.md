@@ -4,7 +4,7 @@ description: Rules for the Recursica autocomplete, a text field that filters a l
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.1.0
+  version: 0.2.0
 ---
 
 # Autocomplete

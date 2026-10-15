@@ -4,7 +4,7 @@ description: Rules for the Recursica transfer list — two lists side by side wi
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.1.0
+  version: 0.2.0
 ---
 
 # Transfer list

@@ -4,7 +4,7 @@ description: House rules for tables and data grids — one table per object type
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.1.0
+  version: 0.2.0
 ---
 
 # Tables and data grids

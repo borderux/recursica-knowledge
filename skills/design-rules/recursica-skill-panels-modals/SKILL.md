@@ -4,7 +4,7 @@ description: House rules for choosing between a panel, a modal, and a page — m
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.1.0
+  version: 0.2.0
 ---
 
 # Panels and modals

@@ -4,7 +4,7 @@ description: Rules for the Recursica slider — when to choose a range with fixe
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.1.0
+  version: 0.2.0
 ---
 
 # Slider

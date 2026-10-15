@@ -4,7 +4,7 @@ description: House rules for type and semantic markup — real elements instead 
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.1.0
+  version: 0.2.0
 ---
 
 # Typography and semantics

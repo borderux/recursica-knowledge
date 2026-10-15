@@ -1,5 +1,39 @@
 # @recursica/knowledge
 
+## 0.10.0
+
+### Minor Changes
+
+- 91eb595: ## Recursica in Grok Build
+
+  Recursica now installs in [Grok Build](https://x.ai/news/grok-build-cli), xAI's coding agent, as one marketplace plugin.
+
+  ```bash
+  grok plugin marketplace add borderux/recursica-knowledge
+  grok plugin install recursica --trust
+  ```
+
+  The plugin holds all 66 skills, Betty the designer, Barb the design reviewer with her helpers Checker and Feisty, and two MCP servers: the Recursica knowledge server and `@recursica/mcp`. In Grok the agents carry the plugin's name, so Barb is `recursica:barb`.
+
+  - `.grok-plugin/plugin.json` makes this repository a Grok plugin, and `.grok-plugin/marketplace.json` lists the plugin.
+  - `npm run agents:build` has a new `grok` target that writes the agents to `portable/grok/agents/`. The target is opt-in, so an agent joins the public plugin only by naming `grok` in its `targets:` line.
+  - A new test fails the build when a Grok agent's tool list names a tool Grok does not recognize. Grok gives such an agent every tool, so a typo in Barb's list would otherwise give the reviewer write access.
+
+### Patch Changes
+
+- 0107430: ## Skill versions
+
+  Each skill now has a version that follows the skill's changes. Until now every skill stayed at 0.1.0, because changesets versions only the package.
+
+  - **Every skill catches up for v0.9.0.** The five renamed skills move to 1.0.0. The other changed skills move up one minor version, such as 0.1.0 to 0.2.0. The new undo skill keeps 0.1.0.
+  - **From now on, a script versions each skill.** `npm run skills:versions` compares each changed skill with `main` and records a major, minor or patch bump with a reason. A person checks each bump, and the release writes the new versions.
+  - **Major** means a rename, a removed checklist item, or fewer rule words. **Minor** means an added checklist item, a changed description, or a changed heading, table or rule word. **Patch** means wording only.
+  - CI fails when a pull request changes a skill and records no bump.
+
+  ### Upgrading
+
+  Anything that checks a skill's version sees the new numbers after this release. Nothing else changes.
+
 ## 0.9.0
 
 ### Minor Changes

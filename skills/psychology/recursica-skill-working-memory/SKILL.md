@@ -4,7 +4,7 @@ description: The research behind Recursica's item-count limits, with citations â
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.1.0
+  version: 0.2.0
 ---
 
 # Working memory and item counts

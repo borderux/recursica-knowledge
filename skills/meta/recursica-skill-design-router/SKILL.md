@@ -4,7 +4,7 @@ description: Start here for any Recursica screen work. The router says what to d
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.1.0
+  version: 0.2.0
 ---
 
 # Design router

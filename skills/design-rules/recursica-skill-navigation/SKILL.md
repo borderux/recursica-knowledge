@@ -4,7 +4,7 @@ description: House rules for navigation and tabs — top bar versus sidebar, ite
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.1.0
+  version: 0.2.0
 ---
 
 # Navigation and tabs

@@ -4,7 +4,7 @@ description: House rules for marking an object's status, counts, tags, or metada
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.1.0
+  version: 0.2.0
 ---
 
 # Badges and chips

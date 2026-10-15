@@ -4,7 +4,7 @@ description: House rules for choosing a selection control — checkbox, switch, 
 license: MIT
 metadata:
   author: hi@borderux.com
-  version: 0.1.0
+  version: 0.2.0
 ---
 
 # Selection controls
