@@ -50,7 +50,7 @@ A porter-adapter subagent starts with no memory and no earlier conversation, so 
 
 **Never tell a subagent how another adapter solved the change.** Each adapter matches the golden adapter's behavior in the adapter's own UI kit idioms, and code from one library does not carry over to another library.
 
-### 3. Dispatch one porter-adapter per target adapter, in parallel
+### 3. Dispatch one porter-adapter per target adapter
 
 Each porter-adapter runs as a job on the job runner, not inside Porter's turn. A job runs in a container with the job's own memory cap, so one job that uses too much memory fails alone instead of stopping the machine.
 
@@ -65,7 +65,7 @@ Each porter-adapter runs as a job on the job runner, not inside Porter's turn. A
 3. Record every job in `/workspace/porter/<tag>/jobs.json`: the adapter, the job runner's address, the job id and the status.
 4. Create one CircleChat task, "Adapter fan-out <tag>", with one subtask per target adapter, and set the progress from the count of finished jobs.
 
-One subagent per target adapter, with no state shared between the subagents. **Building a new component means building the component in all four adapters** unless the user says otherwise; the Mantine release is the signal for the other three adapters.
+One subagent per target adapter, with no state shared between the subagents. **Building a new component means building the component in all four adapters** unless the user says otherwise; the Mantine release is the signal for the other adapters.
 
 ### 4. Collect the reports
 

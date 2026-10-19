@@ -50,17 +50,15 @@ A porter-adapter subagent starts with no memory and no earlier conversation, so 
 
 **Never tell a subagent how another adapter solved the change.** Each adapter matches the golden adapter's behavior in the adapter's own UI kit idioms, and code from one library does not carry over to another library.
 
-### 3. Dispatch one porter-adapter per target adapter, in parallel
+### 3. Dispatch one porter-adapter per target adapter
 
-Dispatch the porter-adapters with the Task tool, in one message, so the three run at the same time. Give each porter-adapter only its own reference package. Each porter-adapter clones its target repository into its own empty folder.
+Dispatch the porter-adapters with the Task tool, in one message, so the three run at the same time. Give each porter-adapter only the reference package for the porter-adapter's target. Each porter-adapter clones the target repository into an empty folder.  Dispatch one porter-adapter at a time to preserve memory.
 
-**Three adapter builds at once can use all of a laptop's memory.** On a machine with less than 32 GB of memory, dispatch one porter-adapter at a time.
-
-One subagent per target adapter, with no state shared between the subagents. **Building a new component means building the component in all four adapters** unless the user says otherwise; the Mantine release is the signal for the other three adapters.
+One subagent per target adapter, with no state shared between the subagents. **Building a new component means building the component in all four adapters** unless the user says otherwise; the Mantine release is the signal for the other adapters.
 
 ### 4. Collect the reports
 
-Each porter-adapter's last message is its report.
+Each porter-adapter's last message is the report.
 
 Each subagent reports a pull request link (never merged), the deviations from the reference change and the reason for each deviation, the source-of-truth results (what matches, what diverges, what was approved), the failures that already fail on `main`, and every behavior the subagent could not match or did not check in a browser.
 
