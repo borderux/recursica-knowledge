@@ -1,9 +1,0 @@
-{
-  "$comment": "Claude Code runtime settings for Porter. The prompt is portable/claude-code/agents/porter.md, and the subagent is portable/claude-code/agents/porter-adapter.md. Read agents/porter/PORTING.md before wiring it up.",
-  "model": "sonnet",
-  "tools": ["Read", "Grep", "Glob", "Bash", "Task", "WebFetch"],
-  "$toolsComment": "Porter reads releases and dispatches; the porter-adapters write code. No Write or Edit for Porter itself: the orchestrator has no repository to change, and a Porter that can edit would be tempted to fix a target adapter itself instead of sending the work to that adapter's porter-adapter.",
-  "$taskComment": "Task is how Porter dispatches one porter-adapter per target adapter. Without Task, Porter can only describe the work.",
-  "$modelComment": "sonnet for Porter, whose work is reading release notes and writing three reference packages. The porter-adapters do the cross-framework porting; give them sonnet or better, since a weak port costs a reviewer more time than it saves.",
-  "$memoryComment": "In a session, all three porter-adapters run on the session's machine. Three Storybooks, a browser and adapter-tester at once ran a 32 GB laptop out of memory. Run them one at a time there, or use the CircleChat build, which runs each porter-adapter as a capped job on a machine with room."
-}

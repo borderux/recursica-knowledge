@@ -10,11 +10,7 @@
     "exactly one node has \"control\": true. It runs CircleChat, the agents and the gateway.",
     "routes: a name agents ask for, mapped to an ordered list of backends. The gateway tries",
     "them in order, so the last entry is the fallback. Backends are \"<node>/<model id>\" or",
-    "\"anthropic/<model>\".",
-    "",
-    "jobs: a node with a jobs block runs a job runner (circlechat/jobd) for long, heavy agent work,",
-    "such as Porter's adapter ports. Each job gets memory_gb of memory at most; slots jobs run at once.",
-    "porter: the release Porter watches, the adapters it ports to, and who it mentions with a result."
+    "\"anthropic/<model>\"."
   ],
   "site": {
     "public_host": "circlechat.example.ts.net",
@@ -32,87 +28,36 @@
       "os": "linux",
       "control": true,
       "address": "host.docker.internal",
-      "kev": {
-        "port": 8009,
-        "priority": 2
-      },
+      "kev": { "port": 8009, "priority": 2 },
       "models": [
-        {
-          "id": "small-local",
-          "port": 1919,
-          "model": "your-model-name",
-          "context": 131072
-        }
+        { "id": "small-local", "port": 1919, "model": "your-model-name", "context": 131072 }
       ],
       "services": [
         {
           "name": "kev-engine",
           "dir": "/home/you/kev-engine",
           "command": "uv run --no-sync --extra serve python -m kev.serve --run jaredpalmer/kev-4b --port 8009 --host 0.0.0.0",
-          "env": {
-            "KEV_FUSED": "0",
-            "KEV_CUDA_GRAPHS": "0"
-          },
-          "secret_env": [
-            "KEV_API_KEY"
-          ]
+          "env": { "KEV_FUSED": "0", "KEV_CUDA_GRAPHS": "0" },
+          "secret_env": ["KEV_API_KEY"]
         }
-      ],
-      "jobs": {
-        "port": 7400,
-        "slots": 1,
-        "memory_gb": 12,
-        "priority": 2
-      }
+      ]
     },
     {
       "name": "big-mac",
       "os": "macos",
       "address": "big-mac.example.ts.net",
-      "kev": {
-        "port": 8009,
-        "priority": 1
-      },
+      "kev": { "port": 8009, "priority": 1 },
       "models": [
-        {
-          "id": "large-local",
-          "port": 11434,
-          "model": "your-large-model",
-          "context": 131072
-        }
+        { "id": "large-local", "port": 11434, "model": "your-large-model", "context": 131072 }
       ],
-      "services": [],
-      "jobs": {
-        "port": 7400,
-        "slots": 3,
-        "memory_gb": 16,
-        "priority": 1
-      }
+      "services": []
     }
   ],
   "routes": {
-    "local-large": [
-      "big-mac/large-local",
-      "control-pc/small-local",
-      "anthropic/claude-sonnet-5-5"
-    ],
-    "local-small": [
-      "control-pc/small-local",
-      "big-mac/large-local"
-    ]
+    "local-large": ["big-mac/large-local", "control-pc/small-local", "anthropic/claude-sonnet-5-5"],
+    "local-small": ["control-pc/small-local", "big-mac/large-local"]
   },
-  "porter": {
-    "owner": "your-circlechat-handle",
-    "watch": "borderux/recursica-adapter-mantine-v8",
-    "targets": [
-      "https://github.com/borderux/recursica-adapter-mui-v7",
-      "https://github.com/borderux/recursica-adapter-beam",
-      "https://github.com/borderux/recursica-adapter-angular-material"
-    ]
-  },
-  "notify": {
-    "slack": true
-  },
+  "notify": { "slack": true },
   "data": {
     "kev_disagreements_branch": ""
   }
