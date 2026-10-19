@@ -41,6 +41,8 @@ set_env CC_SHARED_WORKSPACE_DIR "$WS"
 # does. 480 and 1200 both lost reviews. See agents/barb/runtime/hermes.md.
 set_env HERMES_TIMEOUT 4000
 env_has LITELLM_MASTER_KEY || set_env LITELLM_MASTER_KEY "sk-$(openssl rand -hex 16)"
+# Shared by Porter and every job runner. Copy it into each job-runner machine's ~/.recursica-node.env.
+env_has JOBD_TOKEN || set_env JOBD_TOKEN "$(openssl rand -hex 24)"
 
 # Caddy on $PORT (Tailscale serve, or any reverse proxy, points there)
 sedi "s|- \"80:80\"|- \"$PORT:80\"|" compose.yml
@@ -110,6 +112,11 @@ fi
 ENVS="CC_DIR=$CC_DIR WS=$WS SITE=$SITE"
 install_unit circlechat-boot "cd $CC_DIR && docker compose -f compose.yml -f compose.agents.yml up -d" "$CC_DIR" "$(id -un)" boot
 install_unit agents-sync "git config --global --get-all safe.directory | grep -qx $WS/recursica-knowledge || git config --global --add safe.directory $WS/recursica-knowledge; $ENVS $HERE/sync-skills.sh; chown -R $(id -un) $WS/recursica-knowledge/.git $WS/kev" "$CC_DIR" root hourly
+if [ -n "$(site_get porter.watch)" ]; then
+  # Announces each new release of the watched repository to Porter, through the workflow webhook
+  # in .env (PORTER_HOOK_URL, PORTER_HOOK_SECRET). See circlechat/README.md, "Porter".
+  install_unit release-watch "set -a; . $CC_DIR/.env; set +a; WATCHES_FILE=$KIT_OUT/watches.json STATE=$KIT_OUT/release-watch.json node $HERE/kit/release-watch.mjs" "$CC_DIR" "$(id -un)" hourly
+fi
 if [ -n "$(site_get data.kev_disagreements_branch)" ]; then
   install_unit kev-data-push "$ENVS $HERE/kit/push-data.sh" "$CC_DIR" "$(id -un)" hourly
 fi

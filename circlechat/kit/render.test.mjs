@@ -42,3 +42,20 @@ test("catches the mistakes that would break a deployment", () => {
   assert.match(errs, /unknown backend "nowhere\/model"/);
   assert.match(errs, /used twice/);
 });
+
+test("job runners are ordered by priority, and Porter gets its allowlist", () => {
+  const r = render(example);
+  assert.deepEqual(r.jobNodes, ["http://machine-2.example.ts.net:7400", "http://host.docker.internal:7400"]);
+  assert.match(r.porterEnv, /JOBD_ALLOWED_REPOS=https:\/\/github.com\/borderux\/recursica-adapter-mui-v7,/);
+  assert.deepEqual(r.watches, [{ repo: "borderux/recursica-adapter-mantine-v8", hook: "PORTER" }]);
+  assert.equal(r.services["machine-2"].jobs.slots, 3);
+});
+
+test("porter without a job runner, or with a bad target, is caught", () => {
+  const s = clone();
+  for (const n of s.nodes) delete n.jobs;
+  s.porter.targets.push("git@github.com:x/y.git");
+  const errs = validate(s).join("\n");
+  assert.match(errs, /needs at least one node with a jobs block/);
+  assert.match(errs, /must be an https clone URL/);
+});
