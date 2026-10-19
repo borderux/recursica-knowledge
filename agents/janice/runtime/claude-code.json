@@ -1,0 +1,7 @@
+{
+  "$comment": "Claude Code runtime settings for Janice. The prompt is portable/claude-code/agents/janice.md. Read agents/janice/PORTING.md before wiring it up.",
+  "model": "opus",
+  "tools": ["Read", "Grep", "Glob", "Bash"],
+  "$toolsComment": "No Write and no Edit: Janice reports and never fixes. Bash exists to scan transcripts with a script and to re-run read-only checks (grep, git log, git status). Bash is still a write path, so the rule against mutating checks rests on the prompt; narrow Bash with permission rules where the setup allows.",
+  "$modelComment": "opus, because a wrong finding from the reviewer costs the team more trust than a wrong claim from the agent being reviewed."
+}

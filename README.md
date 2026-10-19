@@ -33,7 +33,7 @@ npm run agents:install
 
 `npm run agents:install:check` reports what is out of date without changing anything, and lists any project copies that are overriding the shared ones. Keep this checkout on `main` — Barb follows whatever branch it is on.
 
-Claire, Stu and Loki are not installed this way: they work with client data, and the protection around it cannot travel in a copied file. Agents running elsewhere update elsewhere — Buzz Desktop with `node buzz-agents/scripts/sync-prompts.mjs`, a CircleChat host with `circlechat/sync-skills.sh`, and instructions pasted into a Claude app Project by hand.
+Claire, Stu, Janice and Loki are not installed this way: they work with client data, and the protection around it cannot travel in a copied file. Agents running elsewhere update elsewhere — Buzz Desktop with `node buzz-agents/scripts/sync-prompts.mjs`, a CircleChat host with `circlechat/sync-skills.sh`, and instructions pasted into a Claude app Project by hand.
 
 ---
 
@@ -62,7 +62,7 @@ Claire, Stu and Loki are not installed this way: they work with client data, and
 
 4. Start a new Grok session. Run `grok inspect` to see the skills, the agents and the MCP servers the plugin added.
 
-In Grok the agents carry the plugin's name, so Betty is `recursica:betty` and Barb is `recursica:barb`. Update the plugin with `grok plugin update recursica`. Alan and Edie maintain this repository and run in Claude Code only. Claire, Stu and Loki work with client data and are never in the plugin.
+In Grok the agents carry the plugin's name, so Betty is `recursica:betty` and Barb is `recursica:barb`. Update the plugin with `grok plugin update recursica`. Alan and Edie maintain this repository and run in Claude Code only. Claire, Stu, Janice and Loki work with client data and are never in the plugin.
 
 ---
 

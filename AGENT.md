@@ -384,8 +384,8 @@ npm run agents:install:check   # report what is out of date; change nothing
 An agent with no `{{TOKEN}}` is linked, so it is current whenever this checkout is. Betty and
 Alan carry tokens, so they get a filled-in copy — the values come from where this checkout
 sits — stamped so the check can say when it is stale. A project's own `.claude/agents` copy
-wins inside that project, and the check lists any under the workspace. Claire, Stu and Loki are
-never installed this way: their data fence cannot travel in a prompt.
+wins inside that project, and the check lists any under the workspace. Claire, Stu, Janice and
+Loki are never installed this way: their data fence cannot travel in a prompt.
 
 `--check` **used to exit 0 whether or not anything had drifted.** It printed the drift and the
 status code said fine, which is invisible while a person reads the output and fatal the moment

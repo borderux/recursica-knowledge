@@ -20,7 +20,7 @@
  *   WORKSPACE_ROOT        the folder that holds it
  * `--knowledge-repo-name` and `--workspace-root` override them.
  *
- * Only the agents that touch no client data. Claire, Stu and Loki are not installed here: their
+ * Only the agents that touch no client data. Claire, Stu, Janice and Loki are not installed here: their
  * isolation is a data fence a prompt cannot carry, and a copy in every project on the machine is
  * the opposite of a fence. See their PORTING.md.
  *
@@ -221,7 +221,7 @@ if (invokedDirectly) {
   }
 
   console.log(
-    `\n  Not installed here: Claire, Stu and Loki, whose data fence a prompt cannot carry — see their PORTING.md.`,
+    `\n  Not installed here: Claire, Stu, Janice and Loki, whose data fence a prompt cannot carry — see their PORTING.md.`,
   );
   if (problems) process.exit(1);
 }
