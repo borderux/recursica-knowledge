@@ -60,6 +60,32 @@ is unreachable. Add a machine by adding a node and rerunning `setup-host.sh`.
 After that, an hourly job pulls this repo and reruns `setup-agent.sh` for every agent
 (`sync-skills.sh`), so merged changes reach the agents within the hour.
 
+## Porter and the job runners
+
+Porter's adapter ports are too long and too heavy for an agent turn, so each port runs as a
+**job** on a **job runner** (`circlechat/jobd`): one container per job, capped at the node's
+`jobs.memory_gb`, at most `jobs.slots` at once. Porter sends each port to the first job runner
+with room, best first by `jobs.priority`. `agents/porter/runtime/hermes.md` explains the design.
+
+1. **Give Porter a GitHub token** with Contents and Pull requests on the target adapters only
+   (`porter.targets`), and no merge rights. Protect `main` on each target with a ruleset whose
+   bypass list is empty. A bot account keeps the pull requests reviewable by the whole team.
+2. **Create the wake-up webhook.** In CircleChat, create a workflow with a webhook trigger and
+   one agent step for Porter. Copy the webhook URL and signing secret into the control machine's
+   `.env` as `PORTER_HOOK_URL` and `PORTER_HOOK_SECRET`. The release watcher (hourly, installed by
+   `setup-host.sh` when `porter.watch` is set) and every job runner use the same webhook.
+3. **On each job-runner machine** (a node with `jobs`), put these in `~/.recursica-node.env`:
+   `JOBD_TOKEN` (copied from the control machine's `.env`), `ANTHROPIC_API_KEY`,
+   `PORTER_GITHUB_PAT`, `PORTER_GIT_NAME`, `PORTER_GIT_EMAIL`, `PORTER_HOOK_URL`,
+   `PORTER_HOOK_SECRET`. The machine's user needs Docker access. Then run `setup-node.sh <node>`:
+   it builds the `recursica/porter-job` image and starts the job runner on `jobs.port`.
+4. Install Porter in the CircleChat UI, then `./circlechat/setup-agent.sh porter`.
+
+A job runner only runs the porter job type for the repositories in `porter.targets`, so a
+request cannot run an arbitrary command. The job's secrets reach the container by name, never on
+a command line. A job that runs out of memory ends as `out_of_memory` and is reported; the machine
+keeps running.
+
 ## Notifications
 
 With `"notify": { "slack": true }` and `SLACK_WEBHOOK_URL` set, the notifier posts to Slack:
@@ -81,6 +107,7 @@ the application's code is confidential, since that branch is as public as this r
 | Betty | Designs and builds prototypes in the app repo (`/workspace/<repos.app_dir>`)                       | Prototype code                                   |
 | Barb  | Reviews Betty's screens against the skills (subagents: checker, feisty). Flags rule problems to Alan | Her reports in `/workspace/reviews`              |
 | Alan  | Turns feedback about the rules into PRs on this repo, and adapter or theme problems into issues      | PR branches in `/workspace/kb-proposals`, issues |
+| Porter | Ports each golden-adapter (Mantine) release to the other adapters, one capped job per adapter      | One PR per target adapter, from a job            |
 
 Loki is set up the same way. On CircleChat he has no Drive: he writes only in `/workspace/loki`,
 and `setup-agent.sh` refuses him if his config has any tool server that could reach client data.
