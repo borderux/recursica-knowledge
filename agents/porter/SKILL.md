@@ -54,11 +54,11 @@ A porter-adapter subagent starts with no memory and no earlier conversation, so 
 
 **Never tell a subagent how another adapter solved the change.** Each adapter matches the golden adapter's behavior in the adapter's own UI kit idioms, and code from one library does not carry over to another library.
 
-### 3. Dispatch one porter-adapter per target adapter, in parallel
+### 3. Dispatch one porter-adapter per target adapter
 
 <!-- platform:dispatch -->
 
-One subagent per target adapter, with no state shared between the subagents. **Building a new component means building the component in all four adapters** unless the user says otherwise; the Mantine release is the signal for the other three adapters.
+One subagent per target adapter, with no state shared between the subagents. **Building a new component means building the component in all four adapters** unless the user says otherwise; the Mantine release is the signal for the other adapters.
 
 ### 4. Collect the reports
 
