@@ -1,0 +1,64 @@
+{
+  "$comment": [
+    "One deployment of CircleChat and the Recursica agents. Copy to $CC_DIR/site.json (outside",
+    "any repository) and fill it in. Secrets never go here: they go in $CC_DIR/.env",
+    "(ANTHROPIC_API_KEY, KEV_ENGINE_KEY, SLACK_WEBHOOK_URL, LITELLM_MASTER_KEY).",
+    "",
+    "nodes: every machine that runs something. Add as many as you have. 'address' is how the",
+    "CONTROL node's containers reach that machine: a VPN/Tailscale address or name, or",
+    "host.docker.internal for the control machine itself.",
+    "exactly one node has \"control\": true. It runs CircleChat, the agents and the gateway.",
+    "routes: a name agents ask for, mapped to an ordered list of backends. The gateway tries",
+    "them in order, so the last entry is the fallback. Backends are \"<node>/<model id>\" or",
+    "\"anthropic/<model>\"."
+  ],
+  "site": {
+    "public_host": "circlechat.example.ts.net",
+    "port": 8080
+  },
+  "repos": {
+    "knowledge": "https://github.com/borderux/recursica-knowledge",
+    "app": "https://github.com/your-org/your-app-repo",
+    "app_dir": "your-app-repo",
+    "app_github": "your-org/your-app-repo"
+  },
+  "nodes": [
+    {
+      "name": "control-pc",
+      "os": "linux",
+      "control": true,
+      "address": "host.docker.internal",
+      "kev": { "port": 8009, "priority": 2 },
+      "models": [
+        { "id": "small-local", "port": 1919, "model": "your-model-name", "context": 131072 }
+      ],
+      "services": [
+        {
+          "name": "kev-engine",
+          "dir": "/home/you/kev-engine",
+          "command": "uv run --no-sync --extra serve python -m kev.serve --run jaredpalmer/kev-4b --port 8009 --host 0.0.0.0",
+          "env": { "KEV_FUSED": "0", "KEV_CUDA_GRAPHS": "0" },
+          "secret_env": ["KEV_API_KEY"]
+        }
+      ]
+    },
+    {
+      "name": "big-mac",
+      "os": "macos",
+      "address": "big-mac.example.ts.net",
+      "kev": { "port": 8009, "priority": 1 },
+      "models": [
+        { "id": "large-local", "port": 11434, "model": "your-large-model", "context": 131072 }
+      ],
+      "services": []
+    }
+  ],
+  "routes": {
+    "local-large": ["big-mac/large-local", "control-pc/small-local", "anthropic/claude-sonnet-5-5"],
+    "local-small": ["control-pc/small-local", "big-mac/large-local"]
+  },
+  "notify": { "slack": true },
+  "data": {
+    "kev_disagreements_branch": ""
+  }
+}
