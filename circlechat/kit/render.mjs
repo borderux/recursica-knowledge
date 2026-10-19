@@ -8,6 +8,9 @@
 //   kev-engines.txt       Kev-engine URLs, best first, comma-separated (Kev fails over in order)
 //   services/<node>.json  the long-running services each node runs (setup-node.sh installs them)
 //   app.env               APP_REPO / APP_REPO_GITHUB, substituted into agent personas at install
+//   job-nodes.txt         job runner URLs, best first (Porter sends each adapter port to the first with room)
+//   porter.env            PORTER_OWNER, JOBD_ALLOWED_REPOS
+//   watches.json          the releases the release watcher announces
 //
 // Any number of nodes. Nothing here is specific to one deployment: that all lives in site.json,
 // which is kept outside the repository.
@@ -38,6 +41,10 @@ export function validate(site) {
       ids.add(m.id);
       if (!m.port || !m.model) errs.push(`node ${n.name}/${m.id}: port and model are required`);
     }
+    if (n.jobs) {
+      if (!Number.isInteger(n.jobs.port) || !Number.isInteger(n.jobs.slots) || n.jobs.slots < 1) errs.push(`node ${n.name}: jobs needs an integer port and slots >= 1`);
+      if (!(n.jobs.memory_gb > 0)) errs.push(`node ${n.name}: jobs.memory_gb must be a positive number`);
+    }
     for (const s of n.services ?? []) {
       if (!SLUG.test(s.name ?? "")) errs.push(`node ${n.name}: service name "${s.name}" must be a slug`);
       if (!s.command || !s.dir) errs.push(`node ${n.name}/${s.name}: command and dir are required`);
@@ -53,6 +60,13 @@ export function validate(site) {
       if (b.startsWith("anthropic/")) continue;
       if (!known.has(b)) errs.push(`route ${route}: unknown backend "${b}" (use <node>/<model id> or anthropic/<model>)`);
     }
+  }
+  if (site.porter) {
+    const p = site.porter;
+    if (!/^[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+$/.test(p.watch ?? "")) errs.push("porter.watch must be owner/name");
+    if (!Array.isArray(p.targets) || !p.targets.length) errs.push("porter.targets needs at least one repository URL");
+    for (const t of p.targets ?? []) if (!/^https:\/\/[^\s,]+$/.test(t)) errs.push(`porter.targets: "${t}" must be an https clone URL`);
+    if (!nodes.some((n) => n.jobs)) errs.push("porter needs at least one node with a jobs block");
   }
   return errs;
 }
@@ -89,9 +103,16 @@ export function render(site) {
     .sort((a, b) => (a.kev.priority ?? 99) - (b.kev.priority ?? 99))
     .map((n) => url(n, n.kev.port));
 
-  const services = Object.fromEntries(nodes.map((n) => [n.name, { os: n.os, services: n.services ?? [] }]));
+  const jobNodes = nodes
+    .filter((n) => n.jobs)
+    .sort((a, b) => (a.jobs.priority ?? 99) - (b.jobs.priority ?? 99))
+    .map((n) => url(n, n.jobs.port));
+  const p = site.porter;
+  const porterEnv = p ? `PORTER_OWNER=${p.owner ?? ""}\nJOBD_ALLOWED_REPOS=${p.targets.join(",")}\n` : "";
+  const watches = p ? [{ repo: p.watch, hook: "PORTER" }] : [];
+  const services = Object.fromEntries(nodes.map((n) => [n.name, { os: n.os, services: n.services ?? [], jobs: n.jobs ?? null }]));
   const appEnv = `APP_REPO=${site.repos.app_dir}\nAPP_REPO_GITHUB=${site.repos.app_github}\n`;
-  return { litellm, kev, services, appEnv };
+  return { litellm, kev, services, appEnv, jobNodes, porterEnv, watches };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
@@ -106,5 +127,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   fs.writeFileSync(path.join(out, "kev-engines.txt"), r.kev.join(",") + "\n");
   for (const [name, s] of Object.entries(r.services)) fs.writeFileSync(path.join(out, "services", `${name}.json`), JSON.stringify(s, null, 2) + "\n");
   fs.writeFileSync(path.join(out, "app.env"), r.appEnv);
-  console.log(`rendered: ${site.nodes.length} node(s), ${Object.keys(site.routes ?? {}).length} route(s), ${r.kev.length} Kev engine(s)`);
+  fs.writeFileSync(path.join(out, "job-nodes.txt"), r.jobNodes.join(",") + "\n");
+  fs.writeFileSync(path.join(out, "porter.env"), r.porterEnv);
+  fs.writeFileSync(path.join(out, "watches.json"), JSON.stringify(r.watches) + "\n");
+  console.log(`rendered: ${site.nodes.length} node(s), ${Object.keys(site.routes ?? {}).length} route(s), ${r.kev.length} Kev engine(s), ${r.jobNodes.length} job runner(s)`);
 }

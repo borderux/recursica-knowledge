@@ -119,6 +119,13 @@ fi
 if [ "$HANDLE" = barb ] && [ -n "${KEV_ENGINE_KEY:-}" ]; then
   set_secret KEV_ENGINE_KEY "$KEV_ENGINE_KEY"
 fi
+# Porter: where the job runners are, the shared job-runner token, and whom to mention with a result.
+if [ "$HANDLE" = porter ]; then
+  [ -s "$KIT_OUT/job-nodes.txt" ] || { echo "No job runners in site.json. Porter needs a node with a jobs block."; exit 1; }
+  set_secret PORTER_JOB_NODES "$(tr -d '\n' < "$KIT_OUT/job-nodes.txt")"
+  set_secret JOBD_TOKEN "$(sed -n 's/^JOBD_TOKEN=//p' "$CC_DIR/.env")"
+  set_secret PORTER_OWNER "$(sed -n 's/^PORTER_OWNER=//p' "$KIT_OUT/porter.env")"
+fi
 # Where Barb finds Kev-engines, best first, from site.json. Not a secret, but it lives with her
 # other settings so her prompt never has to name a machine.
 if [ "$HANDLE" = barb ] && [ -s "$KIT_OUT/kev-engines.txt" ]; then
