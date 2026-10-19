@@ -13,9 +13,8 @@ any `mcp_servers`, since a server that reaches client data would break the fence
 
 ## Model
 
-Any OpenAI-compatible local server. The install that this was written against ran
-`gemma-4-26B-A4B` on FreeToken, reached from the container as a custom provider at
-`http://host.docker.internal:1919/v1`.
+Any OpenAI-compatible local model server, reached from the container as a custom provider,
+such as `http://host.docker.internal:<port>/v1`.
 
 ## Context sizes
 
@@ -27,8 +26,8 @@ auxiliary:
     context_length: 131072
 ```
 
-Hermes guesses a local model's window from its own model list, and guessed **51,200** for a
-Gemma served with **262,144**. Two failures followed, one after the other:
+Hermes guesses a local model's window from its own model list, and has guessed **51,200** for
+a model served with **262,144**. Two failures followed, one after the other:
 
 - Below Hermes' 64K minimum for the compression model, every turn was refused before it started.
 - Once that was overridden, a long task thread outgrew the guessed window and Hermes could not
@@ -43,7 +42,7 @@ pins 131072 when the keys are absent (`LOKI_CONTEXT=` overrides), and leaves the
 
 ## What a small local model gets wrong
 
-Seen on the first CircleChat study, and why `platform/circlechat.md` spells each turn out as
+Seen in testing, and why `platform/circlechat.md` spells each turn out as
 numbered steps: it split one study across two folders, marked a two-interview study done after
 one, and lost the link to its transcript to a malformed attachment. It did write a good
 transcript. Concrete, checkable steps (one folder, list before and after each write, reply with

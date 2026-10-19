@@ -8,6 +8,7 @@
     "CONTROL node's containers reach that machine: a VPN/Tailscale address or name, or",
     "host.docker.internal for the control machine itself.",
     "exactly one node has \"control\": true. It runs CircleChat, the agents and the gateway.",
+    "Any machine can be the control node, a Mac or a PC of any size (Windows runs it through WSL).",
     "routes: a name agents ask for, mapped to an ordered list of backends. The gateway tries",
     "them in order, so the last entry is the fallback. Backends are \"<node>/<model id>\" or",
     "\"anthropic/<model>\"."
@@ -24,13 +25,18 @@
   },
   "nodes": [
     {
-      "name": "control-pc",
+      "name": "machine-1",
       "os": "linux",
       "control": true,
       "address": "host.docker.internal",
       "kev": { "port": 8009, "priority": 2 },
       "models": [
-        { "id": "small-local", "port": 1919, "model": "your-model-name", "context": 131072 }
+        {
+          "id": "small-local",
+          "port": 8000,
+          "model": "your-model-name",
+          "context": 131072
+        }
       ],
       "services": [
         {
@@ -43,19 +49,28 @@
       ]
     },
     {
-      "name": "big-mac",
+      "name": "machine-2",
       "os": "macos",
-      "address": "big-mac.example.ts.net",
+      "address": "machine-2.example.ts.net",
       "kev": { "port": 8009, "priority": 1 },
       "models": [
-        { "id": "large-local", "port": 11434, "model": "your-large-model", "context": 131072 }
+        {
+          "id": "large-local",
+          "port": 11434,
+          "model": "your-large-model",
+          "context": 131072
+        }
       ],
       "services": []
     }
   ],
   "routes": {
-    "local-large": ["big-mac/large-local", "control-pc/small-local", "anthropic/claude-sonnet-5-5"],
-    "local-small": ["control-pc/small-local", "big-mac/large-local"]
+    "local-large": [
+      "machine-2/large-local",
+      "machine-1/small-local",
+      "anthropic/claude-sonnet-5-5"
+    ],
+    "local-small": ["machine-1/small-local", "machine-2/large-local"]
   },
   "notify": { "slack": true },
   "data": {

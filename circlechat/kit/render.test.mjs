@@ -11,15 +11,15 @@ test("the example is valid", () => assert.deepEqual(validate(example), []));
 test("routes become aliases with ordered fallbacks", () => {
   const { litellm } = render(example);
   const alias = litellm.model_list.find((m) => m.model_name === "local-large");
-  assert.equal(alias.litellm_params.api_base, "http://big-mac.example.ts.net:11434/v1");
+  assert.equal(alias.litellm_params.api_base, "http://machine-2.example.ts.net:11434/v1");
   assert.deepEqual(litellm.router_settings.fallbacks.find((f) => f["local-large"])["local-large"],
-    ["control-pc/small-local", "anthropic/claude-sonnet-5-5"]);
+    ["machine-1/small-local", "anthropic/claude-sonnet-5-5"]);
   assert.equal(litellm.model_list.find((m) => m.model_name === "anthropic/claude-sonnet-5-5").litellm_params.api_key,
     "os.environ/ANTHROPIC_API_KEY");
 });
 
 test("kev engines are ordered by priority", () => {
-  assert.deepEqual(render(example).kev, ["http://big-mac.example.ts.net:8009", "http://host.docker.internal:8009"]);
+  assert.deepEqual(render(example).kev, ["http://machine-2.example.ts.net:8009", "http://host.docker.internal:8009"]);
 });
 
 test("any number of nodes", () => {

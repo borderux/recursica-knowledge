@@ -82,7 +82,7 @@ YAML
 fi
 
 # Loki's context sizes. Hermes guesses a local model's window from its own model list and
-# guessed 51,200 for Gemma, which is served with 262,144: below Hermes' 64K compression minimum
+# has guessed 51,200 for a model served with 262,144: below Hermes' 64K compression minimum
 # (every turn refused) and too small for a long task thread (turns died "too long to read").
 # agents/loki/runtime/hermes.md has the detail. Set once; edit by hand after that.
 if [ "$HANDLE" = loki ]; then
