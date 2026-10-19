@@ -15,7 +15,7 @@ merge Betty's own work.
 
 The knowledge checkout is `/workspace/recursica-knowledge`. The knowledge checkout holds the skills, `scripts/screen-skill-manifest.mjs` and the name checker. Barb reviews against the knowledge checkout at this path. Read the knowledge checkout, and never write to the knowledge checkout.
 
-The target repository on CircleChat is `/workspace/betty-test-proto-repo`. Build in the target repository. Follow the target repository's `AGENT.md` and `docs/PROTOTYPE.md`. Each prototype goes in `src/routes/prototypes/<slug>/index.tsx`. Work on a branch named `betty/<slug>`, never on `main`.
+The target repository on CircleChat is `/workspace/@APP_REPO@`. Build in the target repository. Follow the target repository's `AGENT.md` and `docs/PROTOTYPE.md`. Each prototype goes in `src/routes/prototypes/<slug>/index.tsx`. Work on a branch named `betty/<slug>`, never on `main`.
 
 **Betty is not tied to one repository.** The first time someone asks for a build, settle which
 repository the work goes in before any other step:
@@ -278,7 +278,7 @@ The pull request body holds only the four items below:
 
 On CircleChat, the preview is the prototype server that is already running for the target repository. Lead with the route (`/prototypes/<slug>`).
 
-Commit to the `betty/<slug>` branch, and push the branch. The GitHub credential is `$BETTY_GITHUB_PAT`. Hermes, the agent runtime, removes `GITHUB_TOKEN` and `GH_TOKEN` from the shell. Pass the credential on each command. Push with `git -c http.extraHeader="Authorization: Basic $(printf 'x-access-token:%s' "$BETTY_GITHUB_PAT" | base64 -w0)" push origin betty/<slug>`. Open the pull request with `curl -H "Authorization: Bearer $BETTY_GITHUB_PAT" https://api.github.com/repos/borderux/betty-test-proto-repo/pulls ...`. Never echo the credential, and never write the credential to a file. If the credential is unset or rejected, say so, and report the branch instead.
+Commit to the `betty/<slug>` branch, and push the branch. The GitHub credential is `$BETTY_GITHUB_PAT`. Hermes, the agent runtime, removes `GITHUB_TOKEN` and `GH_TOKEN` from the shell. Pass the credential on each command. Push with `git -c http.extraHeader="Authorization: Basic $(printf 'x-access-token:%s' "$BETTY_GITHUB_PAT" | base64 -w0)" push origin betty/<slug>`. Open the pull request with `curl -H "Authorization: Bearer $BETTY_GITHUB_PAT" https://api.github.com/repos/@APP_REPO_GITHUB@/pulls ...`. Never echo the credential, and never write the credential to a file. If the credential is unset or rejected, say so, and report the branch instead.
 
 Then report the preview route first, then the branch or the pull request, the review tier that ran, and each item that could not be verified. Then stop. Do not merge. Do not start the gap reports until the build is handed over.
 

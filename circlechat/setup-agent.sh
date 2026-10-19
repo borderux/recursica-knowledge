@@ -13,10 +13,16 @@ K="$WS/recursica-knowledge"
 H="$CC_DIR/hermes-homes/.hermes-$HANDLE"
 SOUL="$K/portable/circlechat/agents/$HANDLE/SOUL.md"
 MARK="<!-- recursica-circlechat -->"
+. "$(dirname "$0")/kit/lib.sh"
+# Per-deployment values (app repo name, Kev engines) come from setup-host.sh's render of site.json.
+KIT_OUT="$CC_DIR/kit-out"
+[ -f "$KIT_OUT/app.env" ] && . "$KIT_OUT/app.env"
 
-if [ "$HANDLE" = loki ]; then
-  echo "Loki is not set up by this script. His fence is a Drive sandbox that has to exist before"
-  echo "he runs, or he can reach every client folder the key can. See agents/loki/PORTING.md."
+# Loki on CircleChat has no Drive: his fence is /workspace/loki (agents/loki/platform/circlechat.md).
+# What would break that fence is a tool server reaching client data, so refuse if he has any.
+if [ "$HANDLE" = loki ] && sudo grep -qE '^mcp_servers:' "$H/config.yaml" 2>/dev/null; then
+  echo "Loki's config.yaml has mcp_servers. On CircleChat his fence is /workspace/loki and he has no"
+  echo "tool servers; one that reaches client data breaks the fence. Remove it, or set him up by hand."
   exit 1
 fi
 sudo test -d "$H" || { echo "No $H — install $HANDLE in the CircleChat UI first."; exit 1; }
@@ -39,11 +45,18 @@ case "$HANDLE" in
   *)     EFFORT=medium ;;
 esac
 if [ -n "$MODEL" ]; then
-  sudo sed -i -e "s/^\(  default:\).*/\1 $MODEL/" "$H/config.yaml"
+  sudo_sedi -e "s/^\(  default:\).*/\1 $MODEL/" "$H/config.yaml"
 fi
-sudo sed -i \
+# Compression summaries run on Haiku, except for Loki: he runs on a local model with no
+# Anthropic key, so his summaries run on his own model.
+if [ "$HANDLE" = loki ]; then
+  SUMMARY="$(sudo sed -n 's/^  default: *//p' "$H/config.yaml" | head -1)"
+else
+  SUMMARY=claude-haiku-4-5
+fi
+sudo_sedi \
   -e "s/reasoning_effort: .*/reasoning_effort: $EFFORT/" \
-  -e 's/summary_model: .*/summary_model: claude-haiku-4-5/' \
+  -e "s/summary_model: .*/summary_model: $SUMMARY/" \
   "$H/config.yaml"
 
 # Barb's delegation limits. Each default made a full review fail; agents/barb/runtime/hermes.md
@@ -68,9 +81,22 @@ YAML
   fi
 fi
 
+# Loki's context sizes. Hermes guesses a local model's window from its own model list and
+# has guessed 51,200 for a model served with 262,144: below Hermes' 64K compression minimum
+# (every turn refused) and too small for a long task thread (turns died "too long to read").
+# agents/loki/runtime/hermes.md has the detail. Set once; edit by hand after that.
+if [ "$HANDLE" = loki ]; then
+  CTX="${LOKI_CONTEXT:-131072}"
+  sudo grep -qE '^  context_length:' "$H/config.yaml" || sudo_sedi "/^model:/a\\  context_length: $CTX" "$H/config.yaml"
+  if ! sudo grep -qE '^auxiliary:' "$H/config.yaml"; then
+    printf '\nauxiliary:\n  compression:\n    context_length: %s\n' "$CTX" | sudo tee -a "$H/config.yaml" >/dev/null
+  fi
+  sudo mkdir -p "$WS/loki" && sudo chmod 777 "$WS/loki"
+fi
+
 # Secrets go in the agent's own .env, never in SOUL.md.
 set_secret() { # set_secret NAME VALUE
-  sudo sed -i "/^$1=/d" "$H/.env"
+  sudo_sedi "/^$1=/d" "$H/.env"
   echo "$1=$2" | sudo tee -a "$H/.env" >/dev/null
 }
 # Alan's GitHub token is stored as ALAN_GITHUB_PAT, not GITHUB_TOKEN: Hermes strips GITHUB_TOKEN
@@ -88,17 +114,43 @@ if [ "$HANDLE" = alan ]; then
     echo "it, he cannot merge — that is the point."
     exit 1
   fi
-  sudo sed -i '/^GITHUB_TOKEN=/d' "$H/.env"
+  sudo_sedi '/^GITHUB_TOKEN=/d' "$H/.env"
 fi
 if [ "$HANDLE" = barb ] && [ -n "${KEV_ENGINE_KEY:-}" ]; then
   set_secret KEV_ENGINE_KEY "$KEV_ENGINE_KEY"
+fi
+# Porter: where the job runners are, the shared job-runner token, and whom to mention with a result.
+if [ "$HANDLE" = porter ]; then
+  [ -s "$KIT_OUT/job-nodes.txt" ] || { echo "No job runners in site.json. Porter needs a node with a jobs block."; exit 1; }
+  set_secret PORTER_JOB_NODES "$(tr -d '\n' < "$KIT_OUT/job-nodes.txt")"
+  set_secret JOBD_TOKEN "$(sed -n 's/^JOBD_TOKEN=//p' "$CC_DIR/.env")"
+  set_secret PORTER_OWNER "$(sed -n 's/^PORTER_OWNER=//p' "$KIT_OUT/porter.env")"
+fi
+# Where Barb finds Kev-engines, best first, from site.json. Not a secret, but it lives with her
+# other settings so her prompt never has to name a machine.
+if [ "$HANDLE" = barb ] && [ -s "$KIT_OUT/kev-engines.txt" ]; then
+  set_secret KEV_ENGINE_URLS "$(tr -d '\n' < "$KIT_OUT/kev-engines.txt")"
 fi
 
 # Persona: replace our marked section with the built CircleChat persona, keep CircleChat's part.
 # The built file already has every platform passage filled in; never paste agents/<handle>/SKILL.md,
 # whose unfilled markers silently drop whole passages.
-sudo sed -i "/^$MARK\$/,\$d" "$H/SOUL.md"
-{ echo "$MARK"; cat "$SOUL"; } | sudo tee -a "$H/SOUL.md" >/dev/null
+# A SOUL.md with no marker was written whole by something else (an older sync); appending to it
+# would leave two personas in one file. Back it up and start clean.
+if ! sudo grep -qx "$MARK" "$H/SOUL.md" 2>/dev/null && sudo test -s "$H/SOUL.md"; then
+  sudo cp "$H/SOUL.md" "$H/SOUL.md.premark.bak"
+  sudo sh -c ": > '$H/SOUL.md'"
+fi
+sudo_sedi "/^$MARK\$/,\$d" "$H/SOUL.md"
+# Deploy tokens (@APP_REPO@, @APP_REPO_GITHUB@) are this deployment's values, filled in here.
+if grep -q '@APP_REPO' "$SOUL" && [ -z "${APP_REPO:-}" ]; then
+  echo "No app repo configured. Run setup-host.sh with a site.json first (repos.app_dir)."; exit 1
+fi
+PERSONA="$(sed -e "s|@APP_REPO_GITHUB@|${APP_REPO_GITHUB:-}|g" -e "s|@APP_REPO@|${APP_REPO:-}|g" "$SOUL")"
+if printf '%s' "$PERSONA" | grep -qE '@[A-Z0-9_]+@'; then
+  echo "Unfilled deploy token in $HANDLE's persona: $(printf '%s' "$PERSONA" | grep -oE '@[A-Z0-9_]+@' | sort -u | tr '\n' ' ')"; exit 1
+fi
+{ echo "$MARK"; printf '%s\n' "$PERSONA"; } | sudo tee -a "$H/SOUL.md" >/dev/null
 
 sudo chmod -R 777 "$H"
 echo "$HANDLE set up. Changes apply on the next message."

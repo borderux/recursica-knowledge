@@ -47,3 +47,8 @@ gcp-key.json
 
 # Reports from scripts and agents, such as the vague-word report. Never committed.
 .reports/
+
+# A deployment's own config never belongs in the repository
+circlechat/site.json
+site.json
+kit-out/

@@ -166,6 +166,16 @@
       "description": "Buzz channel this client's agents answer in. Passed to the ingest tool so conversations.channel_id records which conversation a row came from.",
       "expandedBy": "nest/bin/deploy-claire-channel.sh, once per client",
       "example": "00000000-0000-0000-0000-000000000000"
+    },
+    "APP_REPO": {
+      "description": "Folder name, under the CircleChat workspace, of the application repository Betty builds in and Barb reviews.",
+      "expandedBy": "circlechat/setup-agent.sh, from repos.app_dir in the deployment's site.json",
+      "example": "your-app-repo"
+    },
+    "APP_REPO_GITHUB": {
+      "description": "owner/name of that application repository on GitHub, for Betty's pull requests.",
+      "expandedBy": "circlechat/setup-agent.sh, from repos.app_github in the deployment's site.json",
+      "example": "your-org/your-app-repo"
     }
   }
 }

@@ -1,0 +1,115 @@
+{
+  "$comment": [
+    "One deployment of CircleChat and the Recursica agents. Copy to $CC_DIR/site.json (outside",
+    "any repository) and fill it in. Secrets never go here: they go in $CC_DIR/.env",
+    "(ANTHROPIC_API_KEY, KEV_ENGINE_KEY, SLACK_WEBHOOK_URL, LITELLM_MASTER_KEY).",
+    "",
+    "nodes: every machine that runs something. Add as many as you have. 'address' is how the",
+    "CONTROL node's containers reach that machine: a VPN/Tailscale address or name, or",
+    "host.docker.internal for the control machine itself.",
+    "exactly one node has \"control\": true. It runs CircleChat, the agents and the gateway.",
+    "Any machine can be the control node, a Mac or a PC of any size (Windows runs it through WSL).",
+    "routes: a name agents ask for, mapped to an ordered list of backends. The gateway tries",
+    "them in order, so the last entry is the fallback. Backends are \"<node>/<model id>\" or",
+    "\"anthropic/<model>\".",
+    "",
+    "jobs: a node with a jobs block runs a job runner (circlechat/jobd) for long, heavy agent work,",
+    "such as Porter's adapter ports. Each job gets memory_gb of memory at most; slots jobs run at once.",
+    "porter: the release Porter watches, the adapters it ports to, and who it mentions with a result."
+  ],
+  "site": {
+    "public_host": "circlechat.example.ts.net",
+    "port": 8080
+  },
+  "repos": {
+    "knowledge": "https://github.com/borderux/recursica-knowledge",
+    "app": "https://github.com/your-org/your-app-repo",
+    "app_dir": "your-app-repo",
+    "app_github": "your-org/your-app-repo"
+  },
+  "nodes": [
+    {
+      "name": "machine-1",
+      "os": "linux",
+      "control": true,
+      "address": "host.docker.internal",
+      "kev": {
+        "port": 8009,
+        "priority": 2
+      },
+      "models": [
+        {
+          "id": "small-local",
+          "port": 8000,
+          "model": "your-model-name",
+          "context": 131072
+        }
+      ],
+      "services": [
+        {
+          "name": "kev-engine",
+          "dir": "/home/you/kev-engine",
+          "command": "uv run --no-sync --extra serve python -m kev.serve --run jaredpalmer/kev-4b --port 8009 --host 0.0.0.0",
+          "env": {
+            "KEV_FUSED": "0",
+            "KEV_CUDA_GRAPHS": "0"
+          },
+          "secret_env": ["KEV_API_KEY"]
+        }
+      ],
+      "jobs": {
+        "port": 7400,
+        "slots": 1,
+        "memory_gb": 12,
+        "priority": 2
+      }
+    },
+    {
+      "name": "machine-2",
+      "os": "macos",
+      "address": "machine-2.example.ts.net",
+      "kev": {
+        "port": 8009,
+        "priority": 1
+      },
+      "models": [
+        {
+          "id": "large-local",
+          "port": 11434,
+          "model": "your-large-model",
+          "context": 131072
+        }
+      ],
+      "services": [],
+      "jobs": {
+        "port": 7400,
+        "slots": 3,
+        "memory_gb": 16,
+        "priority": 1
+      }
+    }
+  ],
+  "routes": {
+    "local-large": [
+      "machine-2/large-local",
+      "machine-1/small-local",
+      "anthropic/claude-sonnet-5-5"
+    ],
+    "local-small": ["machine-1/small-local", "machine-2/large-local"]
+  },
+  "porter": {
+    "owner": "your-circlechat-handle",
+    "watch": "borderux/recursica-adapter-mantine-v8",
+    "targets": [
+      "https://github.com/borderux/recursica-adapter-mui-v7",
+      "https://github.com/borderux/recursica-adapter-beam",
+      "https://github.com/borderux/recursica-adapter-angular-material"
+    ]
+  },
+  "notify": {
+    "slack": true
+  },
+  "data": {
+    "kev_disagreements_branch": ""
+  }
+}

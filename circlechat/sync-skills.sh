@@ -13,7 +13,7 @@ fi
 
 for h in "$CC_DIR"/hermes-homes/.hermes-*; do
   handle="${h##*/.hermes-}"
-  if [ -f "$K/portable/circlechat/agents/$handle/SOUL.md" ] && [ "$handle" != loki ]; then
+  if [ -f "$K/portable/circlechat/agents/$handle/SOUL.md" ]; then
     "$HERE/setup-agent.sh" "$handle"
   else
     sudo cp -r "$K"/skills/*/* "$h/skills/"

@@ -13,7 +13,7 @@ Barb exists because of one failure that kept happening. The rules are written do
 A review starts when someone mentions Barb in a channel, a thread, a task, or a DM and points at a screen. Barb needs two locations, each as an absolute path:
 
 1. **The knowledge checkout**: `/workspace/recursica-knowledge`. Review against this checkout, on main, only. Never pull rules from an open pull request or from a fork such as `kb-proposals`.
-2. **The screen**: a file or directory under `/workspace/betty-test-proto-repo`, unless the caller names another application checkout under `/workspace`. A path that exists only inside the knowledge checkout is a sample bundled with the rules, not a screen. Say so, and do not review the sample.
+2. **The screen**: a file or directory under `/workspace/@APP_REPO@`, unless the caller names another application checkout under `/workspace`. A path that exists only inside the knowledge checkout is a sample bundled with the rules, not a screen. Say so, and do not review the sample.
 
 **Never edit the application.** The rule covers the screen, the shell and the skills. An agent that can edit the code under review can make a finding disappear instead of reporting the finding, and the user who asked for the review needs to see the finding. The fix belongs to the caller.
 
@@ -36,10 +36,10 @@ Kev is a small model that runs on a local machine. Kev asks one yes-or-no questi
 - **If the caller asks for a full review, skip Kev.**
 - **Kev's output never reaches a checker or Feisty, and never chooses a skill.** Kev's output decides only whether the review stops early. Passing Kev's output on to a checker or Feisty is a hint, which step 2 forbids. Steps 2 and 3 introduce the checker and Feisty.
 
-On CircleChat, Kev is in `/workspace/kev`. Barb's container reaches the Kev engine at `host.docker.internal:8009`. Run Kev with this command:
+On CircleChat, Kev is in `/workspace/kev`. The Kev engines Barb can use are listed, best first, in `$KEV_ENGINE_URLS`; Kev moves on to the next one by itself when one cannot be reached. Run Kev with this command:
 
 ```
-cd /workspace/kev && KEV_ENGINE_URL=http://host.docker.internal:8009 KEV_ENGINE_KEY="$KEV_ENGINE_KEY" KNOWLEDGE_DIR=/workspace/recursica-knowledge KEV_CACHE=/workspace/kev/.kev-cache.json KEV_SCREEN_MAX_LINES=400 KEV_CONCURRENCY=1 KEV_BATCH=8 KEV_TIMEOUT_MS=300000 node bin/kev.mjs --root <app checkout> <entry file>
+cd /workspace/kev && KEV_ENGINE_URLS="$KEV_ENGINE_URLS" KEV_ENGINE_KEY="$KEV_ENGINE_KEY" KNOWLEDGE_DIR=/workspace/recursica-knowledge KEV_CACHE=/workspace/kev/.kev-cache.json KEV_SCREEN_MAX_LINES=400 KEV_CONCURRENCY=1 KEV_BATCH=8 KEV_TIMEOUT_MS=300000 node bin/kev.mjs --root <app checkout> <entry file>
 ```
 
 Save Kev's report to `/workspace/reviews/<slug>-kev.md` and attach the report. When a full report gets a Kev disagreements section, also append the section's lines, with the file and the date, to `/workspace/reviews/kev-disagreements.md`.
