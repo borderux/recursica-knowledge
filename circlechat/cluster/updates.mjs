@@ -8,7 +8,7 @@
 //   - An update with no reboot installs, and the check posts what it installed.
 //   - An update that needs a reboot is held, and Slack gets the reboot buttons.
 //
-//   node updates.mjs check          the daily check
+//   node updates.mjs check          the check (updater.mjs runs it hourly)
 //   node updates.mjs install-held   install the held updates (the agent runs this before a reboot)
 import { execFile } from "node:child_process";
 import fs from "node:fs";
@@ -89,7 +89,6 @@ export async function check({ env = process.env, post, stateDir = "/var/lib/agen
       lines.push(`Installed ${d.install.length} Linux security update(s): ${d.install.map((u) => `${u.name} ${u.version}${u.exploited.length ? ` (fixes actively exploited ${u.exploited.join(", ")})` : ""}`).join(", ")}.`);
     }
     held.push(...d.hold.map((u) => ({ kind: "apt", name: u.name, version: u.version, exploited: u.exploited })));
-    if (d.wait.length) lines.push(`${d.wait.length} Linux update(s) wait out the 7 days.`);
   }
 
   if (IS_MAC) {
@@ -101,7 +100,9 @@ export async function check({ env = process.env, post, stateDir = "/var/lib/agen
     // so macOS's own automatic updates install these overnight, with an authenticated restart.
     // The check reports each one.
     const all = [...d.install, ...d.hold];
-    if (all.length) lines.push(`macOS updates ready: ${all.map((u) => `${u.name} ${u.version}${u.reboot ? " (restart)" : ""}`).join(", ")}. macOS installs these overnight on its own.`);
+    const seenMac = all.filter((u) => seen[`reported:${u.key}`] === undefined);
+    for (const u of seenMac) seen[`reported:${u.key}`] = now;
+    if (seenMac.length) lines.push(`macOS updates ready: ${seenMac.map((u) => `${u.name} ${u.version}${u.reboot ? " (restart)" : ""}`).join(", ")}. macOS installs these overnight on its own.`);
     if (env.OWNER) {
       const outdated = JSON.parse((await sh("sudo", ["-u", env.OWNER, "-H", "brew", "outdated", "--json=v2"])) || "{}");
       const brews = (outdated.formulae ?? []).map((f) => ({ key: `${f.name}@${f.current_version}`, name: f.name, version: f.current_version, reboot: false }));
@@ -117,14 +118,18 @@ export async function check({ env = process.env, post, stateDir = "/var/lib/agen
     const ps = "$s=(New-Object -ComObject Microsoft.Update.Session).CreateUpdateSearcher(); $r=$s.Search('IsInstalled=0 and IsHidden=0'); $p=Test-Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate\\Auto Update\\RebootRequired'; [pscustomobject]@{ pending=@($r.Updates | ForEach-Object { $_.Title }); reboot=$p } | ConvertTo-Json -Compress";
     let w = {}; try { w = JSON.parse(await sh("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command", ps])); } catch {}
     const pending = [].concat(w.pending ?? []);
-    if (pending.length) lines.push(`Windows updates waiting (Windows installs them after its 7-day deferral): ${pending.join("; ")}.`);
+    const newWin = pending.filter((t) => seen[`reported:${t}`] === undefined);
+    for (const t of newWin) seen[`reported:${t}`] = now;
+    if (newWin.length) lines.push(`Windows updates waiting (Windows installs them after its 7-day deferral): ${newWin.join("; ")}.`);
     if (w.reboot) held.push({ kind: "windows", name: "Windows updates installed and waiting for a restart" });
   }
 
   fs.writeFileSync(seenFile, JSON.stringify(seen), { mode: 0o600 });
+  // The check runs hourly: a reboot request goes to Slack only when the held updates change.
+  let before = "[]"; try { before = fs.readFileSync(heldFile, "utf8"); } catch {}
   fs.writeFileSync(heldFile, JSON.stringify(held), { mode: 0o600 });
   if (lines.length) await post("info", `:package: ${computer}: ${lines.join(" ")}`);
-  if (held.length) {
+  if (held.length && JSON.stringify(held) !== before) {
     const ref = `upd-${new Date(now).toISOString().slice(0, 10)}`;
     await post("reboot", `:warning: ${computer} has updates that need a reboot: ${held.map((h) => `${h.name}${h.version ? ` ${h.version}` : ""}${h.exploited?.length ? ` (fixes actively exploited ${h.exploited.join(", ")})` : ""}`).join(", ")}. Pick a time to install and reboot. With no answer, nothing happens until the next check.`, ref);
   }

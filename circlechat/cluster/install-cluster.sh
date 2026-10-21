@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# Install the cluster's security services on one computer: the firewall rules, the decoys
-# (OpenCanary), the cluster agent, the daily update check, and on the control computer the Slack
-# app. Run as the account that owns the stacks, after setup-host.sh or setup-node.sh. Safe to
+# Install the cluster's services on one computer: the firewall rules, the decoys (OpenCanary),
+# the cluster agent, the hourly update job, and on the control computer the Slack app. Run as the account that owns the stacks, after setup-host.sh or setup-node.sh. Safe to
 # rerun.
 #
 #   ./circlechat/cluster/install-cluster.sh <computer name from site.json>
@@ -82,14 +81,12 @@ sudo tee /etc/opencanaryd/opencanary.conf >/dev/null <<CANARY
 CANARY
 install_unit opencanary "/opt/opencanary/bin/opencanaryd --dev" / root
 
-# CrowdSec catches repeated break-in attempts, where the operating system's packages carry it.
-if [ "$OS" = Linux ] && ! command -v cscli >/dev/null && apt-cache show crowdsec >/dev/null 2>&1; then
-  sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq crowdsec >/dev/null && echo "installed CrowdSec"
-fi
-
 ENVS="set -a; . /etc/agent-cluster.conf; . /etc/agent-cluster.env; set +a;"
 install_unit cluster-agent "$ENVS exec $NODE_BIN $HERE/agent.mjs" / root
-install_unit cluster-updates "$HERE/updates.sh check" / root "*-*-* 09:00"
+# One update job, hourly: Border UX's software right away (with upgrade.auto), everything else
+# after 7 days. Replaces the separate daily, weekly and hourly jobs of earlier versions.
+uninstall_unit cluster-updates >/dev/null
+install_unit cluster-updater "$ENVS exec $NODE_BIN $HERE/updater.mjs" / root hourly
 if [ "$ROLE" = control ]; then
   install_unit cluster-bot "$ENVS exec $NODE_BIN $HERE/bot.mjs" / root
 fi

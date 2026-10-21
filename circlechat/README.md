@@ -221,13 +221,12 @@ A test restore runs on the first day of January, April, July and October. The te
 
 ## Security services
 
-`./circlechat/cluster/install-cluster.sh <computer>` installs the security services on one computer. Run the script on each computer, after `setup-host.sh` or `setup-node.sh`. The script installs six parts:
+`./circlechat/cluster/install-cluster.sh <computer>` installs the security services on one computer. Run the script on each computer, after `setup-host.sh` or `setup-node.sh`. The script installs five parts:
 
 - **Firewall rules:** each new incoming connection is refused, except from the computer itself, Tailscale, Docker's internal networks and allowed sources. The rules load at every start-up. On Windows, run `circlechat/cluster/windows/install-windows-guard.ps1` once in an Administrator PowerShell.
 - **Decoys:** OpenCanary runs a fake SSH login, FTP server and web page on ports 2222, 2121 and 8088. Nobody legitimate touches a decoy, so any touch starts a lockdown.
-- **CrowdSec,** on Linux, catches repeated break-in attempts.
 - **The cluster agent:** each minute, the agent checks incoming connections, the decoys and the other computers' stacks. The agent also runs each scheduled reboot.
-- **The daily update check,** at 9 a.m.
+- **The update job,** hourly: one job for every kind of update.
 - **The Slack app,** on the control computer only.
 
 ### Remote access
@@ -265,11 +264,13 @@ An incoming connection that no rule allows, or a touch on a decoy, starts a lock
 
 ### Updates
 
-Border UX's own software follows the hourly upgrade job on a stack with `upgrade.auto`: the knowledge repo, the CircleChat fork, and the `@recursica/mcp` package. A release with the same first number goes in at once, and a new major version asks in Slack. Every other stack moves `@recursica/mcp` to a new version after 7 days, like third-party software. The version lives in `.recursica-mcp-version` in the shared workspace, and each agent turn reads it at start.
+One job, `cluster-updater`, runs each hour on each computer, with one rule:
 
-Each day, the check installs updates from stable channels only, after a 7-day wait. A fix for a flaw on CISA's Known Exploited Vulnerabilities list installs at once. An update that needs a reboot is held, and Slack gets four buttons: "4 a.m. ET", "Tonight", "Pick a time" and "Skip". macOS installs its own system updates overnight. Windows waits 7 days before installing a quality update, at 4 a.m.
+- **Border UX's own software** (the knowledge repo, the CircleChat fork and `@recursica/mcp`), on a stack with `upgrade.auto`: right away. A new major version asks in Slack.
+- **Everything else** (operating system packages and container images): after 7 days. A fix for a flaw on CISA's Known Exploited Vulnerabilities list goes in at once.
+- **An update that needs a reboot** asks for a time in Slack: "4 a.m. ET", "Tonight", "Pick a time" or "Skip".
 
-Each Sunday, each stack's containers move to new image versions that are at least 7 days old. When the health check fails, every container goes back to the version it ran before.
+Operating system packages are checked each hour, and each stack's container images once a day. Every image runs at an exact version from the stack's `images.lock`, and a failed health check moves the stack back to the old versions. macOS installs its own system updates overnight, and Windows waits 7 days before installing a quality update. A stack without `upgrade.auto` moves `@recursica/mcp` to a new version after 7 days. The version lives in `.recursica-mcp-version` in the shared workspace, and each agent turn reads it at start.
 
 ### Uptime
 

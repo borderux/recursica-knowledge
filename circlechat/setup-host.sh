@@ -320,16 +320,16 @@ if [ -n "$BACKUP_REMOTE" ]; then
   install_unit "backup$SUFFIX" "$BENV $HERE/backup/backup.sh" "$CC_DIR" root "*-*-* $BACKUP_TIME"
   install_unit "restore-test$SUFFIX" "$BENV $HERE/backup/restore-test.sh" "$CC_DIR" root "*-*-01 04:30"
 fi
-# Weekly container refresh: new image versions wait 7 days, and a failed health check rolls the
-# stack back. Runs on Sunday at 3 a.m.
-install_unit "images$SUFFIX" "CC_DIR=$CC_DIR $(command -v node) $HERE/cluster/images.mjs" "$HOME" "$(id -un)" "Sun *-*-* 03:00"
+# Earlier versions ran their own image and upgrade jobs; cluster-updater (install-cluster.sh)
+# now runs both, hourly.
+uninstall_unit "images$SUFFIX" >/dev/null
 # Updates of the knowledge repo: with upgrade.auto, each release (same first number) installs on
 # its own and a new major version asks in Slack; otherwise the hourly sync pulls main.
+uninstall_unit "upgrade$SUFFIX" >/dev/null
 if [ "$UPGRADE_AUTO" = on ]; then
+  # cluster-updater checks out each release; nothing pulls main.
   uninstall_unit "agents-sync$SUFFIX" >/dev/null
-  install_unit "upgrade$SUFFIX" "CC_DIR=$CC_DIR WS=$WS SITE=$SITE COMPUTER=\$(sed -n s/^COMPUTER=//p /etc/agent-cluster.conf 2>/dev/null) $(command -v node) $HERE/kit/upgrade.mjs" "$HOME" "$(id -un)" hourly
 else
-  uninstall_unit "upgrade$SUFFIX" >/dev/null
   install_unit "agents-sync$SUFFIX" "git config --global --get-all safe.directory | grep -qx $WS/recursica-knowledge || git config --global --add safe.directory $WS/recursica-knowledge; $ENVS $HERE/sync-skills.sh; chown -R $(id -un) $WS/recursica-knowledge/.git $WS/kev" "$CC_DIR" root hourly
 fi
 if [ -n "$(site_get porter.watch)" ]; then
