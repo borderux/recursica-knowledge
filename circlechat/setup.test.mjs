@@ -15,7 +15,7 @@ function sandbox(site, { tenant } = {}) {
   const bin = path.join(home, "bin"), log = path.join(home, "calls.log"), units = path.join(home, "units");
   fs.mkdirSync(bin); fs.mkdirSync(units);
   const stub = (name, body) => { fs.writeFileSync(path.join(bin, name), `#!/usr/bin/env bash\necho "${name} $*" >> "${log}"\n${body}\n`); fs.chmodSync(path.join(bin, name), 0o755); };
-  stub("docker", `case "$1 $2" in "volume inspect"|"network inspect") exit 1 ;; "context inspect") exit 0 ;; esac; exit 0`);
+  stub("docker", `case "$1 $2" in "volume inspect"|"network inspect") exit 1 ;; "context inspect") exit 0 ;; "image inspect") echo "\${@: -1}@sha256:0123abcd" ;; esac; exit 0`);
   stub("sudo", `if [ "$1" = tee ]; then cat > "${units}/$(basename "$2")"; exit 0; fi; if [ "$1" = -n ] || [ "$1" = -u ]; then exit 0; fi; exit 0`);
   const cc = tenant ? path.join(home, "tenants", tenant, "circlechat") : path.join(home, "circlechat");
   fs.mkdirSync(cc, { recursive: true });
@@ -45,6 +45,9 @@ test("setup-host --secrets-only writes the stack's settings and starts the gatew
   assert.match(fs.readFileSync(path.join(s.cc, "compose.egress.yml"), "utf8"), /internal: true/);
   assert.match(s.calls(), /docker run -d --name cc-gateway .*--network circlechat_default/);
   assert.match(s.calls(), /docker network connect --alias cc-gateway circlechat_agents cc-gateway/);
+  assert.match(s.calls(), /ghcr\.io\/berriai\/litellm:main-stable@sha256:0123abcd --config/);
+  const lock = JSON.parse(fs.readFileSync(path.join(s.cc, "images.lock"), "utf8"));
+  assert.equal(lock["ghcr.io/berriai/litellm:main-stable"].ref, "ghcr.io/berriai/litellm:main-stable@sha256:0123abcd");
 });
 
 test("setup-host --upgrade also brings the containers and the filter up", () => {

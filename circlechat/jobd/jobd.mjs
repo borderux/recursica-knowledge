@@ -79,7 +79,7 @@ const MAX_RESTARTS = Number(env.JOBD_MAX_RESTARTS ?? 2);
 function networkArgs() {
   if (!env.JOBD_NETWORK) return [];
   const p = env.JOBD_PROXY;
-  return ["--network", env.JOBD_NETWORK, ...(p ? ["HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy"].flatMap((k) => ["-e", `${k}=${p}`]).concat(["-e", "NODE_USE_ENV_PROXY=1"]) : [])];
+  return ["--network", env.JOBD_NETWORK, "--dns", "127.0.0.1", ...(p ? ["HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy"].flatMap((k) => ["-e", `${k}=${p}`]).concat(["-e", "NODE_USE_ENV_PROXY=1"]) : [])];
 }
 
 function containerArgs(id, repo, image) {

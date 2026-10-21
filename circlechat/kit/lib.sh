@@ -146,3 +146,19 @@ uninstall_unit() {
   fi
   echo "removed $name"
 }
+
+# Pin an image tag to the exact version (digest) in the stack's images.lock. The first use records
+# the version pulled then. The weekly image refresh (cluster/images.mjs) moves a pin to a newer
+# version only after the newer version has been out for 7 days.
+pin_image() {
+  local tag="$1" lock="${IMAGES_LOCK:-$CC_DIR/images.lock}" ref
+  [ -f "$lock" ] || echo '{}' > "$lock"
+  ref="$(node -e 'const l = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")); process.stdout.write(l[process.argv[2]]?.ref ?? "")' "$lock" "$tag")"
+  if [ -z "$ref" ]; then
+    docker pull -q "$tag" >/dev/null
+    ref="$(docker image inspect -f '{{index .RepoDigests 0}}' "$tag")"
+    node -e 'const fs = require("fs"); const [f, t, r] = process.argv.slice(1); const l = JSON.parse(fs.readFileSync(f, "utf8")); l[t] = { ref: r, since: new Date().toISOString() }; fs.writeFileSync(f, JSON.stringify(l, null, 2) + "\n")' "$lock" "$tag" "$ref"
+  fi
+  printf '%s' "$ref"
+}
+

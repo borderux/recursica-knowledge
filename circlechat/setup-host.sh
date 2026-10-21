@@ -33,6 +33,9 @@ WS="${WS:-$HOME/circlechat-workspace}"
 SITE="${SITE:-$CC_DIR/site.json}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 . "$HERE/kit/lib.sh"
+# Exact versions of the npm packages the agents run. Move a version up by pull request, 7 days
+# or more after the version's release.
+RECURSICA_MCP_VERSION=0.8.1
 
 [ -f "$SITE" ] || { echo "No $SITE. Copy circlechat/site.example.json there and fill it in."; exit 1; }
 command -v docker >/dev/null || { echo "Docker is not installed (Linux: Docker Engine; macOS: Colima or OrbStack)."; exit 1; }
@@ -132,6 +135,11 @@ set_env COMPOSE_FILE "$CF"
 # CircleChat's approval gate: an action at high risk waits for a person's approval. The high-risk
 # action, share_files, has CircleChat itself fetch a web address, outside the agents' filter.
 set_env APPROVE_RISK_AT high
+# The Recursica MCP server for Betty and Barb, at an exact version, started in the default proto
+# repo (the server reads the adapter installed there). Projects in other repos fall back to
+# reading the adapter's code.
+RMCP="{\"command\":\"bash\",\"args\":[\"-c\",\"cd /workspace/${APP_REPO:-app} && exec npx -y @recursica/mcp@$RECURSICA_MCP_VERSION\"],\"enabled\":true,\"timeout\":120}"
+set_env CC_AGENT_MCP_SERVERS "{\"betty\":{\"recursica-mcp\":$RMCP},\"barb\":{\"recursica-mcp\":$RMCP}}"
 set_env ENFORCE_AGENT_SCOPES true
 env_has LITELLM_MASTER_KEY || set_env LITELLM_MASTER_KEY "sk-$(openssl rand -hex 16)"
 # CircleChat ships with a default session secret and default passwords. Anyone who knows the
@@ -189,7 +197,7 @@ start_gateway_and_notifier() {
   docker run -d --name "cc-gateway$SUFFIX" --restart unless-stopped --network "$NET" -p "127.0.0.1:$GATEWAY_PORT:4000" ${mask[@]+"${mask[@]}"} \
     --add-host host.docker.internal:host-gateway \
     -v "$KIT_OUT/litellm.yaml":/app/config.yaml:ro --env-file .env \
-    ghcr.io/berriai/litellm:main-stable --config /app/config.yaml --port 4000
+    "$(pin_image ghcr.io/berriai/litellm:main-stable)" --config /app/config.yaml --port 4000
 
   # Slack notifier: task changes, questions to people, rejected agent posts, stalled tasks.
   docker rm -f "cc-slack-notify$SUFFIX" >/dev/null 2>&1 || true
@@ -201,7 +209,7 @@ start_gateway_and_notifier() {
       -e DATABASE_URL="postgres://postgres:$PG@postgres:5432/circlechat" \
       -e SLACK_WEBHOOK_URL="$(sed -n 's/^SLACK_WEBHOOK_URL=//p' .env)" \
       -e CC_URL="https://$TS_HOST" \
-      node:22-alpine sh -c "npm install --silent && node notify.mjs"
+      "$(pin_image node:22-alpine)" sh -c "npm install --silent && node notify.mjs"
     echo "Slack notifier running."
   else
     echo "Slack notifier off (needs notify.slack in site.json and SLACK_WEBHOOK_URL in .env)."
@@ -256,7 +264,7 @@ fi
 if [ -d "$WS/recursica-knowledge/tools/kev" ]; then
   mkdir -p "$WS/kev"
   cp -r "$WS/recursica-knowledge/tools/kev/." "$WS/kev/"
-  docker run --rm -v "$WS/kev":/app -w /app node:22 npm ci --omit=dev --no-audit --no-fund
+  docker run --rm -v "$WS/kev":/app -w /app "$(pin_image node:22)" npm ci --omit=dev --no-audit --no-fund
 fi
 sudo chmod -R 777 hermes-homes "$WS"
 
@@ -267,7 +275,8 @@ for p in "$PORT" "$PREVIEW_PORT" "$GATEWAY_PORT"; do
   [ -z "$o" ] || { echo "Port $p is already used by $o. Give this stack other ports in site.json (site.port, site.preview_port, site.gateway_port)."; exit 1; }
 done
 
-docker pull nousresearch/hermes-agent:latest
+# The agent image, pinned like every other image. CircleChat reads CC_HERMES_IMAGE from .env.
+set_env CC_HERMES_IMAGE "$(pin_image nousresearch/hermes-agent:latest)"
 docker compose up -d --force-recreate
 
 # Always-on dev server for the application (hot-reloads as Betty edits)
@@ -275,7 +284,7 @@ docker rm -f "betty-proto$SUFFIX" >/dev/null 2>&1 || true
 docker run -d --name "betty-proto$SUFFIX" --restart unless-stopped -p "127.0.0.1:$PREVIEW_PORT:5173" \
   -v "$WS/$APP_REPO":/app -w /app \
   -e __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS="$TS_HOST" \
-  node:22 sh -c "npm install && npx vite --host 0.0.0.0"
+  "$(pin_image node:22)" sh -c "npm install && npx vite --host 0.0.0.0"
 
 start_gateway_and_notifier
 start_egress

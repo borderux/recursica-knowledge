@@ -13,6 +13,8 @@ import path from "node:path";
 import { promisify } from "node:util";
 import { SOAK_MS } from "./updates.mjs";
 
+const here = path.dirname(new URL(import.meta.url).pathname);
+
 const exec = promisify(execFile);
 const run = async (cmd, args, opts = {}) => (await exec(cmd, args, { maxBuffer: 64 << 20, timeout: 60 * 60_000, ...opts })).stdout.trim();
 
@@ -66,6 +68,28 @@ async function main() {
     }
     return false;
   };
+  // The images the kit starts directly (gateway, notifier, agent image), pinned in images.lock:
+  // each pin moves to a newer version after the newer version has been out for 7 days.
+  const lockFile = path.join(ccDir, "images.lock");
+  let oldLock = null;
+  if (fs.existsSync(lockFile)) {
+    const lock = JSON.parse(fs.readFileSync(lockFile, "utf8"));
+    const pinned = [];
+    for (const tag of Object.keys(lock)) {
+      await run("docker", ["pull", "-q", tag], { env }).catch(() => "");
+      const pulled = await run("docker", ["image", "inspect", "-f", "{{index .RepoDigests 0}}", tag], { env }).catch(() => "");
+      pinned.push({ tag, current: lock[tag].ref, pulled });
+    }
+    const moves = chooseDigests(pinned, seen).filter((c) => c.changed);
+    fs.writeFileSync(stateFile, JSON.stringify(seen));
+    if (moves.length) {
+      oldLock = lock;
+      const next = structuredClone(lock);
+      for (const m of moves) next[m.tag] = { ref: m.use, since: new Date().toISOString() };
+      fs.writeFileSync(lockFile, JSON.stringify(next, null, 2) + "\n");
+      await run("bash", [path.join(here, "../setup-host.sh"), "--upgrade"], { env: { ...env, CC_DIR: ccDir } });
+    }
+  }
   const changed = choice.filter((c) => c.changed).map((c) => c.tag);
   if (await healthy()) {
     console.log(`stack ${tenantEnv.TENANT || "border"}: images refreshed${changed.length ? ` (${changed.join(", ")})` : ""}, health check passed`);
@@ -77,6 +101,10 @@ async function main() {
     await run("docker", ["tag", image, tag], { env }).catch(() => {});
   }
   await dc(["up", "-d", "--no-build"]);
+  if (oldLock) {
+    fs.writeFileSync(lockFile, JSON.stringify(oldLock, null, 2) + "\n");
+    await run("bash", [path.join(here, "../setup-host.sh"), "--upgrade"], { env: { ...env, CC_DIR: ccDir } }).catch(() => "");
+  }
   const msg = `:x: Weekly image refresh of stack ${tenantEnv.TENANT || "border"} failed its health check. Every container is back on its previous version.`;
   console.error(msg);
   const slack = (fs.readFileSync(path.join(ccDir, ".env"), "utf8").match(/^SLACK_WEBHOOK_URL=(.+)$/m) ?? [])[1];
