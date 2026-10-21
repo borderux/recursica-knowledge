@@ -21,11 +21,17 @@ export function plan(stacks, state = {}, now = Date.now()) {
   }));
 }
 
-export function localStacks(home) {
+// The stacks whose control computer is this computer. A helper computer keeps a copy of a stack's
+// folder, and the update job never touches that copy.
+export function localStacks(home, computer) {
   const out = [];
   const add = (name, ccDir) => {
     const f = path.join(ccDir, "kit-out/tenant.env");
     if (!fs.existsSync(f)) return;
+    try {
+      const site = JSON.parse(fs.readFileSync(path.join(ccDir, "site.json"), "utf8"));
+      if ((site.nodes ?? []).find((n) => n.control)?.name !== computer) return;
+    } catch { return; }
     const t = Object.fromEntries(fs.readFileSync(f, "utf8").split("\n").filter(Boolean).map((l) => [l.slice(0, l.indexOf("=")), l.slice(l.indexOf("=") + 1)]));
     out.push({ name, ccDir, upgradeAuto: t.UPGRADE_AUTO === "on" });
   };
@@ -44,7 +50,7 @@ async function main() {
   const { makeChannel } = await import("./channel.mjs");
   const chat = makeChannel(env);
   await check({ post: (kind, text, ref) => chat.post(env.SLACK_CHANNEL_ID, kind, text, ref) }).catch((e) => console.error(`os updates: ${e.message}`));
-  const stacks = localStacks(env.OWNER_HOME);
+  const stacks = localStacks(env.OWNER_HOME, env.COMPUTER);
   const asOwner = (ccDir, script) => spawnSync("sudo", ["-u", env.OWNER, "-H", "env", `CC_DIR=${ccDir}`, `WS=${path.join(env.OWNER_HOME, "circlechat-workspace")}`,
     `SITE=${path.join(ccDir, "site.json")}`, `COMPUTER=${env.COMPUTER}`, `PATH=${env.PATH}`, process.execPath, script], { stdio: "inherit" });
   for (const p of plan(stacks, state)) {
