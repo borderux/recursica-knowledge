@@ -8,6 +8,12 @@
 # ~/.recursica-node.env on this machine, never from site.json or the repository.
 set -euo pipefail
 NODE="${1:?usage: setup-node.sh <node name from site.json>}"
+# With TENANT=<name>, the stack's own site.json and secrets file: ~/tenants/<name>/circlechat/site.json
+# and ~/.recursica-node.<name>.env. A job runner then serves that stack alone.
+if [ -n "${TENANT:-}" ]; then
+  SITE="${SITE:-$HOME/tenants/$TENANT/circlechat/site.json}"
+  SECRETS="${SECRETS:-$HOME/.recursica-node.$TENANT.env}"
+fi
 SITE="${SITE:-$HOME/circlechat/site.json}"
 SECRETS="${SECRETS:-$HOME/.recursica-node.env}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -17,6 +23,9 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 OUT="$(mktemp -d)"; trap 'rm -rf "$OUT"' EXIT
 node "$HERE/kit/render.mjs" "$SITE" "$OUT" >/dev/null
 SPEC="$OUT/services/$NODE.json"
+. "$OUT/tenant.env"
+[ "${DOCKER_CONTEXT:-}" ] && export DOCKER_CONTEXT
+DCTX="${DOCKER_CONTEXT:+DOCKER_CONTEXT=$DOCKER_CONTEXT }"
 [ -f "$SPEC" ] || { echo "No node \"$NODE\" in $SITE."; exit 1; }
 
 want_os="$(node -e 'console.log(JSON.parse(require("fs").readFileSync(process.argv[1])).os)' "$SPEC")"
@@ -48,6 +57,7 @@ if [ -n "$JOBS" ]; then
   ROOT="$(cd "$HERE/.." && pwd)"
   docker build -q -t recursica/porter-job -f "$HERE/jobd/porter-job/Dockerfile" "$ROOT"
   . "$OUT/porter.env" 2>/dev/null || true
-  install_unit jobd "set -a; . \"$SECRETS\"; set +a; JOBD_PORT=$(jget port) JOBD_SLOTS=$(jget slots) JOBD_MEMORY_GB=$(jget memory_gb) JOBD_NODE_NAME=$NODE JOBD_ALLOWED_REPOS=${JOBD_ALLOWED_REPOS:-} JOBD_DIR=$HOME/.recursica-jobs node $HERE/jobd/jobd.mjs" "$HOME" "$(id -un)"
+  # One job runner per stack: its own unit, port, job folder, secrets and Docker VM.
+  install_unit "jobd$SUFFIX" "set -a; . \"$SECRETS\"; set +a; ${DCTX}JOBD_PORT=$(jget port) JOBD_SLOTS=$(jget slots) JOBD_MEMORY_GB=$(jget memory_gb) JOBD_NODE_NAME=$NODE JOBD_ALLOWED_REPOS=${JOBD_ALLOWED_REPOS:-} JOBD_DIR=$HOME/.recursica-jobs$SUFFIX node $HERE/jobd/jobd.mjs" "$HOME" "$(id -un)"
 fi
 echo "$NODE: services installed. Check reachability from the control machine with the addresses in site.json."

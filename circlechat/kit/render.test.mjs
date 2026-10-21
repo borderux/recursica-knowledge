@@ -59,3 +59,44 @@ test("porter without a job runner, or with a bad target, is caught", () => {
   assert.match(errs, /needs at least one node with a jobs block/);
   assert.match(errs, /must be an https clone URL/);
 });
+
+test("no tenant keeps the single-stack names", () => {
+  const r = render(example);
+  assert.match(r.tenantEnv, /^TENANT=$/m);
+  assert.match(r.tenantEnv, /^SUFFIX=$/m);
+  assert.match(r.tenantEnv, /^COMPOSE_PROJECT_NAME=circlechat$/m);
+  assert.match(r.tenantEnv, /^PREVIEW_PORT=5173$/m);
+  assert.match(r.tenantEnv, /^GATEWAY_PORT=4000$/m);
+});
+
+test("a tenant gets its own names and ports", () => {
+  const s = clone();
+  Object.assign(s.site, { tenant: "acme", kind: "client", docker_context: "colima-acme", port: 8180, preview_port: 5273, gateway_port: 4100 });
+  delete s.data;
+  assert.deepEqual(validate(s), []);
+  const r = render(s);
+  assert.match(r.tenantEnv, /^SUFFIX=-acme$/m);
+  assert.match(r.tenantEnv, /^COMPOSE_PROJECT_NAME=cc-acme$/m);
+  assert.match(r.tenantEnv, /^PREVIEW_PORT=5273$/m);
+  assert.match(r.tenantEnv, /^GATEWAY_PORT=4100$/m);
+  assert.match(r.tenantEnv, /^DOCKER_CONTEXT=colima-acme$/m);
+  assert.match(r.tenantEnv, /^TENANT_KIND=client$/m);
+});
+
+test("a client stack must have a tenant, its own Docker VM, and no review-data push", () => {
+  const s = clone();
+  s.site.kind = "client";
+  s.data = { kev_disagreements_branch: "data/kev" };
+  const errs = validate(s).join("\n");
+  assert.match(errs, /client stack needs site.tenant/);
+  assert.match(errs, /client stack needs site.docker_context/);
+  assert.match(errs, /cannot set data.kev_disagreements_branch/);
+});
+
+test("a stack's three ports must differ, and the tenant name is a slug", () => {
+  const s = clone();
+  Object.assign(s.site, { tenant: "Bad Name", port: 8080, preview_port: 8080 });
+  const errs = validate(s).join("\n");
+  assert.match(errs, /site.tenant "Bad Name"/);
+  assert.match(errs, /must all differ/);
+});

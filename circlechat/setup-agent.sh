@@ -7,6 +7,10 @@
 set -euo pipefail
 
 HANDLE="${1:?usage: setup-agent.sh <handle>}"
+if [ -n "${TENANT:-}" ]; then
+  CC_DIR="${CC_DIR:-$HOME/tenants/$TENANT/circlechat}"
+  WS="${WS:-$HOME/tenants/$TENANT/workspace}"
+fi
 CC_DIR="${CC_DIR:-$HOME/circlechat}"
 WS="${WS:-$HOME/circlechat-workspace}"
 K="$WS/recursica-knowledge"

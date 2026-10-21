@@ -86,6 +86,34 @@ request cannot run an arbitrary command. The job's secrets reach the container b
 a command line. A job that runs out of memory ends as `out_of_memory` and is reported; the machine
 keeps running.
 
+## Clients: one isolated stack each
+
+**Give each client a separate stack.** A stack is one client's CircleChat, agents, secrets, Slack channel, model gateway and job runner. A client's stack shares no part with Border UX's stack or another client's stack. Several stacks can run on one computer.
+
+CircleChat's workspaces cannot keep clients apart. Inside one CircleChat, every agent shares one `/workspace` folder and one set of agent homes. The CircleChat api, worker and bridge also hold a Docker socket with root access to the computer.
+
+1. **Create a Docker VM for the client.** On a Mac, `colima start --profile <client>` creates the Docker context `colima-<client>`.
+2. **Write the client's site.json** at `~/tenants/<client>/circlechat/site.json`, with these fields:
+   - `site.tenant`: the client's short name, in lowercase.
+   - `site.kind`: `"client"`.
+   - `site.docker_context`: the client's Docker context, such as `colima-<client>`.
+   - `site.port`, `site.preview_port` and `site.gateway_port`: three ports no other stack uses.
+3. **Clone CircleChat** into `~/tenants/<client>/circlechat`. Put the client's secrets in the `.env` file in the same folder, including the client's `SLACK_WEBHOOK_URL`.
+4. **Run every kit script with `TENANT=<client>`**, such as `TENANT=<client> ./circlechat/setup-host.sh`. Use the same prefix for `setup-agent.sh` and `setup-node.sh`.
+5. **Give the stack an address** with `tailscale serve --bg --https=<port> http://127.0.0.1:<port>`.
+
+With `TENANT=<client>`, the stack lives in `~/tenants/<client>/`. The stack's containers, volume, Compose project, ports and background jobs all carry the client's name. The stack's job runner reads secrets from `~/.recursica-node.<client>.env`.
+
+The config check refuses a client stack in three cases:
+
+- The stack has no `site.tenant`.
+- The stack has no `site.docker_context`.
+- The stack sets `data.kev_disagreements_branch`. Review data from a client's code stays in the client's stack.
+
+Model servers that keep no data, such as Kev's model and a local model, can serve every stack. Declare each model server's service in one stack's site.json only. The other stacks list the same models and Kev ports, with no `services` entry. Give a client a separate model server when the client's contract requires one.
+
+A stack with no `site.tenant` keeps the names a single install uses today. An existing install changes nothing.
+
 ## Notifications
 
 With `"notify": { "slack": true }` and `SLACK_WEBHOOK_URL` set, the notifier posts to Slack:

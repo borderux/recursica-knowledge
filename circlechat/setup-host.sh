@@ -8,7 +8,16 @@
 #   2. ./circlechat/setup-host.sh
 #   3. Install each agent in the CircleChat UI, then ./circlechat/setup-agent.sh <handle>.
 #   4. On every other machine in site.json: ./circlechat/setup-node.sh <node name>
+#
+# One computer can hold several stacks, one per client. Give each its own site.json with
+# site.tenant set, and run every kit script with TENANT=<name>: the stack then lives in
+# ~/tenants/<name>/ and every container, volume, port and job carries its name.
 set -euo pipefail
+
+if [ -n "${TENANT:-}" ]; then
+  CC_DIR="${CC_DIR:-$HOME/tenants/$TENANT/circlechat}"
+  WS="${WS:-$HOME/tenants/$TENANT/workspace}"
+fi
 
 CC_DIR="${CC_DIR:-$HOME/circlechat}"
 WS="${WS:-$HOME/circlechat-workspace}"
@@ -24,6 +33,16 @@ command -v node >/dev/null   || { echo "Node 20+ is not installed."; exit 1; }
 KIT_OUT="$CC_DIR/kit-out"
 node "$HERE/kit/render.mjs" "$SITE" "$KIT_OUT"
 . "$KIT_OUT/app.env"
+WANT_TENANT="${TENANT:-}"
+. "$KIT_OUT/tenant.env"
+[ "$WANT_TENANT" = "$TENANT" ] || { echo "TENANT=${WANT_TENANT:-<none>} but $SITE has site.tenant ${TENANT:-<none>}. Run with the stack's own TENANT and site.json."; exit 1; }
+# A client stack runs in its own Docker VM. Every docker command below, and every job installed
+# below, uses that VM.
+if [ -n "$DOCKER_CONTEXT" ]; then
+  docker context inspect "$DOCKER_CONTEXT" >/dev/null 2>&1 || { echo "Docker context $DOCKER_CONTEXT does not exist. On a Mac: colima start --profile ${DOCKER_CONTEXT#colima-}"; exit 1; }
+  export DOCKER_CONTEXT
+fi
+DCTX="${DOCKER_CONTEXT:+DOCKER_CONTEXT=$DOCKER_CONTEXT }"
 TS_HOST="$(site_get site.public_host)"
 PORT="$(site_get site.port)"; PORT="${PORT:-8080}"
 KNOWLEDGE_REPO="$(site_get repos.knowledge)"
@@ -43,12 +62,20 @@ set_env HERMES_TIMEOUT 4000
 # Docker Compose reads COMPOSE_FILE from .env, so a plain `docker compose up -d` in this folder
 # also loads the agents overlay. Without it the api loses Docker access and agents stop installing.
 set_env COMPOSE_FILE compose.yml:compose.agents.yml
+# Each stack is its own Compose project, so two stacks never share a container, network or volume.
+set_env COMPOSE_PROJECT_NAME "$COMPOSE_PROJECT_NAME"
 env_has LITELLM_MASTER_KEY || set_env LITELLM_MASTER_KEY "sk-$(openssl rand -hex 16)"
 # Shared by Porter and every job runner. Copy it into each job-runner machine's ~/.recursica-node.env.
 env_has JOBD_TOKEN || set_env JOBD_TOKEN "$(openssl rand -hex 24)"
 
 # Caddy on $PORT (Tailscale serve, or any reverse proxy, points there)
 sedi "s|- \"80:80\"|- \"$PORT:80\"|" compose.yml
+# CircleChat also publishes 443 and MinIO's console (9001). Two stacks on one computer cannot both
+# hold those, so a tenant stack drops 443 (Tailscale serve gives it HTTPS) and binds the console
+# to a random local port.
+if [ -n "$TENANT" ]; then
+  sedi '/- "443:443"/d; /- "443:443\/udp"/d; s|- "9001:9001"|- "127.0.0.1::9001"|' compose.yml
+fi
 # Shared /workspace mounted into the api (the bridge already reads CC_SHARED_WORKSPACE_DIR)
 grep -q ':/workspace' compose.agents.yml || \
   sedi 's|^      - /var/run/docker.sock:/var/run/docker.sock$|&\
@@ -76,32 +103,39 @@ if [ -d "$WS/recursica-knowledge/tools/kev" ]; then
 fi
 sudo chmod -R 777 hermes-homes "$WS"
 
+# A port another stack already uses stops the setup here, before anything restarts.
+port_owner() { docker ps --format '{{.Names}} {{.Ports}}' | grep -E "(:|\\])$1->" | awk '{print $1}' | grep -vE "^(${COMPOSE_PROJECT_NAME}[-_]|betty-proto$SUFFIX\$|cc-gateway$SUFFIX\$)" || true; }
+for p in "$PORT" "$PREVIEW_PORT" "$GATEWAY_PORT"; do
+  o="$(port_owner "$p")"
+  [ -z "$o" ] || { echo "Port $p is already used by $o. Give this stack other ports in site.json (site.port, site.preview_port, site.gateway_port)."; exit 1; }
+done
+
 docker pull nousresearch/hermes-agent:latest
 docker compose -f compose.yml -f compose.agents.yml up -d --force-recreate
-NET="$(docker network ls --format '{{.Name}}' | grep -m1 '_default$' || true)"
+NET="${COMPOSE_PROJECT_NAME}_default"
 
 # Always-on dev server for the application (hot-reloads as Betty edits)
-docker rm -f betty-proto >/dev/null 2>&1 || true
-docker run -d --name betty-proto --restart unless-stopped -p 5173:5173 \
+docker rm -f "betty-proto$SUFFIX" >/dev/null 2>&1 || true
+docker run -d --name "betty-proto$SUFFIX" --restart unless-stopped -p "$PREVIEW_PORT:5173" \
   -v "$WS/$APP_REPO":/app -w /app \
   -e __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS="$TS_HOST" \
   node:22 sh -c "npm install && npx vite --host 0.0.0.0"
 
 # Model gateway: one address for every model on every node, with fallbacks in route order.
-# Agents reach it at http://localhost:4000 (their turns run on the host network).
-docker rm -f cc-gateway >/dev/null 2>&1 || true
-docker run -d --name cc-gateway --restart unless-stopped -p 127.0.0.1:4000:4000 \
+# Agents reach it at http://localhost:$GATEWAY_PORT (their turns run on the host network).
+docker rm -f "cc-gateway$SUFFIX" >/dev/null 2>&1 || true
+docker run -d --name "cc-gateway$SUFFIX" --restart unless-stopped -p "127.0.0.1:$GATEWAY_PORT:4000" \
   --add-host host.docker.internal:host-gateway \
   -v "$KIT_OUT/litellm.yaml":/app/config.yaml:ro --env-file .env \
   ghcr.io/berriai/litellm:main-stable --config /app/config.yaml --port 4000
 
 # Slack notifier: task changes, questions to people, rejected agent posts, stalled tasks.
-docker rm -f cc-slack-notify >/dev/null 2>&1 || true
+docker rm -f "cc-slack-notify$SUFFIX" >/dev/null 2>&1 || true
 if [ "$(site_get notify.slack)" = true ] && env_has SLACK_WEBHOOK_URL && [ -n "$NET" ]; then
   mkdir -p "$CC_DIR/notify" && cp "$HERE/notify/notify.mjs" "$HERE/notify/package.json" "$CC_DIR/notify/"
   PG="$(sed -n 's/^PG_PASSWORD=//p' .env)"; PG="${PG:-circlechat}"
-  docker run -d --name cc-slack-notify --restart unless-stopped --network "$NET" \
-    -v "$CC_DIR/notify":/app -v cc-notify-state:/state -w /app \
+  docker run -d --name "cc-slack-notify$SUFFIX" --restart unless-stopped --network "$NET" \
+    -v "$CC_DIR/notify":/app -v "cc-notify-state$SUFFIX":/state -w /app \
     -e DATABASE_URL="postgres://postgres:$PG@postgres:5432/circlechat" \
     -e SLACK_WEBHOOK_URL="$(sed -n 's/^SLACK_WEBHOOK_URL=//p' .env)" \
     -e CC_URL="https://$TS_HOST" \
@@ -113,15 +147,15 @@ fi
 
 # Background jobs, the native way for this OS (systemd on Linux, launchd on macOS).
 ENVS="CC_DIR=$CC_DIR WS=$WS SITE=$SITE"
-install_unit circlechat-boot "cd $CC_DIR && docker compose -f compose.yml -f compose.agents.yml up -d" "$CC_DIR" "$(id -un)" boot
-install_unit agents-sync "git config --global --get-all safe.directory | grep -qx $WS/recursica-knowledge || git config --global --add safe.directory $WS/recursica-knowledge; $ENVS $HERE/sync-skills.sh; chown -R $(id -un) $WS/recursica-knowledge/.git $WS/kev" "$CC_DIR" root hourly
+install_unit "circlechat-boot$SUFFIX" "cd $CC_DIR && ${DCTX}docker compose -f compose.yml -f compose.agents.yml up -d" "$CC_DIR" "$(id -un)" boot
+install_unit "agents-sync$SUFFIX" "git config --global --get-all safe.directory | grep -qx $WS/recursica-knowledge || git config --global --add safe.directory $WS/recursica-knowledge; $ENVS $HERE/sync-skills.sh; chown -R $(id -un) $WS/recursica-knowledge/.git $WS/kev" "$CC_DIR" root hourly
 if [ -n "$(site_get porter.watch)" ]; then
   # Announces each new release of the watched repository to Porter, through the workflow webhook
   # in .env (PORTER_HOOK_URL, PORTER_HOOK_SECRET). See circlechat/README.md, "Porter".
-  install_unit release-watch "set -a; . $CC_DIR/.env; set +a; WATCHES_FILE=$KIT_OUT/watches.json STATE=$KIT_OUT/release-watch.json node $HERE/kit/release-watch.mjs" "$CC_DIR" "$(id -un)" hourly
+  install_unit "release-watch$SUFFIX" "set -a; . $CC_DIR/.env; set +a; WATCHES_FILE=$KIT_OUT/watches.json STATE=$KIT_OUT/release-watch.json node $HERE/kit/release-watch.mjs" "$CC_DIR" "$(id -un)" hourly
 fi
 if [ -n "$(site_get data.kev_disagreements_branch)" ]; then
-  install_unit kev-data-push "$ENVS $HERE/kit/push-data.sh" "$CC_DIR" "$(id -un)" hourly
+  install_unit "kev-data-push$SUFFIX" "$ENVS $HERE/kit/push-data.sh" "$CC_DIR" "$(id -un)" hourly
 fi
 
 if grep -qi microsoft /proc/version 2>/dev/null; then
@@ -131,9 +165,16 @@ if grep -qi microsoft /proc/version 2>/dev/null; then
   echo "  schtasks /create /tn \"WSL keep-alive\" /sc onstart /ru SYSTEM /rl highest /tr \"wsl.exe -d ${WSL_DISTRO_NAME:-Ubuntu} -u $(id -un) --exec sleep infinity\""
 fi
 
+if [ -z "$TENANT" ]; then
+  SERVE="tailscale serve --bg http://127.0.0.1:$PORT"
+  WHERE="https://$TS_HOST"
+else
+  SERVE="tailscale serve --bg --https=$PORT http://127.0.0.1:$PORT"
+  WHERE="https://$TS_HOST:$PORT"
+fi
 cat << MSG
 
-Done. Point https://$TS_HOST at http://127.0.0.1:$PORT (Tailscale: tailscale serve --bg http://127.0.0.1:$PORT)
-and https://$TS_HOST:5173 at http://127.0.0.1:5173 for the app preview.
-Wait ~30s for the api, then install agents in the UI and run setup-agent.sh for each.
+Done${TENANT:+ (stack: $TENANT)}. Point $WHERE at http://127.0.0.1:$PORT (Tailscale: $SERVE)
+and https://$TS_HOST:$PREVIEW_PORT at http://127.0.0.1:$PREVIEW_PORT for the app preview.
+Wait ~30s for the api, then install agents in the UI and run ${TENANT:+TENANT=$TENANT }setup-agent.sh for each.
 MSG

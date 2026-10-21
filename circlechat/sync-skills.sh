@@ -2,6 +2,10 @@
 # After merging a knowledge PR: pull, then refresh every agent's skills and persona.
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
+if [ -n "${TENANT:-}" ]; then
+  CC_DIR="${CC_DIR:-$HOME/tenants/$TENANT/circlechat}"
+  WS="${WS:-$HOME/tenants/$TENANT/workspace}"
+fi
 CC_DIR="${CC_DIR:-$HOME/circlechat}"
 WS="${WS:-$HOME/circlechat-workspace}"
 K="$WS/recursica-knowledge"

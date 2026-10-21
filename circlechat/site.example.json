@@ -15,7 +15,11 @@
     "",
     "jobs: a node with a jobs block runs a job runner (circlechat/jobd) for long, heavy agent work,",
     "such as Porter's adapter ports. Each job gets memory_gb of memory at most; slots jobs run at once.",
-    "porter: the release Porter watches, the adapters it ports to, and who it mentions with a result."
+    "porter: the release Porter watches, the adapters it ports to, and who it mentions with a result.",
+    "",
+    "site.tenant, site.kind, site.preview_port, site.gateway_port, site.docker_context: one stack per",
+    "client on a shared computer. Leave them out for a single stack. A client stack sets kind \"client\",",
+    "its own tenant name and ports, and its own Docker VM; see circlechat/README.md, \"Clients\"."
   ],
   "site": {
     "public_host": "circlechat.example.ts.net",

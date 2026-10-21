@@ -11,9 +11,16 @@
 //   job-nodes.txt         job runner URLs, best first (Porter sends each adapter port to the first with room)
 //   porter.env            PORTER_OWNER, JOBD_ALLOWED_REPOS
 //   watches.json          the releases the release watcher announces
+//   tenant.env            TENANT, SUFFIX, COMPOSE_PROJECT_NAME, ports and DOCKER_CONTEXT for this stack
 //
 // Any number of nodes. Nothing here is specific to one deployment: that all lives in site.json,
 // which is kept outside the repository.
+//
+// One site.json is one stack. A computer can hold several stacks, one per client (a tenant), each
+// in its own folder with its own database, files, agents, secrets and Slack channel. site.tenant
+// names the stack, and every container, volume, port and background job of the stack carries that
+// name, so two stacks never share one. A client stack (site.kind "client") must also run in its
+// own Docker VM (site.docker_context), so no client shares a Docker socket or network with another.
 import fs from "node:fs";
 import path from "node:path";
 
@@ -23,6 +30,20 @@ export function validate(site) {
   const errs = [];
   const nodes = site.nodes ?? [];
   if (!site.site?.public_host) errs.push("site.public_host is required");
+  const t = site.site ?? {};
+  if (t.tenant !== undefined && (!SLUG.test(t.tenant) || t.tenant === "default")) errs.push(`site.tenant "${t.tenant}" must be lowercase letters, digits and hyphens, and not "default"`);
+  if (t.kind !== undefined && !["internal", "client"].includes(t.kind)) errs.push("site.kind must be internal or client");
+  for (const k of ["port", "preview_port", "gateway_port"]) {
+    if (t[k] !== undefined && !(Number.isInteger(t[k]) && t[k] >= 1024 && t[k] <= 65535)) errs.push(`site.${k} must be a port number from 1024 to 65535`);
+  }
+  const ports = ["port", "preview_port", "gateway_port"].map((k) => t[k]).filter((v) => v !== undefined);
+  if (new Set(ports).size !== ports.length) errs.push("site.port, site.preview_port and site.gateway_port must all differ");
+  if (t.docker_context !== undefined && !/^[A-Za-z0-9._-]+$/.test(t.docker_context)) errs.push("site.docker_context must be a Docker context name");
+  if (t.kind === "client") {
+    if (!t.tenant) errs.push("a client stack needs site.tenant, so its containers, ports and jobs never collide with another stack's");
+    if (!t.docker_context) errs.push("a client stack needs site.docker_context: its own Docker VM (for example a Colima profile), so no client shares a Docker socket or network with another");
+    if (site.data?.kev_disagreements_branch) errs.push("a client stack cannot set data.kev_disagreements_branch: review data from a client's code never leaves the client's stack");
+  }
   for (const k of ["knowledge", "app", "app_dir", "app_github"]) if (!site.repos?.[k]) errs.push(`repos.${k} is required`);
   if (site.repos?.app_dir && !/^[A-Za-z0-9._-]+$/.test(site.repos.app_dir)) errs.push("repos.app_dir must be a plain folder name");
   if (site.repos?.app_github && !/^[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+$/.test(site.repos.app_github)) errs.push("repos.app_github must be owner/name");
@@ -112,7 +133,20 @@ export function render(site) {
   const watches = p ? [{ repo: p.watch, hook: "PORTER" }] : [];
   const services = Object.fromEntries(nodes.map((n) => [n.name, { os: n.os, services: n.services ?? [], jobs: n.jobs ?? null }]));
   const appEnv = `APP_REPO=${site.repos.app_dir}\nAPP_REPO_GITHUB=${site.repos.app_github}\n`;
-  return { litellm, kev, services, appEnv, jobNodes, porterEnv, watches };
+  // No tenant keeps the names a single-stack install has always used, so an existing install
+  // keeps its containers, volumes and jobs.
+  const st = site.site ?? {};
+  const tenant = st.tenant ?? "";
+  const tenantEnv = [
+    `TENANT=${tenant}`,
+    `TENANT_KIND=${st.kind ?? "internal"}`,
+    `SUFFIX=${tenant ? `-${tenant}` : ""}`,
+    `COMPOSE_PROJECT_NAME=${tenant ? `cc-${tenant}` : "circlechat"}`,
+    `PREVIEW_PORT=${st.preview_port ?? 5173}`,
+    `GATEWAY_PORT=${st.gateway_port ?? 4000}`,
+    `DOCKER_CONTEXT=${st.docker_context ?? ""}`,
+  ].join("\n") + "\n";
+  return { litellm, kev, services, appEnv, jobNodes, porterEnv, watches, tenantEnv };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
@@ -130,5 +164,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   fs.writeFileSync(path.join(out, "job-nodes.txt"), r.jobNodes.join(",") + "\n");
   fs.writeFileSync(path.join(out, "porter.env"), r.porterEnv);
   fs.writeFileSync(path.join(out, "watches.json"), JSON.stringify(r.watches) + "\n");
+  fs.writeFileSync(path.join(out, "tenant.env"), r.tenantEnv);
   console.log(`rendered: ${site.nodes.length} node(s), ${Object.keys(site.routes ?? {}).length} route(s), ${r.kev.length} Kev engine(s), ${r.jobNodes.length} job runner(s)`);
 }
