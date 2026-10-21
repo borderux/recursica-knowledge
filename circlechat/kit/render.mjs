@@ -36,8 +36,11 @@ export function isCloud(backend, site) {
 // The sites a stack's agents may reach through the outgoing filter: GitHub, the npm and Python
 // package registries, the cloud model providers the stack's routes use (only with cloud models
 // allowed), each other computer of the stack, and the sites in site.egress.allow.
+// Cloud model backends the gateway accepts: Anthropic directly, or Claude through AWS Bedrock,
+// Google Vertex AI or Azure, as an enterprise's purchasing requires.
+export const CLOUD_PREFIXES = ["anthropic/", "bedrock/", "vertex_ai/", "azure/"];
 export const EGRESS_BASE = [".github.com", ".githubusercontent.com", "registry.npmjs.org", "pypi.org", "files.pythonhosted.org"];
-const PROVIDER_HOSTS = { anthropic: ["api.anthropic.com"], xai: ["api.x.ai"], vertex_ai: [".googleapis.com"], bedrock: [".amazonaws.com"], openai: ["api.openai.com"] };
+const PROVIDER_HOSTS = { anthropic: ["api.anthropic.com"], xai: ["api.x.ai"], vertex_ai: [".googleapis.com"], bedrock: [".amazonaws.com"], azure: [".openai.azure.com", ".services.ai.azure.com"], openai: ["api.openai.com"] };
 export function egressAllow(site) {
   const out = new Set(EGRESS_BASE);
   // With masking on, only the gateway reaches the cloud model providers, so every request passes
@@ -106,6 +109,12 @@ export function validate(site) {
   // password manager, so no computer can read the evidence it uploads.
   if (site.security?.evidence_recipient !== undefined && !/^age1[0-9a-z]{58}$/.test(site.security.evidence_recipient)) errs.push("security.evidence_recipient must be an age public key (age1...)");
   // Nightly backups: restic, through an rclone remote such as "gdrive-backups:agent-backups".
+  // Settings that differ by client: the git host, how agents get access to a repo, the HTTPS
+  // address in front of CircleChat, and automatic upgrades.
+  if (site.git?.host !== undefined && !["github", "other"].includes(site.git.host)) errs.push('git.host must be "github" or "other"');
+  if (site.repos?.access !== undefined && !["service-account", "github-app", "admin-token"].includes(site.repos.access)) errs.push('repos.access must be "service-account", "github-app" or "admin-token"');
+  if (site.site?.proxy !== undefined && !["tailscale", "other"].includes(site.site.proxy)) errs.push('site.proxy must be "tailscale" or "other"');
+  if (site.upgrade?.auto !== undefined && typeof site.upgrade.auto !== "boolean") errs.push("upgrade.auto must be true or false");
   if (site.privacy?.mask_pii !== undefined && typeof site.privacy.mask_pii !== "boolean") errs.push("privacy.mask_pii must be true or false");
   if (site.privacy?.mask_pii === true && !cloudAllowed(site)) errs.push("privacy.mask_pii applies to cloud model calls, and this client stack has no recorded permission for cloud models");
   if (site.egress !== undefined) {
@@ -176,8 +185,8 @@ export function validate(site) {
     if (!SLUG.test(route)) errs.push(`route "${route}" must be a slug`);
     if (!Array.isArray(backends) || !backends.length) errs.push(`route ${route}: needs at least one backend`);
     for (const b of backends ?? []) {
-      if (b.startsWith("anthropic/")) continue;
-      if (!known.has(b)) errs.push(`route ${route}: unknown backend "${b}" (use <node>/<model id> or anthropic/<model>)`);
+      if (CLOUD_PREFIXES.some((p) => b.startsWith(p))) continue;
+      if (!known.has(b)) errs.push(`route ${route}: unknown backend "${b}" (use <node>/<model id>, or a cloud model: ${CLOUD_PREFIXES.map((p) => `${p}<model>`).join(", ")})`);
     }
   }
   if (site.porter) {
@@ -199,6 +208,9 @@ export function render(site) {
 
   const params = (b) => {
     if (b.startsWith("anthropic/")) return { model: b, api_key: "os.environ/ANTHROPIC_API_KEY" };
+    // Bedrock, Vertex AI and Azure read their credentials from the gateway's environment
+    // (AWS_*, VERTEXAI_*, AZURE_API_*), which the secrets helper writes to .env.
+    if (CLOUD_PREFIXES.some((p) => b.startsWith(p))) return { model: b };
     const { n, m } = byKey.get(b);
     return { model: `openai/${m.model}`, api_base: url(n, m.port, "/v1"), api_key: "none" };
   };
@@ -248,6 +260,11 @@ export function render(site) {
     `BACKUP_REMOTE=${site.backup?.remote ?? ""}`,
     `EGRESS=${site.egress?.enabled === false ? "off" : "on"}`,
     `MASK_PII=${maskPii(site) ? "on" : "off"}`,
+    `GIT_HOST=${site.git?.host ?? "github"}`,
+    `REPO_ACCESS=${site.repos?.access ?? "service-account"}`,
+    `PROXY=${site.site?.proxy ?? "tailscale"}`,
+    `UPGRADE_AUTO=${site.upgrade?.auto === true ? "on" : "off"}`,
+    `PUBLIC_KNOWLEDGE=${/borderux\/recursica-knowledge(\.git)?$/.test(site.repos?.knowledge ?? "") ? "yes" : "no"}`,
     `BACKUP_TIME=${site.backup?.time ?? "02:00"}`,
   ].join("\n") + "\n";
   const egress = { allow: egressAllow(site).join("\n") + "\n", conf: squidConf() };

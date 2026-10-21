@@ -187,3 +187,22 @@ test("masking is on by default for a client stack with cloud models, and keeps a
   assert.match(render(s).egress.allow, /api\.anthropic\.com/);
   assert.match(render(example).tenantEnv, /^MASK_PII=off$/m);
 });
+
+test("cloud models through Bedrock, Vertex AI or Azure are allowed, and the per-client settings are checked", () => {
+  const s = clone();
+  s.routes["claude-bedrock"] = ["bedrock/anthropic.claude-sonnet"];
+  s.git = { host: "other" };
+  s.repos.access = "admin-token";
+  s.site.proxy = "other";
+  s.upgrade = { auto: true };
+  assert.deepEqual(validate(s), []);
+  const r = render(s);
+  assert.match(r.tenantEnv, /^GIT_HOST=other$/m);
+  assert.match(r.tenantEnv, /^REPO_ACCESS=admin-token$/m);
+  assert.match(r.tenantEnv, /^UPGRADE_AUTO=on$/m);
+  assert.match(r.egress.allow, /\.amazonaws\.com/);
+  s.git.host = "gitlab-ish"; s.repos.access = "magic";
+  const errs = validate(s).join("\n");
+  assert.match(errs, /git.host must be/);
+  assert.match(errs, /repos.access must be/);
+});

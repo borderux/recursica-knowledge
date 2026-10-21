@@ -21,10 +21,10 @@ MARK="<!-- recursica-circlechat -->"
 # Per-deployment values (app repo name, Kev engines) come from setup-host.sh's render of site.json.
 KIT_OUT="$CC_DIR/kit-out"
 [ -f "$KIT_OUT/app.env" ] && . "$KIT_OUT/app.env"
-# Alan proposes changes to the public knowledge repo, so a client stack never runs Alan: no client
-# detail can reach a public pull request.
-if [ -f "$KIT_OUT/tenant.env" ] && grep -q '^TENANT_KIND=client' "$KIT_OUT/tenant.env" && [ "$HANDLE" = alan ]; then
-  echo "A client stack never runs Alan: Alan's pull requests go to the public knowledge repo."; exit 1
+# Alan sends pull requests only to the stack's own knowledge repo. A client stack that still uses
+# the public knowledge repo never runs Alan, so no client detail reaches a public pull request.
+if [ -f "$KIT_OUT/tenant.env" ] && grep -q '^TENANT_KIND=client' "$KIT_OUT/tenant.env" && grep -q '^PUBLIC_KNOWLEDGE=yes' "$KIT_OUT/tenant.env" && [ "$HANDLE" = alan ]; then
+  echo "This client stack uses the public knowledge repo, so it never runs Alan. Point repos.knowledge at the client's own fork first."; exit 1
 fi
 
 # Loki on CircleChat has no Drive: his fence is /workspace/loki (agents/loki/platform/circlechat.md).
