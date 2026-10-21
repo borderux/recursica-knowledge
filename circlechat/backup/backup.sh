@@ -9,7 +9,6 @@
 # file store, the agent homes, the shared workspace and site.json. The backup leaves out .env:
 # every secret lives in the stack's GitHub environment.
 set -euo pipefail
-HERE="$(cd "$(dirname "$0")" && pwd)"
 : "${CC_DIR:?CC_DIR}" "${OWNER_HOME:?OWNER_HOME}"
 WS="${WS:-$OWNER_HOME/circlechat-workspace}"
 . "$CC_DIR/kit-out/tenant.env"
