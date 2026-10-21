@@ -10,11 +10,14 @@ export const ACTIONS = {
   "shut-down": { label: "Shut down", twoFactor: false, style: "danger" },
   "release-lockdown": { label: "Release lockdown", twoFactor: true },
   "allow-source": { label: "Allow this source", twoFactor: true },
+  "egress-allow-once": { label: "Allow once (15 min)", twoFactor: true },
+  "egress-deny": { label: "Deny", twoFactor: false, style: "danger" },
 };
 
 export const KINDS = {
   reboot: ["reboot-4am", "reboot-tonight", "reboot-pick", "reboot-skip"],
   lockdown: ["cut-off-now", "keep-watching", "shut-down", "release-lockdown", "allow-source"],
+  egress: ["egress-allow-once", "egress-deny"],
 };
 
 export const TZ = "America/New_York";

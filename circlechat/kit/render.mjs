@@ -33,6 +33,43 @@ export function isCloud(backend, site) {
   return !names.has(node);
 }
 
+// The sites a stack's agents may reach through the outgoing filter: GitHub, the npm and Python
+// package registries, the cloud model providers the stack's routes use (only with cloud models
+// allowed), each other computer of the stack, and the sites in site.egress.allow.
+export const EGRESS_BASE = [".github.com", ".githubusercontent.com", "registry.npmjs.org", "pypi.org", "files.pythonhosted.org"];
+const PROVIDER_HOSTS = { anthropic: ["api.anthropic.com"], xai: ["api.x.ai"], vertex_ai: [".googleapis.com"], bedrock: [".amazonaws.com"], openai: ["api.openai.com"] };
+export function egressAllow(site) {
+  const out = new Set(EGRESS_BASE);
+  if (cloudAllowed(site)) {
+    out.add("api.anthropic.com");   // the agents' own Claude keys
+    for (const b of Object.values(site.routes ?? {}).flat()) for (const h of PROVIDER_HOSTS[String(b).split("/")[0]] ?? []) out.add(h);
+  }
+  out.add("host.docker.internal");
+  for (const n of site.nodes ?? []) if (n.address && n.address !== "host.docker.internal") out.add(n.address);
+  for (const h of site.egress?.allow ?? []) out.add(h);
+  return [...out].sort();
+}
+
+export function squidConf() {
+  return `# Written by circlechat/kit/render.mjs. Each stack's outgoing filter.
+http_port 3128
+pid_filename none
+acl allowed dstdomain "/etc/egress/allow.txt"
+acl allow_once dstdomain "/etc/egress/allow-once.txt"
+acl Safe_ports port 80 443 1919 7400 8009 11434
+http_access deny !Safe_ports
+http_access allow allowed
+http_access allow allow_once
+deny_info ERR_EGRESS_BLOCKED all
+http_access deny all
+logformat egress %ts %>a %rm %ru %>Hs %Ss
+access_log stdio:/var/log/egress/access.log logformat=egress
+cache deny all
+via off
+forwarded_for delete
+`;
+}
+
 // A stack may call cloud models unless it is a client stack without a recorded permission.
 export function cloudAllowed(site) {
   if (site.site?.kind !== "client") return true;
@@ -57,6 +94,12 @@ export function validate(site) {
   // password manager, so no computer can read the evidence it uploads.
   if (site.security?.evidence_recipient !== undefined && !/^age1[0-9a-z]{58}$/.test(site.security.evidence_recipient)) errs.push("security.evidence_recipient must be an age public key (age1...)");
   // Nightly backups: restic, through an rclone remote such as "gdrive-backups:agent-backups".
+  if (site.egress !== undefined) {
+    const e = site.egress;
+    if (e.enabled !== undefined && typeof e.enabled !== "boolean") errs.push("egress.enabled must be true or false");
+    for (const h of e.allow ?? []) if (!/^\.?[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/.test(h)) errs.push(`egress.allow: "${h}" must be a host name, such as docs.example.com or .example.com for every subdomain`);
+    if (!cloudAllowed(site)) for (const h of e.allow ?? []) if (Object.values(PROVIDER_HOSTS).flat().some((p) => h === p || h.endsWith(p))) errs.push(`egress.allow: "${h}" is a cloud model provider, and this client stack has no recorded permission for cloud models`);
+  }
   if (site.backup !== undefined) {
     const b = site.backup;
     if (!/^[A-Za-z0-9_-]+:\S*$/.test(b?.remote ?? "")) errs.push("backup.remote must be an rclone remote and folder, such as gdrive-backups:agent-backups");
@@ -188,9 +231,11 @@ export function render(site) {
     `DOCKER_CONTEXT=${st.docker_context ?? ""}`,
     `CLOUD_MODELS=${cloudAllowed(site) ? "allowed" : "local-only"}`,
     `BACKUP_REMOTE=${site.backup?.remote ?? ""}`,
+    `EGRESS=${site.egress?.enabled === false ? "off" : "on"}`,
     `BACKUP_TIME=${site.backup?.time ?? "02:00"}`,
   ].join("\n") + "\n";
-  return { litellm, kev, services, appEnv, jobNodes, porterEnv, watches, tenantEnv };
+  const egress = { allow: egressAllow(site).join("\n") + "\n", conf: squidConf() };
+  return { litellm, kev, services, appEnv, jobNodes, porterEnv, watches, tenantEnv, egress };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
@@ -209,5 +254,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   fs.writeFileSync(path.join(out, "porter.env"), r.porterEnv);
   fs.writeFileSync(path.join(out, "watches.json"), JSON.stringify(r.watches) + "\n");
   fs.writeFileSync(path.join(out, "tenant.env"), r.tenantEnv);
+  fs.mkdirSync(path.join(out, "egress"), { recursive: true });
+  fs.writeFileSync(path.join(out, "egress", "allow.txt"), r.egress.allow);
+  fs.writeFileSync(path.join(out, "egress", "squid.conf"), r.egress.conf);
+  // One-time consents: the cluster agent rewrites this file. An empty list holds a name that
+  // never resolves, because Squid refuses an empty list.
+  const once = path.join(out, "egress", "allow-once.txt");
+  if (!fs.existsSync(once)) fs.writeFileSync(once, "nothing.invalid\n");
   console.log(`rendered: ${site.nodes.length} node(s), ${Object.keys(site.routes ?? {}).length} route(s), ${r.kev.length} Kev engine(s), ${r.jobNodes.length} job runner(s)`);
 }

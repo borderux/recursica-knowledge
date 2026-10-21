@@ -59,8 +59,25 @@ if [ -n "$JOBS" ]; then
   ROOT="$(cd "$HERE/.." && pwd)"
   docker build -q -t recursica/porter-job -f "$HERE/jobd/porter-job/Dockerfile" "$ROOT"
   . "$OUT/porter.env" 2>/dev/null || true
+  # The port jobs' outgoing filter: a closed network whose only exit is the filter, with the
+  # stack's allowlist. A refused site gets a Slack alert; permanent access goes in site.json.
+  JOBS_NET_ARGS=""
+  if grep -q '^EGRESS=on' "$OUT/tenant.env"; then
+    JNET="jobs-egress$SUFFIX"
+    docker network inspect "$JNET" >/dev/null 2>&1 || docker network create --internal "$JNET" >/dev/null
+    docker build -q -t recursica/egress "$HERE/egress" >/dev/null
+    # The rendered files in $OUT go away when this script ends, so the filter gets a copy.
+    [ -n "${TENANT:-}" ] && JBASE="$HOME/tenants/$TENANT/jobs-egress" || JBASE="$HOME/.recursica-jobs-egress"
+    mkdir -p "$JBASE/conf" "$JBASE/logs" && chmod 777 "$JBASE/logs"
+    cp "$OUT/egress/"* "$JBASE/conf/"
+    docker rm -f "cc-jobs-egress$SUFFIX" >/dev/null 2>&1 || true
+    docker run -d --name "cc-jobs-egress$SUFFIX" --restart unless-stopped --add-host host.docker.internal:host-gateway \
+      -v "$JBASE/conf":/etc/egress:ro -v "$JBASE/logs":/var/log/egress recursica/egress >/dev/null
+    docker network connect --alias egress "$JNET" "cc-jobs-egress$SUFFIX"
+    JOBS_NET_ARGS="JOBD_NETWORK=$JNET JOBD_PROXY=http://egress:3128 "
+  fi
   # One job runner per stack: its own unit, port, job folder, secrets and Docker VM.
   if [ -n "${TENANT:-}" ]; then JOBS_DIR="$HOME/tenants/$TENANT/jobs"; else JOBS_DIR="$HOME/.recursica-jobs"; fi
-  install_unit "jobd$SUFFIX" "set -a; . \"$SECRETS\"; set +a; ${DCTX}JOBD_PORT=$(jget port) JOBD_SLOTS=$(jget slots) JOBD_MEMORY_GB=$(jget memory_gb) JOBD_NODE_NAME=$NODE JOBD_ALLOWED_REPOS=${JOBD_ALLOWED_REPOS:-} JOBD_DIR=$JOBS_DIR node $HERE/jobd/jobd.mjs" "$HOME" "$(id -un)"
+  install_unit "jobd$SUFFIX" "set -a; . \"$SECRETS\"; set +a; ${DCTX}${JOBS_NET_ARGS}JOBD_PORT=$(jget port) JOBD_SLOTS=$(jget slots) JOBD_MEMORY_GB=$(jget memory_gb) JOBD_NODE_NAME=$NODE JOBD_ALLOWED_REPOS=${JOBD_ALLOWED_REPOS:-} JOBD_DIR=$JOBS_DIR node $HERE/jobd/jobd.mjs" "$HOME" "$(id -un)"
 fi
 echo "$NODE: services installed. Check reachability from the control machine with the addresses in site.json."

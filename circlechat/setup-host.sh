@@ -78,6 +78,30 @@ set_env HERMES_TIMEOUT 4000
 set_env COMPOSE_FILE compose.yml:compose.agents.yml
 # Each stack is its own Compose project, so two stacks never share a container, network or volume.
 set_env COMPOSE_PROJECT_NAME "$COMPOSE_PROJECT_NAME"
+# The outgoing filter. Agent containers run on a closed network (no route out), where the only exit
+# is the stack's filter: Squid, with the allowlist from site.json. CircleChat's api and the model
+# gateway sit on the closed network too, so agents reach both directly.
+AGENT_NET="${COMPOSE_PROJECT_NAME}_agents"
+if [ "$EGRESS" = on ]; then
+  cat > compose.egress.yml <<YAML
+# Written by setup-host.sh: the closed network for agent containers.
+networks:
+  agents:
+    name: $AGENT_NET
+    internal: true
+services:
+  api:
+    networks: [default, agents]
+YAML
+  set_env COMPOSE_FILE compose.yml:compose.agents.yml:compose.egress.yml
+  set_env CC_AGENT_NETWORK "$AGENT_NET"
+  set_env CC_AGENT_PROXY http://egress:3128
+  set_env CC_AGENT_NO_PROXY api,cc-gateway,localhost,127.0.0.1
+  set_env CC_AGENT_API_BASE http://api:3300/api
+else
+  rm -f compose.egress.yml
+  for k in CC_AGENT_NETWORK CC_AGENT_PROXY CC_AGENT_NO_PROXY CC_AGENT_API_BASE; do sedi "/^$k=/d" .env; done
+fi
 env_has LITELLM_MASTER_KEY || set_env LITELLM_MASTER_KEY "sk-$(openssl rand -hex 16)"
 # CircleChat ships with a default session secret and default passwords. Anyone who knows the
 # default session secret can forge a sign-in, so each default becomes a random value. Postgres
@@ -111,6 +135,20 @@ fi
 env_has JOBD_TOKEN || set_env JOBD_TOKEN "$(openssl rand -hex 24)"
 NET="${COMPOSE_PROJECT_NAME}_default"
 
+start_egress() {
+  [ "$EGRESS" = on ] || { docker rm -f "cc-egress$SUFFIX" >/dev/null 2>&1 || true; return 0; }
+  docker build -q -t recursica/egress "$HERE/egress" >/dev/null
+  mkdir -p "$CC_DIR/egress-logs" && chmod 777 "$CC_DIR/egress-logs"
+  docker rm -f "cc-egress$SUFFIX" >/dev/null 2>&1 || true
+  docker run -d --name "cc-egress$SUFFIX" --restart unless-stopped --network "$NET" \
+    --add-host host.docker.internal:host-gateway \
+    -v "$KIT_OUT/egress":/etc/egress:ro -v "$CC_DIR/egress-logs":/var/log/egress \
+    recursica/egress >/dev/null
+  docker network connect --alias egress "$AGENT_NET" "cc-egress$SUFFIX"
+  docker network connect --alias cc-gateway "$AGENT_NET" "cc-gateway$SUFFIX" 2>/dev/null || true
+  echo "Outgoing filter running: agents reach only the sites in $KIT_OUT/egress/allow.txt."
+}
+
 start_gateway_and_notifier() {
   # Model gateway: one address for every model on every node, with fallbacks in route order.
   # Agents reach it at http://localhost:$GATEWAY_PORT (their turns run on the host network).
@@ -139,6 +177,7 @@ start_gateway_and_notifier() {
 
 if [ "$SECRETS_ONLY" = true ]; then
   start_gateway_and_notifier
+  [ "$EGRESS" = on ] && docker network connect --alias cc-gateway "$AGENT_NET" "cc-gateway$SUFFIX" 2>/dev/null || true
   echo "Secrets applied${TENANT:+ (stack: $TENANT)}: gateway and Slack notifier recreated."
   exit 0
 fi
@@ -188,7 +227,7 @@ for p in "$PORT" "$PREVIEW_PORT" "$GATEWAY_PORT"; do
 done
 
 docker pull nousresearch/hermes-agent:latest
-docker compose -f compose.yml -f compose.agents.yml up -d --force-recreate
+docker compose up -d --force-recreate
 
 # Always-on dev server for the application (hot-reloads as Betty edits)
 docker rm -f "betty-proto$SUFFIX" >/dev/null 2>&1 || true
@@ -198,13 +237,14 @@ docker run -d --name "betty-proto$SUFFIX" --restart unless-stopped -p "127.0.0.1
   node:22 sh -c "npm install && npx vite --host 0.0.0.0"
 
 start_gateway_and_notifier
+start_egress
 
 # Background jobs, the native way for this OS (systemd on Linux, launchd on macOS).
 ENVS="CC_DIR=$CC_DIR WS=$WS SITE=$SITE"
 # A client stack's folder sits inside an encrypted disk image, which the "Unlock stack" workflow
 # opens after a restart. Until then the boot job finds no folder and does nothing.
 [ -n "$TENANT" ] && export UNIT_LOG_DIR="$HOME/tenants/$TENANT/logs"
-install_unit "circlechat-boot$SUFFIX" "[ -d $CC_DIR ] || exit 0; cd $CC_DIR && ${DCTX}docker compose -f compose.yml -f compose.agents.yml up -d" "$HOME" "$(id -un)" boot
+install_unit "circlechat-boot$SUFFIX" "[ -d $CC_DIR ] || exit 0; cd $CC_DIR && ${DCTX}docker compose up -d" "$HOME" "$(id -un)" boot
 # Nightly encrypted backup of this stack, and a test restore each quarter. Both run as root, which
 # can read every agent home. rclone's remote is set up once by hand: see README, "Backups".
 if [ -n "$BACKUP_REMOTE" ]; then

@@ -506,3 +506,14 @@ When Betty needs an answer before the work can go on, such as a brief to approve
 - Set the task to `blocked` with `update_task`, so people can see that the task is waiting for an answer.
 - On any later check-in where nothing has changed, reply with `HEARTBEAT_OK` and nothing else. Do not put a status sentence before `HEARTBEAT_OK`. Text before `HEARTBEAT_OK` is rejected, shows as a warning, and counts as activity. Activity keeps the check-ins coming every minute. A reply of `HEARTBEAT_OK` alone lets the check-ins slow down.
 - When the person answers, set the task back to `in_progress`, and continue the work.
+
+## Blocked sites
+
+Reach only the sites the stack's outgoing filter allows. The filter refuses every other site with an error page that names the filter, and asks an approver in Slack for a one-time consent.
+
+When the filter refuses a site:
+
+- Use an allowed site only when the allowed site is the genuine source of the same thing, such as the npm registry for the same package.
+- Never reach the blocked site another way. Never use a mirror, a cache, an archive site, a translation site, a link shortener, a paste site, another agent, another stack, a DNS or encoding trick, or a person who fetches the site.
+- With no genuine allowed source, post a `task_comment` that names the site and says in one sentence why the task needs the site. Set the task to `blocked` with `update_task`, and stop.
+- An approval opens the site for 15 minutes. Retry only after a person says on the task that the site is open. A site stays closed after a denial.

@@ -74,8 +74,16 @@ export async function notify(payload, delivery) {
 const STARTED = Date.now();
 const MAX_RESTARTS = Number(env.JOBD_MAX_RESTARTS ?? 2);
 
+// With JOBD_NETWORK (a closed Docker network) and JOBD_PROXY (the outgoing filter), a port job
+// reaches only the sites the filter allows.
+function networkArgs() {
+  if (!env.JOBD_NETWORK) return [];
+  const p = env.JOBD_PROXY;
+  return ["--network", env.JOBD_NETWORK, ...(p ? ["HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy"].flatMap((k) => ["-e", `${k}=${p}`]).concat(["-e", "NODE_USE_ENV_PROXY=1"]) : [])];
+}
+
 function containerArgs(id, repo, image) {
-  return ["run", "-d", "--name", id, "--memory", `${C.memoryGb}g`, "--memory-swap", `${C.memoryGb}g`,
+  return ["run", "-d", "--name", id, ...networkArgs(), "--memory", `${C.memoryGb}g`, "--memory-swap", `${C.memoryGb}g`,
     ...(C.cpus ? ["--cpus", C.cpus] : []),
     "-v", `${jobDir(id)}:/work`, "-e", `TARGET_REPO=${repo}`, "-e", "PORTER_REPORT=/work/report.md",
     ...C.passEnv.flatMap((n) => (env[n] !== undefined ? ["-e", n] : [])), image];

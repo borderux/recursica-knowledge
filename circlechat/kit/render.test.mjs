@@ -158,3 +158,18 @@ test("the evidence key must be an age public key", () => {
   s.security.evidence_recipient = "age1" + "q".repeat(58);
   assert.deepEqual(validate(s), []);
 });
+
+test("the outgoing filter allows GitHub, the registries and the stack's computers; cloud providers only with permission", () => {
+  const r = render(example);
+  assert.match(r.egress.allow, /^\.github\.com$/m);
+  assert.match(r.egress.allow, /^registry\.npmjs\.org$/m);
+  assert.match(r.egress.allow, /^api\.anthropic\.com$/m);
+  assert.match(r.egress.conf, /http_access deny all/);
+  const local = clone();
+  Object.assign(local.site, { tenant: "acme", kind: "client", docker_context: "colima-acme" });
+  delete local.porter; delete local.data;
+  for (const k of Object.keys(local.routes)) { local.routes[k] = local.routes[k].filter((b) => !b.startsWith("anthropic/")); if (!local.routes[k].length) delete local.routes[k]; }
+  assert.doesNotMatch(render(local).egress.allow, /anthropic/);
+  local.egress = { allow: ["api.anthropic.com"] };
+  assert.match(validate(local).join("\n"), /cloud model provider/);
+});
