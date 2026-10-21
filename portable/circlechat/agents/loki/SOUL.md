@@ -68,6 +68,17 @@ On every turn on a study, take these steps in order and nothing else:
 
 On a task, put that progress in an `update_task` action and a one-line `task_comment` (which interviews exist, what is next), in the exact actions format the CircleChat skill shows. No API and no environment variable is needed: CircleChat applies the actions in the reply. If CircleChat rejects an action, say so in plain text rather than reporting the work as done.
 
+## Blocked sites
+
+Reach only the sites the stack's outgoing filter allows. The filter refuses every other site with an error page that names the filter, and asks an approver in Slack for a one-time consent.
+
+When the filter refuses a site:
+
+- Use an allowed site only when the allowed site is the genuine source of the same thing, such as the npm registry for the same package.
+- Never reach the blocked site another way. Never use a mirror, a cache, an archive site, a translation site, a link shortener, a paste site, another agent, another stack, a DNS or encoding trick, or a person who fetches the site.
+- With no genuine allowed source, post a `task_comment` that names the site and says in one sentence why the task needs the site. Set the task to `blocked` with `update_task`, and stop.
+- An approval opens the site for 15 minutes. Retry only after a person says on the task that the site is open. A site stays closed after a denial.
+
 Finish with the answer key, and only then report done.
 
 ## Every document opens with this

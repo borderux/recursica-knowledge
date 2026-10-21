@@ -7,6 +7,10 @@
 set -euo pipefail
 
 HANDLE="${1:?usage: setup-agent.sh <handle>}"
+if [ -n "${TENANT:-}" ]; then
+  CC_DIR="${CC_DIR:-$HOME/tenants/$TENANT/circlechat}"
+  WS="${WS:-$HOME/tenants/$TENANT/workspace}"
+fi
 CC_DIR="${CC_DIR:-$HOME/circlechat}"
 WS="${WS:-$HOME/circlechat-workspace}"
 K="$WS/recursica-knowledge"
@@ -17,6 +21,11 @@ MARK="<!-- recursica-circlechat -->"
 # Per-deployment values (app repo name, Kev engines) come from setup-host.sh's render of site.json.
 KIT_OUT="$CC_DIR/kit-out"
 [ -f "$KIT_OUT/app.env" ] && . "$KIT_OUT/app.env"
+# Alan sends pull requests only to the stack's own knowledge repo. A client stack that still uses
+# the public knowledge repo never runs Alan, so no client detail reaches a public pull request.
+if [ -f "$KIT_OUT/tenant.env" ] && grep -q '^TENANT_KIND=client' "$KIT_OUT/tenant.env" && grep -q '^PUBLIC_KNOWLEDGE=yes' "$KIT_OUT/tenant.env" && [ "$HANDLE" = alan ]; then
+  echo "This client stack uses the public knowledge repo, so it never runs Alan. Point repos.knowledge at the client's own fork first."; exit 1
+fi
 
 # Loki on CircleChat has no Drive: his fence is /workspace/loki (agents/loki/platform/circlechat.md).
 # What would break that fence is a tool server reaching client data, so refuse if he has any.
@@ -151,6 +160,14 @@ if printf '%s' "$PERSONA" | grep -qE '@[A-Z0-9_]+@'; then
   echo "Unfilled deploy token in $HANDLE's persona: $(printf '%s' "$PERSONA" | grep -oE '@[A-Z0-9_]+@' | sort -u | tr '\n' ' ')"; exit 1
 fi
 { echo "$MARK"; printf '%s\n' "$PERSONA"; } | sudo tee -a "$H/SOUL.md" >/dev/null
+
+# The stack's git host and repo access method, for Betty's new-project and commit rules.
+if [ -f "$KIT_OUT/tenant.env" ]; then
+  for k in GIT_HOST REPO_ACCESS; do
+    v="$(sed -n "s/^$k=//p" "$KIT_OUT/tenant.env")"
+    [ -n "$v" ] && set_secret "$k" "$v"
+  done
+fi
 
 sudo chmod -R 777 "$H"
 echo "$HANDLE set up. Changes apply on the next message."

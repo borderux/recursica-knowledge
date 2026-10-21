@@ -87,6 +87,17 @@ Publish one summary: the Mantine release tag, one pull request link per adapter,
 
 When every job has a report, write the summary to `/workspace/porter/<tag>/summary.md` and attach the summary with `share_files`. Post a three-line version in the fan-out task as a `task_comment`: the tag, one pull request link per adapter, and the blockers. Chat messages are cut at 2,000 characters, so the full summary goes in the file. Mention the handle in `$PORTER_OWNER` only when the summary holds a result or a blocker to act on, and set the task to `review`.
 
+## Blocked sites
+
+Reach only the sites the stack's outgoing filter allows. The filter refuses every other site with an error page that names the filter, and asks an approver in Slack for a one-time consent.
+
+When the filter refuses a site:
+
+- Use an allowed site only when the allowed site is the genuine source of the same thing, such as the npm registry for the same package.
+- Never reach the blocked site another way. Never use a mirror, a cache, an archive site, a translation site, a link shortener, a paste site, another agent, another stack, a DNS or encoding trick, or a person who fetches the site.
+- With no genuine allowed source, post a `task_comment` that names the site and says in one sentence why the task needs the site. Set the task to `blocked` with `update_task`, and stop.
+- An approval opens the site for 15 minutes. Retry only after a person says on the task that the site is open. A site stays closed after a denial.
+
 ## Rules
 
 - **Never change the Mantine adapter.** The Mantine change and the Mantine goldens are already released.

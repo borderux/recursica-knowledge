@@ -2,11 +2,16 @@
 # After merging a knowledge PR: pull, then refresh every agent's skills and persona.
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
+if [ -n "${TENANT:-}" ]; then
+  CC_DIR="${CC_DIR:-$HOME/tenants/$TENANT/circlechat}"
+  WS="${WS:-$HOME/tenants/$TENANT/workspace}"
+fi
 CC_DIR="${CC_DIR:-$HOME/circlechat}"
 WS="${WS:-$HOME/circlechat-workspace}"
 K="$WS/recursica-knowledge"
 
-git -C "$K" pull --ff-only
+# With upgrade.auto, the upgrade job checks out each release, so this script does not pull.
+[ "${NO_PULL:-}" = 1 ] || git -C "$K" pull --ff-only
 if [ -d "$WS/kev" ] && [ -d "$K/tools/kev" ]; then
   cp -r "$K/tools/kev/." "$WS/kev/"
 fi

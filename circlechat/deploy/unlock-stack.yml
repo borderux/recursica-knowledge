@@ -1,0 +1,42 @@
+# Copy to .github/workflows/unlock-stack.yml in the private repo of stacks. Opens or closes a
+# client stack's encrypted disk image on one computer. After a restart, run "unlock" for each
+# client stack. The key comes from STACK_DISK_KEY in the client's GitHub environment, passes to
+# the helper on stdin, and is never written to disk. See circlechat/README.md, "Encrypted client
+# stacks".
+name: Unlock stack
+
+on:
+  workflow_dispatch:
+    inputs:
+      stack:
+        description: "Client stack: client-<name>"
+        required: true
+      computer:
+        description: "Computer name from the stack's site.json"
+        required: true
+      action:
+        description: "unlock or lock"
+        type: choice
+        options: [unlock, lock]
+        default: unlock
+
+permissions:
+  contents: read
+
+jobs:
+  unlock:
+    runs-on: [self-hosted, "${{ inputs.computer }}"]
+    environment: ${{ inputs.stack }}
+    steps:
+      - name: Open or close the stack's disk image
+        env:
+          STACK: ${{ inputs.stack }}
+          COMPUTER: ${{ inputs.computer }}
+          ACTION: ${{ inputs.action }}
+          STACK_DISK_KEY: ${{ secrets.STACK_DISK_KEY }}
+        run: |
+          if [ "$ACTION" = unlock ]; then
+            printf 'STACK_DISK_KEY=%s\n' "$STACK_DISK_KEY" | sudo -n /usr/local/bin/agent-stacks-apply --unlock "$STACK" "$COMPUTER"
+          else
+            sudo -n /usr/local/bin/agent-stacks-apply --lock "$STACK" "$COMPUTER" < /dev/null
+          fi

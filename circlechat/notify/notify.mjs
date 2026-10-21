@@ -10,11 +10,11 @@
 import fs from "node:fs";
 import pg from "pg";
 
-const { DATABASE_URL, SLACK_WEBHOOK_URL, CC_URL = "" } = process.env;
+const { DATABASE_URL, SLACK_BOT_TOKEN, SLACK_CHANNEL, CC_URL = "", NOTIFY_DETAILS = "on" } = process.env;
 const STALE_BLOCKED_H = Number(process.env.STALE_BLOCKED_HOURS ?? 24);
 const STALE_ACTIVE_H = Number(process.env.STALE_ACTIVE_HOURS ?? 12);
 const STATE = "/state/last.json";
-if (!DATABASE_URL || !SLACK_WEBHOOK_URL) { console.error("need DATABASE_URL and SLACK_WEBHOOK_URL"); process.exit(1); }
+if (!DATABASE_URL || !SLACK_BOT_TOKEN || !SLACK_CHANNEL) { console.error("need DATABASE_URL, SLACK_BOT_TOKEN and SLACK_CHANNEL"); process.exit(1); }
 
 const db = new pg.Pool({ connectionString: DATABASE_URL });
 const load = () => { try { return JSON.parse(fs.readFileSync(STATE, "utf8")); } catch { return {}; } };
@@ -25,9 +25,20 @@ st.activity ??= now; st.comments ??= now; st.runs ??= now; st.staleAt ??= 0; st.
 save(st); // so a restart picks up from here, not from whenever it restarts
 
 const link = (id, title) => CC_URL ? `<${CC_URL.replace(/\/$/, "")}/board?task=${id}|${title}>` : `*${title}*`;
+// With NOTIFY_DETAILS=off (a client stack, by default), Slack gets no task titles or comments:
+// one note at most every 10 minutes that CircleChat has new activity.
+let lastMinimal = 0;
 async function slack(text) {
-  const r = await fetch(SLACK_WEBHOOK_URL, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text }) });
-  if (!r.ok) throw new Error(`slack ${r.status}: ${await r.text()}`);
+  if (NOTIFY_DETAILS === "off") {
+    if (Date.now() - lastMinimal < 600_000) return;
+    lastMinimal = Date.now();
+    text = `:bell: New task activity in CircleChat${CC_URL ? ` (<${CC_URL}|open CircleChat>)` : ""}.`;
+  }
+  const r = await fetch("https://slack.com/api/chat.postMessage", { method: "POST",
+    headers: { authorization: `Bearer ${SLACK_BOT_TOKEN}`, "content-type": "application/json; charset=utf-8" },
+    body: JSON.stringify({ channel: SLACK_CHANNEL, text }) });
+  const j = await r.json();
+  if (!j.ok) throw new Error(`slack: ${j.error}`);
 }
 
 // member id → "@handle" (people) or "@handle (agent)"

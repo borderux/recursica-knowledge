@@ -24,7 +24,7 @@
     },
     "recursica-mcp": {
       "command": "npx",
-      "args": ["-y", "@recursica/mcp@latest"]
+      "args": ["-y", "@recursica/mcp@0.8.1"]
     }
   }
 }

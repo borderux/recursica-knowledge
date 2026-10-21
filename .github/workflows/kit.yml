@@ -1,0 +1,78 @@
+# The kit's checks that need real tools or real computers: ShellCheck, the firewall and filter
+# tools, a whole install on a fresh machine, macOS's firewall and disk images, and the Windows
+# scripts. The tests themselves run in checks.yml.
+name: Kit
+
+on:
+  pull_request:
+    paths: ["circlechat/**", ".github/workflows/kit.yml"]
+  push:
+    branches: [main]
+    paths: ["circlechat/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tools:
+    name: ShellCheck, firewall rules and the filter
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "24" }
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck nftables squid
+      - name: ShellCheck
+        run: find circlechat -name "*.sh" -print0 | xargs -0 shellcheck -S warning
+      - name: Firewall and filter tests, with the real tools
+        run: sudo -E env "PATH=$PATH" node --test circlechat/cluster/firewall.test.mjs
+
+  smoke-install:
+    name: Install a whole stack on a fresh machine
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: bash circlechat/ci/smoke-install.sh
+
+  macos:
+    name: macOS firewall rules and encrypted disk images
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: The pf rules parse
+        run: |
+          for f in base lockdown; do
+            sed "s/@CANARY_PORTS@/2222 2121 8088/; s/@SPLASHTOP_PORT@/6783/" "circlechat/cluster/firewall/pf-$f.conf" > "/tmp/pf-$f.conf"
+            sudo pfctl -a agentguard-ci -nf "/tmp/pf-$f.conf"
+          done
+      - name: A client disk image is created, opened and closed
+        run: |
+          printf 'ci-test-key-0123456789abcdefgh' | bash circlechat/tenant/disk-image.sh create citest 1g
+          [ "$(bash circlechat/tenant/disk-image.sh status citest)" = unlocked ]
+          touch "$HOME/tenants/citest/written-inside"
+          bash circlechat/tenant/disk-image.sh lock citest
+          [ "$(bash circlechat/tenant/disk-image.sh status citest)" = locked ]
+          [ ! -e "$HOME/tenants/citest/written-inside" ]
+          printf 'ci-test-key-0123456789abcdefgh' | hdiutil attach -stdinpass -nobrowse -mountpoint "$HOME/tenants/citest" "$HOME/tenant-images/citest.sparsebundle"
+          [ -e "$HOME/tenants/citest/written-inside" ]
+          hdiutil detach "$HOME/tenants/citest"
+
+  windows-scripts:
+    name: Windows scripts (PSScriptAnalyzer)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - shell: pwsh
+        run: |
+          Install-Module PSScriptAnalyzer -Force -Scope CurrentUser
+          $found = Invoke-ScriptAnalyzer -Path circlechat/cluster/windows -Recurse -Severity Error,Warning
+          $found | Format-Table -AutoSize | Out-String -Width 200 | Write-Host
+          if ($found | Where-Object Severity -eq 'Error') { exit 1 }

@@ -1,0 +1,6 @@
+<html><body>
+<h1>Blocked by the stack's outgoing filter: %H</h1>
+<p>This site is not on the stack's allowlist. An approval request went to Slack.</p>
+<p>Use an allowed site only when the allowed site is the genuine source of the same thing. Never reach this site another way: no mirror, cache, archive, translation site, link shortener, paste site, other agent, other stack, DNS or encoding trick, and no person who fetches the site.</p>
+<p>With no genuine allowed source: post a task comment that names the site and says why the task needs the site, set the task to blocked, and stop. An approval opens the site for 15 minutes.</p>
+</body></html>

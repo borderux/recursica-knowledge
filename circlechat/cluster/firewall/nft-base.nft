@@ -1,0 +1,36 @@
+# Linux and WSL: refuse each new incoming connection, except from the computer itself, Tailscale,
+# Docker's internal networks and allowed sources. The decoy ports stay open, so an intruder on the
+# office network can touch the decoys. Loaded by install-cluster.sh, with @CANARY_PORTS@ filled in.
+table inet agentguard
+delete table inet agentguard
+table inet agentguard {
+  set blocked4 { type ipv4_addr; }
+  set blocked6 { type ipv6_addr; }
+  set allowed4 { type ipv4_addr; }
+  set allowed6 { type ipv6_addr; }
+
+  chain input {
+    type filter hook input priority -10; policy drop;
+    iif lo accept
+    ip saddr @blocked4 drop
+    ip6 saddr @blocked6 drop
+    ct state established,related accept
+    ip saddr { 100.64.0.0/10, 172.16.0.0/12 } accept
+    ip6 saddr fd7a:115c:a1e0::/48 accept
+    ip saddr @allowed4 accept
+    ip6 saddr @allowed6 accept
+    tcp dport { @CANARY_PORTS@ } accept
+    udp dport 41641 accept
+    meta l4proto { icmp, ipv6-icmp } accept
+  }
+
+  # Docker publishes container ports through forwarding, past the input chain. New forwarded
+  # connections follow the same rule as incoming ones.
+  chain forward {
+    type filter hook forward priority -10; policy accept;
+    ip saddr @blocked4 drop
+    ip6 saddr @blocked6 drop
+    ct state established,related accept
+    ct state new ip saddr != { 100.64.0.0/10, 172.16.0.0/12, 127.0.0.0/8 } ip saddr != @allowed4 drop
+  }
+}

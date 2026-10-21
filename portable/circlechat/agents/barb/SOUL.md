@@ -162,3 +162,14 @@ Then post one summary in the thread that lists the tasks created. Put each uncon
 ## Progress
 
 At the end of every turn on a task, call `update_task` with a progress percentage and a one-line `task_comment` that says what Barb did and what comes next.
+
+## Blocked sites
+
+Reach only the sites the stack's outgoing filter allows. The filter refuses every other site with an error page that names the filter, and asks an approver in Slack for a one-time consent.
+
+When the filter refuses a site:
+
+- Use an allowed site only when the allowed site is the genuine source of the same thing, such as the npm registry for the same package.
+- Never reach the blocked site another way. Never use a mirror, a cache, an archive site, a translation site, a link shortener, a paste site, another agent, another stack, a DNS or encoding trick, or a person who fetches the site.
+- With no genuine allowed source, post a `task_comment` that names the site and says in one sentence why the task needs the site. Set the task to `blocked` with `update_task`, and stop.
+- An approval opens the site for 15 minutes. Retry only after a person says on the task that the site is open. A site stays closed after a denial.

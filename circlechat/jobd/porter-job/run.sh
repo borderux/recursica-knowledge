@@ -3,7 +3,7 @@
 # the report in /work/report.md. The job runner (jobd) starts this with the target repository, the
 # report path and the secrets passed by name; /work holds package.md.
 set -uo pipefail
-cd /work
+cd /work || exit 1
 
 : "${TARGET_REPO:?}" "${ANTHROPIC_API_KEY:?}" "${PORTER_GITHUB_PAT:?}" "${PORTER_REPORT:=/work/report.md}"
 export GH_TOKEN="$PORTER_GITHUB_PAT"            # gh and git both use the job's own token
@@ -12,7 +12,7 @@ git config --global user.email "${PORTER_GIT_EMAIL:?set PORTER_GIT_EMAIL on the 
 gh auth setup-git
 
 git clone --quiet "$TARGET_REPO" repo || { echo "Porter job: could not clone $TARGET_REPO" > "$PORTER_REPORT"; exit 1; }
-cd repo
+cd repo || exit 1
 
 # The built porter-adapter prompt, without its front matter (that is for Claude Code's agent list).
 PROMPT="$(awk 'BEGIN{f=0} /^---$/{f++; next} f>=2' /porter/porter-adapter.md)"
