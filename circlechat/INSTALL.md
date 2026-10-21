@@ -110,13 +110,14 @@ A release with a new first number (a major version) can change settings. Read th
 
 A trial on Border UX's cluster ends with an encrypted archive of the trial's stack. Border UX sends the archive folder and, separately, the archive key.
 
-1. Install the platform with this guide, up to "Install", step 3.
-2. Stop CircleChat: `docker compose stop`, in `~/circlechat`.
-3. Restore the archive with restic, using the archive key: `restic -r <archive folder> restore latest --target /tmp/trial`.
-4. Load the database dump into the new postgres: `gunzip -c <dump>/db.sql.gz | docker compose exec -T postgres psql -U postgres circlechat`.
-5. Unpack the file store into the new MinIO volume, and copy the agent homes and the workspace into place.
-6. Start CircleChat with `docker compose up -d`, and rerun `circlechat/setup-host.sh`.
-7. Delete `/tmp/trial`, and keep the archive key in the client's own secret store.
+1. Follow "Install", steps 1 and 2: clone the forks, and put the secrets on the computer.
+2. Restore the archive with restic, using the archive key: `restic -r <archive folder> restore latest --target /tmp/trial`.
+3. Before the first setup, copy each line of the archive's `generated.env` into `~/circlechat/.env`. CircleChat's file store and sign-ins need these exact values.
+4. Run the setup scripts, as "Install", step 3 describes.
+5. Load the database dump: `gunzip -c <dump>/db.sql.gz | docker compose exec -T postgres psql -U postgres circlechat`, in `~/circlechat`.
+6. Stop the file store with `docker compose stop minio`, unpack `minio.tgz` into the file store's volume, then start the file store again.
+7. Copy the agent homes and the workspace into place, and run `circlechat/sync-skills.sh`.
+8. Delete `/tmp/trial`, and keep the archive key in the client's own secret store.
 
 ## Support
 

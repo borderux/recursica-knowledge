@@ -28,6 +28,8 @@ archive)
   NAME="archive-$CLIENT-$(date -u +%Y-%m-%d)"
   export RESTIC_REPOSITORY="rclone:$BACKUP_REMOTE/$NAME"
   STAGE="$STACK_DIR/archive-staging"; rm -rf "$STAGE"; mkdir -p "$STAGE"; chmod 700 "$STAGE"
+  grep -E '^(SESSION_SECRET|PG_PASSWORD|MINIO_ROOT_USER|MINIO_ROOT_PASSWORD|LITELLM_MASTER_KEY)=' "$CC_DIR/.env" > "$STAGE/generated.env" || true
+  chmod 600 "$STAGE/generated.env"
   (cd "$CC_DIR" && docker compose exec -T postgres pg_dump -U postgres circlechat) | gzip > "$STAGE/db.sql.gz"
   docker run --rm -v "${COMPOSE_PROJECT_NAME}_miniodata:/data:ro" -v "$STAGE:/out" alpine:3.20 tar czf /out/minio.tgz -C /data .
   restic init >/dev/null

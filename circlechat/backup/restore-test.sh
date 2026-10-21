@@ -28,5 +28,6 @@ gzip -dc "$db" | grep -q "CREATE TABLE" || fail "the database dump holds no tabl
 store="$(find "$SCRATCH" -name minio.tgz | head -1)"
 [ -n "$store" ] && tar tzf "$store" >/dev/null || fail "the file store archive is missing or damaged"
 [ -d "$(find "$SCRATCH" -type d -name hermes-homes | head -1)" ] || fail "the agent homes are missing"
+grep -q '^MINIO_ROOT_PASSWORD=' "$(find "$SCRATCH" -name generated.env | head -1)" 2>/dev/null || fail "CircleChat's generated secrets are missing"
 when="$(restic snapshots latest --tag "$STACK" --json | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s)[0]?.time?.slice(0,16)??"unknown"))')"
 say ":white_check_mark: Test restore of stack $STACK passed on $(hostname -s). Newest backup: $when UTC."

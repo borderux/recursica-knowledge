@@ -2,7 +2,7 @@
   "$comment": [
     "One deployment of CircleChat and the Recursica agents. Copy to $CC_DIR/site.json (outside",
     "any repository) and fill it in. Secrets never go here: they go in $CC_DIR/.env",
-    "(ANTHROPIC_API_KEY, KEV_ENGINE_KEY, SLACK_WEBHOOK_URL, LITELLM_MASTER_KEY).",
+    "(ANTHROPIC_API_KEY, KEV_ENGINE_KEY, SLACK_BOT_TOKEN, LITELLM_MASTER_KEY).",
     "",
     "nodes: every machine that runs something. Add as many as you have. 'address' is how the",
     "CONTROL node's containers reach that machine: a VPN/Tailscale address or name, or",

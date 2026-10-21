@@ -113,7 +113,13 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const stateDir = "/var/lib/agent-cluster";
   fs.mkdirSync(stateDir, { recursive: true, mode: 0o700 });
   // Channels this computer may post to: the cluster channel, and each local stack's channel.
-  const allowedChannels = async () => [env.SLACK_CHANNEL_ID, ...(await localStacks(env.OWNER_HOME, async () => true)).map((s) => s.channel).filter(Boolean)];
+  // Uptime alerts name the other computers' stacks, so their channels (from each computer's own
+  // report, kept in the monitor's state) are allowed too.
+  const allowedChannels = async () => {
+    let peers = [];
+    try { peers = Object.values(JSON.parse(fs.readFileSync(path.join(stateDir, "monitor.json"), "utf8"))).flatMap((p) => (p.stacks ?? []).map((s) => s.channel)); } catch {}
+    return [env.SLACK_CHANNEL_ID, ...(await localStacks(env.OWNER_HOME, async () => true)).map((s) => s.channel), ...peers].filter(Boolean);
+  };
   const chat = makeChannel(env, allowedChannels);
   const post = (kind, text, ref) => chat.post(env.SLACK_CHANNEL_ID, kind, text, ref).catch((e) => console.error(e.message));
   const platform = makePlatform(env);

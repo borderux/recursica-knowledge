@@ -11,10 +11,10 @@ skills in this repo. Linux or macOS, on one machine or many.
 Nothing about a deployment lives in this repository. Two files on the control machine, both
 outside any repo, hold all of it:
 
-| File                | Holds                                                                                                 | Example                        |
-| ------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------ |
-| `$CC_DIR/site.json` | Machines, how to reach them, what each runs, model routes, the app repo                               | `circlechat/site.example.json` |
-| `$CC_DIR/.env`      | Secrets: `ANTHROPIC_API_KEY`, `KEV_ENGINE_KEY`, `SLACK_WEBHOOK_URL`, `LITELLM_MASTER_KEY` (generated) | —                              |
+| File                | Holds                                                                                               | Example                        |
+| ------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------ |
+| `$CC_DIR/site.json` | Machines, how to reach them, what each runs, model routes, the app repo                             | `circlechat/site.example.json` |
+| `$CC_DIR/.env`      | Secrets: `ANTHROPIC_API_KEY`, `KEV_ENGINE_KEY`, `SLACK_BOT_TOKEN`, `LITELLM_MASTER_KEY` (generated) | —                              |
 
 Each agent's own key and GitHub token stay in its Hermes home (`setup-agent.sh` puts them there).
 Each extra machine keeps the secrets its services need in `~/.recursica-node.env`.
@@ -108,7 +108,7 @@ CircleChat's workspaces cannot keep clients apart. Inside one CircleChat, every 
 
    `payer` says who pays. `border-ramp` means Border UX pays, with a virtual card made for the client. `client-byok` means the client supplies the client's own key.
 
-4. **Clone CircleChat** into `~/tenants/<client>/circlechat`. Put the client's secrets, including the client's `SLACK_WEBHOOK_URL`, in the client's GitHub environment, as "Secrets in GitHub" describes.
+4. **Clone CircleChat** into `~/tenants/<client>/circlechat`. Put the client's secrets, including the Slack app's `SLACK_BOT_TOKEN`, in the client's GitHub environment, as "Secrets in GitHub" describes.
 5. **Run every kit script with `TENANT=<client>`**, such as `TENANT=<client> ./circlechat/setup-host.sh`. Use the same prefix for `setup-agent.sh` and `setup-node.sh`.
 6. **Give the stack an address** with `tailscale serve --bg --https=<port> http://127.0.0.1:<port>`.
 
@@ -153,17 +153,17 @@ Deleting the image and the key makes the client's data unreadable for good.
 
 The node secrets file is `~/.recursica-node.env`, or `~/.recursica-node.<client>.env` for a client stack.
 
-| Secret in GitHub                                           | File the helper writes                                    | Read by                                 |
-| ---------------------------------------------------------- | --------------------------------------------------------- | --------------------------------------- |
-| `ANTHROPIC_API_KEY`                                        | `.env` on the control computer                            | The model gateway                       |
-| `SLACK_WEBHOOK_URL`                                        | `.env` on the control computer                            | The Slack notifier                      |
-| `KEV_ENGINE_KEY`                                           | `.env` on the control computer                            | Barb's first pass with Kev              |
-| `JOBD_TOKEN`                                               | `.env` on the control computer, and the node secrets file | Porter and each job runner              |
-| `PORTER_HOOK_URL`, `PORTER_HOOK_SECRET`                    | `.env` on the control computer, and the node secrets file | The release watcher and each job runner |
-| `<HANDLE>_GITHUB_PAT`, such as `ALAN_GITHUB_PAT`           | The `.env` in the agent's Hermes home                     | The agent, at the start of each turn    |
-| `KEV_API_KEY`                                              | The node secrets file                                     | Kev's model                             |
-| `PORTER_ANTHROPIC_API_KEY`                                 | The node secrets file, as `ANTHROPIC_API_KEY`             | The port jobs                           |
-| `PORTER_GITHUB_PAT`, `PORTER_GIT_NAME`, `PORTER_GIT_EMAIL` | The node secrets file                                     | The port jobs                           |
+| Secret in GitHub                                           | File the helper writes                                    | Read by                                                                    |
+| ---------------------------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `ANTHROPIC_API_KEY`                                        | `.env` on the control computer                            | The model gateway                                                          |
+| `SLACK_BOT_TOKEN`                                          | `.env` on the control computer, for each stack            | The task notifier and the stack's scripts, through the cluster's Slack app |
+| `KEV_ENGINE_KEY`                                           | `.env` on the control computer                            | Barb's first pass with Kev                                                 |
+| `JOBD_TOKEN`                                               | `.env` on the control computer, and the node secrets file | Porter and each job runner                                                 |
+| `PORTER_HOOK_URL`, `PORTER_HOOK_SECRET`                    | `.env` on the control computer, and the node secrets file | The release watcher and each job runner                                    |
+| `<HANDLE>_GITHUB_PAT`, such as `ALAN_GITHUB_PAT`           | The `.env` in the agent's Hermes home                     | The agent, at the start of each turn                                       |
+| `KEV_API_KEY`                                              | The node secrets file                                     | Kev's model                                                                |
+| `PORTER_ANTHROPIC_API_KEY`                                 | The node secrets file, as `ANTHROPIC_API_KEY`             | The port jobs                                                              |
+| `PORTER_GITHUB_PAT`, `PORTER_GIT_NAME`, `PORTER_GIT_EMAIL` | The node secrets file                                     | The port jobs                                                              |
 
 An agent's own Anthropic key stays in CircleChat's agent settings. To deploy a GitHub token for a new agent, add the agent's `<HANDLE>_GITHUB_PAT` line to the workflow's list of secrets.
 
@@ -215,7 +215,7 @@ Two more rules hold on every stack:
    "backup": { "remote": "gdrive-backups:agent-backups", "time": "02:00" }
    ```
 
-Each nightly backup holds five parts: the database, CircleChat's file store, the agent homes, the shared workspace and site.json. The backup leaves out each `.env`, because every secret lives in the stack's GitHub environment. restic keeps 7 daily, 4 weekly and 6 monthly backups.
+Each nightly backup holds five parts: the database, CircleChat's file store, the agent homes, the shared workspace and site.json. The backup leaves out each `.env`, because every secret lives in the stack's GitHub environment. restic keeps 7 daily, 4 weekly and 6 monthly backups. Each backup also holds `generated.env`: CircleChat's generated passwords and session secret. A restore copies those lines into the new `.env` before CircleChat's first start, because the file store encrypts its own settings with its password.
 
 A test restore runs on the first day of January, April, July and October. The test unpacks the newest backup into a scratch folder, then checks the database dump, the file store and the agent homes. The result goes to the stack's Slack channel, and so does every failed backup. Run a test restore at any time with `FORCE=1`.
 
@@ -287,7 +287,7 @@ Each computer asks the other computers for the health of their stacks every minu
 
 ## Notifications
 
-With `"notify": { "slack": true }` and `SLACK_WEBHOOK_URL` set, the notifier posts to Slack:
+With `"notify": { "slack": true }`, `site.slack_channel_id` and `SLACK_BOT_TOKEN` set, the notifier posts to the stack's channel through the cluster's Slack app:
 task created, assigned, status changed and done; every comment, flagged **needs @person** when it
 mentions one; agent messages CircleChat rejected (otherwise silent); and tasks blocked 24 h or in
 progress 12 h with no activity. It reads the database, so it misses nothing across restarts.

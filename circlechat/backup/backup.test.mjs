@@ -13,7 +13,7 @@ function setup({ restic = "ok" } = {}) {
   const bin = path.join(tmp, "bin"), cc = path.join(tmp, "cc"), log = path.join(tmp, "calls.log");
   fs.mkdirSync(bin); fs.mkdirSync(path.join(cc, "kit-out"), { recursive: true }); fs.mkdirSync(path.join(cc, "hermes-homes", ".hermes-alan"), { recursive: true });
   fs.writeFileSync(path.join(cc, "site.json"), "{}");
-  fs.writeFileSync(path.join(cc, ".env"), "RESTIC_PASSWORD=pw\nSLACK_BOT_TOKEN=xoxb-test\nSLACK_CHANNEL=C123\n");
+  fs.writeFileSync(path.join(cc, ".env"), "RESTIC_PASSWORD=pw\nSLACK_BOT_TOKEN=xoxb-test\nSLACK_CHANNEL=C123\nSESSION_SECRET=abc\nMINIO_ROOT_PASSWORD=def\n");
   fs.writeFileSync(path.join(cc, "kit-out", "tenant.env"), "TENANT=acme\nSUFFIX=-acme\nCOMPOSE_PROJECT_NAME=cc-acme\nDOCKER_CONTEXT=\nBACKUP_REMOTE=gd:backups\n");
   const stub = (name, body) => { fs.writeFileSync(path.join(bin, name), `#!/usr/bin/env bash\necho "${name} $*" >> ${log}\n${body}\n`); fs.chmodSync(path.join(bin, name), 0o755); };
   stub("docker", `case "$1" in
@@ -42,6 +42,7 @@ test("backs up the stack, encrypted with the stack's key, then tests a restore",
   assert.match(calls, /restic init/);
   assert.match(calls, /restic backup --tag acme/);
   assert.match(calls, /restic forget --tag acme --keep-daily 7/);
+  assert.match(fs.readFileSync(path.join(cc, "backup-saved/generated.env"), "utf8"), /^MINIO_ROOT_PASSWORD=def$/m);
   assert.equal(fs.existsSync(path.join(cc, "backup-staging")), false);
   const r = run("restore-test.sh", env);
   assert.equal(r.status, 0, r.stdout + r.stderr);

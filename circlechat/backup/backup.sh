@@ -30,6 +30,11 @@ export RCLONE_CONFIG="${RCLONE_CONFIG:-$OWNER_HOME/.config/rclone/rclone.conf}"
 
 STAGE="$CC_DIR/backup-staging"
 rm -rf "$STAGE"; mkdir -p "$STAGE"; chmod 700 "$STAGE"
+# CircleChat's generated secrets: the file store (MinIO) encrypts its own settings with its root
+# password, and the session secret keeps people signed in. A restore needs the same values. The
+# backup is encrypted, like every other part.
+grep -E '^(SESSION_SECRET|PG_PASSWORD|MINIO_ROOT_USER|MINIO_ROOT_PASSWORD|LITELLM_MASTER_KEY)=' "$CC_DIR/.env" > "$STAGE/generated.env" || true
+chmod 600 "$STAGE/generated.env"
 STEP="database dump"
 (cd "$CC_DIR" && docker compose exec -T postgres pg_dump -U postgres circlechat) | gzip > "$STAGE/db.sql.gz"
 STEP="file store"
