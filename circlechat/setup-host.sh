@@ -79,6 +79,34 @@ set_env COMPOSE_FILE compose.yml:compose.agents.yml
 # Each stack is its own Compose project, so two stacks never share a container, network or volume.
 set_env COMPOSE_PROJECT_NAME "$COMPOSE_PROJECT_NAME"
 env_has LITELLM_MASTER_KEY || set_env LITELLM_MASTER_KEY "sk-$(openssl rand -hex 16)"
+# CircleChat ships with a default session secret and default passwords. Anyone who knows the
+# default session secret can forge a sign-in, so each default becomes a random value. Postgres
+# keeps the password the database started with, so PG_PASSWORD changes only before the database
+# exists.
+env_value() { sed -n "s/^$1=//p" .env | tail -1; }
+is_default() { local v; v="$(env_value "$1")"; [ -z "$v" ] || [ "$v" = "$2" ]; }
+is_default SESSION_SECRET change-me-at-least-32-chars-long-string && set_env SESSION_SECRET "$(openssl rand -hex 32)"
+if is_default MINIO_ROOT_PASSWORD minioadmin; then
+  set_env MINIO_ROOT_USER "cc-$(openssl rand -hex 4)"
+  set_env MINIO_ROOT_PASSWORD "$(openssl rand -hex 24)"
+fi
+if is_default PG_PASSWORD circlechat; then
+  if docker volume inspect "${COMPOSE_PROJECT_NAME}_pgdata" >/dev/null 2>&1; then
+    echo "Warning: the database still uses CircleChat's default password. Change the password inside postgres, then set PG_PASSWORD in .env."
+  else
+    set_env PG_PASSWORD "$(openssl rand -hex 24)"
+  fi
+fi
+# A local-only client stack never sends data to a cloud model, including CircleChat's own optional
+# planner and embeddings, which call the URL in .env.
+if [ "$CLOUD_MODELS" = local-only ]; then
+  for k in PLANNER_BASE_URL EMBEDDINGS_BASE_URL; do
+    u="$(env_value "$k")"
+    case "$u" in ""|http://localhost*|http://127.0.0.1*|http://host.docker.internal*|http://host.lima.internal*) ;;
+      *) echo "$k points to $u, outside this computer, and stack ${TENANT:-<none>} is local-only. Remove $k from .env, or record the client's permission in site.cloud_models."; exit 1 ;;
+    esac
+  done
+fi
 # Shared by Porter and every job runner. Copy it into each job-runner machine's ~/.recursica-node.env.
 env_has JOBD_TOKEN || set_env JOBD_TOKEN "$(openssl rand -hex 24)"
 NET="${COMPOSE_PROJECT_NAME}_default"
