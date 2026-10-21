@@ -199,7 +199,10 @@ start_gateway_and_notifier
 
 # Background jobs, the native way for this OS (systemd on Linux, launchd on macOS).
 ENVS="CC_DIR=$CC_DIR WS=$WS SITE=$SITE"
-install_unit "circlechat-boot$SUFFIX" "cd $CC_DIR && ${DCTX}docker compose -f compose.yml -f compose.agents.yml up -d" "$CC_DIR" "$(id -un)" boot
+# A client stack's folder sits inside an encrypted disk image, which the "Unlock stack" workflow
+# opens after a restart. Until then the boot job finds no folder and does nothing.
+[ -n "$TENANT" ] && export UNIT_LOG_DIR="$HOME/tenants/$TENANT/logs"
+install_unit "circlechat-boot$SUFFIX" "[ -d $CC_DIR ] || exit 0; cd $CC_DIR && ${DCTX}docker compose -f compose.yml -f compose.agents.yml up -d" "$HOME" "$(id -un)" boot
 # Nightly encrypted backup of this stack, and a test restore each quarter. Both run as root, which
 # can read every agent home. rclone's remote is set up once by hand: see README, "Backups".
 if [ -n "$BACKUP_REMOTE" ]; then

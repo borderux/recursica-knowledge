@@ -92,7 +92,7 @@ keeps running.
 
 CircleChat's workspaces cannot keep clients apart. Inside one CircleChat, every agent shares one `/workspace` folder and one set of agent homes. The CircleChat api, worker and bridge also hold a Docker socket with root access to the computer.
 
-1. **Create a Docker VM for the client.** On a Mac, `colima start --profile <client>` creates the Docker context `colima-<client>`.
+1. **Create the client's encrypted disk image, then the client's Docker VM.** See "Encrypted client stacks" below. On a Mac, `colima start --profile <client>` creates the Docker context `colima-<client>`.
 2. **Write the client's site.json** at `~/tenants/<client>/circlechat/site.json`, with these fields:
    - `site.tenant`: the client's short name, in lowercase.
    - `site.kind`: `"client"`.
@@ -123,6 +123,19 @@ With no recorded permission in `site.cloud_models`, the config check also refuse
 Model servers that keep no data, such as Kev's model and a local model, can serve every stack. Declare each model server's service in one stack's site.json only. The other stacks list the same models and Kev ports, with no `services` entry. Give a client a separate model server when the client's contract requires one.
 
 A stack with no `site.tenant` keeps the names a single install uses today. An existing install changes nothing.
+
+## Encrypted client stacks
+
+**Keep each client stack in an encrypted disk image with the client's own key.** The image holds the client's whole stack in `~/tenants/<client>`: CircleChat, the agent homes, the workspace, the job folder, the secrets file and the logs. The client's Docker VM lives inside the image too. Encrypted client disk images need a Mac.
+
+1. **Create the key in the password manager,** at least 24 random characters. Add the key to the client's GitHub environment as `STACK_DISK_KEY`.
+2. **Create the image before the client's Docker VM:** pipe the key into `./circlechat/tenant/disk-image.sh create <client> 200g`. The image grows as the stack grows, up to the size given.
+3. **Create the Docker VM** with `colima start --profile <client>`. The VM's folder links into the image.
+4. **Copy `circlechat/secrets/unlock-stack.yml`** to `.github/workflows/unlock-stack.yml` in the private repo of stacks.
+
+After every restart of the Mac, the client's image stays closed. Run the "Unlock stack" workflow with the stack and the computer. The workflow passes `STACK_DISK_KEY` to the secrets helper, which opens the image and starts the Docker VM. Docker then starts each container of the stack. The key never touches the disk. Run the same workflow with `lock` to stop the VM and close the image.
+
+Deleting the image and the key makes the client's data unreadable for good.
 
 ## Secrets in GitHub
 

@@ -119,8 +119,8 @@ UNIT
   <key>WorkingDirectory</key><string>$dir</string>
   <key>ProgramArguments</key><array><string>/bin/bash</string><string>-lc</string><string>$xcmd</string></array>
   $timing
-  <key>StandardOutPath</key><string>/tmp/$name.log</string>
-  <key>StandardErrorPath</key><string>/tmp/$name.log</string>
+  <key>StandardOutPath</key><string>${UNIT_LOG_DIR:-/tmp}/$name.log</string>
+  <key>StandardErrorPath</key><string>${UNIT_LOG_DIR:-/tmp}/$name.log</string>
 </dict></plist>
 PLIST
     sudo launchctl bootout system "$plist" 2>/dev/null || true

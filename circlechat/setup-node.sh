@@ -9,10 +9,12 @@
 set -euo pipefail
 NODE="${1:?usage: setup-node.sh <node name from site.json>}"
 # With TENANT=<name>, the stack's own site.json and secrets file: ~/tenants/<name>/circlechat/site.json
-# and ~/.recursica-node.<name>.env. A job runner then serves that stack alone.
+# and ~/tenants/<name>/node.env, both inside the client's encrypted disk image on a Mac. A job
+# runner then serves that stack alone, with its job folder and logs inside the image too.
 if [ -n "${TENANT:-}" ]; then
   SITE="${SITE:-$HOME/tenants/$TENANT/circlechat/site.json}"
-  SECRETS="${SECRETS:-$HOME/.recursica-node.$TENANT.env}"
+  SECRETS="${SECRETS:-$HOME/tenants/$TENANT/node.env}"
+  export UNIT_LOG_DIR="$HOME/tenants/$TENANT/logs"
 fi
 SITE="${SITE:-$HOME/circlechat/site.json}"
 SECRETS="${SECRETS:-$HOME/.recursica-node.env}"
@@ -58,6 +60,7 @@ if [ -n "$JOBS" ]; then
   docker build -q -t recursica/porter-job -f "$HERE/jobd/porter-job/Dockerfile" "$ROOT"
   . "$OUT/porter.env" 2>/dev/null || true
   # One job runner per stack: its own unit, port, job folder, secrets and Docker VM.
-  install_unit "jobd$SUFFIX" "set -a; . \"$SECRETS\"; set +a; ${DCTX}JOBD_PORT=$(jget port) JOBD_SLOTS=$(jget slots) JOBD_MEMORY_GB=$(jget memory_gb) JOBD_NODE_NAME=$NODE JOBD_ALLOWED_REPOS=${JOBD_ALLOWED_REPOS:-} JOBD_DIR=$HOME/.recursica-jobs$SUFFIX node $HERE/jobd/jobd.mjs" "$HOME" "$(id -un)"
+  if [ -n "${TENANT:-}" ]; then JOBS_DIR="$HOME/tenants/$TENANT/jobs"; else JOBS_DIR="$HOME/.recursica-jobs"; fi
+  install_unit "jobd$SUFFIX" "set -a; . \"$SECRETS\"; set +a; ${DCTX}JOBD_PORT=$(jget port) JOBD_SLOTS=$(jget slots) JOBD_MEMORY_GB=$(jget memory_gb) JOBD_NODE_NAME=$NODE JOBD_ALLOWED_REPOS=${JOBD_ALLOWED_REPOS:-} JOBD_DIR=$JOBS_DIR node $HERE/jobd/jobd.mjs" "$HOME" "$(id -un)"
 fi
 echo "$NODE: services installed. Check reachability from the control machine with the addresses in site.json."
