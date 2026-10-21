@@ -54,7 +54,7 @@ if [ "$OS" = Linux ]; then
   fi
 else
   for f in base lockdown; do
-    sed "s/@CANARY_PORTS@/${CANARY_PORTS//,/}/; s/@SPLASHTOP_PORT@/6783/" "$HERE/firewall/pf-$f.conf" | sudo tee "/var/lib/agent-cluster/pf-$f.conf" >/dev/null
+    sed "s/@CANARY_PORTS@/${CANARY_PORTS//,/}/;" "$HERE/firewall/pf-$f.conf" | sudo tee "/var/lib/agent-cluster/pf-$f.conf" >/dev/null
   done
   if ! grep -q 'anchor "agentguard"' /etc/pf.conf; then
     sudo cp /etc/pf.conf /etc/pf.conf.agentguard-backup

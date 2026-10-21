@@ -1,6 +1,7 @@
 // Decide which incoming connections no rule allows. A connection is incoming when the computer's
-// side of the connection is a listening port. Allowed sources: the computer itself, Tailscale,
-// Docker's internal networks, Splashtop's programs, and each source an approver allowed.
+// side of the connection is a listening port. Allowed sources: the computer itself, Tailscale
+// (remote access with RustDesk runs over Tailscale), Docker's internal networks, and each source
+// an approver allowed.
 import net from "node:net";
 
 const RANGES = [
@@ -8,7 +9,6 @@ const RANGES = [
   ["100.64.0.0", 10, 4], ["fd7a:115c:a1e0::", 48, 6],        // Tailscale
   ["172.16.0.0", 12, 4],                                     // Docker's internal networks
 ];
-const SPLASHTOP = /^(SRService|SRFeature|SRManager|SRAppPB|Strwinclt|SRServer|Splashtop.*|splashtop.*)(\.exe)?$/i;
 const TAILSCALE = /^(tailscaled|tailscale|IPNExtension)(\.exe)?$/i;
 
 function toBig(ip) {
@@ -38,6 +38,5 @@ export function suspicious(connections, listening, allowed = []) {
   const ports = new Set(listening.map(Number));
   return connections.filter((c) => ports.has(Number(c.localPort))
     && !allowedSource(c.remote, allowed)
-    && !SPLASHTOP.test(c.process ?? "")
     && !TAILSCALE.test(c.process ?? ""));
 }

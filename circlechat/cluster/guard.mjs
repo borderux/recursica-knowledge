@@ -2,8 +2,8 @@
 //
 //   normal --(an incoming connection no rule allows, or a touch on a decoy)--> watching
 //   watching: client stacks sealed, packets recorded; Slack gets the alert and the buttons
-//   watching --(10 minutes, or "Cut off now")--> cut off: only Tailscale, Splashtop and the
-//   guard's own Slack connection stay open; the evidence is fingerprinted, encrypted and uploaded
+//   watching --(10 minutes, or "Cut off now")--> cut off: only Tailscale and the guard's own
+//   Slack connection stay open; the evidence is fingerprinted, encrypted and uploaded
 //   "Release lockdown" or "Allow this source" (both with an authenticator code) --> normal
 //
 // The OS commands come in as `platform`, so the logic runs the same on every computer.
@@ -65,7 +65,7 @@ export class Guard {
     const manifest = await this.preserve(s.dir);
     const next = { ...s, status: "cut-off", cutOffAt: this.now(), reason, manifest };
     this.state = next;
-    await this.notify("info", `:lock: ${this.computer} is cut off (${reason}). Only Tailscale, Splashtop and the guard's Slack connection stay open. Evidence ${s.id}: ${manifest.files} files, fingerprints in manifest.json, ${manifest.uploaded ? "encrypted copy uploaded" : "kept on this computer"}.`);
+    await this.notify("info", `:lock: ${this.computer} is cut off (${reason}). Only Tailscale and the guard's Slack connection stay open. Evidence ${s.id}: ${manifest.files} files, fingerprints in manifest.json, ${manifest.uploaded ? "encrypted copy uploaded" : "kept on this computer"}.`);
     return next;
   }
 

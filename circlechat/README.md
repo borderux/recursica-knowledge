@@ -230,6 +230,16 @@ A test restore runs on the first day of January, April, July and October. The te
 - **The daily update check,** at 9 a.m.
 - **The Slack app,** on the control computer only.
 
+### Remote access
+
+**Reach each computer only through Tailscale, with RustDesk.** RustDesk is an open-source remote desktop for Linux, macOS and Windows. Set each computer's RustDesk this way:
+
+- Turn on "Direct IP access", so connections go straight from computer to computer over Tailscale.
+- Set the ID server to `127.0.0.1`, so RustDesk never contacts RustDesk's public servers.
+- Set a permanent password, and turn on RustDesk's two-factor sign-in.
+
+The firewall rules let RustDesk's port open only to Tailscale addresses. A RustDesk connection from the office network starts a lockdown.
+
 ### Lockdown
 
 An incoming connection that no rule allows, or a touch on a decoy, starts a lockdown:
@@ -237,7 +247,7 @@ An incoming connection that no rule allows, or a touch on a decoy, starts a lock
 1. The computer seals first: each client stack's disk image closes, and each secrets file becomes unreadable.
 2. For 10 minutes, tcpdump records the source's packets. A snapshot records the connections, programs, signed-in users and sign-in logs, and a lookup records the source's network owner and country.
 3. Slack gets the alert, with five buttons: "Cut off now", "Keep watching 30 min", "Shut down", "Release lockdown" and "Allow this source".
-4. After 10 minutes, the computer cuts off every connection except Tailscale, Splashtop and HTTPS on port 443.
+4. After 10 minutes, the computer cuts off every connection except Tailscale and HTTPS on port 443.
 5. Each evidence file gets a SHA-256 fingerprint and a UTC time in `manifest.json`. The evidence is encrypted to `security.evidence_recipient`, an age public key, and uploaded to the backups remote. The private key stays in the password manager.
 
 "Release lockdown" and "Allow this source" need a 6-digit authenticator code. Three wrong codes lock both buttons for an hour. The guard records only traffic to the cluster's own computers, and never acts against the source.

@@ -19,13 +19,11 @@ Get-ChildItem "$base\requests\*.json" -ErrorAction SilentlyContinue | Sort-Objec
       Log "unblocked $($r.ip)"
     }
     "lockdown-on" {
-      # Outgoing: only Tailscale, Splashtop, HTTPS on port 443 and name lookups.
+      # Outgoing: only Tailscale, HTTPS on port 443 and name lookups.
       New-NetFirewallRule -DisplayName "AgentGuard lockdown: Tailscale" -Direction Outbound -Program "C:\Program Files\Tailscale\tailscaled.exe" -Action Allow -ErrorAction SilentlyContinue | Out-Null
       New-NetFirewallRule -DisplayName "AgentGuard lockdown: HTTPS" -Direction Outbound -Protocol TCP -RemotePort 443 -Action Allow -ErrorAction SilentlyContinue | Out-Null
       New-NetFirewallRule -DisplayName "AgentGuard lockdown: DNS" -Direction Outbound -Protocol UDP -RemotePort 53 -Action Allow -ErrorAction SilentlyContinue | Out-Null
       New-NetFirewallRule -DisplayName "AgentGuard lockdown: Tailscale peers" -Direction Outbound -RemoteAddress 100.64.0.0/10 -Action Allow -ErrorAction SilentlyContinue | Out-Null
-      Get-ChildItem "C:\Program Files*\Splashtop" -Recurse -Filter *.exe -ErrorAction SilentlyContinue | ForEach-Object {
-        New-NetFirewallRule -DisplayName "AgentGuard lockdown: Splashtop $($_.Name)" -Direction Outbound -Program $_.FullName -Action Allow -ErrorAction SilentlyContinue | Out-Null }
       Set-NetFirewallProfile -All -DefaultOutboundAction Block
       Set-NetFirewallHyperVVMSetting -Name $wsl -DefaultOutboundAction Block
       New-NetFirewallHyperVRule -Name "AgentGuard-lockdown-https" -DisplayName "AgentGuard lockdown: WSL HTTPS" -Direction Outbound -VMCreatorId $wsl -Protocol TCP -RemotePorts 443 -Action Allow -ErrorAction SilentlyContinue | Out-Null

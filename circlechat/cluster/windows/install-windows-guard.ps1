@@ -3,8 +3,8 @@
 #
 # 1. BitLocker on drive C: with TPM unlock, so the Beast still restarts on its own. Shows the
 #    recovery password once: save it in the password manager.
-# 2. Windows Firewall: refuse every incoming connection except Tailscale, Splashtop, the
-#    decoys, and WSL services reached over Tailscale.
+# 2. Windows Firewall: refuse every incoming connection except Tailscale (remote access with
+#    RustDesk runs over Tailscale), the decoys, and WSL services reached over Tailscale.
 # 3. Windows Update: quality updates wait 7 days, no new Windows version, install at 4 a.m.
 # 4. A task running as SYSTEM every minute applies the guard's requests from WSL.
 $ErrorActionPreference = "Stop"
@@ -27,7 +27,7 @@ Get-BitLockerVolume | Where-Object { $_.MountPoint -ne "C:" -and $_.VolumeType -
 
 # 2. Firewall
 Set-NetFirewallProfile -All -DefaultInboundAction Block -DefaultOutboundAction Allow -NotifyOnListen False -LogBlocked True
-$keep = 'tailscale|splashtop|AgentGuard'
+$keep = 'tailscale|AgentGuard'
 $disabled = Get-NetFirewallRule -Direction Inbound -Action Allow -Enabled True | Where-Object {
   $app = ($_ | Get-NetFirewallApplicationFilter).Program
   -not (($_.DisplayName -match $keep) -or ($app -match $keep))
@@ -61,4 +61,4 @@ Set-ItemProperty $au NoAutoRebootWithLoggedOnUsers 0 -Type DWord
 $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -NonInteractive -ExecutionPolicy Bypass -File `"$base\guard-windows.ps1`""
 $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes 1)
 Register-ScheduledTask -TaskName "AgentClusterGuard" -Action $action -Trigger $trigger -User "SYSTEM" -RunLevel Highest -Force | Out-Null
-Write-Host "Done. Windows stays on version $ver, takes quality updates after 7 days at 4 a.m., and refuses incoming connections except Tailscale, Splashtop and the decoys."
+Write-Host "Done. Windows stays on version $ver, takes quality updates after 7 days at 4 a.m., and refuses incoming connections except Tailscale and the decoys."
