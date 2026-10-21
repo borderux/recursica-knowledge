@@ -90,6 +90,16 @@ async function main() {
       await run("bash", [path.join(here, "../setup-host.sh"), "--upgrade"], { env: { ...env, CC_DIR: ccDir } });
     }
   }
+  // @recursica/mcp on a stack without automatic upgrades: a new version goes in after 7 days.
+  const tenantUpgrade = tenantEnv.UPGRADE_AUTO;
+  const mcpFile = path.join(process.env.WS ?? path.join(process.env.HOME ?? "", "circlechat-workspace"), ".recursica-mcp-version");
+  if (tenantUpgrade !== "on" && fs.existsSync(mcpFile)) {
+    const latest = await fetch("https://registry.npmjs.org/@recursica/mcp/latest").then((r) => r.json()).then((j) => j.version).catch(() => "");
+    const current = fs.readFileSync(mcpFile, "utf8").trim();
+    const [m] = chooseDigests([{ tag: "@recursica/mcp", current, pulled: latest }], seen);
+    fs.writeFileSync(stateFile, JSON.stringify(seen));
+    if (m.changed && latest.split(".")[0] === current.split(".")[0]) fs.writeFileSync(mcpFile, `${latest}\n`);
+  }
   const changed = choice.filter((c) => c.changed).map((c) => c.tag);
   if (await healthy()) {
     console.log(`stack ${tenantEnv.TENANT || "border"}: images refreshed${changed.length ? ` (${changed.join(", ")})` : ""}, health check passed`);

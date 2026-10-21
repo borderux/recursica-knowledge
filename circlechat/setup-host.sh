@@ -135,10 +135,20 @@ set_env COMPOSE_FILE "$CF"
 # CircleChat's approval gate: an action at high risk waits for a person's approval. The high-risk
 # action, share_files, has CircleChat itself fetch a web address, outside the agents' filter.
 set_env APPROVE_RISK_AT high
-# The Recursica MCP server for Betty and Barb, at an exact version, started in the default proto
-# repo (the server reads the adapter installed there). Projects in other repos fall back to
-# reading the adapter's code.
-RMCP="{\"command\":\"bash\",\"args\":[\"-c\",\"cd /workspace/${APP_REPO:-app} && exec npx -y @recursica/mcp@$RECURSICA_MCP_VERSION\"],\"enabled\":true,\"timeout\":120}"
+# The Recursica MCP server for Betty and Barb, started in the default proto repo (the server reads
+# the adapter installed there). Projects in other repos fall back to reading the adapter's code.
+# The exact version lives in the shared workspace, read at the start of each agent turn: Border
+# UX's own stack moves it hourly (kit/upgrade.mjs), every other stack after 7 days
+# (cluster/images.mjs).
+mkdir -p "$WS"
+[ -s "$WS/.recursica-mcp-version" ] || printf '%s\n' "$RECURSICA_MCP_VERSION" > "$WS/.recursica-mcp-version"
+cat > "$WS/.recursica-mcp.sh" <<'SH'
+#!/bin/sh
+# Start the Recursica MCP server in the given project, at the version in .recursica-mcp-version.
+cd "$1" && exec npx -y "@recursica/mcp@$(cat /workspace/.recursica-mcp-version)"
+SH
+chmod 755 "$WS/.recursica-mcp.sh"
+RMCP="{\"command\":\"sh\",\"args\":[\"/workspace/.recursica-mcp.sh\",\"/workspace/${APP_REPO:-app}\"],\"enabled\":true,\"timeout\":120}"
 set_env CC_AGENT_MCP_SERVERS "{\"betty\":{\"recursica-mcp\":$RMCP},\"barb\":{\"recursica-mcp\":$RMCP}}"
 set_env ENFORCE_AGENT_SCOPES true
 env_has LITELLM_MASTER_KEY || set_env LITELLM_MASTER_KEY "sk-$(openssl rand -hex 16)"

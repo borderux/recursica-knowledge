@@ -265,6 +265,8 @@ An incoming connection that no rule allows, or a touch on a decoy, starts a lock
 
 ### Updates
 
+Border UX's own software follows the hourly upgrade job on a stack with `upgrade.auto`: the knowledge repo, the CircleChat fork, and the `@recursica/mcp` package. A release with the same first number goes in at once, and a new major version asks in Slack. Every other stack moves `@recursica/mcp` to a new version after 7 days, like third-party software. The version lives in `.recursica-mcp-version` in the shared workspace, and each agent turn reads it at start.
+
 Each day, the check installs updates from stable channels only, after a 7-day wait. A fix for a flaw on CISA's Known Exploited Vulnerabilities list installs at once. An update that needs a reboot is held, and Slack gets four buttons: "4 a.m. ET", "Tonight", "Pick a time" and "Skip". macOS installs its own system updates overnight. Windows waits 7 days before installing a quality update, at 4 a.m.
 
 Each Sunday, each stack's containers move to new image versions that are at least 7 days old. When the health check fails, every container goes back to the version it ran before.

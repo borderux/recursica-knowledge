@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { decide } from "./upgrade.mjs";
+import { decide, decideMcp } from "./upgrade.mjs";
 
 const tags = ["@recursica/knowledge@0.11.0", "@recursica/knowledge@0.11.1", "@recursica/knowledge@0.12.0", "@recursica/knowledge@1.0.0"];
 
@@ -16,4 +16,12 @@ test("a new major version asks once, and a skipped one stays skipped", () => {
 
 test("nothing newer means nothing to do, and other tags are ignored", () => {
   assert.deepEqual(decide("1.0.0", [...tags, "v9.9.9", "@other/pkg@9.0.0"]), { action: "none" });
+});
+
+test("Border UX's MCP package: a release with the same first number goes in at once, a major version asks once", () => {
+  assert.deepEqual(decideMcp("0.8.1", "0.9.0"), { action: "upgrade", version: "0.9.0" });
+  assert.deepEqual(decideMcp("0.8.1", "0.8.1"), { action: "none" });
+  assert.deepEqual(decideMcp("0.9.0", "1.0.0"), { action: "ask", tag: "@recursica/mcp@1.0.0" });
+  assert.deepEqual(decideMcp("0.9.0", "1.0.0", { asked: { "@recursica/mcp@1.0.0": 1 } }), { action: "none" });
+  assert.deepEqual(decideMcp("0.9.0", "garbage"), { action: "none" });
 });

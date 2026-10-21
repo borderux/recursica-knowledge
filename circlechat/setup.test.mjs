@@ -38,6 +38,10 @@ test("setup-host --secrets-only writes the stack's settings and starts the gatew
   assert.equal(e.CC_API_BASE, `http://localhost:${example.site.port ?? 8080}/api`);
   assert.match(e.COMPOSE_FILE, /compose\.egress\.yml/);
   assert.equal(e.APPROVE_RISK_AT, "high");
+  const mcp = JSON.parse(e.CC_AGENT_MCP_SERVERS);
+  assert.deepEqual(mcp.betty["recursica-mcp"].args[0], "/workspace/.recursica-mcp.sh");
+  assert.doesNotMatch(e.CC_AGENT_MCP_SERVERS, /\$/);
+  assert.equal(fs.readFileSync(path.join(s.home, "circlechat-workspace/.recursica-mcp-version"), "utf8").trim(), "0.8.1");
   assert.equal(e.CC_AGENT_NETWORK, "circlechat_agents");
   assert.notEqual(e.SESSION_SECRET, "change-me-at-least-32-chars-long-string");
   assert.notEqual(e.MINIO_ROOT_PASSWORD, "minioadmin");

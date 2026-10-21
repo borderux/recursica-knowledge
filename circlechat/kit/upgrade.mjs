@@ -46,7 +46,34 @@ function pickUpCircleChat(ccDir, say) {
   say(`:x: The CircleChat update to ${after.slice(0, 7)} failed its health check. CircleChat is back on ${before.slice(0, 7)}.`);
 }
 
-function main() {
+// Border UX's own npm package, @recursica/mcp: same rule as the knowledge repo, applied hourly.
+// A release with the same first number goes in at once; a new major version asks in Slack.
+export function decideMcp(current, latest, state = {}) {
+  const cur = String(current).trim().split(".").map(Number), lat = String(latest).trim().split(".").map(Number);
+  if (lat.length !== 3 || lat.some(Number.isNaN) || cmp(lat, cur) <= 0) return { action: "none" };
+  if (lat[0] === cur[0]) return { action: "upgrade", version: latest };
+  const tag = `@recursica/mcp@${latest}`;
+  if (state.asked?.[tag] || state.skipped?.[tag]) return { action: "none" };
+  return { action: "ask", tag };
+}
+
+async function updateMcp(ws, stateFile, state, say) {
+  const file = path.join(ws, ".recursica-mcp-version");
+  if (!fs.existsSync(file)) return;
+  const current = fs.readFileSync(file, "utf8").trim();
+  const r = await fetch("https://registry.npmjs.org/@recursica/mcp/latest", { signal: AbortSignal.timeout(20_000) }).catch(() => null);
+  if (!r?.ok) return;
+  const latest = (await r.json()).version;
+  const d = decideMcp(current, latest, state);
+  if (d.action === "upgrade") { fs.writeFileSync(file, `${d.version}\n`); console.log(`@recursica/mcp ${current} -> ${d.version}`); }
+  if (d.action === "ask") {
+    const here = path.dirname(new URL(import.meta.url).pathname);
+    const post = spawnSync(process.execPath, [path.join(here, "../cluster/post.mjs"), "upgrade", `:arrow_up: @recursica/mcp ${latest} is a new major version (the agents run ${current}).`, process.env.COMPUTER ?? "", d.tag], { encoding: "utf8" });
+    if (post.status === 0) { state.asked = { ...(state.asked ?? {}), [d.tag]: Date.now() }; fs.writeFileSync(stateFile, JSON.stringify(state)); }
+  }
+}
+
+async function main() {
   const ws = process.env.WS, ccDir = process.env.CC_DIR, k = path.join(ws, "recursica-knowledge");
   const here = path.dirname(new URL(import.meta.url).pathname);
   const stateFile = path.join(ccDir, "kit-out/upgrade-state.json");
@@ -58,6 +85,7 @@ function main() {
   // CircleChat: each new commit on the fork's branch is rebuilt, checked and rolled back on a
   // failure. The weekly upstream sync brings the original project's changes to that branch.
   try { pickUpCircleChat(ccDir, say); } catch (e) { say(`:x: CircleChat update failed to start: ${e.message}`); }
+  await updateMcp(ws, stateFile, state, say).catch((e) => console.error(`@recursica/mcp check: ${e.message}`));
   git("fetch", "--tags", "--quiet");
   const current = JSON.parse(fs.readFileSync(path.join(k, "package.json"), "utf8")).version;
   const tags = git("tag", "--list", "@recursica/knowledge@*").split("\n").filter(Boolean);
