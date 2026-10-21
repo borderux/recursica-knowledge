@@ -48,6 +48,10 @@ export function makeBot({ env = process.env, api, relay, now = () => Date.now() 
     await api("chat.postMessage", { channel: meta.channel ?? channel, thread_ts: meta.ts, text });
   }
 
+  // Slack needs each click acknowledged within 3 seconds, and a relay to another computer can take
+  // longer. So the action starts here, and the acknowledgment goes back without waiting for it.
+  function start(...args) { run(...args).catch((e) => console.error(`action failed: ${e.message}`)); }
+
   async function run(meta, user, actionId, value, extra = {}) {
     const result = await relay(value.c, { action: actionId, ref: value.r, extra, by: approvers[user] ?? user });
     await reply(meta, `${result.ok ? ":white_check_mark:" : ":x:"} <@${user}> pressed "${ACTIONS[actionId]?.label ?? actionId}" for ${value.c}: ${result.message}`);
@@ -101,7 +105,7 @@ export function makeBot({ env = process.env, api, relay, now = () => Date.now() 
         await api("views.open", { trigger_id: p.trigger_id, view: timeModal(meta) });
         return undefined;
       }
-      await run(meta, user, a.action_id, value);
+      start(meta, user, a.action_id, value);
       return undefined;
     }
     if (p.type === "view_submission") {
@@ -117,14 +121,14 @@ export function makeBot({ env = process.env, api, relay, now = () => Date.now() 
           return { response_action: "errors", errors: { code: nowLocked ? "Locked for an hour after three wrong codes." : "Wrong code." } };
         }
         lockout.succeed(user);
-        await run(meta, user, meta.id, meta.value);
+        start(meta, user, meta.id, meta.value);
         return { response_action: "clear" };
       }
       if (p.view.callback_id === "pick-time") {
         const day = p.view.state?.values?.day?.day?.selected_date, time = p.view.state?.values?.time?.time?.selected_time;
         const at = day && time ? etToUtc(day, time) : 0;
         if (!at || at <= now()) return { response_action: "errors", errors: { time: "Pick a time in the future." } };
-        await run(meta, user, "reboot-at", meta.value, { at, label: formatEt(new Date(at)) });
+        start(meta, user, "reboot-at", meta.value, { at, label: formatEt(new Date(at)) });
         return { response_action: "clear" };
       }
     }

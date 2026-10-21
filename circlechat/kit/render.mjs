@@ -60,12 +60,15 @@ export function squidConf() {
 http_port 3128
 pid_filename none
 acl allowed dstdomain "/etc/egress/allow.txt"
+# IP addresses, such as another computer's Tailscale address (100.x): name rules never match one.
+acl allowed_ips dst "/etc/egress/allow-ips.txt"
 acl allow_once dstdomain "/etc/egress/allow-once.txt"
 # The blocked page agents see lives in the templates folder; Squid looks there for every page.
 error_directory /usr/share/squid/errors/templates
 acl Safe_ports port 80 443 1919 7400 8009 11434
 http_access deny !Safe_ports
 http_access allow allowed
+http_access allow allowed_ips
 http_access allow allow_once
 deny_info ERR_EGRESS_BLOCKED all
 http_access deny all
@@ -123,7 +126,7 @@ export function validate(site) {
   if (site.egress !== undefined) {
     const e = site.egress;
     if (e.enabled !== undefined && typeof e.enabled !== "boolean") errs.push("egress.enabled must be true or false");
-    for (const h of e.allow ?? []) if (!/^\.?[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/.test(h)) errs.push(`egress.allow: "${h}" must be a host name, such as docs.example.com or .example.com for every subdomain`);
+    for (const h of e.allow ?? []) if (!/^\.?[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/.test(h)) errs.push(`egress.allow: "${h}" must be a host name or an IPv4 address, such as docs.example.com, .example.com for every subdomain, or 100.64.0.5`);
     if (!cloudAllowed(site)) for (const h of e.allow ?? []) if (Object.values(PROVIDER_HOSTS).flat().some((p) => h === p || h.endsWith(p))) errs.push(`egress.allow: "${h}" is a cloud model provider, and this client stack has no recorded permission for cloud models`);
   }
   if (site.backup !== undefined) {
@@ -273,7 +276,11 @@ export function render(site) {
     `PUBLIC_KNOWLEDGE=${/borderux\/recursica-knowledge(\.git)?$/.test(site.repos?.knowledge ?? "") ? "yes" : "no"}`,
     `BACKUP_TIME=${site.backup?.time ?? "02:00"}`,
   ].join("\n") + "\n";
-  const egress = { allow: egressAllow(site).join("\n") + "\n", conf: squidConf() };
+  const isIp = (h) => /^\d{1,3}(\.\d{1,3}){3}$/.test(h) || h.includes(":");
+  const hosts = egressAllow(site);
+  const ips = hosts.filter(isIp);
+  // Squid refuses an empty list, so each list holds a placeholder that never matches.
+  const egress = { allow: (hosts.filter((h) => !isIp(h)).join("\n") || "nothing.invalid") + "\n", allowIps: (ips.join("\n") || "192.0.2.1") + "\n", conf: squidConf() };
   return { litellm, kev, services, appEnv, jobNodes, porterEnv, watches, tenantEnv, egress };
 }
 
@@ -295,6 +302,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   fs.writeFileSync(path.join(out, "tenant.env"), r.tenantEnv);
   fs.mkdirSync(path.join(out, "egress"), { recursive: true });
   fs.writeFileSync(path.join(out, "egress", "allow.txt"), r.egress.allow);
+  fs.writeFileSync(path.join(out, "egress", "allow-ips.txt"), r.egress.allowIps);
   fs.writeFileSync(path.join(out, "egress", "squid.conf"), r.egress.conf);
   // One-time consents: the cluster agent rewrites this file. An empty list holds a name that
   // never resolves, because Squid refuses an empty list.

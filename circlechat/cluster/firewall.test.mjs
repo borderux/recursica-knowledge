@@ -34,6 +34,7 @@ function squidFiles() {
   fs.chmodSync(path.join(dir, "log"), 0o777);
   fs.writeFileSync(path.join(dir, "allow.txt"), r.egress.allow);
   fs.writeFileSync(path.join(dir, "allow-once.txt"), "nothing.invalid\n");
+  fs.writeFileSync(path.join(dir, "allow-ips.txt"), r.egress.allowIps);
   return { dir, conf: r.egress.conf.replaceAll("/etc/egress", dir).replace("/var/log/egress", path.join(dir, "log")).replace("deny_info ERR_EGRESS_BLOCKED all", "deny_info ERR_ACCESS_DENIED all") };
 }
 

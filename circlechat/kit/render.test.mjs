@@ -206,3 +206,13 @@ test("cloud models through Bedrock, Vertex AI or Azure are allowed, and the per-
   assert.match(errs, /git.host must be/);
   assert.match(errs, /repos.access must be/);
 });
+
+test("a computer's IP address goes on the filter's IP list, where name rules cannot miss it", () => {
+  const s = clone();
+  s.nodes[1].address = "100.101.102.103";
+  const r = render(s);
+  assert.match(r.egress.allowIps, /^100\.101\.102\.103$/m);
+  assert.doesNotMatch(r.egress.allow, /100\.101/);
+  assert.match(r.egress.conf, /acl allowed_ips dst "\/etc\/egress\/allow-ips.txt"/);
+  assert.match(render(example).egress.allowIps, /192\.0\.2\.1/);
+});

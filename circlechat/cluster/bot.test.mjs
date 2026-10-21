@@ -82,3 +82,14 @@ test("a button with a suffix, such as Stop for one agent, reaches its action", a
   assert.equal(relays[0][1].action, "agents-stop");
   assert.equal(relays[0][1].ref, "border|betty");
 });
+
+test("a click is acknowledged without waiting for the target computer", async () => {
+  const env = { APPROVERS: "U1=aaron", TOTP_SECRET_AARON: "JBSWY3DPEHPK3PXP", SLACK_CHANNEL_ID: "C1", STATE_DIR: fs.mkdtempSync(path.join(os.tmpdir(), "bot-")) };
+  let release;
+  const slow = new Promise((r) => (release = r));
+  const bot = makeBot({ env, now: () => NOW, api: async () => ({ ok: true }), relay: async () => { await slow; return { ok: true, message: "done" }; } });
+  const started = Date.now();
+  await bot.handle(click("U1", "cut-off-now"));
+  assert.ok(Date.now() - started < 1000);
+  release();
+});
