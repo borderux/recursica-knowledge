@@ -130,7 +130,7 @@ Barb's Hermes settings (delegation limits, timeout, Kev access) are explained in
 
 ## Hard-won lessons (read before debugging)
 
-- **Compose needs both files:** `docker compose -f compose.yml -f compose.agents.yml ...`. Without the second, the api loses Docker access and new agents fail to install.
+- **Compose needs both files.** `setup-host.sh` writes `COMPOSE_FILE=compose.yml:compose.agents.yml` into `.env`, so a plain `docker compose up -d` in the CircleChat folder loads both. Without the second file, the api loses Docker access and new agents fail to install.
 - **On WSL, keep WSL running.** It stops when no Windows program holds it open, taking every service with it. `setup-host.sh` prints the keep-alive task.
 
 - **Use the UI's Install + link to create agents.** Never insert agent rows in Postgres or hand-write `bridge-config.json`. The bridge only reads `handle`, `token`, `hermesHome` from it; tokens come from the install.

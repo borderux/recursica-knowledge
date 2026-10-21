@@ -40,6 +40,9 @@ set_env CC_SHARED_WORKSPACE_DIR "$WS"
 # Seconds. The api discards a reply that takes longer than this + 60s, and a full Barb review
 # does. 480 and 1200 both lost reviews. See agents/barb/runtime/hermes.md.
 set_env HERMES_TIMEOUT 4000
+# Docker Compose reads COMPOSE_FILE from .env, so a plain `docker compose up -d` in this folder
+# also loads the agents overlay. Without it the api loses Docker access and agents stop installing.
+set_env COMPOSE_FILE compose.yml:compose.agents.yml
 env_has LITELLM_MASTER_KEY || set_env LITELLM_MASTER_KEY "sk-$(openssl rand -hex 16)"
 # Shared by Porter and every job runner. Copy it into each job-runner machine's ~/.recursica-node.env.
 env_has JOBD_TOKEN || set_env JOBD_TOKEN "$(openssl rand -hex 24)"
