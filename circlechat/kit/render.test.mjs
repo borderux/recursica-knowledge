@@ -150,3 +150,11 @@ test("backup settings are checked and passed to the setup", () => {
   assert.match(errs, /backup.remote must be an rclone remote/);
   assert.match(errs, /backup.time must be HH:MM/);
 });
+
+test("the evidence key must be an age public key", () => {
+  const s = clone();
+  s.security = { evidence_recipient: "not-a-key" };
+  assert.match(validate(s).join("\n"), /age public key/);
+  s.security.evidence_recipient = "age1" + "q".repeat(58);
+  assert.deepEqual(validate(s), []);
+});

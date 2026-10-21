@@ -52,6 +52,9 @@ export function validate(site) {
   const ports = ["port", "preview_port", "gateway_port"].map((k) => t[k]).filter((v) => v !== undefined);
   if (new Set(ports).size !== ports.length) errs.push("site.port, site.preview_port and site.gateway_port must all differ");
   if (t.docker_context !== undefined && !/^[A-Za-z0-9._-]+$/.test(t.docker_context)) errs.push("site.docker_context must be a Docker context name");
+  // Evidence from a lockdown is encrypted to this public key (age). The private key stays in the
+  // password manager, so no computer can read the evidence it uploads.
+  if (site.security?.evidence_recipient !== undefined && !/^age1[0-9a-z]{58}$/.test(site.security.evidence_recipient)) errs.push("security.evidence_recipient must be an age public key (age1...)");
   // Nightly backups: restic, through an rclone remote such as "gdrive-backups:agent-backups".
   if (site.backup !== undefined) {
     const b = site.backup;

@@ -215,6 +215,9 @@ if [ -n "$BACKUP_REMOTE" ]; then
   install_unit "backup$SUFFIX" "$BENV $HERE/backup/backup.sh" "$CC_DIR" root "*-*-* $BACKUP_TIME"
   install_unit "restore-test$SUFFIX" "$BENV $HERE/backup/restore-test.sh" "$CC_DIR" root "*-*-01 04:30"
 fi
+# Weekly container refresh: new image versions wait 7 days, and a failed health check rolls the
+# stack back. Runs on Sunday at 3 a.m.
+install_unit "images$SUFFIX" "CC_DIR=$CC_DIR $(command -v node) $HERE/cluster/images.mjs" "$HOME" "$(id -un)" "Sun *-*-* 03:00"
 install_unit "agents-sync$SUFFIX" "git config --global --get-all safe.directory | grep -qx $WS/recursica-knowledge || git config --global --add safe.directory $WS/recursica-knowledge; $ENVS $HERE/sync-skills.sh; chown -R $(id -un) $WS/recursica-knowledge/.git $WS/kev" "$CC_DIR" root hourly
 if [ -n "$(site_get porter.watch)" ]; then
   # Announces each new release of the watched repository to Porter, through the workflow webhook
