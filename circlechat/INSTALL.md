@@ -88,6 +88,8 @@ The kit sets each of these up. Each one has a section in `circlechat/README.md`:
 - **Security services:** firewall rules, decoys, the lockdown and its encrypted evidence.
 - **Backups:** nightly and encrypted, with a test restore each quarter.
 - **Updates:** security updates after a 7-day wait, and right away for actively exploited flaws.
+- **Agent controls:** Slack posts each waiting approval, with Stop buttons per agent and per stack.
+- **Remote access:** RustDesk, only over Tailscale or the client's own VPN, with two-factor sign-in.
 
 ## Working with Betty
 
