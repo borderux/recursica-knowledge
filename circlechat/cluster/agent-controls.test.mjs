@@ -27,7 +27,7 @@ test("a waiting approval is posted once, and the controls are posted when the ag
 
 test("stop pauses one agent and ends that agent's turn in progress only", async () => {
   const { c, queries, dockerCalls } = setup();
-  const r = await c.stop("border|betty", "aaron");
+  const r = await c.stop("border|betty", "person_a");
   assert.equal(r.ok, true);
   assert.match(queries.at(-1) ?? queries.find((q) => q.startsWith("update")), /status = 'paused'.*handle = 'betty'/);
   assert.deepEqual(dockerCalls.filter((a) => a[0] === "kill"), [["kill", "c1"]]);
@@ -35,9 +35,9 @@ test("stop pauses one agent and ends that agent's turn in progress only", async 
 
 test("resume clears only a manual pause, and refuses an unsafe name", async () => {
   const { c, queries } = setup();
-  await c.resume("border|*", "matt");
+  await c.resume("border|*", "person_b");
   assert.match(queries.at(-1), /pause_reason = 'manual'$/);
-  assert.equal((await c.stop("border|x'; drop table agents;--", "aaron")).ok, false);
+  assert.equal((await c.stop("border|x'; drop table agents;--", "person_a")).ok, false);
 });
 
 test("the controls have a stop button per agent, and stop-all and resume-all", () => {

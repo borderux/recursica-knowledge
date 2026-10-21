@@ -10,7 +10,7 @@ import { buttonBlocks } from "./actions.mjs";
 const NOW = 1_800_000_000_000;
 function setup() {
   const secret = newSecret();
-  const env = { APPROVERS: "U1=aaron,U2=matt", TOTP_SECRET_AARON: secret, TOTP_SECRET_MATT: newSecret(),
+  const env = { APPROVERS: "U1=person_a,U2=person_b", TOTP_SECRET_PERSON_A: secret, TOTP_SECRET_PERSON_B: newSecret(),
     SLACK_CHANNEL_ID: "C1", STATE_DIR: fs.mkdtempSync(path.join(os.tmpdir(), "bot-")) };
   const calls = [], relays = [];
   const bot = makeBot({ env, now: () => NOW,
@@ -28,7 +28,7 @@ const codeView = (code) => ({ callback_id: "two-factor", private_metadata: JSON.
 test("a button with no two-factor runs at once for an approver", async () => {
   const { bot, relays } = setup();
   await bot.handle(click("U1", "cut-off-now"));
-  assert.deepEqual(relays[0], ["studio", { action: "cut-off-now", ref: "lock-1", extra: {}, by: "aaron" }]);
+  assert.deepEqual(relays[0], ["studio", { action: "cut-off-now", ref: "lock-1", extra: {}, by: "person_a" }]);
 });
 
 test("anyone who is not an approver is turned away", async () => {
@@ -62,8 +62,8 @@ test("three wrong codes lock the two-factor buttons and post an alert", async ()
 
 test("a code from another approver's authenticator is refused", async () => {
   const { bot, relays } = setup();
-  const matt = setup();
-  const r = await bot.handle(submit("U2", codeView(totp(matt.secret, NOW))));
+  const person_b = setup();
+  const r = await bot.handle(submit("U2", codeView(totp(person_b.secret, NOW))));
   assert.equal(r.response_action, "errors");
   assert.equal(relays.length, 0);
 });
@@ -84,7 +84,7 @@ test("a button with a suffix, such as Stop for one agent, reaches its action", a
 });
 
 test("a click is acknowledged without waiting for the target computer", async () => {
-  const env = { APPROVERS: "U1=aaron", TOTP_SECRET_AARON: "JBSWY3DPEHPK3PXP", SLACK_CHANNEL_ID: "C1", STATE_DIR: fs.mkdtempSync(path.join(os.tmpdir(), "bot-")) };
+  const env = { APPROVERS: "U1=person_a", TOTP_SECRET_PERSON_A: "JBSWY3DPEHPK3PXP", SLACK_CHANNEL_ID: "C1", STATE_DIR: fs.mkdtempSync(path.join(os.tmpdir(), "bot-")) };
   let release;
   const slow = new Promise((r) => (release = r));
   const bot = makeBot({ env, now: () => NOW, api: async () => ({ ok: true }), relay: async () => { await slow; return { ok: true, message: "done" }; } });

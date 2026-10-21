@@ -39,7 +39,7 @@ test("a refused site asks the stack's channel once, naming the agent", async () 
 
 test("allow once opens the site for 15 minutes, then closes it", async () => {
   const { e, execs, dir, advance } = setup();
-  const r = await e.allowOnce("acme|docs.example.com", "aaron");
+  const r = await e.allowOnce("acme|docs.example.com", "person_a");
   assert.equal(r.ok, true);
   const once = path.join(dir, "kit-out/egress/allow-once.txt");
   assert.equal(fs.readFileSync(once, "utf8"), "docs.example.com\n");
@@ -52,6 +52,6 @@ test("allow once opens the site for 15 minutes, then closes it", async () => {
 
 test("refuses a consent for a stack or a host it does not know", async () => {
   const { e } = setup();
-  assert.equal((await e.allowOnce("other|x.com", "aaron")).ok, false);
-  assert.equal((await e.allowOnce("acme|bad host;rm", "aaron")).ok, false);
+  assert.equal((await e.allowOnce("other|x.com", "person_a")).ok, false);
+  assert.equal((await e.allowOnce("acme|bad host;rm", "person_a")).ok, false);
 });

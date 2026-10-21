@@ -258,7 +258,7 @@ An incoming connection that no rule allows, or a touch on a decoy, starts a lock
 3. Add the cluster's secrets to the border GitHub environment, then deploy them to each computer:
    - `SLACK_APP_TOKEN`, `SLACK_BOT_TOKEN` and `SLACK_CHANNEL_ID`, from the Slack app.
    - `CLUSTER_TOKEN`, a new random value.
-   - `APPROVERS`: Slack user IDs and names, such as `U012=aaron,U034=matt`.
+   - `APPROVERS`: Slack user IDs and names, such as `U012=person_a,U034=person_b`.
    - Each approver's `TOTP_SECRET_<NAME>`, from `enroll.mjs`.
 4. Set `site.slack_channel_id` in each stack's site.json, so uptime alerts reach the stack's own channel.
 

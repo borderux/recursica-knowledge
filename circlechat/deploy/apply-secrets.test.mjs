@@ -92,11 +92,11 @@ test("unlock refuses Border's stack, which has no disk image", () => {
 
 test("the cluster's secrets go to the cluster file, for the border stack only", () => {
   const { home, conf } = setup();
-  const r = apply(conf, ["border", control, "false"], "SLACK_BOT_TOKEN=xoxb-1\nTOTP_SECRET_AARON=ABC\n");
+  const r = apply(conf, ["border", control, "false"], "SLACK_BOT_TOKEN=xoxb-1\nTOTP_SECRET_PERSON_A=ABC\n");
   assert.equal(r.status, 0, r.stdout + r.stderr);
   const f = fs.readFileSync(path.join(home, "agent-cluster.env"), "utf8");
   assert.match(f, /^SLACK_BOT_TOKEN=xoxb-1$/m);
-  assert.match(f, /^TOTP_SECRET_AARON=ABC$/m);
+  assert.match(f, /^TOTP_SECRET_PERSON_A=ABC$/m);
 });
 
 test("a client stack never gets Alan's token for the public repo", () => {

@@ -7,7 +7,7 @@
 //   SLACK_APP_TOKEN    app-level token (xapp-...), with the connections:write scope
 //   SLACK_BOT_TOKEN    bot token (xoxb-...), with chat:write
 //   SLACK_CHANNEL_ID   the channel for alerts, such as #agent-cluster's ID
-//   APPROVERS          Slack user IDs and names: "U012=aaron,U034=matt"
+//   APPROVERS          Slack user IDs and names: "U012=person_a,U034=person_b"
 //   TOTP_SECRET_<NAME> each approver's authenticator secret
 //   CLUSTER_TOKEN      the token each cluster agent requires
 //   AGENTS             computer names and agent URLs: "beast=http://beast:7500,studio=http://127.0.0.1:7500"
