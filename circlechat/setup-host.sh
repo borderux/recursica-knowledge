@@ -318,7 +318,9 @@ if [ -n "$BACKUP_REMOTE" ]; then
   for t in restic rclone; do command -v "$t" >/dev/null || { echo "$t is not installed. Linux: sudo apt install $t. macOS: brew install $t."; exit 1; }; done
   rclone --config "$HOME/.config/rclone/rclone.conf" listremotes 2>/dev/null | grep -qx "${BACKUP_REMOTE%%:*}:" \
     || { echo "rclone has no remote named ${BACKUP_REMOTE%%:*}. Set it up first: see README, \"Backups\"."; exit 1; }
-  BENV="OWNER_HOME=$HOME CC_DIR=$CC_DIR WS=$WS PATH=$(dirname "$(command -v node)"):/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin"
+  # Root reads Docker's settings from the owner's ~/.docker: on a Mac, Colima's Docker belongs to
+  # the owner, and root has no settings of its own.
+  BENV="OWNER_HOME=$HOME CC_DIR=$CC_DIR WS=$WS DOCKER_CONFIG=$HOME/.docker PATH=$(dirname "$(command -v node)"):/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin"
   install_unit "backup$SUFFIX" "$BENV $HERE/backup/backup.sh" "$CC_DIR" root "*-*-* $BACKUP_TIME"
   install_unit "restore-test$SUFFIX" "$BENV $HERE/backup/restore-test.sh" "$CC_DIR" root "*-*-01 04:30"
 fi

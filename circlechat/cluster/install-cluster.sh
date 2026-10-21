@@ -28,6 +28,8 @@ TSIP="$( (tailscale ip -4 2>/dev/null || tailscale.exe ip -4 2>/dev/null) | head
 CANARY_PORTS="2222, 2121, 8088"
 
 sudo mkdir -p /var/lib/agent-cluster && sudo chmod 700 /var/lib/agent-cluster
+# DOCKER_CONFIG: the cluster's root services read Docker's settings from the owner's ~/.docker.
+# On a Mac, Colima's Docker belongs to the owner, and root has no Docker settings of its own.
 sudo tee /etc/agent-cluster.conf >/dev/null <<CONF
 COMPUTER=$NODE
 OWNER=$(id -un)
@@ -39,6 +41,7 @@ AGENTS=$AGENTS
 CANARY_LOG=/var/lib/agent-cluster/opencanary.log
 EVIDENCE_RECIPIENT=$EVIDENCE
 BACKUP_REMOTE=$BACKUP_REMOTE
+DOCKER_CONFIG=$HOME/.docker
 PATH=$(dirname "$NODE_BIN"):/usr/local/sbin:/usr/local/bin:/opt/homebrew/bin:/usr/sbin:/usr/bin:/sbin:/bin
 CONF
 [ -f /etc/agent-cluster.env ] || sudo install -m 600 -o root /dev/null /etc/agent-cluster.env
