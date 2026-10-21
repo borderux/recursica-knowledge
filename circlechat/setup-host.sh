@@ -71,7 +71,12 @@ set_env() { sedi "/^$1=/d" .env; echo "$1=$2" >> .env; }   # replace or append, 
 env_has() { grep -q "^$1=." .env; }
 set_env HERMES_HOMES_DIR "$CC_DIR/hermes-homes"
 set_env CC_REPO_HOST_DIR "$CC_DIR"
-set_env PUBLIC_BASE_URL "http://localhost:$PORT"
+# CircleChat's public address: the HTTPS address people use, which single sign-on (such as Google)
+# sends people back to. The api and the bridge reach CircleChat on this computer through
+# CC_API_BASE instead, so they never depend on the public address.
+if [ -n "$TENANT" ] && [ "$PROXY" = tailscale ]; then PUBLIC_URL="https://$TS_HOST:$PORT"; else PUBLIC_URL="https://$TS_HOST"; fi
+set_env PUBLIC_BASE_URL "$PUBLIC_URL"
+set_env CC_API_BASE "http://localhost:$PORT/api"
 set_env CC_SHARED_WORKSPACE_DIR "$WS"
 # Seconds. The api discards a reply that takes longer than this + 60s, and a full Barb review
 # does. 480 and 1200 both lost reviews. See agents/barb/runtime/hermes.md.
@@ -218,6 +223,9 @@ fi
 # Caddy on $PORT (Tailscale serve, or any reverse proxy, points there)
 # Caddy listens on this computer only. Tailscale serve gives each person on the tailnet the HTTPS
 # address, and nobody on the office network reaches CircleChat directly.
+# The agents' compose file reads CircleChat's address from the public address; point it at
+# CC_API_BASE, on this computer.
+sedi 's|CC_API_BASE: ${PUBLIC_BASE_URL:-http://localhost:8080}/api|CC_API_BASE: ${CC_API_BASE:-http://localhost:8080/api}|' compose.agents.yml
 sedi "s|- \"80:80\"|- \"127.0.0.1:$PORT:80\"|; s|- \"$PORT:80\"|- \"127.0.0.1:$PORT:80\"|" compose.yml
 # CircleChat also publishes 443 and MinIO's console (9001). Two stacks on one computer cannot both
 # hold those, so a tenant stack drops 443 (Tailscale serve gives it HTTPS) and binds the console
