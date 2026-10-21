@@ -139,11 +139,9 @@ export async function installHeld({ stateDir = "/var/lib/agent-cluster" } = {}) 
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const { buttonBlocks } = await import("./actions.mjs");
-  const { slackApi } = await import("./bot.mjs");
-  const api = slackApi(process.env.SLACK_BOT_TOKEN);
-  const post = (kind, text, ref) => api("chat.postMessage", { channel: process.env.SLACK_CHANNEL_ID, text,
-    ...(kind === "info" ? {} : { blocks: buttonBlocks(kind, text, process.env.COMPUTER, ref) }) });
+  const { makeChannel } = await import("./channel.mjs");
+  const chat = makeChannel(process.env);
+  const post = (kind, text, ref) => chat.post(process.env.SLACK_CHANNEL_ID, kind, text, ref);
   if (process.argv[2] === "install-held") await installHeld();
   else await check({ post });
 }

@@ -316,7 +316,10 @@ if grep -qi microsoft /proc/version 2>/dev/null; then
   echo "  schtasks /create /tn \"WSL keep-alive\" /sc onstart /ru SYSTEM /rl highest /tr \"wsl.exe -d ${WSL_DISTRO_NAME:-Ubuntu} -u $(id -un) --exec sleep infinity\""
 fi
 
-if [ -z "$TENANT" ]; then
+if [ "$PROXY" = other ]; then
+  SERVE="your own HTTPS reverse proxy, on this computer"
+  WHERE="https://<your address>"
+elif [ -z "$TENANT" ]; then
   SERVE="tailscale serve --bg http://127.0.0.1:$PORT"
   WHERE="https://$TS_HOST"
 else

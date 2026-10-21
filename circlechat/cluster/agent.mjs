@@ -13,7 +13,8 @@ import { spawn, spawnSync, execFile } from "node:child_process";
 import { Guard } from "./guard.mjs";
 import { makePlatform } from "./platform.mjs";
 import { buttonBlocks, nextAt, formatEt } from "./actions.mjs";
-import { slackApi, parsePairs } from "./bot.mjs";
+import { parsePairs } from "./bot.mjs";
+import { makeChannel } from "./channel.mjs";
 import { Monitor, localStacks } from "./monitor.mjs";
 import { Egress } from "./egress.mjs";
 
@@ -102,13 +103,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const env = process.env;
   const stateDir = "/var/lib/agent-cluster";
   fs.mkdirSync(stateDir, { recursive: true, mode: 0o700 });
-  const api = slackApi(env.SLACK_BOT_TOKEN);
-  const post = (kind, text, ref) => api("chat.postMessage", { channel: env.SLACK_CHANNEL_ID, text,
-    ...(kind === "info" ? {} : { blocks: buttonBlocks(kind, text, env.COMPUTER, ref) }) }).catch((e) => console.error(e.message));
+  const chat = makeChannel(env);
+  const post = (kind, text, ref) => chat.post(env.SLACK_CHANNEL_ID, kind, text, ref).catch((e) => console.error(e.message));
   const platform = makePlatform(env);
   const guard = new Guard({ platform, notify: post, stateDir, computer: env.COMPUTER });
   const monitor = new Monitor({ self: env.COMPUTER, peers: parsePairs(env.AGENTS), token: env.CLUSTER_TOKEN, clusterChannel: env.SLACK_CHANNEL_ID,
-    stateFile: path.join(stateDir, "monitor.json"), post: (channel, text) => api("chat.postMessage", { channel, text }) });
+    stateFile: path.join(stateDir, "monitor.json"), post: (channel, text) => chat.post(channel, "info", text) });
   // The stacks on this computer with an outgoing filter: Border UX's, and each open client stack.
   const filterStacks = async () => {
     const out = [];
@@ -131,7 +131,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   };
   const docker = (st, args) => new Promise((resolve) => execFile("docker", args, { env: { ...process.env, ...(st.context ? { DOCKER_CONTEXT: st.context } : {}) } }, (err, out) => resolve(err ? "" : out)));
   const egress = new Egress({ stacks: filterStacks, stateFile: path.join(stateDir, "egress.json"), exec: docker,
-    post: (channel, kind, text, ref) => api("chat.postMessage", { channel, text, blocks: buttonBlocks(kind, text, env.COMPUTER, ref) }),
+    post: (channel, kind, text, ref) => chat.post(channel, kind, text, ref),
     // The agent behind a refused connection: the container with that address on the stack's agent network.
     whoIs: async (st, ip) => {
       const j = JSON.parse((await docker(st, ["network", "inspect", st.network])) || "[]");
