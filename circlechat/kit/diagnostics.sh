@@ -31,7 +31,18 @@ run tenant-settings cat "$CC_DIR/kit-out/tenant.env"
 run env-names bash -c "sed 's/=.*//' '$CC_DIR/.env'"
 run site bash -c "node -e 'const s=require(process.argv[1]); console.log(JSON.stringify(s,null,2))' '$CC_DIR/site.json'"
 run egress-allow cat "$CC_DIR/kit-out/egress/allow.txt"
-run egress-refused bash -c "grep DENIED '$CC_DIR/egress-logs/access.log' 2>/dev/null | tail -50 | awk '{print \$1, \$3, \$4, \$6}'"
+# The filter's log keeps Squid's default permissions, because it holds the client's web addresses,
+# so the owner may need sudo to read it.
+EGRESS_LOG="$CC_DIR/egress-logs/access.log"
+if [ ! -e "$EGRESS_LOG" ] || [ -r "$EGRESS_LOG" ]; then READ_LOG="cat"
+elif sudo -n true 2>/dev/null; then READ_LOG="sudo -n cat"
+else READ_LOG=""; echo "Run diagnostics.sh with sudo to include the filter's refusals."
+fi
+if [ -n "$READ_LOG" ]; then
+  run egress-refused bash -c "$READ_LOG '$EGRESS_LOG' 2>/dev/null | grep DENIED | tail -50 | awk '{print \$1, \$3, \$4, \$6}'"
+else
+  run egress-refused echo "Run diagnostics.sh with sudo to include the filter's refusals."
+fi
 run recent-errors bash -c "(journalctl --since -24h -p err --no-pager 2>/dev/null | tail -200) || (log show --last 24h --predicate 'eventMessage CONTAINS \"error\"' --style compact 2>/dev/null | tail -200)"
 run container-errors bash -c "for c in \$(docker ps -a --format '{{.Names}}'); do echo \"== \$c\"; docker logs --tail 40 \"\$c\" 2>&1 | grep -iE 'error|fail|fatal' | tail -10; done"
 run guard bash -c "sudo -n cat /var/lib/agent-cluster/lockdown.json 2>/dev/null || echo 'no access to the guard state without sudo'"
