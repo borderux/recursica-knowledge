@@ -93,7 +93,6 @@ services:
   api:
     networks: [default, agents]
 YAML
-  set_env COMPOSE_FILE compose.yml:compose.agents.yml:compose.egress.yml
   set_env CC_AGENT_NETWORK "$AGENT_NET"
   set_env CC_AGENT_PROXY http://egress:3128
   set_env CC_AGENT_NO_PROXY api,cc-gateway,localhost,127.0.0.1
@@ -102,6 +101,30 @@ else
   rm -f compose.egress.yml
   for k in CC_AGENT_NETWORK CC_AGENT_PROXY CC_AGENT_NO_PROXY CC_AGENT_API_BASE; do sedi "/^$k=/d" .env; done
 fi
+# Personal information masking: Presidio's analyzer and anonymizer run beside the stack, and the
+# model gateway removes personal details from each request before the request reaches a cloud model.
+if [ "$MASK_PII" = on ]; then
+  cat > compose.privacy.yml <<YAML
+# Written by setup-host.sh: the masking services for the model gateway.
+services:
+  presidio-analyzer:
+    image: mcr.microsoft.com/presidio-analyzer:latest
+    restart: unless-stopped
+  presidio-anonymizer:
+    image: mcr.microsoft.com/presidio-anonymizer:latest
+    restart: unless-stopped
+YAML
+else
+  rm -f compose.privacy.yml
+fi
+CF="compose.yml:compose.agents.yml"
+[ "$EGRESS" = on ] && CF="$CF:compose.egress.yml"
+[ "$MASK_PII" = on ] && CF="$CF:compose.privacy.yml"
+set_env COMPOSE_FILE "$CF"
+# CircleChat's approval gate: an action at high risk waits for a person's approval. The high-risk
+# action, share_files, has CircleChat itself fetch a web address, outside the agents' filter.
+set_env APPROVE_RISK_AT high
+set_env ENFORCE_AGENT_SCOPES true
 env_has LITELLM_MASTER_KEY || set_env LITELLM_MASTER_KEY "sk-$(openssl rand -hex 16)"
 # CircleChat ships with a default session secret and default passwords. Anyone who knows the
 # default session secret can forge a sign-in, so each default becomes a random value. Postgres
@@ -153,7 +176,9 @@ start_gateway_and_notifier() {
   # Model gateway: one address for every model on every node, with fallbacks in route order.
   # Agents reach it at http://localhost:$GATEWAY_PORT (their turns run on the host network).
   docker rm -f "cc-gateway$SUFFIX" >/dev/null 2>&1 || true
-  docker run -d --name "cc-gateway$SUFFIX" --restart unless-stopped -p "127.0.0.1:$GATEWAY_PORT:4000" \
+  local mask=()
+  [ "$MASK_PII" = on ] && mask=(-e PRESIDIO_ANALYZER_API_BASE=http://presidio-analyzer:3000 -e PRESIDIO_ANONYMIZER_API_BASE=http://presidio-anonymizer:3000)
+  docker run -d --name "cc-gateway$SUFFIX" --restart unless-stopped --network "$NET" -p "127.0.0.1:$GATEWAY_PORT:4000" ${mask[@]+"${mask[@]}"} \
     --add-host host.docker.internal:host-gateway \
     -v "$KIT_OUT/litellm.yaml":/app/config.yaml:ro --env-file .env \
     ghcr.io/berriai/litellm:main-stable --config /app/config.yaml --port 4000

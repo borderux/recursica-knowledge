@@ -40,7 +40,9 @@ export const EGRESS_BASE = [".github.com", ".githubusercontent.com", "registry.n
 const PROVIDER_HOSTS = { anthropic: ["api.anthropic.com"], xai: ["api.x.ai"], vertex_ai: [".googleapis.com"], bedrock: [".amazonaws.com"], openai: ["api.openai.com"] };
 export function egressAllow(site) {
   const out = new Set(EGRESS_BASE);
-  if (cloudAllowed(site)) {
+  // With masking on, only the gateway reaches the cloud model providers, so every request passes
+  // the masking first.
+  if (cloudAllowed(site) && !maskPii(site)) {
     out.add("api.anthropic.com");   // the agents' own Claude keys
     for (const b of Object.values(site.routes ?? {}).flat()) for (const h of PROVIDER_HOSTS[String(b).split("/")[0]] ?? []) out.add(h);
   }
@@ -70,6 +72,16 @@ forwarded_for delete
 `;
 }
 
+// Personal information masking: the model gateway removes names, email addresses, phone numbers
+// and similar details from each request before the request reaches a cloud model (Presidio).
+// On by default for a client stack with cloud models; then the agents reach cloud models only
+// through the gateway, never directly.
+export function maskPii(site) {
+  if (!cloudAllowed(site)) return false;
+  const v = site.privacy?.mask_pii;
+  return v === undefined ? site.site?.kind === "client" : v === true;
+}
+
 // A stack may call cloud models unless it is a client stack without a recorded permission.
 export function cloudAllowed(site) {
   if (site.site?.kind !== "client") return true;
@@ -94,6 +106,8 @@ export function validate(site) {
   // password manager, so no computer can read the evidence it uploads.
   if (site.security?.evidence_recipient !== undefined && !/^age1[0-9a-z]{58}$/.test(site.security.evidence_recipient)) errs.push("security.evidence_recipient must be an age public key (age1...)");
   // Nightly backups: restic, through an rclone remote such as "gdrive-backups:agent-backups".
+  if (site.privacy?.mask_pii !== undefined && typeof site.privacy.mask_pii !== "boolean") errs.push("privacy.mask_pii must be true or false");
+  if (site.privacy?.mask_pii === true && !cloudAllowed(site)) errs.push("privacy.mask_pii applies to cloud model calls, and this client stack has no recorded permission for cloud models");
   if (site.egress !== undefined) {
     const e = site.egress;
     if (e.enabled !== undefined && typeof e.enabled !== "boolean") errs.push("egress.enabled must be true or false");
@@ -201,6 +215,7 @@ export function render(site) {
     model_list,
     router_settings: { fallbacks, num_retries: 1, timeout: 600 },
     general_settings: { master_key: "os.environ/LITELLM_MASTER_KEY" },
+    ...(maskPii(site) ? { guardrails: [{ guardrail_name: "presidio-pii", litellm_params: { guardrail: "presidio", mode: "pre_call", default_on: true } }] } : {}),
   };
 
   const kev = nodes
@@ -232,6 +247,7 @@ export function render(site) {
     `CLOUD_MODELS=${cloudAllowed(site) ? "allowed" : "local-only"}`,
     `BACKUP_REMOTE=${site.backup?.remote ?? ""}`,
     `EGRESS=${site.egress?.enabled === false ? "off" : "on"}`,
+    `MASK_PII=${maskPii(site) ? "on" : "off"}`,
     `BACKUP_TIME=${site.backup?.time ?? "02:00"}`,
   ].join("\n") + "\n";
   const egress = { allow: egressAllow(site).join("\n") + "\n", conf: squidConf() };

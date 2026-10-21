@@ -173,3 +173,17 @@ test("the outgoing filter allows GitHub, the registries and the stack's computer
   local.egress = { allow: ["api.anthropic.com"] };
   assert.match(validate(local).join("\n"), /cloud model provider/);
 });
+
+test("masking is on by default for a client stack with cloud models, and keeps agents off the providers", () => {
+  const s = clone();
+  Object.assign(s.site, { tenant: "acme", kind: "client", docker_context: "colima-acme" });
+  s.site.cloud_models = { allowed: true, granted_by: "Person A, acme.com", granted_on: "2026-10-20", payer: "client-byok" };
+  delete s.data;
+  const r = render(s);
+  assert.match(r.tenantEnv, /^MASK_PII=on$/m);
+  assert.equal(r.litellm.guardrails[0].litellm_params.guardrail, "presidio");
+  assert.doesNotMatch(r.egress.allow, /anthropic/);
+  s.privacy = { mask_pii: false };
+  assert.match(render(s).egress.allow, /api\.anthropic\.com/);
+  assert.match(render(example).tenantEnv, /^MASK_PII=off$/m);
+});

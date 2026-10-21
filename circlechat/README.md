@@ -182,6 +182,23 @@ When the filter refuses a site:
 
 A refused site in a port job gets a Slack alert with no buttons, because a job cannot wait. To allow a site for good, add the site to `egress.allow` in the stack's site.json through a pull request. Then rerun `setup-host.sh`. Set `"egress": { "enabled": false }` only for a stack with no agents.
 
+## Privacy rules for agents
+
+**The model gateway removes personal information before a request reaches a cloud model.** Presidio, Microsoft's open-source masking service, finds names, email addresses, phone numbers and similar details. The gateway replaces each one before the request leaves. Masking is on by default for a client stack with cloud models. Set `"privacy": { "mask_pii": false }` in site.json only when the client asks.
+
+With masking on, the outgoing filter keeps the agents away from every cloud model provider. Each request then passes the gateway first. Install each agent with the gateway as the agent's provider, with these settings:
+
+- Provider: OpenAI-compatible, at `http://cc-gateway:4000/v1`.
+- Key: the stack's `LITELLM_MASTER_KEY`.
+- Model: a route name, such as `claude-sonnet`.
+
+Copy the key to the clipboard without showing it: `grep '^LITELLM_MASTER_KEY=' .env | cut -d= -f2- | tr -d '\n' | pbcopy` on a Mac.
+
+Two more rules hold on every stack:
+
+- **CircleChat's approval gate is on.** `setup-host.sh` sets `APPROVE_RISK_AT=high`, so each high-risk action waits for a person's approval in CircleChat. The high-risk action, `share_files`, has CircleChat itself fetch a web address, outside the agents' filter.
+- **A client stack never runs Alan.** Alan's pull requests go to the public knowledge repo. `setup-agent.sh` refuses Alan on a client stack, and the secrets helper refuses `ALAN_GITHUB_PAT` for a client stack.
+
 ## Backups
 
 **Back up each stack every night, encrypted on the computer before the backup leaves the computer.** restic encrypts each backup with the stack's own `RESTIC_PASSWORD`, and rclone uploads the backup to Google Drive. Both tools are open source.

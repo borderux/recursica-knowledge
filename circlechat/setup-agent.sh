@@ -21,6 +21,11 @@ MARK="<!-- recursica-circlechat -->"
 # Per-deployment values (app repo name, Kev engines) come from setup-host.sh's render of site.json.
 KIT_OUT="$CC_DIR/kit-out"
 [ -f "$KIT_OUT/app.env" ] && . "$KIT_OUT/app.env"
+# Alan proposes changes to the public knowledge repo, so a client stack never runs Alan: no client
+# detail can reach a public pull request.
+if [ -f "$KIT_OUT/tenant.env" ] && grep -q '^TENANT_KIND=client' "$KIT_OUT/tenant.env" && [ "$HANDLE" = alan ]; then
+  echo "A client stack never runs Alan: Alan's pull requests go to the public knowledge repo."; exit 1
+fi
 
 # Loki on CircleChat has no Drive: his fence is /workspace/loki (agents/loki/platform/circlechat.md).
 # What would break that fence is a tool server reaching client data, so refuse if he has any.
