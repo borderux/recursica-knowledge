@@ -12,7 +12,13 @@
 # One computer can hold several stacks, one per client. Give each its own site.json with
 # site.tenant set, and run every kit script with TENANT=<name>: the stack then lives in
 # ~/tenants/<name>/ and every container, volume, port and job carries its name.
+#
+# --secrets-only: after a secret in .env changes, recreate only the model gateway and the Slack
+# notifier, which read .env when they start. CircleChat, the agents and the background jobs keep
+# running. The deploy-secrets workflow uses this mode; see circlechat/README.md, "Secrets in GitHub".
 set -euo pipefail
+SECRETS_ONLY=false
+[ "${1:-}" = --secrets-only ] && SECRETS_ONLY=true
 
 if [ -n "${TENANT:-}" ]; then
   CC_DIR="${CC_DIR:-$HOME/tenants/$TENANT/circlechat}"
@@ -49,7 +55,15 @@ KNOWLEDGE_REPO="$(site_get repos.knowledge)"
 APP_REPO_URL="$(site_get repos.app)"
 
 cd "$CC_DIR"
-[ -f .env ] || cp .env.example .env
+# Add each default from .env.example that .env lacks. The secrets helper can create .env before
+# the first setup, and a plain copy would then skip CircleChat's defaults.
+touch .env
+if [ -f .env.example ]; then
+  while IFS= read -r line; do
+    case "$line" in ''|\#*) continue ;; esac
+    grep -q "^${line%%=*}=" .env || printf '%s\n' "$line" >> .env
+  done < .env.example
+fi
 set_env() { sedi "/^$1=/d" .env; echo "$1=$2" >> .env; }   # replace or append, never duplicate
 env_has() { grep -q "^$1=." .env; }
 set_env HERMES_HOMES_DIR "$CC_DIR/hermes-homes"
@@ -67,6 +81,39 @@ set_env COMPOSE_PROJECT_NAME "$COMPOSE_PROJECT_NAME"
 env_has LITELLM_MASTER_KEY || set_env LITELLM_MASTER_KEY "sk-$(openssl rand -hex 16)"
 # Shared by Porter and every job runner. Copy it into each job-runner machine's ~/.recursica-node.env.
 env_has JOBD_TOKEN || set_env JOBD_TOKEN "$(openssl rand -hex 24)"
+NET="${COMPOSE_PROJECT_NAME}_default"
+
+start_gateway_and_notifier() {
+  # Model gateway: one address for every model on every node, with fallbacks in route order.
+  # Agents reach it at http://localhost:$GATEWAY_PORT (their turns run on the host network).
+  docker rm -f "cc-gateway$SUFFIX" >/dev/null 2>&1 || true
+  docker run -d --name "cc-gateway$SUFFIX" --restart unless-stopped -p "127.0.0.1:$GATEWAY_PORT:4000" \
+    --add-host host.docker.internal:host-gateway \
+    -v "$KIT_OUT/litellm.yaml":/app/config.yaml:ro --env-file .env \
+    ghcr.io/berriai/litellm:main-stable --config /app/config.yaml --port 4000
+
+  # Slack notifier: task changes, questions to people, rejected agent posts, stalled tasks.
+  docker rm -f "cc-slack-notify$SUFFIX" >/dev/null 2>&1 || true
+  if [ "$(site_get notify.slack)" = true ] && env_has SLACK_WEBHOOK_URL && [ -n "$NET" ]; then
+    mkdir -p "$CC_DIR/notify" && cp "$HERE/notify/notify.mjs" "$HERE/notify/package.json" "$CC_DIR/notify/"
+    PG="$(sed -n 's/^PG_PASSWORD=//p' .env)"; PG="${PG:-circlechat}"
+    docker run -d --name "cc-slack-notify$SUFFIX" --restart unless-stopped --network "$NET" \
+      -v "$CC_DIR/notify":/app -v "cc-notify-state$SUFFIX":/state -w /app \
+      -e DATABASE_URL="postgres://postgres:$PG@postgres:5432/circlechat" \
+      -e SLACK_WEBHOOK_URL="$(sed -n 's/^SLACK_WEBHOOK_URL=//p' .env)" \
+      -e CC_URL="https://$TS_HOST" \
+      node:22-alpine sh -c "npm install --silent && node notify.mjs"
+    echo "Slack notifier running."
+  else
+    echo "Slack notifier off (needs notify.slack in site.json and SLACK_WEBHOOK_URL in .env)."
+  fi
+}
+
+if [ "$SECRETS_ONLY" = true ]; then
+  start_gateway_and_notifier
+  echo "Secrets applied${TENANT:+ (stack: $TENANT)}: gateway and Slack notifier recreated."
+  exit 0
+fi
 
 # Caddy on $PORT (Tailscale serve, or any reverse proxy, points there)
 sedi "s|- \"80:80\"|- \"$PORT:80\"|" compose.yml
@@ -112,7 +159,6 @@ done
 
 docker pull nousresearch/hermes-agent:latest
 docker compose -f compose.yml -f compose.agents.yml up -d --force-recreate
-NET="${COMPOSE_PROJECT_NAME}_default"
 
 # Always-on dev server for the application (hot-reloads as Betty edits)
 docker rm -f "betty-proto$SUFFIX" >/dev/null 2>&1 || true
@@ -121,29 +167,7 @@ docker run -d --name "betty-proto$SUFFIX" --restart unless-stopped -p "$PREVIEW_
   -e __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS="$TS_HOST" \
   node:22 sh -c "npm install && npx vite --host 0.0.0.0"
 
-# Model gateway: one address for every model on every node, with fallbacks in route order.
-# Agents reach it at http://localhost:$GATEWAY_PORT (their turns run on the host network).
-docker rm -f "cc-gateway$SUFFIX" >/dev/null 2>&1 || true
-docker run -d --name "cc-gateway$SUFFIX" --restart unless-stopped -p "127.0.0.1:$GATEWAY_PORT:4000" \
-  --add-host host.docker.internal:host-gateway \
-  -v "$KIT_OUT/litellm.yaml":/app/config.yaml:ro --env-file .env \
-  ghcr.io/berriai/litellm:main-stable --config /app/config.yaml --port 4000
-
-# Slack notifier: task changes, questions to people, rejected agent posts, stalled tasks.
-docker rm -f "cc-slack-notify$SUFFIX" >/dev/null 2>&1 || true
-if [ "$(site_get notify.slack)" = true ] && env_has SLACK_WEBHOOK_URL && [ -n "$NET" ]; then
-  mkdir -p "$CC_DIR/notify" && cp "$HERE/notify/notify.mjs" "$HERE/notify/package.json" "$CC_DIR/notify/"
-  PG="$(sed -n 's/^PG_PASSWORD=//p' .env)"; PG="${PG:-circlechat}"
-  docker run -d --name "cc-slack-notify$SUFFIX" --restart unless-stopped --network "$NET" \
-    -v "$CC_DIR/notify":/app -v "cc-notify-state$SUFFIX":/state -w /app \
-    -e DATABASE_URL="postgres://postgres:$PG@postgres:5432/circlechat" \
-    -e SLACK_WEBHOOK_URL="$(sed -n 's/^SLACK_WEBHOOK_URL=//p' .env)" \
-    -e CC_URL="https://$TS_HOST" \
-    node:22-alpine sh -c "npm install --silent && node notify.mjs"
-  echo "Slack notifier running."
-else
-  echo "Slack notifier off (needs notify.slack in site.json and SLACK_WEBHOOK_URL in .env)."
-fi
+start_gateway_and_notifier
 
 # Background jobs, the native way for this OS (systemd on Linux, launchd on macOS).
 ENVS="CC_DIR=$CC_DIR WS=$WS SITE=$SITE"

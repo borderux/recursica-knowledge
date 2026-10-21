@@ -114,6 +114,36 @@ Model servers that keep no data, such as Kev's model and a local model, can serv
 
 A stack with no `site.tenant` keeps the names a single install uses today. An existing install changes nothing.
 
+## Secrets in GitHub
+
+**Keep each stack's secrets in GitHub, in the private repo that holds the stacks' site.json files.** GitHub records each change, and more than one person can update a secret. GitHub never shows a secret again after the secret is saved. Keep a copy of each secret in a password manager.
+
+1. **Create one GitHub environment per stack** in the private repo. Name the environment `border` for the stack with no tenant name, and `client-<name>` for each client stack.
+2. **Require an approval** in each environment's settings, under "Required reviewers". A workflow then waits for the approval before the workflow reads the environment's secrets.
+3. **Add the stack's secrets to the environment**, with the names in the table below.
+4. **Copy `circlechat/secrets/deploy-secrets.yml`** to `.github/workflows/deploy-secrets.yml` in the private repo.
+5. **Install a GitHub self-hosted runner on each computer**, for the private repo only, under a separate account. Give the runner a label with the computer's name from site.json.
+6. **Run `./circlechat/secrets/install-secrets-helper.sh <runner account>`** on each computer, as the account that owns the stacks. The runner's account can then run one command as root: the helper that writes the secrets.
+7. **Run the "Deploy secrets" workflow** with the stack and the computer. The workflow writes each secret to the file that reads the secret, then restarts the services that read the file.
+
+The node secrets file is `~/.recursica-node.env`, or `~/.recursica-node.<client>.env` for a client stack.
+
+| Secret in GitHub                                           | File the helper writes                                    | Read by                                 |
+| ---------------------------------------------------------- | --------------------------------------------------------- | --------------------------------------- |
+| `ANTHROPIC_API_KEY`                                        | `.env` on the control computer                            | The model gateway                       |
+| `SLACK_WEBHOOK_URL`                                        | `.env` on the control computer                            | The Slack notifier                      |
+| `KEV_ENGINE_KEY`                                           | `.env` on the control computer                            | Barb's first pass with Kev              |
+| `JOBD_TOKEN`                                               | `.env` on the control computer, and the node secrets file | Porter and each job runner              |
+| `PORTER_HOOK_URL`, `PORTER_HOOK_SECRET`                    | `.env` on the control computer, and the node secrets file | The release watcher and each job runner |
+| `<HANDLE>_GITHUB_PAT`, such as `ALAN_GITHUB_PAT`           | The `.env` in the agent's Hermes home                     | The agent, at the start of each turn    |
+| `KEV_API_KEY`                                              | The node secrets file                                     | Kev's model                             |
+| `PORTER_ANTHROPIC_API_KEY`                                 | The node secrets file, as `ANTHROPIC_API_KEY`             | The port jobs                           |
+| `PORTER_GITHUB_PAT`, `PORTER_GIT_NAME`, `PORTER_GIT_EMAIL` | The node secrets file                                     | The port jobs                           |
+
+An agent's own Anthropic key stays in CircleChat's agent settings. To deploy a GitHub token for a new agent, add the agent's `<HANDLE>_GITHUB_PAT` line to the workflow's list of secrets.
+
+**Limit write access to the private repo.** A person who can edit a workflow can read the secrets of each environment the workflow uses. The required approval in step 2 keeps a changed workflow from reading secrets without an approval.
+
 ## Notifications
 
 With `"notify": { "slack": true }` and `SLACK_WEBHOOK_URL` set, the notifier posts to Slack:
