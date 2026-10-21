@@ -69,6 +69,18 @@ export async function notify(payload, delivery) {
   } catch (e) { console.error(`notify ${delivery}: ${e.message}`); }
 }
 
+// When this process started. A job that started before this moment, and whose container is no
+// longer running with no report written, was cut off by a restart of the computer or of Docker.
+const STARTED = Date.now();
+const MAX_RESTARTS = Number(env.JOBD_MAX_RESTARTS ?? 2);
+
+function containerArgs(id, repo, image) {
+  return ["run", "-d", "--name", id, "--memory", `${C.memoryGb}g`, "--memory-swap", `${C.memoryGb}g`,
+    ...(C.cpus ? ["--cpus", C.cpus] : []),
+    "-v", `${jobDir(id)}:/work`, "-e", `TARGET_REPO=${repo}`, "-e", "PORTER_REPORT=/work/report.md",
+    ...C.passEnv.flatMap((n) => (env[n] !== undefined ? ["-e", n] : [])), image];
+}
+
 async function start(body) {
   const type = TYPES[body?.type];
   if (!type) return [400, { error: "unknown_job_type" }];
@@ -81,11 +93,7 @@ async function start(body) {
   fs.chmodSync(dir, 0o777);  // the container's user writes here
   fs.writeFileSync(path.join(dir, "package.md"), body.package);
   const label = String(body.label ?? "").slice(0, 120);
-  const args = ["run", "-d", "--name", id, "--memory", `${C.memoryGb}g`, "--memory-swap", `${C.memoryGb}g`,
-    ...(C.cpus ? ["--cpus", C.cpus] : []),
-    "-v", `${dir}:/work`, "-e", `TARGET_REPO=${body.repo}`, "-e", "PORTER_REPORT=/work/report.md",
-    ...C.passEnv.flatMap((n) => (env[n] !== undefined ? ["-e", n] : [])), type.image];
-  const r = await run(args);
+  const r = await run(containerArgs(id, body.repo, type.image));
   if (!r.ok) { fs.rmSync(dir, { recursive: true, force: true }); return [500, { error: "start_failed", detail: r.err.slice(0, 400) }]; }
   writeMeta({ id, type: body.type, repo: body.repo, label, status: "running", started: new Date().toISOString(), node: C.node });
   console.log(`started ${id} ${label}`);
@@ -101,6 +109,19 @@ async function reap() {
     fs.writeFileSync(path.join(jobDir(m.id), "job.log"), logs.out + logs.err);
     await run(["rm", "-f", m.id]);
     const hasReport = fs.existsSync(path.join(jobDir(m.id), "report.md"));
+    // A restart cut the job off: start the job again from the saved package, up to MAX_RESTARTS
+    // times, instead of reporting a failure the job never had.
+    const interrupted = !hasReport && oom !== "true" && Date.parse(m.started) < STARTED;
+    if (interrupted && (m.restarts ?? 0) < MAX_RESTARTS && TYPES[m.type]) {
+      const again = await run(containerArgs(m.id, m.repo, TYPES[m.type].image));
+      if (again.ok) {
+        m.restarts = (m.restarts ?? 0) + 1;
+        m.started = new Date().toISOString();
+        writeMeta(m);
+        console.log(`restarted ${m.id} after an interruption (restart ${m.restarts} of ${MAX_RESTARTS})`);
+        continue;
+      }
+    }
     m.exit_code = Number(code); m.oom = oom === "true"; m.ended = new Date().toISOString();
     m.status = m.oom ? "out_of_memory" : m.exit_code === 0 && hasReport ? "succeeded" : "failed";
     writeMeta(m);
