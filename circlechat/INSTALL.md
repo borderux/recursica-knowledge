@@ -106,6 +106,18 @@ Update the forks by hand. For the knowledge repo:
 
 A release with a new first number (a major version) can change settings. Read the release notes first.
 
+## Move a trial into your own install
+
+A trial on Border UX's cluster ends with an encrypted archive of the trial's stack. Border UX sends the archive folder and, separately, the archive key.
+
+1. Install the platform with this guide, up to "Install", step 3.
+2. Stop CircleChat: `docker compose stop`, in `~/circlechat`.
+3. Restore the archive with restic, using the archive key: `restic -r <archive folder> restore latest --target /tmp/trial`.
+4. Load the database dump into the new postgres: `gunzip -c <dump>/db.sql.gz | docker compose exec -T postgres psql -U postgres circlechat`.
+5. Unpack the file store into the new MinIO volume, and copy the agent homes and the workspace into place.
+6. Start CircleChat with `docker compose up -d`, and rerun `circlechat/setup-host.sh`.
+7. Delete `/tmp/trial`, and keep the archive key in the client's own secret store.
+
 ## Support
 
 Border UX gives support without access to the client's computers. Run `circlechat/kit/diagnostics.sh`, read the bundle it writes, then send the bundle to Border UX. The script replaces keys, tokens, passwords and email addresses with `[removed]`, and reads no client data.
