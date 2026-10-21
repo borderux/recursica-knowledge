@@ -126,7 +126,7 @@ A stack with no `site.tenant` keeps the names a single install uses today. An ex
 
 ## Encrypted client stacks
 
-**Keep each client stack in an encrypted disk image with the client's own key.** The image holds the client's whole stack in `~/tenants/<client>`: CircleChat, the agent homes, the workspace, the job folder, the secrets file and the logs. The client's Docker VM lives inside the image too. Encrypted client disk images need a Mac.
+**Keep each client stack in an encrypted disk image with the client's own key.** The image holds the client's whole stack in `~/tenants/<client>`. The stack holds CircleChat, the agent homes, the workspace, the job folder, the secrets file and the logs. The client's Docker VM lives inside the image too. Encrypted client disk images need a Mac.
 
 1. **Create the key in the password manager,** at least 24 random characters. Add the key to the client's GitHub environment as `STACK_DISK_KEY`.
 2. **Create the image before the client's Docker VM:** pipe the key into `./circlechat/tenant/disk-image.sh create <client> 200g`. The image grows as the stack grows, up to the size given.
@@ -184,6 +184,59 @@ An agent's own Anthropic key stays in CircleChat's agent settings. To deploy a G
 Each nightly backup holds five parts: the database, CircleChat's file store, the agent homes, the shared workspace and site.json. The backup leaves out each `.env`, because every secret lives in the stack's GitHub environment. restic keeps 7 daily, 4 weekly and 6 monthly backups.
 
 A test restore runs on the first day of January, April, July and October. The test unpacks the newest backup into a scratch folder, then checks the database dump, the file store and the agent homes. The result goes to the stack's Slack channel, and so does every failed backup. Run a test restore at any time with `FORCE=1`.
+
+## Security services
+
+`./circlechat/cluster/install-cluster.sh <computer>` installs the security services on one computer. Run the script on each computer, after `setup-host.sh` or `setup-node.sh`. The script installs six parts:
+
+- **Firewall rules:** each new incoming connection is refused, except from the computer itself, Tailscale, Docker's internal networks and allowed sources. The rules load at every start-up. On Windows, run `circlechat/cluster/windows/install-windows-guard.ps1` once in an Administrator PowerShell.
+- **Decoys:** OpenCanary runs a fake SSH login, FTP server and web page on ports 2222, 2121 and 8088. Nobody legitimate touches a decoy, so any touch starts a lockdown.
+- **CrowdSec,** on Linux, catches repeated break-in attempts.
+- **The cluster agent:** each minute, the agent checks incoming connections, the decoys and the other computers' stacks. The agent also runs each scheduled reboot.
+- **The daily update check,** at 9 a.m.
+- **The Slack app,** on the control computer only.
+
+### Lockdown
+
+An incoming connection that no rule allows, or a touch on a decoy, starts a lockdown:
+
+1. The computer seals first: each client stack's disk image closes, and each secrets file becomes unreadable.
+2. For 10 minutes, tcpdump records the source's packets. A snapshot records the connections, programs, signed-in users and sign-in logs, and a lookup records the source's network owner and country.
+3. Slack gets the alert, with five buttons: "Cut off now", "Keep watching 30 min", "Shut down", "Release lockdown" and "Allow this source".
+4. After 10 minutes, the computer cuts off every connection except Tailscale, Splashtop and HTTPS on port 443.
+5. Each evidence file gets a SHA-256 fingerprint and a UTC time in `manifest.json`. The evidence is encrypted to `security.evidence_recipient`, an age public key, and uploaded to the backups remote. The private key stays in the password manager.
+
+"Release lockdown" and "Allow this source" need a 6-digit authenticator code. Three wrong codes lock both buttons for an hour. The guard records only traffic to the cluster's own computers, and never acts against the source.
+
+### The Slack app
+
+1. Create a Slack app with Socket Mode on. Give the app-level token the `connections:write` scope, and the bot the `chat:write` scope. Invite the bot to #agent-cluster and to each client's channel.
+2. Enroll each approver: `node circlechat/cluster/enroll.mjs <name>`, then scan the QR code with an authenticator app.
+3. Add the cluster's secrets to the border GitHub environment, then deploy them to each computer:
+   - `SLACK_APP_TOKEN`, `SLACK_BOT_TOKEN` and `SLACK_CHANNEL_ID`, from the Slack app.
+   - `CLUSTER_TOKEN`, a new random value.
+   - `APPROVERS`: Slack user IDs and names, such as `U012=aaron,U034=matt`.
+   - Each approver's `TOTP_SECRET_<NAME>`, from `enroll.mjs`.
+4. Set `site.slack_channel_id` in each stack's site.json, so uptime alerts reach the stack's own channel.
+
+### Updates
+
+Each day, the check installs updates from stable channels only, after a 7-day wait. A fix for a flaw on CISA's Known Exploited Vulnerabilities list installs at once. An update that needs a reboot is held, and Slack gets four buttons: "4 a.m. ET", "Tonight", "Pick a time" and "Skip". macOS installs its own system updates overnight. Windows waits 7 days before installing a quality update, at 4 a.m.
+
+Each Sunday, each stack's containers move to new image versions that are at least 7 days old. When the health check fails, every container goes back to the version it ran before.
+
+### Uptime
+
+Each computer asks the other computers for the health of their stacks every minute. A computer silent for 3 minutes, or a stack that stops answering, gets one alert in each affected stack's channel.
+
+## Offboarding a client
+
+1. **Open the client's stack** with the Unlock stack workflow.
+2. **Archive:** pipe a new archive key, made in the password manager, into `./circlechat/tenant/offboard.sh archive <client>`. The script writes a final encrypted archive, then test-restores the archive. Nothing is deleted unless the archive restores cleanly.
+3. **Move the archive folder** into the Archive folder in Google Drive, by hand.
+4. **Remove:** run `./circlechat/tenant/offboard.sh remove <client>` on each computer.
+5. **Check:** run `./circlechat/tenant/offboard.sh check <client>` on each computer, for a pass/fail table.
+6. **Remove the client's access:** delete the client's GitHub environment, Tailscale shares, keys and tokens, and archive the client's Slack channel.
 
 ## Notifications
 
