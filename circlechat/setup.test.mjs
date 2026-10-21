@@ -43,6 +43,7 @@ test("setup-host --secrets-only writes the stack's settings and starts the gatew
   assert.doesNotMatch(e.CC_AGENT_MCP_SERVERS, /\$/);
   assert.equal(fs.readFileSync(path.join(s.home, "circlechat-workspace/.recursica-mcp-version"), "utf8").trim(), "0.8.1");
   assert.equal(e.CC_AGENT_NETWORK, "circlechat_agents");
+  assert.equal(e.CC_AGENT_API_BASE, "http://api:3000/api");
   assert.notEqual(e.SESSION_SECRET, "change-me-at-least-32-chars-long-string");
   assert.notEqual(e.MINIO_ROOT_PASSWORD, "minioadmin");
   assert.notEqual(e.PG_PASSWORD, "circlechat");

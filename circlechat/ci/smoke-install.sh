@@ -36,6 +36,10 @@ check "CircleChat answers on the computer" "curl -fsS -o /dev/null http://127.0.
 check "CircleChat does not answer on other addresses" "! curl -fsS -m 5 -o /dev/null http://\$(hostname -I | awk '{print \$1}'):8080/"
 check "the model gateway answers" "curl -fsS -o /dev/null http://127.0.0.1:4000/health/liveliness"
 CURL="docker run --rm --network circlechat_agents curlimages/curl:8.10.1"
+for svc in api worker bridge; do
+  check "CircleChat's $svc container has the agents' network setting" "[ \"\$(cd '$CC' && docker compose exec -T $svc printenv CC_AGENT_NETWORK)\" = circlechat_agents ]"
+done
+check "an agent container reaches CircleChat's api directly" "[ \"\$($CURL -s -o /dev/null -w '%{http_code}' --noproxy '*' http://api:3000/api/ || true)\" != 000 ]"
 check "the filter refuses a site that is not on the list" "[ \"\$($CURL -s -o /dev/null -w '%{http_connect}' -x http://egress:3128 https://example.com || true)\" = 403 ]"
 check "the filter allows GitHub" "[ \"\$($CURL -s -o /dev/null -w '%{http_connect}' -x http://egress:3128 https://api.github.com || true)\" = 200 ]"
 check "the closed network has no way out but the filter" "! $CURL -s -m 10 -o /dev/null https://example.com"

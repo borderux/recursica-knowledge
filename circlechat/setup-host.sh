@@ -111,7 +111,9 @@ YAML
   set_env CC_AGENT_NETWORK "$AGENT_NET"
   set_env CC_AGENT_PROXY http://egress:3128
   set_env CC_AGENT_NO_PROXY api,cc-gateway,localhost,127.0.0.1
-  set_env CC_AGENT_API_BASE http://api:3300/api
+  # The api listens on port 3000 inside its container, and serves its routes under /api, as
+  # Caddy passes them through.
+  set_env CC_AGENT_API_BASE http://api:3000/api
 else
   rm -f compose.egress.yml
   for k in CC_AGENT_NETWORK CC_AGENT_PROXY CC_AGENT_NO_PROXY CC_AGENT_API_BASE; do sedi "/^$k=/d" .env; done
