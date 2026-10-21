@@ -38,7 +38,8 @@ export class AgentControls {
       for (const [id, handle, action, scope] of pending) {
         if (s.approvals[id]) continue;
         s.approvals[id] = Date.now();
-        await this.post(st.channel, `:hourglass_flowing_sand: ${handle} on stack ${st.name} waits for approval: \`${action}\` (${scope}). Decide in CircleChat's approvals.`);
+        const what = st.details === false ? "an action" : `\`${action}\` (${scope})`;
+        await this.post(st.channel, `:hourglass_flowing_sand: ${handle} on stack ${st.name} waits for approval: ${what}. Decide in CircleChat's approvals.`);
       }
       const agents = (await this.sql(st, "select handle, name from agents order by handle")).map(([handle, name]) => ({ handle, name }));
       const key = agents.map((a) => a.handle).join(",");

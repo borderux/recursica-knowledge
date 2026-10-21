@@ -12,6 +12,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { promisify } from "node:util";
 import { SOAK_MS } from "./updates.mjs";
+import { stackSlack } from "../kit/slack.mjs";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
 
@@ -117,8 +118,7 @@ async function main() {
   }
   const msg = `:x: Weekly image refresh of stack ${tenantEnv.TENANT || "border"} failed its health check. Every container is back on its previous version.`;
   console.error(msg);
-  const slack = (fs.readFileSync(path.join(ccDir, ".env"), "utf8").match(/^SLACK_WEBHOOK_URL=(.+)$/m) ?? [])[1];
-  if (slack) await fetch(slack, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text: msg }) }).catch(() => {});
+  await stackSlack(ccDir)(msg);
   process.exit(1);
 }
 

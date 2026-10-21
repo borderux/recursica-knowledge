@@ -115,6 +115,7 @@ export function validate(site) {
   if (site.repos?.access !== undefined && !["service-account", "github-app", "admin-token"].includes(site.repos.access)) errs.push('repos.access must be "service-account", "github-app" or "admin-token"');
   if (site.site?.proxy !== undefined && !["tailscale", "other"].includes(site.site.proxy)) errs.push('site.proxy must be "tailscale" or "other"');
   if (site.upgrade?.auto !== undefined && typeof site.upgrade.auto !== "boolean") errs.push("upgrade.auto must be true or false");
+  if (site.notify?.details !== undefined && typeof site.notify.details !== "boolean") errs.push("notify.details must be true or false");
   if (site.privacy?.mask_pii !== undefined && typeof site.privacy.mask_pii !== "boolean") errs.push("privacy.mask_pii must be true or false");
   if (site.privacy?.mask_pii === true && !cloudAllowed(site)) errs.push("privacy.mask_pii applies to cloud model calls, and this client stack has no recorded permission for cloud models");
   if (site.egress !== undefined) {
@@ -264,6 +265,9 @@ export function render(site) {
     `REPO_ACCESS=${site.repos?.access ?? "service-account"}`,
     `PROXY=${site.site?.proxy ?? "tailscale"}`,
     `UPGRADE_AUTO=${site.upgrade?.auto === true ? "on" : "off"}`,
+    // Task details in Slack: on for Border UX's stack; off for a client stack unless the client
+    // allows details (notify.details), because Slack is an outside company.
+    `NOTIFY_DETAILS=${(site.notify?.details ?? st.kind !== "client") ? "on" : "off"}`,
     `PUBLIC_KNOWLEDGE=${/borderux\/recursica-knowledge(\.git)?$/.test(site.repos?.knowledge ?? "") ? "yes" : "no"}`,
     `BACKUP_TIME=${site.backup?.time ?? "02:00"}`,
   ].join("\n") + "\n";

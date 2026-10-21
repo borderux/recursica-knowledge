@@ -80,6 +80,10 @@ set_env CC_REPO_HOST_DIR "$CC_DIR"
 if [ -n "$TENANT" ] && [ "$PROXY" = tailscale ]; then PUBLIC_URL="https://$TS_HOST:$PORT"; else PUBLIC_URL="https://$TS_HOST"; fi
 set_env PUBLIC_BASE_URL "$PUBLIC_URL"
 set_env CC_API_BASE "http://localhost:$PORT/api"
+# The stack's own Slack channel, for every post from this stack (the Slack app's bot token comes
+# from the secrets helper).
+SLACK_CHANNEL_ID="$(site_get site.slack_channel_id)"
+if [ -n "$SLACK_CHANNEL_ID" ]; then set_env SLACK_CHANNEL "$SLACK_CHANNEL_ID"; else sedi "/^SLACK_CHANNEL=/d" .env; fi
 set_env CC_SHARED_WORKSPACE_DIR "$WS"
 # Seconds. The api discards a reply that takes longer than this + 60s, and a full Barb review
 # does. 480 and 1200 both lost reviews. See agents/barb/runtime/hermes.md.
@@ -211,18 +215,19 @@ start_gateway_and_notifier() {
 
   # Slack notifier: task changes, questions to people, rejected agent posts, stalled tasks.
   docker rm -f "cc-slack-notify$SUFFIX" >/dev/null 2>&1 || true
-  if [ "$(site_get notify.slack)" = true ] && env_has SLACK_WEBHOOK_URL && [ -n "$NET" ]; then
+  if [ "$(site_get notify.slack)" = true ] && env_has SLACK_BOT_TOKEN && env_has SLACK_CHANNEL && [ -n "$NET" ]; then
     mkdir -p "$CC_DIR/notify" && cp "$HERE/notify/notify.mjs" "$HERE/notify/package.json" "$CC_DIR/notify/"
     PG="$(sed -n 's/^PG_PASSWORD=//p' .env)"; PG="${PG:-circlechat}"
     docker run -d --name "cc-slack-notify$SUFFIX" --restart unless-stopped --network "$NET" \
       -v "$CC_DIR/notify":/app -v "cc-notify-state$SUFFIX":/state -w /app \
       -e DATABASE_URL="postgres://postgres:$PG@postgres:5432/circlechat" \
-      -e SLACK_WEBHOOK_URL="$(sed -n 's/^SLACK_WEBHOOK_URL=//p' .env)" \
+      -e SLACK_BOT_TOKEN="$(sed -n 's/^SLACK_BOT_TOKEN=//p' .env)" -e SLACK_CHANNEL="$(sed -n 's/^SLACK_CHANNEL=//p' .env)" \
+      -e NOTIFY_DETAILS="$NOTIFY_DETAILS" \
       -e CC_URL="https://$TS_HOST" \
       "$(pin_image node:22-alpine)" sh -c "npm install --silent && node notify.mjs"
     echo "Slack notifier running."
   else
-    echo "Slack notifier off (needs notify.slack in site.json and SLACK_WEBHOOK_URL in .env)."
+    echo "Slack notifier off (needs notify.slack and site.slack_channel_id in site.json, and SLACK_BOT_TOKEN in .env)."
   fi
 }
 

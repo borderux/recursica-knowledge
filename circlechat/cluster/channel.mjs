@@ -8,13 +8,20 @@
 import { buttonBlocks } from "./actions.mjs";
 import { slackApi } from "./bot.mjs";
 
-export function makeChannel(env = process.env) {
+// allowed() lists the channels this computer may post to: the cluster channel and each local
+// stack's own channel. A post to any other channel is refused, so one client's alert can never
+// land in another client's channel.
+export function makeChannel(env = process.env, allowed = () => [env.SLACK_CHANNEL_ID]) {
   const chat = env.CHAT ?? "slack";
   if (chat === "slack") {
     const api = slackApi(env.SLACK_BOT_TOKEN);
     return {
-      post: (channel, kind, text, ref, blocks) => api("chat.postMessage", { channel: channel ?? env.SLACK_CHANNEL_ID, text,
-        ...(blocks ? { blocks } : kind === "info" ? {} : { blocks: buttonBlocks(kind, text, env.COMPUTER, ref) }) }),
+      post: async (channel, kind, text, ref, blocks) => {
+        const to = channel ?? env.SLACK_CHANNEL_ID;
+        if (!(await allowed()).includes(to)) { console.error(`refused a post to channel ${to}: not this computer's channel`); return { ok: false }; }
+        return api("chat.postMessage", { channel: to, text,
+        ...(blocks ? { blocks } : kind === "info" ? {} : { blocks: buttonBlocks(kind, text, env.COMPUTER, ref) }) });
+      },
     };
   }
   throw new Error(`CHAT=${chat} is not supported yet. Slack is the chat tool today.`);

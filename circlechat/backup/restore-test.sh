@@ -9,11 +9,9 @@ case "$(date +%m)" in 01|04|07|10) ;; *) [ "${FORCE:-}" = 1 ] || exit 0 ;; esac
 . "$CC_DIR/kit-out/tenant.env"
 STACK="${TENANT:-border}"
 env_value() { sed -n "s/^$1=//p" "$CC_DIR/.env" | tail -1; }
-SLACK="$(env_value SLACK_WEBHOOK_URL)"
 say() {
   echo "$1"
-  [ -z "$SLACK" ] || curl -fsS -m 20 -X POST -H 'content-type: application/json' \
-    --data "$(node -e 'console.log(JSON.stringify({ text: process.argv[1] }))' "$1")" "$SLACK" >/dev/null || true
+  CC_DIR="$CC_DIR" node "$(dirname "$0")/../kit/slack.mjs" "$1" >/dev/null 2>&1 || true
 }
 [ -n "$BACKUP_REMOTE" ] || exit 0
 export RESTIC_PASSWORD; RESTIC_PASSWORD="$(env_value RESTIC_PASSWORD)"

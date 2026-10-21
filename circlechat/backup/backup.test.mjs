@@ -13,7 +13,7 @@ function setup({ restic = "ok" } = {}) {
   const bin = path.join(tmp, "bin"), cc = path.join(tmp, "cc"), log = path.join(tmp, "calls.log");
   fs.mkdirSync(bin); fs.mkdirSync(path.join(cc, "kit-out"), { recursive: true }); fs.mkdirSync(path.join(cc, "hermes-homes", ".hermes-alan"), { recursive: true });
   fs.writeFileSync(path.join(cc, "site.json"), "{}");
-  fs.writeFileSync(path.join(cc, ".env"), "RESTIC_PASSWORD=pw\nSLACK_WEBHOOK_URL=https://hooks.example/x\n");
+  fs.writeFileSync(path.join(cc, ".env"), "RESTIC_PASSWORD=pw\nSLACK_BOT_TOKEN=xoxb-test\nSLACK_CHANNEL=C123\n");
   fs.writeFileSync(path.join(cc, "kit-out", "tenant.env"), "TENANT=acme\nSUFFIX=-acme\nCOMPOSE_PROJECT_NAME=cc-acme\nDOCKER_CONTEXT=\nBACKUP_REMOTE=gd:backups\n");
   const stub = (name, body) => { fs.writeFileSync(path.join(bin, name), `#!/usr/bin/env bash\necho "${name} $*" >> ${log}\n${body}\n`); fs.chmodSync(path.join(bin, name), 0o755); };
   stub("docker", `case "$1" in
@@ -49,10 +49,9 @@ test("backs up the stack, encrypted with the stack's key, then tests a restore",
   assert.equal(fs.existsSync(path.join(cc, ".restore-test")), false);
 });
 
-test("a failed backup posts to the stack's Slack channel", () => {
-  const { env, log } = setup({ restic: "fail-backup" });
+test("a failed backup reports the failed step, for the stack's Slack channel", () => {
+  const { env } = setup({ restic: "fail-backup" });
   const b = run("backup.sh", env);
   assert.notEqual(b.status, 0);
   assert.match(b.stdout, /Backup of stack acme failed .* at step: restic/);
-  assert.match(fs.readFileSync(log, "utf8"), /curl .*hooks.example/);
 });

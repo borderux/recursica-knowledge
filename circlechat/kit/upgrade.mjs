@@ -12,6 +12,7 @@
 import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { stackSlack } from "./slack.mjs";
 
 const TAG = /^@recursica\/knowledge@(\d+)\.(\d+)\.(\d+)$/;
 export const parse = (t) => { const m = String(t).match(TAG); return m ? m.slice(1).map(Number) : null; };
@@ -79,9 +80,8 @@ async function main() {
   const stateFile = path.join(ccDir, "kit-out/upgrade-state.json");
   let state = {}; try { state = JSON.parse(fs.readFileSync(stateFile, "utf8")); } catch {}
   const git = (...a) => execFileSync("git", ["-C", k, ...a], { encoding: "utf8" }).trim();
-  const env = fs.readFileSync(path.join(ccDir, ".env"), "utf8");
-  const slack = (env.match(/^SLACK_WEBHOOK_URL=(.+)$/m) ?? [])[1];
-  const say = (text) => slack && spawnSync("curl", ["-fsS", "-m", "20", "-X", "POST", "-H", "content-type: application/json", "--data", JSON.stringify({ text }), slack]);
+  const post = stackSlack(ccDir);
+  const say = (text) => { post(text).catch(() => {}); };
   // CircleChat: each new commit on the fork's branch is rebuilt, checked and rolled back on a
   // failure. The weekly upstream sync brings the original project's changes to that branch.
   try { pickUpCircleChat(ccDir, say); } catch (e) { say(`:x: CircleChat update failed to start: ${e.message}`); }

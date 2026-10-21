@@ -15,11 +15,9 @@ WS="${WS:-$OWNER_HOME/circlechat-workspace}"
 [ -n "$DOCKER_CONTEXT" ] && export DOCKER_CONTEXT
 STACK="${TENANT:-border}"
 env_value() { sed -n "s/^$1=//p" "$CC_DIR/.env" | tail -1; }
-SLACK="$(env_value SLACK_WEBHOOK_URL)"
 say() {
   echo "$1"
-  [ -z "$SLACK" ] || curl -fsS -m 20 -X POST -H 'content-type: application/json' \
-    --data "$(node -e 'console.log(JSON.stringify({ text: process.argv[1] }))' "$1")" "$SLACK" >/dev/null || true
+  CC_DIR="$CC_DIR" node "$(dirname "$0")/../kit/slack.mjs" "$1" >/dev/null 2>&1 || true
 }
 STEP="start"
 trap 'say ":warning: Backup of stack $STACK failed on $(hostname -s), at step: $STEP."' ERR

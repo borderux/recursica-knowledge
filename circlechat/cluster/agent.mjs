@@ -112,7 +112,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const env = process.env;
   const stateDir = "/var/lib/agent-cluster";
   fs.mkdirSync(stateDir, { recursive: true, mode: 0o700 });
-  const chat = makeChannel(env);
+  // Channels this computer may post to: the cluster channel, and each local stack's channel.
+  const allowedChannels = async () => [env.SLACK_CHANNEL_ID, ...(await localStacks(env.OWNER_HOME, async () => true)).map((s) => s.channel).filter(Boolean)];
+  const chat = makeChannel(env, allowedChannels);
   const post = (kind, text, ref) => chat.post(env.SLACK_CHANNEL_ID, kind, text, ref).catch((e) => console.error(e.message));
   const platform = makePlatform(env);
   const guard = new Guard({ platform, notify: post, stateDir, computer: env.COMPUTER });
@@ -154,7 +156,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       if (!fs.existsSync(path.join(ccDir, "kit-out/tenant.env"))) return;
       const tenant = Object.fromEntries(fs.readFileSync(path.join(ccDir, "kit-out/tenant.env"), "utf8").split("\n").filter(Boolean).map((l) => [l.slice(0, l.indexOf("=")), l.slice(l.indexOf("=") + 1)]));
       const site = JSON.parse(fs.readFileSync(path.join(ccDir, "site.json"), "utf8"));
-      out.push({ name, ccDir, context: tenant.DOCKER_CONTEXT, channel: site.site?.slack_channel_id ?? env.SLACK_CHANNEL_ID, hermesHomes: path.join(ccDir, "hermes-homes") });
+      out.push({ name, ccDir, context: tenant.DOCKER_CONTEXT, channel: site.site?.slack_channel_id ?? env.SLACK_CHANNEL_ID, hermesHomes: path.join(ccDir, "hermes-homes"), details: tenant.NOTIFY_DETAILS !== "off" });
     };
     add("border", path.join(env.OWNER_HOME, "circlechat"));
     const tenants = path.join(env.OWNER_HOME, "tenants");
