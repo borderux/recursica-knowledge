@@ -14,6 +14,8 @@ export const ACTIONS = {
   "egress-deny": { label: "Deny", twoFactor: false, style: "danger" },
   "upgrade-now": { label: "Upgrade now", twoFactor: false },
   "upgrade-skip": { label: "Skip this version", twoFactor: false },
+  "agents-stop": { label: "Stop", twoFactor: false, style: "danger" },
+  "agents-resume": { label: "Resume", twoFactor: true },
 };
 
 export const KINDS = {

@@ -17,8 +17,9 @@ import { parsePairs } from "./bot.mjs";
 import { makeChannel } from "./channel.mjs";
 import { Monitor, localStacks } from "./monitor.mjs";
 import { Egress } from "./egress.mjs";
+import { AgentControls } from "./agent-controls.mjs";
 
-export function makeAgent({ env, platform, guard, post, now = () => Date.now(), stateDir, monitor, stacks = async () => [], egress }) {
+export function makeAgent({ env, platform, guard, post, now = () => Date.now(), stateDir, monitor, stacks = async () => [], egress, controls }) {
   const rebootFile = path.join(stateDir, "reboot.json");
   const readReboot = () => { try { return JSON.parse(fs.readFileSync(rebootFile, "utf8")); } catch { return null; } };
   const schedule = (at, ref, label) => {
@@ -39,6 +40,8 @@ export function makeAgent({ env, platform, guard, post, now = () => Date.now(), 
       case "allow-source": return guard.release(true);
       case "egress-allow-once": return egress ? egress.allowOnce(ref, extra.by ?? "an approver") : { ok: false, message: "no outgoing filter on this computer" };
       case "egress-deny": return egress ? egress.deny(ref, extra.by ?? "an approver") : { ok: false, message: "no outgoing filter on this computer" };
+      case "agents-stop": return controls ? controls.stop(ref, extra.by ?? "an approver") : { ok: false, message: "no agent controls on this computer" };
+      case "agents-resume": return controls ? controls.resume(ref, extra.by ?? "an approver") : { ok: false, message: "no agent controls on this computer" };
       case "upgrade-now": {
         if (!/^@recursica\/knowledge@\d+\.\d+\.\d+$/.test(ref ?? "")) return { ok: false, message: "not a release tag" };
         const ccDir = path.join(env.OWNER_HOME, "circlechat");
@@ -62,6 +65,7 @@ export function makeAgent({ env, platform, guard, post, now = () => Date.now(), 
     await guard.tick(canaryHits);
     if (monitor) await monitor.tick().catch((e) => console.error(`monitor: ${e.message}`));
     if (egress) await egress.tick().catch((e) => console.error(`egress: ${e.message}`));
+    if (controls) await controls.tick().catch((e) => console.error(`controls: ${e.message}`));
     const r = readReboot();
     if (r && r.at <= now()) {
       fs.rmSync(rebootFile, { force: true });
@@ -138,7 +142,25 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       const c = Object.values(j[0]?.Containers ?? {}).find((x) => String(x.IPv4Address).startsWith(`${ip}/`));
       return c?.Name ?? "";
     } });
-  const agent = makeAgent({ env, platform, guard, post, stateDir, monitor, stacks: () => localStacks(env.OWNER_HOME), egress });
+  // Each open stack's CircleChat database, read and changed through the stack's postgres container.
+  const controlStacks = async () => {
+    const out = [];
+    const add = (name, ccDir) => {
+      if (!fs.existsSync(path.join(ccDir, "kit-out/tenant.env"))) return;
+      const tenant = Object.fromEntries(fs.readFileSync(path.join(ccDir, "kit-out/tenant.env"), "utf8").split("\n").filter(Boolean).map((l) => [l.slice(0, l.indexOf("=")), l.slice(l.indexOf("=") + 1)]));
+      const site = JSON.parse(fs.readFileSync(path.join(ccDir, "site.json"), "utf8"));
+      out.push({ name, ccDir, context: tenant.DOCKER_CONTEXT, channel: site.site?.slack_channel_id ?? env.SLACK_CHANNEL_ID, hermesHomes: path.join(ccDir, "hermes-homes") });
+    };
+    add("border", path.join(env.OWNER_HOME, "circlechat"));
+    const tenants = path.join(env.OWNER_HOME, "tenants");
+    if (fs.existsSync(tenants)) for (const t of fs.readdirSync(tenants)) add(t, path.join(tenants, t, "circlechat"));
+    return out;
+  };
+  const sql = (st, query) => new Promise((resolve) => execFile("docker", ["compose", "exec", "-T", "postgres", "psql", "-U", "postgres", "circlechat", "-At", "-F", "\t", "-c", query],
+    { cwd: st.ccDir, env: { ...process.env, ...(st.context ? { DOCKER_CONTEXT: st.context } : {}) } }, (err, out) => resolve(err ? [] : out.split("\n").filter(Boolean).map((l) => l.split("\t")))));
+  const controls = new AgentControls({ stacks: controlStacks, sql, docker: (st, args) => docker(st, args), computer: env.COMPUTER,
+    stateFile: path.join(stateDir, "controls.json"), post: (channel, text, blocks) => chat.post(channel, "info", text, undefined, blocks) });
+  const agent = makeAgent({ env, platform, guard, post, stateDir, monitor, stacks: () => localStacks(env.OWNER_HOME), egress, controls });
   const srv = agent.server();
   for (const host of String(env.AGENT_BIND ?? "127.0.0.1").split(",")) {
     http.createServer(srv.listeners("request")[0]).listen(Number(env.AGENT_PORT ?? 7500), host.trim());

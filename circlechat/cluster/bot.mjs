@@ -60,7 +60,10 @@ export function makeBot({ env = process.env, api, relay, now = () => Date.now() 
     if (envelope.type !== "interactive") return undefined;
     const user = p.user?.id;
     if (p.type === "block_actions") {
-      const a = p.actions?.[0]; if (!a || !ACTIONS[a.action_id]) return undefined;
+      const raw = p.actions?.[0];
+      // One action can have several buttons in a message, such as "agents-stop:betty".
+      const a = raw && { ...raw, action_id: String(raw.action_id).split(":")[0] };
+      if (!a || !ACTIONS[a.action_id]) return undefined;
       const value = JSON.parse(a.value);
       const meta = { id: a.action_id, value, channel: p.channel?.id, ts: p.message?.ts };
       if (!approvers[user]) {

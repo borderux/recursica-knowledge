@@ -13,8 +13,8 @@ export function makeChannel(env = process.env) {
   if (chat === "slack") {
     const api = slackApi(env.SLACK_BOT_TOKEN);
     return {
-      post: (channel, kind, text, ref) => api("chat.postMessage", { channel: channel ?? env.SLACK_CHANNEL_ID, text,
-        ...(kind === "info" ? {} : { blocks: buttonBlocks(kind, text, env.COMPUTER, ref) }) }),
+      post: (channel, kind, text, ref, blocks) => api("chat.postMessage", { channel: channel ?? env.SLACK_CHANNEL_ID, text,
+        ...(blocks ? { blocks } : kind === "info" ? {} : { blocks: buttonBlocks(kind, text, env.COMPUTER, ref) }) }),
     };
   }
   throw new Error(`CHAT=${chat} is not supported yet. Slack is the chat tool today.`);

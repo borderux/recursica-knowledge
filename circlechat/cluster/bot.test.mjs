@@ -74,3 +74,11 @@ test("buttons carry the computer and the reference", () => {
   assert.deepEqual(ids, ["reboot-4am", "reboot-tonight", "reboot-pick", "reboot-skip"]);
   assert.deepEqual(JSON.parse(blocks[1].elements[0].value), { c: "beast", r: "upd-1" });
 });
+
+test("a button with a suffix, such as Stop for one agent, reaches its action", async () => {
+  const { bot, relays } = setup();
+  await bot.handle({ type: "interactive", payload: { type: "block_actions", user: { id: "U1" }, trigger_id: "T", channel: { id: "C1" }, message: { ts: "1.1" },
+    actions: [{ action_id: "agents-stop:betty", value: JSON.stringify({ c: "studio", r: "border|betty" }) }] } });
+  assert.equal(relays[0][1].action, "agents-stop");
+  assert.equal(relays[0][1].ref, "border|betty");
+});
