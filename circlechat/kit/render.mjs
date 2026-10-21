@@ -61,6 +61,8 @@ http_port 3128
 pid_filename none
 acl allowed dstdomain "/etc/egress/allow.txt"
 acl allow_once dstdomain "/etc/egress/allow-once.txt"
+# The blocked page agents see lives in the templates folder; Squid looks there for every page.
+error_directory /usr/share/squid/errors/templates
 acl Safe_ports port 80 443 1919 7400 8009 11434
 http_access deny !Safe_ports
 http_access allow allowed

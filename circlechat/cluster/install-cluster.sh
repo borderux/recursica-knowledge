@@ -63,9 +63,11 @@ else
 fi
 
 # Decoys: fake SSH, FTP and web services that nobody legitimate ever touches.
+# The Python found before sudo: on a Mac, sudo's own python3 is Apple's install stub.
+PY="$(command -v python3)" || { echo "python3 is not installed."; exit 1; }
 if [ ! -x /opt/opencanary/bin/opencanaryd ]; then
-  sudo python3 -m venv /opt/opencanary
-  sudo /opt/opencanary/bin/pip install --quiet opencanary
+  sudo "$PY" -m venv /opt/opencanary
+  sudo /opt/opencanary/bin/pip install --quiet "opencanary>=0.9,<1"
 fi
 sudo mkdir -p /etc/opencanaryd
 sudo tee /etc/opencanaryd/opencanary.conf >/dev/null <<CANARY
@@ -89,5 +91,8 @@ uninstall_unit cluster-updates >/dev/null
 install_unit cluster-updater "$ENVS exec $NODE_BIN $HERE/updater.mjs" / root hourly
 if [ "$ROLE" = control ]; then
   install_unit cluster-bot "$ENVS exec $NODE_BIN $HERE/bot.mjs" / root
+else
+  # Only the control computer runs the Slack app; a computer that becomes a helper drops it.
+  uninstall_unit cluster-bot >/dev/null
 fi
 echo "Cluster services installed on $NODE ($ROLE). Deploy the border stack's secrets, so the agent and the Slack app can reach Slack."

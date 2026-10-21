@@ -28,9 +28,10 @@ Get-BitLockerVolume | Where-Object { $_.MountPoint -ne "C:" -and $_.VolumeType -
 # 2. Firewall
 Set-NetFirewallProfile -All -DefaultInboundAction Block -DefaultOutboundAction Allow -NotifyOnListen False -LogBlocked True
 $keep = 'tailscale|AgentGuard'
+# Windows' own Core Networking rules (DHCP, IPv6 neighbor discovery and similar) stay on.
 $disabled = Get-NetFirewallRule -Direction Inbound -Action Allow -Enabled True | Where-Object {
   $app = ($_ | Get-NetFirewallApplicationFilter).Program
-  -not (($_.DisplayName -match $keep) -or ($app -match $keep))
+  -not (($_.DisplayName -match $keep) -or ($app -match $keep) -or ($_.DisplayGroup -eq 'Core Networking'))
 }
 $disabled | Select-Object -ExpandProperty Name | Out-File -Append "$base\disabled-rules.txt"
 $disabled | Disable-NetFirewallRule
