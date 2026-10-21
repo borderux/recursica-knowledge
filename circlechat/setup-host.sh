@@ -144,7 +144,9 @@ if [ "$SECRETS_ONLY" = true ]; then
 fi
 
 # Caddy on $PORT (Tailscale serve, or any reverse proxy, points there)
-sedi "s|- \"80:80\"|- \"$PORT:80\"|" compose.yml
+# Caddy listens on this computer only. Tailscale serve gives each person on the tailnet the HTTPS
+# address, and nobody on the office network reaches CircleChat directly.
+sedi "s|- \"80:80\"|- \"127.0.0.1:$PORT:80\"|; s|- \"$PORT:80\"|- \"127.0.0.1:$PORT:80\"|" compose.yml
 # CircleChat also publishes 443 and MinIO's console (9001). Two stacks on one computer cannot both
 # hold those, so a tenant stack drops 443 (Tailscale serve gives it HTTPS) and binds the console
 # to a random local port.
@@ -190,7 +192,7 @@ docker compose -f compose.yml -f compose.agents.yml up -d --force-recreate
 
 # Always-on dev server for the application (hot-reloads as Betty edits)
 docker rm -f "betty-proto$SUFFIX" >/dev/null 2>&1 || true
-docker run -d --name "betty-proto$SUFFIX" --restart unless-stopped -p "$PREVIEW_PORT:5173" \
+docker run -d --name "betty-proto$SUFFIX" --restart unless-stopped -p "127.0.0.1:$PREVIEW_PORT:5173" \
   -v "$WS/$APP_REPO":/app -w /app \
   -e __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS="$TS_HOST" \
   node:22 sh -c "npm install && npx vite --host 0.0.0.0"

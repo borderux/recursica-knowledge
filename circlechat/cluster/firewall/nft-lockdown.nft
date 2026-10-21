@@ -1,0 +1,16 @@
+# Linux and WSL lockdown: on top of the base rules, refuse every outgoing connection except to
+# Tailscale and HTTPS on port 443, which Slack, Splashtop's relay and Tailscale's relays use.
+table inet agentguard_lockdown
+delete table inet agentguard_lockdown
+table inet agentguard_lockdown {
+  chain output {
+    type filter hook output priority -10; policy drop;
+    oif lo accept
+    ct state established,related accept
+    ip daddr { 100.64.0.0/10, 172.16.0.0/12 } accept
+    ip6 daddr fd7a:115c:a1e0::/48 accept
+    tcp dport 443 accept
+    udp dport { 41641, 3478 } accept
+    udp dport 53 accept
+  }
+}
