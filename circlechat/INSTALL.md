@@ -76,7 +76,7 @@ The secret names are in the table under "Secrets in GitHub" in `circlechat/READM
 2. **Put the secrets on the computer,** as "Secrets" describes.
 3. **Run the setup scripts,** from the knowledge repo, in order: `circlechat/setup-host.sh`, `circlechat/setup-node.sh <computer>`, then `circlechat/cluster/install-cluster.sh <computer>`.
 4. **Point HTTPS at CircleChat:** run the `tailscale serve` line the setup prints. With a reverse proxy, point the proxy at CircleChat's port.
-5. **Turn on single sign-on:** CircleChat supports OpenID Connect providers, such as Okta and Entra ID, in each workspace's enterprise settings.
+5. **Turn on single sign-on:** CircleChat supports OpenID Connect providers, such as Google Workspace, Okta and Entra ID, in each workspace's enterprise settings. The provider's redirect address is `https://<CircleChat's address>/api/auth/sso/callback`. List the company's email domain as the allowed domain.
 6. **Install the agents** in CircleChat, then run `circlechat/setup-agent.sh <handle>` for each agent, and `circlechat/sync-skills.sh` once.
 
 ## Security
