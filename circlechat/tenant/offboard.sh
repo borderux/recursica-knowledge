@@ -46,8 +46,8 @@ archive)
   [ "$ok" = true ] || { echo "The archive did not restore cleanly. Nothing was deleted."; exit 1; }
   echo "Archive $NAME written and test-restored."
   echo "When the client moves to an install of the client's own, the archive is the move: send the"
-  echo "client the $NAME folder, and send the archive key separately. INSTALL.md, \"Move a trial into"
-  echo "your own install\", has the client's steps."
+  echo "client the $NAME folder, and send the archive key separately. INSTALL.md, \"Move a trial into the"
+  echo "client's own install\", has the client's steps."
   echo "Next: move the $NAME folder into the Archive folder in Google Drive, then run: offboard.sh remove $CLIENT"
   ;;
 

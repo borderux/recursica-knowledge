@@ -106,7 +106,7 @@ Update the forks by hand. For the knowledge repo:
 
 A release with a new first number (a major version) can change settings. Read the release notes first.
 
-## Move a trial into your own install
+## Move a trial into the client's own install
 
 A trial on Border UX's cluster ends with an encrypted archive of the trial's stack. Border UX sends the archive folder and, separately, the archive key.
 
