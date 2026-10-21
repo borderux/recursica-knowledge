@@ -22,7 +22,7 @@ test("reads the filter's log lines", () => {
   assert.deepEqual(parseLine("1792532511 172.20.0.5 CONNECT Example.com:443 403 TCP_DENIED"),
     { ts: 1792532511000, client: "172.20.0.5", method: "CONNECT", host: "example.com", status: 403, denied: true });
   assert.equal(parseLine("1792532511 127.0.0.1 CONNECT api.github.com:443 200 TCP_TUNNEL").denied, false);
-  assert.equal(parseLine("1 1.2.3.4 GET http://neverssl.com/ 403 TCP_DENIED").host, "neverssl.com");
+  assert.equal(parseLine("1 198.51.100.7 GET http://neverssl.com/ 403 TCP_DENIED").host, "neverssl.com");
 });
 
 test("a refused site asks the stack's channel once, naming the agent", async () => {

@@ -31,5 +31,5 @@ test("flags remote access from outside Tailscale, such as RustDesk on the office
 });
 
 test("ignores outgoing connections, whose local port is not a listening port", () => {
-  assert.deepEqual(suspicious([{ remote: "151.101.1.1", remotePort: 443, localPort: 55123, process: "node" }], listening), []);
+  assert.deepEqual(suspicious([{ remote: "203.0.113.10", remotePort: 443, localPort: 55123, process: "node" }], listening), []);
 });
