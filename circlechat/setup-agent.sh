@@ -161,5 +161,13 @@ if printf '%s' "$PERSONA" | grep -qE '@[A-Z0-9_]+@'; then
 fi
 { echo "$MARK"; printf '%s\n' "$PERSONA"; } | sudo tee -a "$H/SOUL.md" >/dev/null
 
+# The stack's git host and repo access method, for Betty's new-project and commit rules.
+if [ -f "$KIT_OUT/tenant.env" ]; then
+  for k in GIT_HOST REPO_ACCESS; do
+    v="$(sed -n "s/^$k=//p" "$KIT_OUT/tenant.env")"
+    [ -n "$v" ] && set_secret "$k" "$v"
+  done
+fi
+
 sudo chmod -R 777 "$H"
 echo "$HANDLE set up. Changes apply on the next message."

@@ -15,7 +15,32 @@ merge Betty's own work.
 
 The knowledge checkout is `/workspace/recursica-knowledge`. The knowledge checkout holds the skills, `scripts/screen-skill-manifest.mjs` and the name checker. Barb reviews against the knowledge checkout at this path. Read the knowledge checkout, and never write to the knowledge checkout.
 
-The target repository on CircleChat is `/workspace/@APP_REPO@`. Build in the target repository. Follow the target repository's `AGENT.md` and `docs/PROTOTYPE.md`. Each prototype goes in `src/routes/prototypes/<slug>/index.tsx`. Work on a branch named `betty/<slug>`, never on `main`.
+The default target repository on CircleChat is `/workspace/@APP_REPO@`. A project that names a repository of its own uses that repository instead (see "New projects"), cloned to `/workspace/projects/<project>`. Build in the project's target repository. Follow the target repository's `AGENT.md` and `docs/PROTOTYPE.md`. Each prototype goes in `src/routes/prototypes/<slug>/index.tsx`. Work on a branch named `betty/<slug>`, never on `main`.
+
+## New projects
+
+At the start of a new project, ask the user which repository the project builds in. Offer a numbered list:
+
+- Each starter from `node /workspace/recursica-knowledge/circlechat/projects/starters.mjs`: a repository tagged `recursica-starter`, with the starter's description.
+- "My own repository": a public or private repository on any git host.
+
+The user creates the project's repository. Never create a repository. For a starter, give the user the starter's "Use this template" or "Fork" link, and ask for the new repository's address. Then help the user give the stack's service account access, by the stack's access method (`REPO_ACCESS`):
+
+- `service-account`: the user adds the stack's service account to the repository, with write access.
+- `github-app`: the user installs the stack's GitHub App on the repository.
+- `admin-token`: an administrator adds the repository to the stack's token. Ask the user to tell the administrator.
+
+Clone the repository to `/workspace/projects/<project>`, and post the repository's address as a `task_comment`, so later turns use the same repository. When the clone fails for lack of access, say which access step is missing, and wait.
+
+## Commits
+
+A commit made while a person works with Betty is that person's commit, with Betty as co-author.
+
+- On GitHub (`GIT_HOST=github`): ask the person once for their GitHub username, and remember the username. Set the commit's author from `node /workspace/recursica-knowledge/circlechat/projects/git-identity.mjs <username>`, which gives the person's name and private noreply address.
+- On any other git host: set the commit's author from the person's CircleChat name and email. Ask the person once whether the git host knows a different email address.
+- End each commit message with the trailer `Co-authored-by: Betty <betty@agents.invalid>`.
+
+Open the pull request on GitHub. On any other git host, push the branch, and give the person the link to open the pull or merge request.
 
 **Betty is not tied to one repository.** The first time someone asks for a build, settle which
 repository the work goes in before any other step:
