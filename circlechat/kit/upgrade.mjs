@@ -23,20 +23,24 @@ export function decide(current, tags, state = {}) {
   const cur = String(current).split(".").map(Number);
   const newer = tags.map((t) => [t, parse(t)]).filter(([, v]) => v && cmp(v, cur) > 0).sort((a, b) => cmp(a[1], b[1]));
   if (!newer.length) return { action: "none" };
-  const sameMajor = newer.filter(([, v]) => v[0] === cur[0]);
+  // A release that failed once is skipped until a newer one appears, or a person presses
+  // "Upgrade now", so a broken release never restarts the stack every hour.
+  const sameMajor = newer.filter(([t, v]) => v[0] === cur[0] && !state.failed?.[t]);
   if (sameMajor.length) return { action: "upgrade", tag: sameMajor[sameMajor.length - 1][0] };
-  const [tag] = newer[newer.length - 1];
+  const majors = newer.filter(([, v]) => v[0] > cur[0]);
+  if (!majors.length) return { action: "none" };
+  const [tag] = majors[majors.length - 1];
   if (state.asked?.[tag] || state.skipped?.[tag]) return { action: "none" };
   return { action: "ask", tag };
 }
 
-function pickUpCircleChat(ccDir, say) {
+function pickUpCircleChat(ccDir, say, state, saveState) {
   const cc = (...a) => execFileSync("git", ["-C", ccDir, ...a], { encoding: "utf8" }).trim();
   const branch = cc("rev-parse", "--abbrev-ref", "HEAD");
   if (branch === "HEAD") return;
   cc("fetch", "--quiet", "origin", branch);
   const before = cc("rev-parse", "HEAD"), after = cc("rev-parse", `origin/${branch}`);
-  if (before === after) return;
+  if (before === after || state.ccFailed === after) return;
   const port = (fs.readFileSync(path.join(ccDir, ".env"), "utf8").match(/^CC_API_BASE=http:\/\/localhost:(\d+)/m) ?? [])[1] ?? "8080";
   const rebuild = () => spawnSync("docker", ["compose", "up", "-d", "--build"], { cwd: ccDir, stdio: "inherit" }).status === 0
     && spawnSync("bash", ["-c", `for i in $(seq 1 30); do curl -fsS -o /dev/null http://localhost:${port}/ && exit 0; sleep 10; done; exit 1`]).status === 0;
@@ -44,7 +48,8 @@ function pickUpCircleChat(ccDir, say) {
   if (rebuild()) { console.log(`CircleChat updated to ${after.slice(0, 7)}`); return; }
   cc("reset", "--hard", "--quiet", before);
   rebuild();
-  say(`:x: The CircleChat update to ${after.slice(0, 7)} failed its health check. CircleChat is back on ${before.slice(0, 7)}.`);
+  state.ccFailed = after; saveState();
+  say(`:x: The CircleChat update to ${after.slice(0, 7)} failed its health check. CircleChat is back on ${before.slice(0, 7)}, and stays there until the next CircleChat commit.`);
 }
 
 // Border UX's own npm package, @recursica/mcp: same rule as the knowledge repo, applied hourly.
@@ -84,7 +89,8 @@ async function main() {
   const say = (text) => { post(text).catch(() => {}); };
   // CircleChat: each new commit on the fork's branch is rebuilt, checked and rolled back on a
   // failure. The weekly upstream sync brings the original project's changes to that branch.
-  try { pickUpCircleChat(ccDir, say); } catch (e) { say(`:x: CircleChat update failed to start: ${e.message}`); }
+  const saveState = () => fs.writeFileSync(stateFile, JSON.stringify(state));
+  try { pickUpCircleChat(ccDir, say, state, saveState); } catch (e) { say(`:x: CircleChat update failed to start: ${e.message}`); }
   await updateMcp(ws, stateFile, state, say).catch((e) => console.error(`@recursica/mcp check: ${e.message}`));
   git("fetch", "--tags", "--quiet");
   const current = JSON.parse(fs.readFileSync(path.join(k, "package.json"), "utf8")).version;
@@ -114,7 +120,8 @@ async function main() {
   }
   git("checkout", "--quiet", before);
   run();
-  say(`:x: The upgrade of the knowledge repo to ${d.tag.split("@").pop()} failed on the setup or the checks. The stack is back on ${current}.`);
+  state.failed = { ...(state.failed ?? {}), [d.tag]: Date.now() }; saveState();
+  say(`:x: The upgrade of the knowledge repo to ${d.tag.split("@").pop()} failed on the setup or the checks. The stack is back on ${current}, and skips ${d.tag.split("@").pop()} until a newer release appears.`);
   process.exit(1);
 }
 
