@@ -131,3 +131,18 @@ PLIST
   fi
   echo "installed $name${sched:+ ($sched)}"
 }
+
+# Remove a service or scheduled job that install_unit installed. Safe when the unit does not exist.
+uninstall_unit() {
+  local name="$1"
+  if [ "$OS" = Linux ]; then
+    sudo systemctl disable --now "$name.service" "$name.timer" >/dev/null 2>&1 || true
+    sudo rm -f "/etc/systemd/system/$name.service" "/etc/systemd/system/$name.timer"
+    sudo systemctl daemon-reload
+  elif [ "$OS" = Darwin ]; then
+    local plist="/Library/LaunchDaemons/io.recursica.$name.plist"
+    sudo launchctl bootout system "$plist" >/dev/null 2>&1 || true
+    sudo rm -f "$plist"
+  fi
+  echo "removed $name"
+}
