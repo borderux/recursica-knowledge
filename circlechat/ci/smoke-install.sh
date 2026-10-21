@@ -8,7 +8,7 @@ CC="$HOME/circlechat" WS="$HOME/circlechat-workspace"
 fail=0; check() { if eval "$2"; then echo "pass: $1"; else echo "FAIL: $1"; fail=1; fi; }
 
 # CircleChat: Border UX's fork carries the agents' network setting; the original repo is the fallback.
-git clone --quiet --depth 1 --branch border/local-fixes https://github.com/borderux/circlechat "$CC" 2>/dev/null \
+git clone --quiet --depth 1 --branch border/local-fixes https://github.com/borderux/recursica-circlechat "$CC" 2>/dev/null \
   || git clone --quiet --depth 1 https://github.com/tashfeenahmed/circlechat "$CC"
 mkdir -p "$WS" && ln -sfn "$KIT" "$WS/recursica-knowledge"
 
@@ -47,6 +47,7 @@ check "an agent container cannot look up outside names" "! docker run --rm --net
 check "an agent container still finds the filter by name" "docker run --rm --network circlechat_agents --dns 127.0.0.1 busybox:1.36 nslookup egress >/dev/null 2>&1"
 check "images the kit starts are pinned to exact versions" "grep -q '@sha256:' '$CC/images.lock' && docker inspect -f '{{.Config.Image}}' cc-gateway | grep -q '@sha256:'"
 check "the refusal is in the filter's log" "grep -q 'example.com:443 403 TCP_DENIED' '$CC/egress-logs/access.log'"
+check "the file store has CircleChat's bucket" "(cd '$CC' && docker compose run --rm --no-deps -T -e MU=\"\$(sed -n 's/^MINIO_ROOT_USER=//p' .env | tail -1)\" -e MP=\"\$(sed -n 's/^MINIO_ROOT_PASSWORD=//p' .env | tail -1)\" --entrypoint /bin/sh minio-setup -c 'mc alias set local http://minio:9000 \"\$MU\" \"\$MP\" >/dev/null && mc ls local/circlechat >/dev/null')"
 check "CircleChat's default secrets are gone" "! grep -qE '^(SESSION_SECRET=change-me|MINIO_ROOT_PASSWORD=minioadmin$)' '$CC/.env'"
 check "the approval gate is on" "grep -q '^APPROVE_RISK_AT=high' '$CC/.env'"
 check "the firewall rules are loaded" "sudo nft list table inet agentguard >/dev/null"

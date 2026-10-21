@@ -55,6 +55,19 @@ test("setup-host --secrets-only writes the stack's settings and starts the gatew
   assert.equal(lock["ghcr.io/berriai/litellm:main-stable"].ref, "ghcr.io/berriai/litellm:main-stable@sha256:0123abcd");
 });
 
+test("setup-host runs the file store from pinned Chainguard images, in every stack", () => {
+  const s = sandbox(example);
+  const r = s.run("setup-host.sh", "--secrets-only");
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(s.dotenv().COMPOSE_FILE, /^compose\.yml:compose\.agents\.yml:compose\.storage\.yml(:|$)/);
+  const storage = fs.readFileSync(path.join(s.cc, "compose.storage.yml"), "utf8");
+  assert.match(storage, /minio:\n    image: cgr\.dev\/chainguard\/minio:latest@sha256:0123abcd\n    user: "0:0"/);
+  assert.match(storage, /minio-setup:\n    image: cgr\.dev\/chainguard\/minio-client:latest-dev@sha256:0123abcd/);
+  const lock = JSON.parse(fs.readFileSync(path.join(s.cc, "images.lock"), "utf8"));
+  assert.ok(lock["cgr.dev/chainguard/minio:latest"]);
+  assert.ok(lock["cgr.dev/chainguard/minio-client:latest-dev"]);
+});
+
 test("setup-host --upgrade also brings the containers and the filter up", () => {
   const s = sandbox(example);
   const r = s.run("setup-host.sh", "--upgrade");

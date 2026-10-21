@@ -23,7 +23,7 @@ Fork each repo into the client's own git host, as a private repo:
 1. **The knowledge repo** (this repo): the skills, the agents and this kit. Point `repos.knowledge` at the fork.
 2. **A starter proto repo:** the template each new project starts from. Each Border UX starter carries the `recursica-starter` topic on GitHub.
 3. **The Recursica adapter,** when the client changes the adapter. Each proto repo names the adapter as a dependency.
-4. **CircleChat:** from `https://github.com/borderux/circlechat`, branch `border/local-fixes`, which carries the outgoing filter.
+4. **CircleChat:** from `https://github.com/borderux/recursica-circlechat`, branch `border/local-fixes`, which carries the outgoing filter.
 
 The knowledge repo and CircleChat both use the MIT license. A private, commercial fork is allowed, with each license notice kept.
 

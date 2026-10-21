@@ -134,7 +134,21 @@ YAML
 else
   rm -f compose.privacy.yml
 fi
-CF="compose.yml:compose.agents.yml"
+# CircleChat's file store: MinIO no longer publishes the images CircleChat's compose.yml names, so
+# each stack runs Chainguard's builds, pinned like every other image. Chainguard's MinIO runs as a
+# non-root user by default; the official image ran as root, so root keeps existing volumes writable.
+MINIO_IMAGE="$(pin_image cgr.dev/chainguard/minio:latest)"
+MC_IMAGE="$(pin_image cgr.dev/chainguard/minio-client:latest-dev)"
+cat > compose.storage.yml <<YAML
+# Written by setup-host.sh: the file store's images.
+services:
+  minio:
+    image: $MINIO_IMAGE
+    user: "0:0"
+  minio-setup:
+    image: $MC_IMAGE
+YAML
+CF="compose.yml:compose.agents.yml:compose.storage.yml"
 [ "$EGRESS" = on ] && CF="$CF:compose.egress.yml"
 [ "$MASK_PII" = on ] && CF="$CF:compose.privacy.yml"
 set_env COMPOSE_FILE "$CF"
