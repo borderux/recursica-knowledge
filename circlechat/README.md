@@ -1,5 +1,7 @@
 # CircleChat setup for the Recursica agents
 
+A client's IT team installs the platform with `circlechat/INSTALL.md`. This README holds the details each part of the kit needs.
+
 Runs Betty, Barb and Alan (and optionally Loki) on a self-hosted
 [CircleChat](https://github.com/tashfeenahmed/circlechat) with the Hermes runtime, all reading the
 skills in this repo. Linux or macOS, on one machine or many.
