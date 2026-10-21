@@ -60,8 +60,8 @@ Run `node circlechat/kit/render.mjs ~/circlechat/site.json /tmp/check` to check 
 
 Keep every key, token and password in the client's secret store, never in a repo. Two ways put the secrets on the computer:
 
-- **GitHub environments:** see "Secrets in GitHub" in `circlechat/README.md`, with `circlechat/secrets/deploy-secrets.yml`.
-- **The client's own vault,** such as HashiCorp Vault or Azure Key Vault. Install the helper with `circlechat/secrets/install-secrets-helper.sh`, then pipe `NAME=value` lines from the vault into the helper:
+- **GitHub environments:** see "Secrets in GitHub" in `circlechat/README.md`, with `circlechat/deploy/deploy-secrets.yml`.
+- **The client's own vault,** such as HashiCorp Vault or Azure Key Vault. Install the helper with `circlechat/deploy/install-secrets-helper.sh`, then pipe `NAME=value` lines from the vault into the helper:
 
   ```text
   vault kv get -format=json secret/agent-stack | jq -r '.data.data | to_entries[] | "\(.key)=\(.value)"' \

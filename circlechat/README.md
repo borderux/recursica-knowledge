@@ -133,7 +133,7 @@ A stack with no `site.tenant` keeps the names a single install uses today. An ex
 1. **Create the key in the password manager,** at least 24 random characters. Add the key to the client's GitHub environment as `STACK_DISK_KEY`.
 2. **Create the image before the client's Docker VM:** pipe the key into `./circlechat/tenant/disk-image.sh create <client> 200g`. The image grows as the stack grows, up to the size given.
 3. **Create the Docker VM** with `colima start --profile <client>`. The VM's folder links into the image.
-4. **Copy `circlechat/secrets/unlock-stack.yml`** to `.github/workflows/unlock-stack.yml` in the private repo of stacks.
+4. **Copy `circlechat/deploy/unlock-stack.yml`** to `.github/workflows/unlock-stack.yml` in the private repo of stacks.
 
 After every restart of the Mac, the client's image stays closed. Run the "Unlock stack" workflow with the stack and the computer. The workflow passes `STACK_DISK_KEY` to the secrets helper, which opens the image and starts the Docker VM. Docker then starts each container of the stack. The key never touches the disk. Run the same workflow with `lock` to stop the VM and close the image.
 
@@ -146,9 +146,9 @@ Deleting the image and the key makes the client's data unreadable for good.
 1. **Create one GitHub environment per stack** in the private repo. Name the environment `border` for the stack with no tenant name, and `client-<name>` for each client stack.
 2. **Require an approval** in each environment's settings, under "Required reviewers". A workflow then waits for the approval before the workflow reads the environment's secrets.
 3. **Add the stack's secrets to the environment**, with the names in the table below.
-4. **Copy `circlechat/secrets/deploy-secrets.yml`** to `.github/workflows/deploy-secrets.yml` in the private repo.
+4. **Copy `circlechat/deploy/deploy-secrets.yml`** to `.github/workflows/deploy-secrets.yml` in the private repo.
 5. **Install a GitHub self-hosted runner on each computer**, for the private repo only, under a separate account. Give the runner a label with the computer's name from site.json.
-6. **Run `./circlechat/secrets/install-secrets-helper.sh <runner account>`** on each computer, as the account that owns the stacks. The runner's account can then run one command as root: the helper that writes the secrets.
+6. **Run `./circlechat/deploy/install-secrets-helper.sh <runner account>`** on each computer, as the account that owns the stacks. The runner's account can then run one command as root: the helper that writes the secrets.
 7. **Run the "Deploy secrets" workflow** with the stack and the computer. The workflow writes each secret to the file that reads the secret, then restarts the services that read the file.
 
 The node secrets file is `~/.recursica-node.env`, or `~/.recursica-node.<client>.env` for a client stack.

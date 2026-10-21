@@ -4,6 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
 const root = path.join(here, "..");
@@ -27,4 +28,11 @@ test("every circlechat/ file INSTALL.md names exists", () => {
   const files = [...guide.matchAll(/`(circlechat\/[A-Za-z0-9_./-]+)`/g)].map((m) => m[1]);
   const missing = files.filter((f) => !fs.existsSync(path.join(root, f)));
   assert.deepEqual(missing, [], `INSTALL.md names files that do not exist: ${missing.join(", ")}`);
+});
+
+test("no kit file is ignored by git, so every file the docs name ships in the repo", () => {
+  const r = spawnSync("git", ["status", "--ignored", "--porcelain", "circlechat", ".github"], { cwd: root, encoding: "utf8" });
+  if (r.status !== 0) return;   // not a git checkout, such as an unpacked release
+  const ignored = r.stdout.split("\n").filter((l) => l.startsWith("!! ") && !l.includes("node_modules"));
+  assert.deepEqual(ignored, [], `git ignores kit files: ${ignored.join(", ")}`);
 });
