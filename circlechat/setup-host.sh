@@ -17,8 +17,11 @@
 # notifier, which read .env when they start. CircleChat, the agents and the background jobs keep
 # running. The deploy-secrets workflow uses this mode; see circlechat/README.md, "Secrets in GitHub".
 set -euo pipefail
-SECRETS_ONLY=false
+# --upgrade: the upgrade job's mode, after a new release is checked out. Changes only what needs
+# no sudo: the rendered config, the containers, the gateway, the notifier and the filter.
+SECRETS_ONLY=false; UPGRADE_ONLY=false
 [ "${1:-}" = --secrets-only ] && SECRETS_ONLY=true
+[ "${1:-}" = --upgrade ] && { SECRETS_ONLY=true; UPGRADE_ONLY=true; }
 
 if [ -n "${TENANT:-}" ]; then
   CC_DIR="${CC_DIR:-$HOME/tenants/$TENANT/circlechat}"
@@ -201,9 +204,14 @@ start_gateway_and_notifier() {
 }
 
 if [ "$SECRETS_ONLY" = true ]; then
+  if [ "$UPGRADE_ONLY" = true ]; then
+    docker compose up -d --remove-orphans
+  fi
   start_gateway_and_notifier
+  [ "$UPGRADE_ONLY" = true ] && start_egress
   [ "$EGRESS" = on ] && docker network connect --alias cc-gateway "$AGENT_NET" "cc-gateway$SUFFIX" 2>/dev/null || true
-  echo "Secrets applied${TENANT:+ (stack: $TENANT)}: gateway and Slack notifier recreated."
+  if [ "$UPGRADE_ONLY" = true ]; then what="Upgrade applied"; else what="Secrets applied"; fi
+  echo "$what${TENANT:+ (stack: $TENANT)}: gateway and Slack notifier recreated."
   exit 0
 fi
 
@@ -283,7 +291,15 @@ fi
 # Weekly container refresh: new image versions wait 7 days, and a failed health check rolls the
 # stack back. Runs on Sunday at 3 a.m.
 install_unit "images$SUFFIX" "CC_DIR=$CC_DIR $(command -v node) $HERE/cluster/images.mjs" "$HOME" "$(id -un)" "Sun *-*-* 03:00"
-install_unit "agents-sync$SUFFIX" "git config --global --get-all safe.directory | grep -qx $WS/recursica-knowledge || git config --global --add safe.directory $WS/recursica-knowledge; $ENVS $HERE/sync-skills.sh; chown -R $(id -un) $WS/recursica-knowledge/.git $WS/kev" "$CC_DIR" root hourly
+# Updates of the knowledge repo: with upgrade.auto, each release (same first number) installs on
+# its own and a new major version asks in Slack; otherwise the hourly sync pulls main.
+if [ "$UPGRADE_AUTO" = on ]; then
+  uninstall_unit "agents-sync$SUFFIX" >/dev/null
+  install_unit "upgrade$SUFFIX" "CC_DIR=$CC_DIR WS=$WS SITE=$SITE COMPUTER=\$(sed -n s/^COMPUTER=//p /etc/agent-cluster.conf 2>/dev/null) $(command -v node) $HERE/kit/upgrade.mjs" "$HOME" "$(id -un)" hourly
+else
+  uninstall_unit "upgrade$SUFFIX" >/dev/null
+  install_unit "agents-sync$SUFFIX" "git config --global --get-all safe.directory | grep -qx $WS/recursica-knowledge || git config --global --add safe.directory $WS/recursica-knowledge; $ENVS $HERE/sync-skills.sh; chown -R $(id -un) $WS/recursica-knowledge/.git $WS/kev" "$CC_DIR" root hourly
+fi
 if [ -n "$(site_get porter.watch)" ]; then
   # Announces each new release of the watched repository to Porter, through the workflow webhook
   # in .env (PORTER_HOOK_URL, PORTER_HOOK_SECRET). See circlechat/README.md, "Porter".

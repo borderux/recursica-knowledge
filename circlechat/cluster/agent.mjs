@@ -9,7 +9,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import http from "node:http";
 import path from "node:path";
-import { spawnSync, execFile } from "node:child_process";
+import { spawn, spawnSync, execFile } from "node:child_process";
 import { Guard } from "./guard.mjs";
 import { makePlatform } from "./platform.mjs";
 import { buttonBlocks, nextAt, formatEt } from "./actions.mjs";
@@ -38,6 +38,20 @@ export function makeAgent({ env, platform, guard, post, now = () => Date.now(), 
       case "allow-source": return guard.release(true);
       case "egress-allow-once": return egress ? egress.allowOnce(ref, extra.by ?? "an approver") : { ok: false, message: "no outgoing filter on this computer" };
       case "egress-deny": return egress ? egress.deny(ref, extra.by ?? "an approver") : { ok: false, message: "no outgoing filter on this computer" };
+      case "upgrade-now": {
+        if (!/^@recursica\/knowledge@\d+\.\d+\.\d+$/.test(ref ?? "")) return { ok: false, message: "not a release tag" };
+        const ccDir = path.join(env.OWNER_HOME, "circlechat");
+        spawn("sudo", ["-u", env.OWNER, "-H", "env", `CC_DIR=${ccDir}`, `WS=${path.join(env.OWNER_HOME, "circlechat-workspace")}`, `SITE=${path.join(ccDir, "site.json")}`, `COMPUTER=${env.COMPUTER}`,
+          process.execPath, path.join(env.KIT, "circlechat/kit/upgrade.mjs"), ref], { detached: true, stdio: "ignore" }).unref();
+        return { ok: true, message: `upgrading to ${ref.split("@").pop()}; Slack hears again only on a failure` };
+      }
+      case "upgrade-skip": {
+        const f = path.join(env.OWNER_HOME, "circlechat/kit-out/upgrade-state.json");
+        let st = {}; try { st = JSON.parse(fs.readFileSync(f, "utf8")); } catch {}
+        st.skipped = { ...(st.skipped ?? {}), [ref]: now() };
+        fs.writeFileSync(f, JSON.stringify(st));
+        return { ok: true, message: `skipped ${String(ref).split("@").pop()}` };
+      }
       default: return { ok: false, message: `unknown action ${action}` };
     }
   }
