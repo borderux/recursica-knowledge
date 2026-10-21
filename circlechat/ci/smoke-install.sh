@@ -7,9 +7,9 @@ KIT="$(cd "$(dirname "$0")/../.." && pwd)"
 CC="$HOME/circlechat" WS="$HOME/circlechat-workspace"
 fail=0; check() { if eval "$2"; then echo "pass: $1"; else echo "FAIL: $1"; fail=1; fi; }
 
-# CircleChat: Border UX's fork carries the agents' network setting; the original repo is the fallback.
-git clone --quiet --depth 1 --branch border/local-fixes https://github.com/borderux/recursica-circlechat "$CC" 2>/dev/null \
-  || git clone --quiet --depth 1 https://github.com/tashfeenahmed/circlechat "$CC"
+# CircleChat: Border UX's fork, which carries the agents' network setting. The original repo has no
+# such setting, so a failed clone stops the smoke install instead of testing the wrong CircleChat.
+git clone --quiet --depth 1 --branch border/local-fixes https://github.com/borderux/recursica-circlechat "$CC"
 mkdir -p "$WS" && ln -sfn "$KIT" "$WS/recursica-knowledge"
 
 cat > "$CC/site.json" <<JSON
