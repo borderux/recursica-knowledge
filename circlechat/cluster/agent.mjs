@@ -13,9 +13,10 @@ import { spawnSync } from "node:child_process";
 import { Guard } from "./guard.mjs";
 import { makePlatform } from "./platform.mjs";
 import { buttonBlocks, nextAt, formatEt } from "./actions.mjs";
-import { slackApi } from "./bot.mjs";
+import { slackApi, parsePairs } from "./bot.mjs";
+import { Monitor, localStacks } from "./monitor.mjs";
 
-export function makeAgent({ env, platform, guard, post, now = () => Date.now(), stateDir }) {
+export function makeAgent({ env, platform, guard, post, now = () => Date.now(), stateDir, monitor, stacks = async () => [] }) {
   const rebootFile = path.join(stateDir, "reboot.json");
   const readReboot = () => { try { return JSON.parse(fs.readFileSync(rebootFile, "utf8")); } catch { return null; } };
   const schedule = (at, ref, label) => {
@@ -41,6 +42,7 @@ export function makeAgent({ env, platform, guard, post, now = () => Date.now(), 
   // Each minute: the guard, then a due reboot. The updates installer runs before the reboot.
   async function minute(canaryHits = []) {
     await guard.tick(canaryHits);
+    if (monitor) await monitor.tick().catch((e) => console.error(`monitor: ${e.message}`));
     const r = readReboot();
     if (r && r.at <= now()) {
       fs.rmSync(rebootFile, { force: true });
@@ -56,7 +58,7 @@ export function makeAgent({ env, platform, guard, post, now = () => Date.now(), 
       const auth = req.headers.authorization ?? "";
       const want = `Bearer ${env.CLUSTER_TOKEN}`;
       if (auth.length !== want.length || !crypto.timingSafeEqual(Buffer.from(auth), Buffer.from(want))) return send(401, { ok: false, message: "unauthorized" });
-      if (req.method === "GET" && req.url === "/status") return send(200, { ok: true, computer: env.COMPUTER, guard: guard.state, reboot: readReboot() });
+      if (req.method === "GET" && req.url === "/status") return send(200, { ok: true, computer: env.COMPUTER, guard: { status: guard.state.status }, reboot: readReboot(), stacks: await stacks() });
       if (req.method !== "POST" || req.url !== "/action") return send(404, { ok: false, message: "not found" });
       let body = ""; for await (const c of req) { body += c; if (body.length > 10_000) return send(413, { ok: false, message: "too large" }); }
       try { send(200, await act(JSON.parse(body))); } catch (e) { send(500, { ok: false, message: e.message }); }
@@ -87,7 +89,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     ...(kind === "info" ? {} : { blocks: buttonBlocks(kind, text, env.COMPUTER, ref) }) }).catch((e) => console.error(e.message));
   const platform = makePlatform(env);
   const guard = new Guard({ platform, notify: post, stateDir, computer: env.COMPUTER });
-  const agent = makeAgent({ env, platform, guard, post, stateDir });
+  const monitor = new Monitor({ self: env.COMPUTER, peers: parsePairs(env.AGENTS), token: env.CLUSTER_TOKEN, clusterChannel: env.SLACK_CHANNEL_ID,
+    stateFile: path.join(stateDir, "monitor.json"), post: (channel, text) => api("chat.postMessage", { channel, text }) });
+  const agent = makeAgent({ env, platform, guard, post, stateDir, monitor, stacks: () => localStacks(env.OWNER_HOME) });
   const srv = agent.server();
   for (const host of String(env.AGENT_BIND ?? "127.0.0.1").split(",")) {
     http.createServer(srv.listeners("request")[0]).listen(Number(env.AGENT_PORT ?? 7500), host.trim());
