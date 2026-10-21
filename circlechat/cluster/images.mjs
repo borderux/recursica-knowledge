@@ -106,7 +106,11 @@ async function main() {
     console.log(`stack ${tenantEnv.TENANT || "border"}: images refreshed${changed.length ? ` (${changed.join(", ")})` : ""}, health check passed`);
     return;
   }
-  // Roll back: tag each service's old image back, and recreate from it.
+  // Roll back: tag each service's old image back, and recreate from it. Each new version that
+  // failed is marked so the job never moves to it again; a later version gets its own 7 days.
+  for (const c of choice.filter((x) => x.changed)) seen[`${c.tag}@${c.use}`] = Number.MAX_SAFE_INTEGER;
+  if (oldLock) for (const [tag, v] of Object.entries(JSON.parse(fs.readFileSync(lockFile, "utf8")))) if (oldLock[tag]?.ref !== v.ref) seen[`${tag}@${v.ref}`] = Number.MAX_SAFE_INTEGER;
+  fs.writeFileSync(stateFile, JSON.stringify(seen));
   for (const [svc, image] of Object.entries(before)) {
     const tag = tags[svc]?.image ?? `${tenantEnv.COMPOSE_PROJECT_NAME}-${svc}`;
     await run("docker", ["tag", image, tag], { env }).catch(() => {});

@@ -55,3 +55,11 @@ test("a new image version waits 7 days before a stack uses it", () => {
   assert.deepEqual(chooseDigests(tags, seen, t).map((c) => [c.tag, c.use]), [["postgres:16", "sha256:old"], ["redis:7", "sha256:same"]]);
   assert.deepEqual(chooseDigests(tags, seen, t + SOAK_MS).map((c) => [c.tag, c.use, c.changed]), [["postgres:16", "sha256:new", true], ["redis:7", "sha256:same", false]]);
 });
+
+test("an image version marked as failed is never used, and a later version still can be", () => {
+  const seen = { "postgres:16@sha256:bad": Number.MAX_SAFE_INTEGER };
+  const t = 1_900_000_000_000;
+  assert.equal(chooseDigests([{ tag: "postgres:16", current: "sha256:old", pulled: "sha256:bad" }], seen, t)[0].use, "sha256:old");
+  assert.equal(chooseDigests([{ tag: "postgres:16", current: "sha256:old", pulled: "sha256:new" }], seen, t + SOAK_MS)[0].use, "sha256:old");
+  assert.equal(chooseDigests([{ tag: "postgres:16", current: "sha256:old", pulled: "sha256:new" }], seen, t + 2 * SOAK_MS)[0].use, "sha256:new");
+});
