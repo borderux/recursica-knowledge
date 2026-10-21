@@ -137,3 +137,16 @@ test("cloud models on a client stack need who granted the permission, when, and 
 test("Border's own stack may call cloud models", () => {
   assert.match(render(example).tenantEnv, /^CLOUD_MODELS=allowed$/m);
 });
+
+test("backup settings are checked and passed to the setup", () => {
+  const s = clone();
+  s.backup = { remote: "gdrive-backups:agent-backups", time: "02:30" };
+  assert.deepEqual(validate(s), []);
+  const r = render(s);
+  assert.match(r.tenantEnv, /^BACKUP_REMOTE=gdrive-backups:agent-backups$/m);
+  assert.match(r.tenantEnv, /^BACKUP_TIME=02:30$/m);
+  s.backup = { remote: "no colon", time: "25:00" };
+  const errs = validate(s).join("\n");
+  assert.match(errs, /backup.remote must be an rclone remote/);
+  assert.match(errs, /backup.time must be HH:MM/);
+});

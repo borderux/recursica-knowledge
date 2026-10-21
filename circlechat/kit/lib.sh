@@ -14,10 +14,27 @@ site_get() { node -e '
   if (v !== undefined && v !== null) process.stdout.write(typeof v === "object" ? JSON.stringify(v) : String(v));
 ' "$SITE" "$1"; }
 
+# Turn a systemd calendar line ("Sun *-*-* 03:00", "*-*-01 03:30", "*-*-* 02:00") into launchd's
+# StartCalendarInterval. Only the weekday, the day of the month, the hour and the minute are read.
+launchd_calendar() {
+  local line="$1" wd="" day="" hm keys=""
+  case "$line" in Mon\ *) wd=1 ;; Tue\ *) wd=2 ;; Wed\ *) wd=3 ;; Thu\ *) wd=4 ;; Fri\ *) wd=5 ;; Sat\ *) wd=6 ;; Sun\ *) wd=0 ;; esac
+  line="${line#* }"; [ -z "$wd" ] && line="$1"
+  local date="${line%% *}"; hm="${line#* }"
+  day="${date##*-}"; [ "$day" = "*" ] && day=""
+  local hour="${hm%%:*}" min="${hm#*:}"; min="${min%%:*}"
+  [[ "$hour" =~ ^[0-9]{1,2}$ && "$min" =~ ^[0-9]{1,2}$ ]] || { echo "launchd_calendar: cannot read \"$1\"" >&2; return 1; }
+  [ -n "$wd" ] && keys="$keys<key>Weekday</key><integer>$wd</integer>"
+  [ -n "$day" ] && keys="$keys<key>Day</key><integer>$((10#$day))</integer>"
+  printf '<key>StartCalendarInterval</key><dict>%s<key>Hour</key><integer>%d</integer><key>Minute</key><integer>%d</integer></dict>' "$keys" "$((10#$hour))" "$((10#$min))"
+}
+
 # Install a long-running service or a scheduled job, the native way for this OS.
 #   install_unit NAME "COMMAND" [WORKDIR] [USER] [SCHEDULE]
 # SCHEDULE empty = keep running (restart on failure, start at boot); "boot" = run once at each
-# start-up; "hourly" = every hour.
+# start-up; "hourly" = every hour; or a fixed time as a systemd calendar line: "*-*-* 02:00" every
+# day, "Sun *-*-* 03:00" every Sunday, "*-*-01 03:30" on the first of each month. A fixed time also
+# works on macOS, where launchd gets the same day and time.
 install_unit() {
   local name="$1" cmd="$2" dir="${3:-$HOME}" user="${4:-$(id -un)}" sched="${5:-}"
   if [ "$OS" = Linux ]; then
@@ -86,6 +103,8 @@ UNIT
     local xcmd; xcmd="$(printf '%s' "$cmd" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g')"   # plist is XML
     if [ "$sched" = boot ]; then
       timing="<key>RunAtLoad</key><true/>"
+    elif [ "$sched" != hourly ] && [ -n "$sched" ]; then
+      timing="$(launchd_calendar "$sched")" || return 1
     elif [ -z "$sched" ]; then
       timing="<key>RunAtLoad</key><true/><key>KeepAlive</key><true/>"
     else

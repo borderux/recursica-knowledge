@@ -52,6 +52,12 @@ export function validate(site) {
   const ports = ["port", "preview_port", "gateway_port"].map((k) => t[k]).filter((v) => v !== undefined);
   if (new Set(ports).size !== ports.length) errs.push("site.port, site.preview_port and site.gateway_port must all differ");
   if (t.docker_context !== undefined && !/^[A-Za-z0-9._-]+$/.test(t.docker_context)) errs.push("site.docker_context must be a Docker context name");
+  // Nightly backups: restic, through an rclone remote such as "gdrive-backups:agent-backups".
+  if (site.backup !== undefined) {
+    const b = site.backup;
+    if (!/^[A-Za-z0-9_-]+:\S*$/.test(b?.remote ?? "")) errs.push("backup.remote must be an rclone remote and folder, such as gdrive-backups:agent-backups");
+    if (b?.time !== undefined && !/^([01]\d|2[0-3]):[0-5]\d$/.test(b.time)) errs.push("backup.time must be HH:MM, in the computer's time zone");
+  }
   // Cloud models on a client stack need the client's recorded permission. Without the permission,
   // the stack runs local open-weight models only: no cloud route, and no Porter (port jobs use
   // Claude).
@@ -177,6 +183,8 @@ export function render(site) {
     `GATEWAY_PORT=${st.gateway_port ?? 4000}`,
     `DOCKER_CONTEXT=${st.docker_context ?? ""}`,
     `CLOUD_MODELS=${cloudAllowed(site) ? "allowed" : "local-only"}`,
+    `BACKUP_REMOTE=${site.backup?.remote ?? ""}`,
+    `BACKUP_TIME=${site.backup?.time ?? "02:00"}`,
   ].join("\n") + "\n";
   return { litellm, kev, services, appEnv, jobNodes, porterEnv, watches, tenantEnv };
 }

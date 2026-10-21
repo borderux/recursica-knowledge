@@ -200,6 +200,16 @@ start_gateway_and_notifier
 # Background jobs, the native way for this OS (systemd on Linux, launchd on macOS).
 ENVS="CC_DIR=$CC_DIR WS=$WS SITE=$SITE"
 install_unit "circlechat-boot$SUFFIX" "cd $CC_DIR && ${DCTX}docker compose -f compose.yml -f compose.agents.yml up -d" "$CC_DIR" "$(id -un)" boot
+# Nightly encrypted backup of this stack, and a test restore each quarter. Both run as root, which
+# can read every agent home. rclone's remote is set up once by hand: see README, "Backups".
+if [ -n "$BACKUP_REMOTE" ]; then
+  for t in restic rclone; do command -v "$t" >/dev/null || { echo "$t is not installed. Linux: sudo apt install $t. macOS: brew install $t."; exit 1; }; done
+  rclone --config "$HOME/.config/rclone/rclone.conf" listremotes 2>/dev/null | grep -qx "${BACKUP_REMOTE%%:*}:" \
+    || { echo "rclone has no remote named ${BACKUP_REMOTE%%:*}. Set it up first: see README, \"Backups\"."; exit 1; }
+  BENV="OWNER_HOME=$HOME CC_DIR=$CC_DIR WS=$WS PATH=$(dirname "$(command -v node)"):/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin"
+  install_unit "backup$SUFFIX" "$BENV $HERE/backup/backup.sh" "$CC_DIR" root "*-*-* $BACKUP_TIME"
+  install_unit "restore-test$SUFFIX" "$BENV $HERE/backup/restore-test.sh" "$CC_DIR" root "*-*-01 04:30"
+fi
 install_unit "agents-sync$SUFFIX" "git config --global --get-all safe.directory | grep -qx $WS/recursica-knowledge || git config --global --add safe.directory $WS/recursica-knowledge; $ENVS $HERE/sync-skills.sh; chown -R $(id -un) $WS/recursica-knowledge/.git $WS/kev" "$CC_DIR" root hourly
 if [ -n "$(site_get porter.watch)" ]; then
   # Announces each new release of the watched repository to Porter, through the workflow webhook
