@@ -26,6 +26,19 @@ import path from "node:path";
 
 const SLUG = /^[a-z0-9][a-z0-9-]*$/;
 
+// A backend is a cloud model unless it names a model on a computer in this site.json.
+export function isCloud(backend, site) {
+  const names = new Set((site.nodes ?? []).map((n) => n.name));
+  const [node] = String(backend).split("/");
+  return !names.has(node);
+}
+
+// A stack may call cloud models unless it is a client stack without a recorded permission.
+export function cloudAllowed(site) {
+  if (site.site?.kind !== "client") return true;
+  return site.site?.cloud_models?.allowed === true;
+}
+
 export function validate(site) {
   const errs = [];
   const nodes = site.nodes ?? [];
@@ -39,10 +52,28 @@ export function validate(site) {
   const ports = ["port", "preview_port", "gateway_port"].map((k) => t[k]).filter((v) => v !== undefined);
   if (new Set(ports).size !== ports.length) errs.push("site.port, site.preview_port and site.gateway_port must all differ");
   if (t.docker_context !== undefined && !/^[A-Za-z0-9._-]+$/.test(t.docker_context)) errs.push("site.docker_context must be a Docker context name");
+  // Cloud models on a client stack need the client's recorded permission. Without the permission,
+  // the stack runs local open-weight models only: no cloud route, and no Porter (port jobs use
+  // Claude).
+  const cm = t.cloud_models;
+  if (cm !== undefined) {
+    if (typeof cm !== "object" || cm === null || typeof cm.allowed !== "boolean") errs.push("site.cloud_models must be an object with allowed: true or false");
+    else if (cm.allowed) {
+      if (!cm.granted_by || typeof cm.granted_by !== "string") errs.push("site.cloud_models.granted_by must name the person who granted the permission");
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(cm.granted_on ?? "")) errs.push("site.cloud_models.granted_on must be the date of the permission, as YYYY-MM-DD");
+      if (!["border-ramp", "client-byok"].includes(cm.payer)) errs.push("site.cloud_models.payer must be border-ramp or client-byok");
+    }
+  }
   if (t.kind === "client") {
     if (!t.tenant) errs.push("a client stack needs site.tenant, so its containers, ports and jobs never collide with another stack's");
     if (!t.docker_context) errs.push("a client stack needs site.docker_context: its own Docker VM (for example a Colima profile), so no client shares a Docker socket or network with another");
     if (site.data?.kev_disagreements_branch) errs.push("a client stack cannot set data.kev_disagreements_branch: review data from a client's code never leaves the client's stack");
+    if (!cloudAllowed(site)) {
+      for (const [route, backends] of Object.entries(site.routes ?? {})) {
+        for (const b of backends) if (isCloud(b, site)) errs.push(`route ${route}: "${b}" is a cloud model, and this client stack has no recorded permission for cloud models (site.cloud_models)`);
+      }
+      if (site.porter) errs.push("a local-only client stack cannot run Porter: port jobs call Claude. Record the client's permission in site.cloud_models first");
+    }
   }
   for (const k of ["knowledge", "app", "app_dir", "app_github"]) if (!site.repos?.[k]) errs.push(`repos.${k} is required`);
   if (site.repos?.app_dir && !/^[A-Za-z0-9._-]+$/.test(site.repos.app_dir)) errs.push("repos.app_dir must be a plain folder name");
@@ -145,6 +176,7 @@ export function render(site) {
     `PREVIEW_PORT=${st.preview_port ?? 5173}`,
     `GATEWAY_PORT=${st.gateway_port ?? 4000}`,
     `DOCKER_CONTEXT=${st.docker_context ?? ""}`,
+    `CLOUD_MODELS=${cloudAllowed(site) ? "allowed" : "local-only"}`,
   ].join("\n") + "\n";
   return { litellm, kev, services, appEnv, jobNodes, porterEnv, watches, tenantEnv };
 }

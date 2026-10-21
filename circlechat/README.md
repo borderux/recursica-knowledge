@@ -98,9 +98,17 @@ CircleChat's workspaces cannot keep clients apart. Inside one CircleChat, every 
    - `site.kind`: `"client"`.
    - `site.docker_context`: the client's Docker context, such as `colima-<client>`.
    - `site.port`, `site.preview_port` and `site.gateway_port`: three ports no other stack uses.
-3. **Clone CircleChat** into `~/tenants/<client>/circlechat`. Put the client's secrets in the `.env` file in the same folder, including the client's `SLACK_WEBHOOK_URL`.
-4. **Run every kit script with `TENANT=<client>`**, such as `TENANT=<client> ./circlechat/setup-host.sh`. Use the same prefix for `setup-agent.sh` and `setup-node.sh`.
-5. **Give the stack an address** with `tailscale serve --bg --https=<port> http://127.0.0.1:<port>`.
+3. **Ask the client whether the agents may send the client's data to a cloud model provider.** Until the client says yes, the stack runs local open-weight models only. When the client says yes, record the permission in `site.cloud_models`:
+
+   ```json
+   "cloud_models": { "allowed": true, "granted_by": "Person A, acme.com", "granted_on": "2026-10-20", "payer": "client-byok" }
+   ```
+
+   `payer` says who pays. `border-ramp` means Border UX pays, with a virtual card made for the client. `client-byok` means the client supplies the client's own key.
+
+4. **Clone CircleChat** into `~/tenants/<client>/circlechat`. Put the client's secrets, including the client's `SLACK_WEBHOOK_URL`, in the client's GitHub environment, as "Secrets in GitHub" describes.
+5. **Run every kit script with `TENANT=<client>`**, such as `TENANT=<client> ./circlechat/setup-host.sh`. Use the same prefix for `setup-agent.sh` and `setup-node.sh`.
+6. **Give the stack an address** with `tailscale serve --bg --https=<port> http://127.0.0.1:<port>`.
 
 With `TENANT=<client>`, the stack lives in `~/tenants/<client>/`. The stack's containers, volume, Compose project, ports and background jobs all carry the client's name. The stack's job runner reads secrets from `~/.recursica-node.<client>.env`.
 
@@ -109,6 +117,8 @@ The config check refuses a client stack in three cases:
 - The stack has no `site.tenant`.
 - The stack has no `site.docker_context`.
 - The stack sets `data.kev_disagreements_branch`. Review data from a client's code stays in the client's stack.
+
+With no recorded permission in `site.cloud_models`, the config check also refuses every cloud route and Porter, because port jobs call Claude. The secrets helper refuses to deploy a cloud key to the stack.
 
 Model servers that keep no data, such as Kev's model and a local model, can serve every stack. Declare each model server's service in one stack's site.json only. The other stacks list the same models and Kev ports, with no `services` entry. Give a client a separate model server when the client's contract requires one.
 

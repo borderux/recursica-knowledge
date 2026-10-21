@@ -72,6 +72,7 @@ test("no tenant keeps the single-stack names", () => {
 test("a tenant gets its own names and ports", () => {
   const s = clone();
   Object.assign(s.site, { tenant: "acme", kind: "client", docker_context: "colima-acme", port: 8180, preview_port: 5273, gateway_port: 4100 });
+  s.site.cloud_models = { allowed: true, granted_by: "Person A, acme.com", granted_on: "2026-10-20", payer: "border-ramp" };
   delete s.data;
   assert.deepEqual(validate(s), []);
   const r = render(s);
@@ -99,4 +100,40 @@ test("a stack's three ports must differ, and the tenant name is a slug", () => {
   const errs = validate(s).join("\n");
   assert.match(errs, /site.tenant "Bad Name"/);
   assert.match(errs, /must all differ/);
+});
+
+function clientStack() {
+  const s = clone();
+  Object.assign(s.site, { tenant: "acme", kind: "client", docker_context: "colima-acme", port: 8180, preview_port: 5273, gateway_port: 4100 });
+  delete s.data;
+  return s;
+}
+
+test("a client stack is local-only until the client's permission is recorded", () => {
+  const s = clientStack();
+  const errs = validate(s).join("\n");
+  assert.match(errs, /is a cloud model, and this client stack has no recorded permission/);
+  if (s.porter) assert.match(errs, /local-only client stack cannot run Porter/);
+  const local = clientStack();
+  delete local.porter;
+  for (const k of Object.keys(local.routes)) local.routes[k] = local.routes[k].filter((b) => !b.startsWith("anthropic/"));
+  for (const k of Object.keys(local.routes)) if (!local.routes[k].length) delete local.routes[k];
+  assert.deepEqual(validate(local), []);
+  assert.match(render(local).tenantEnv, /^CLOUD_MODELS=local-only$/m);
+});
+
+test("cloud models on a client stack need who granted the permission, when, and who pays", () => {
+  const s = clientStack();
+  s.site.cloud_models = { allowed: true };
+  const errs = validate(s).join("\n");
+  assert.match(errs, /granted_by must name the person/);
+  assert.match(errs, /granted_on must be the date/);
+  assert.match(errs, /payer must be border-ramp or client-byok/);
+  s.site.cloud_models = { allowed: true, granted_by: "Person A, acme.com", granted_on: "2026-10-20", payer: "client-byok" };
+  assert.deepEqual(validate(s), []);
+  assert.match(render(s).tenantEnv, /^CLOUD_MODELS=allowed$/m);
+});
+
+test("Border's own stack may call cloud models", () => {
+  assert.match(render(example).tenantEnv, /^CLOUD_MODELS=allowed$/m);
 });
