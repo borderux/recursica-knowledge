@@ -36,7 +36,7 @@ A transfer list shows two lists of options side by side. An item is one option i
 
 ## Variants
 
-**Use only the transfer list variants and options that the Recursica MCP server lists for the theme.** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. A wrong name in code has no effect and shows no error. Never invent a variant or an option.
+**Use only the transfer list variants and options that the knowledge MCP server lists for the theme.** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `component_api` tool, and use the names the code uses. A wrong name in code has no effect and shows no error. Never invent a variant or an option.
 
 The rules below describe each option by role, such as "the error state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 

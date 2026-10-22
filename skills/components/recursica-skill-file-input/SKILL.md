@@ -46,9 +46,9 @@ A file input is a single-line field where the persona picks a file from the pers
 
 ## Variants
 
-**Use only the file input variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Never invent a variant or an option.
+**Use only the file input variants and options that the knowledge MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Never invent a variant or an option.
 
-**Get the list with the server's `recursica_get_component_doc` tool.** Use the names the code uses.
+**Get the list with the server's `component_api` tool.** Use the names the code uses.
 
 The rules below describe each option by role, such as "the error state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 

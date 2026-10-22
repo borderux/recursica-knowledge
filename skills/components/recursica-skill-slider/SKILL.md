@@ -33,9 +33,9 @@ A slider lets the persona pick a value from a range with fixed ends, such as vol
 
 ## Variants
 
-**Use only the slider variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Never invent a variant or an option.
+**Use only the slider variants and options that the knowledge MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Never invent a variant or an option.
 
-**Use the names the code uses.** Get the list of variants and options with the server's `recursica_get_component_doc` tool. The name in code can differ from the name in Figma and the UI kit. A wrong name in code has no effect and shows no error.
+**Use the names the code uses.** Get the list of variants and options with the server's `component_api` tool. The name in code can differ from the name in Figma and the UI kit. A wrong name in code has no effect and shows no error.
 
 Each option below is described by role, such as "the error state". A name from the standard UI kit (the unchanged UI kit in the official Recursica release) is only an example.
 
@@ -151,8 +151,8 @@ The application must add every behavior in the two lists below. The slider compo
 - [ ] The value can be set with no pointer at all, and dragging is never the only way.
 - [ ] The thumb is the tab stop, and the focus ring is on the thumb and not hidden. The number input is a separate tab stop.
 - [ ] The tab order follows the visual order. Focus is never moved for the persona. Every part needed to use the slider shows without hover.
-- [ ] Every variant, size and state is one the Recursica MCP server lists for the theme. No variant or option is invented.
-- [ ] No hover state, second thumb or vertical orientation is used unless the Recursica MCP server lists one for the theme.
+- [ ] Every variant, size and state is one the knowledge MCP server lists for the theme. No variant or option is invented.
+- [ ] No hover state, second thumb or vertical orientation is used unless the knowledge MCP server lists one for the theme.
 - [ ] No styling is set or overridden on the slider. No container or spacer is added to change the slider's look.
 - [ ] The active state marks only the thumb the persona is moving.
 - [ ] No slider is disabled to show a value.

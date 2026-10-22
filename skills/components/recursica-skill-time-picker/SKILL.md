@@ -42,9 +42,9 @@ See `recursica-skill-forms`.
 
 ## Variants
 
-**Use only the time picker variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ.
+**Use only the time picker variants and options that the knowledge MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ.
 
-- Get the list with the server's `recursica_get_component_doc` tool.
+- Get the list with the server's `component_api` tool.
 - Before using a variant, look up the variant's name in code with the same tool. Use the name the code uses.
 - Never invent a variant or an option.
 
@@ -187,7 +187,7 @@ The time picker's width is fixed.
 - **Whether a time has a masked format while the field has focus**, as a date does. The rule in `recursica-skill-dates-and-currency` that focus decides the format gives only a date example.
 - **Seconds.** Whether the field can accept seconds at all is unknown. Confirm with the user only when the theme has no seconds variant.
 - **Time ranges.** How a start time and an end time are checked against each other is not stated. For example, no source says whether an end time may come before the start time. Confirm with the user only when the theme has no range variant.
-- **The UI kit defines a disabled state, but the design-system website does not show one.** Treat the list of states that the Recursica MCP server gives for the theme as the authority. Flag the missing disabled state on the website.
+- **The UI kit defines a disabled state, but the design-system website does not show one.** Treat the list of states that the knowledge MCP server gives for the theme as the authority. Flag the missing disabled state on the website.
 
 ## Pre-flight checklist
 
@@ -206,7 +206,7 @@ The time picker's width is fixed.
 - [ ] Every control inside the field has an accessible name, is a separate tab stop, and works with Enter or Space. The controls include the clock trigger and the AM/PM control. Decorative icons are hidden from screen readers.
 - [ ] The popover opens from the keyboard, and the arrow keys move between values. Escape closes the popover and returns focus to the field.
 - [ ] Focus never jumps ahead automatically between hour, minute, and AM/PM, and is never moved for the persona.
-- [ ] Every variant and state is one the Recursica MCP server lists for the theme.
+- [ ] Every variant and state is one the knowledge MCP server lists for the theme.
 - [ ] No size variant, seconds variant, or range variant is added unless the server lists one for the theme.
 - [ ] No warning state or inline clock is added unless the server lists one for the theme.
 - [ ] No styling is set or overridden on the time picker. No container or spacer is added to change the time picker's look.

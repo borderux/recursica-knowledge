@@ -24,6 +24,10 @@
  * isolation is a data fence a prompt cannot carry, and a copy in every project on the machine is
  * the opposite of a fence. See their PORTING.md.
  *
+ * Betty and Barb also need the Recursica knowledge MCP server, so this registers it for every
+ * project on the machine through `install-mcp.mjs`. `--no-mcp` skips that, and `npm run mcp:install` does it on
+ * its own.
+ *
  * A project's own .claude/agents overrides these for that project. `--check` names any such copy
  * under WORKSPACE_ROOT, because an old copy there is how an agent stays out of date after this
  * has run.
@@ -32,6 +36,7 @@
  *   npm run agents:install                     install or refresh
  *   npm run agents:install -- --check          report, change nothing; exit 1 if anything is stale
  *   npm run agents:install -- --target <dir>   somewhere other than ~/.claude/agents
+ *   npm run agents:install -- --no-mcp         leave the MCP servers alone
  */
 
 import crypto from "node:crypto";
@@ -40,6 +45,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { detokenize, TOKEN_PATTERN } from "../buzz-agents/lib/placeholders.mjs";
+import { ensure as ensureMcp } from "./install-mcp.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const ARTIFACTS = path.join(ROOT, "portable", "claude-code", "agents");
@@ -210,6 +216,13 @@ if (invokedDirectly) {
       fs.symlinkSync(src, dest);
       console.log(`  ✓ ${name}: linked`);
     }
+  }
+
+  if (!args.includes("--no-mcp")) {
+    console.log(
+      `\n  Betty and Barb look up the adapter's names with the knowledge MCP server:`,
+    );
+    problems += ensureMcp({ scope: "user", check });
   }
 
   const overriding = projectCopies(values.WORKSPACE_ROOT, AGENTS);

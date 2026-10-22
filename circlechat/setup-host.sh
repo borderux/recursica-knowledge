@@ -33,9 +33,6 @@ WS="${WS:-$HOME/circlechat-workspace}"
 SITE="${SITE:-$CC_DIR/site.json}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 . "$HERE/kit/lib.sh"
-# Exact versions of the npm packages the agents run. Move a version up by pull request, 7 days
-# or more after the version's release.
-RECURSICA_MCP_VERSION=0.8.1
 
 [ -f "$SITE" ] || { echo "No $SITE. Copy circlechat/site.example.json there and fill it in."; exit 1; }
 command -v docker >/dev/null || { echo "Docker is not installed (Linux: Docker Engine; macOS: Colima or OrbStack)."; exit 1; }
@@ -155,21 +152,14 @@ set_env COMPOSE_FILE "$CF"
 # CircleChat's approval gate: an action at high risk waits for a person's approval. The high-risk
 # action, share_files, has CircleChat itself fetch a web address, outside the agents' filter.
 set_env APPROVE_RISK_AT high
-# The Recursica MCP server for Betty and Barb, started in the default proto repo (the server reads
-# the adapter installed there). Projects in other repos fall back to reading the adapter's code.
-# The exact version lives in the shared workspace, read at the start of each agent turn: Border
-# UX's own stack moves it hourly (kit/upgrade.mjs), every other stack after 7 days
-# (cluster/images.mjs).
+# The Recursica knowledge MCP server for Betty and Barb. It runs from the knowledge checkout in the
+# shared workspace, so it serves the same skills the agents read and needs no version of its own.
+# Its component_api tool reads the adapter installed in whichever project the agent names.
+# The two files below started the old @recursica/mcp package, which this replaces.
 mkdir -p "$WS"
-[ -s "$WS/.recursica-mcp-version" ] || printf '%s\n' "$RECURSICA_MCP_VERSION" > "$WS/.recursica-mcp-version"
-cat > "$WS/.recursica-mcp.sh" <<'SH'
-#!/bin/sh
-# Start the Recursica MCP server in the given project, at the version in .recursica-mcp-version.
-cd "$1" && exec npx -y "@recursica/mcp@$(cat /workspace/.recursica-mcp-version)"
-SH
-chmod 755 "$WS/.recursica-mcp.sh"
-RMCP="{\"command\":\"sh\",\"args\":[\"/workspace/.recursica-mcp.sh\",\"/workspace/${APP_REPO:-app}\"],\"enabled\":true,\"timeout\":120}"
-set_env CC_AGENT_MCP_SERVERS "{\"betty\":{\"recursica-mcp\":$RMCP},\"barb\":{\"recursica-mcp\":$RMCP}}"
+rm -f "$WS/.recursica-mcp-version" "$WS/.recursica-mcp.sh"
+KMCP="{\"command\":\"node\",\"args\":[\"/workspace/recursica-knowledge/nest/mcp/knowledge/server.mjs\"],\"enabled\":true,\"timeout\":120}"
+set_env CC_AGENT_MCP_SERVERS "{\"betty\":{\"recursica-knowledge\":$KMCP},\"barb\":{\"recursica-knowledge\":$KMCP}}"
 set_env ENFORCE_AGENT_SCOPES true
 env_has LITELLM_MASTER_KEY || set_env LITELLM_MASTER_KEY "sk-$(openssl rand -hex 16)"
 # CircleChat ships with a default session secret and default passwords. Anyone who knows the
