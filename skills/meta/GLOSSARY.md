@@ -4,8 +4,8 @@ The official wording for the design and accessibility terms the skills define.
 
 **This file is not a skill, and agents are not sent here.** Each skill defines its own terms the
 first time it uses them, in brackets right after the term — for example, "a tab stop (a place the
-Tab key lands)". That keeps every skill complete on its own. The MCP server and the skill packages
-serve one `SKILL.md` at a time, and neither one serves this file.
+Tab key lands)". In-place definitions make every skill complete without other files. The knowledge MCP server and the skill packages
+serve skills, and neither one serves this file.
 
 This file is what keeps those in-place definitions the same everywhere. When a skill defines a term
 listed here, `npm run skills:glossary:check` requires the words in the brackets to match the

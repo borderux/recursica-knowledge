@@ -38,7 +38,7 @@ A loader shows that work is still in progress. A loader cannot show how much of 
 
 ## Variants
 
-**Use only the loader variants and options that the Recursica MCP server lists for the theme.** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant, an option, a type, or a state.
+**Use only the loader variants and options that the knowledge MCP server lists for the theme.** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `component_api` tool, and use the names the code uses. Never invent a variant, an option, a type, or a state.
 
 Each option below is described by role, such as "the largest size". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
@@ -53,7 +53,7 @@ Each option below is described by role, such as "the largest size". The names in
 
   - Use Oval, the default type in both adapters, unless a reason calls for a different type.
   - Do not use the type to signal any meaning.
-  - Get the name of the type setting in code from the Recursica MCP server.
+  - Get the name of the type setting in code from the knowledge MCP server.
 
   Each adapter has a type setting for the three types. Each adapter styles each type, not the UI kit, so a type may look different in each adapter.
 

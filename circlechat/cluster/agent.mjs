@@ -43,11 +43,6 @@ export function makeAgent({ env, platform, guard, post, now = () => Date.now(), 
       case "agents-stop": return controls ? controls.stop(ref, extra.by ?? "an approver") : { ok: false, message: "no agent controls on this computer" };
       case "agents-resume": return controls ? controls.resume(ref, extra.by ?? "an approver") : { ok: false, message: "no agent controls on this computer" };
       case "upgrade-now": {
-        const mcp = String(ref ?? "").match(/^@recursica\/mcp@(\d+\.\d+\.\d+)$/);
-        if (mcp) {
-          fs.writeFileSync(path.join(env.OWNER_HOME, "circlechat-workspace/.recursica-mcp-version"), `${mcp[1]}\n`);
-          return { ok: true, message: `@recursica/mcp ${mcp[1]} takes effect at each agent's next turn` };
-        }
         if (!/^@recursica\/knowledge@\d+\.\d+\.\d+$/.test(ref ?? "")) return { ok: false, message: "not a release tag" };
         const ccDir = path.join(env.OWNER_HOME, "circlechat");
         spawn("sudo", ["-u", env.OWNER, "-H", "env", `CC_DIR=${ccDir}`, `WS=${path.join(env.OWNER_HOME, "circlechat-workspace")}`, `SITE=${path.join(ccDir, "site.json")}`, `COMPUTER=${env.COMPUTER}`,

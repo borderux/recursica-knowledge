@@ -101,9 +101,10 @@ mismatch before building on the setting, not after.
 **Use the names the code uses, not the names in the skills.** The skills use the names in Figma
 and the UI kit, such as `layouts` and `side-by-side`. The code can use a different name for the
 same option. A wrong name in code has no effect and shows no error. Before setting any option in
-code, look up the name the code uses with the Recursica MCP server's
-`recursica_get_component_doc` tool. If the Recursica MCP server is not available, read the
-component's API in the installed adapter. Never guess a name.
+code, look up the name the code uses with the knowledge MCP server's `component_api` tool. Give
+the tool the component and the target project's folder. The tool reads the adapter that project
+installs. If the knowledge MCP server is not available, read the component's API in the installed
+adapter. Never guess a name.
 
 ## Stage 1 — People, then the product
 

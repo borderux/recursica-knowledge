@@ -52,9 +52,9 @@ Never use a calendar for a complex or partial date.
 
 ## Variants
 
-**Use only the date picker variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Never invent a variant or an option.
+**Use only the date picker variants and options that the knowledge MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Never invent a variant or an option.
 
-**Get the list with the server's `recursica_get_component_doc` tool.** Use the names the code uses. A wrong name in code has no effect and shows no error.
+**Get the list with the server's `component_api` tool.** Use the names the code uses. A wrong name in code has no effect and shows no error.
 
 Each option below is described by role, such as "the error state". The names in Figma and in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
@@ -191,7 +191,7 @@ The application builds the calendar trigger (the control that opens the calendar
 - [ ] The calendar trigger has an accessible name, is a separate tab stop, and works with Enter or Space. Decorative icons are hidden from screen readers.
 - [ ] The calendar popover opens from the keyboard, and the arrow keys move between dates. Escape closes the calendar popover and returns focus to the field.
 - [ ] Focus never jumps ahead automatically between the parts of a date, and is never moved for the persona.
-- [ ] Every variant and state is one the Recursica MCP server lists for the theme. No size variant, range variant, or inline calendar is added unless the Recursica MCP server lists one for the theme.
+- [ ] Every variant and state is one the knowledge MCP server lists for the theme. No size variant, range variant, or inline calendar is added unless the knowledge MCP server lists one for the theme.
 - [ ] No styling is set or overridden on the date picker. No container or spacer is added to change the date picker's look.
 - [ ] Every field without focus looks editable, not disabled.
 - [ ] Dates that are not editable where the dates are shown use the read-only field, not a disabled date picker.

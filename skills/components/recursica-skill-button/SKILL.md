@@ -36,7 +36,7 @@ Using a button to go to a different page is the most common misuse of buttons.
 
 ## Variants
 
-**Use only the button variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** Get the list with the server's `recursica_get_component_doc` tool. Use the names the code uses. Never invent a variant or an option. Each theme can differ, because a designer can add variants and options in Theme Forge.
+**Use only the button variants and options that the knowledge MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** Get the list with the server's `component_api` tool. Use the names the code uses. Never invent a variant or an option. Each theme can differ, because a designer can add variants and options in Theme Forge.
 
 The rules below describe each option by role, such as "the primary style". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
@@ -137,7 +137,7 @@ The button component shows the focus ring. The button component also responds to
 - **Full-width buttons.** When the theme has no full-width option, no rule says whether a full-width button is ever allowed, or where.
 - **The icon for a loading button.** A loading button uses the theme's loading state, or the disabled look with an animated icon. That part is settled. Which icon to use is not settled. Whether the UI kit or the adapter (the Recursica component library for one framework, such as Mantine or Angular Material) defines the animation is also unknown.
 - **Split buttons and button groups.** Use a split button or a button group only when the theme has that component. Never build either one from separate buttons.
-- **Setting the disabled state.** Nobody has confirmed that each adapter offers the disabled state as a setting. Check the button's settings with the Recursica MCP server, or confirm with the user, before relying on the disabled state.
+- **Setting the disabled state.** Nobody has confirmed that each adapter offers the disabled state as a setting. Check the button's settings with the knowledge MCP server, or confirm with the user, before relying on the disabled state.
 
 ## Pre-flight checklist
 

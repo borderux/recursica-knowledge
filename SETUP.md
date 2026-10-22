@@ -26,6 +26,16 @@ Once the marketplace is registered, discover and install the `recursica-knowledg
 
 Claude Code will automatically load the skills and apply them dynamically on-demand.
 
+### 3. Register the knowledge MCP server
+
+The plugin holds the skills only. The Recursica knowledge MCP server serves the skills as whole families, and gives the adapter's name for each design-system name the skills use. It runs from a checkout of this repository. Clone the repository next to your projects, and in the clone run:
+
+```bash
+npm run mcp:install
+```
+
+That registers the server for every project. Run it again after moving the clone. The old `@recursica/mcp` server is retired; the command removes it if it is registered.
+
 ---
 
 ## 📦 Option 2: Install via NPM (Workspace Package)

@@ -32,7 +32,7 @@ A link takes the persona to a different location, such as another page. A link n
 
 ## Variants
 
-**Use only the link variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
+**Use only the link variants and options that the knowledge MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `component_api` tool, and use the names the code uses. Never invent a variant or an option.
 
 The rules below describe each option by role. The names in the standard UI kit are examples only.
 
@@ -117,7 +117,7 @@ Every Recursica link already shows the underline, the color, and the focus ring.
 - [ ] No link is disabled. Each link to an unavailable destination is left out, or text on the page explains why the destination is unavailable.
 - [ ] No link appears only on hover, and the focus ring shows on every focused link.
 - [ ] After navigation, focus lands at the start of the new content.
-- [ ] Every variant and state is one the Recursica MCP server lists for the theme, under the name the code uses.
+- [ ] Every variant and state is one the knowledge MCP server lists for the theme, under the name the code uses.
 - [ ] No variant or option is invented.
 - [ ] No styling is set or overridden on the link.
 - [ ] No container or spacer is added to change the link's look.

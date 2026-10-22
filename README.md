@@ -22,7 +22,9 @@ Betty (builds screens), Barb (reviews them, with her helpers Checker and Feisty)
    npm run agents:install
    ```
 
-   You should see seven ✓ lines. If one says "a copy this script did not write", delete that file and run it again.
+   You should see seven ✓ lines for the agents and one for the Recursica knowledge MCP server. If one says "a copy this script did not write", delete that file and run it again.
+
+   The installer also registers the Recursica knowledge MCP server in Claude Code for every project. The server runs from this folder and serves the skills in it. Betty and Barb use it to look up the adapter's name for each design-system name, and Betty uses it to load skills. Add `--no-mcp` to skip it. It also removes the retired `@recursica/mcp` server if it finds one.
 
 **Whenever the agents change**
 
@@ -31,7 +33,19 @@ git pull
 npm run agents:install
 ```
 
-`npm run agents:install:check` reports what is out of date without changing anything, and lists any project copies that are overriding the shared ones. Keep this checkout on `main` — Barb follows whatever branch it is on.
+`npm run agents:install:check` reports what is out of date without changing anything, including the knowledge MCP server, and lists any project copies that are overriding the shared ones. Keep this checkout on `main` — Barb follows whatever branch it is on.
+
+**Only the knowledge MCP server**
+
+The server does not need the agents. To register only the server, run one of these in this folder:
+
+```bash
+npm run mcp:install                           # every project on this machine
+npm run mcp:install -- --project ../my-app    # one project, for you only
+npm run mcp:install:check                     # report, change nothing
+```
+
+The server runs from this folder, so it stays current as long as this checkout does.
 
 Claire, Stu, Janice and Loki are not installed this way: they work with client data, and the protection around it cannot travel in a copied file. Agents running elsewhere update elsewhere — Buzz Desktop with `node buzz-agents/scripts/sync-prompts.mjs`, a CircleChat host with `circlechat/sync-skills.sh`, and instructions pasted into a Claude app Project by hand.
 
@@ -39,7 +53,7 @@ Claire, Stu, Janice and Loki are not installed this way: they work with client d
 
 ## ⚡ Using Recursica in Grok Build
 
-[Grok Build](https://x.ai/news/grok-build-cli), xAI's coding agent, installs Recursica as one marketplace plugin. The plugin holds all 66 skills, Betty and Barb with Barb's helpers Checker and Feisty, and two MCP servers: the Recursica knowledge server and `@recursica/mcp`. You need Grok Build and Node 20 or newer.
+[Grok Build](https://x.ai/news/grok-build-cli), xAI's coding agent, installs Recursica as one marketplace plugin. The plugin holds all 66 skills, Betty and Barb with Barb's helpers Checker and Feisty, and the Recursica knowledge MCP server. You need Grok Build and Node 20 or newer.
 
 1. Add this repository as a marketplace. Nothing installs yet:
 

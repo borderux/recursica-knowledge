@@ -36,9 +36,9 @@ A number input records a quantity that the persona types.
 
 ## Variants
 
-**Use only the number input variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Never invent a variant or an option.
+**Use only the number input variants and options that the knowledge MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Never invent a variant or an option.
 
-**Look up the name the code uses for each variant before using the variant.** Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. The name in code can differ from the name in Figma and the UI kit. A wrong name in code has no effect and shows no error.
+**Look up the name the code uses for each variant before using the variant.** Get the list with the server's `component_api` tool, and use the names the code uses. The name in code can differ from the name in Figma and the UI kit. A wrong name in code has no effect and shows no error.
 
 Each option below is described by role, such as "the error state". A name from the standard UI kit (the unchanged UI kit in the official Recursica release) is only an example.
 
@@ -175,7 +175,7 @@ The number input component connects the label to the input and shows the focus r
 - [ ] The value is a quantity, not an identifier, a length of time, or a position on a range.
 - [ ] The field has a visible label. The label names the object, and names the unit when the object does not make the unit obvious.
 - [ ] Label placement is side by side, unless the container is too narrow.
-- [ ] Label placement is set explicitly on every field, to side by side unless the form's container is too narrow. The setting uses the names the code uses, looked up with `recursica_get_component_doc`. A field with no setting gets the label above the field (`stacked`), not the house rule.
+- [ ] Label placement is set explicitly on every field, to side by side unless the form's container is too narrow. The setting uses the names the code uses, looked up with `component_api`. A field with no setting gets the label above the field (`stacked`), not the house rule.
 - [ ] Label placement matches every other field in the same form. Each form has one placement at each breakpoint, with no mixing between fields or form sections.
 - [ ] The value is right-aligned, and the alignment matches the read-only values on the same screen.
 - [ ] Precision is fixed, and the same across every value shown together. Currency has two decimal places.
@@ -188,7 +188,7 @@ The number input component connects the label to the input and shows the focus r
 - [ ] Every icon inside the field that the persona can use has an accessible name. Every decorative icon is hidden from screen readers.
 - [ ] Typing alone can enter any valid value. Any adjustment control is only a shortcut, and is a separate tab stop.
 - [ ] The arrow keys and the scroll wheel do not change the value unexpectedly.
-- [ ] Every variant, size, and state is one the Recursica MCP server lists for the theme. No variant or option is invented. No stepper is built unless the Recursica MCP server lists a stepper for the theme.
+- [ ] Every variant, size, and state is one the knowledge MCP server lists for the theme. No variant or option is invented. No stepper is built unless the knowledge MCP server lists a stepper for the theme.
 - [ ] No styling is set or overridden on the number input. No container or spacer is added to change the number input's look.
 - [ ] A number input without focus looks editable.
 - [ ] Numbers that are not editable here use the read-only field, not a disabled number input.

@@ -379,7 +379,18 @@ has this — run it after pulling a change to an agent:
 ```bash
 npm run agents:install         # Betty, Barb, her checkers, Alan, and Edie with her comparer into ~/.claude/agents
 npm run agents:install:check   # report what is out of date; change nothing
+npm run mcp:install            # the knowledge MCP server alone, for anyone not installing the agents
 ```
+
+`agents:install` also registers the knowledge MCP server, `nest/mcp/knowledge/server.mjs`, because
+Betty and Barb look up adapter names with its `component_api` tool and nothing registered it on
+Claude Code. A clean machine ran both agents without it and no step said so. The server runs from
+this checkout, so like a linked agent it is current whenever the checkout is.
+
+**The `@recursica/mcp` package is retired.** It kept its own copy of the knowledge, which drifted
+from the skills, and it recognized only the Mantine and MUI adapters. The installer removes it,
+`--check` fails while it is registered, and `scripts/install-mcp.test.mjs` fails if anything in
+this repository starts it again.
 
 An agent with no `{{TOKEN}}` is linked, so it is current whenever this checkout is. Betty and
 Alan carry tokens, so they get a filled-in copy — the values come from where this checkout
