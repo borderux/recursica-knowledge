@@ -146,9 +146,11 @@ function arg(args, name) {
   return i === -1 ? null : args[i + 1];
 }
 
+// Compared through realpath, so a run through a symlinked checkout is not silently a no-op.
 const invokedDirectly =
   process.argv[1] &&
-  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+  fs.realpathSync(process.argv[1]) ===
+    fs.realpathSync(fileURLToPath(import.meta.url));
 if (invokedDirectly) {
   const args = process.argv.slice(2);
   const check = args.includes("--check");

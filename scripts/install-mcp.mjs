@@ -17,8 +17,10 @@
  * as an argument, so the folder Claude Code starts in does not matter.
  *
  * The old server, the `@recursica/mcp` package registered as `recursica-mcp`, kept its own copy
- * of the knowledge and recognized only two adapters. An install removes it wherever it is
- * registered, and `--check` fails while it is.
+ * of the knowledge and recognized only two adapters. An install removes it for every project and
+ * for each folder Claude Code knows, since `claude mcp add` registers for one folder by default.
+ * One in a project's committed .mcp.json is reported for the team to remove, never edited.
+ * `--check` fails while any of these remain.
  *
  * Registration goes through the `claude mcp` command, never by editing Claude Code's own config
  * files. Reading those files is how `--check` sees what is registered without starting anything.
@@ -48,7 +50,9 @@ export const SERVER_FILE = path.join(
   "knowledge",
   "server.mjs",
 );
-const SERVER_TAIL = path.join("nest", "mcp", "knowledge", "server.mjs");
+const SERVER_TAIL = "nest/mcp/knowledge/server.mjs";
+/** Forward slashes, so a path written on Windows or by hand compares with one built here. */
+const slash = (p) => p.replace(/\\/g, "/");
 
 /** The retired server: its registered name, and the package it ran. */
 export const RETIRED = { name: "recursica-mcp", package: "@recursica/mcp" };
@@ -89,13 +93,17 @@ export function registrations({ claudeJson, mcpJson, dir, name = SERVER }) {
  */
 export function verdict(entry, file = SERVER_FILE) {
   const args = entry?.args ?? [];
-  const server = args.find((a) => a.endsWith(SERVER_TAIL));
+  const server = args.find(
+    (a) => typeof a === "string" && slash(a).endsWith(SERVER_TAIL),
+  );
   if (!server)
     return {
       state: "foreign",
       why: `runs \`${[entry?.command, ...args].filter(Boolean).join(" ")}\`, not the knowledge server`,
     };
-  if (path.resolve(server) === file) return { state: "current" };
+  // Absolute in either style is compared as written; a relative path is resolved first.
+  const abs = /^([a-zA-Z]:)?[\\/]/.test(server) ? server : path.resolve(server);
+  if (slash(abs) === slash(file)) return { state: "current" };
   return { state: "stale", why: `runs the server from ${server}` };
 }
 
@@ -148,6 +156,32 @@ const WHERE = {
   project: (dir) => `${dir}, for everyone who clones it`,
 };
 
+/** Every registration of the retired server that runs the retired package, at any scope. */
+export function retiredRegistrations({ claudeJson, mcpJson, dir }) {
+  const found = [];
+  const add = (scope, entry, project = null) => {
+    if (entry && isRetired(entry)) found.push({ scope, project });
+  };
+  // Local scope is per folder, and `claude mcp add` registers there by default, so every folder
+  // Claude Code knows about is searched, not only the one this run was given.
+  for (const [project, v] of Object.entries(claudeJson?.projects ?? {}))
+    add("local", v?.mcpServers?.[RETIRED.name], project);
+  add("project", mcpJson?.mcpServers?.[RETIRED.name], dir);
+  add("user", claudeJson?.mcpServers?.[RETIRED.name]);
+  return found;
+}
+
+/** Local-scope registrations of the server, in any folder, that do not run this checkout's. */
+export function staleLocal({ claudeJson, file = SERVER_FILE, except = null }) {
+  return Object.entries(claudeJson?.projects ?? {})
+    .filter(([project, v]) => project !== except && v?.mcpServers?.[SERVER])
+    .map(([project, v]) => ({
+      project,
+      v: verdict(v.mcpServers[SERVER], file),
+    }))
+    .filter(({ v }) => v.state !== "current");
+}
+
 /**
  * Register or check the server, retire the old one, print one line per finding, and return the
  * number of problems. `run`, `home` and `file` are parameters so the tests never touch the real
@@ -160,7 +194,13 @@ export function ensure({
   home = os.homedir(),
   file = SERVER_FILE,
   run = (args, cwd) =>
-    spawnSync("claude", args, { cwd, encoding: "utf8", stdio: "pipe" }),
+    spawnSync("claude", args, {
+      cwd,
+      encoding: "utf8",
+      stdio: "pipe",
+      // On Windows the npm-installed `claude` is a .cmd file, which only a shell can start.
+      shell: process.platform === "win32",
+    }),
   log = console.log,
 } = {}) {
   const claudeJson = readJson(path.join(home, ".claude.json"));
@@ -170,26 +210,22 @@ export function ensure({
   // registration Claude Code uses, at whatever scope that is. An install acts at the scope asked.
   if (check && regs.length) scope = regs[0].scope;
   const p = plan(scope, regs, file);
-  const retired = registrations({
-    claudeJson,
-    mcpJson,
-    dir,
-    name: RETIRED.name,
-  }).filter((r) => isRetired(r.entry));
-  const cwd = dir ?? home;
+  const rerun = dir
+    ? `npm run mcp:install -- --project ${dir}`
+    : "npm run mcp:install";
   let problems = 0;
 
-  const call = (args) => {
+  const call = (args, cwd = dir ?? home) => {
     const r = run(args, cwd);
     if (r.error?.code === "ENOENT") {
       log(
-        `  ✗ ${SERVER}: the claude command is not on PATH. Register the server by hand:\n      claude ${addArgs(scope, file).join(" ")}`,
+        `  ✗ the claude command is not on PATH. Run this by hand${cwd === home ? "" : ` in ${cwd}`}:\n      claude ${args.join(" ")}`,
       );
       return false;
     }
     if (r.status !== 0) {
       log(
-        `  ✗ ${SERVER}: \`claude ${args.join(" ")}\` failed: ${(r.stderr || r.stdout || "").trim()}`,
+        `  ✗ \`claude ${args.join(" ")}\` failed${cwd === home ? "" : ` in ${cwd}`}: ${(r.stderr || r.stdout || "").trim()}`,
       );
       return false;
     }
@@ -205,7 +241,7 @@ export function ensure({
     problems++;
   } else if (check) {
     log(
-      `  ✗ ${SERVER}: ${p.state}${p.why ? ` — ${p.why}` : ""} (${WHERE[scope](dir)}). Run npm run mcp:install.`,
+      `  ✗ ${SERVER}: ${p.state}${p.why ? ` — ${p.why}` : ""} (${WHERE[scope](dir)}). Run ${rerun}.`,
     );
     problems++;
   } else {
@@ -216,42 +252,81 @@ export function ensure({
   }
   if (p.shadow) log(`  ! ${SERVER}: ${p.shadow}.`);
 
-  for (const r of retired) {
-    if (check) {
+  // A registration for one folder wins over the one for every project, so a stale one hides
+  // this checkout's server in that folder. Reported, not changed: the folder's owner chose it.
+  if (!dir)
+    for (const { project, v } of staleLocal({ claudeJson, file }))
       log(
-        `  ✗ ${RETIRED.name}: the retired ${RETIRED.package} server is still registered at ${r.scope} scope. Run npm run mcp:install to remove it.`,
+        `  ! ${SERVER}: ${project} has its own registration, which ${v.why}, and wins in that folder. Run npm run mcp:install -- --project ${project} to replace it.`,
+      );
+
+  for (const r of retiredRegistrations({ claudeJson, mcpJson, dir })) {
+    const where = r.scope === "local" ? ` for ${r.project}` : "";
+    if (r.scope === "project") {
+      // A project-scope registration lives in the project's committed .mcp.json. Editing a
+      // team's committed file is the team's change to make, so it is reported, never edited.
+      log(
+        `  ✗ ${RETIRED.name}: the retired ${RETIRED.package} server is in ${path.join(r.project, ".mcp.json")}. Remove the "${RETIRED.name}" entry there and commit the change.`,
       );
       problems++;
       continue;
     }
-    if (!call(["mcp", "remove", "--scope", r.scope, RETIRED.name]))
+    if (r.scope === "local" && !fs.existsSync(r.project)) {
+      log(
+        `  ! ${RETIRED.name}: the retired ${RETIRED.package} server is registered${where}, a folder that no longer exists. Claude Code never starts it there.`,
+      );
+      continue;
+    }
+    if (check) {
+      log(
+        `  ✗ ${RETIRED.name}: the retired ${RETIRED.package} server is still registered at ${r.scope} scope${where}. Run npm run mcp:install to remove it.`,
+      );
+      problems++;
+      continue;
+    }
+    const cwd = r.scope === "local" ? r.project : home;
+    if (!call(["mcp", "remove", "--scope", r.scope, RETIRED.name], cwd))
       return problems + 1;
     log(
-      `  ✓ ${RETIRED.name}: removed the retired ${RETIRED.package} server (${r.scope} scope)`,
+      `  ✓ ${RETIRED.name}: removed the retired ${RETIRED.package} server (${r.scope} scope${where})`,
     );
   }
   return problems;
 }
 
-function arg(args, name) {
+/** `--name value` or `--name=value`; `undefined` when the flag is absent, `""` when it has no value. */
+export function arg(args, name) {
+  const eq = args.find((a) => a.startsWith(`${name}=`));
+  if (eq) return eq.slice(name.length + 1);
   const i = args.indexOf(name);
-  return i === -1 ? null : args[i + 1];
+  if (i === -1) return undefined;
+  const v = args[i + 1];
+  return v && !v.startsWith("--") ? v : "";
 }
 
+// Compared through realpath, so a run through a symlinked checkout is not silently a no-op.
 const invokedDirectly =
   process.argv[1] &&
-  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+  fs.realpathSync(process.argv[1]) ===
+    fs.realpathSync(fileURLToPath(import.meta.url));
 if (invokedDirectly) {
   const args = process.argv.slice(2);
   const project = arg(args, "--project");
+  if (project === "") {
+    console.log("--project needs a folder: --project <dir>.");
+    process.exit(1);
+  }
   // npm runs a script from the package root; INIT_CWD is where the person typed the command.
-  const dir = project
+  let dir = project
     ? path.resolve(process.env.INIT_CWD ?? process.cwd(), project)
     : null;
   if (dir && !fs.existsSync(dir)) {
     console.log(`No folder at ${dir}.`);
     process.exit(1);
   }
+  // Claude Code keys a folder's registrations by the folder's real path, so a path through a
+  // symlink would never match the registration it just wrote.
+  if (dir) dir = fs.realpathSync(dir);
   console.log(`The Recursica knowledge MCP server in Claude Code`);
   console.log(`  from ${SERVER_FILE}\n`);
   const problems = ensure({

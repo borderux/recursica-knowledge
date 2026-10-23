@@ -161,6 +161,18 @@ A round of feedback on generated screens, treated as rules rather than fixes for
 
 **Recorded as rules elsewhere:** switch is form-only with segmented controls for every toggle outside a form; bulk actions revealed on selection when there is one and persistent-but-disabled when there are several, with a prior question about whether bulk belongs at all; action labels naming what actually happens; a sorted column always indicated even when sort is fixed; no tables inside panels; secondary panel content in a second tab; nothing completed rendered as pending; conditional requirements stating their condition; every label a noun with no filler and no gloss beside it.
 
+## Found while retiring `@recursica/mcp`
+
+**Where an agent gets the theme's list of variants.** About 40 component skills say to use only
+the variants and options the knowledge MCP server lists for the theme. The server's
+`component_api` tool reads the adapter the project installs, and the adapter's prop types are
+fixed by the package version. A designer's changes in Theme Forge reach the project's
+`recursica_ui-kit.json`, under `ui-kit.components.<component>.variants`, and no tool reads that
+file. The retired `@recursica/mcp` had the same gap, so the skills' wording changed no meaning.
+
+Should `component_api` also return the component's entry from the project's
+`recursica_ui-kit.json`, or should the skills say where the theme's list comes from?
+
 ## Now resolved
 
 These were open when this file was first written. Each was settled by reading the design rules rather than by adding new opinion, and the corresponding `## Open questions` entries have been removed from the component skills.

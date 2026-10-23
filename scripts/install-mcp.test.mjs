@@ -3,10 +3,11 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import {
   RETIRED,
+  arg,
   SERVER,
   SERVER_FILE,
   ensure,
@@ -212,4 +213,134 @@ test("nothing in the repository starts the retired @recursica/mcp package", () =
       starts.push(f);
   }
   assert.deepEqual(starts, []);
+});
+
+test("a retired server registered for one folder is removed from that folder, from a plain install", () => {
+  const project = tmp();
+  const h = home({
+    mcpServers: { [SERVER]: here },
+    projects: { [project]: { mcpServers: { [RETIRED.name]: old } } },
+  });
+  assert.equal(
+    ensure({
+      check: true,
+      home: h,
+      run: () => assert.fail("a check runs nothing"),
+      log: () => {},
+    }),
+    1,
+  );
+  const calls = [];
+  const run = (args, cwd) => (calls.push({ args, cwd }), { status: 0 });
+  assert.equal(ensure({ home: h, run, log: () => {} }), 0);
+  assert.deepEqual(calls, [
+    { args: ["mcp", "remove", "--scope", "local", RETIRED.name], cwd: project },
+  ]);
+});
+
+test("a retired server registered for a folder that is gone is reported, not counted", () => {
+  const h = home({
+    mcpServers: { [SERVER]: here },
+    projects: { "/no/such/folder": { mcpServers: { [RETIRED.name]: old } } },
+  });
+  const lines = [];
+  const run = () => assert.fail("nothing to run");
+  assert.equal(ensure({ home: h, run, log: (l) => lines.push(l) }), 0);
+  assert.match(lines.join("\n"), /no longer exists/);
+});
+
+test("a retired server in a project's committed .mcp.json is reported, never edited", () => {
+  const dir = tmp();
+  fs.writeFileSync(
+    path.join(dir, ".mcp.json"),
+    JSON.stringify({ mcpServers: { [RETIRED.name]: old } }),
+  );
+  const h = home({ projects: { [dir]: { mcpServers: { [SERVER]: here } } } });
+  const lines = [];
+  const run = () => assert.fail("a committed file is not edited");
+  assert.equal(
+    ensure({ scope: "local", dir, home: h, run, log: (l) => lines.push(l) }),
+    1,
+  );
+  assert.match(lines.join("\n"), /commit the change/);
+});
+
+test("a folder's own stale registration is reported by a plain install", () => {
+  const h = home({
+    mcpServers: { [SERVER]: here },
+    projects: { "/w/app": { mcpServers: { [SERVER]: elsewhere } } },
+  });
+  const lines = [];
+  const run = () => assert.fail("nothing to run");
+  assert.equal(ensure({ home: h, run, log: (l) => lines.push(l) }), 0);
+  assert.match(
+    lines.join("\n"),
+    /\/w\/app has its own registration.*--project \/w\/app/,
+  );
+});
+
+test("a check with --project points back at --project", () => {
+  const dir = tmp();
+  const lines = [];
+  ensure({
+    scope: "local",
+    dir,
+    check: true,
+    home: tmp(),
+    log: (l) => lines.push(l),
+  });
+  assert.match(
+    lines.join("\n"),
+    new RegExp(
+      `mcp:install -- --project ${dir.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&")}`,
+    ),
+  );
+});
+
+test("a path written with backslashes still counts as this checkout's server", () => {
+  const win = { command: "node", args: [SERVER_FILE.replace(/\//g, "\\")] };
+  assert.equal(verdict(win, SERVER_FILE.replace(/\//g, "\\")).state, "current");
+});
+
+test("--project takes a value either way, and an empty one is caught", () => {
+  assert.equal(arg(["--project", "../app"], "--project"), "../app");
+  assert.equal(arg(["--project=../app"], "--project"), "../app");
+  assert.equal(arg(["--project"], "--project"), "");
+  assert.equal(arg(["--project", "--check"], "--project"), "");
+  assert.equal(arg(["--check"], "--project"), undefined);
+});
+
+test("--project through a symlink matches the registration under the real path", () => {
+  const real = fs.realpathSync(tmp());
+  const link = path.join(tmp(), "link");
+  fs.symlinkSync(real, link);
+  const h = home({ projects: { [real]: { mcpServers: { [SERVER]: here } } } });
+  const r = spawnSync(
+    process.execPath,
+    [
+      path.join(ROOT, "scripts", "install-mcp.mjs"),
+      "--check",
+      "--project",
+      link,
+    ],
+    {
+      encoding: "utf8",
+      env: { ...process.env, HOME: h, USERPROFILE: h, INIT_CWD: ROOT },
+    },
+  );
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /current/);
+});
+
+test("without the claude command, the failing command itself is printed", () => {
+  const lines = [];
+  ensure({
+    home: home({ mcpServers: { [SERVER]: elsewhere } }),
+    run: () => ({ error: { code: "ENOENT" } }),
+    log: (l) => lines.push(l),
+  });
+  assert.match(
+    lines.join("\n"),
+    /claude mcp remove --scope user recursica-knowledge/,
+  );
 });
