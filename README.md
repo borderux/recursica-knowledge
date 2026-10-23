@@ -61,7 +61,7 @@ Claire, Stu, Janice and Loki are not installed this way: they work with client d
    grok plugin marketplace add borderux/recursica-knowledge
    ```
 
-2. Install the plugin. `--trust` lets the plugin start its MCP servers:
+2. Install the plugin. `--trust` lets the plugin start its MCP server:
 
    ```bash
    grok plugin install recursica --trust
@@ -74,7 +74,7 @@ Claire, Stu, Janice and Loki are not installed this way: they work with client d
    max_depth = 2
    ```
 
-4. Start a new Grok session. Run `grok inspect` to see the skills, the agents and the MCP servers the plugin added.
+4. Start a new Grok session. Run `grok inspect` to see the skills, the agents and the MCP server the plugin added.
 
 In Grok the agents carry the plugin's name, so Betty is `recursica:betty` and Barb is `recursica:barb`. Update the plugin with `grok plugin update recursica`. Alan and Edie maintain this repository and run in Claude Code only. Claire, Stu, Janice and Loki work with client data and are never in the plugin.
 

@@ -1,6 +1,6 @@
 {
   "name": "recursica",
-  "description": "The Recursica design system's skills, agents and MCP servers for Grok Build.",
+  "description": "The Recursica design system's skills, agents and knowledge MCP server for Grok Build.",
   "owner": {
     "name": "Border UX",
     "email": "hi@borderux.com",
@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "recursica",
-      "description": "66 Recursica skills, Betty the designer, Barb the design reviewer, and the Recursica knowledge and component MCP servers.",
+      "description": "66 Recursica skills, Betty the designer, Barb the design reviewer, and the Recursica knowledge MCP server.",
       "category": "design",
       "homepage": "https://github.com/borderux/recursica-knowledge",
       "tags": ["design-system", "ui", "design-review"],
