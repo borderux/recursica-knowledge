@@ -34,7 +34,7 @@ A panel shows extra content beside the page. The persona can still use the page 
 
 ## Variants
 
-**Use only the panel variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
+**Use only the panel variants and options that the knowledge MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `component_api` tool, and use the names the code uses. Never invent a variant or an option.
 
 The rules below describe each part and option by role. The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
@@ -115,7 +115,7 @@ See `recursica-skill-forms`.
 
 The house rule is that a panel leaves the page usable, and a modal panel does the opposite. A panel built on such a drawer with only the adapter's documented settings blocks the page. Nobody notices the blocked page.
 
-Look up the name the code uses for each of the four settings with the Recursica MCP server's `recursica_get_component_doc` tool. A build test on one adapter confirmed that all four settings are needed. The modal default is a tracked defect in the adapter. Before assuming the four settings are still needed, check the adapter's current default. When the adapter's default is fixed, delete the four settings.
+Look up the name the code uses for each of the four settings with the knowledge MCP server's `component_api` tool. A build test on one adapter confirmed that all four settings are needed. The modal default is a tracked defect in the adapter. Before assuming the four settings are still needed, check the adapter's current default. When the adapter's default is fixed, delete the four settings.
 
 **A code library's default is not a house rule.** A drawer that blocks the page by default says nothing about what a Recursica panel should do. Never treat the drawer's modal default as a house rule. See `recursica-skill-design-router`.
 
@@ -203,7 +203,7 @@ The rules below add to the accessibility baseline in `recursica-skill-design-sys
 
 - [ ] The page underneath the panel is needed while the panel is open. No critical content is hidden in the panel.
 - [ ] Every task that must be finished or given up first is in a modal. Brief feedback is in a toast.
-- [ ] Every variant and option on the panel is one the Recursica MCP server lists for the theme. No side, width, size, or type variant is set unless the theme has that variant. No variant or option is invented.
+- [ ] Every variant and option on the panel is one the knowledge MCP server lists for the theme. No side, width, size, or type variant is set unless the theme has that variant. No variant or option is invented.
 - [ ] A button opens the panel, with no browser history entry. The panel has an address whenever possible.
 - [ ] The header names the panel's purpose and is connected as the panel's accessible name.
 - [ ] No card wraps the panel content, and no form, form section, or form control sits inside a card.

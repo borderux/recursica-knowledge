@@ -32,9 +32,9 @@ A breadcrumb shows where the current page sits in the page hierarchy. A breadcru
 
 ## Variants
 
-**Use only the breadcrumb variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
+**Use only the breadcrumb variants and options that the knowledge MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `component_api` tool, and use the names the code uses. Never invent a variant or an option.
 
-Do not set a variant, state or content option that the MCP server does not list for the theme.
+Do not set a variant, state or content option that the knowledge MCP server does not list for the theme.
 
 - **The separator.** A separator is the mark between two items, such as a slash, a chevron or a dot. If the theme has a separator, use the theme's separator. Do not invent a separator. Which separator to use is an open question.
 - **Long trails.** A long trail never scrolls horizontally. `recursica-skill-navigation` forbids horizontal scrolling outright. No rule says yet how a long trail collapses, is cut off or overflows. The answer to that open question can never be horizontal scrolling.
@@ -147,7 +147,7 @@ The breadcrumb's styling includes the separator's look, wherever the separator c
 - [ ] Every breadcrumb link is a tab stop, in visual order, and the current page cannot receive focus.
 - [ ] No part of the trail depends on hover, and the modifier keys are not intercepted.
 - [ ] The trail does not scroll horizontally, wrap into a strip, or shrink to fit.
-- [ ] Every variant, state and content option is one the Recursica MCP server lists for the theme, under the code's name.
+- [ ] Every variant, state and content option is one the knowledge MCP server lists for the theme, under the code's name.
 - [ ] No separator token is invented.
 - [ ] No styling is set or overridden on the breadcrumb.
 - [ ] No container or spacer is added to change the breadcrumb's look.

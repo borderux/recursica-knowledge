@@ -315,7 +315,7 @@ test("Barb and her checkers hold no write tool on Grok", () => {
   }
 });
 
-test("the Grok plugin manifest points at every skill folder, the agents and both MCP servers", () => {
+test("the Grok plugin manifest points at every skill folder, the agents and the knowledge MCP server", () => {
   const manifest = JSON.parse(
     fs.readFileSync(path.join(repoRoot, ".grok-plugin", "plugin.json"), "utf8"),
   );
@@ -339,9 +339,10 @@ test("the Grok plugin manifest points at every skill folder, the agents and both
     fs.existsSync(server),
     `the knowledge server ${knowledge.args[0]} does not exist`,
   );
-  assert.ok(
-    manifest.mcpServers["recursica-mcp"],
-    "recursica-mcp is missing; Barb's and Betty's tool lists name it",
+  assert.deepEqual(
+    Object.keys(manifest.mcpServers),
+    ["recursica-knowledge"],
+    "the plugin starts the knowledge server and nothing else; Barb's and Betty's tool lists name only it",
   );
 });
 

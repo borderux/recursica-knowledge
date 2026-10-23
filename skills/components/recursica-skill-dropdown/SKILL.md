@@ -36,7 +36,7 @@ A dropdown is a form field that hides a list of options until the persona opens 
 
 ## Variants
 
-**Use only the dropdown variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. The code can use a different name from the name in Figma and the UI kit. A wrong name in code has no effect and shows no error. Never invent a variant or an option.
+**Use only the dropdown variants and options that the knowledge MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `component_api` tool, and use the names the code uses. The code can use a different name from the name in Figma and the UI kit. A wrong name in code has no effect and shows no error. Never invent a variant or an option.
 
 The rules below describe each option by role, such as "the error state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
@@ -203,7 +203,7 @@ Do not set or override the parts the dropdown component provides:
 - [ ] Where no default exists, the dropdown shows placeholder text, and the placeholder holds no required information.
 - [ ] The dropdown has a real label that makes sense without the text around the dropdown. The placeholder is not used as the label.
 - [ ] Label placement is side by side, unless the form's container is too narrow.
-- [ ] Label placement matches every other field in the same form. Each form has one placement at each breakpoint, with no mixing between fields or form sections. Label placement is set explicitly on the field, to `side-by-side` unless the form's container is too narrow. A field with no label placement set shows the label above the field (`stacked`), which breaks the house rule. The label placement setting uses the name the code uses, looked up with `recursica_get_component_doc`.
+- [ ] Label placement matches every other field in the same form. Each form has one placement at each breakpoint, with no mixing between fields or form sections. Label placement is set explicitly on the field, to `side-by-side` unless the form's container is too narrow. A field with no label placement set shows the label above the field (`stacked`), which breaks the house rule. The label placement setting uses the name the code uses, looked up with `component_api`.
 - [ ] The open menu is not cut off by the viewport, a panel, a modal, or any scrolling ancestor.
 - [ ] Selection rules are in the assistive text. On error, an error message that restates the rule replaces the assistive text, with a signal that is not color.
 - [ ] A screen reader announces the expanded state, the number of options, the active option, and the selected value.

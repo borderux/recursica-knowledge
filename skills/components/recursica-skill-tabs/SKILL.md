@@ -32,7 +32,7 @@ Tabs split the content about one subject into sections, and show one section at 
 
 ## Variants
 
-**Use only the tab variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
+**Use only the tab variants and options that the knowledge MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `component_api` tool, and use the names the code uses. Never invent a variant or an option.
 
 The rules below describe each option by role, such as "the vertical orientation". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
@@ -122,7 +122,7 @@ A wrong role or a wrong connection in the tab set's markup makes the tab set's c
 - [ ] A tab set that did not fit is vertical or has shorter labels.
 - [ ] The fix for a tab set that did not fit was chosen without confirming with the user.
 - [ ] One style applies to the whole tab set. No tab item mixes in another style, and no style is invented.
-- [ ] Every style, orientation, and state is one the Recursica MCP server lists for the theme.
+- [ ] Every style, orientation, and state is one the knowledge MCP server lists for the theme.
 - [ ] The tab list, each tab, and each tab panel have the correct role for each part.
 - [ ] Each tab panel is connected to the tab that controls the panel.
 - [ ] Selection is shown by more than color, and the selected tab is announced as selected.

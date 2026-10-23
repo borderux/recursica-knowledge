@@ -33,7 +33,7 @@ Use the component in the right column. Do not change a text field to fit the sit
 
 ## Variants
 
-**Use only the text field variants, options and states that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. The code can use a different name from the name in Figma and the UI kit. A wrong name in code has no effect and shows no error. Never invent a variant or an option.
+**Use only the text field variants, options and states that the knowledge MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `component_api` tool, and use the names the code uses. The code can use a different name from the name in Figma and the UI kit. A wrong name in code has no effect and shows no error. Never invent a variant or an option.
 
 The rules below describe each option by role, such as "the label beside the field". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
@@ -149,7 +149,7 @@ Never set or override how the label connects to the input or how keys work insid
 - [ ] The value cannot come from a fixed list of options.
 - [ ] The text field has a visible label, and the label makes sense without the context around the field.
 - [ ] Label placement is side by side, unless the form's container is too narrow.
-- [ ] Label placement is set explicitly to the side-by-side option, unless the form's container is too narrow. A field with no label placement set shows the label above the field, not the house default. The setting uses the name the code uses, looked up with `recursica_get_component_doc`.
+- [ ] Label placement is set explicitly to the side-by-side option, unless the form's container is too narrow. A field with no label placement set shows the label above the field, not the house default. The setting uses the name the code uses, looked up with `component_api`.
 - [ ] Label placement matches every other field in the same form. Each form has one placement at each breakpoint, with no mixing between fields or form sections.
 - [ ] The placeholder text holds no required information.
 - [ ] The assistive text states the field's rule. On error, an error message that restates the rule replaces the assistive text.

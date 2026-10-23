@@ -379,7 +379,19 @@ has this — run it after pulling a change to an agent:
 ```bash
 npm run agents:install         # Betty, Barb, her checkers, Alan, and Edie with her comparer into ~/.claude/agents
 npm run agents:install:check   # report what is out of date; change nothing
+npm run mcp:install            # the knowledge MCP server alone, for anyone not installing the agents
 ```
+
+`agents:install` also registers the knowledge MCP server, `nest/mcp/knowledge/server.mjs`, because
+Betty and Barb look up adapter names with its `component_api` tool and nothing registered it on
+Claude Code. A clean machine ran both agents without it and no step said so. The server runs from
+this checkout, so like a linked agent it is current whenever the checkout is.
+
+**The `@recursica/mcp` package is retired.** It kept its own copy of the knowledge, which drifted
+from the skills, and it recognized only the Mantine and MUI adapters. The installer removes it for
+every project and for each folder Claude Code knows, and reports one in a project's committed
+`.mcp.json` for the team to remove. `--check` fails while any remain, and
+`scripts/install-mcp.test.mjs` fails if anything in this repository starts it again.
 
 An agent with no `{{TOKEN}}` is linked, so it is current whenever this checkout is. Betty and
 Alan carry tokens, so they get a filled-in copy — the values come from where this checkout
@@ -530,7 +542,7 @@ If you (the AI assistant) are tasked with creating, editing, or registering cust
   | `skills:wiring:check`    | every skill is wired to the agents: packaged, in `llms.txt`, routed to, and reachable by the reviewers — see below                  |
   | `writing:check`          | American spelling, no "you" in skills or agents, none of the vague phrases [WRITING.md](WRITING.md) lists, a reading grade below 10 |
 
-  `skills:wiring:check` and `writing:check` carry a short `KNOWN` list of mismatches that are logged in [`docs/open-questions.md`](docs/open-questions.md) and waiting on a decision. They print on every run, and an entry fails the check once it is fixed, so the list cannot outlive the problem. Variants are not checked here: each project can define its own in its UI kit, and agents get the theme's list from the Recursica MCP server.
+  `skills:wiring:check` and `writing:check` carry a short `KNOWN` list of mismatches that are logged in [`docs/open-questions.md`](docs/open-questions.md) and waiting on a decision. They print on every run, and an entry fails the check once it is fixed, so the list cannot outlive the problem. Variants are not checked here: each project can define its own in its UI kit, and agents look up the names with the knowledge MCP server's `component_api` tool, which reads the adapter the project installs. Whether it should also read the theme's own list is an open question.
 
 - **A new or renamed skill is not finished until the agents can use it.** A skill on disk that no agent reaches passes every other check and is never applied. `skills:wiring:check` fails until the skill is listed in `.claude-plugin/marketplace.json` and `llms.txt`, has a request in `scripts/fixtures/routing-requests.json`, and — for a design-rules skill — is named in the design router and reachable by Barb and Kev: in `ALWAYS` or `ROUTES` in `scripts/screen-skill-manifest.mjs`, or in a component skill's `## Related skills` above the "only if" heading. A psychology skill must be cited by a design-rules skill. Where a skill changes what an agent's own brief or intake should ask for — as the object map did for Betty — change that agent in `agents/` too and rebuild.
 - **`npm run skills:review` before you ask for review of a wording change.** It compares each changed skill with `main` and lists every change that tends to move a rule rather than its wording — a dropped "must", "never" or "only" (counted per section, so a move between sections shows), a lost code span or number, a merged checklist item. It warns and does not fail, because a deliberate rule change looks the same; CI posts the warnings as annotations on the pull request. `--strict` fails on any, for a change that is meant to be wording only.

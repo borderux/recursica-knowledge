@@ -60,7 +60,9 @@ every skill in a family cost 6% of the response. `list_skills` still returns it.
 
 ## Registering it
 
-The server needs no arguments when it runs from the checkout. Use an absolute path.
+On Claude Code, run `npm run mcp:install` in the checkout. It registers the server for every
+project, and `npm run agents:install` runs the same step. By hand, the server needs no arguments
+when it runs from the checkout. Use an absolute path.
 
 ```json
 {

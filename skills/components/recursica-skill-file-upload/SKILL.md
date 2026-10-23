@@ -41,7 +41,7 @@ A file upload has two parts: an upload area and a list of added files.
 
 ## Variants
 
-**Use only the file upload variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
+**Use only the file upload variants and options that the knowledge MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `component_api` tool, and use the names the code uses. Never invent a variant or an option.
 
 Each option below is described by role, such as "the error state". A name from the standard UI kit (the unchanged UI kit in the official Recursica release) is only an example.
 
@@ -186,6 +186,6 @@ The application must add every behavior in the two lists below. A drop zone (an 
 - [ ] No upload starts as a side effect of choosing a file. An upload starts when the persona clearly asks to upload. When the form saves all fields together, the upload finishes before the form is submitted. The screen is never blocked while an upload runs.
 - [ ] The tab order runs from the label to the add control, then down the list. The focus ring is intact. If the focus ring looks like the highlight that shows where to drop a file, the gap is reported.
 - [ ] The file upload sits in the form's single column, not inside a card.
-- [ ] Every variant, size, and state is one the Recursica MCP server lists for the theme. No variant or option is invented. The list of added files comes from the file upload component, with no hand-built list, chips, or list rows.
+- [ ] Every variant, size, and state is one the knowledge MCP server lists for the theme. No variant or option is invented. The list of added files comes from the file upload component, with no hand-built list, chips, or list rows.
 - [ ] No styling is set or overridden on the file upload. No container or spacer is added to change the file upload's look.
 - [ ] Open questions were asked about, not decided: progress, success, retrying, previews, and overall limits.

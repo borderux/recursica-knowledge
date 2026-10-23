@@ -38,7 +38,7 @@ A modal blocks the page until the persona makes one decision or finishes one sho
 
 ## Variants
 
-**Use only the modal variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
+**Use only the modal variants and options that the knowledge MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `component_api` tool, and use the names the code uses. Never invent a variant or an option.
 
 The rules below describe each part and option by role. The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
@@ -149,7 +149,7 @@ Never restyle the overlay behind the modal. Never change when the scroll divider
 
 - [ ] Blocking the page is justified, and the task is short and self-contained.
 - [ ] No action that can be undone asks for confirmation. Each action that can be undone offers undo instead.
-- [ ] Every variant and option on the modal is one the Recursica MCP server lists for the theme. No size, type, or severity variant is set unless the theme has one, and no variant or option is invented.
+- [ ] Every variant and option on the modal is one the knowledge MCP server lists for the theme. No size, type, or severity variant is set unless the theme has one, and no variant or option is invented.
 - [ ] A button opens the modal, with no browser history entry. The modal has an address whenever possible, unless the modal is a confirmation.
 - [ ] The title states the decision, and the label of the primary action says what will happen.
 - [ ] No modal opens another modal on top of the first modal, and no two scrims are ever visible at once. A reused confirmation modal replaces the open modal instead of stacking on the open modal.

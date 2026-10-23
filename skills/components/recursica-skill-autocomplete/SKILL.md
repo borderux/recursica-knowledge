@@ -32,7 +32,7 @@ An autocomplete is a text field whose value comes from a set list of options. Th
 
 ## Variants
 
-**Use only the autocomplete variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool. The same tool gives the name the code uses for each variant. The name in code can differ from the name in Figma and the UI kit. Use the names in code for every variant and option. A wrong name in code has no effect and shows no error. Never invent a variant or an option.
+**Use only the autocomplete variants and options that the knowledge MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `component_api` tool. The same tool gives the name the code uses for each variant. The name in code can differ from the name in Figma and the UI kit. Use the names in code for every variant and option. A wrong name in code has no effect and shows no error. Never invent a variant or an option.
 
 The rules below describe each option by role, such as "the error state". The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 

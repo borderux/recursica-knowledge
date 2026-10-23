@@ -33,7 +33,7 @@ A checkbox turns one specific value on or off, such as "Remember me". A checkbox
 
 ## Variants
 
-**Use only the checkbox variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
+**Use only the checkbox variants and options that the knowledge MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `component_api` tool, and use the names the code uses. Never invent a variant or an option.
 
 Each option below is described by role, such as "the checked state". A name from the standard UI kit (the unchanged UI kit in the official Recursica release) is only an example.
 
@@ -199,7 +199,7 @@ Apps most often miss the behavior in the two lists.
 - [ ] Clicking the item label toggles the box.
 - [ ] Focus is never moved for the persona, including when a checkbox reveals fields below.
 - [ ] The disabled state is used only for options that are unavailable for now. A value that can never be edited uses the read-only field.
-- [ ] Every variant, size, and state is one the Recursica MCP server lists for the theme.
+- [ ] Every variant, size, and state is one the knowledge MCP server lists for the theme.
 - [ ] No styling is set or overridden on the checkbox.
 - [ ] No container or spacer is added to change the checkbox's look.
 - [ ] The group saves with the form, in the same save mode as every other part of the application.

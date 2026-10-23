@@ -34,7 +34,7 @@ A tooltip is a short text label for a control that has no visible label. For exa
 
 ## Variants
 
-**Use only the tooltip variants and options that the Recursica MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `recursica_get_component_doc` tool, and use the names the code uses. Never invent a variant or an option.
+**Use only the tooltip variants and options that the knowledge MCP server lists for the theme (the design a designer sets in Theme Forge: the token values, the components, and each component's variants, states and sizes).** A designer can add variants and options in Theme Forge, so each theme can differ. Get the list with the server's `component_api` tool, and use the names the code uses. Never invent a variant or an option.
 
 The rules below describe each part and option by role. The names in the standard UI kit (the unchanged UI kit in the official Recursica release) are examples only.
 
@@ -146,7 +146,7 @@ The tooltip's beak is part of the tooltip component. Do not draw a separate beak
 - [ ] The tooltip appears on keyboard focus as well as on hover, and stays visible long enough to read.
 - [ ] Escape closes the tooltip without moving focus, and focus never enters the tooltip.
 - [ ] The trigger can take focus, and the trigger's focus ring is not hidden.
-- [ ] Every variant and option on the tooltip is one the Recursica MCP server lists for the theme. No placement, size, or content variant is set unless the theme has one, and no variant or option is invented.
+- [ ] Every variant and option on the tooltip is one the knowledge MCP server lists for the theme. No placement, size, or content variant is set unless the theme has one, and no variant or option is invented.
 - [ ] No styling is set or overridden on the tooltip.
 - [ ] No container or spacer is added to change the tooltip's look.
 - [ ] Open questions were asked about, not decided: placement, custom content, show and hide delays, touch behavior, targets that cannot take focus, and the viewport edge.
