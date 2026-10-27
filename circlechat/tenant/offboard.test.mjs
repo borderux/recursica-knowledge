@@ -33,3 +33,22 @@ test("refuses a client name that is not a slug", () => {
   const r = spawnSync("bash", [path.join(here, "offboard.sh"), "remove", "../x"], { encoding: "utf8" });
   assert.notEqual(r.status, 0);
 });
+
+test("fails on a Docker VM left in Colima's own folder, on a Mac or on Linux", () => {
+  for (const dir of [".colima/_lima/_disks/colima-acme", ".config/colima/acme"]) {
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), "off-"));
+    fs.mkdirSync(path.join(home, dir), { recursive: true });
+    const r = check(home);
+    assert.notEqual(r.status, 0);
+    assert.match(r.stdout, new RegExp(`${dir.replace(/\./g, "\\.")}\\s+FAIL`));
+  }
+});
+
+test("fails on an ssh config line that names the client", () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "off-"));
+  fs.mkdirSync(path.join(home, ".ssh"));
+  fs.writeFileSync(path.join(home, ".ssh/config"), `Include ${home}/tenants/acme/colima/ssh_config\n`);
+  const r = check(home);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stdout, /files naming acme\s+FAIL/);
+});

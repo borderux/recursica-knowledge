@@ -135,6 +135,9 @@ PLIST
 # Remove a service or scheduled job that install_unit installed. Safe when the unit does not exist.
 uninstall_unit() {
   local name="$1"
+  # A unit that was never installed needs no sudo, and no password.
+  if [ "$OS" = Linux ] && [ ! -e "/etc/systemd/system/$name.service" ] && [ ! -e "/etc/systemd/system/$name.timer" ]; then return 0; fi
+  if [ "$OS" = Darwin ] && [ ! -e "/Library/LaunchDaemons/io.recursica.$name.plist" ]; then return 0; fi
   if [ "$OS" = Linux ]; then
     sudo systemctl disable --now "$name.service" "$name.timer" >/dev/null 2>&1 || true
     sudo rm -f "/etc/systemd/system/$name.service" "/etc/systemd/system/$name.timer"

@@ -122,3 +122,31 @@ test("a client stack with its own knowledge fork may hold Alan's token", () => {
   const r = apply(conf, ["client-acme", control, "false"], "ALAN_GITHUB_PAT=ghp_x\n");
   assert.equal(r.status, 0, r.stdout + r.stderr);
 });
+
+test("on Linux, unlock opens the LUKS image itself, then starts the VM as the owner with no key", { skip: process.platform !== "linux" }, () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), "stacks-"));
+  const bin = path.join(home, "bin");
+  const kit = path.join(home, "kit");
+  const log = path.join(home, "log");
+  fs.mkdirSync(bin);
+  fs.mkdirSync(path.join(kit, "circlechat", "tenant"), { recursive: true });
+  // stdin=<n> is the length of what the call read on stdin.
+  const stub = (file, name) => fs.writeFileSync(file, `#!/usr/bin/env bash\nin="$(cat)"; echo "${name} $* stdin=\${#in}" >> "${log}"\n`, { mode: 0o755 });
+  stub(path.join(bin, "helper"), "helper");
+  stub(path.join(kit, "circlechat", "tenant", "disk-image.sh"), "disk-image.sh");
+  fs.writeFileSync(path.join(bin, "sudo"), '#!/usr/bin/env bash\n[ "$1" = -n ] && shift; exec "$@"\n', { mode: 0o755 });
+  const conf = path.join(home, "conf");
+  fs.writeFileSync(conf, `OWNER=${os.userInfo().username}\nOWNER_HOME=${home}\nKIT=${kit}\nNODE_BIN=${process.execPath}\n`);
+  const env = { ...process.env, AGENT_STACKS_CONF: conf, AGENT_STACKS_DISK: path.join(bin, "helper"), PATH: `${bin}:${process.env.PATH}` };
+  const run = (args, input) => spawnSync("bash", [path.join(here, "apply-secrets.sh"), ...args], { env, input, encoding: "utf8" });
+  let r = run(["--unlock", "client-acme", control], `STACK_DISK_KEY=${"k".repeat(32)}\n`);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  r = run(["--lock", "client-acme", control], "");
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.deepEqual(fs.readFileSync(log, "utf8").trim().split("\n"), [
+    "helper open acme stdin=32",
+    "disk-image.sh unlock acme stdin=0",
+    "disk-image.sh stop-vm acme stdin=0",
+    "helper close acme stdin=0",
+  ]);
+});
