@@ -80,7 +80,7 @@ remove)
   for d in "$HOME/.colima" "$HOME/.config/colima"; do
     [ -e "$d/$CLIENT" ] || [ -e "$d/_lima/colima-$CLIENT" ] || continue
     COLIMA_HOME="$d" colima delete --profile "$CLIENT" --force >/dev/null 2>&1 || true
-    rm -rf "$d/_lima/colima-$CLIENT" "$d/_lima/_disks/colima-$CLIENT" "$d/$CLIENT"
+    rm -rf "${d:?}/_lima/colima-$CLIENT" "${d:?}/_lima/_disks/colima-$CLIENT" "${d:?}/$CLIENT"
   done
   rm -rf "$HOME/tenant-images/$CLIENT.sparsebundle"
   # Colima adds an Include line for each VM to ~/.ssh/config unless told not to.

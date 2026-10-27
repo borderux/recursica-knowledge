@@ -67,7 +67,7 @@ check_mounts() {
   local conf="$COLIMA_HOME/$PROFILE/colima.yaml" locations
   [ -f "$conf" ] || return 0
   locations="$(sed -n 's/^ *- *location: *//p' "$conf" | tr -d "\"'")"
-  if [ -z "$locations" ] || printf '%s\n' "$locations" | grep -vqx -e "$MOUNT" -e "~/tenants/$CLIENT"; then
+  if [ -z "$locations" ] || printf '%s\n' "$locations" | grep -vqx -e "$MOUNT"; then
     echo "The Docker VM of $CLIENT mounts more than $MOUNT. Set mounts in $conf to $MOUNT only."
     exit 1
   fi
