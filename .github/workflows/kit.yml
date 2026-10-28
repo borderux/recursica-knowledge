@@ -1,5 +1,5 @@
 # The kit's checks that need real tools or real computers: ShellCheck, the firewall and filter
-# tools, a whole install on a fresh machine, macOS's firewall and disk images, and the Windows
+# tools, a whole install on a fresh machine, macOS's firewall and disk images, Linux disk images, and the Windows
 # scripts. The tests themselves run in checks.yml.
 name: Kit
 
@@ -64,6 +64,34 @@ jobs:
           printf 'ci-test-key-0123456789abcdefgh' | hdiutil attach -stdinpass -nobrowse -mountpoint "$HOME/tenants/citest" "$HOME/tenant-images/citest.sparsebundle"
           [ -e "$HOME/tenants/citest/written-inside" ]
           hdiutil detach "$HOME/tenants/citest"
+
+  linux-disk:
+    name: Linux encrypted disk images (LUKS)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: A client disk image is created, opened and closed
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq cryptsetup-bin
+          sudo modprobe dm_crypt
+          sudo install -m 755 -o root circlechat/tenant/disk-helper.sh /usr/local/bin/agent-stacks-disk
+          printf 'OWNER=%q\nOWNER_HOME=%q\n' "$USER" "$HOME" | sudo tee /etc/agent-stacks-disk.conf >/dev/null
+          M="$HOME/tenants/citest"; mkdir -p "$M"
+          printf 'ci-test-key-0123456789abcdefgh' | sudo agent-stacks-disk create citest 1g
+          findmnt -n -o SOURCE --mountpoint "$M" | grep -qx /dev/mapper/agent-stacks-citest
+          touch "$M/written-inside"
+          sudo agent-stacks-disk close citest
+          [ ! -e "$M/written-inside" ] && [ ! -e /dev/mapper/agent-stacks-citest ]
+          ! printf 'wrong-key-0123456789abcdefghij' | sudo agent-stacks-disk open citest
+          printf 'ci-test-key-0123456789abcdefgh' | sudo agent-stacks-disk open citest
+          [ -e "$M/written-inside" ]
+          sudo agent-stacks-disk destroy citest
+          [ ! -e /var/lib/agent-stacks/images/citest.luks ] && [ ! -e /dev/mapper/agent-stacks-citest ]
+      - name: The mount point cannot be a link
+        run: |
+          mkdir -p "$HOME/tenants" /tmp/elsewhere && ln -s /tmp/elsewhere "$HOME/tenants/linked"
+          ! printf 'ci-test-key-0123456789abcdefgh' | sudo agent-stacks-disk create linked 1g
+          ! findmnt --mountpoint /tmp/elsewhere
 
   windows-scripts:
     name: Windows scripts (PSScriptAnalyzer)

@@ -15,6 +15,7 @@ Border UX keeps this guide in step with the kit. A test fails when a `site.json`
 - **Backup storage:** any storage rclone supports, such as S3, Azure Blob Storage, Google Drive or a local disk.
 - **HTTPS in front of CircleChat:** Tailscale, or the client's own reverse proxy on the same computer.
 - **Disk encryption:** LUKS on Linux, FileVault on a Mac, or BitLocker on Windows, set up when the computer is installed.
+- **More than one stack on a computer:** each stack needs a separate Docker VM and encrypted disk image. On Linux or Windows with WSL, run `circlechat/tenant/setup-pc.sh` first. WSL needs nested virtualization; see "Encrypted client stacks" in `circlechat/README.md`.
 
 ## Repos to fork
 

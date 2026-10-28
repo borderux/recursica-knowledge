@@ -8,7 +8,8 @@
 #   agent-stacks-apply --lock <stack> <computer>
 #
 # --unlock opens a client stack's encrypted disk image and starts the stack's Docker VM, and
-# --lock does the reverse. The key passes through on stdin and is never written to disk.
+# --lock does the reverse. The key passes through on stdin and is never written to disk. On Linux
+# and WSL, this script opens and closes the LUKS image itself, as root, with agent-stacks-disk.
 #
 # <stack> is the GitHub environment: "border" for the stack with no tenant name, or
 # "client-<name>" for the client stack with site.tenant <name>. <computer> is a node name in that
@@ -42,13 +43,27 @@ fi
 if [ "$MODE" != apply ]; then
   [ -n "$TENANT" ] || { echo "Only a client stack has an encrypted disk image."; exit 1; }
   DISK="$KIT/circlechat/tenant/disk-image.sh"
+  as_owner() { if [ "$(id -un)" = "$OWNER" ]; then "$@"; else sudo -u "$OWNER" -H "$@"; fi; }
+  # Linux and WSL: the image opens as root, then the owner starts the VM inside the open image.
+  LUKS=false; [ "$(uname -s)" = Linux ] && LUKS=true
+  HELPER="${AGENT_STACKS_DISK:-/usr/local/bin/agent-stacks-disk}"
+  luks() { if [ "$(id -u)" = 0 ]; then "$HELPER" "$@"; else sudo -n "$HELPER" "$@"; fi; }
   if [ "$MODE" = unlock ]; then
     KEY=""
     while IFS= read -r line || [ -n "$line" ]; do case "$line" in STACK_DISK_KEY=*) KEY="${line#STACK_DISK_KEY=}" ;; esac; done
     [ -n "$KEY" ] || { echo "No STACK_DISK_KEY in the client's GitHub environment."; exit 1; }
-    printf '%s' "$KEY" | sudo -u "$OWNER" -H bash "$DISK" unlock "$TENANT"
+    if [ "$LUKS" = true ]; then
+      printf '%s' "$KEY" | luks open "$TENANT"
+      as_owner bash "$DISK" unlock "$TENANT" </dev/null
+    else
+      printf '%s' "$KEY" | as_owner bash "$DISK" unlock "$TENANT"
+    fi
+  elif [ "$LUKS" = true ]; then
+    as_owner bash "$DISK" stop-vm "$TENANT"
+    luks close "$TENANT"
+    echo "Locked stack $TENANT: Docker VM stopped, image closed."
   else
-    sudo -u "$OWNER" -H bash "$DISK" lock "$TENANT"
+    as_owner bash "$DISK" lock "$TENANT"
   fi
   exit 0
 fi

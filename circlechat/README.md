@@ -94,7 +94,7 @@ keeps running.
 
 CircleChat's workspaces cannot keep clients apart. Inside one CircleChat, every agent shares one `/workspace` folder and one set of agent homes. The CircleChat api, worker and bridge also hold a Docker socket with root access to the computer.
 
-1. **Create the client's encrypted disk image, then the client's Docker VM.** See "Encrypted client stacks" below. On a Mac, `colima start --profile <client>` creates the Docker context `colima-<client>`.
+1. **Create the client's encrypted disk image, then the client's Docker VM.** See "Encrypted client stacks" below. `disk-image.sh vm <client>` creates the Docker context `colima-<client>`.
 2. **Write the client's site.json** at `~/tenants/<client>/circlechat/site.json`, with these fields:
    - `site.tenant`: the client's short name, in lowercase.
    - `site.kind`: `"client"`.
@@ -128,14 +128,26 @@ A stack with no `site.tenant` keeps the names a single install uses today. An ex
 
 ## Encrypted client stacks
 
-**Keep each client stack in an encrypted disk image with the client's own key.** The image holds the client's whole stack in `~/tenants/<client>`. The stack holds CircleChat, the agent homes, the workspace, the job folder, the secrets file and the logs. The client's Docker VM lives inside the image too. Encrypted client disk images need a Mac.
+**Keep each client stack in an encrypted disk image with the client's own key.** The image holds the client's whole stack in `~/tenants/<client>`. The stack holds CircleChat, the agent homes, the workspace, the job folder, the secrets file and the logs. The client's Docker VM lives inside the image too, in `~/tenants/<client>/colima`. Each client stack runs on the Docker engine in the stack's own VM, never on a shared Docker engine.
 
-1. **Create the key in the password manager,** at least 24 random characters. Add the key to the client's GitHub environment as `STACK_DISK_KEY`.
-2. **Create the image before the client's Docker VM:** pipe the key into `./circlechat/tenant/disk-image.sh create <client> 200g`. The image grows as the stack grows, up to the size given.
-3. **Create the Docker VM** with `colima start --profile <client>`. The VM's folder links into the image.
-4. **Copy `circlechat/deploy/unlock-stack.yml`** to `.github/workflows/unlock-stack.yml` in the private repo of stacks.
+| Computer                   | Disk image                                           | Docker VM                                     |
+| -------------------------- | ---------------------------------------------------- | --------------------------------------------- |
+| A Mac                      | An encrypted APFS sparse bundle in `~/tenant-images` | A Colima profile, with Apple's virtualization |
+| Linux, or Windows with WSL | A LUKS image file in `/var/lib/agent-stacks/images`  | A Colima profile, with QEMU and KVM           |
 
-After every restart of the Mac, the client's image stays closed. Run the "Unlock stack" workflow with the stack and the computer. The workflow passes `STACK_DISK_KEY` to the secrets helper, which opens the image and starts the Docker VM. Docker then starts each container of the stack. The key never touches the disk. Run the same workflow with `lock` to stop the VM and close the image.
+1. **On Linux or in WSL, prepare the computer once.** Run `./circlechat/tenant/setup-pc.sh` as the account that owns the stacks. The script installs QEMU, Lima, Colima and cryptsetup, and adds the account to the `kvm` group. The script also installs `agent-stacks-disk`, the part of `disk-image.sh` that runs as root. Rerun the script after the kit changes.
+2. **Create the key in the password manager,** at least 24 random characters. Add the key to the client's GitHub environment as `STACK_DISK_KEY`.
+3. **Create the image before the client's Docker VM:** pipe the key into `./circlechat/tenant/disk-image.sh create <client> 200g`. The image grows as the stack grows, up to the size given. On Linux and in WSL, `sudo` asks for the owner's password, so run the command in a terminal.
+4. **Create the Docker VM** with `./circlechat/tenant/disk-image.sh vm <client> <CPUs> <memory GiB> <disk GiB>`, such as `vm acme 8 32 100`. The VM mounts `~/tenants/<client>` and no other folder. The VM never becomes the current Docker context, so a plain `docker` command never reaches a client's VM.
+5. **Copy `circlechat/deploy/unlock-stack.yml`** to `.github/workflows/unlock-stack.yml` in the private repo of stacks.
+
+After every restart of the computer, the client's image stays closed. Run the "Unlock stack" workflow with the stack and the computer. The workflow passes `STACK_DISK_KEY` to the secrets helper, which opens the image and starts the Docker VM. On Linux and in WSL, the secrets helper opens the LUKS image as root. The owner's account then starts the VM. Docker then starts each container of the stack. The key never touches the disk. Run the same workflow with `lock` to stop the VM and close the image.
+
+**Check the stack's isolation** with `./circlechat/tenant/isolation-check.sh <client>`, while the stack is open. The pass/fail table covers the stack's Docker context and Docker engine, containers, volumes, networks, folders, VM mounts and ports.
+
+**Give each `colima` command the client's Colima folder,** such as `COLIMA_HOME=~/tenants/<client>/colima colima status --profile <client>`. Without `COLIMA_HOME`, Colima looks in the folder for VMs outside any image.
+
+**WSL needs nested virtualization** for the Docker VMs. Windows 11 turns nested virtualization on by default, and `ls /dev/kvm` in WSL shows the device. When `/dev/kvm` is missing, add `nestedVirtualization=true` under `[wsl2]` in `%UserProfile%\.wslconfig`. Set `memory=` in the same file high enough for every stack's VM, plus the services outside the VMs. Then run `wsl --shutdown` in PowerShell and reopen Ubuntu.
 
 Deleting the image and the key makes the client's data unreadable for good.
 
@@ -281,7 +293,7 @@ Each computer asks the other computers for the health of their stacks every minu
 1. **Open the client's stack** with the Unlock stack workflow.
 2. **Archive:** pipe a new archive key, made in the password manager, into `./circlechat/tenant/offboard.sh archive <client>`. The script writes a final encrypted archive, then test-restores the archive. Nothing is deleted unless the archive restores cleanly.
 3. **Move the archive folder** into the Archive folder in Google Drive, by hand.
-4. **Remove:** run `./circlechat/tenant/offboard.sh remove <client>` on each computer.
+4. **Remove:** run `./circlechat/tenant/offboard.sh remove <client>` on each computer. The script destroys the client's disk image, with the Docker VM inside the image.
 5. **Check:** run `./circlechat/tenant/offboard.sh check <client>` on each computer, for a pass/fail table.
 6. **Remove the client's access:** delete the client's GitHub environment, Tailscale shares, keys and tokens, and archive the client's Slack channel.
 

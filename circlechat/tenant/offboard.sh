@@ -71,13 +71,24 @@ remove)
   for u in circlechat-boot agents-sync release-watch kev-data-push backup restore-test images jobd; do uninstall_unit "$u-$CLIENT"; done
   docker rm -f "cc-jobs-egress-$CLIENT" >/dev/null 2>&1 || true
   docker network rm "jobs-egress-$CLIENT" >/dev/null 2>&1 || true
-  if [ "$OS" = Darwin ]; then
-    colima delete --profile "$CLIENT" --force >/dev/null 2>&1 || true
-    mount | grep -q " on $STACK_DIR (apfs" && hdiutil detach "$STACK_DIR" >/dev/null
-    rm -rf "$HOME/tenant-images/$CLIENT.sparsebundle" "$HOME/.colima/_lima/colima-$CLIENT" "$HOME/.colima/$CLIENT"
-    docker context rm -f "colima-$CLIENT" >/dev/null 2>&1 || true
+  # The client's Docker VM sits inside the client's disk image, so destroying the image removes both.
+  if [ "$OS" = Darwin ] || [ -x /usr/local/bin/agent-stacks-disk ]; then
+    bash "$HERE/disk-image.sh" destroy "$CLIENT"
   fi
-  sudo rm -rf "$STACK_DIR" "$HOME/.recursica-node.$CLIENT.env" "$HOME/.recursica-jobs-$CLIENT" /tmp/*-"$CLIENT".log
+  # A VM created before the VM moved into the image, in Colima's own folder: ~/.colima on a Mac,
+  # ~/.config/colima on Linux.
+  for d in "$HOME/.colima" "$HOME/.config/colima"; do
+    [ -e "$d/$CLIENT" ] || [ -e "$d/_lima/colima-$CLIENT" ] || continue
+    COLIMA_HOME="$d" colima delete --profile "$CLIENT" --force >/dev/null 2>&1 || true
+    rm -rf "${d:?}/_lima/colima-$CLIENT" "${d:?}/_lima/_disks/colima-$CLIENT" "${d:?}/$CLIENT"
+  done
+  rm -rf "$HOME/tenant-images/$CLIENT.sparsebundle"
+  # Colima adds an Include line for each VM to ~/.ssh/config unless told not to.
+  if [ -f "$HOME/.ssh/config" ]; then sedi "\#/tenants/$CLIENT/#d; \#/colima/_lima/colima-$CLIENT/#d" "$HOME/.ssh/config"; fi
+  docker context rm -f "colima-$CLIENT" >/dev/null 2>&1 || true
+  # Root owns files a container wrote on a computer with no Docker VM. Only those need sudo.
+  rm -rf "$STACK_DIR" "$HOME/.recursica-node.$CLIENT.env" "$HOME/.recursica-jobs-$CLIENT" /tmp/*-"$CLIENT".log 2>/dev/null \
+    || sudo rm -rf "$STACK_DIR" "$HOME/.recursica-node.$CLIENT.env" "$HOME/.recursica-jobs-$CLIENT" /tmp/*-"$CLIENT".log
   echo "Removed client $CLIENT from $(hostname -s). Run: offboard.sh check $CLIENT"
   ;;
 
@@ -85,17 +96,22 @@ check)
   fail=0
   row() { printf '%-46s %s\n' "$1" "$2"; [ "$2" = pass ] || fail=1; }
   printf '%-46s %s\n' "Place" "Result"
-  for p in "$STACK_DIR" "$HOME/tenant-images/$CLIENT.sparsebundle" "$HOME/.colima/_lima/colima-$CLIENT" "$HOME/.colima/$CLIENT" \
+  for p in "$STACK_DIR" "$HOME/tenant-images/$CLIENT.sparsebundle" \
+           "$HOME/.colima/_lima/colima-$CLIENT" "$HOME/.colima/_lima/_disks/colima-$CLIENT" "$HOME/.colima/$CLIENT" \
+           "$HOME/.config/colima/_lima/colima-$CLIENT" "$HOME/.config/colima/_lima/_disks/colima-$CLIENT" "$HOME/.config/colima/$CLIENT" \
            "$HOME/.recursica-node.$CLIENT.env" "$HOME/.recursica-jobs-$CLIENT"; do
-    [ -e "$p" ] && row "$p" "FAIL: still exists" || row "$p" pass
+    [ -e "$p" ] || [ -L "$p" ] && row "$p" "FAIL: still exists" || row "$p" pass
   done
+  [ -e "/var/lib/agent-stacks/images/$CLIENT.luks" ] && row "/var/lib/agent-stacks/images/$CLIENT.luks" "FAIL: still exists" \
+    || row "/var/lib/agent-stacks/images/$CLIENT.luks" pass
+  [ -e "/dev/mapper/agent-stacks-$CLIENT" ] && row "/dev/mapper/agent-stacks-$CLIENT" "FAIL: still open" || row "/dev/mapper/agent-stacks-$CLIENT" pass
   units="$( (systemctl list-unit-files 2>/dev/null; ls /Library/LaunchDaemons 2>/dev/null) | grep -E -- "-$CLIENT(\.|$)" || true)"
   [ -n "$units" ] && row "services and scheduled jobs" "FAIL: $units" || row "services and scheduled jobs" pass
   ctx="$(docker context ls --format '{{.Name}}' 2>/dev/null | grep -x "colima-$CLIENT" || true)"
   [ -n "$ctx" ] && row "Docker context colima-$CLIENT" "FAIL: still exists" || row "Docker context colima-$CLIENT" pass
   left="$(docker ps -a --format '{{.Names}}' 2>/dev/null | grep -E -- "(-|^cc-)$CLIENT(-|$)" || true; docker volume ls --format '{{.Name}}' 2>/dev/null | grep -E -- "(^cc-${CLIENT}_|-${CLIENT}$)" || true)"
   [ -n "$left" ] && row "containers and volumes" "FAIL: $left" || row "containers and volumes" pass
-  found="$(grep -rIl --exclude-dir=archived --exclude-dir=.git -- "$CLIENT" "$HOME/circlechat" "$HOME/.config/rclone" /var/lib/agent-cluster 2>/dev/null | head -5 || true)"
+  found="$(grep -rIl --exclude-dir=archived --exclude-dir=.git -- "$CLIENT" "$HOME/circlechat" "$HOME/.config/rclone" "$HOME/.ssh/config" /var/lib/agent-cluster 2>/dev/null | head -5 || true)"
   [ -n "$found" ] && row "files naming $CLIENT" "FAIL: $found" || row "files naming $CLIENT" pass
   [ "$fail" = 0 ] && echo "Nothing of client $CLIENT remains on $(hostname -s)." || { echo "Something of client $CLIENT remains on $(hostname -s)."; exit 1; }
   ;;
