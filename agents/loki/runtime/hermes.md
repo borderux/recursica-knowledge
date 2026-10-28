@@ -37,8 +37,9 @@ Check what the server really serves (`curl …/v1/models`, `context_length`) and
 of it: room for long threads without every turn paying for the whole window. `setup-agent.sh`
 pins 131072 when the keys are absent (`LOKI_CONTEXT=` overrides), and leaves them alone after.
 
-**Compression summaries run on his own model.** The script points every other agent's
-`summary_model` at Claude Haiku; Loki has no Anthropic key, so his stays local.
+**Compression summaries run on his own model.** The script points every agent's `summary_model`
+at the agent's own route, through the model gateway. Loki's cloud switch is off in site.json, so
+his summaries stay on the cluster.
 
 ## What a small local model gets wrong
 

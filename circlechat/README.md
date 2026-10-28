@@ -11,12 +11,13 @@ skills in this repo. Linux or macOS, on one machine or many.
 Nothing about a deployment lives in this repository. Two files on the control machine, both
 outside any repo, hold all of it:
 
-| File                | Holds                                                                                               | Example                        |
-| ------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------ |
-| `$CC_DIR/site.json` | Machines, how to reach them, what each runs, model routes, the app repo                             | `circlechat/site.example.json` |
-| `$CC_DIR/.env`      | Secrets: `ANTHROPIC_API_KEY`, `KEV_ENGINE_KEY`, `SLACK_BOT_TOKEN`, `LITELLM_MASTER_KEY` (generated) | —                              |
+| File                     | Holds                                                                                                            | Example                        |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| `$CC_DIR/site.json`      | Machines, how to reach them, what each runs, model routes, cloud keys' names, the app                            | `circlechat/site.example.json` |
+| `$CC_DIR/.env`           | Secrets other than cloud keys, such as `KEV_ENGINE_KEY` and `SLACK_BOT_TOKEN`                                    | —                              |
+| `$CC_DIR/model-keys.env` | The cloud model keys, as `MODEL_KEY_<NAME>` lines. Root owns the file, and only the model gateway reads the file | —                              |
 
-Each agent's own key and GitHub token stay in its Hermes home (`setup-agent.sh` puts them there).
+Each agent's gateway key and GitHub token stay in the agent's Hermes home (`setup-agent.sh` puts them there). No agent holds a cloud key.
 Each extra machine keeps the secrets its services need in `~/.recursica-node.env`.
 
 ## Machines
@@ -26,9 +27,9 @@ Each extra machine keeps the secrets its services need in `~/.recursica-node.env
 serve models and a Kev-engine. `address` is how the control machine's containers reach it: a
 Tailscale or other VPN address, or `host.docker.internal` for the control machine itself.
 
-**Routes** are the names agents ask for. Each maps to an ordered list of backends
-(`<node>/<model id>` or `anthropic/<model>`); the gateway tries them in order, so put the
-fallback last. Kev-engines are tried best-first by `priority`, and Kev moves on by itself when one
+**Routes** are the names agents ask for. Each maps to an ordered list of the cluster's models
+(`<node>/<model id>`); the gateway tries them in order, so put the fallback last. A cloud model
+never joins a route: cloud models come from `model_keys`, as "Cloud models and the model gateway" describes. Kev-engines are tried best-first by `priority`, and Kev moves on by itself when one
 is unreachable. Add a machine by adding a node and rerunning `setup-host.sh`.
 
 ## Install, in order
@@ -39,21 +40,23 @@ is unreachable. Add a machine by adding a node and rerunning `setup-host.sh`.
 2. `./circlechat/setup-host.sh`. It validates `site.json` (and stops before changing anything if
    it is wrong), then: fixes `.env` (including `HERMES_TIMEOUT`), ports, the shared workspace and
    its checkouts, copies Kev, starts CircleChat, the app preview, the model gateway
-   (`localhost:4000`) and the Slack notifier, and installs start-at-boot and hourly jobs (systemd
+   and the Slack notifier, and installs start-at-boot and hourly jobs (systemd
    or launchd). It turns on this repository's commit hooks in Alan's checkout; add
    `LOCAL_REDACTIONS=<path to your local-redactions.json>` so client names are checked too.
 3. **Every other machine:** copy `site.json` over (it holds no secrets), put its services'
    secrets in `~/.recursica-node.env`, and run `./circlechat/setup-node.sh <node name>`.
 4. Point your HTTPS name at `127.0.0.1:<port>`; the script prints the Tailscale commands.
-5. For each agent: add it in the CircleChat UI (**Members → Add agent**: Hermes, provider
-   Anthropic, paste that agent's key, **Install + link**), wait for it to finish, then:
+5. For each agent: add the agent in the CircleChat UI (**Members → Add agent**: Hermes, provider
+   custom (FreeLLMAPI), base URL `http://cc-gateway:4000/v1`, key `placeholder-key`, **Install + link**).
+   Never paste a cloud key into CircleChat. Wait for the install to finish, then run:
    ```bash
    ./circlechat/setup-agent.sh betty
    KEV_ENGINE_KEY=... ./circlechat/setup-agent.sh barb
    GITHUB_TOKEN=github_pat_... ./circlechat/setup-agent.sh alan   # stored as ALAN_GITHUB_PAT
    ```
-   `setup-agent.sh` fills each persona's deploy tokens (`@APP_REPO@`, `@APP_REPO_GITHUB@`) from
-   `site.json`, and gives Barb the Kev-engine list. Alan's token is fine-grained: Contents, Pull
+   `setup-agent.sh` gives the agent the agent's own gateway key, in place of the placeholder. The
+   script fills each persona's deploy tokens (`@APP_REPO@`, `@APP_REPO_GITHUB@`) from `site.json`,
+   and gives Barb the Kev-engine list. Alan's token is fine-grained: Contents, Pull
    requests and Issues on this repository, Issues on the adapter repositories and Theme Forge,
    and **no merge rights**. Protect `main` with a ruleset whose bypass list is empty; a token acts
    as the person who made it.
@@ -77,15 +80,17 @@ with room, best first by `jobs.priority`. `agents/porter/runtime/hermes.md` expl
    `.env` as `PORTER_HOOK_URL` and `PORTER_HOOK_SECRET`. The release watcher (hourly, installed by
    `setup-host.sh` when `porter.watch` is set) and every job runner use the same webhook.
 3. **On each job-runner machine** (a node with `jobs`), put these in `~/.recursica-node.env`:
-   `JOBD_TOKEN` (copied from the control machine's `.env`), `ANTHROPIC_API_KEY`,
-   `PORTER_GITHUB_PAT`, `PORTER_GIT_NAME`, `PORTER_GIT_EMAIL`, `PORTER_HOOK_URL`,
-   `PORTER_HOOK_SECRET`. The machine's user needs Docker access. Then run `setup-node.sh <node>`:
-   it builds the `recursica/porter-job` image and starts the job runner on `jobs.port`.
+   `JOBD_TOKEN` (copied from the control machine's `.env`), `PORTER_GITHUB_PAT`,
+   `PORTER_GIT_NAME`, `PORTER_GIT_EMAIL`, `PORTER_HOOK_URL`, `PORTER_HOOK_SECRET`. The file holds
+   no cloud key. The machine's user needs Docker access. Then run `setup-node.sh <node>`:
+   it builds the `recursica/porter-job` image and starts the job runner on `jobs.port`. On the
+   control computer, run `setup-host.sh` first, so the gateway exists.
 4. Install Porter in the CircleChat UI, then `./circlechat/setup-agent.sh porter`.
 
 A job runner only runs the porter job type for the repositories in `porter.targets`, so a
 request cannot run an arbitrary command. The job's secrets reach the container by name, never on
-a command line. A job that runs out of memory ends as `out_of_memory` and is reported; the machine
+a command line. Each job sends the job's model requests to the control computer's gateway, with
+the gateway key for the job's task. Porter gets that key from the gateway during a turn on the task. A job that runs out of memory ends as `out_of_memory` and is reported; the machine
 keeps running.
 
 ## Clients: one isolated stack each
@@ -120,7 +125,7 @@ The config check refuses a client stack in three cases:
 - The stack has no `site.docker_context`.
 - The stack sets `data.kev_disagreements_branch`. Review data from a client's code stays in the client's stack.
 
-With no recorded permission in `site.cloud_models`, the config check also refuses every cloud route and Porter, because port jobs call Claude. The secrets helper refuses to deploy a cloud key to the stack.
+With no recorded permission in `site.cloud_models`, the config check also refuses a `model_keys` block, every cloud route and Porter. The secrets helper refuses to deploy a cloud key to the stack.
 
 Model servers that keep no data, such as Kev's model and a local model, can serve every stack. Declare each model server's service in one stack's site.json only. The other stacks list the same models and Kev ports, with no `services` entry. Give a client a separate model server when the client's contract requires one.
 
@@ -167,17 +172,16 @@ The node secrets file is `~/.recursica-node.env`, or `~/.recursica-node.<client>
 
 | Secret in GitHub                                           | File the helper writes                                    | Read by                                                                    |
 | ---------------------------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `ANTHROPIC_API_KEY`                                        | `.env` on the control computer                            | The model gateway                                                          |
+| `MODEL_KEY_<NAME>`, such as `MODEL_KEY_DEFAULT`            | `model-keys.env` on the control computer                  | The model gateway, and nothing else                                        |
 | `SLACK_BOT_TOKEN`                                          | `.env` on the control computer, for each stack            | The task notifier and the stack's scripts, through the cluster's Slack app |
 | `KEV_ENGINE_KEY`                                           | `.env` on the control computer                            | Barb's first pass with Kev                                                 |
 | `JOBD_TOKEN`                                               | `.env` on the control computer, and the node secrets file | Porter and each job runner                                                 |
 | `PORTER_HOOK_URL`, `PORTER_HOOK_SECRET`                    | `.env` on the control computer, and the node secrets file | The release watcher and each job runner                                    |
 | `<HANDLE>_GITHUB_PAT`, such as `ALAN_GITHUB_PAT`           | The `.env` in the agent's Hermes home                     | The agent, at the start of each turn                                       |
 | `KEV_API_KEY`                                              | The node secrets file                                     | Kev's model                                                                |
-| `PORTER_ANTHROPIC_API_KEY`                                 | The node secrets file, as `ANTHROPIC_API_KEY`             | The port jobs                                                              |
 | `PORTER_GITHUB_PAT`, `PORTER_GIT_NAME`, `PORTER_GIT_EMAIL` | The node secrets file                                     | The port jobs                                                              |
 
-An agent's own Anthropic key stays in CircleChat's agent settings. To deploy a GitHub token for a new agent, add the agent's `<HANDLE>_GITHUB_PAT` line to the workflow's list of secrets.
+The workflow passes every `MODEL_KEY_<NAME>` secret in the environment, with no list to keep. The helper still accepts `ANTHROPIC_API_KEY` as the older name of `MODEL_KEY_DEFAULT`. The helper never writes a cloud key to `.env` or to a node secrets file. To deploy a GitHub token for a new agent, add the agent's `<HANDLE>_GITHUB_PAT` line to the workflow's list of secrets.
 
 **Limit write access to the private repo.** A person who can edit a workflow can read the secrets of each environment the workflow uses. The required approval in step 2 keeps a changed workflow from reading secrets without an approval.
 
@@ -185,7 +189,7 @@ An agent's own Anthropic key stays in CircleChat's agent settings. To deploy a G
 
 **Each stack's agents reach only the sites on the stack's allowlist.** CircleChat starts agent containers on a closed Docker network with no route out. The only exit is the stack's filter, Squid from Ubuntu's LTS packages. CircleChat's api and the model gateway sit on the closed network too. Port jobs get the same kind of filter on each computer that runs jobs.
 
-The allowlist holds GitHub, the npm and Python package registries, and the stack's other computers. The sites in `egress.allow` in site.json join the list. A stack with cloud models also reaches each cloud model provider the stack uses. A local-only client stack never reaches a cloud model provider, and the config check refuses one in `egress.allow`.
+The allowlist holds GitHub, the npm and Python package registries, and the stack's other computers. The sites in `egress.allow` in site.json join the list. No cloud model provider is ever on the list. Agents and port jobs reach cloud models only through the model gateway. The config check refuses a cloud model provider in `egress.allow`.
 
 When the filter refuses a site:
 
@@ -198,20 +202,95 @@ A refused site in a port job gets a Slack alert with no buttons, because a job c
 
 ## Privacy rules for agents
 
-**The model gateway removes personal information before a request reaches a cloud model.** Presidio, Microsoft's open-source masking service, finds names, email addresses, phone numbers and similar details. The gateway replaces each one before the request leaves. Masking is on by default for a client stack with cloud models. Set `"privacy": { "mask_pii": false }` in site.json only when the client asks.
-
-With masking on, the outgoing filter keeps the agents away from every cloud model provider. Each request then passes the gateway first. Install each agent with the gateway as the agent's provider, with these settings:
-
-- Provider: OpenAI-compatible, at `http://cc-gateway:4000/v1`.
-- Key: the stack's `LITELLM_MASTER_KEY`.
-- Model: a route name, such as `claude-sonnet`.
-
-Copy the key to the clipboard without showing it: `grep '^LITELLM_MASTER_KEY=' .env | cut -d= -f2- | tr -d '\n' | pbcopy` on a Mac.
+**The model gateway removes personal information before a request reaches a cloud model.** Presidio, Microsoft's open-source masking service, finds names, email addresses, phone numbers and similar details. The gateway replaces each one before the request leaves. Masking is on by default for a client stack with cloud models. Set `"privacy": { "mask_pii": false }` in site.json only when the client asks. Masking is a separate setting for each stack: with masking on or off, every request passes the gateway.
 
 Two more rules hold on every stack:
 
 - **CircleChat's approval gate is on.** `setup-host.sh` sets `APPROVE_RISK_AT=high`, so each high-risk action waits for a person's approval in CircleChat. The high-risk action, `share_files`, has CircleChat itself fetch a web address, outside the agents' filter.
 - **A client stack never runs Alan.** Alan's pull requests go to the public knowledge repo. `setup-agent.sh` refuses Alan on a client stack, and the secrets helper refuses `ALAN_GITHUB_PAT` for a client stack.
+
+## Cloud models and the model gateway
+
+**Every agent and every port job sends each model request to the stack's model gateway.** The cluster's own models answer by default. A cloud model answers only when the task's "Cloud models" setting allows a cloud model. No cloud key leaves the gateway.
+
+### Cloud keys
+
+**Name each cloud key in `model_keys` in site.json.** Each named key, such as `default`, `betty` or `acme-grok`, records three things:
+
+- `provider`: the key's provider, such as `anthropic`, `xai` or `openai`. The gateway also takes `gemini`, `mistral`, `groq`, `deepseek`, `openrouter`, `azure` (with `api_base`) and `bedrock` (with `region`).
+- `model`: the cloud model the key calls, such as `claude-sonnet-5-5`.
+- `agents`: the handles of the agents that use the key. An agent that no key names uses the key named `default`.
+
+```json
+"model_keys": {
+  "default": { "provider": "anthropic", "model": "claude-sonnet-5-5", "agents": [] },
+  "acme-grok": { "provider": "xai", "model": "grok-4", "agents": ["barb"] }
+}
+```
+
+Any mix works: one key for every agent, one key per agent, or a key shared by a few agents.
+
+**Keep each key's value in the stack's GitHub environment,** as `MODEL_KEY_<NAME>`: `MODEL_KEY_DEFAULT` for `default`, and `MODEL_KEY_ACME_GROK` for `acme-grok`. A Bedrock key's value is `<access key id>:<secret access key>`. The secrets helper writes each value to `model-keys.env` on the control computer. Root owns that file, and only the gateway reads the file. The gateway reads each key from the file when the gateway starts, never from an environment variable. `docker inspect` then shows no key. CircleChat, the agent homes, the agent and job containers, the `.env` files and the backups hold no cloud key. Keep each provider's spend limit in the provider's console.
+
+**A stack with no `model_keys` block keeps working.** The cloud model in the stack's routes becomes the key named `default`, which every agent uses. `setup-host.sh` moves the stack's `ANTHROPIC_API_KEY` out of `.env` and into `model-keys.env` as `MODEL_KEY_DEFAULT`. Rename the GitHub secret to `MODEL_KEY_DEFAULT` after that move.
+
+### Agents
+
+**Set each agent's routes and cloud switch in `agents` in site.json:**
+
+```json
+"agents": {
+  "betty": { "routes": ["local-large"] },
+  "loki": { "routes": ["local-small"], "cloud": false }
+}
+```
+
+- `routes`: the routes the agent's gateway key may use. The agent asks for the first route. An agent that `agents` leaves out may use every route.
+- `cloud`: the agent's cloud switch, on by default. With the switch off, the gateway never calls a cloud model for the agent, whatever the task's setting says.
+
+**Each agent has the agent's own gateway key.** `setup-agent.sh` makes the key and writes the key to the agent's Hermes home. The gateway keeps only a hash of each key. A gateway key reaches only the agent's routes, and works only from the stack's own containers and computers. No agent holds LiteLLM's master key. To revoke one agent's key, run `sudo node circlechat/gateway/keys.mjs revoke <CC_DIR>/gateway-state <handle>`. The other agents keep working. Run `setup-agent.sh <handle>` to give the agent a new key.
+
+### Which model answers
+
+**The task's "Cloud models" setting decides, for each request.** The gateway reads the setting from CircleChat's database, and keeps a copy for at most one minute. A change on the Kanban board applies within a minute.
+
+| Setting            | Who answers                                                                                                        |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| Cluster only       | A cluster model, every time                                                                                        |
+| Cloud after a wait | A cluster model, until the task passes the wait to start or the time to finish. Then the agent's cloud key answers |
+| Cloud now          | The agent's cloud key, from the first request, so the work runs beside the cluster's other work                    |
+
+- **A request waits for the cluster as long as the cluster needs.** A busy or failing cluster is never a reason to call a cloud model. The gateway tries the cluster again until the cluster answers.
+- **The task's clock starts at the gateway's first request for the task.** The wait to start ends at the cluster's first answer. The time to finish counts from the first request.
+- **A request outside a task uses the cluster only,** such as a chat mention or a heartbeat.
+- **The gateway finds the task from the agent's running turn.** CircleChat records the task of each turn. A port job's gateway key names the job's task.
+- **When the gateway cannot tell a request's task, the strictest setting decides.** An agent can have more than one running turn, or a turn outside a task. The gateway then uses the strictest setting among those turns, so Cluster only wins. Such a request starts no task's clock.
+- **A stack with no cluster model fails a Cluster only task.** The gateway posts a comment on the task that says why, once per task.
+
+### What reaches the gateway
+
+**The gateway passes on model requests only:** `POST /v1/chat/completions`, `/v1/completions` and `/v1/messages`. Every other path gets a 404, even with a valid gateway key. LiteLLM's own endpoints, such as key and model management, stay out of reach.
+
+**The gateway listens on two ports.**
+
+- Port 4000 inside the stack's Docker networks: the agents, and the port jobs on the control computer.
+- `site.gateway_port`, 4000 unless site.json sets another port: the port for port jobs on other computers. `setup-host.sh` opens this port on the control computer's Tailscale address only. The port takes only a task key, for every request, `/health` included.
+
+With the outgoing filter off, the control computer's own agents use `site.gateway_port` on `127.0.0.1`.
+
+**The gateway reads CircleChat's database with a read-only role, `cc_gateway_read`.** The role reads only the columns the gateway needs, from six tables, and writes nothing. `setup-host.sh` makes the role from `circlechat/gateway/gateway-db.sql`. The role's password lives in the gateway's state folder, never in an environment variable. After a CircleChat update, rerun `setup-host.sh`, so the role can read any new table the gateway needs.
+
+### The spend log
+
+**The gateway writes one line per request to `<CC_DIR>/gateway-logs/spend.jsonl`.** Each line holds these fields:
+
+- the time, the task and the agent
+- the key's name, or `cluster` for a cluster model
+- the route, the model that answered, the status and the token counts The log holds no prompt and no answer.
+
+### The key check
+
+**`setup-host.sh` and the test restore run the key check, `circlechat/gateway/key-check.mjs`.** The check fails when a cloud key is in CircleChat's database, in an agent's Hermes home or in a backup. The check finds a key by the exact values in `model-keys.env` and by the shapes of the providers' keys. The report names each place and the kind of key, never the key. Remove each key the check finds, and rotate the key in the provider's console.
 
 ## Backups
 
@@ -226,6 +305,8 @@ Two more rules hold on every stack:
    ```json
    "backup": { "remote": "gdrive-backups:agent-backups", "time": "02:00" }
    ```
+
+The test restore also runs the key check over the restored backup. The test fails when the backup holds a cloud key. The Slack message gives the count of places, and the restore test's log on the computer lists the places.
 
 Each nightly backup holds five parts: the database, CircleChat's file store, the agent homes, the shared workspace and site.json. The backup leaves out each `.env`, because every secret lives in the stack's GitHub environment. restic keeps 7 daily, 4 weekly and 6 monthly backups. Each backup also holds `generated.env`: CircleChat's generated passwords and session secret. A restore copies those lines into the new `.env` before CircleChat's first start, because the file store encrypts its own settings with its password.
 
@@ -346,8 +427,8 @@ Barb's Hermes settings (delegation limits, timeout, Kev access) are explained in
 
 - **Use the UI's Install + link to create agents.** Never insert agent rows in Postgres or hand-write `bridge-config.json`. The bridge only reads `handle`, `token`, `hermesHome` from it; tokens come from the install.
 - **Never `rm -rf hermes-homes`.** Each agent's real setup lives in `hermes-homes/.hermes-<handle>/`.
-- **Each agent's key lives in its own home.** The install puts it there. Nothing reads `ANTHROPIC_API_KEY_BETTY`-style lines in CircleChat's `.env`.
-- **The model that runs is in `.hermes-<handle>/config.yaml`,** not the label on the agent page. `setup-agent.sh` sets Alan's to Sonnet; pass `MODEL=...` to set another agent's.
+- **Each agent's gateway key lives in the agent's own home.** `setup-agent.sh` puts the key there. A cloud key never does: the model gateway holds every cloud key.
+- **The route an agent asks for is in `.hermes-<handle>/config.yaml`,** not the label on the agent page. `setup-agent.sh` sets the agent's first route from `agents.<handle>.routes` in site.json. The gateway then picks a cluster model or the agent's cloud key for each request.
 - **A review that finishes but never appears is `HERMES_TIMEOUT`.** The api drops replies that arrive later than it + 60 s. `setup-host.sh` sets 4000.
 - **Don't `git checkout compose.yml`** — the port change (8080) lives there. `setup-host.sh` reapplies it.
 - **`restart` doesn't reload `.env`.** Use `up -d --force-recreate`.

@@ -1,21 +1,108 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
-import { render, validate } from "./render.mjs";
+import { keySecret, render, validate } from "./render.mjs";
 
 const example = JSON.parse(fs.readFileSync(new URL("../site.example.json", import.meta.url), "utf8"));
 const clone = () => structuredClone(example);
 
 test("the example is valid", () => assert.deepEqual(validate(example), []));
 
-test("routes become aliases with ordered fallbacks", () => {
+test("routes become aliases with ordered fallbacks among the cluster's models", () => {
   const { litellm } = render(example);
   const alias = litellm.model_list.find((m) => m.model_name === "local-large");
   assert.equal(alias.litellm_params.api_base, "http://machine-2.example.ts.net:11434/v1");
-  assert.deepEqual(litellm.router_settings.fallbacks.find((f) => f["local-large"])["local-large"],
-    ["machine-1/small-local", "anthropic/claude-sonnet-5-5"]);
-  assert.equal(litellm.model_list.find((m) => m.model_name === "anthropic/claude-sonnet-5-5").litellm_params.api_key,
-    "os.environ/ANTHROPIC_API_KEY");
+  assert.equal(alias.litellm_params.timeout, 86400, "a request waits for a busy cluster");
+  assert.equal(alias.litellm_params.model, "hosted_vllm/your-large-model");
+  assert.equal(alias.model_info.id, "local-large|machine-2/large-local", "LiteLLM names the model that answered");
+  assert.deepEqual(litellm.router_settings.fallbacks.find((f) => f["local-large"])["local-large"], ["machine-1/small-local"]);
+  assert.equal(litellm.general_settings, undefined, "the master key comes from a file when LiteLLM starts");
+});
+
+test("each cloud key becomes key/<name>, with a placeholder the gateway fills from its secrets file", () => {
+  const { litellm } = render(example);
+  const key = (n) => litellm.model_list.find((m) => m.model_name === `key/${n}`).litellm_params;
+  assert.deepEqual(key("default"), { model: "anthropic/claude-sonnet-5-5", api_key: "file:MODEL_KEY_DEFAULT" });
+  assert.deepEqual(key("acme-grok"), { model: "xai/grok-4", api_key: "file:MODEL_KEY_ACME_GROK" });
+  assert.equal(keySecret("acme-grok"), "MODEL_KEY_ACME_GROK");
+  assert.doesNotMatch(JSON.stringify(litellm), /os\.environ/, "no key comes from an environment variable");
+});
+
+test("the gateway gets each agent's routes, cloud switch and key", () => {
+  const g = render(example).gateway;
+  assert.deepEqual(g.agents.betty, { routes: ["local-large"], cloud: true, key: "default" });
+  assert.deepEqual(g.agents.loki, { routes: ["local-small"], cloud: false, key: "default" });
+  assert.deepEqual(g.agents.porter, { routes: ["local-large", "local-small"], cloud: true, key: "porter" });
+  assert.deepEqual(g.agents.barb.key, "acme-grok");
+  assert.deepEqual(g.fallback, { routes: ["local-large", "local-small"], cloud: true, key: "default" });
+  assert.deepEqual(g.keys["acme-grok"], { model: "key/acme-grok", provider: "xai" });
+  assert.deepEqual(g.routes, { "local-large": { local: true }, "local-small": { local: true } });
+  assert.deepEqual(g.nodes, ["machine-2.example.ts.net"]);
+});
+
+test("a stack with no model_keys block keeps working: its cloud route model becomes the default key", () => {
+  const s = clone();
+  delete s.model_keys;
+  s.routes["local-large"].push("anthropic/claude-sonnet-5-5");
+  assert.deepEqual(validate(s), []);
+  const r = render(s);
+  assert.deepEqual(r.litellm.model_list.find((m) => m.model_name === "key/default").litellm_params, { model: "anthropic/claude-sonnet-5-5", api_key: "file:MODEL_KEY_DEFAULT" });
+  assert.deepEqual(r.litellm.router_settings.fallbacks.find((f) => f["local-large"])["local-large"], ["machine-1/small-local"], "the cloud model is no fallback");
+  assert.equal(r.gateway.agents.betty.key, "default");
+  assert.equal(r.gateway.fallback.key, "default");
+  s.routes["local-small"].push("xai/grok-4");
+  assert.match(validate(s).join("\n"), /more than one cloud model/);
+});
+
+test("model_keys accept any provider the gateway supports, and catch the mistakes", () => {
+  const s = clone();
+  s.model_keys.gpt = { provider: "openai", model: "openai/gpt-5", agents: ["alan"] };
+  s.model_keys.az = { provider: "azure", model: "gpt-5", agents: [], api_base: "https://acme.openai.azure.com" };
+  s.model_keys.br = { provider: "bedrock", model: "anthropic.claude-sonnet", agents: [], region: "us-east-1" };
+  assert.deepEqual(validate(s), []);
+  const r = render(s);
+  assert.equal(r.litellm.model_list.find((m) => m.model_name === "key/gpt").litellm_params.model, "openai/gpt-5");
+  assert.deepEqual(r.litellm.model_list.find((m) => m.model_name === "key/br").litellm_params,
+    { model: "bedrock/anthropic.claude-sonnet", aws_access_key_id: "file:MODEL_KEY_BR#1", aws_secret_access_key: "file:MODEL_KEY_BR#2", aws_region_name: "us-east-1" });
+  s.model_keys.bad = { provider: "nowhere", model: "", agents: ["barb"] };
+  s.model_keys.vx = { provider: "vertex_ai", model: "gemini" };
+  s.model_keys.mix = { provider: "xai", model: "anthropic/claude" };
+  s.model_keys.az.api_base = "http://plain";
+  s.model_keys.br.region = "mars";
+  s.routes["local-small"].push("anthropic/claude-sonnet-5-5");
+  const errs = validate(s).join("\n");
+  assert.match(errs, /model_keys.bad.provider must be one of anthropic, openai, xai/);
+  assert.match(errs, /model_keys.bad.model must name the cloud model/);
+  assert.match(errs, /agent barb is in model_keys.acme-grok and model_keys.bad/);
+  assert.match(errs, /Vertex AI signs in with a service account file/);
+  assert.match(errs, /"anthropic\/claude" belongs to another provider than xai/);
+  assert.match(errs, /model_keys.az.api_base must be the Azure deployment's https address/);
+  assert.match(errs, /model_keys.br.region must be an AWS region/);
+  assert.match(errs, /route local-small: "anthropic\/claude-sonnet-5-5" is a cloud model. Routes list the cluster's models/);
+});
+
+test("each agent's routes and cloud switch are checked", () => {
+  const s = clone();
+  s.agents.betty = { routes: ["nowhere"], cloud: "yes" };
+  s.agents["Not A Handle"] = {};
+  const errs = validate(s).join("\n");
+  assert.match(errs, /agents.betty.routes: no route named "nowhere"/);
+  assert.match(errs, /agents.betty.cloud must be true or false/);
+  assert.match(errs, /"Not A Handle" is not an agent handle/);
+});
+
+test("port jobs reach the control computer's gateway: over the job network there, over Tailscale elsewhere", () => {
+  const r = render(example);
+  assert.equal(r.services["machine-1"].jobs.gateway_url, "http://cc-gateway:4000");
+  assert.equal(r.services["machine-2"].jobs.gateway_url, "http://100.64.0.1:4000");
+  assert.match(r.tenantEnv, /^TAILNET_ADDRESS=100\.64\.0\.1$/m);
+  assert.match(r.egress.allowIps, /^100\.64\.0\.1$/m);
+  assert.match(r.egress.conf, /acl Safe_ports port .* 4000\n/);
+  const s = clone();
+  delete s.nodes[0].tailnet_address;
+  assert.match(validate(s).join("\n"), /needs the control computer's tailnet_address/);
+  s.nodes[0].tailnet_address = "not an address";
+  assert.match(validate(s).join("\n"), /tailnet_address must be an IP address/);
 });
 
 test("kev engines are ordered by priority", () => {
@@ -111,15 +198,18 @@ function clientStack() {
 
 test("a client stack is local-only until the client's permission is recorded", () => {
   const s = clientStack();
+  s.routes["local-small"].push("anthropic/claude-sonnet-5-5");
   const errs = validate(s).join("\n");
   assert.match(errs, /is a cloud model, and this client stack has no recorded permission/);
+  assert.match(errs, /model_keys: this client stack has no recorded permission/);
   if (s.porter) assert.match(errs, /local-only client stack cannot run Porter/);
   const local = clientStack();
-  delete local.porter;
+  delete local.porter; delete local.model_keys;
   for (const k of Object.keys(local.routes)) local.routes[k] = local.routes[k].filter((b) => !b.startsWith("anthropic/"));
   for (const k of Object.keys(local.routes)) if (!local.routes[k].length) delete local.routes[k];
   assert.deepEqual(validate(local), []);
   assert.match(render(local).tenantEnv, /^CLOUD_MODELS=local-only$/m);
+  assert.deepEqual(render(local).gateway.keys, {});
 });
 
 test("cloud models on a client stack need who granted the permission, when, and who pays", () => {
@@ -159,19 +249,18 @@ test("the evidence key must be an age public key", () => {
   assert.deepEqual(validate(s), []);
 });
 
-test("the outgoing filter allows GitHub, the registries and the stack's computers; cloud providers only with permission", () => {
+test("the outgoing filter allows GitHub, the registries and the stack's computers, and never a model provider", () => {
   const r = render(example);
   assert.match(r.egress.allow, /^\.github\.com$/m);
   assert.match(r.egress.allow, /^registry\.npmjs\.org$/m);
-  assert.match(r.egress.allow, /^api\.anthropic\.com$/m);
+  assert.doesNotMatch(r.egress.allow, /anthropic|x\.ai|openai/);
   assert.match(r.egress.conf, /http_access deny all/);
-  const local = clone();
-  Object.assign(local.site, { tenant: "acme", kind: "client", docker_context: "colima-acme" });
-  delete local.porter; delete local.data;
-  for (const k of Object.keys(local.routes)) { local.routes[k] = local.routes[k].filter((b) => !b.startsWith("anthropic/")); if (!local.routes[k].length) delete local.routes[k]; }
-  assert.doesNotMatch(render(local).egress.allow, /anthropic/);
-  local.egress = { allow: ["api.anthropic.com"] };
-  assert.match(validate(local).join("\n"), /cloud model provider/);
+  const s = clone();
+  s.egress = { allow: ["api.anthropic.com", "api.x.ai", "docs.example.com"] };
+  const errs = validate(s).join("\n");
+  assert.match(errs, /"api.anthropic.com" is a cloud model provider. Agents and port jobs reach cloud models only through the gateway/);
+  assert.match(errs, /"api.x.ai" is a cloud model provider/);
+  assert.doesNotMatch(errs, /docs.example.com/);
 });
 
 test("masking is on by default for a client stack with cloud models, and keeps agents off the providers", () => {
@@ -184,13 +273,13 @@ test("masking is on by default for a client stack with cloud models, and keeps a
   assert.equal(r.litellm.guardrails[0].litellm_params.guardrail, "presidio");
   assert.doesNotMatch(r.egress.allow, /anthropic/);
   s.privacy = { mask_pii: false };
-  assert.match(render(s).egress.allow, /api\.anthropic\.com/);
+  assert.match(render(s).tenantEnv, /^MASK_PII=off$/m);
+  assert.doesNotMatch(render(s).egress.allow, /anthropic/, "masking is a separate setting: agents never reach a provider");
   assert.match(render(example).tenantEnv, /^MASK_PII=off$/m);
 });
 
-test("cloud models through Bedrock, Vertex AI or Azure are allowed, and the per-client settings are checked", () => {
+test("the per-client settings are checked", () => {
   const s = clone();
-  s.routes["claude-bedrock"] = ["bedrock/anthropic.claude-sonnet"];
   s.git = { host: "other" };
   s.repos.access = "admin-token";
   s.site.proxy = "other";
@@ -200,7 +289,6 @@ test("cloud models through Bedrock, Vertex AI or Azure are allowed, and the per-
   assert.match(r.tenantEnv, /^GIT_HOST=other$/m);
   assert.match(r.tenantEnv, /^REPO_ACCESS=admin-token$/m);
   assert.match(r.tenantEnv, /^UPGRADE_AUTO=on$/m);
-  assert.match(r.egress.allow, /\.amazonaws\.com/);
   s.git.host = "gitlab-ish"; s.repos.access = "magic";
   const errs = validate(s).join("\n");
   assert.match(errs, /git.host must be/);
@@ -214,5 +302,7 @@ test("a computer's IP address goes on the filter's IP list, where name rules can
   assert.match(r.egress.allowIps, /^100\.101\.102\.103$/m);
   assert.doesNotMatch(r.egress.allow, /100\.101/);
   assert.match(r.egress.conf, /acl allowed_ips dst "\/etc\/egress\/allow-ips.txt"/);
-  assert.match(render(example).egress.allowIps, /192\.0\.2\.1/);
+  const none = clone();
+  delete none.nodes[0].tailnet_address; delete none.nodes[1].jobs; delete none.porter;
+  assert.match(render(none).egress.allowIps, /192\.0\.2\.1/);
 });

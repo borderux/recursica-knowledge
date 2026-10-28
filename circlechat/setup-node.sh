@@ -49,13 +49,18 @@ node -e '
   install_unit "$name" "$cmd" "$dir" "$(id -un)"
 done
 # A job runner, when the node has a `jobs` block: builds the porter job image and runs jobd, which
-# starts each job in a container capped at jobs.memory_gb. Its secrets (JOBD_TOKEN, ANTHROPIC_API_KEY,
-# PORTER_GITHUB_PAT, PORTER_GIT_NAME, PORTER_GIT_EMAIL, PORTER_HOOK_URL, PORTER_HOOK_SECRET) come
-# from $SECRETS. JOBD_TOKEN must match the one in the control machine's .env.
+# starts each job in a container capped at jobs.memory_gb. Its secrets (JOBD_TOKEN, PORTER_GITHUB_PAT,
+# PORTER_GIT_NAME, PORTER_GIT_EMAIL, PORTER_HOOK_URL, PORTER_HOOK_SECRET) come from $SECRETS.
+# JOBD_TOKEN must match the one in the control machine's .env. A job holds no cloud key: the job
+# sends its model requests to the control computer's gateway, with the gateway key for its task.
 JOBS="$(node -e 'const s=JSON.parse(require("fs").readFileSync(process.argv[1]));process.stdout.write(s.jobs?JSON.stringify(s.jobs):"")' "$SPEC")"
 if [ -n "$JOBS" ]; then
   jget() { node -e 'process.stdout.write(String(JSON.parse(process.argv[1])[process.argv[2]] ?? ""))' "$JOBS" "$1"; }
   [ -f "$SECRETS" ] && grep -q '^JOBD_TOKEN=.' "$SECRETS" || { echo "$NODE runs jobs: put JOBD_TOKEN (from the control machine's .env) and the job secrets in $SECRETS first."; exit 1; }
+  if grep -qE '^(ANTHROPIC_API_KEY|OPENAI_API_KEY|XAI_API_KEY)=.' "$SECRETS"; then
+    echo "$SECRETS holds a cloud key. Port jobs reach cloud models only through the gateway: remove the key from $SECRETS, then rerun."; exit 1
+  fi
+  GATEWAY_URL="$(jget gateway_url)"
   ROOT="$(cd "$HERE/.." && pwd)"
   docker build -q -t recursica/porter-job -f "$HERE/jobd/porter-job/Dockerfile" "$ROOT"
   . "$OUT/porter.env" 2>/dev/null || true
@@ -75,9 +80,15 @@ if [ -n "$JOBS" ]; then
       -v "$JBASE/conf":/etc/egress:ro -v "$JBASE/logs":/var/log/egress recursica/egress >/dev/null
     docker network connect --alias egress "$JNET" "cc-jobs-egress$SUFFIX"
     JOBS_NET_ARGS="JOBD_NETWORK=$JNET JOBD_PROXY=http://egress:3128 "
+    # On the control computer, the jobs reach the gateway on the job network.
+    if [ "$GATEWAY_URL" = http://cc-gateway:4000 ]; then
+      docker network connect --alias cc-gateway "$JNET" "cc-gateway$SUFFIX" 2>/dev/null \
+        || docker network inspect -f '{{range .Containers}}{{.Name}} {{end}}' "$JNET" | grep -qw "cc-gateway$SUFFIX" \
+        || { echo "Start the gateway first: run setup-host.sh on this computer, then rerun setup-node.sh."; exit 1; }
+    fi
   fi
   # One job runner per stack: its own unit, port, job folder, secrets and Docker VM.
   if [ -n "${TENANT:-}" ]; then JOBS_DIR="$HOME/tenants/$TENANT/jobs"; else JOBS_DIR="$HOME/.recursica-jobs"; fi
-  install_unit "jobd$SUFFIX" "set -a; . \"$SECRETS\"; set +a; ${DCTX}${JOBS_NET_ARGS}JOBD_PORT=$(jget port) JOBD_SLOTS=$(jget slots) JOBD_MEMORY_GB=$(jget memory_gb) JOBD_NODE_NAME=$NODE JOBD_ALLOWED_REPOS=${JOBD_ALLOWED_REPOS:-} JOBD_DIR=$JOBS_DIR node $HERE/jobd/jobd.mjs" "$HOME" "$(id -un)"
+  install_unit "jobd$SUFFIX" "set -a; . \"$SECRETS\"; set +a; ${DCTX}${JOBS_NET_ARGS}JOBD_PORT=$(jget port) JOBD_SLOTS=$(jget slots) JOBD_MEMORY_GB=$(jget memory_gb) JOBD_NODE_NAME=$NODE JOBD_GATEWAY_URL=$GATEWAY_URL JOBD_ALLOWED_REPOS=${JOBD_ALLOWED_REPOS:-} JOBD_DIR=$JOBS_DIR node $HERE/jobd/jobd.mjs" "$HOME" "$(id -un)"
 fi
 echo "$NODE: services installed. Check reachability from the control machine with the addresses in site.json."

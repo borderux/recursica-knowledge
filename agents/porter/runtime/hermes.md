@@ -30,17 +30,22 @@ and report. Each porter-adapter runs as a **job** on a **job runner** (`circlech
 | `PORTER_JOB_NODES` | `site.json` nodes with `jobs`, best first | Job runner addresses |
 | `JOBD_TOKEN` | the control machine's `.env` | The job runners' shared token |
 | `PORTER_OWNER` | `site.json` `porter.owner` | The CircleChat handle to mention with a result |
+| `CC_GATEWAY_URL`, `CC_GATEWAY_KEY` | `setup-agent.sh porter` | The model gateway's address and Porter's own gateway key, to get each job's task key |
 
 Porter needs no GitHub token. Porter reads public releases, and the jobs push with their own token.
 
 ## What each job needs
+
+A job holds no cloud key. Porter gets a gateway key for each adapter's subtask and puts the key in
+the job request. The job runner gives the job that key and the gateway's address in a file in the
+job's folder, and deletes the file when the job ends. Claude Code in the job sends every model
+request to the gateway, and the subtask's "Cloud models" setting decides which model answers.
 
 The job runner reads these from `~/.recursica-node.env` on its machine and passes only these to
 the job:
 
 | Variable | Holds |
 | --- | --- |
-| `ANTHROPIC_API_KEY` | The porter-adapter's model key |
 | `PORTER_GITHUB_PAT` | Fine-grained token: Contents and Pull requests on the three target adapters only, no access to the Mantine adapter, **no merge rights**. Protect `main` on each target with a ruleset whose bypass list is empty |
 | `PORTER_GIT_NAME`, `PORTER_GIT_EMAIL` | The git identity the commits use. A bot account keeps the pull requests reviewable by the whole team |
 | `PORTER_HOOK_URL`, `PORTER_HOOK_SECRET` | The CircleChat workflow webhook that wakes Porter |

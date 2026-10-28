@@ -43,26 +43,19 @@ if [ "$HANDLE" = barb ]; then
   sudo cp -r "$K/agents/barb/subagents/checker" "$K/agents/barb/subagents/feisty" "$H/skills/"
 fi
 
-# Model and effort. The model that runs is the one in config.yaml, not the label in the UI.
-# MODEL=... overrides; otherwise only Alan's is set, and the others keep what the install chose.
-case "$HANDLE" in
-  alan) MODEL="${MODEL:-claude-sonnet-5-5}" ;;
-  *)    MODEL="${MODEL:-}" ;;
-esac
+# The model gateway. The agent sends every model request to the stack's gateway with the agent's
+# own gateway key, and asks for the agent's first route in site.json (agents.<handle>.routes). The
+# gateway decides, for each request, whether a cluster model or the agent's cloud key answers.
+# No cloud key stays in the agent's home. Porter's shell also gets the gateway's address and key,
+# to ask for each port job's task key.
+[ -f "$KIT_OUT/gateway.json" ] || { echo "No $KIT_OUT/gateway.json. Run setup-host.sh first."; exit 1; }
+gateway_access "$HANDLE" "$H" "$([ "$HANDLE" = porter ] && echo env)"
 case "$HANDLE" in
   betty) EFFORT=low ;;
   *)     EFFORT=medium ;;
 esac
-if [ -n "$MODEL" ]; then
-  sudo_sedi -e "s/^\(  default:\).*/\1 $MODEL/" "$H/config.yaml"
-fi
-# Compression summaries run on Haiku, except for Loki: he runs on a local model with no
-# Anthropic key, so his summaries run on his own model.
-if [ "$HANDLE" = loki ]; then
-  SUMMARY="$(sudo sed -n 's/^  default: *//p' "$H/config.yaml" | head -1)"
-else
-  SUMMARY=claude-haiku-4-5
-fi
+# Compression summaries go to the same route, through the gateway.
+SUMMARY="$(sudo sed -n 's/^  default: *//p' "$H/config.yaml" | head -1)"
 sudo_sedi \
   -e "s/reasoning_effort: .*/reasoning_effort: $EFFORT/" \
   -e "s/summary_model: .*/summary_model: $SUMMARY/" \
