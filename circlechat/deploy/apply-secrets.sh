@@ -119,6 +119,13 @@ fi
 for k in AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY VERTEXAI_PROJECT AZURE_API_KEY; do
   has "$k" && { echo "Refused: $k goes in a MODEL_KEY_<NAME> secret now, named in site.json's model_keys (circlechat/README.md, \"Cloud models\"). Nothing was written."; exit 1; }
 done
+# The helper runs as root, and the owner can replace model-keys.env with a symlink. Writing the
+# cloud keys through a symlink would write them to the file the symlink names.
+if [[ " $ROLES " == *" control "* ]] && [ -L "$CC_DIR/model-keys.env" ]; then
+  for k in $NAMES; do case "$k" in ANTHROPIC_API_KEY|MODEL_KEY_*)
+    echo "Refused: $CC_DIR/model-keys.env is a symlink. Replace the symlink with a plain file. Nothing was written."; exit 1 ;;
+  esac; done
+fi
 
 # Replace or add one KEY=value line, keeping every other line and the file's owner.
 set_kv() {
@@ -155,6 +162,9 @@ if [[ " $ROLES " == *" control "* ]]; then
     tmp="$(mktemp)"; awk -v k="$name" 'index($0, k "=") != 1' "$KEYS_FILE" > "$tmp"
     printf '%s=%s\n' "$name" "$(val "$k")" >> "$tmp"; cat "$tmp" > "$KEYS_FILE"; rm -f "$tmp"
     chmod 600 "$KEYS_FILE"
+    # On a Mac, the Docker VM reads the Mac's files as the owner, never as root, so the gateway
+    # can mount only a file the owner owns. On Linux, root keeps the file.
+    if [ "$(uname -s)" = Darwin ]; then chown -h "$OWNER" "$KEYS_FILE"; fi
     echo "  $name -> $KEYS_FILE"; WROTE_CONTROL=true
   done
   drop_kv "$CC_DIR/.env" ANTHROPIC_API_KEY
