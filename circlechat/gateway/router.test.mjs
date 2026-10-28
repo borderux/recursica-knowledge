@@ -30,7 +30,7 @@ const litellm = await listen(async (req, res) => {
     return res.end("data: [DONE]\n\n");
   }
   const model = body.model.startsWith("key/") ? "claude-sonnet-5-5" : `openai/${body.model}`;
-  const answered = body.model.startsWith("key/") ? "anthropic/claude-sonnet-5-5" : `m1/${body.model}`;
+  const answered = body.model.startsWith("key/") ? "anthropic/claude-sonnet-5-5" : `m1/${body.model === "local-small" ? "mlx" : "ollama"}/${body.model}`;
   res.writeHead(200, { "content-type": "application/json", "x-litellm-model-id": `${body.model}|${answered}` });
   res.end(JSON.stringify({ model, choices: [{ message: { content: "secret answer text" } }], usage: { prompt_tokens: 11, completion_tokens: 3 } }));
 });
@@ -53,6 +53,11 @@ const config = {
   fallback: { routes: ["local-large", "local-small"], cloud: true, key: "default" },
   keys: { default: { model: "key/default" }, porter: { model: "key/porter" } },
   routes: { "local-large": { local: true }, "local-small": { local: true }, "cloud-only": { local: false } },
+  models: {
+    "m1/ollama/local-large": { server: "m1/ollama", kind: "ollama", model: "qwen3:32b" },
+    "m1/mlx/local-small": { server: "m1/mlx", kind: "mlx-lm", model: "mlx-community/Qwen3-8B-4bit" },
+    "anthropic/claude-sonnet-5-5": { server: "anthropic", kind: "cloud", model: "claude-sonnet-5-5" },
+  },
 };
 const db = {
   tasks: { betty: null, loki: null, porter: null, nolocal: null },
@@ -86,8 +91,8 @@ test("a request outside a task goes to the cluster, and the spend log holds no p
   assert.equal((await r.json()).model, "openai/local-large");
   assert.equal(seen.at(-1).model, "local-large");
   const log = await lastLog();
-  assert.deepEqual({ task: log.task, agent: log.agent, key: log.key, model: log.model, input: log.input_tokens, output: log.output_tokens },
-    { task: null, agent: "betty", key: "cluster", model: "m1/local-large", input: 11, output: 3 });
+  assert.deepEqual({ task: log.task, agent: log.agent, key: log.key, server: log.server, model: log.model, backend: log.backend, input: log.input_tokens, output: log.output_tokens },
+    { task: null, agent: "betty", key: "cluster", server: "m1/ollama", model: "qwen3:32b", backend: "m1/ollama/local-large", input: 11, output: 3 });
   assert.doesNotMatch(fs.readFileSync(spendLog, "utf8"), /secret prompt text|secret answer text/);
 });
 
@@ -108,7 +113,17 @@ test("cloud now calls the agent's cloud key from the first request", async () =>
   assert.equal((await r.json()).model, "claude-sonnet-5-5");
   assert.equal(seen.at(-1).model, "key/default");
   const log = await lastLog();
-  assert.deepEqual([log.task, log.agent, log.key, log.model], ["t-now", "betty", "default", "anthropic/claude-sonnet-5-5"]);
+  assert.deepEqual([log.task, log.agent, log.key, log.server, log.model], ["t-now", "betty", "default", "anthropic", "claude-sonnet-5-5"]);
+});
+
+test("the spend log names each request's agent, server and model, so runs can be compared", async () => {
+  db.tasks.betty = null; db.tasks.loki = null;
+  await ask(keys.betty);
+  const a = await lastLog();
+  await ask(keys.loki, "local-small");
+  const b = await lastLog();
+  assert.deepEqual([a.agent, a.server, a.model], ["betty", "m1/ollama", "qwen3:32b"]);
+  assert.deepEqual([b.agent, b.server, b.model], ["loki", "m1/mlx", "mlx-community/Qwen3-8B-4bit"]);
 });
 
 test("an agent whose cloud switch is off never calls a cloud model, whatever the task says", async () => {

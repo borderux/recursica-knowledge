@@ -64,6 +64,27 @@ export function egressAllow(site) {
   return [...out].sort();
 }
 
+// The model servers a computer runs. site.json lists each server under the node's "servers", with
+// the models the server serves:
+//   { "id": "mlx", "kind": "mlx-lm", "port": 8081, "models": [{ "id": "qwen-32b", "model": "<name>", "memory_gb": 20 }] }
+// A route or an agent names one model as "<node>/<server id>/<model id>". An older site.json lists
+// "models" on the node instead, each with its own port; each model is then named "<node>/<model id>",
+// and the port 11434 counts as an Ollama server named ollama.
+export const SERVER_KINDS = { ollama: ["linux", "macos", "windows"], "mlx-lm": ["macos"] };
+export function clusterModels(site) {
+  const out = new Map();
+  for (const n of site.nodes ?? []) {
+    for (const sv of n.servers ?? []) {
+      for (const m of sv.models ?? []) out.set(`${n.name}/${sv.id}/${m.id}`, { n, server: sv, m });
+    }
+    for (const m of n.models ?? []) {
+      const id = m.port === 11434 ? "ollama" : `port-${m.port}`;
+      out.set(`${n.name}/${m.id}`, { n, server: { id, kind: m.port === 11434 ? "ollama" : "openai-compatible", port: m.port }, m });
+    }
+  }
+  return out;
+}
+
 // The secret that holds a key's value, in GitHub and in the gateway's secrets file.
 export const keySecret = (name) => `MODEL_KEY_${name.toUpperCase().replace(/-/g, "_")}`;
 const splitModel = (provider, model) => (String(model).startsWith(`${provider}/`) ? String(model).slice(provider.length + 1) : String(model));
@@ -96,8 +117,8 @@ export function agentKey(keys, handle) {
 // and the agent's cloud key. An agent site.json never names gets the fallback.
 export function gatewayConfig(site) {
   const keys = modelKeys(site);
-  const nodes = new Set((site.nodes ?? []).map((n) => n.name));
-  const local = (b) => nodes.has(String(b).split("/")[0]);
+  const cluster = clusterModels(site);
+  const local = (b) => cluster.has(b);
   const all = Object.keys(site.routes ?? {});
   const handles = new Set([...Object.keys(site.agents ?? {}), ...Object.values(keys).flatMap((k) => k.agents)]);
   const agents = Object.fromEntries([...handles].sort().map((h) => [h, {
@@ -107,7 +128,16 @@ export function gatewayConfig(site) {
     agents,
     fallback: { routes: all, cloud: true, key: keys.default ? "default" : null },
     keys: Object.fromEntries(Object.entries(keys).map(([name, k]) => [name, { model: `key/${name}`, provider: k.provider }])),
-    routes: Object.fromEntries(Object.entries(site.routes ?? {}).map(([r, bs]) => [r, { local: bs.some(local) }])),
+    // Each route, and each cluster model, which an agent may also name as a route of its own.
+    routes: Object.fromEntries([
+      ...Object.entries(site.routes ?? {}).map(([r, bs]) => [r, { local: bs.some(local) }]),
+      ...[...cluster.keys()].map((b) => [b, { local: true }]),
+    ]),
+    // The server and the model behind each name LiteLLM reports, for the spend log.
+    models: Object.fromEntries([
+      ...[...cluster].map(([b, { n, server, m }]) => [b, { server: `${n.name}/${server.id}`, kind: server.kind, model: m.model }]),
+      ...Object.values(keys).map((k) => [`${k.provider}/${k.model}`, { server: k.provider, kind: "cloud", model: k.model }]),
+    ]),
     // The other computers, whose port jobs use the gateway over Tailscale.
     nodes: (site.nodes ?? []).filter((n) => !n.control && n.address !== "host.docker.internal").map((n) => n.address),
   };
@@ -154,6 +184,49 @@ export function maskPii(site) {
 export function cloudAllowed(site) {
   if (site.site?.kind !== "client") return true;
   return site.site?.cloud_models?.allowed === true;
+}
+
+// One node's model servers: each server's kind, port and models, and whether the models the
+// node loads fit the memory the node gives its models (model_memory_gb).
+function serverErrors(n) {
+  const errs = [];
+  const servers = n.servers ?? [];
+  if (n.servers !== undefined && !Array.isArray(n.servers)) return [`node ${n.name}: servers must be a list`];
+  if (servers.length && n.models?.length) errs.push(`node ${n.name}: list the models under servers, not also under models`);
+  const ids = new Set(), ports = new Map([[n.kev?.port, "kev"], [n.jobs?.port, "jobs"]]);
+  for (const sv of servers) {
+    const where = `node ${n.name}, server ${sv.id}`;
+    if (!SLUG.test(sv.id ?? "")) errs.push(`node ${n.name}: server id "${sv.id}" must be a slug`);
+    if (ids.has(sv.id)) errs.push(`node ${n.name}: server id "${sv.id}" is used twice`);
+    ids.add(sv.id);
+    if (!SERVER_KINDS[sv.kind]) errs.push(`${where}: kind must be ${Object.keys(SERVER_KINDS).join(" or ")}`);
+    else if (!SERVER_KINDS[sv.kind].includes(n.os)) errs.push(`${where}: an ${sv.kind} server runs only on ${SERVER_KINDS[sv.kind].join(", ")}, and this node is ${n.os}`);
+    if (!Number.isInteger(sv.port)) errs.push(`${where}: port must be a number`);
+    else if (ports.has(sv.port)) errs.push(`${where}: port ${sv.port} is already used by ${ports.get(sv.port)}`);
+    else ports.set(sv.port, `server ${sv.id}`);
+    if (!Array.isArray(sv.models) || !sv.models.length) { errs.push(`${where}: models must list at least one model`); continue; }
+    // mlx-lm's server holds one model at a time: run one server for each model.
+    if (sv.kind === "mlx-lm" && sv.models.length > 1) errs.push(`${where}: an mlx-lm server serves one model. Run one mlx-lm server, on its own port, for each model`);
+    const mids = new Set();
+    for (const m of sv.models) {
+      if (!SLUG.test(m.id ?? "")) errs.push(`${where}: model id "${m.id}" must be a slug`);
+      if (mids.has(m.id)) errs.push(`${where}: model id "${m.id}" is used twice`);
+      mids.add(m.id);
+      if (!m.model) errs.push(`${where}, model ${m.id}: model is required, the name the server knows the model by`);
+      if (!(m.memory_gb > 0)) errs.push(`${where}, model ${m.id}: memory_gb must be the memory the model needs, in GB`);
+    }
+  }
+  // Every model a node lists stays loaded, so agents can use several at once. The models must fit.
+  const loaded = [...servers.flatMap((sv) => (sv.models ?? []).map((m) => [`${sv.id}/${m.id}`, m.memory_gb])), ...(n.models ?? []).map((m) => [m.id, m.memory_gb])];
+  if (servers.length && !(n.model_memory_gb > 0)) errs.push(`node ${n.name}: model_memory_gb must be the memory, in GB, this computer gives its models`);
+  if (n.model_memory_gb > 0) {
+    const sized = loaded.filter(([, gb]) => gb > 0);
+    const total = sized.reduce((a, [, gb]) => a + gb, 0);
+    if (total > n.model_memory_gb) {
+      errs.push(`node ${n.name}: the loaded models need ${total} GB, and the node gives its models ${n.model_memory_gb} GB (model_memory_gb): ${sized.map(([id, gb]) => `${id} ${gb} GB`).join(", ")}`);
+    }
+  }
+  return errs;
 }
 
 export function validate(site) {
@@ -235,6 +308,7 @@ export function validate(site) {
       ids.add(m.id);
       if (!m.port || !m.model) errs.push(`node ${n.name}/${m.id}: port and model are required`);
     }
+    errs.push(...serverErrors(n));
     if (n.jobs) {
       if (!Number.isInteger(n.jobs.port) || !Number.isInteger(n.jobs.slots) || n.jobs.slots < 1) errs.push(`node ${n.name}: jobs needs an integer port and slots >= 1`);
       if (!(n.jobs.memory_gb > 0)) errs.push(`node ${n.name}: jobs.memory_gb must be a positive number`);
@@ -246,13 +320,13 @@ export function validate(site) {
   }
   const controls = nodes.filter((n) => n.control);
   if (controls.length !== 1) errs.push(`exactly one node must have "control": true (found ${controls.length})`);
-  const known = new Set(nodes.flatMap((n) => (n.models ?? []).map((m) => `${n.name}/${m.id}`)));
+  const known = new Set(clusterModels(site).keys());
   for (const [route, backends] of Object.entries(site.routes ?? {})) {
     if (!SLUG.test(route)) errs.push(`route "${route}" must be a slug`);
     if (!Array.isArray(backends) || !backends.length) errs.push(`route ${route}: needs at least one backend`);
     for (const b of backends ?? []) {
       if (CLOUD_PREFIXES.some((p) => b.startsWith(p))) continue;
-      if (!known.has(b)) errs.push(`route ${route}: unknown backend "${b}" (use <node>/<model id>, or a cloud model: ${CLOUD_PREFIXES.map((p) => `${p}<model>`).join(", ")})`);
+      if (!known.has(b)) errs.push(`route ${route}: unknown backend "${b}" (use <node>/<server id>/<model id>, or a cloud model: ${CLOUD_PREFIXES.map((p) => `${p}<model>`).join(", ")})`);
     }
   }
   // Cloud keys: each named key's provider, cloud model and agents. The key's value is never here.
@@ -288,7 +362,9 @@ export function validate(site) {
       if (!a || typeof a !== "object") { errs.push(`agents.${h} must be an object`); continue; }
       if (a.cloud !== undefined && typeof a.cloud !== "boolean") errs.push(`agents.${h}.cloud must be true or false`);
       if (a.routes !== undefined && (!Array.isArray(a.routes) || !a.routes.length)) errs.push(`agents.${h}.routes must list at least one route`);
-      for (const r of Array.isArray(a.routes) ? a.routes : []) if (!site.routes?.[r]) errs.push(`agents.${h}.routes: no route named "${r}"`);
+      for (const r of Array.isArray(a.routes) ? a.routes : []) {
+        if (!site.routes?.[r] && !known.has(r)) errs.push(`agents.${h}.routes: "${r}" is neither a route nor a cluster model (<node>/<server id>/<model id>)`);
+      }
     }
   }
   // Routes list the cluster's models. A cloud model in a route would answer whenever the cluster
@@ -319,19 +395,20 @@ const url = (n, port, suffix = "") => `http://${n.address}:${port}${suffix}`;
 
 export function render(site) {
   const nodes = site.nodes;
-  const byKey = new Map();
-  for (const n of nodes) for (const m of n.models ?? []) byKey.set(`${n.name}/${m.id}`, { n, m });
+  const byKey = clusterModels(site);
 
   // A cluster model may take a long time to answer when the cluster is busy: the request waits.
-  // hosted_vllm is LiteLLM's name for any server with the OpenAI chat API. Unlike openai/, it also
-  // answers a request in Anthropic's format (a port job's Claude Code) through that chat API.
+  // hosted_vllm is LiteLLM's name for any server with the OpenAI chat API, which Ollama and mlx-lm
+  // both serve at /v1. Unlike openai/, it also answers a request in Anthropic's format (a port
+  // job's Claude Code) through that chat API.
   const WAIT = 86_400;
   const params = (b) => {
-    const { n, m } = byKey.get(b);
-    return { model: `hosted_vllm/${m.model}`, api_base: url(n, m.port, "/v1"), api_key: "none", timeout: WAIT, stream_timeout: WAIT };
+    const { n, server, m } = byKey.get(b);
+    return { model: `hosted_vllm/${m.model}`, api_base: url(n, server.port, "/v1"), api_key: "none", timeout: WAIT, stream_timeout: WAIT };
   };
   // LiteLLM names the model that answered in the x-litellm-model-id header: "<name>|<model>", where
-  // <model> is the cluster model (<node>/<model id>) or the cloud model (<provider>/<model>).
+  // <model> is the cluster model (<node>/<server id>/<model id>) or the cloud model
+  // (<provider>/<model>). The gateway looks up the model's server in gateway.json.
   const entry = (name, b, p) => ({ model_name: name, litellm_params: p, model_info: { id: `${name}|${b}` } });
   // Every cluster model under its own name, and each route as an alias of its first cluster model,
   // with the route's other cluster models as fallbacks in order. Cloud models never join a route.

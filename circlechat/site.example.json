@@ -9,9 +9,13 @@
     "host.docker.internal for the control machine itself.",
     "exactly one node has \"control\": true. It runs CircleChat, the agents and the gateway.",
     "Any machine can be the control node, a Mac or a PC of any size (Windows runs it through WSL).",
+    "servers: the model servers a node runs, each with its kind (ollama, or mlx-lm on a Mac), its port",
+    "and the models it serves. Each model records memory_gb, the memory it needs. Every listed model",
+    "stays loaded, so the models must fit model_memory_gb, the memory the node gives its models.",
+    "mlx-lm serves one model: run one mlx-lm server, on its own port, for each model (a service).",
     "routes: a name agents ask for, mapped to an ordered list of backends. The gateway tries",
-    "them in order, so the last entry is the fallback. A backend is \"<node>/<model id>\": a route",
-    "lists only the cluster's own models. A cloud model never joins a route.",
+    "them in order, so the last entry is the fallback. A backend is \"<node>/<server id>/<model id>\":",
+    "a route lists only the cluster's own models. A cloud model never joins a route.",
     "",
     "jobs: a node with a jobs block runs a job runner (circlechat/jobd) for long, heavy agent work,",
     "such as Porter's adapter ports. Each job gets memory_gb of memory at most; slots jobs run at once.",
@@ -27,7 +31,8 @@
     "agents that use the key. The key's value lives only in the stack's GitHub environment, as",
     "MODEL_KEY_<NAME> (MODEL_KEY_DEFAULT for the key named default). An agent no key names uses the",
     "key named default. A task's \"Cloud models\" setting decides when a cloud key answers.",
-    "agents: each agent's routes (all routes when left out) and cloud switch (on when left out). With",
+    "agents: each agent's routes (all routes when left out) and cloud switch (on when left out). A route",
+    "here can also name one cluster model, \"<node>/<server id>/<model id>\", to compare models. With",
     "the switch off, the gateway never calls a cloud model for the agent."
   ],
   "site": {
@@ -51,12 +56,20 @@
         "port": 8009,
         "priority": 2
       },
-      "models": [
+      "model_memory_gb": 16,
+      "servers": [
         {
-          "id": "small-local",
-          "port": 8000,
-          "model": "your-model-name",
-          "context": 131072
+          "id": "ollama",
+          "kind": "ollama",
+          "port": 11434,
+          "models": [
+            {
+              "id": "small-local",
+              "model": "your-model-name",
+              "memory_gb": 10,
+              "context": 131072
+            }
+          ]
         }
       ],
       "services": [
@@ -86,15 +99,42 @@
         "port": 8009,
         "priority": 1
       },
-      "models": [
+      "model_memory_gb": 96,
+      "servers": [
         {
-          "id": "large-local",
+          "id": "ollama",
+          "kind": "ollama",
           "port": 11434,
-          "model": "your-large-model",
-          "context": 131072
+          "models": [
+            {
+              "id": "large-local",
+              "model": "your-large-model",
+              "memory_gb": 40,
+              "context": 131072
+            }
+          ]
+        },
+        {
+          "id": "mlx",
+          "kind": "mlx-lm",
+          "port": 8081,
+          "models": [
+            {
+              "id": "large-mlx",
+              "model": "your-org/your-large-model-mlx",
+              "memory_gb": 40,
+              "context": 131072
+            }
+          ]
         }
       ],
-      "services": [],
+      "services": [
+        {
+          "name": "mlx-large",
+          "dir": "/Users/you/mlx",
+          "command": "uv run mlx_lm.server --model your-org/your-large-model-mlx --host 0.0.0.0 --port 8081"
+        }
+      ],
       "jobs": {
         "port": 7400,
         "slots": 3,
@@ -104,8 +144,14 @@
     }
   ],
   "routes": {
-    "local-large": ["machine-2/large-local", "machine-1/small-local"],
-    "local-small": ["machine-1/small-local", "machine-2/large-local"]
+    "local-large": [
+      "machine-2/ollama/large-local",
+      "machine-1/ollama/small-local"
+    ],
+    "local-small": [
+      "machine-1/ollama/small-local",
+      "machine-2/ollama/large-local"
+    ]
   },
   "model_keys": {
     "default": {
@@ -131,6 +177,9 @@
     "loki": {
       "routes": ["local-small"],
       "cloud": false
+    },
+    "barb": {
+      "routes": ["machine-2/mlx/large-mlx"]
     }
   },
   "porter": {

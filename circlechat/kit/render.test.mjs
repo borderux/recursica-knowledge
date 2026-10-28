@@ -14,8 +14,8 @@ test("routes become aliases with ordered fallbacks among the cluster's models", 
   assert.equal(alias.litellm_params.api_base, "http://machine-2.example.ts.net:11434/v1");
   assert.equal(alias.litellm_params.timeout, 86400, "a request waits for a busy cluster");
   assert.equal(alias.litellm_params.model, "hosted_vllm/your-large-model");
-  assert.equal(alias.model_info.id, "local-large|machine-2/large-local", "LiteLLM names the model that answered");
-  assert.deepEqual(litellm.router_settings.fallbacks.find((f) => f["local-large"])["local-large"], ["machine-1/small-local"]);
+  assert.equal(alias.model_info.id, "local-large|machine-2/ollama/large-local", "LiteLLM names the model that answered");
+  assert.deepEqual(litellm.router_settings.fallbacks.find((f) => f["local-large"])["local-large"], ["machine-1/ollama/small-local"]);
   assert.equal(litellm.general_settings, undefined, "the master key comes from a file when LiteLLM starts");
 });
 
@@ -36,7 +36,8 @@ test("the gateway gets each agent's routes, cloud switch and key", () => {
   assert.deepEqual(g.agents.barb.key, "acme-grok");
   assert.deepEqual(g.fallback, { routes: ["local-large", "local-small"], cloud: true, key: "default" });
   assert.deepEqual(g.keys["acme-grok"], { model: "key/acme-grok", provider: "xai" });
-  assert.deepEqual(g.routes, { "local-large": { local: true }, "local-small": { local: true } });
+  assert.deepEqual(g.routes["local-large"], { local: true });
+  assert.deepEqual(g.routes["machine-2/mlx/large-mlx"], { local: true }, "an agent may name one cluster model as a route");
   assert.deepEqual(g.nodes, ["machine-2.example.ts.net"]);
 });
 
@@ -47,7 +48,7 @@ test("a stack with no model_keys block keeps working: its cloud route model beco
   assert.deepEqual(validate(s), []);
   const r = render(s);
   assert.deepEqual(r.litellm.model_list.find((m) => m.model_name === "key/default").litellm_params, { model: "anthropic/claude-sonnet-5-5", api_key: "file:MODEL_KEY_DEFAULT" });
-  assert.deepEqual(r.litellm.router_settings.fallbacks.find((f) => f["local-large"])["local-large"], ["machine-1/small-local"], "the cloud model is no fallback");
+  assert.deepEqual(r.litellm.router_settings.fallbacks.find((f) => f["local-large"])["local-large"], ["machine-1/ollama/small-local"], "the cloud model is no fallback");
   assert.equal(r.gateway.agents.betty.key, "default");
   assert.equal(r.gateway.fallback.key, "default");
   s.routes["local-small"].push("xai/grok-4");
@@ -86,7 +87,7 @@ test("each agent's routes and cloud switch are checked", () => {
   s.agents.betty = { routes: ["nowhere"], cloud: "yes" };
   s.agents["Not A Handle"] = {};
   const errs = validate(s).join("\n");
-  assert.match(errs, /agents.betty.routes: no route named "nowhere"/);
+  assert.match(errs, /agents.betty.routes: "nowhere" is neither a route nor a cluster model/);
   assert.match(errs, /agents.betty.cloud must be true or false/);
   assert.match(errs, /"Not A Handle" is not an agent handle/);
 });
@@ -305,4 +306,67 @@ test("a computer's IP address goes on the filter's IP list, where name rules can
   const none = clone();
   delete none.nodes[0].tailnet_address; delete none.nodes[1].jobs; delete none.porter;
   assert.match(render(none).egress.allowIps, /192\.0\.2\.1/);
+});
+
+test("a computer runs several model servers, and an agent can name any server and model", () => {
+  const { litellm, gateway } = render(example);
+  const mlx = litellm.model_list.find((m) => m.model_name === "machine-2/mlx/large-mlx");
+  assert.deepEqual([mlx.litellm_params.model, mlx.litellm_params.api_base], ["hosted_vllm/your-org/your-large-model-mlx", "http://machine-2.example.ts.net:8081/v1"]);
+  assert.equal(mlx.model_info.id, "machine-2/mlx/large-mlx|machine-2/mlx/large-mlx");
+  assert.deepEqual(gateway.agents.barb.routes, ["machine-2/mlx/large-mlx"]);
+  // The spend log's server and model, for each name LiteLLM reports.
+  assert.deepEqual(gateway.models["machine-2/mlx/large-mlx"], { server: "machine-2/mlx", kind: "mlx-lm", model: "your-org/your-large-model-mlx" });
+  assert.deepEqual(gateway.models["machine-2/ollama/large-local"], { server: "machine-2/ollama", kind: "ollama", model: "your-large-model" });
+  assert.deepEqual(gateway.models["xai/grok-4"], { server: "xai", kind: "cloud", model: "grok-4" });
+  // Moving an agent to another server and model is a site.json change.
+  const s = clone();
+  s.agents.betty.routes = ["machine-2/ollama/large-local"];
+  assert.deepEqual(validate(s), []);
+  assert.deepEqual(render(s).gateway.agents.betty.routes, ["machine-2/ollama/large-local"]);
+});
+
+test("the config check refuses loaded models that don't fit a computer's memory, and names each model", () => {
+  const s = clone();
+  s.nodes[1].model_memory_gb = 64;
+  assert.deepEqual(validate(s), ["node machine-2: the loaded models need 80 GB, and the node gives its models 64 GB (model_memory_gb): ollama/large-local 40 GB, mlx/large-mlx 40 GB"]);
+  delete s.nodes[1].model_memory_gb;
+  delete s.nodes[1].servers[0].models[0].memory_gb;
+  const errs = validate(s).join("\n");
+  assert.match(errs, /node machine-2: model_memory_gb must be the memory, in GB, this computer gives its models/);
+  assert.match(errs, /server ollama, model large-local: memory_gb must be the memory the model needs/);
+});
+
+test("each model server's kind, port and models are checked", () => {
+  const s = clone();
+  const m1 = s.nodes[0];
+  m1.servers.push(
+    { id: "mlx", kind: "mlx-lm", port: 8081, models: [{ id: "a", model: "x", memory_gb: 1 }] },
+    { id: "other", kind: "vllm", port: 8009, models: [] },
+    { id: "ollama", kind: "ollama", port: 11500, models: [{ id: "b", memory_gb: 1 }] },
+  );
+  s.nodes[1].servers[1].models.push({ id: "second", model: "y", memory_gb: 1 });
+  s.nodes[1].models = [{ id: "old", port: 9000, model: "z" }];
+  const errs = validate(s).join("\n");
+  assert.match(errs, /node machine-1, server mlx: an mlx-lm server runs only on macos, and this node is linux/);
+  assert.match(errs, /node machine-1, server other: kind must be ollama or mlx-lm/);
+  assert.match(errs, /node machine-1, server other: port 8009 is already used by kev/);
+  assert.match(errs, /node machine-1, server other: models must list at least one model/);
+  assert.match(errs, /node machine-1: server id "ollama" is used twice/);
+  assert.match(errs, /node machine-1, server ollama, model b: model is required/);
+  assert.match(errs, /node machine-2, server mlx: an mlx-lm server serves one model/);
+  assert.match(errs, /node machine-2: list the models under servers, not also under models/);
+});
+
+test("a site.json with one Ollama server, in the older form, keeps working", () => {
+  const s = clone();
+  for (const n of s.nodes) delete n.servers, delete n.model_memory_gb;
+  s.nodes[1].models = [{ id: "large-local", port: 11434, model: "your-large-model", context: 131072 }];
+  s.routes = { "local-large": ["machine-2/large-local"] };
+  s.agents = { betty: { routes: ["local-large"] } };
+  assert.deepEqual(validate(s), []);
+  const { litellm, gateway } = render(s);
+  const alias = litellm.model_list.find((m) => m.model_name === "local-large");
+  assert.deepEqual([alias.litellm_params.model, alias.litellm_params.api_base, alias.model_info.id],
+    ["hosted_vllm/your-large-model", "http://machine-2.example.ts.net:11434/v1", "local-large|machine-2/large-local"]);
+  assert.deepEqual(gateway.models["machine-2/large-local"], { server: "machine-2/ollama", kind: "ollama", model: "your-large-model" });
 });

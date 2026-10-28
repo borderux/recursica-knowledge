@@ -50,6 +50,8 @@ export function writeConfig(config, { baseUrl, key, route }) {
   const c = block(lines, "custom_providers");
   if (c) lines.splice(c[0], c[1] - c[0]);
   lines.push("custom_providers:", `- name: ${PROVIDER}`, `  base_url: ${JSON.stringify(baseUrl)}`, `  api_key: ${JSON.stringify(key)}`, "  api_mode: chat_completions");
+  // Compression summaries go to the same route, so a new route in site.json moves them too.
+  lines = lines.map((l) => (/^summary_model:/.test(l) ? `summary_model: ${route}` : l));
   // Any other line that still holds a cloud key, such as an old api_key, goes.
   lines = lines.filter((l) => !keyShape(l));
   return lines.join("\n") + "\n";

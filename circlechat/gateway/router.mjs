@@ -22,8 +22,8 @@
 // Settings come from gateway.json (written by kit/render.mjs from site.json). State lives in the
 // state folder: agent-keys.json (hashes only), task-key.secret, clocks.json (each task's first
 // request and first cluster answer) and notified.json. The spend log gets one line per request:
-// the time, the task, the agent, the key's name, the route, the model that answered, the status
-// and the token counts. The log holds no prompt and no answer.
+// the time, the task, the agent, the key's name, the route, the server and the model that
+// answered, the status and the token counts. The log holds no prompt and no answer.
 import dns from "node:dns/promises";
 import fs from "node:fs";
 import http from "node:http";
@@ -156,9 +156,12 @@ export function createGateway({ config, db, litellm, litellmKey = "", stateDir, 
   function relay(res, up, entry) {
     const skip = new Set(["connection", "transfer-encoding", "keep-alive", "content-length"]);
     res.writeHead(up.statusCode, Object.fromEntries(Object.entries(up.headers).filter(([k]) => !skip.has(k))));
-    // LiteLLM's x-litellm-model-id header is "<name>|<model that answered>" (kit/render.mjs).
+    // LiteLLM's x-litellm-model-id header is "<name>|<model that answered>" (kit/render.mjs), and
+    // gateway.json names that model's server: "<node>/<server id>" for a cluster model, or the
+    // provider for a cloud model.
     const id = String(up.headers["x-litellm-model-id"] ?? "");
     const answered = id.includes("|") ? id.slice(id.indexOf("|") + 1) : null;
+    const info = answered ? config.models?.[answered] : null;
     const seen = { model: null, input: null, output: null };
     let whole = "", pending = "";
     const read = (o) => {
@@ -185,7 +188,7 @@ export function createGateway({ config, db, litellm, litellmKey = "", stateDir, 
     up.on("end", () => {
       if (!seen.model && whole.trim().startsWith("{")) { try { read(JSON.parse(whole)); } catch { /* not JSON */ } }
       res.end();
-      log({ ...entry, model: answered ?? seen.model, status: up.statusCode, input_tokens: seen.input, output_tokens: seen.output });
+      log({ ...entry, server: info?.server ?? null, model: info?.model ?? answered ?? seen.model, backend: answered, status: up.statusCode, input_tokens: seen.input, output_tokens: seen.output });
     });
     up.on("error", () => res.destroy());
   }

@@ -28,9 +28,49 @@ serve models and a Kev-engine. `address` is how the control machine's containers
 Tailscale or other VPN address, or `host.docker.internal` for the control machine itself.
 
 **Routes** are the names agents ask for. Each maps to an ordered list of the cluster's models
-(`<node>/<model id>`); the gateway tries them in order, so put the fallback last. A cloud model
+(`<node>/<server id>/<model id>`); the gateway tries them in order, so put the fallback last. A cloud model
 never joins a route: cloud models come from `model_keys`, as "Cloud models and the model gateway" describes. Kev-engines are tried best-first by `priority`, and Kev moves on by itself when one
 is unreachable. Add a machine by adding a node and rerunning `setup-host.sh`.
+
+### Model servers
+
+**A computer can run more than one model server.** List each server under the node's `servers`, with the models the server serves. The kit supports two kinds of server:
+
+- `ollama`: Ollama, on a Mac or a PC. One Ollama server can serve several models.
+- `mlx-lm`: mlx-lm's OpenAI-compatible server, `mlx_lm.server`, on a Mac only. An mlx-lm server serves one model, so run one server, on its own port, for each model. Start each one from the node's `services`, as `site.example.json` shows.
+
+```json
+"model_memory_gb": 96,
+"servers": [
+  { "id": "ollama", "kind": "ollama", "port": 11434,
+    "models": [{ "id": "large-local", "model": "your-large-model", "memory_gb": 40 }] },
+  { "id": "mlx", "kind": "mlx-lm", "port": 8081,
+    "models": [{ "id": "large-mlx", "model": "your-org/your-large-model-mlx", "memory_gb": 40 }] }
+]
+```
+
+- `model`: the name the server knows the model by. For mlx-lm, use the same name as the server's `--model`.
+- `memory_gb`: the memory the model needs, in GB.
+- `model_memory_gb`: the memory the computer gives its models. On a Mac, that is unified memory, less what macOS and other work need. On a PC, that is the GPU's memory.
+
+**Every listed model stays loaded,** so agents can use several models at once. The config check refuses a `site.json` whose models need more than a computer's `model_memory_gb`. The message names each model and the memory the model needs.
+
+**Name a model as `<node>/<server id>/<model id>`,** such as `machine-2/mlx/large-mlx`, in a route or in an agent's routes. Pull or download each model on its server first: the kit does not.
+
+**An older `site.json` keeps working.** A node may still list `models`, each with its own port, and name each model `<node>/<model id>`. The gateway counts port 11434 as an Ollama server named `ollama`.
+
+### Comparing models
+
+**Give each agent the server and model to compare.** An agent's `routes` can name a route or one cluster model:
+
+```json
+"agents": {
+  "betty": { "routes": ["machine-2/ollama/large-local"] },
+  "barb": { "routes": ["machine-2/mlx/large-mlx"] }
+}
+```
+
+To move an agent to another server or model, change `site.json` and rerun `setup-host.sh`. The script points each agent at the agent's first route, compression summaries included. The spend log then records the agent, the server and the model for each request, so runs compare by agent, server and model.
 
 ## Install, in order
 
@@ -245,7 +285,7 @@ Any mix works: one key for every agent, one key per agent, or a key shared by a 
 }
 ```
 
-- `routes`: the routes the agent's gateway key may use. The agent asks for the first route. An agent that `agents` leaves out may use every route.
+- `routes`: the routes the agent's gateway key may use, or single cluster models (`<node>/<server id>/<model id>`). The agent asks for the first route. An agent that `agents` leaves out may use every route.
 - `cloud`: the agent's cloud switch, on by default. With the switch off, the gateway never calls a cloud model for the agent, whatever the task's setting says.
 
 **Each agent has the agent's own gateway key.** `setup-agent.sh` makes the key and writes the key to the agent's Hermes home. The gateway keeps only a hash of each key. A gateway key reaches only the agent's routes, and works only from the stack's own containers and computers. No agent holds LiteLLM's master key. To revoke one agent's key, run `sudo node circlechat/gateway/keys.mjs revoke <CC_DIR>/gateway-state <handle>`. The other agents keep working. Run `setup-agent.sh <handle>` to give the agent a new key.
@@ -286,7 +326,11 @@ With the outgoing filter off, the control computer's own agents use `site.gatewa
 
 - the time, the task and the agent
 - the key's name, or `cluster` for a cluster model
-- the route, the model that answered, the status and the token counts The log holds no prompt and no answer.
+- the route, and the server and model that answered: `server` is `<node>/<server id>` for a cluster model, or the provider for a cloud model
+- `backend`: the model's name in `site.json`, such as `machine-2/mlx/large-mlx`
+- the status and the token counts
+
+The log holds no prompt and no answer.
 
 ### The key check
 
