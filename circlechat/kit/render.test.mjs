@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
-import { keySecret, render, validate } from "./render.mjs";
+import { keySecret, placeStack, render, validate } from "./render.mjs";
 
 const example = JSON.parse(fs.readFileSync(new URL("../site.example.json", import.meta.url), "utf8"));
 const clone = () => structuredClone(example);
@@ -369,4 +369,42 @@ test("a site.json with one Ollama server, in the older form, keeps working", () 
   assert.deepEqual([alias.litellm_params.model, alias.litellm_params.api_base, alias.model_info.id],
     ["hosted_vllm/your-large-model", "http://machine-2.example.ts.net:11434/v1", "local-large|machine-2/large-local"]);
   assert.deepEqual(gateway.models["machine-2/large-local"], { server: "machine-2/ollama", kind: "ollama", model: "your-large-model" });
+});
+
+test("a client or demo stack's picked computers and limits are checked, against the cluster's site.json too", () => {
+  const s = clone();
+  Object.assign(s.site, { tenant: "acme", kind: "demo", port: 8180, preview_port: 5273, gateway_port: 4100 });
+  assert.match(validate(s).join("\n"), /a demo stack needs site.docker_context/);
+  s.site.docker_context = "colima-acme";
+  s.site.computers = ["machine-2"];
+  s.nodes[1].limits = { cpus: 2.5, disk_gb: 10 };
+  let errs = validate(s).join("\n");
+  assert.match(errs, /site.computers picks machine-2, so list only machine-2 in nodes, not machine-1/);
+  assert.match(errs, /node machine-2: the stack's one computer is the stack's control computer/);
+  assert.match(errs, /node machine-2: limits.cpus must be a positive number of whole cores/);
+  assert.match(errs, /node machine-2: limits.disk_gb is not a limit/);
+  s.site.computers = "cluster";
+  s.nodes[1].limits = { cpus: 2 };
+  const cluster = clone();
+  cluster.nodes.push({ name: "machine-3", os: "linux", address: "machine-3.example.ts.net" });
+  errs = validate(s, { cluster }).join("\n");
+  assert.match(errs, /site.computers is "cluster", so list every computer of the cluster: machine-3 missing/);
+  assert.match(errs, /node machine-1: jobs.port 7400 is the cluster's own job runner's port/);
+  s.site.port = 8080;
+  assert.match(validate(s, { cluster }).join("\n"), /site.port 8080 is the cluster's own stack's port/);
+  s.site.computers = "some";
+  assert.match(validate(s).join("\n"), /site.computers must be "cluster", or a list of one computer's name/);
+  const plain = clone();
+  plain.nodes[0].limits = { cpus: 2 };
+  assert.match(validate(plain).join("\n"), /limits apply to a client or demo stack's computers, so set site.computers too/);
+});
+
+test("a stack on picked computers leaves out a model that does not fit, where the cluster's own stack is refused", () => {
+  const s = clone();
+  s.nodes[1].model_memory_gb = 64;
+  assert.match(validate(s).join("\n"), /the loaded models need 80 GB/);
+  Object.assign(s.site, { tenant: "acme", kind: "demo", docker_context: "colima-acme", computers: "cluster", port: 8180, preview_port: 5273, gateway_port: 4100 });
+  for (const n of s.nodes) if (n.jobs) n.jobs.port = 7410;
+  assert.deepEqual(validate(s, { cluster: example }), []);
+  assert.deepEqual(placeStack(s).notes[0], "Left out machine-2/mlx/large-mlx: the model needs 40 GB, and machine-2 has 24 GB left of the 64 GB it gives this stack's models.");
 });

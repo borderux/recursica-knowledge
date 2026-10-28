@@ -37,6 +37,7 @@ Copy `circlechat/site.example.json` to `~/circlechat/site.json`, and fill in eac
 | `site.public_host`                                    | The address people use for CircleChat                                                                                                            |
 | `site.port`, `site.preview_port`, `site.gateway_port` | CircleChat's and the app preview's ports on the computer, and the gateway's port for port jobs on other computers                                |
 | `site.tenant`, `site.kind`, `site.docker_context`     | One stack per client on a shared computer; see "Clients" in `circlechat/README.md`                                                               |
+| `site.computers`, `nodes[].limits`                    | A client or demo stack's computers: one computer or the whole cluster, and optional limits that make a computer act smaller                      |
 | `site.cloud_models`                                   | The client's permission for cloud models: who granted the permission, the date, and who pays                                                     |
 | `site.slack_channel_id`                               | The Slack channel for the stack's alerts                                                                                                         |
 | `site.proxy`                                          | `tailscale`, or `other` for the client's own reverse proxy                                                                                       |

@@ -9,13 +9,14 @@ import { spawnSync } from "node:child_process";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
 const example = JSON.parse(fs.readFileSync(path.join(here, "site.example.json"), "utf8"));
+import { stackSite } from "./kit/stack-site.mjs";
 
 function sandbox(site, { tenant } = {}) {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "setup-"));
   const bin = path.join(home, "bin"), log = path.join(home, "calls.log"), units = path.join(home, "units");
   fs.mkdirSync(bin); fs.mkdirSync(units);
   const stub = (name, body) => { fs.writeFileSync(path.join(bin, name), `#!/usr/bin/env bash\necho "${name} $*" >> "${log}"\n${body}\n`); fs.chmodSync(path.join(bin, name), 0o755); };
-  stub("docker", `case "$1 $2" in "volume inspect"|"network inspect") exit 1 ;; "context inspect") exit 0 ;; "image inspect") echo "\${@: -1}@sha256:0123abcd" ;; "compose exec") case "$*" in *to_regclass*) echo t ;; esac ;; esac; exit 0`);
+  stub("docker", `case "$1 $2" in "volume inspect"|"network inspect") exit 1 ;; "context inspect") exit 0 ;; "image inspect") echo "\${@: -1}@sha256:0123abcd" ;; "compose exec") case "$*" in *to_regclass*) echo t ;; esac ;; "info --format") echo "\${FAKE_DOCKER_INFO:-}" ;; esac; exit 0`);
   stub("sudo", `if [ "$1" = tee ]; then cat > "${units}/$(basename "$2")"; exit 0; fi; if [ "$1" = -n ] || [ "$1" = -u ]; then exit 0; fi; exit 0`);
   const cc = tenant ? path.join(home, "tenants", tenant, "circlechat") : path.join(home, "circlechat");
   fs.mkdirSync(cc, { recursive: true });
@@ -24,6 +25,8 @@ function sandbox(site, { tenant } = {}) {
   fs.writeFileSync(path.join(cc, "compose.yml"), 'services:\n  caddy:\n    ports:\n      - "80:80"\n      - "443:443"\n');
   fs.writeFileSync(path.join(cc, "compose.agents.yml"), "services:\n  api:\n    environment:\n      CC_API_BASE: ${PUBLIC_BASE_URL:-http://localhost:8080}/api\n");
   const env = { ...process.env, HOME: home, PATH: `${bin}:${process.env.PATH}`, ...(tenant ? { TENANT: tenant } : {}) };
+  // The cluster's own site.json, which a client or demo stack's computers are checked against.
+  if (tenant) { fs.mkdirSync(path.join(home, "circlechat"), { recursive: true }); fs.writeFileSync(path.join(home, "circlechat", "site.json"), JSON.stringify(example)); }
   const run = (script, ...args) => spawnSync("bash", [path.join(here, script), ...args], { env, encoding: "utf8", cwd: home });
   const dotenv = () => Object.fromEntries(fs.readFileSync(path.join(cc, ".env"), "utf8").split("\n").filter((l) => l.includes("=")).map((l) => [l.slice(0, l.indexOf("=")), l.slice(l.indexOf("=") + 1)]));
   return { home, cc, run, dotenv, calls: () => (fs.existsSync(log) ? fs.readFileSync(log, "utf8") : ""), units };
@@ -158,4 +161,33 @@ test("setup-node refuses a cloud key in the job runner's secrets file", () => {
   const r = s.run("setup-node.sh", "machine-1");
   assert.notEqual(r.status, 0);
   assert.match(r.stdout, /holds a cloud key. Port jobs reach cloud models only through the gateway/);
+});
+
+test("a demo stack on one computer leaves out the models that don't fit, and stops on a Docker VM bigger than its limits", () => {
+  const tenantsDir = fs.mkdtempSync(path.join(os.tmpdir(), "tenants-"));
+  const site = stackSite(example, { stack: "acme", kind: "demo", computers: "machine-2", limits: { cpus: 4, memory_gb: 24, model_memory_gb: 48 }, tenantsDir });
+  const s = sandbox(site, { tenant: "acme" });
+  const big = s.run("setup-host.sh", "--secrets-only");
+  assert.match(big.stdout, /Left out machine-2\/mlx\/large-mlx: the model needs 40 GB, and machine-2 has 8 GB left of the 48 GB it gives this stack's models\./);
+  const tooBig = spawnSync("bash", [path.join(here, "setup-host.sh"), "--secrets-only"], { env: { ...process.env, HOME: s.home, PATH: `${s.home}/bin:${process.env.PATH}`, TENANT: "acme", FAKE_DOCKER_INFO: "8 17179869184" }, encoding: "utf8" });
+  assert.notEqual(tooBig.status, 0);
+  assert.match(tooBig.stdout, /has 8 cores, and limits.cpus is 4/);
+  assert.equal(big.status, 0, big.stdout + big.stderr);
+  const gw = JSON.parse(fs.readFileSync(path.join(s.cc, "kit-out", "gateway.json"), "utf8"));
+  assert.equal(gw.routes["machine-2/mlx/large-mlx"], undefined, "the gateway never offers the left-out model");
+});
+
+test("a stack's job runner on its one computer gets its own port and the computer's limits", () => {
+  const tenantsDir = fs.mkdtempSync(path.join(os.tmpdir(), "tenants-"));
+  const site = stackSite(example, { stack: "acme", kind: "demo", computers: "machine-1", limits: { cpus: 2, memory_gb: 8, model_memory_gb: 12 }, tenantsDir });
+  const s = sandbox(site, { tenant: "acme" });
+  fs.writeFileSync(path.join(s.home, "tenants/acme/node.env"), "JOBD_TOKEN=t\n");
+  const r = s.run("setup-node.sh", "machine-1");
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  const unit = fs.readFileSync(path.join(s.units, "jobd-acme.service"), "utf8");
+  assert.match(unit, /JOBD_PORT=7410 JOBD_SLOTS=1 JOBD_MEMORY_GB=8 JOBD_CPUS=2 /);
+  assert.ok(!fs.existsSync(path.join(s.units, "kev-engine.service")), "the cluster's own stack starts the shared Kev's model");
+  const other = s.run("setup-node.sh", "machine-2");
+  assert.notEqual(other.status, 0);
+  assert.match(other.stdout, /No node "machine-2" .* lists only the computers picked for the stack/);
 });

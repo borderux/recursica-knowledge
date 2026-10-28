@@ -44,8 +44,11 @@ RECURSICA_MCP_VERSION=0.8.1
 command -v docker >/dev/null || { echo "Docker is not installed (Linux: Docker Engine; macOS: Colima or OrbStack)."; exit 1; }
 command -v node >/dev/null   || { echo "Node 20+ is not installed."; exit 1; }
 
-# Validate and render. A broken site.json stops here, before anything changes.
+# Validate and render. A broken site.json stops here, before anything changes. A client or demo
+# stack's computers are checked against the cluster's own site.json, and each model that does not
+# fit the stack's computers is left out, with a line that says so.
 KIT_OUT="$CC_DIR/kit-out"
+if [ -n "${TENANT:-}" ] && [ -f "$HOME/circlechat/site.json" ]; then export CLUSTER_SITE="$HOME/circlechat/site.json"; fi
 node "$HERE/kit/render.mjs" "$SITE" "$KIT_OUT"
 . "$KIT_OUT/app.env"
 WANT_TENANT="${TENANT:-}"
@@ -56,6 +59,7 @@ WANT_TENANT="${TENANT:-}"
 if [ -n "$DOCKER_CONTEXT" ]; then
   docker context inspect "$DOCKER_CONTEXT" >/dev/null 2>&1 || { echo "Docker context $DOCKER_CONTEXT does not exist. On a Mac: colima start --profile ${DOCKER_CONTEXT#colima-}"; exit 1; }
   export DOCKER_CONTEXT
+  check_vm_limits "$LIMIT_CPUS" "$LIMIT_MEMORY_GB" || exit 1
 fi
 DCTX="${DOCKER_CONTEXT:+DOCKER_CONTEXT=$DOCKER_CONTEXT }"
 TS_HOST="$(site_get site.public_host)"
