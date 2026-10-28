@@ -35,12 +35,12 @@ $disabled = Get-NetFirewallRule -Direction Inbound -Action Allow -Enabled True |
 }
 $disabled | Select-Object -ExpandProperty Name | Out-File -Append "$base\disabled-rules.txt"
 $disabled | Disable-NetFirewallRule
-New-NetFirewallRule -DisplayName "AgentGuard: Tailscale peers" -Direction Inbound -RemoteAddress 100.64.0.0/10 -Action Allow -ErrorAction SilentlyContinue | Out-Null
+New-NetFirewallRule -DisplayName "AgentGuard: Tailscale peers" -Direction Inbound -RemoteAddress 100.64.0.0/10,fd7a:115c:a1e0::/48 -Action Allow -ErrorAction SilentlyContinue | Out-Null
 New-NetFirewallRule -DisplayName "AgentGuard: decoys" -Direction Inbound -Protocol TCP -LocalPort 2222,2121,8088 -Action Allow -ErrorAction SilentlyContinue | Out-Null
 # WSL in mirrored networking mode sits behind the Hyper-V firewall.
 $wsl = '{40E0AC32-46A5-438A-A0B2-2B479E8F2E90}'
 Set-NetFirewallHyperVVMSetting -Name $wsl -DefaultInboundAction Block -DefaultOutboundAction Allow
-New-NetFirewallHyperVRule -Name "AgentGuard-Tailscale" -DisplayName "AgentGuard: Tailscale peers to WSL" -Direction Inbound -VMCreatorId $wsl -RemoteAddresses 100.64.0.0/10 -Action Allow -ErrorAction SilentlyContinue | Out-Null
+New-NetFirewallHyperVRule -Name "AgentGuard-Tailscale" -DisplayName "AgentGuard: Tailscale peers to WSL" -Direction Inbound -VMCreatorId $wsl -RemoteAddresses 100.64.0.0/10,fd7a:115c:a1e0::/48 -Action Allow -ErrorAction SilentlyContinue | Out-Null
 New-NetFirewallHyperVRule -Name "AgentGuard-Decoys" -DisplayName "AgentGuard: decoys in WSL" -Direction Inbound -VMCreatorId $wsl -Protocol TCP -LocalPorts 2222,2121,8088 -Action Allow -ErrorAction SilentlyContinue | Out-Null
 
 # 3. Windows Update
