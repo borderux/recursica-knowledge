@@ -135,17 +135,74 @@ keeps running.
 
 ## Clients: one isolated stack each
 
-**Give each client a separate stack.** A stack is one client's CircleChat, agents, secrets, Slack channel, model gateway and job runner. A client's stack shares no part with Border UX's stack or another client's stack. Several stacks can run on one computer.
+**Give each client, and each demo, a separate stack.** A stack is one client's CircleChat, agents, secrets, Slack channel, model gateway and job runner. A client's stack shares no data with the cluster's own stack or another client's stack. Several stacks can run on one computer. A demo stack (`site.kind` `"demo"`) follows the same rules as a client stack, including the recorded permission for cloud models.
 
 CircleChat's workspaces cannot keep clients apart. Inside one CircleChat, every agent shares one `/workspace` folder and one set of agent homes. The CircleChat api, worker and bridge also hold a Docker socket with root access to the computer.
 
-1. **Create the client's encrypted disk image, then the client's Docker VM.** See "Encrypted client stacks" below. `disk-image.sh vm <client>` creates the Docker context `colima-<client>`.
-2. **Write the client's site.json** at `~/tenants/<client>/circlechat/site.json`, with these fields:
-   - `site.tenant`: the client's short name, in lowercase.
-   - `site.kind`: `"client"`.
-   - `site.docker_context`: the client's Docker context, such as `colima-<client>`.
-   - `site.port`, `site.preview_port` and `site.gateway_port`: three ports no other stack uses.
-3. **Ask the client whether the agents may send the client's data to a cloud model provider.** Until the client says yes, the stack runs local open-weight models only. When the client says yes, record the permission in `site.cloud_models`:
+### The stack's computers
+
+**Pick the computers for each stack:** one computer from the cluster's site.json, such as one PC or one Mac, or the whole cluster.
+
+- **One computer:** that computer is the stack's control computer. The computer runs the stack's CircleChat in the stack's own Docker VM.
+- **The whole cluster:** the cluster's control computer runs the stack's CircleChat, in the stack's own Docker VM.
+
+The stack's site.json records the choice in `site.computers`, `["<computer>"]` or `"cluster"`, and lists only the picked computers. The stack's agents, jobs, local models and Kev's model then use only those computers. `setup-host.sh` checks the stack's computers and ports against the cluster's own site.json, `~/circlechat/site.json`.
+
+**Write the stack's site.json with `circlechat/kit/stack-site.mjs`:**
+
+```bash
+node circlechat/kit/stack-site.mjs ~/circlechat/site.json acme demo machine-2 > site.json
+node circlechat/kit/stack-site.mjs ~/circlechat/site.json acme client cluster > site.json
+```
+
+### Cloud keys for a demo
+
+**Setting up a demo always asks:** "Give this demo cloud model keys, such as Claude or Grok, with billing attached? [y/N]". Each cloud key comes with billing, so a demo needs a recorded permission, the same as a client stack.
+
+- **No**, the default: the demo gets no `model_keys` and no cloud route, and runs on local models only. site.json records `"cloud_models": { "allowed": false }`.
+- **Yes:** the script asks for each provider and model, such as `anthropic:claude-sonnet-5-5,xai:grok-4`. Then the script asks who granted the permission and who pays. The script records the answers in the demo's `site.cloud_models` and `model_keys`. The first key is the key named `default`, which every agent uses. Each other key is named for the key's provider: name the key's agents in site.json. Add an Azure or Bedrock key to site.json by hand.
+
+**Without a person at the keyboard, such as from Claude Code, give the answer as an option.** The script then stops unless the command has `--cloud-keys`, and never answers yes without the option:
+
+```bash
+node circlechat/kit/stack-site.mjs ~/circlechat/site.json acme demo machine-2 --cloud-keys none > site.json
+node circlechat/kit/stack-site.mjs ~/circlechat/site.json acme demo machine-2 \
+  --cloud-keys anthropic:claude-sonnet-5-5 --granted-by "Person A" --payer border-ramp > site.json
+```
+
+**Add the key values yourself, outside Claude Code,** with `circlechat/deploy/set-model-keys.sh <site.json> <owner/private repo>`. The script asks for each key's value at the keyboard and shows nothing on the screen. The script saves each value as a `MODEL_KEY_<NAME>` secret in the stack's GitHub environment, through `gh`. The script refuses to run without a terminal, or inside a Claude Code session. Then run the "Deploy secrets" workflow for the stack.
+
+The script copies the picked computers, their routes and the agents from the cluster's site.json. The script gives the stack the first ports that no stack in `~/tenants` uses. Check `repos` and `notify` before the first setup.
+
+**Model servers that keep no data serve several stacks,** such as Kev's model and the local models. The cluster's own stack starts each server, from `services` in the cluster's site.json. A stack's site.json lists the same servers and models, with no `services`. Each stack still gets the stack's own gateway, gateway keys, job runner and ports. Give a client a separate model server when the client's contract requires one.
+
+### Limits: a smaller computer for a demo
+
+**Optional limits make a large computer act like a smaller one,** so a demo can show how a smaller computer performs. Add the limits to stack-site.mjs, such as `--cpus 4 --memory-gb 16 --model-memory-gb 16`, or set `limits` on a picked computer:
+
+```json
+"limits": { "cpus": 4, "memory_gb": 16, "model_memory_gb": 16 }
+```
+
+- `cpus` and `memory_gb`: the most cores and memory for the stack's Docker VM and for each job. Create the VM with that size, such as `disk-image.sh vm acme 4 16 100`. `setup-host.sh` and `setup-node.sh` stop when the stack's VM is bigger.
+- `model_memory_gb`: the memory the computer gives the stack's models.
+
+**A model that does not fit is left out.** Each computer gives the stack's models the smaller of `model_memory_gb` and the limit. `setup-host.sh` leaves out each model that does not fit, in site.json's order, and prints a line for each one. A large model on a PC with 16 GB of GPU memory is left out, for example. A route with no model left goes too. An agent with no route left uses the stack's other routes. The setup stops when no model fits. The cluster's own stack has no limits: its config check refuses models that don't fit, as "Model servers" describes.
+
+The limits choose the models and size the stack's VM and jobs. A shared model server still runs at the large computer's speed.
+
+### Set up a stack
+
+1. **Create the stack's encrypted disk image, then the stack's Docker VM,** on the stack's control computer. Do the same on each other picked computer that runs the stack's jobs. See "Encrypted client stacks" below. `disk-image.sh vm <client>` creates the Docker context `colima-<client>`.
+2. **Clone CircleChat** into `~/tenants/<client>/circlechat`.
+3. **Write the stack's site.json** at `~/tenants/<client>/circlechat/site.json` with stack-site.mjs. The script sets these fields:
+   - `site.tenant`: the stack's short name, in lowercase.
+   - `site.kind`: `"client"` or `"demo"`.
+   - For a demo, `site.cloud_models` and any `model_keys`, from the answer about cloud keys.
+   - `site.docker_context`: the stack's Docker context, `colima-<client>`.
+   - `site.computers`: the picked computers.
+   - `site.port`, `site.preview_port` and `site.gateway_port`: three ports no other stack uses, and each job runner's `jobs.port`.
+4. **For a client stack, ask the client whether the agents may send the client's data to a cloud model provider.** Until the client says yes, the stack runs local open-weight models only. When the client says yes, record the permission in `site.cloud_models`:
 
    ```json
    "cloud_models": { "allowed": true, "granted_by": "Person A, acme.com", "granted_on": "2026-10-20", "payer": "client-byok" }
@@ -153,21 +210,21 @@ CircleChat's workspaces cannot keep clients apart. Inside one CircleChat, every 
 
    `payer` says who pays. `border-ramp` means Border UX pays, with a virtual card made for the client. `client-byok` means the client supplies the client's own key.
 
-4. **Clone CircleChat** into `~/tenants/<client>/circlechat`. Put the client's secrets, including the Slack app's `SLACK_BOT_TOKEN`, in the client's GitHub environment, as "Secrets in GitHub" describes.
-5. **Run every kit script with `TENANT=<client>`**, such as `TENANT=<client> ./circlechat/setup-host.sh`. Use the same prefix for `setup-agent.sh` and `setup-node.sh`.
-6. **Give the stack an address** with `tailscale serve --bg --https=<port> http://127.0.0.1:<port>`.
+5. **Put the stack's secrets,** including the Slack app's `SLACK_BOT_TOKEN`, in the stack's GitHub environment, as "Secrets in GitHub" describes.
+6. **Run every kit script with `TENANT=<client>`**, such as `TENANT=<client> ./circlechat/setup-host.sh`. Use the same prefix for `setup-agent.sh`, and for `setup-node.sh` on each picked computer that runs jobs.
+7. **Give the stack an address** with `tailscale serve --bg --https=<port> http://127.0.0.1:<port>`.
 
-With `TENANT=<client>`, the stack lives in `~/tenants/<client>/`. The stack's containers, volume, Compose project, ports and background jobs all carry the client's name. The stack's job runner reads secrets from `~/.recursica-node.<client>.env`.
+With `TENANT=<client>`, the stack lives in `~/tenants/<client>/`. The stack's containers, volume, Compose project, ports and background jobs all carry the client's name. The stack's job runner reads secrets from `~/tenants/<client>/node.env`.
 
-The config check refuses a client stack in three cases:
+The config check refuses a client or demo stack in these cases:
 
 - The stack has no `site.tenant`.
 - The stack has no `site.docker_context`.
-- The stack sets `data.kev_disagreements_branch`. Review data from a client's code stays in the client's stack.
+- `site.computers` picks one computer, and the stack lists another computer, or the picked computer is not the control computer.
+- `site.computers` is `"cluster"`, and the stack leaves out a computer of the cluster, or names another control computer.
+- The stack uses a port of the cluster's own stack.
 
-With no recorded permission in `site.cloud_models`, the config check also refuses a `model_keys` block, every cloud route and Porter. The secrets helper refuses to deploy a cloud key to the stack.
-
-Model servers that keep no data, such as Kev's model and a local model, can serve every stack. Declare each model server's service in one stack's site.json only. The other stacks list the same models and Kev ports, with no `services` entry. Give a client a separate model server when the client's contract requires one.
+The config check also refuses a client stack that sets `data.kev_disagreements_branch`. Review data from a client's code stays in the client's stack. With no recorded permission in `site.cloud_models`, the config check also refuses a `model_keys` block, every cloud route and Porter on a client or demo stack. The secrets helper refuses to deploy a cloud key to the stack.
 
 A stack with no `site.tenant` keeps the names a single install uses today. An existing install changes nothing.
 
@@ -202,13 +259,13 @@ Deleting the image and the key makes the client's data unreadable for good.
 
 1. **Create one GitHub environment per stack** in the private repo. Name the environment `border` for the stack with no tenant name, and `client-<name>` for each client stack.
 2. **Require an approval** in each environment's settings, under "Required reviewers". A workflow then waits for the approval before the workflow reads the environment's secrets.
-3. **Add the stack's secrets to the environment**, with the names in the table below.
+3. **Add the stack's secrets to the environment**, with the names in the table below. Add cloud key values with `circlechat/deploy/set-model-keys.sh`, in your own terminal, outside Claude Code.
 4. **Copy `circlechat/deploy/deploy-secrets.yml`** to `.github/workflows/deploy-secrets.yml` in the private repo.
 5. **Install a GitHub self-hosted runner on each computer**, for the private repo only, under a separate account. Give the runner a label with the computer's name from site.json.
 6. **Run `./circlechat/deploy/install-secrets-helper.sh <runner account>`** on each computer, as the account that owns the stacks. The runner's account can then run one command as root: the helper that writes the secrets.
 7. **Run the "Deploy secrets" workflow** with the stack and the computer. The workflow writes each secret to the file that reads the secret, then restarts the services that read the file.
 
-The node secrets file is `~/.recursica-node.env`, or `~/.recursica-node.<client>.env` for a client stack.
+The node secrets file is `~/.recursica-node.env`, or `~/tenants/<client>/node.env` for a client or demo stack.
 
 | Secret in GitHub                                           | File the helper writes                                    | Read by                                                                    |
 | ---------------------------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------- |
@@ -418,8 +475,8 @@ Each computer asks the other computers for the health of their stacks every minu
 1. **Open the client's stack** with the Unlock stack workflow.
 2. **Archive:** pipe a new archive key, made in the password manager, into `./circlechat/tenant/offboard.sh archive <client>`. The script writes a final encrypted archive, then test-restores the archive. Nothing is deleted unless the archive restores cleanly.
 3. **Move the archive folder** into the Archive folder in Google Drive, by hand.
-4. **Remove:** run `./circlechat/tenant/offboard.sh remove <client>` on each computer. The script destroys the client's disk image, with the Docker VM inside the image.
-5. **Check:** run `./circlechat/tenant/offboard.sh check <client>` on each computer, for a pass/fail table.
+4. **Remove:** run `./circlechat/tenant/offboard.sh remove <client>` on each computer picked for the stack. The script lists those computers. The script destroys the client's disk image, with the Docker VM inside the image, and the stack's job runner. The shared model servers and Kev's model stay, because the cluster's own stack owns them.
+5. **Check:** run `./circlechat/tenant/offboard.sh check <client>` on each of those computers, for a pass/fail table. The table also checks that the cluster's own stack runs as before on the computer: each model server, Kev's model, the job runner and each service, and the gateway on the control computer.
 6. **Remove the client's access:** delete the client's GitHub environment, Tailscale shares, keys and tokens, and archive the client's Slack channel.
 
 ## Notifications

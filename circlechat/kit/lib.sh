@@ -29,6 +29,24 @@ launchd_calendar() {
   printf '<key>StartCalendarInterval</key><dict>%s<key>Hour</key><integer>%d</integer><key>Minute</key><integer>%d</integer></dict>' "$keys" "$((10#$hour))" "$((10#$min))"
 }
 
+# A stack's limits make a large computer act like a smaller one (site.json, nodes[].limits). The
+# stack's Docker VM must be no bigger than the limits, or the stack runs faster than the smaller
+# computer would. Needs DOCKER_CONTEXT, the stack's VM; returns 1 with a message when too big.
+#   check_vm_limits <cpus or empty> <memory GB or empty>
+check_vm_limits() {
+  local cpus="$1" gb="$2" have ncpu mem
+  [ -n "${DOCKER_CONTEXT:-}" ] && { [ -n "$cpus" ] || [ -n "$gb" ]; } || return 0
+  have="$(docker info --format '{{.NCPU}} {{.MemTotal}}' 2>/dev/null)" || return 0
+  read -r ncpu mem <<<"$have"
+  [ -n "$ncpu" ] && [ -n "$mem" ] || return 0
+  if [ -n "$cpus" ] && [ "$ncpu" -gt "$cpus" ]; then
+    echo "The stack's Docker VM ($DOCKER_CONTEXT) has $ncpu cores, and limits.cpus is $cpus. Recreate the VM with $cpus cores: disk-image.sh vm <stack> $cpus <memory GiB> <disk GiB>."; return 1
+  fi
+  if [ -n "$gb" ] && [ "$mem" -gt $((gb * 1073741824)) ]; then
+    echo "The stack's Docker VM ($DOCKER_CONTEXT) has $((mem / 1073741824)) GiB of memory, and limits.memory_gb is $gb. Recreate the VM with $gb GiB or less."; return 1
+  fi
+}
+
 # Install a long-running service or a scheduled job, the native way for this OS.
 #   install_unit NAME "COMMAND" [WORKDIR] [USER] [SCHEDULE]
 # SCHEDULE empty = keep running (restart on failure, start at boot); "boot" = run once at each

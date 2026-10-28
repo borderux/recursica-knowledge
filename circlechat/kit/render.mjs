@@ -20,8 +20,16 @@
 // One site.json is one stack. A computer can hold several stacks, one per client (a tenant), each
 // in its own folder with its own database, files, agents, secrets and Slack channel. site.tenant
 // names the stack, and every container, volume, port and background job of the stack carries that
-// name, so two stacks never share one. A client stack (site.kind "client") must also run in its
-// own Docker VM (site.docker_context), so no client shares a Docker socket or network with another.
+// name, so two stacks never share one. A client or demo stack (site.kind "client" or "demo") must
+// also run in its own Docker VM (site.docker_context), so no stack shares a Docker socket or
+// network with another.
+//
+// A client or demo stack runs on computers picked for it (site.computers): one computer from the
+// cluster's site.json, which is then the stack's control computer, or the whole cluster, whose
+// control computer then runs the stack's CircleChat. The stack's site.json lists only those
+// computers, so the stack's agents, jobs, models and Kev's model use only them. kit/stack-site.mjs
+// writes such a site.json from the cluster's. A chosen computer's limits (nodes[].limits) make it
+// act like a smaller computer, and placeStack() leaves out each model that does not fit.
 import fs from "node:fs";
 import path from "node:path";
 
@@ -180,15 +188,19 @@ export function maskPii(site) {
   return v === undefined ? site.site?.kind === "client" : v === true;
 }
 
-// A stack may call cloud models unless it is a client stack without a recorded permission.
+// A stack may call cloud models unless it is a client or demo stack without a recorded permission.
+// A cloud key comes with billing, so a demo needs the same record as a client: who granted the
+// permission, the date and who pays.
+export const NEEDS_PERMISSION = ["client", "demo"];
 export function cloudAllowed(site) {
-  if (site.site?.kind !== "client") return true;
+  if (!NEEDS_PERMISSION.includes(site.site?.kind)) return true;
   return site.site?.cloud_models?.allowed === true;
 }
+const kindWord = (site) => (site.site?.kind === "demo" ? "demo" : "client");
 
 // One node's model servers: each server's kind, port and models, and whether the models the
 // node loads fit the memory the node gives its models (model_memory_gb).
-function serverErrors(n) {
+function serverErrors(n, { leaveOut = false } = {}) {
   const errs = [];
   const servers = n.servers ?? [];
   if (n.servers !== undefined && !Array.isArray(n.servers)) return [`node ${n.name}: servers must be a list`];
@@ -219,7 +231,8 @@ function serverErrors(n) {
   // Every model a node lists stays loaded, so agents can use several at once. The models must fit.
   const loaded = [...servers.flatMap((sv) => (sv.models ?? []).map((m) => [`${sv.id}/${m.id}`, m.memory_gb])), ...(n.models ?? []).map((m) => [m.id, m.memory_gb])];
   if (servers.length && !(n.model_memory_gb > 0)) errs.push(`node ${n.name}: model_memory_gb must be the memory, in GB, this computer gives its models`);
-  if (n.model_memory_gb > 0) {
+  // A stack on picked computers leaves out each model that does not fit, instead (placeStack).
+  if (n.model_memory_gb > 0 && !leaveOut) {
     const sized = loaded.filter(([, gb]) => gb > 0);
     const total = sized.reduce((a, [, gb]) => a + gb, 0);
     if (total > n.model_memory_gb) {
@@ -229,13 +242,105 @@ function serverErrors(n) {
   return errs;
 }
 
-export function validate(site) {
+// The computers picked for a client or demo stack (site.computers), and each one's limits. With the
+// cluster's own site.json, also checks the stack's computers against the cluster's.
+const LIMITS = { cpus: (v) => Number.isInteger(v) && v > 0, memory_gb: (v) => v > 0, model_memory_gb: (v) => v > 0 };
+function computersErrors(site, cluster) {
+  const errs = [];
+  const t = site.site ?? {};
+  const nodes = site.nodes ?? [];
+  for (const n of nodes) {
+    if (n.limits === undefined) continue;
+    if (t.computers === undefined) { errs.push(`node ${n.name}: limits apply to a client or demo stack's computers, so set site.computers too`); continue; }
+    if (typeof n.limits !== "object" || n.limits === null) { errs.push(`node ${n.name}: limits must be an object`); continue; }
+    for (const [k, v] of Object.entries(n.limits)) {
+      if (!LIMITS[k]) errs.push(`node ${n.name}: limits.${k} is not a limit. Use ${Object.keys(LIMITS).join(", ")}`);
+      else if (!LIMITS[k](v)) errs.push(`node ${n.name}: limits.${k} must be a positive number${k === "cpus" ? " of whole cores" : ", in GB"}`);
+    }
+  }
+  if (t.computers === undefined) return errs;
+  if (!t.tenant) errs.push("site.computers is for a client or demo stack: set site.tenant too");
+  const one = Array.isArray(t.computers) && t.computers.length === 1 && typeof t.computers[0] === "string";
+  if (t.computers !== "cluster" && !one) return [...errs, 'site.computers must be "cluster", or a list of one computer\'s name, such as ["machine-1"]'];
+  const names = nodes.map((n) => n.name);
+  if (one) {
+    const [name] = t.computers;
+    const extra = names.filter((x) => x !== name);
+    if (extra.length) errs.push(`site.computers picks ${name}, so list only ${name} in nodes, not ${extra.join(", ")}`);
+    const me = nodes.find((n) => n.name === name);
+    if (!me) errs.push(`site.computers picks ${name}, and nodes has no ${name}`);
+    else if (!me.control) errs.push(`node ${name}: the stack's one computer is the stack's control computer, so set "control": true`);
+  }
+  if (!cluster) return errs;
+  // The cluster's own site.json: the computers it lists, and what the cluster's own stack uses.
+  const theirs = new Map((cluster.nodes ?? []).map((n) => [n.name, n]));
+  for (const n of nodes) {
+    const c = theirs.get(n.name);
+    if (!c) { errs.push(`node ${n.name} is not a computer in the cluster's site.json`); continue; }
+    if (n.jobs && c.jobs && n.jobs.port === c.jobs.port) errs.push(`node ${n.name}: jobs.port ${n.jobs.port} is the cluster's own job runner's port. Give the stack's job runner another port`);
+  }
+  if (t.computers === "cluster") {
+    const missing = [...theirs.keys()].filter((x) => !names.includes(x));
+    if (missing.length) errs.push(`site.computers is "cluster", so list every computer of the cluster: ${missing.join(", ")} missing`);
+    const control = (cluster.nodes ?? []).find((n) => n.control)?.name;
+    const mine = nodes.find((n) => n.control)?.name;
+    if (control && mine && control !== mine) errs.push(`site.computers is "cluster", so the cluster's control computer, ${control}, is the stack's control computer, not ${mine}`);
+  }
+  const cs = cluster.site ?? {};
+  const theirPorts = { port: cs.port ?? 8080, preview_port: cs.preview_port ?? 5173, gateway_port: cs.gateway_port ?? 4000 };
+  for (const [k, v] of Object.entries(theirPorts)) if ((t[k] ?? theirPorts[k]) === v) errs.push(`site.${k} ${v} is the cluster's own stack's port. Give the stack another port`);
+  return errs;
+}
+
+// A client or demo stack's models on its picked computers. Each computer gives the stack's models
+// the smaller of model_memory_gb and limits.model_memory_gb. Each model that does not fit, in the
+// order site.json lists them, is left out, then each route and each agent's routes drop it.
+// An agent whose routes all go uses every route the stack has left. Returns the stack's site.json
+// without those models, a note for each one left out, and an error when no model is left.
+export function placeStack(site) {
+  const out = structuredClone(site);
+  const notes = [], errs = [];
+  if (!site.site?.computers) return { site: out, notes, errs };
+  const gone = new Set();
+  for (const n of out.nodes ?? []) {
+    const rooms = [n.model_memory_gb, n.limits?.model_memory_gb].filter((v) => v > 0);
+    if (!rooms.length) continue;
+    const room = Math.min(...rooms);
+    let used = 0;
+    const fits = (backend, m) => {
+      const gb = m.memory_gb > 0 ? m.memory_gb : 0;
+      if (used + gb <= room) { used += gb; return true; }
+      gone.add(backend);
+      notes.push(`Left out ${backend}: the model needs ${gb} GB, and ${n.name} has ${room - used} GB left of the ${room} GB it gives this stack's models.`);
+      return false;
+    };
+    for (const sv of n.servers ?? []) sv.models = (sv.models ?? []).filter((m) => fits(`${n.name}/${sv.id}/${m.id}`, m));
+    if (n.servers) n.servers = n.servers.filter((sv) => sv.models.length);
+    if (n.models) n.models = n.models.filter((m) => fits(`${n.name}/${m.id}`, m));
+  }
+  if (!gone.size) return { site: out, notes, errs };
+  for (const [r, bs] of Object.entries(out.routes ?? {})) {
+    out.routes[r] = bs.filter((b) => !gone.has(b));
+    if (!out.routes[r].length) { delete out.routes[r]; notes.push(`Left out route ${r}: none of its models runs on this stack's computers.`); }
+  }
+  const left = clusterModels(out);
+  for (const [h, a] of Object.entries(out.agents ?? {})) {
+    if (!a?.routes) continue;
+    a.routes = a.routes.filter((r) => out.routes?.[r] || left.has(r));
+    if (!a.routes.length) { delete a.routes; notes.push(`Agent ${h}: every model in the agent's routes is left out, so ${h} uses the stack's other routes.`); }
+  }
+  if (!Object.keys(out.routes ?? {}).length && !left.size) errs.push("no model of this stack fits its computers. Pick a bigger computer, raise the limits, or list a smaller model");
+  return { site: out, notes, errs };
+}
+
+export function validate(site, { cluster } = {}) {
   const errs = [];
   const nodes = site.nodes ?? [];
   if (!site.site?.public_host) errs.push("site.public_host is required");
   const t = site.site ?? {};
   if (t.tenant !== undefined && (!SLUG.test(t.tenant) || t.tenant === "default")) errs.push(`site.tenant "${t.tenant}" must be lowercase letters, digits and hyphens, and not "default"`);
-  if (t.kind !== undefined && !["internal", "client"].includes(t.kind)) errs.push("site.kind must be internal or client");
+  if (t.kind !== undefined && !["internal", "client", "demo"].includes(t.kind)) errs.push("site.kind must be internal, client or demo");
+  errs.push(...computersErrors(site, cluster));
   for (const k of ["port", "preview_port", "gateway_port"]) {
     if (t[k] !== undefined && !(Number.isInteger(t[k]) && t[k] >= 1024 && t[k] <= 65535)) errs.push(`site.${k} must be a port number from 1024 to 65535`);
   }
@@ -255,7 +360,7 @@ export function validate(site) {
   if (site.upgrade?.auto !== undefined && typeof site.upgrade.auto !== "boolean") errs.push("upgrade.auto must be true or false");
   if (site.notify?.details !== undefined && typeof site.notify.details !== "boolean") errs.push("notify.details must be true or false");
   if (site.privacy?.mask_pii !== undefined && typeof site.privacy.mask_pii !== "boolean") errs.push("privacy.mask_pii must be true or false");
-  if (site.privacy?.mask_pii === true && !cloudAllowed(site)) errs.push("privacy.mask_pii applies to cloud model calls, and this client stack has no recorded permission for cloud models");
+  if (site.privacy?.mask_pii === true && !cloudAllowed(site)) errs.push(`privacy.mask_pii applies to cloud model calls, and this ${kindWord(site)} stack has no recorded permission for cloud models`);
   if (site.egress !== undefined) {
     const e = site.egress;
     if (e.enabled !== undefined && typeof e.enabled !== "boolean") errs.push("egress.enabled must be true or false");
@@ -267,7 +372,7 @@ export function validate(site) {
     if (!/^[A-Za-z0-9_-]+:\S*$/.test(b?.remote ?? "")) errs.push("backup.remote must be an rclone remote and folder, such as gdrive-backups:agent-backups");
     if (b?.time !== undefined && !/^([01]\d|2[0-3]):[0-5]\d$/.test(b.time)) errs.push("backup.time must be HH:MM, in the computer's time zone");
   }
-  // Cloud models on a client stack need the client's recorded permission. Without the permission,
+  // Cloud models on a client or demo stack need a recorded permission. Without the permission,
   // the stack runs local open-weight models only: no cloud route, and no Porter (port jobs use
   // Claude).
   const cm = t.cloud_models;
@@ -279,16 +384,16 @@ export function validate(site) {
       if (!["border-ramp", "client-byok"].includes(cm.payer)) errs.push("site.cloud_models.payer must be border-ramp or client-byok");
     }
   }
-  if (t.kind === "client") {
-    if (!t.tenant) errs.push("a client stack needs site.tenant, so its containers, ports and jobs never collide with another stack's");
-    if (!t.docker_context) errs.push("a client stack needs site.docker_context: its own Docker VM (for example a Colima profile), so no client shares a Docker socket or network with another");
-    if (site.data?.kev_disagreements_branch) errs.push("a client stack cannot set data.kev_disagreements_branch: review data from a client's code never leaves the client's stack");
-    if (!cloudAllowed(site)) {
-      for (const [route, backends] of Object.entries(site.routes ?? {})) {
-        for (const b of backends) if (isCloud(b, site)) errs.push(`route ${route}: "${b}" is a cloud model, and this client stack has no recorded permission for cloud models (site.cloud_models)`);
-      }
-      if (site.porter) errs.push("a local-only client stack cannot run Porter: Porter's port jobs need a cloud model. Record the client's permission in site.cloud_models first");
+  if (t.kind === "client" || t.kind === "demo") {
+    if (!t.tenant) errs.push(`a ${t.kind} stack needs site.tenant, so its containers, ports and jobs never collide with another stack's`);
+    if (!t.docker_context) errs.push(`a ${t.kind} stack needs site.docker_context: its own Docker VM (for example a Colima profile), so no stack shares a Docker socket or network with another`);
+  }
+  if (t.kind === "client" && site.data?.kev_disagreements_branch) errs.push("a client stack cannot set data.kev_disagreements_branch: review data from a client's code never leaves the client's stack");
+  if (NEEDS_PERMISSION.includes(t.kind) && !cloudAllowed(site)) {
+    for (const [route, backends] of Object.entries(site.routes ?? {})) {
+      for (const b of backends) if (isCloud(b, site)) errs.push(`route ${route}: "${b}" is a cloud model, and this ${t.kind} stack has no recorded permission for cloud models (site.cloud_models)`);
     }
+    if (site.porter) errs.push(`a local-only ${t.kind} stack cannot run Porter: Porter's port jobs need a cloud model. Record the permission in site.cloud_models first`);
   }
   for (const k of ["knowledge", "app", "app_dir", "app_github"]) if (!site.repos?.[k]) errs.push(`repos.${k} is required`);
   if (site.repos?.app_dir && !/^[A-Za-z0-9._-]+$/.test(site.repos.app_dir)) errs.push("repos.app_dir must be a plain folder name");
@@ -308,7 +413,7 @@ export function validate(site) {
       ids.add(m.id);
       if (!m.port || !m.model) errs.push(`node ${n.name}/${m.id}: port and model are required`);
     }
-    errs.push(...serverErrors(n));
+    errs.push(...serverErrors(n, { leaveOut: Boolean(site.site?.computers) }));
     if (n.jobs) {
       if (!Number.isInteger(n.jobs.port) || !Number.isInteger(n.jobs.slots) || n.jobs.slots < 1) errs.push(`node ${n.name}: jobs needs an integer port and slots >= 1`);
       if (!(n.jobs.memory_gb > 0)) errs.push(`node ${n.name}: jobs.memory_gb must be a positive number`);
@@ -334,7 +439,7 @@ export function validate(site) {
     const mk = site.model_keys;
     if (typeof mk !== "object" || mk === null || Array.isArray(mk)) errs.push("model_keys must be an object of named keys, such as { \"default\": { ... } }");
     else {
-      if (!cloudAllowed(site) && Object.keys(mk).length) errs.push("model_keys: this client stack has no recorded permission for cloud models (site.cloud_models)");
+      if (!cloudAllowed(site) && Object.keys(mk).length) errs.push(`model_keys: this ${kindWord(site)} stack has no recorded permission for cloud models (site.cloud_models)`);
       const owner = new Map();
       for (const [name, k] of Object.entries(mk)) {
         const at = `model_keys.${name}`;
@@ -456,7 +561,19 @@ export function render(site) {
   // through the job network, and from another computer over Tailscale.
   const control = nodes.find((n) => n.control);
   const gatewayUrl = (n) => (n.control ? "http://cc-gateway:4000" : `http://${control?.tailnet_address}:${site.site?.gateway_port ?? 4000}`);
-  const services = Object.fromEntries(nodes.map((n) => [n.name, { os: n.os, services: n.services ?? [], jobs: n.jobs ? { ...n.jobs, gateway_url: gatewayUrl(n) } : null }]));
+  // A computer's limits cap each job: no more memory than limits.memory_gb, no more jobs at once
+  // than fit in it, and no more cores than limits.cpus.
+  const jobs = (n) => {
+    const j = { ...n.jobs, gateway_url: gatewayUrl(n) };
+    const l = n.limits ?? {};
+    if (l.memory_gb) {
+      j.memory_gb = Math.min(j.memory_gb, l.memory_gb);
+      j.slots = Math.max(1, Math.min(j.slots, Math.floor(l.memory_gb / j.memory_gb)));
+    }
+    if (l.cpus) j.cpus = l.cpus;
+    return j;
+  };
+  const services = Object.fromEntries(nodes.map((n) => [n.name, { os: n.os, services: n.services ?? [], jobs: n.jobs ? jobs(n) : null, limits: n.limits ?? null }]));
   const appEnv = `APP_REPO=${site.repos.app_dir}\nAPP_REPO_GITHUB=${site.repos.app_github}\n`;
   // No tenant keeps the names a single-stack install has always used, so an existing install
   // keeps its containers, volumes and jobs.
@@ -485,6 +602,9 @@ export function render(site) {
     `BACKUP_TIME=${site.backup?.time ?? "02:00"}`,
     // Port jobs on other computers reach the gateway at this address, over Tailscale.
     `TAILNET_ADDRESS=${control?.tailnet_address ?? ""}`,
+    // The control computer's limits: the most the stack's Docker VM may have (setup-host.sh checks).
+    `LIMIT_CPUS=${control?.limits?.cpus ?? ""}`,
+    `LIMIT_MEMORY_GB=${control?.limits?.memory_gb ?? ""}`,
   ].join("\n") + "\n";
   const isIp = (h) => /^\d{1,3}(\.\d{1,3}){3}$/.test(h) || h.includes(":");
   const hosts = egressAllow(site);
@@ -497,9 +617,14 @@ export function render(site) {
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [file, out] = process.argv.slice(2);
   if (!file || !out) { console.error("usage: render.mjs <site.json> <out dir>"); process.exit(2); }
-  const site = JSON.parse(fs.readFileSync(file, "utf8"));
-  const errs = validate(site);
+  const given = JSON.parse(fs.readFileSync(file, "utf8"));
+  // A client or demo stack's computers are checked against the cluster's own site.json.
+  const cluster = process.env.CLUSTER_SITE && fs.existsSync(process.env.CLUSTER_SITE) ? JSON.parse(fs.readFileSync(process.env.CLUSTER_SITE, "utf8")) : undefined;
+  const placed = placeStack(given);
+  const errs = [...validate(given, { cluster }), ...placed.errs];
   if (errs.length) { console.error("site.json has problems:\n  - " + errs.join("\n  - ")); process.exit(1); }
+  for (const note of placed.notes) console.log(note);
+  const site = placed.site;
   const r = render(site);
   fs.mkdirSync(path.join(out, "services"), { recursive: true });
   fs.writeFileSync(path.join(out, "litellm.yaml"), JSON.stringify(r.litellm, null, 2) + "\n");

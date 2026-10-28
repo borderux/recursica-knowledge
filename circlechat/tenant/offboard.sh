@@ -2,8 +2,9 @@
 # Remove a client: a final encrypted archive, then the client's stack, gone from every computer.
 #
 #   offboard.sh archive <client>   on the control computer; the new archive key arrives on stdin
-#   offboard.sh remove <client>    on each computer that runs anything for the client
-#   offboard.sh check <client>     on each computer: a pass/fail table of anything left
+#   offboard.sh remove <client>    on each computer picked for the stack (site.computers)
+#   offboard.sh check <client>     on each computer: a pass/fail table of anything left, and of the
+#                                  cluster's own stack, which must run as before
 #
 # The archive key is new, made in the password manager for this archive alone. The key never
 # stays on a computer. The archive goes to the backups remote, in archive-<client>-<date>; move the
@@ -56,6 +57,12 @@ archive)
 remove)
   read -r -p "Remove every trace of client $CLIENT from this computer? Type the client's name to confirm: " typed
   [ "$typed" = "$CLIENT" ] || { echo "Not confirmed. Nothing was removed."; exit 1; }
+  # The stack's computers, from the stack's site.json, before the site.json goes.
+  if [ -f "$CC_DIR/site.json" ]; then
+    PICKED="$(node -e 'const s = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")); console.log((s.nodes ?? []).map((n) => n.name).join(" "))' "$CC_DIR/site.json")"
+  fi
+  # A stack's model servers and Kev's model belong to the cluster's own stack, which keeps them.
+  # Everything below carries the client's name, so nothing of the cluster's own stack goes.
   if [ -f "$CC_DIR/kit-out/tenant.env" ]; then
     . "$CC_DIR/kit-out/tenant.env"
     [ -n "$DOCKER_CONTEXT" ] && export DOCKER_CONTEXT
@@ -90,6 +97,8 @@ remove)
   rm -rf "$STACK_DIR" "$HOME/.recursica-node.$CLIENT.env" "$HOME/.recursica-jobs-$CLIENT" /tmp/*-"$CLIENT".log 2>/dev/null \
     || sudo rm -rf "$STACK_DIR" "$HOME/.recursica-node.$CLIENT.env" "$HOME/.recursica-jobs-$CLIENT" /tmp/*-"$CLIENT".log
   echo "Removed client $CLIENT from $(hostname -s). Run: offboard.sh check $CLIENT"
+  [ -n "${PICKED:-}" ] && echo "The stack ran on: $PICKED. Run offboard.sh remove $CLIENT, then check, on each of those computers."
+  true
   ;;
 
 check)
@@ -113,7 +122,15 @@ check)
   [ -n "$left" ] && row "containers and volumes" "FAIL: $left" || row "containers and volumes" pass
   found="$(grep -rIl --exclude-dir=archived --exclude-dir=.git -- "$CLIENT" "$HOME/circlechat" "$HOME/.config/rclone" "$HOME/.ssh/config" /var/lib/agent-cluster 2>/dev/null | head -5 || true)"
   [ -n "$found" ] && row "files naming $CLIENT" "FAIL: $found" || row "files naming $CLIENT" pass
-  [ "$fail" = 0 ] && echo "Nothing of client $CLIENT remains on $(hostname -s)." || { echo "Something of client $CLIENT remains on $(hostname -s)."; exit 1; }
+  # The cluster's own stack runs as before: its model servers, Kev's model, job runner and services
+  # on this computer, and its gateway on the control computer.
+  COMPUTER="${CLUSTER_COMPUTER:-$(sed -n 's/^COMPUTER=//p' /etc/agent-cluster.conf 2>/dev/null || true)}"
+  if [ -f "$HOME/circlechat/site.json" ] && [ -n "$COMPUTER" ]; then
+    while IFS=$'\t' read -r what result; do row "$what" "$result"; done < <(node "$HERE/cluster-intact.mjs" "$HOME/circlechat/site.json" "$COMPUTER")
+  else
+    echo "Skipped the cluster's own stack: no ~/circlechat/site.json, or no computer name in /etc/agent-cluster.conf."
+  fi
+  [ "$fail" = 0 ] && echo "Nothing of client $CLIENT remains on $(hostname -s), and the cluster's own stack runs as before." || { echo "A check failed on $(hostname -s): see each FAIL above."; exit 1; }
   ;;
 *) echo "Unknown command $CMD."; exit 1 ;;
 esac

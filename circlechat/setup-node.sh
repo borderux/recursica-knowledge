@@ -23,12 +23,20 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 [ -f "$SITE" ] || { echo "No $SITE. Copy this deployment's site.json here (it holds no secrets)."; exit 1; }
 
 OUT="$(mktemp -d)"; trap 'rm -rf "$OUT"' EXIT
+if [ -n "${TENANT:-}" ] && [ -f "$HOME/circlechat/site.json" ]; then export CLUSTER_SITE="$HOME/circlechat/site.json"; fi
 node "$HERE/kit/render.mjs" "$SITE" "$OUT" >/dev/null
 SPEC="$OUT/services/$NODE.json"
 . "$OUT/tenant.env"
-[ "${DOCKER_CONTEXT:-}" ] && export DOCKER_CONTEXT
+[ -f "$SPEC" ] || { echo "No node \"$NODE\" in $SITE. A client or demo stack lists only the computers picked for the stack."; exit 1; }
+# A client or demo stack's jobs run in the stack's own Docker VM on each computer, with the
+# computer's limits.
+if [ "${DOCKER_CONTEXT:-}" ]; then
+  docker context inspect "$DOCKER_CONTEXT" >/dev/null 2>&1 || { echo "Docker context $DOCKER_CONTEXT does not exist on this computer. Create the stack's disk image and Docker VM here first (circlechat/README.md, \"Encrypted client stacks\")."; exit 1; }
+  export DOCKER_CONTEXT
+  limit() { node -e 'process.stdout.write(String(JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).limits?.[process.argv[2]] ?? ""))' "$SPEC" "$1"; }
+  check_vm_limits "$(limit cpus)" "$(limit memory_gb)" || exit 1
+fi
 DCTX="${DOCKER_CONTEXT:+DOCKER_CONTEXT=$DOCKER_CONTEXT }"
-[ -f "$SPEC" ] || { echo "No node \"$NODE\" in $SITE."; exit 1; }
 
 want_os="$(node -e 'console.log(JSON.parse(require("fs").readFileSync(process.argv[1])).os)' "$SPEC")"
 case "$want_os/$OS" in
@@ -89,6 +97,6 @@ if [ -n "$JOBS" ]; then
   fi
   # One job runner per stack: its own unit, port, job folder, secrets and Docker VM.
   if [ -n "${TENANT:-}" ]; then JOBS_DIR="$HOME/tenants/$TENANT/jobs"; else JOBS_DIR="$HOME/.recursica-jobs"; fi
-  install_unit "jobd$SUFFIX" "set -a; . \"$SECRETS\"; set +a; ${DCTX}${JOBS_NET_ARGS}JOBD_PORT=$(jget port) JOBD_SLOTS=$(jget slots) JOBD_MEMORY_GB=$(jget memory_gb) JOBD_NODE_NAME=$NODE JOBD_GATEWAY_URL=$GATEWAY_URL JOBD_ALLOWED_REPOS=${JOBD_ALLOWED_REPOS:-} JOBD_DIR=$JOBS_DIR node $HERE/jobd/jobd.mjs" "$HOME" "$(id -un)"
+  install_unit "jobd$SUFFIX" "set -a; . \"$SECRETS\"; set +a; ${DCTX}${JOBS_NET_ARGS}JOBD_PORT=$(jget port) JOBD_SLOTS=$(jget slots) JOBD_MEMORY_GB=$(jget memory_gb) JOBD_CPUS=$(jget cpus) JOBD_NODE_NAME=$NODE JOBD_GATEWAY_URL=$GATEWAY_URL JOBD_ALLOWED_REPOS=${JOBD_ALLOWED_REPOS:-} JOBD_DIR=$JOBS_DIR node $HERE/jobd/jobd.mjs" "$HOME" "$(id -un)"
 fi
 echo "$NODE: services installed. Check reachability from the control machine with the addresses in site.json."
