@@ -11,7 +11,7 @@ Border UX keeps this guide in step with the kit. A test fails when a `site.json`
 - **An NVIDIA GPU (optional),** for Kev's model and local models. Without a GPU, use cloud models only.
 - **A chat tool:** Slack, for alerts and approval buttons. Other chat tools are not supported yet.
 - **A git host:** GitHub gets the full flow. Every other git host gets a pushed branch and a link to open the request.
-- **Model access:** Claude through Anthropic, AWS Bedrock, Google Vertex AI or Azure, or local open-weight models only.
+- **Model access:** local open-weight models. Cloud keys are optional, from a provider the gateway supports, such as Anthropic, xAI, OpenAI, Azure or AWS Bedrock.
 - **Backup storage:** any storage rclone supports, such as S3, Azure Blob Storage, Google Drive or a local disk.
 - **HTTPS in front of CircleChat:** Tailscale, or the client's own reverse proxy on the same computer.
 - **Disk encryption:** LUKS on Linux, FileVault on a Mac, or BitLocker on Windows, set up when the computer is installed.
@@ -45,7 +45,10 @@ Copy `circlechat/site.example.json` to `~/circlechat/site.json`, and fill in eac
 | `repos.access`                                        | How agents get access to a project's repo: `service-account`, `github-app` or `admin-token`                      |
 | `git`                                                 | `git.host`: `github`, or `other` for any other git host                                                          |
 | `nodes`                                               | Each computer: name, os, address, control, and the computer's Kev's model, local models, services and job runner |
-| `routes`                                              | Each model route, such as `claude-sonnet` to `anthropic/claude-sonnet-5-5` or `bedrock/...`                      |
+| `nodes[].tailnet_address`                             | The control computer's Tailscale IP address, where port jobs on other computers reach the model gateway          |
+| `routes`                                              | Each model route: an ordered list of the cluster's models, such as `local-large` to `machine-2/large-local`      |
+| `model_keys`                                          | Each cloud key's name, provider, cloud model and agents. The key's value lives only in the secret store          |
+| `agents`                                              | Each agent's routes and cloud switch                                                                             |
 | `porter`                                              | Porter's golden adapter and target adapters, only when the client ports adapters                                 |
 | `notify`                                              | Slack alerts for task changes                                                                                    |
 | `data`                                                | Kev's disagreement log; leave out for a client                                                                   |
@@ -86,6 +89,7 @@ The kit sets each of these up. Each one has a section in `circlechat/README.md`:
 
 - **The outgoing filter:** agents reach only the sites on the stack's allowlist. A refused site asks an approver in Slack.
 - **Privacy rules for agents:** personal information masking and CircleChat's approval gate. Alan's pull requests go only to the client's own knowledge fork.
+- **Cloud models and the model gateway:** only the gateway holds the cloud keys. Each task's "Cloud models" setting decides when a cloud model answers. The key check fails when a cloud key is in CircleChat's database, an agent's home or a backup.
 - **Security services:** firewall rules, decoys, the lockdown and its encrypted evidence.
 - **Backups:** nightly and encrypted, with a test restore each quarter.
 - **Updates:** security updates after a 7-day wait, and right away for actively exploited flaws.

@@ -56,3 +56,21 @@ test("a failed backup reports the failed step, for the stack's Slack channel", (
   assert.notEqual(b.status, 0);
   assert.match(b.stdout, /Backup of stack acme failed .* at step: restic/);
 });
+
+test("the restore test fails when a cloud key is in the backup", () => {
+  const { env, cc } = setup();
+  assert.equal(run("backup.sh", env).status, 0);
+  fs.writeFileSync(path.join(cc, "backup-saved", "notes.txt"), `key ${"sk-ant-" + "a".repeat(40)}\n`);
+  const r = run("restore-test.sh", env);
+  assert.notEqual(r.status, 0);
+  assert.match(r.stdout, /Test restore of stack acme failed .*the key check found a cloud key in the backup, in 1 place/);
+  assert.doesNotMatch(r.stdout, /sk-ant-a/, "the report never shows the key");
+});
+
+test("the restore test finds a key from the gateway's secrets file by its exact value", () => {
+  const { env, cc } = setup();
+  fs.writeFileSync(path.join(cc, "model-keys.env"), "MODEL_KEY_ACME=plain-looking-provider-secret-1234\n");
+  assert.equal(run("backup.sh", env).status, 0);
+  fs.writeFileSync(path.join(cc, "backup-saved", "notes.txt"), "plain-looking-provider-secret-1234\n");
+  assert.match(run("restore-test.sh", env).stdout, /found a cloud key in the backup/);
+});

@@ -3,7 +3,7 @@
 S="${FAKE_DOCKER_STATE:?}"; mkdir -p "$S"
 case "$1" in
   run) for a in "$@"; do [ "${last:-}" = --name ] && name="$a"; last="$a"; done
-       echo "running 0 false" > "$S/$name"; echo "fakeid-$name" ;;
+       echo "running 0 false" > "$S/$name"; printf '%s\n' "$@" > "$S/$name.args"; echo "fakeid-$name" ;;
   inspect) n="${!#}"; [ -f "$S/$n" ] && cat "$S/$n" || { echo "no such" >&2; exit 1; } ;;
   logs) echo "log line for ${!#}" ;;
   rm) rm -f "$S/${!#}" ;;

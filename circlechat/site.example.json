@@ -1,8 +1,8 @@
 {
   "$comment": [
     "One deployment of CircleChat and the Recursica agents. Copy to $CC_DIR/site.json (outside",
-    "any repository) and fill it in. Secrets never go here: they go in $CC_DIR/.env",
-    "(ANTHROPIC_API_KEY, KEV_ENGINE_KEY, SLACK_BOT_TOKEN, LITELLM_MASTER_KEY).",
+    "any repository) and fill it in. Secrets never go here: each stack's secrets live in the stack's",
+    "GitHub environment, and the secrets helper writes them on each computer (circlechat/README.md).",
     "",
     "nodes: every machine that runs something. Add as many as you have. 'address' is how the",
     "CONTROL node's containers reach that machine: a VPN/Tailscale address or name, or",
@@ -10,8 +10,8 @@
     "exactly one node has \"control\": true. It runs CircleChat, the agents and the gateway.",
     "Any machine can be the control node, a Mac or a PC of any size (Windows runs it through WSL).",
     "routes: a name agents ask for, mapped to an ordered list of backends. The gateway tries",
-    "them in order, so the last entry is the fallback. Backends are \"<node>/<model id>\" or",
-    "\"anthropic/<model>\".",
+    "them in order, so the last entry is the fallback. A backend is \"<node>/<model id>\": a route",
+    "lists only the cluster's own models. A cloud model never joins a route.",
     "",
     "jobs: a node with a jobs block runs a job runner (circlechat/jobd) for long, heavy agent work,",
     "such as Porter's adapter ports. Each job gets memory_gb of memory at most; slots jobs run at once.",
@@ -19,7 +19,16 @@
     "",
     "site.tenant, site.kind, site.preview_port, site.gateway_port, site.docker_context: one stack per",
     "client on a shared computer. Leave them out for a single stack. A client stack sets kind \"client\",",
-    "its own tenant name and ports, and its own Docker VM; see circlechat/README.md, \"Clients\"."
+    "its own tenant name and ports, and its own Docker VM; see circlechat/README.md, \"Clients\".",
+    "",
+    "tailnet_address: the control node's Tailscale IP address. Port jobs on other nodes reach the",
+    "model gateway there.",
+    "model_keys: the stack's cloud keys. Each named key records the provider, the cloud model and the",
+    "agents that use the key. The key's value lives only in the stack's GitHub environment, as",
+    "MODEL_KEY_<NAME> (MODEL_KEY_DEFAULT for the key named default). An agent no key names uses the",
+    "key named default. A task's \"Cloud models\" setting decides when a cloud key answers.",
+    "agents: each agent's routes (all routes when left out) and cloud switch (on when left out). With",
+    "the switch off, the gateway never calls a cloud model for the agent."
   ],
   "site": {
     "public_host": "circlechat.example.ts.net",
@@ -37,6 +46,7 @@
       "os": "linux",
       "control": true,
       "address": "host.docker.internal",
+      "tailnet_address": "100.64.0.1",
       "kev": {
         "port": 8009,
         "priority": 2
@@ -94,12 +104,34 @@
     }
   ],
   "routes": {
-    "local-large": [
-      "machine-2/large-local",
-      "machine-1/small-local",
-      "anthropic/claude-sonnet-5-5"
-    ],
+    "local-large": ["machine-2/large-local", "machine-1/small-local"],
     "local-small": ["machine-1/small-local", "machine-2/large-local"]
+  },
+  "model_keys": {
+    "default": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "agents": []
+    },
+    "porter": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "agents": ["porter"]
+    },
+    "acme-grok": {
+      "provider": "xai",
+      "model": "grok-4",
+      "agents": ["barb"]
+    }
+  },
+  "agents": {
+    "betty": {
+      "routes": ["local-large"]
+    },
+    "loki": {
+      "routes": ["local-small"],
+      "cloud": false
+    }
   },
   "porter": {
     "owner": "your-circlechat-handle",

@@ -19,11 +19,11 @@ const jobd = spawn(process.execPath, [path.join(here, "jobd.mjs")], { env: { ...
   JOBD_PORT: String(PORT), JOBD_HOST: "127.0.0.1", JOBD_TOKEN: TOKEN, JOBD_SLOTS: "1", JOBD_DIR: path.join(tmp, "jobs"),
   JOBD_DOCKER: path.join(here, "fake-docker.sh"), FAKE_DOCKER_STATE: state, JOBD_ALLOWED_REPOS: REPO, JOBD_POLL_MS: "150",
   JOBD_NODE_NAME: "node-a", PORTER_HOOK_URL: `http://127.0.0.1:${hook.address().port}/hook`, PORTER_HOOK_SECRET: SECRET,
-  ANTHROPIC_API_KEY: "should-pass-by-name" }, stdio: "ignore" });
+  JOBD_GATEWAY_URL: "http://cc-gateway:4000", ANTHROPIC_API_KEY: "never-reaches-a-job", PORTER_GITHUB_PAT: "should-pass-by-name" }, stdio: "ignore" });
 await new Promise((r) => setTimeout(r, 400));
 const call = (method, p, body, auth = TOKEN) => fetch(`http://127.0.0.1:${PORT}${p}`, { method,
   headers: { authorization: `Bearer ${auth}`, "content-type": "application/json" }, body: body && JSON.stringify(body) });
-const pkg = { type: "porter", repo: REPO, label: "v1.2.3 mui-v7", package: "# Port the new prop" };
+const pkg = { type: "porter", repo: REPO, label: "v1.2.3 mui-v7", package: "# Port the new prop", gateway_key: "cct_eyJhIjoicG9ydGVyIn0.c2lnbmF0dXJl" };
 
 test.after(() => { jobd.kill(); hook.close(); });
 
@@ -31,12 +31,25 @@ test("rejects a wrong token", async () => assert.equal((await call("GET", "/jobs
 test("rejects a repository outside the allowlist", async () =>
   assert.equal((await call("POST", "/jobs", { ...pkg, repo: "https://github.com/evil/x" })).status, 403));
 test("rejects an unknown job type", async () => assert.equal((await call("POST", "/jobs", { ...pkg, type: "shell" })).status, 400));
+test("refuses a job without a task's gateway key", async () => {
+  const r = await call("POST", "/jobs", { ...pkg, gateway_key: "sk-ant-not-a-gateway-key" });
+  assert.equal(r.status, 400);
+  assert.equal((await r.json()).error, "gateway_key_required");
+});
 
 test("starts a job, refuses a second when full, reports and wakes the agent when the job ends", async () => {
   const r = await call("POST", "/jobs", pkg);
   assert.equal(r.status, 201);
   const { id } = await r.json();
   assert.equal(fs.readFileSync(path.join(tmp, "jobs", id, "package.md"), "utf8"), pkg.package);
+  // The job gets the gateway's address and the task's gateway key from a file, never a cloud key.
+  const gw = path.join(tmp, "jobs", id, "gateway.env");
+  assert.equal(fs.readFileSync(gw, "utf8"), `ANTHROPIC_BASE_URL=http://cc-gateway:4000\nANTHROPIC_AUTH_TOKEN=${pkg.gateway_key}\n`);
+  assert.equal(fs.statSync(gw).mode & 0o777, 0o600);
+  const args = fs.readFileSync(path.join(state, `${id}.args`), "utf8").split("\n");
+  assert.equal(args[args.indexOf("--env-file") + 1], gw);
+  assert.ok(args.includes("PORTER_GITHUB_PAT"));
+  assert.ok(!args.some((a) => a.includes("ANTHROPIC_API_KEY") || a.includes(pkg.gateway_key)), "no cloud key and no key on the command line");
   assert.equal((await call("POST", "/jobs", pkg)).status, 429);
   assert.equal((await (await call("GET", `/jobs/${id}`)).json()).status, "running");
   fs.writeFileSync(path.join(tmp, "jobs", id, "report.md"), "PR: https://example/pr/1");
@@ -44,6 +57,7 @@ test("starts a job, refuses a second when full, reports and wakes the agent when
   await new Promise((r) => setTimeout(r, 600));
   const meta = await (await call("GET", `/jobs/${id}`)).json();
   assert.equal(meta.status, "succeeded");
+  assert.equal(fs.existsSync(path.join(tmp, "jobs", id, "gateway.env")), false, "the key file goes when the job ends");
   assert.equal(await (await call("GET", `/jobs/${id}/report`)).text(), "PR: https://example/pr/1");
   assert.equal(hooks.length, 1);
   const { h, b } = hooks[0];

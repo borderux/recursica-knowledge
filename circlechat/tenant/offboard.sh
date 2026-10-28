@@ -60,7 +60,7 @@ remove)
     . "$CC_DIR/kit-out/tenant.env"
     [ -n "$DOCKER_CONTEXT" ] && export DOCKER_CONTEXT
     (cd "$CC_DIR" && docker compose down -v --remove-orphans) || true
-    docker rm -f "betty-proto-$CLIENT" "cc-gateway-$CLIENT" "cc-slack-notify-$CLIENT" "cc-egress-$CLIENT" >/dev/null 2>&1 || true
+    docker rm -f "betty-proto-$CLIENT" "cc-gateway-$CLIENT" "cc-litellm-$CLIENT" "cc-slack-notify-$CLIENT" "cc-egress-$CLIENT" >/dev/null 2>&1 || true
     docker volume rm "cc-notify-state-$CLIENT" >/dev/null 2>&1 || true
     PORT="$(node -e 'console.log(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).site?.port ?? "")' "$CC_DIR/site.json")"
     [ -n "$PORT" ] && { tailscale serve --https="$PORT" off >/dev/null 2>&1 || true; }

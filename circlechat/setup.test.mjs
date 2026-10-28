@@ -48,9 +48,24 @@ test("setup-host --secrets-only writes the stack's settings and starts the gatew
   assert.notEqual(e.MINIO_ROOT_PASSWORD, "minioadmin");
   assert.notEqual(e.PG_PASSWORD, "circlechat");
   assert.match(fs.readFileSync(path.join(s.cc, "compose.egress.yml"), "utf8"), /internal: true/);
-  assert.match(s.calls(), /docker run -d --name cc-gateway .*--network circlechat_default/);
-  assert.match(s.calls(), /docker network connect --alias cc-gateway circlechat_agents cc-gateway/);
-  assert.match(s.calls(), /ghcr\.io\/berriai\/litellm:main-stable@sha256:0123abcd --config/);
+  // The gateway: LiteLLM alone on the gateway's network, with the keys from the secrets file and no
+  // environment file; the router in front, on the stack's network, the gateway's network and the
+  // agents' network, reachable over Tailscale for port jobs on other computers.
+  const calls = s.calls();
+  const litellm = calls.split("\n").find((l) => l.startsWith("docker run -d --name cc-litellm "));
+  assert.match(litellm, /--network circlechat_models /);
+  assert.match(litellm, /-v .*\/model-keys\.env:\/run\/secrets\/model-keys\.env:ro/);
+  assert.match(litellm, /--entrypoint python ghcr\.io\/berriai\/litellm:main-stable@sha256:0123abcd \/kit\/start-litellm\.py/);
+  assert.doesNotMatch(litellm, /--env-file|-p /, "LiteLLM gets no environment file and publishes no port");
+  assert.match(calls, /docker network create circlechat_models/);
+  const router = calls.split("\n").find((l) => l.startsWith("docker run -d --name cc-gateway "));
+  assert.match(router, /--network circlechat_default -p 127\.0\.0\.1:4000:4000 -p 100\.64\.0\.1:4000:4000 /);
+  assert.match(router, /LITELLM_URL=http:\/\/cc-litellm:4000/);
+  assert.doesNotMatch(router, /--env-file|ANTHROPIC/);
+  assert.match(calls, /docker network connect circlechat_models cc-gateway/);
+  assert.match(calls, /docker network connect --alias cc-gateway circlechat_agents cc-gateway/);
+  assert.ok(fs.existsSync(path.join(s.cc, "gateway-app/router.mjs")));
+  assert.equal(e.LITELLM_MASTER_KEY, undefined, "no agent gets a master key");
   const lock = JSON.parse(fs.readFileSync(path.join(s.cc, "images.lock"), "utf8"));
   assert.equal(lock["ghcr.io/berriai/litellm:main-stable"].ref, "ghcr.io/berriai/litellm:main-stable@sha256:0123abcd");
 });
@@ -88,7 +103,21 @@ test("a client stack with cloud models runs the masking services and passes them
   assert.match(s.dotenv().COMPOSE_FILE, /compose\.privacy\.yml/);
   assert.equal(s.dotenv().COMPOSE_PROJECT_NAME, "cc-acme");
   assert.match(fs.readFileSync(path.join(s.cc, "compose.privacy.yml"), "utf8"), /presidio-analyzer/);
-  assert.match(s.calls(), /docker run -d --name cc-gateway-acme .*PRESIDIO_ANALYZER_API_BASE=http:\/\/presidio-analyzer:3000/);
+  assert.match(s.calls(), /docker run -d --name cc-litellm-acme .*PRESIDIO_ANALYZER_API_BASE=http:\/\/presidio-analyzer:3000/);
+  assert.match(fs.readFileSync(path.join(s.cc, "compose.privacy.yml"), "utf8"), /name: cc-acme_models\n    external: true/);
+});
+
+test("setup-host moves an old ANTHROPIC_API_KEY out of .env, and stops on another cloud key there", () => {
+  const s = sandbox(example);
+  fs.writeFileSync(path.join(s.cc, ".env"), "ANTHROPIC_API_KEY=sk-ant-old\n");
+  const r = s.run("setup-host.sh", "--secrets-only");
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.equal(s.dotenv().ANTHROPIC_API_KEY, undefined);
+  assert.match(r.stdout, /Moved ANTHROPIC_API_KEY from \.env to the gateway's secrets file/);
+  fs.appendFileSync(path.join(s.cc, ".env"), "XAI_API_KEY=xai-abc\n");
+  const again = s.run("setup-host.sh", "--secrets-only");
+  assert.notEqual(again.status, 0);
+  assert.match(again.stdout, /XAI_API_KEY is in .*\.env, which holds no cloud key/);
 });
 
 test("setup-host stops when TENANT and site.tenant disagree", () => {
@@ -116,4 +145,13 @@ test("setup-node gives a client stack its own job runner, filter, job folder and
   assert.match(unit, /tenants\/acme\/node\.env/);
   assert.match(unit, /DOCKER_CONTEXT=colima-acme/);
   assert.match(s.calls(), /docker run -d --name cc-jobs-egress-acme /);
+  assert.match(unit, node === "machine-1" ? /JOBD_GATEWAY_URL=http:\/\/cc-gateway:4000 / : /JOBD_GATEWAY_URL=http:\/\/100\.64\.0\.1:4000 /);
+});
+
+test("setup-node refuses a cloud key in the job runner's secrets file", () => {
+  const s = sandbox(example);
+  fs.writeFileSync(path.join(s.home, ".recursica-node.env"), "JOBD_TOKEN=t\nANTHROPIC_API_KEY=k\n");
+  const r = s.run("setup-node.sh", "machine-1");
+  assert.notEqual(r.status, 0);
+  assert.match(r.stdout, /holds a cloud key. Port jobs reach cloud models only through the gateway/);
 });

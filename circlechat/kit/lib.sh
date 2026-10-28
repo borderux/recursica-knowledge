@@ -150,6 +150,21 @@ uninstall_unit() {
   echo "removed $name"
 }
 
+# Point one agent's Hermes home at the stack's gateway, with the agent's own gateway key, and clear
+# every cloud key out of the home (gateway/hermes-access.mjs). Reads $KIT_OUT and $CC_DIR. The agent
+# asks for its first route in site.json. With "env", the home's .env also gets the gateway's address
+# and the agent's gateway key.
+#   gateway_access <handle> <hermes home> [env]
+gateway_access() {
+  local handle="$1" home="$2" kit route url
+  kit="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+  route="$(node -e 'const g = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")); const a = g.agents?.[process.argv[2]] ?? g.fallback; process.stdout.write(a?.routes?.[0] ?? "")' "$KIT_OUT/gateway.json" "$handle")"
+  [ -n "$route" ] || { echo "$handle: site.json has no route, so $handle has no model to ask for. Add a route."; return 1; }
+  if grep -q '^EGRESS=on' "$KIT_OUT/tenant.env"; then url=http://cc-gateway:4000/v1
+  else url="http://localhost:$(sed -n 's/^GATEWAY_PORT=//p' "$KIT_OUT/tenant.env")/v1"; fi
+  sudo "$(command -v node)" "$kit/gateway/hermes-access.mjs" "$home" "$handle" "$CC_DIR/gateway-state" "$url" "$route" ${3:+"$3"}
+}
+
 # Pin an image tag to the exact version (digest) in the stack's images.lock. The first use records
 # the version pulled then. The weekly image refresh (cluster/images.mjs) moves a pin to a newer
 # version only after the newer version has been out for 7 days.
