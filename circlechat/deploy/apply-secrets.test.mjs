@@ -65,10 +65,24 @@ test("on a Mac, the gateway's secrets file belongs to the owner, and on Linux to
     const r = apply(conf, ["border", control, "false"], "MODEL_KEY_DEFAULT=k\n", fake.env);
     assert.equal(r.status, 0, r.stdout + r.stderr);
     const keys = path.join(home, "circlechat", "model-keys.env");
-    const call = `chown ${os.userInfo().username} ${keys}`;
+    const call = `chown -h ${os.userInfo().username} ${keys}`;
     assert.equal(fake.calls().split("\n").includes(call), owned, `${system}: ${fake.calls()}`);
     assert.equal(fs.statSync(keys).mode & 0o777, 0o600);
   }
+});
+
+test("refuses to write the cloud keys through a symlink, and writes nothing", () => {
+  const { home, conf } = setup();
+  const target = path.join(home, "elsewhere.txt");
+  fs.writeFileSync(target, "untouched\n");
+  const keys = path.join(home, "circlechat", "model-keys.env");
+  fs.symlinkSync(target, keys);
+  const r = apply(conf, ["border", control, "false"], "MODEL_KEY_DEFAULT=k\nJOBD_TOKEN=jt\n");
+  assert.notEqual(r.status, 0);
+  assert.match(r.stdout, /Refused: .*model-keys\.env is a symlink/);
+  assert.equal(fs.readFileSync(target, "utf8"), "untouched\n");
+  assert.ok(fs.lstatSync(keys).isSymbolicLink());
+  assert.doesNotMatch(fs.readFileSync(path.join(home, "circlechat", ".env"), "utf8"), /JOBD_TOKEN/);
 });
 
 test("refuses a provider's own credential names, which used to land in .env", () => {

@@ -86,8 +86,8 @@ test("on a Mac, setup-host gives the gateway's secrets file and state folder to 
     assert.equal(r.status, 0, r.stdout + r.stderr);
     const calls = s.calls().split("\n");
     const gw = path.join(s.cc, "gateway-state");
-    assert.equal(calls.includes(`sudo chown -R ${me} ${path.join(s.cc, "model-keys.env")} ${gw}`), owned, system);
-    assert.equal(calls.includes(`sudo chown -R ${me} ${gw}/db.url`), owned, system);
+    assert.equal(calls.includes(`sudo chown -h -R ${me} ${path.join(s.cc, "model-keys.env")} ${gw}`), owned, system);
+    assert.equal(calls.includes(`sudo chown -h -R ${me} ${gw}/db.url`), owned, system);
     assert.equal(calls.some((l) => l.startsWith("sudo chown")), owned, `${system}: no other chown`);
   }
 });
