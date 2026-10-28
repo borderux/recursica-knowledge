@@ -196,7 +196,7 @@ test("a demo stack on one computer leaves out the models that don't fit, and sto
 test("a stack's job runner on its one computer gets its own port and the computer's limits", () => {
   const tenantsDir = fs.mkdtempSync(path.join(os.tmpdir(), "tenants-"));
   const site = stackSite(example, { stack: "acme", kind: "demo", computers: "machine-1", limits: { cpus: 2, memory_gb: 8, model_memory_gb: 12 }, cloud: null, tenantsDir });
-  const s = sandbox(site, { tenant: "acme" });
+  const s = sandbox(site, { tenant: "acme", system: "Linux" });
   fs.writeFileSync(path.join(s.home, "tenants/acme/node.env"), "JOBD_TOKEN=t\n");
   const r = s.run("setup-node.sh", "machine-1");
   assert.equal(r.status, 0, r.stdout + r.stderr);
