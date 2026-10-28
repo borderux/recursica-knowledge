@@ -9,7 +9,7 @@ fail=0; check() { if eval "$2"; then echo "pass: $1"; else echo "FAIL: $1"; fail
 
 # CircleChat: Border UX's fork, which carries the agents' network setting. The original repo has no
 # such setting, so a failed clone stops the smoke install instead of testing the wrong CircleChat.
-git clone --quiet --depth 1 --branch border/local-fixes https://github.com/borderux/recursica-circlechat "$CC"
+git clone --quiet --depth 1 --branch recursica/local-fixes https://github.com/borderux/recursica-circlechat "$CC"
 mkdir -p "$WS" && ln -sfn "$KIT" "$WS/recursica-knowledge"
 
 cat > "$CC/site.json" <<JSON
