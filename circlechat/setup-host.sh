@@ -195,6 +195,8 @@ sudo mkdir -p "$GW_STATE" && sudo chmod 700 "$GW_STATE"
 # LiteLLM's master key: only the router uses the key, so the key lives in the gateway's state
 # folder, never in .env. Agents now use their own gateway keys.
 sudo test -s "$GW_STATE/litellm-master.key" || echo "sk-$(openssl rand -hex 24)" | sudo tee "$GW_STATE/litellm-master.key" >/dev/null
+# The password of the router's read-only database role (gateway/gateway-db.sql).
+sudo test -s "$GW_STATE/db-password" || openssl rand -hex 24 | sudo tee "$GW_STATE/db-password" >/dev/null
 sedi '/^LITELLM_MASTER_KEY=/d' .env
 if env_has ANTHROPIC_API_KEY; then
   if ! sudo grep -q '^MODEL_KEY_DEFAULT=.' "$MODEL_KEYS"; then
@@ -252,6 +254,23 @@ start_egress() {
   echo "Outgoing filter running: agents reach only the sites in $KIT_OUT/egress/allow.txt."
 }
 
+# The router's database role: it reads only the columns the router needs, and writes nothing
+# (gateway/gateway-db.sql). The role's address, with its password, goes in a file in the gateway's
+# state folder, so `docker inspect` shows no database password. CircleChat's api makes the tables
+# when it starts, so this waits for them.
+gateway_db_role() {
+  local pw i
+  pw="$(sudo cat "$GW_STATE/db-password")"
+  for i in $(seq 90); do
+    [ "$(docker compose exec -T postgres psql -U postgres -d circlechat -Atc "select to_regclass('public.agent_runs') is not null" 2>/dev/null)" = t ] && break
+    [ "$i" = 90 ] && { echo "CircleChat's tables are not there yet, so the gateway cannot read tasks and treats every request as cluster only. Run this script again once CircleChat is up."; return 0; }
+    sleep 2
+  done
+  { printf '\\set password %s\n' "$pw"; cat "$HERE/gateway/gateway-db.sql"; } | docker compose exec -T postgres psql -q -U postgres -d circlechat >/dev/null
+  printf 'postgres://cc_gateway_read:%s@postgres:5432/circlechat\n' "$pw" | sudo tee "$GW_STATE/db.url" >/dev/null
+  sudo chmod 600 "$GW_STATE/db.url"
+}
+
 start_gateway_and_notifier() {
   # The model gateway, in two containers.
   # LiteLLM (cc-litellm): one address for every cluster model, with fallbacks in route order, and
@@ -268,17 +287,21 @@ start_gateway_and_notifier() {
     /kit/start-litellm.py /app/config.yaml /run/secrets/model-keys.env /run/secrets/litellm-master.key --port 4000
   # The router (cc-gateway): each agent's and each port job's gateway key, the task's "Cloud
   # models" setting from CircleChat's database, and the spend log in gateway-logs/. Agents reach the
-  # router on their closed network; port jobs on other computers reach it over Tailscale.
+  # router on their closed network, on port 4000. Port jobs on other computers reach the router's
+  # port 4001 over Tailscale: site.gateway_port on the control computer's Tailscale address only,
+  # where every request needs a task key. With the filter off, this computer's agents use
+  # site.gateway_port on 127.0.0.1.
+  gateway_db_role
   docker rm -f "cc-gateway$SUFFIX" >/dev/null 2>&1 || true
   mkdir -p "$CC_DIR/gateway-app" "$CC_DIR/gateway-logs"
   cp "$HERE"/gateway/*.mjs "$HERE/gateway/package.json" "$CC_DIR/gateway-app/"
-  local publish=(-p "127.0.0.1:$GATEWAY_PORT:4000")
-  [ -n "$TAILNET_ADDRESS" ] && publish+=(-p "$TAILNET_ADDRESS:$GATEWAY_PORT:4000")
-  local pg; pg="$(env_value PG_PASSWORD)"; pg="${pg:-circlechat}"
-  docker run -d --name "cc-gateway$SUFFIX" --restart unless-stopped --network "$NET" "${publish[@]}" \
+  local publish=()
+  [ "$EGRESS" = on ] || publish+=(-p "127.0.0.1:$GATEWAY_PORT:4000")
+  [ -n "$TAILNET_ADDRESS" ] && publish+=(-p "$TAILNET_ADDRESS:$GATEWAY_PORT:4001")
+  docker run -d --name "cc-gateway$SUFFIX" --restart unless-stopped --network "$NET" ${publish[@]+"${publish[@]}"} \
     -v "$CC_DIR/gateway-app":/app -v "$KIT_OUT/gateway.json":/etc/gateway/gateway.json:ro \
     -v "$GW_STATE":/state -v "$CC_DIR/gateway-logs":/logs -w /app \
-    -e DATABASE_URL="postgres://postgres:$pg@postgres:5432/circlechat" -e LITELLM_URL="http://cc-litellm$SUFFIX:4000" \
+    -e LITELLM_URL="http://cc-litellm$SUFFIX:4000" \
     "$(pin_image node:22-alpine)" sh -c "npm install --silent && node router.mjs" >/dev/null
   docker network connect "$MODEL_NET" "cc-gateway$SUFFIX"
 

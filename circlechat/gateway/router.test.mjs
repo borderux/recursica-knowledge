@@ -5,7 +5,7 @@ import http from "node:http";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { createGateway, inCidr } from "./router.mjs";
+import { createGateway, inCidr, strictest } from "./router.mjs";
 import { issue, revoke } from "./keys.mjs";
 
 const listen = (handler) => new Promise((r) => { const s = http.createServer(handler); s.listen(0, "127.0.0.1", () => r(s)); });
@@ -58,7 +58,8 @@ const db = {
   tasks: { betty: null, loki: null, porter: null, nolocal: null },
   settings: {},
   reads: 0,
-  async runTask(h) { return this.tasks[h] ?? null; },
+  // One task id per running turn; a list stands for more than one running turn.
+  async runTasks(h) { const t = this.tasks[h]; return Array.isArray(t) ? t : t == null ? [] : [t]; },
   async onTask(h, t) { return h === "porter" && t.startsWith("t-sub"); },
   async setting(t) { this.reads++; return this.settings[t] ?? null; },
   async botToken(h) { return `cc_bot_${h}`; },
@@ -147,6 +148,62 @@ test("a change to the task's setting applies within a minute", async () => {
   offset += 61_000;
   await ask(keys.betty);
   assert.equal(seen.at(-1).model, "key/default");
+});
+
+test("with more than one running turn, the strictest setting among their tasks decides", async () => {
+  db.settings["t-now"] = { mode: "cloud_now" }; db.settings["t-now-2"] = { mode: "cloud_now" };
+  db.settings["t-only"] = { mode: "cluster_only" };
+  db.tasks.betty = ["t-now", "t-only"];
+  await ask(keys.betty);
+  assert.equal(seen.at(-1).model, "local-large", "cluster only wins over cloud now");
+  const log = await lastLog();
+  assert.deepEqual([log.task, log.key, log.tasks], ["t-only", "cluster", ["t-now", "t-only"]]);
+  db.tasks.betty = ["t-now", null];
+  await ask(keys.betty);
+  assert.equal(seen.at(-1).model, "local-large", "a turn outside a task counts as cluster only");
+  db.tasks.betty = ["t-now", "t-now-2"];
+  await ask(keys.betty);
+  assert.equal(seen.at(-1).model, "key/default", "every running task allows cloud now");
+  db.tasks.betty = ["t-new-a", "t-new-b"];
+  await ask(keys.betty);
+  assert.ok(!(await clocks())["t-new-a"], "a request the router cannot place starts no task's clock");
+  db.tasks.porter = ["t-a", "t-b"];
+  const many = await fetch(`${base(gw)}/task-key`, { method: "POST", headers: { authorization: `Bearer ${keys.porter}` } });
+  assert.equal(many.status, 409, "Porter must name the task");
+  db.tasks.betty = null; db.tasks.porter = null;
+  // A later move to the cloud is stricter than an earlier one.
+  const at = (until) => ({ task: String(until), clock: null, d: { target: "cluster", until } });
+  assert.equal(strictest([at(5), at(9), { task: "c", d: { target: "cloud" } }]).task, "9");
+  assert.equal(strictest([at(5), { task: "x", d: { target: "cluster" } }]).task, "x");
+});
+
+test("only model requests reach LiteLLM: its admin endpoints are refused, even with a valid key", async () => {
+  const before = seen.length;
+  for (const [method, p] of [["POST", "/key/generate"], ["POST", "/v1/key/generate"], ["GET", "/key/list"], ["POST", "/model/new"], ["GET", "/v1/model/info"],
+    ["POST", "/user/new"], ["GET", "/spend/logs"], ["POST", "/config/update"], ["POST", "/v1/embeddings"], ["POST", "/v1/messages/batches"], ["POST", "/v1/../key/generate"]]) {
+    const r = await fetch(`${base(gw)}${p}`, { method, headers: { authorization: `Bearer ${keys.betty}`, "content-type": "application/json" }, body: method === "POST" ? "{}" : undefined });
+    assert.equal(r.status, 404, `${method} ${p}`);
+  }
+  assert.equal(seen.length, before, "LiteLLM saw none of them");
+  for (const p of ["/v1/chat/completions", "/v1/completions", "/v1/messages"]) {
+    const r = await fetch(`${base(gw)}${p}`, { method: "POST", headers: { authorization: `Bearer ${keys.betty}`, "content-type": "application/json" }, body: JSON.stringify({ model: "local-large", max_tokens: 5 }) });
+    assert.equal(r.status, 200, p);
+  }
+  assert.deepEqual(seen.slice(before).map((s) => s.path), ["/v1/chat/completions", "/v1/completions", "/v1/messages"]);
+});
+
+test("the port for port jobs takes only a task key, for every request", async () => {
+  const handler = createGateway({ config, db, litellm: base(litellm), litellmKey: "sk-master", stateDir: state, spendLog, now, retryMs: 20 });
+  const jobs = await listen(handler.jobs);
+  const get = (p, key) => fetch(`${base(jobs)}${p}`, { headers: key ? { authorization: `Bearer ${key}` } : {} });
+  assert.equal((await get("/health")).status, 401, "no key, not even for /health");
+  assert.equal((await get("/health", keys.porter)).status, 401, "an agent key is refused here");
+  const { key } = await (await fetch(`${base(gw)}/task-key`, { method: "POST", headers: { authorization: `Bearer ${keys.porter}`, "content-type": "application/json" }, body: JSON.stringify({ task: "t-sub-x" }) })).json();
+  assert.equal((await get("/health", key)).status, 200);
+  const r = await fetch(`${base(jobs)}/v1/messages`, { method: "POST", headers: { "x-api-key": key, "content-type": "application/json" }, body: JSON.stringify({ model: "sonnet", max_tokens: 5 }) });
+  assert.equal(r.status, 200);
+  assert.equal((await fetch(`${base(jobs)}/key/generate`, { method: "POST", headers: { "x-api-key": key } })).status, 404);
+  jobs.close();
 });
 
 test("a key reaches only its agent's routes; another name means the agent's first route", async () => {

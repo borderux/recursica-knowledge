@@ -15,7 +15,7 @@ function sandbox(site, { tenant } = {}) {
   const bin = path.join(home, "bin"), log = path.join(home, "calls.log"), units = path.join(home, "units");
   fs.mkdirSync(bin); fs.mkdirSync(units);
   const stub = (name, body) => { fs.writeFileSync(path.join(bin, name), `#!/usr/bin/env bash\necho "${name} $*" >> "${log}"\n${body}\n`); fs.chmodSync(path.join(bin, name), 0o755); };
-  stub("docker", `case "$1 $2" in "volume inspect"|"network inspect") exit 1 ;; "context inspect") exit 0 ;; "image inspect") echo "\${@: -1}@sha256:0123abcd" ;; esac; exit 0`);
+  stub("docker", `case "$1 $2" in "volume inspect"|"network inspect") exit 1 ;; "context inspect") exit 0 ;; "image inspect") echo "\${@: -1}@sha256:0123abcd" ;; "compose exec") case "$*" in *to_regclass*) echo t ;; esac ;; esac; exit 0`);
   stub("sudo", `if [ "$1" = tee ]; then cat > "${units}/$(basename "$2")"; exit 0; fi; if [ "$1" = -n ] || [ "$1" = -u ]; then exit 0; fi; exit 0`);
   const cc = tenant ? path.join(home, "tenants", tenant, "circlechat") : path.join(home, "circlechat");
   fs.mkdirSync(cc, { recursive: true });
@@ -59,9 +59,13 @@ test("setup-host --secrets-only writes the stack's settings and starts the gatew
   assert.doesNotMatch(litellm, /--env-file|-p /, "LiteLLM gets no environment file and publishes no port");
   assert.match(calls, /docker network create circlechat_models/);
   const router = calls.split("\n").find((l) => l.startsWith("docker run -d --name cc-gateway "));
-  assert.match(router, /--network circlechat_default -p 127\.0\.0\.1:4000:4000 -p 100\.64\.0\.1:4000:4000 /);
+  // With the filter on, only the port for port jobs is published, on the Tailscale address.
+  assert.match(router, /--network circlechat_default -p 100\.64\.0\.1:4000:4001 -v /);
   assert.match(router, /LITELLM_URL=http:\/\/cc-litellm:4000/);
-  assert.doesNotMatch(router, /--env-file|ANTHROPIC/);
+  assert.doesNotMatch(router, /--env-file|ANTHROPIC|DATABASE_URL|postgres:\/\//);
+  // The router's read-only database role, made before the router starts; its address is in a file.
+  assert.match(calls, /docker compose exec -T postgres psql -q -U postgres -d circlechat\n(.*\n)*docker run -d --name cc-gateway /);
+  assert.match(fs.readFileSync(path.join(s.units, "db.url"), "utf8"), /^postgres:\/\/cc_gateway_read:.*@postgres:5432\/circlechat$/m);
   assert.match(calls, /docker network connect circlechat_models cc-gateway/);
   assert.match(calls, /docker network connect --alias cc-gateway circlechat_agents cc-gateway/);
   assert.ok(fs.existsSync(path.join(s.cc, "gateway-app/router.mjs")));

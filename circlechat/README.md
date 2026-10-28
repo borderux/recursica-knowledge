@@ -40,7 +40,7 @@ is unreachable. Add a machine by adding a node and rerunning `setup-host.sh`.
 2. `./circlechat/setup-host.sh`. It validates `site.json` (and stops before changing anything if
    it is wrong), then: fixes `.env` (including `HERMES_TIMEOUT`), ports, the shared workspace and
    its checkouts, copies Kev, starts CircleChat, the app preview, the model gateway
-   (`localhost:4000`) and the Slack notifier, and installs start-at-boot and hourly jobs (systemd
+   and the Slack notifier, and installs start-at-boot and hourly jobs (systemd
    or launchd). It turns on this repository's commit hooks in Alan's checkout; add
    `LOCAL_REDACTIONS=<path to your local-redactions.json>` so client names are checked too.
 3. **Every other machine:** copy `site.json` over (it holds no secrets), put its services'
@@ -264,7 +264,21 @@ Any mix works: one key for every agent, one key per agent, or a key shared by a 
 - **The task's clock starts at the gateway's first request for the task.** The wait to start ends at the cluster's first answer. The time to finish counts from the first request.
 - **A request outside a task uses the cluster only,** such as a chat mention or a heartbeat.
 - **The gateway finds the task from the agent's running turn.** CircleChat records the task of each turn. A port job's gateway key names the job's task.
+- **When the gateway cannot tell a request's task, the strictest setting decides.** An agent can have more than one running turn, or a turn outside a task. The gateway then uses the strictest setting among those turns, so Cluster only wins. Such a request starts no task's clock.
 - **A stack with no cluster model fails a Cluster only task.** The gateway posts a comment on the task that says why, once per task.
+
+### What reaches the gateway
+
+**The gateway passes on model requests only:** `POST /v1/chat/completions`, `/v1/completions` and `/v1/messages`. Every other path gets a 404, even with a valid gateway key. LiteLLM's own endpoints, such as key and model management, stay out of reach.
+
+**The gateway listens on two ports.**
+
+- Port 4000 inside the stack's Docker networks: the agents, and the port jobs on the control computer.
+- `site.gateway_port`, 4000 unless site.json sets another port: the port for port jobs on other computers. `setup-host.sh` opens this port on the control computer's Tailscale address only. The port takes only a task key, for every request, `/health` included.
+
+With the outgoing filter off, the control computer's own agents use `site.gateway_port` on `127.0.0.1`.
+
+**The gateway reads CircleChat's database with a read-only role, `cc_gateway_read`.** The role reads only the columns the gateway needs, from six tables, and writes nothing. `setup-host.sh` makes the role from `circlechat/gateway/gateway-db.sql`. The role's password lives in the gateway's state folder, never in an environment variable. After a CircleChat update, rerun `setup-host.sh`, so the role can read any new table the gateway needs.
 
 ### The spend log
 
