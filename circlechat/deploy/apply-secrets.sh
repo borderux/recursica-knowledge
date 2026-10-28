@@ -155,6 +155,9 @@ if [[ " $ROLES " == *" control "* ]]; then
     tmp="$(mktemp)"; awk -v k="$name" 'index($0, k "=") != 1' "$KEYS_FILE" > "$tmp"
     printf '%s=%s\n' "$name" "$(val "$k")" >> "$tmp"; cat "$tmp" > "$KEYS_FILE"; rm -f "$tmp"
     chmod 600 "$KEYS_FILE"
+    # On a Mac, the Docker VM reads the Mac's files as the owner, never as root, so the gateway
+    # can mount only a file the owner owns. On Linux, root keeps the file.
+    if [ "$(uname -s)" = Darwin ]; then chown "$OWNER" "$KEYS_FILE"; fi
     echo "  $name -> $KEYS_FILE"; WROTE_CONTROL=true
   done
   drop_kv "$CC_DIR/.env" ANTHROPIC_API_KEY

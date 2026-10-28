@@ -20,12 +20,21 @@ function setup() {
   return { home, conf };
 }
 
-function apply(conf, args, input) {
+function apply(conf, args, input, env = {}) {
   return spawnSync("bash", [path.join(here, "apply-secrets.sh"), ...args], {
     input,
-    env: { ...process.env, AGENT_STACKS_CONF: conf, AGENT_CLUSTER_ENV: path.join(path.dirname(conf), "agent-cluster.env") },
+    env: { ...process.env, AGENT_STACKS_CONF: conf, AGENT_CLUSTER_ENV: path.join(path.dirname(conf), "agent-cluster.env"), ...env },
     encoding: "utf8",
   });
+}
+
+// Stand-ins for uname, which reports the given system, and chown, which records each call.
+function fakeSystem(home, system) {
+  const bin = path.join(home, "bin"), log = path.join(home, "chown.log");
+  fs.mkdirSync(bin, { recursive: true });
+  fs.writeFileSync(path.join(bin, "uname"), `#!/usr/bin/env bash\necho ${system}\n`, { mode: 0o755 });
+  fs.writeFileSync(path.join(bin, "chown"), `#!/usr/bin/env bash\necho "chown $*" >> "${log}"\n`, { mode: 0o755 });
+  return { env: { PATH: `${bin}:${process.env.PATH}` }, calls: () => (fs.existsSync(log) ? fs.readFileSync(log, "utf8") : "") };
 }
 
 test("writes each known secret to the file that uses it, and keeps other lines", () => {
@@ -47,6 +56,19 @@ test("writes each known secret to the file that uses it, and keeps other lines",
   assert.doesNotMatch(nodeEnv, /ANTHROPIC_API_KEY|pk/);
   assert.match(r.stdout, /PORTER_ANTHROPIC_API_KEY skipped: port jobs use the gateway/);
   assert.equal(fs.statSync(path.join(home, ".recursica-node.env")).mode & 0o777, 0o600);
+});
+
+test("on a Mac, the gateway's secrets file belongs to the owner, and on Linux to root", () => {
+  for (const [system, owned] of [["Darwin", true], ["Linux", false]]) {
+    const { home, conf } = setup();
+    const fake = fakeSystem(home, system);
+    const r = apply(conf, ["border", control, "false"], "MODEL_KEY_DEFAULT=k\n", fake.env);
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+    const keys = path.join(home, "circlechat", "model-keys.env");
+    const call = `chown ${os.userInfo().username} ${keys}`;
+    assert.equal(fake.calls().split("\n").includes(call), owned, `${system}: ${fake.calls()}`);
+    assert.equal(fs.statSync(keys).mode & 0o777, 0o600);
+  }
 });
 
 test("refuses a provider's own credential names, which used to land in .env", () => {

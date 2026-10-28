@@ -201,6 +201,8 @@ sudo mkdir -p "$GW_STATE" && sudo chmod 700 "$GW_STATE"
 sudo test -s "$GW_STATE/litellm-master.key" || echo "sk-$(openssl rand -hex 24)" | sudo tee "$GW_STATE/litellm-master.key" >/dev/null
 # The password of the router's read-only database role (gateway/gateway-db.sql).
 sudo test -s "$GW_STATE/db-password" || openssl rand -hex 24 | sudo tee "$GW_STATE/db-password" >/dev/null
+# On a Mac, the owner owns both, so the gateway's containers can mount them (kit/lib.sh).
+own_for_docker "$MODEL_KEYS" "$GW_STATE"
 sedi '/^LITELLM_MASTER_KEY=/d' .env
 if env_has ANTHROPIC_API_KEY; then
   if ! sudo grep -q '^MODEL_KEY_DEFAULT=.' "$MODEL_KEYS"; then
@@ -273,6 +275,7 @@ gateway_db_role() {
   { printf '\\set password %s\n' "$pw"; cat "$HERE/gateway/gateway-db.sql"; } | docker compose exec -T postgres psql -q -U postgres -d circlechat >/dev/null
   printf 'postgres://cc_gateway_read:%s@postgres:5432/circlechat\n' "$pw" | sudo tee "$GW_STATE/db.url" >/dev/null
   sudo chmod 600 "$GW_STATE/db.url"
+  own_for_docker "$GW_STATE/db.url"
 }
 
 start_gateway_and_notifier() {

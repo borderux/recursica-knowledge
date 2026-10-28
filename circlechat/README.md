@@ -11,11 +11,11 @@ skills in this repo. Linux or macOS, on one machine or many.
 Nothing about a deployment lives in this repository. Two files on the control machine, both
 outside any repo, hold all of it:
 
-| File                     | Holds                                                                                                            | Example                        |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------- | ------------------------------ |
-| `$CC_DIR/site.json`      | Machines, how to reach them, what each runs, model routes, cloud keys' names, the app                            | `circlechat/site.example.json` |
-| `$CC_DIR/.env`           | Secrets other than cloud keys, such as `KEV_ENGINE_KEY` and `SLACK_BOT_TOKEN`                                    | —                              |
-| `$CC_DIR/model-keys.env` | The cloud model keys, as `MODEL_KEY_<NAME>` lines. Root owns the file, and only the model gateway reads the file | —                              |
+| File                     | Holds                                                                                                                 | Example                        |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| `$CC_DIR/site.json`      | Machines, how to reach them, what each runs, model routes, cloud keys' names, the app                                 | `circlechat/site.example.json` |
+| `$CC_DIR/.env`           | Secrets other than cloud keys, such as `KEV_ENGINE_KEY` and `SLACK_BOT_TOKEN`                                         | —                              |
+| `$CC_DIR/model-keys.env` | The cloud model keys, as `MODEL_KEY_<NAME>` lines. Root owns the file on Linux. Only the model gateway reads the file | —                              |
 
 Each agent's gateway key and GitHub token stay in the agent's Hermes home (`setup-agent.sh` puts them there). No agent holds a cloud key.
 Each extra machine keeps the secrets its services need in `~/.recursica-node.env`.
@@ -327,7 +327,9 @@ Two more rules hold on every stack:
 
 Any mix works: one key for every agent, one key per agent, or a key shared by a few agents.
 
-**Keep each key's value in the stack's GitHub environment,** as `MODEL_KEY_<NAME>`: `MODEL_KEY_DEFAULT` for `default`, and `MODEL_KEY_ACME_GROK` for `acme-grok`. A Bedrock key's value is `<access key id>:<secret access key>`. The secrets helper writes each value to `model-keys.env` on the control computer. Root owns that file, and only the gateway reads the file. The gateway reads each key from the file when the gateway starts, never from an environment variable. `docker inspect` then shows no key. CircleChat, the agent homes, the agent and job containers, the `.env` files and the backups hold no cloud key. Keep each provider's spend limit in the provider's console.
+**Keep each key's value in the stack's GitHub environment,** as `MODEL_KEY_<NAME>`: `MODEL_KEY_DEFAULT` for `default`, and `MODEL_KEY_ACME_GROK` for `acme-grok`. A Bedrock key's value is `<access key id>:<secret access key>`. The secrets helper writes each value to `model-keys.env` on the control computer. On Linux, root owns that file. Only the gateway reads the file. The gateway reads each key from the file when the gateway starts, never from an environment variable. `docker inspect` then shows no key. CircleChat, the agent homes, the agent and job containers, the `.env` files and the backups hold no cloud key. Keep each provider's spend limit in the provider's console.
+
+**On a Mac, the stack's owner can read the cloud keys, and the agents still cannot.** Docker on a Mac runs in a VM, such as Colima's. The VM reads the Mac's files as the stack's owner, never as root. The stack's owner therefore owns `model-keys.env` and the `gateway-state` folder, with the same modes as on Linux. Every program that runs as the owner can read the keys. Only the gateway's LiteLLM container mounts `model-keys.env`, so no agent or job container can read the file. The owner's account controls Docker on Linux too, so root ownership never kept the keys from the owner.
 
 **A stack with no `model_keys` block keeps working.** The cloud model in the stack's routes becomes the key named `default`, which every agent uses. `setup-host.sh` moves the stack's `ANTHROPIC_API_KEY` out of `.env` and into `model-keys.env` as `MODEL_KEY_DEFAULT`. Rename the GitHub secret to `MODEL_KEY_DEFAULT` after that move.
 
