@@ -54,12 +54,8 @@ case "$HANDLE" in
   betty) EFFORT=low ;;
   *)     EFFORT=medium ;;
 esac
-# Compression summaries go to the same route, through the gateway.
-SUMMARY="$(sudo sed -n 's/^  default: *//p' "$H/config.yaml" | head -1)"
-sudo_sedi \
-  -e "s/reasoning_effort: .*/reasoning_effort: $EFFORT/" \
-  -e "s/summary_model: .*/summary_model: $SUMMARY/" \
-  "$H/config.yaml"
+# Compression summaries go to the agent's route too: gateway_access sets summary_model.
+sudo_sedi -e "s/reasoning_effort: .*/reasoning_effort: $EFFORT/" "$H/config.yaml"
 
 # Barb's delegation limits. Each default made a full review fail; agents/barb/runtime/hermes.md
 # says which and why. Appended only when absent, because merging YAML with sed is how a key ends

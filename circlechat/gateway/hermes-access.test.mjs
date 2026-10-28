@@ -24,6 +24,7 @@ summary_model: claude-haiku-4-5
 test("the agent's config asks the gateway for the agent's route, with the agent's gateway key", () => {
   const out = writeConfig(installed, { baseUrl: "http://cc-gateway:4000/v1", key: "ccg_abc", route: "local-large" });
   assert.match(out, /^model:\n  default: local-large\n  provider: custom:gateway\nagent:/m);
+  assert.match(out, /^summary_model: local-large$/m);
   assert.doesNotMatch(out, /base_url: https:\/\/api\.anthropic\.com/);
   assert.match(out, /custom_providers:\n- name: gateway\n  base_url: "http:\/\/cc-gateway:4000\/v1"\n  api_key: "ccg_abc"\n  api_mode: chat_completions\n$/);
   assert.equal((out.match(/^custom_providers:/gm) ?? []).length, 1);
@@ -66,4 +67,11 @@ test("the script gives the agent a key once, keeps it on a rerun, and clears the
   const again = run("env");
   assert.match(again.stdout, /\(local-large\)\.$/m, "a rerun keeps the key");
   assert.equal(currentKey(fs.readFileSync(path.join(home, "config.yaml"), "utf8")), key);
+  // A new route in site.json: a rerun points the agent at the new server and model, with the same key.
+  const moved = spawnSync(process.execPath, [path.join(here, "hermes-access.mjs"), home, "porter", state, "http://cc-gateway:4000/v1", "machine-2/mlx/large-mlx"], { encoding: "utf8" });
+  assert.equal(moved.status, 0, moved.stderr);
+  const cfg = fs.readFileSync(path.join(home, "config.yaml"), "utf8");
+  assert.match(cfg, /^model:\n  default: machine-2\/mlx\/large-mlx\n  provider: custom:gateway$/m);
+  assert.match(cfg, /^summary_model: machine-2\/mlx\/large-mlx$/m, "summaries move with the route");
+  assert.equal(currentKey(cfg), key);
 });
