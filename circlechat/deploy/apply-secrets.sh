@@ -97,11 +97,11 @@ ROLES="$("$NODE_BIN" -e '
 ' "$SITE" "$COMPUTER")"
 [ "$ROLES" != none ] || { echo "Computer $COMPUTER runs nothing for stack $STACK in $SITE."; exit 1; }
 
-# A client stack without the client's recorded permission runs local models only, so no cloud
+# A client or demo stack without a recorded permission runs local models only, so no cloud
 # key may reach the stack. The helper refuses the whole run before writing anything.
 CLOUD="$("$NODE_BIN" -e '
   const s = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
-  const local = s.site?.kind === "client" && s.site?.cloud_models?.allowed !== true;
+  const local = ["client", "demo"].includes(s.site?.kind) && s.site?.cloud_models?.allowed !== true;
   console.log(local ? "local-only" : "allowed");
 ' "$SITE")"
 # Alan sends pull requests only to the stack's own knowledge repo. A client stack that still uses

@@ -188,11 +188,15 @@ export function maskPii(site) {
   return v === undefined ? site.site?.kind === "client" : v === true;
 }
 
-// A stack may call cloud models unless it is a client stack without a recorded permission.
+// A stack may call cloud models unless it is a client or demo stack without a recorded permission.
+// A cloud key comes with billing, so a demo needs the same record as a client: who granted the
+// permission, the date and who pays.
+export const NEEDS_PERMISSION = ["client", "demo"];
 export function cloudAllowed(site) {
-  if (site.site?.kind !== "client") return true;
+  if (!NEEDS_PERMISSION.includes(site.site?.kind)) return true;
   return site.site?.cloud_models?.allowed === true;
 }
+const kindWord = (site) => (site.site?.kind === "demo" ? "demo" : "client");
 
 // One node's model servers: each server's kind, port and models, and whether the models the
 // node loads fit the memory the node gives its models (model_memory_gb).
@@ -356,7 +360,7 @@ export function validate(site, { cluster } = {}) {
   if (site.upgrade?.auto !== undefined && typeof site.upgrade.auto !== "boolean") errs.push("upgrade.auto must be true or false");
   if (site.notify?.details !== undefined && typeof site.notify.details !== "boolean") errs.push("notify.details must be true or false");
   if (site.privacy?.mask_pii !== undefined && typeof site.privacy.mask_pii !== "boolean") errs.push("privacy.mask_pii must be true or false");
-  if (site.privacy?.mask_pii === true && !cloudAllowed(site)) errs.push("privacy.mask_pii applies to cloud model calls, and this client stack has no recorded permission for cloud models");
+  if (site.privacy?.mask_pii === true && !cloudAllowed(site)) errs.push(`privacy.mask_pii applies to cloud model calls, and this ${kindWord(site)} stack has no recorded permission for cloud models`);
   if (site.egress !== undefined) {
     const e = site.egress;
     if (e.enabled !== undefined && typeof e.enabled !== "boolean") errs.push("egress.enabled must be true or false");
@@ -368,7 +372,7 @@ export function validate(site, { cluster } = {}) {
     if (!/^[A-Za-z0-9_-]+:\S*$/.test(b?.remote ?? "")) errs.push("backup.remote must be an rclone remote and folder, such as gdrive-backups:agent-backups");
     if (b?.time !== undefined && !/^([01]\d|2[0-3]):[0-5]\d$/.test(b.time)) errs.push("backup.time must be HH:MM, in the computer's time zone");
   }
-  // Cloud models on a client stack need the client's recorded permission. Without the permission,
+  // Cloud models on a client or demo stack need a recorded permission. Without the permission,
   // the stack runs local open-weight models only: no cloud route, and no Porter (port jobs use
   // Claude).
   const cm = t.cloud_models;
@@ -384,14 +388,12 @@ export function validate(site, { cluster } = {}) {
     if (!t.tenant) errs.push(`a ${t.kind} stack needs site.tenant, so its containers, ports and jobs never collide with another stack's`);
     if (!t.docker_context) errs.push(`a ${t.kind} stack needs site.docker_context: its own Docker VM (for example a Colima profile), so no stack shares a Docker socket or network with another`);
   }
-  if (t.kind === "client") {
-    if (site.data?.kev_disagreements_branch) errs.push("a client stack cannot set data.kev_disagreements_branch: review data from a client's code never leaves the client's stack");
-    if (!cloudAllowed(site)) {
-      for (const [route, backends] of Object.entries(site.routes ?? {})) {
-        for (const b of backends) if (isCloud(b, site)) errs.push(`route ${route}: "${b}" is a cloud model, and this client stack has no recorded permission for cloud models (site.cloud_models)`);
-      }
-      if (site.porter) errs.push("a local-only client stack cannot run Porter: Porter's port jobs need a cloud model. Record the client's permission in site.cloud_models first");
+  if (t.kind === "client" && site.data?.kev_disagreements_branch) errs.push("a client stack cannot set data.kev_disagreements_branch: review data from a client's code never leaves the client's stack");
+  if (NEEDS_PERMISSION.includes(t.kind) && !cloudAllowed(site)) {
+    for (const [route, backends] of Object.entries(site.routes ?? {})) {
+      for (const b of backends) if (isCloud(b, site)) errs.push(`route ${route}: "${b}" is a cloud model, and this ${t.kind} stack has no recorded permission for cloud models (site.cloud_models)`);
     }
+    if (site.porter) errs.push(`a local-only ${t.kind} stack cannot run Porter: Porter's port jobs need a cloud model. Record the permission in site.cloud_models first`);
   }
   for (const k of ["knowledge", "app", "app_dir", "app_github"]) if (!site.repos?.[k]) errs.push(`repos.${k} is required`);
   if (site.repos?.app_dir && !/^[A-Za-z0-9._-]+$/.test(site.repos.app_dir)) errs.push("repos.app_dir must be a plain folder name");
@@ -437,7 +439,7 @@ export function validate(site, { cluster } = {}) {
     const mk = site.model_keys;
     if (typeof mk !== "object" || mk === null || Array.isArray(mk)) errs.push("model_keys must be an object of named keys, such as { \"default\": { ... } }");
     else {
-      if (!cloudAllowed(site) && Object.keys(mk).length) errs.push("model_keys: this client stack has no recorded permission for cloud models (site.cloud_models)");
+      if (!cloudAllowed(site) && Object.keys(mk).length) errs.push(`model_keys: this ${kindWord(site)} stack has no recorded permission for cloud models (site.cloud_models)`);
       const owner = new Map();
       for (const [name, k] of Object.entries(mk)) {
         const at = `model_keys.${name}`;

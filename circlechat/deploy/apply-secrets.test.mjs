@@ -70,12 +70,12 @@ test("refuses a client stack whose site.json is not on this computer", () => {
   assert.match(r.stdout, /No .*tenants\/acme\/circlechat\/site.json/);
 });
 
-test("refuses a cloud key for a local-only client stack, and writes nothing", () => {
+for (const kind of ["client", "demo"]) test(`refuses a cloud key for a local-only ${kind} stack, and writes nothing`, () => {
   const { home, conf } = setup();
   const dir = path.join(home, "tenants", "acme", "circlechat");
   fs.mkdirSync(dir, { recursive: true });
   const site = structuredClone(example);
-  Object.assign(site.site, { tenant: "acme", kind: "client", docker_context: "colima-acme" });
+  Object.assign(site.site, { tenant: "acme", kind, docker_context: "colima-acme" });
   fs.writeFileSync(path.join(dir, "site.json"), JSON.stringify(site));
   const r = apply(conf, ["client-acme", control, "false"], "SLACK_WEBHOOK_URL=https://x\nANTHROPIC_API_KEY=k\n");
   assert.notEqual(r.status, 0);

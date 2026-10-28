@@ -135,7 +135,7 @@ keeps running.
 
 ## Clients: one isolated stack each
 
-**Give each client, and each demo, a separate stack.** A stack is one client's CircleChat, agents, secrets, Slack channel, model gateway and job runner. A client's stack shares no data with the cluster's own stack or another client's stack. Several stacks can run on one computer. A demo stack (`site.kind` `"demo"`) follows the same rules as a client stack, except that a demo may call cloud models without a recorded permission.
+**Give each client, and each demo, a separate stack.** A stack is one client's CircleChat, agents, secrets, Slack channel, model gateway and job runner. A client's stack shares no data with the cluster's own stack or another client's stack. Several stacks can run on one computer. A demo stack (`site.kind` `"demo"`) follows the same rules as a client stack, including the recorded permission for cloud models.
 
 CircleChat's workspaces cannot keep clients apart. Inside one CircleChat, every agent shares one `/workspace` folder and one set of agent homes. The CircleChat api, worker and bridge also hold a Docker socket with root access to the computer.
 
@@ -154,6 +154,23 @@ The stack's site.json records the choice in `site.computers`, `["<computer>"]` o
 node circlechat/kit/stack-site.mjs ~/circlechat/site.json acme demo machine-2 > site.json
 node circlechat/kit/stack-site.mjs ~/circlechat/site.json acme client cluster > site.json
 ```
+
+### Cloud keys for a demo
+
+**Setting up a demo always asks:** "Give this demo cloud model keys, such as Claude or Grok, with billing attached? [y/N]". Each cloud key comes with billing, so a demo needs a recorded permission, the same as a client stack.
+
+- **No**, the default: the demo gets no `model_keys` and no cloud route, and runs on local models only. site.json records `"cloud_models": { "allowed": false }`.
+- **Yes:** the script asks for each provider and model, such as `anthropic:claude-sonnet-5-5,xai:grok-4`. Then the script asks who granted the permission and who pays. The script records the answers in the demo's `site.cloud_models` and `model_keys`. The first key is the key named `default`, which every agent uses. Each other key is named for the key's provider: name the key's agents in site.json. Add an Azure or Bedrock key to site.json by hand.
+
+**Without a person at the keyboard, such as from Claude Code, give the answer as an option.** The script then stops unless the command has `--cloud-keys`, and never answers yes without the option:
+
+```bash
+node circlechat/kit/stack-site.mjs ~/circlechat/site.json acme demo machine-2 --cloud-keys none > site.json
+node circlechat/kit/stack-site.mjs ~/circlechat/site.json acme demo machine-2 \
+  --cloud-keys anthropic:claude-sonnet-5-5 --granted-by "Person A" --payer border-ramp > site.json
+```
+
+**Add the key values yourself, outside Claude Code,** with `circlechat/deploy/set-model-keys.sh <site.json> <owner/private repo>`. The script asks for each key's value at the keyboard and shows nothing on the screen. The script saves each value as a `MODEL_KEY_<NAME>` secret in the stack's GitHub environment, through `gh`. The script refuses to run without a terminal, or inside a Claude Code session. Then run the "Deploy secrets" workflow for the stack.
 
 The script copies the picked computers, their routes and the agents from the cluster's site.json. The script gives the stack the first ports that no stack in `~/tenants` uses. Check `repos` and `notify` before the first setup.
 
@@ -181,10 +198,11 @@ The limits choose the models and size the stack's VM and jobs. A shared model se
 3. **Write the stack's site.json** at `~/tenants/<client>/circlechat/site.json` with stack-site.mjs. The script sets these fields:
    - `site.tenant`: the stack's short name, in lowercase.
    - `site.kind`: `"client"` or `"demo"`.
+   - For a demo, `site.cloud_models` and any `model_keys`, from the answer about cloud keys.
    - `site.docker_context`: the stack's Docker context, `colima-<client>`.
    - `site.computers`: the picked computers.
    - `site.port`, `site.preview_port` and `site.gateway_port`: three ports no other stack uses, and each job runner's `jobs.port`.
-4. **Ask the client whether the agents may send the client's data to a cloud model provider.** Until the client says yes, the stack runs local open-weight models only. When the client says yes, record the permission in `site.cloud_models`:
+4. **For a client stack, ask the client whether the agents may send the client's data to a cloud model provider.** Until the client says yes, the stack runs local open-weight models only. When the client says yes, record the permission in `site.cloud_models`:
 
    ```json
    "cloud_models": { "allowed": true, "granted_by": "Person A, acme.com", "granted_on": "2026-10-20", "payer": "client-byok" }
@@ -206,7 +224,7 @@ The config check refuses a client or demo stack in these cases:
 - `site.computers` is `"cluster"`, and the stack leaves out a computer of the cluster, or names another control computer.
 - The stack uses a port of the cluster's own stack.
 
-The config check also refuses a client stack that sets `data.kev_disagreements_branch`. Review data from a client's code stays in the client's stack. With no recorded permission in `site.cloud_models`, the config check also refuses a `model_keys` block, every cloud route and Porter on a client stack. The secrets helper refuses to deploy a cloud key to the stack.
+The config check also refuses a client stack that sets `data.kev_disagreements_branch`. Review data from a client's code stays in the client's stack. With no recorded permission in `site.cloud_models`, the config check also refuses a `model_keys` block, every cloud route and Porter on a client or demo stack. The secrets helper refuses to deploy a cloud key to the stack.
 
 A stack with no `site.tenant` keeps the names a single install uses today. An existing install changes nothing.
 
@@ -241,7 +259,7 @@ Deleting the image and the key makes the client's data unreadable for good.
 
 1. **Create one GitHub environment per stack** in the private repo. Name the environment `border` for the stack with no tenant name, and `client-<name>` for each client stack.
 2. **Require an approval** in each environment's settings, under "Required reviewers". A workflow then waits for the approval before the workflow reads the environment's secrets.
-3. **Add the stack's secrets to the environment**, with the names in the table below.
+3. **Add the stack's secrets to the environment**, with the names in the table below. Add cloud key values with `circlechat/deploy/set-model-keys.sh`, in your own terminal, outside Claude Code.
 4. **Copy `circlechat/deploy/deploy-secrets.yml`** to `.github/workflows/deploy-secrets.yml` in the private repo.
 5. **Install a GitHub self-hosted runner on each computer**, for the private repo only, under a separate account. Give the runner a label with the computer's name from site.json.
 6. **Run `./circlechat/deploy/install-secrets-helper.sh <runner account>`** on each computer, as the account that owns the stacks. The runner's account can then run one command as root: the helper that writes the secrets.

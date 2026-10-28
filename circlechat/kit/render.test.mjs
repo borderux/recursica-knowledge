@@ -405,6 +405,7 @@ test("a stack on picked computers leaves out a model that does not fit, where th
   assert.match(validate(s).join("\n"), /the loaded models need 80 GB/);
   Object.assign(s.site, { tenant: "acme", kind: "demo", docker_context: "colima-acme", computers: "cluster", port: 8180, preview_port: 5273, gateway_port: 4100 });
   for (const n of s.nodes) if (n.jobs) n.jobs.port = 7410;
+  delete s.model_keys; delete s.porter;   // a demo with no recorded permission for cloud models
   assert.deepEqual(validate(s, { cluster: example }), []);
   assert.deepEqual(placeStack(s).notes[0], "Left out machine-2/mlx/large-mlx: the model needs 40 GB, and machine-2 has 24 GB left of the 64 GB it gives this stack's models.");
 });

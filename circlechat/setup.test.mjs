@@ -165,7 +165,7 @@ test("setup-node refuses a cloud key in the job runner's secrets file", () => {
 
 test("a demo stack on one computer leaves out the models that don't fit, and stops on a Docker VM bigger than its limits", () => {
   const tenantsDir = fs.mkdtempSync(path.join(os.tmpdir(), "tenants-"));
-  const site = stackSite(example, { stack: "acme", kind: "demo", computers: "machine-2", limits: { cpus: 4, memory_gb: 24, model_memory_gb: 48 }, tenantsDir });
+  const site = stackSite(example, { stack: "acme", kind: "demo", computers: "machine-2", limits: { cpus: 4, memory_gb: 24, model_memory_gb: 48 }, cloud: null, tenantsDir });
   const s = sandbox(site, { tenant: "acme" });
   const big = s.run("setup-host.sh", "--secrets-only");
   assert.match(big.stdout, /Left out machine-2\/mlx\/large-mlx: the model needs 40 GB, and machine-2 has 8 GB left of the 48 GB it gives this stack's models\./);
@@ -179,7 +179,7 @@ test("a demo stack on one computer leaves out the models that don't fit, and sto
 
 test("a stack's job runner on its one computer gets its own port and the computer's limits", () => {
   const tenantsDir = fs.mkdtempSync(path.join(os.tmpdir(), "tenants-"));
-  const site = stackSite(example, { stack: "acme", kind: "demo", computers: "machine-1", limits: { cpus: 2, memory_gb: 8, model_memory_gb: 12 }, tenantsDir });
+  const site = stackSite(example, { stack: "acme", kind: "demo", computers: "machine-1", limits: { cpus: 2, memory_gb: 8, model_memory_gb: 12 }, cloud: null, tenantsDir });
   const s = sandbox(site, { tenant: "acme" });
   fs.writeFileSync(path.join(s.home, "tenants/acme/node.env"), "JOBD_TOKEN=t\n");
   const r = s.run("setup-node.sh", "machine-1");
