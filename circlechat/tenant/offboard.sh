@@ -2,8 +2,9 @@
 # Remove a client: a final encrypted archive, then the client's stack, gone from every computer.
 #
 #   offboard.sh archive <client>   on the control computer; the new archive key arrives on stdin
-#   offboard.sh remove <client>    on each computer that runs anything for the client
-#   offboard.sh check <client>     on each computer: a pass/fail table of anything left
+#   offboard.sh remove <client>    on each computer picked for the stack (site.computers)
+#   offboard.sh check <client>     on each computer: a pass/fail table of anything left, and of the
+#                                  cluster's own stack, which must run as before
 #
 # The archive key is new, made in the password manager for this archive alone. The key never
 # stays on a computer. The archive goes to the backups remote, in archive-<client>-<date>; move the
@@ -56,11 +57,17 @@ archive)
 remove)
   read -r -p "Remove every trace of client $CLIENT from this computer? Type the client's name to confirm: " typed
   [ "$typed" = "$CLIENT" ] || { echo "Not confirmed. Nothing was removed."; exit 1; }
+  # The stack's computers, from the stack's site.json, before the site.json goes.
+  if [ -f "$CC_DIR/site.json" ]; then
+    PICKED="$(node -e 'const s = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")); console.log((s.nodes ?? []).map((n) => n.name).join(" "))' "$CC_DIR/site.json")"
+  fi
+  # A stack's model servers and Kev's model belong to the cluster's own stack, which keeps them.
+  # Everything below carries the client's name, so nothing of the cluster's own stack goes.
   if [ -f "$CC_DIR/kit-out/tenant.env" ]; then
     . "$CC_DIR/kit-out/tenant.env"
     [ -n "$DOCKER_CONTEXT" ] && export DOCKER_CONTEXT
     (cd "$CC_DIR" && docker compose down -v --remove-orphans) || true
-    docker rm -f "betty-proto-$CLIENT" "cc-gateway-$CLIENT" "cc-slack-notify-$CLIENT" "cc-egress-$CLIENT" >/dev/null 2>&1 || true
+    docker rm -f "betty-proto-$CLIENT" "cc-gateway-$CLIENT" "cc-litellm-$CLIENT" "cc-slack-notify-$CLIENT" "cc-egress-$CLIENT" >/dev/null 2>&1 || true
     docker volume rm "cc-notify-state-$CLIENT" >/dev/null 2>&1 || true
     PORT="$(node -e 'console.log(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).site?.port ?? "")' "$CC_DIR/site.json")"
     [ -n "$PORT" ] && { tailscale serve --https="$PORT" off >/dev/null 2>&1 || true; }
@@ -71,33 +78,59 @@ remove)
   for u in circlechat-boot agents-sync release-watch kev-data-push backup restore-test images jobd; do uninstall_unit "$u-$CLIENT"; done
   docker rm -f "cc-jobs-egress-$CLIENT" >/dev/null 2>&1 || true
   docker network rm "jobs-egress-$CLIENT" >/dev/null 2>&1 || true
-  if [ "$OS" = Darwin ]; then
-    colima delete --profile "$CLIENT" --force >/dev/null 2>&1 || true
-    mount | grep -q " on $STACK_DIR (apfs" && hdiutil detach "$STACK_DIR" >/dev/null
-    rm -rf "$HOME/tenant-images/$CLIENT.sparsebundle" "$HOME/.colima/_lima/colima-$CLIENT" "$HOME/.colima/$CLIENT"
-    docker context rm -f "colima-$CLIENT" >/dev/null 2>&1 || true
+  # The client's Docker VM sits inside the client's disk image, so destroying the image removes both.
+  if [ "$OS" = Darwin ] || [ -x /usr/local/bin/agent-stacks-disk ]; then
+    bash "$HERE/disk-image.sh" destroy "$CLIENT"
   fi
-  sudo rm -rf "$STACK_DIR" "$HOME/.recursica-node.$CLIENT.env" "$HOME/.recursica-jobs-$CLIENT" /tmp/*-"$CLIENT".log
+  # A VM created before the VM moved into the image, in Colima's own folder: ~/.colima on a Mac,
+  # ~/.config/colima on Linux.
+  for d in "$HOME/.colima" "$HOME/.config/colima"; do
+    [ -e "$d/$CLIENT" ] || [ -e "$d/_lima/colima-$CLIENT" ] || continue
+    COLIMA_HOME="$d" colima delete --profile "$CLIENT" --force >/dev/null 2>&1 || true
+    rm -rf "${d:?}/_lima/colima-$CLIENT" "${d:?}/_lima/_disks/colima-$CLIENT" "${d:?}/$CLIENT"
+  done
+  rm -rf "$HOME/tenant-images/$CLIENT.sparsebundle"
+  # Colima adds an Include line for each VM to ~/.ssh/config unless told not to.
+  if [ -f "$HOME/.ssh/config" ]; then sedi "\#/tenants/$CLIENT/#d; \#/colima/_lima/colima-$CLIENT/#d" "$HOME/.ssh/config"; fi
+  docker context rm -f "colima-$CLIENT" >/dev/null 2>&1 || true
+  # Root owns files a container wrote on a computer with no Docker VM. Only those need sudo.
+  rm -rf "$STACK_DIR" "$HOME/.recursica-node.$CLIENT.env" "$HOME/.recursica-jobs-$CLIENT" /tmp/*-"$CLIENT".log 2>/dev/null \
+    || sudo rm -rf "$STACK_DIR" "$HOME/.recursica-node.$CLIENT.env" "$HOME/.recursica-jobs-$CLIENT" /tmp/*-"$CLIENT".log
   echo "Removed client $CLIENT from $(hostname -s). Run: offboard.sh check $CLIENT"
+  [ -n "${PICKED:-}" ] && echo "The stack ran on: $PICKED. Run offboard.sh remove $CLIENT, then check, on each of those computers."
+  true
   ;;
 
 check)
   fail=0
   row() { printf '%-46s %s\n' "$1" "$2"; [ "$2" = pass ] || fail=1; }
   printf '%-46s %s\n' "Place" "Result"
-  for p in "$STACK_DIR" "$HOME/tenant-images/$CLIENT.sparsebundle" "$HOME/.colima/_lima/colima-$CLIENT" "$HOME/.colima/$CLIENT" \
+  for p in "$STACK_DIR" "$HOME/tenant-images/$CLIENT.sparsebundle" \
+           "$HOME/.colima/_lima/colima-$CLIENT" "$HOME/.colima/_lima/_disks/colima-$CLIENT" "$HOME/.colima/$CLIENT" \
+           "$HOME/.config/colima/_lima/colima-$CLIENT" "$HOME/.config/colima/_lima/_disks/colima-$CLIENT" "$HOME/.config/colima/$CLIENT" \
            "$HOME/.recursica-node.$CLIENT.env" "$HOME/.recursica-jobs-$CLIENT"; do
-    [ -e "$p" ] && row "$p" "FAIL: still exists" || row "$p" pass
+    [ -e "$p" ] || [ -L "$p" ] && row "$p" "FAIL: still exists" || row "$p" pass
   done
+  [ -e "/var/lib/agent-stacks/images/$CLIENT.luks" ] && row "/var/lib/agent-stacks/images/$CLIENT.luks" "FAIL: still exists" \
+    || row "/var/lib/agent-stacks/images/$CLIENT.luks" pass
+  [ -e "/dev/mapper/agent-stacks-$CLIENT" ] && row "/dev/mapper/agent-stacks-$CLIENT" "FAIL: still open" || row "/dev/mapper/agent-stacks-$CLIENT" pass
   units="$( (systemctl list-unit-files 2>/dev/null; ls /Library/LaunchDaemons 2>/dev/null) | grep -E -- "-$CLIENT(\.|$)" || true)"
   [ -n "$units" ] && row "services and scheduled jobs" "FAIL: $units" || row "services and scheduled jobs" pass
   ctx="$(docker context ls --format '{{.Name}}' 2>/dev/null | grep -x "colima-$CLIENT" || true)"
   [ -n "$ctx" ] && row "Docker context colima-$CLIENT" "FAIL: still exists" || row "Docker context colima-$CLIENT" pass
   left="$(docker ps -a --format '{{.Names}}' 2>/dev/null | grep -E -- "(-|^cc-)$CLIENT(-|$)" || true; docker volume ls --format '{{.Name}}' 2>/dev/null | grep -E -- "(^cc-${CLIENT}_|-${CLIENT}$)" || true)"
   [ -n "$left" ] && row "containers and volumes" "FAIL: $left" || row "containers and volumes" pass
-  found="$(grep -rIl --exclude-dir=archived --exclude-dir=.git -- "$CLIENT" "$HOME/circlechat" "$HOME/.config/rclone" /var/lib/agent-cluster 2>/dev/null | head -5 || true)"
+  found="$(grep -rIl --exclude-dir=archived --exclude-dir=.git -- "$CLIENT" "$HOME/circlechat" "$HOME/.config/rclone" "$HOME/.ssh/config" /var/lib/agent-cluster 2>/dev/null | head -5 || true)"
   [ -n "$found" ] && row "files naming $CLIENT" "FAIL: $found" || row "files naming $CLIENT" pass
-  [ "$fail" = 0 ] && echo "Nothing of client $CLIENT remains on $(hostname -s)." || { echo "Something of client $CLIENT remains on $(hostname -s)."; exit 1; }
+  # The cluster's own stack runs as before: its model servers, Kev's model, job runner and services
+  # on this computer, and its gateway on the control computer.
+  COMPUTER="${CLUSTER_COMPUTER:-$(sed -n 's/^COMPUTER=//p' /etc/agent-cluster.conf 2>/dev/null || true)}"
+  if [ -f "$HOME/circlechat/site.json" ] && [ -n "$COMPUTER" ]; then
+    while IFS=$'\t' read -r what result; do row "$what" "$result"; done < <(node "$HERE/cluster-intact.mjs" "$HOME/circlechat/site.json" "$COMPUTER")
+  else
+    echo "Skipped the cluster's own stack: no ~/circlechat/site.json, or no computer name in /etc/agent-cluster.conf."
+  fi
+  [ "$fail" = 0 ] && echo "Nothing of client $CLIENT remains on $(hostname -s), and the cluster's own stack runs as before." || { echo "A check failed on $(hostname -s): see each FAIL above."; exit 1; }
   ;;
 *) echo "Unknown command $CMD."; exit 1 ;;
 esac

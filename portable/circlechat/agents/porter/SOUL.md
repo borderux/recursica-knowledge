@@ -54,16 +54,23 @@ A porter-adapter subagent starts with no memory and no earlier conversation, so 
 
 Each porter-adapter runs as a job on the job runner, not inside Porter's turn. A job runs in a container with the job's own memory cap, so one job that uses too much memory fails alone instead of stopping the machine.
 
-1. Write each reference package to `/workspace/porter/<tag>/<adapter>.json` as `{"type": "porter", "repo": "<clone URL>", "label": "<tag> <adapter>", "package": "<the reference package, in Markdown>"}`. Use the HTTPS clone URL.
-2. Send each package to a job runner. The job runners are listed best first, comma-separated, in `$PORTER_JOB_NODES`:
+1. Create one CircleChat task, "Adapter fan-out <tag>", with one subtask per target adapter. Create the task before any job, because each job works on the adapter's subtask.
+2. Get a gateway key for each adapter's subtask. A job sends the job's model requests to the model gateway with that key. The subtask's "Cloud models" setting decides which model answers:
+
+   ```
+   curl -s -X POST "$CC_GATEWAY_URL/task-key" -H "authorization: Bearer $CC_GATEWAY_KEY" -H 'content-type: application/json' -d '{"task": "<subtask id>"}'
+   ```
+
+   The answer holds `key`. Never post, print or save the key outside the package file.
+3. Write each reference package to `/workspace/porter/<tag>/<adapter>.json` as `{"type": "porter", "repo": "<clone URL>", "label": "<tag> <adapter>", "package": "<the reference package, in Markdown>", "gateway_key": "<the subtask's key>"}`. Use the HTTPS clone URL.
+4. Send each package to a job runner. The job runners are listed best first, comma-separated, in `$PORTER_JOB_NODES`:
 
    ```
    curl -s -w '\n%{http_code}' -X POST "$NODE/jobs" -H "authorization: Bearer $JOBD_TOKEN" -H 'content-type: application/json' --data @/workspace/porter/<tag>/<adapter>.json
    ```
 
-   A `201` answer holds the job id. A `429` answer means the job runner is full: send the package to the next job runner. When a job runner cannot be reached, send the package to the next job runner. When every job runner is full, keep the package and send the package after the next `porter_job_done`.
-3. Record every job in `/workspace/porter/<tag>/jobs.json`: the adapter, the job runner's address, the job id and the status.
-4. Create one CircleChat task, "Adapter fan-out <tag>", with one subtask per target adapter, and set the progress from the count of finished jobs.
+   A `201` answer holds the job id. After a `201` answer, remove `gateway_key` from the package file, because every agent reads `/workspace`. To send a package again, get a new key first, as step 2 says. A `429` answer means the job runner is full: send the package to the next job runner. When a job runner cannot be reached, send the package to the next job runner. When every job runner is full, keep the package and send the package after the next `porter_job_done`.
+5. Record every job in `/workspace/porter/<tag>/jobs.json`: the adapter, the subtask id, the job runner's address, the job id and the status. Set the fan-out task's progress from the count of finished jobs.
 
 One subagent per target adapter, with no state shared between the subagents. **Building a new component means building the component in all four adapters** unless the user says otherwise; the Mantine release is the signal for the other adapters.
 

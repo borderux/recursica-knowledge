@@ -7,8 +7,12 @@
 // and its command are fixed here, so a request cannot run an arbitrary command. Secrets reach a job
 // by name (`-e NAME`), never as text on a command line.
 //
+// A job holds no cloud key. The job sends its model requests to the stack's gateway
+// (JOBD_GATEWAY_URL) with the gateway key for the job's task, which the request brings. The job
+// gets the key from a file in the job's folder (`--env-file`), and the file goes when the job ends.
+//
 //   GET    /health                 { node, slots, running }
-//   POST   /jobs                   { type: "porter", repo, label, package }  -> 201 { id } | 429 when full
+//   POST   /jobs                   { type: "porter", repo, label, package, gateway_key }  -> 201 { id } | 429 when full
 //   GET    /jobs/:id               { id, label, repo, status, exit_code, oom }
 //   GET    /jobs/:id/report        the job's report.md
 //   GET    /jobs/:id/log?tail=200  the job's output
@@ -32,8 +36,9 @@ const C = {
   docker: env.JOBD_DOCKER ?? "docker",
   node: env.JOBD_NODE_NAME ?? os.hostname(),
   repos: new Set((env.JOBD_ALLOWED_REPOS ?? "").split(",").map((s) => s.trim()).filter(Boolean)),
-  passEnv: (env.JOBD_PASS_ENV ?? "ANTHROPIC_API_KEY,PORTER_GITHUB_PAT,PORTER_GIT_NAME,PORTER_GIT_EMAIL,PORTER_MODEL")
+  passEnv: (env.JOBD_PASS_ENV ?? "PORTER_GITHUB_PAT,PORTER_GIT_NAME,PORTER_GIT_EMAIL,PORTER_MODEL")
     .split(",").map((s) => s.trim()).filter(Boolean),
+  gateway: env.JOBD_GATEWAY_URL ?? "",
   hookUrl: env.PORTER_HOOK_URL ?? "",
   hookSecret: env.PORTER_HOOK_SECRET ?? "",
   pollMs: Number(env.JOBD_POLL_MS ?? 30000),
@@ -44,6 +49,7 @@ fs.mkdirSync(C.dir, { recursive: true });
 
 const run = (args) => new Promise((res) => execFile(C.docker, args, { maxBuffer: 16 << 20 }, (e, out, err) => res({ ok: !e, out: String(out), err: String(err) })));
 const ID = /^job-[0-9a-z-]{6,64}$/;
+const TASK_KEY = /^cct_[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/;
 const jobDir = (id) => path.join(C.dir, id);
 const readMeta = (id) => { try { return JSON.parse(fs.readFileSync(path.join(jobDir(id), "meta.json"), "utf8")); } catch { return null; } };
 const writeMeta = (m) => fs.writeFileSync(path.join(jobDir(m.id), "meta.json"), JSON.stringify(m, null, 2));
@@ -79,13 +85,16 @@ const MAX_RESTARTS = Number(env.JOBD_MAX_RESTARTS ?? 2);
 function networkArgs() {
   if (!env.JOBD_NETWORK) return [];
   const p = env.JOBD_PROXY;
-  return ["--network", env.JOBD_NETWORK, "--dns", "127.0.0.1", ...(p ? ["HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy"].flatMap((k) => ["-e", `${k}=${p}`]).concat(["-e", "NODE_USE_ENV_PROXY=1"]) : [])];
+  // The gateway on this computer sits on the job network, so the job reaches it without the filter.
+  const direct = ["NO_PROXY", "no_proxy"].flatMap((k) => ["-e", `${k}=cc-gateway,localhost,127.0.0.1`]);
+  return ["--network", env.JOBD_NETWORK, "--dns", "127.0.0.1", ...(p ? ["HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy"].flatMap((k) => ["-e", `${k}=${p}`]).concat(["-e", "NODE_USE_ENV_PROXY=1"], direct) : [])];
 }
 
 function containerArgs(id, repo, image) {
   return ["run", "-d", "--name", id, ...networkArgs(), "--memory", `${C.memoryGb}g`, "--memory-swap", `${C.memoryGb}g`,
     ...(C.cpus ? ["--cpus", C.cpus] : []),
     "-v", `${jobDir(id)}:/work`, "-e", `TARGET_REPO=${repo}`, "-e", "PORTER_REPORT=/work/report.md",
+    "--env-file", path.join(jobDir(id), "gateway.env"),
     ...C.passEnv.flatMap((n) => (env[n] !== undefined ? ["-e", n] : [])), image];
 }
 
@@ -94,12 +103,15 @@ async function start(body) {
   if (!type) return [400, { error: "unknown_job_type" }];
   if (!C.repos.has(body.repo)) return [403, { error: "repo_not_allowed", allowed: [...C.repos] }];
   if (typeof body.package !== "string" || !body.package.trim() || body.package.length > 200_000) return [400, { error: "bad_package" }];
+  if (!TASK_KEY.test(body.gateway_key ?? "")) return [400, { error: "gateway_key_required", detail: "Send the gateway key for the job's task (POST /task-key on the gateway)." }];
+  if (!C.gateway) return [500, { error: "no_gateway", detail: "JOBD_GATEWAY_URL is not set. Rerun setup-node.sh." }];
   if (running().length >= C.slots) return [429, { error: "full", slots: C.slots }];
   const id = `job-${Date.now().toString(36)}-${crypto.randomBytes(3).toString("hex")}`;
   const dir = jobDir(id);
   fs.mkdirSync(dir, { recursive: true, mode: 0o777 });
   fs.chmodSync(dir, 0o777);  // the container's user writes here
   fs.writeFileSync(path.join(dir, "package.md"), body.package);
+  fs.writeFileSync(path.join(dir, "gateway.env"), `ANTHROPIC_BASE_URL=${C.gateway}\nANTHROPIC_AUTH_TOKEN=${body.gateway_key}\n`, { mode: 0o600 });
   const label = String(body.label ?? "").slice(0, 120);
   const r = await run(containerArgs(id, body.repo, type.image));
   if (!r.ok) { fs.rmSync(dir, { recursive: true, force: true }); return [500, { error: "start_failed", detail: r.err.slice(0, 400) }]; }
@@ -130,6 +142,7 @@ async function reap() {
         continue;
       }
     }
+    fs.rmSync(path.join(jobDir(m.id), "gateway.env"), { force: true });
     m.exit_code = Number(code); m.oom = oom === "true"; m.ended = new Date().toISOString();
     m.status = m.oom ? "out_of_memory" : m.exit_code === 0 && hasReport ? "succeeded" : "failed";
     writeMeta(m);
@@ -157,7 +170,7 @@ export const server = http.createServer(async (req, res) => {
     if (!m || !ID.test(m[1])) return send(res, 404, { error: "not_found" });
     const meta = readMeta(m[1]);
     if (!meta) return send(res, 404, { error: "not_found" });
-    if (req.method === "DELETE" && !m[2]) { await run(["rm", "-f", meta.id]); meta.status = "stopped"; writeMeta(meta); return send(res, 200, meta); }
+    if (req.method === "DELETE" && !m[2]) { await run(["rm", "-f", meta.id]); fs.rmSync(path.join(jobDir(meta.id), "gateway.env"), { force: true }); meta.status = "stopped"; writeMeta(meta); return send(res, 200, meta); }
     if (!m[2]) return send(res, 200, meta);
     if (m[2] === "report") {
       const f = path.join(jobDir(meta.id), "report.md");

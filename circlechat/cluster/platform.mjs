@@ -4,6 +4,7 @@ import { execFile, spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { promisify } from "node:util";
+import { stopColimaVms } from "./colima.mjs";
 
 const exec = promisify(execFile);
 const here = path.dirname(new URL(import.meta.url).pathname);
@@ -187,7 +188,12 @@ export function makePlatform(env = process.env) {
     },
     async reboot() {
       if (IS_WSL) await sh("shutdown.exe", ["/r", "/t", "60", "/c", "Agent cluster: installing updates"]);
-      else await sh("shutdown", ["-r", "+1"]);
+      else if (IS_MAC) {
+        // Each Colima VM stops cleanly before the restart (colima.mjs).
+        const { running } = await stopColimaVms({ owner, ownerHome: home, run: sh, envPath: env.PATH });
+        if (running.length) console.error(`Colima VMs still running after 2 minutes: ${running.map((v) => v.name).join(", ")}`);
+        await sh("shutdown", ["-r", "+1"]);
+      } else await sh("shutdown", ["-r", "+1"]);
     },
   };
 }

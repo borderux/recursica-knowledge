@@ -13,9 +13,12 @@
 # site.tenant set, and run every kit script with TENANT=<name>: the stack then lives in
 # ~/tenants/<name>/ and every container, volume, port and job carries its name.
 #
-# --secrets-only: after a secret in .env changes, recreate only the model gateway and the Slack
-# notifier, which read .env when they start. CircleChat, the agents and the background jobs keep
+# --secrets-only: after a secret changes, recreate only the model gateway and the Slack notifier,
+# which read their secrets when they start. CircleChat, the agents and the background jobs keep
 # running. The deploy-secrets workflow uses this mode; see circlechat/README.md, "Secrets in GitHub".
+#
+# Every mode ends with the key check (gateway/key-check.mjs): the setup fails when a cloud model key
+# is in CircleChat's database or in an agent's Hermes home.
 set -euo pipefail
 # --upgrade: the upgrade job's mode, after a new release is checked out. Changes only what needs
 # no sudo: the rendered config, the containers, the gateway, the notifier and the filter.
@@ -38,18 +41,39 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 command -v docker >/dev/null || { echo "Docker is not installed (Linux: Docker Engine; macOS: Colima or OrbStack)."; exit 1; }
 command -v node >/dev/null   || { echo "Node 20+ is not installed."; exit 1; }
 
-# Validate and render. A broken site.json stops here, before anything changes.
+# Validate and render. A broken site.json stops here, before anything changes. A client or demo
+# stack's computers are checked against the cluster's own site.json, and each model that does not
+# fit the stack's computers is left out, with a line that says so.
 KIT_OUT="$CC_DIR/kit-out"
+if [ -n "${TENANT:-}" ] && [ -f "$HOME/circlechat/site.json" ]; then export CLUSTER_SITE="$HOME/circlechat/site.json"; fi
 node "$HERE/kit/render.mjs" "$SITE" "$KIT_OUT"
 . "$KIT_OUT/app.env"
 WANT_TENANT="${TENANT:-}"
 . "$KIT_OUT/tenant.env"
 [ "$WANT_TENANT" = "$TENANT" ] || { echo "TENANT=${WANT_TENANT:-<none>} but $SITE has site.tenant ${TENANT:-<none>}. Run with the stack's own TENANT and site.json."; exit 1; }
+# On a Mac, the cluster's own stack runs Colima's VM and Ollama as LaunchDaemons (kit/lib.sh). A
+# client stack's VM sits in the client's disk image, and the "Unlock stack" workflow starts the VM.
+# The other modes need no sudo, so only the full setup installs the daemons.
+if [ "$OS" = Darwin ] && [ -z "$TENANT" ] && [ "$SECRETS_ONLY" = false ]; then
+  case "$(docker context show 2>/dev/null)" in
+    colima) VM_PROFILE=default ;;
+    colima-*) VM_PROFILE="$(docker context show)"; VM_PROFILE="${VM_PROFILE#colima-}" ;;
+    *) VM_PROFILE="" ;;
+  esac
+  OLLAMA_PORT="$(node -e '
+    const s = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+    const n = (s.nodes ?? []).find((x) => x.control) ?? {};
+    const sv = (n.servers ?? []).find((x) => x.kind === "ollama") ?? (n.models ?? []).find((m) => m.port === 11434);
+    if (sv) process.stdout.write(String(sv.port));
+  ' "$SITE")"
+  mac_services "$VM_PROFILE" "$OLLAMA_PORT"
+fi
 # A client stack runs in its own Docker VM. Every docker command below, and every job installed
 # below, uses that VM.
 if [ -n "$DOCKER_CONTEXT" ]; then
   docker context inspect "$DOCKER_CONTEXT" >/dev/null 2>&1 || { echo "Docker context $DOCKER_CONTEXT does not exist. On a Mac: colima start --profile ${DOCKER_CONTEXT#colima-}"; exit 1; }
   export DOCKER_CONTEXT
+  check_vm_limits "$LIMIT_CPUS" "$LIMIT_MEMORY_GB" || exit 1
 fi
 DCTX="${DOCKER_CONTEXT:+DOCKER_CONTEXT=$DOCKER_CONTEXT }"
 TS_HOST="$(site_get site.public_host)"
@@ -115,18 +139,28 @@ else
   rm -f compose.egress.yml
   for k in CC_AGENT_NETWORK CC_AGENT_PROXY CC_AGENT_NO_PROXY CC_AGENT_API_BASE; do sedi "/^$k=/d" .env; done
 fi
+# The model gateway's private network. Only the gateway's two containers join it: LiteLLM, which
+# holds the cloud keys, and the router in front of LiteLLM, which every agent and job talks to.
+MODEL_NET="${COMPOSE_PROJECT_NAME}_models"
+docker network inspect "$MODEL_NET" >/dev/null 2>&1 || docker network create "$MODEL_NET" >/dev/null
 # Personal information masking: Presidio's analyzer and anonymizer run beside the stack, and the
 # model gateway removes personal details from each request before the request reaches a cloud model.
 if [ "$MASK_PII" = on ]; then
   cat > compose.privacy.yml <<YAML
-# Written by setup-host.sh: the masking services for the model gateway.
+# Written by setup-host.sh: the masking services for the model gateway, on the gateway's network.
+networks:
+  models:
+    name: $MODEL_NET
+    external: true
 services:
   presidio-analyzer:
     image: mcr.microsoft.com/presidio-analyzer:latest
     restart: unless-stopped
+    networks: [default, models]
   presidio-anonymizer:
     image: mcr.microsoft.com/presidio-anonymizer:latest
     restart: unless-stopped
+    networks: [default, models]
 YAML
 else
   rm -f compose.privacy.yml
@@ -161,7 +195,32 @@ rm -f "$WS/.recursica-mcp-version" "$WS/.recursica-mcp.sh"
 KMCP="{\"command\":\"node\",\"args\":[\"/workspace/recursica-knowledge/nest/mcp/knowledge/server.mjs\"],\"enabled\":true,\"timeout\":120}"
 set_env CC_AGENT_MCP_SERVERS "{\"betty\":{\"recursica-knowledge\":$KMCP},\"barb\":{\"recursica-knowledge\":$KMCP}}"
 set_env ENFORCE_AGENT_SCOPES true
-env_has LITELLM_MASTER_KEY || set_env LITELLM_MASTER_KEY "sk-$(openssl rand -hex 16)"
+# Cloud model keys live in one secrets file that only the gateway reads, owned by root. The
+# secrets helper writes the file from the stack's GitHub environment (MODEL_KEY_<NAME>). An older
+# stack kept its Claude key in .env as ANTHROPIC_API_KEY: that key moves to the secrets file as
+# MODEL_KEY_DEFAULT, the default key's secret, and leaves .env.
+MODEL_KEYS="$CC_DIR/model-keys.env"
+GW_STATE="$CC_DIR/gateway-state"
+sudo test -f "$MODEL_KEYS" || sudo install -m 600 /dev/null "$MODEL_KEYS"
+sudo mkdir -p "$GW_STATE" && sudo chmod 700 "$GW_STATE"
+# LiteLLM's master key: only the router uses the key, so the key lives in the gateway's state
+# folder, never in .env. Agents now use their own gateway keys.
+sudo test -s "$GW_STATE/litellm-master.key" || echo "sk-$(openssl rand -hex 24)" | sudo tee "$GW_STATE/litellm-master.key" >/dev/null
+# The password of the router's read-only database role (gateway/gateway-db.sql).
+sudo test -s "$GW_STATE/db-password" || openssl rand -hex 24 | sudo tee "$GW_STATE/db-password" >/dev/null
+# On a Mac, the owner owns both, so the gateway's containers can mount them (kit/lib.sh).
+own_for_docker "$MODEL_KEYS" "$GW_STATE"
+sedi '/^LITELLM_MASTER_KEY=/d' .env
+if env_has ANTHROPIC_API_KEY; then
+  if ! sudo grep -q '^MODEL_KEY_DEFAULT=.' "$MODEL_KEYS"; then
+    sed -n 's/^ANTHROPIC_API_KEY=/MODEL_KEY_DEFAULT=/p' .env | tail -1 | sudo tee -a "$MODEL_KEYS" >/dev/null
+  fi
+  sedi '/^ANTHROPIC_API_KEY=/d' .env
+  echo "Moved ANTHROPIC_API_KEY from .env to the gateway's secrets file, as the default key. In GitHub, rename the secret to MODEL_KEY_DEFAULT."
+fi
+for k in OPENAI_API_KEY XAI_API_KEY GEMINI_API_KEY AZURE_API_KEY AWS_SECRET_ACCESS_KEY OPENROUTER_API_KEY; do
+  env_has "$k" && { echo "$k is in $CC_DIR/.env, which holds no cloud key. Put the key in the stack's GitHub environment as MODEL_KEY_<NAME>, name the key in site.json's model_keys, deploy the secrets, and remove $k from .env."; exit 1; }
+done
 # CircleChat ships with a default session secret and default passwords. Anyone who knows the
 # default session secret can forge a sign-in, so each default becomes a random value. Postgres
 # keeps the password the database started with, so PG_PASSWORD changes only before the database
@@ -208,16 +267,57 @@ start_egress() {
   echo "Outgoing filter running: agents reach only the sites in $KIT_OUT/egress/allow.txt."
 }
 
+# The router's database role: it reads only the columns the router needs, and writes nothing
+# (gateway/gateway-db.sql). The role's address, with its password, goes in a file in the gateway's
+# state folder, so `docker inspect` shows no database password. CircleChat's api makes the tables
+# when it starts, so this waits for them.
+gateway_db_role() {
+  local pw i
+  pw="$(sudo cat "$GW_STATE/db-password")"
+  for i in $(seq 90); do
+    [ "$(docker compose exec -T postgres psql -U postgres -d circlechat -Atc "select to_regclass('public.agent_runs') is not null" 2>/dev/null)" = t ] && break
+    [ "$i" = 90 ] && { echo "CircleChat's tables are not there yet, so the gateway cannot read tasks and treats every request as cluster only. Run this script again once CircleChat is up."; return 0; }
+    sleep 2
+  done
+  { printf '\\set password %s\n' "$pw"; cat "$HERE/gateway/gateway-db.sql"; } | docker compose exec -T postgres psql -q -U postgres -d circlechat >/dev/null
+  printf 'postgres://cc_gateway_read:%s@postgres:5432/circlechat\n' "$pw" | sudo tee "$GW_STATE/db.url" >/dev/null
+  sudo chmod 600 "$GW_STATE/db.url"
+  own_for_docker "$GW_STATE/db.url"
+}
+
 start_gateway_and_notifier() {
-  # Model gateway: one address for every model on every node, with fallbacks in route order.
-  # Agents reach it at http://localhost:$GATEWAY_PORT (their turns run on the host network).
-  docker rm -f "cc-gateway$SUFFIX" >/dev/null 2>&1 || true
+  # The model gateway, in two containers.
+  # LiteLLM (cc-litellm): one address for every cluster model, with fallbacks in route order, and
+  # one model per cloud key (key/<name>). start-litellm.py reads the keys from the secrets file, so
+  # no key is in an environment variable. LiteLLM joins only the gateway's private network.
+  docker rm -f "cc-litellm$SUFFIX" >/dev/null 2>&1 || true
   local mask=()
   [ "$MASK_PII" = on ] && mask=(-e PRESIDIO_ANALYZER_API_BASE=http://presidio-analyzer:3000 -e PRESIDIO_ANONYMIZER_API_BASE=http://presidio-anonymizer:3000)
-  docker run -d --name "cc-gateway$SUFFIX" --restart unless-stopped --network "$NET" -p "127.0.0.1:$GATEWAY_PORT:4000" ${mask[@]+"${mask[@]}"} \
+  docker run -d --name "cc-litellm$SUFFIX" --restart unless-stopped --network "$MODEL_NET" ${mask[@]+"${mask[@]}"} \
     --add-host host.docker.internal:host-gateway \
-    -v "$KIT_OUT/litellm.yaml":/app/config.yaml:ro --env-file .env \
-    "$(pin_image ghcr.io/berriai/litellm:main-stable)" --config /app/config.yaml --port 4000
+    -v "$KIT_OUT/litellm.yaml":/app/config.yaml:ro -v "$HERE/gateway/start-litellm.py":/kit/start-litellm.py:ro \
+    -v "$MODEL_KEYS":/run/secrets/model-keys.env:ro -v "$GW_STATE/litellm-master.key":/run/secrets/litellm-master.key:ro \
+    --entrypoint python "$(pin_image ghcr.io/berriai/litellm:main-stable)" \
+    /kit/start-litellm.py /app/config.yaml /run/secrets/model-keys.env /run/secrets/litellm-master.key --port 4000
+  # The router (cc-gateway): each agent's and each port job's gateway key, the task's "Cloud
+  # models" setting from CircleChat's database, and the spend log in gateway-logs/. Agents reach the
+  # router on their closed network, on port 4000. Port jobs on other computers reach the router's
+  # port 4001 over Tailscale: site.gateway_port on the control computer's Tailscale address only,
+  # where every request needs a task key. With the filter off, this computer's agents use
+  # site.gateway_port on 127.0.0.1.
+  gateway_db_role
+  docker rm -f "cc-gateway$SUFFIX" >/dev/null 2>&1 || true
+  mkdir -p "$CC_DIR/gateway-app" "$CC_DIR/gateway-logs"
+  cp "$HERE"/gateway/*.mjs "$HERE/gateway/package.json" "$CC_DIR/gateway-app/"
+  local publish=()
+  [ "$EGRESS" = on ] || publish+=(-p "127.0.0.1:$GATEWAY_PORT:4000")
+  [ -n "$TAILNET_ADDRESS" ] && publish+=(-p "$TAILNET_ADDRESS:$GATEWAY_PORT:4001")
+  docker run -d --name "cc-gateway$SUFFIX" --restart unless-stopped --network "$NET" ${publish[@]+"${publish[@]}"} \
+    -v "$CC_DIR/gateway-app":/app -v "$KIT_OUT/gateway.json":/etc/gateway/gateway.json:ro \
+    -v "$GW_STATE":/state -v "$CC_DIR/gateway-logs":/logs -w /app \
+    -e LITELLM_URL="http://cc-litellm$SUFFIX:4000" \
+    "$(pin_image node:22-alpine)" sh -c "npm install --silent && node router.mjs" >/dev/null
+  docker network connect "$MODEL_NET" "cc-gateway$SUFFIX"
 
   # Slack notifier: task changes, questions to people, rejected agent posts, stalled tasks.
   docker rm -f "cc-slack-notify$SUFFIX" >/dev/null 2>&1 || true
@@ -237,6 +337,22 @@ start_gateway_and_notifier() {
   fi
 }
 
+# Every agent of the stack asks the gateway with the agent's own gateway key, and no agent's home
+# holds a cloud key. setup-agent.sh does the same for one agent.
+agents_to_gateway() {
+  local h
+  for h in "$CC_DIR"/hermes-homes/.hermes-*; do
+    sudo test -f "$h/config.yaml" || continue
+    gateway_access "${h##*/.hermes-}" "$h" || true
+  done
+}
+
+# The key check: no cloud key in CircleChat's database or in an agent's Hermes home.
+key_check() {
+  (docker compose exec -T postgres pg_dump -U postgres circlechat 2>/dev/null || true) |
+    sudo "$(command -v node)" "$HERE/gateway/key-check.mjs" --secrets "$MODEL_KEYS" --stdin "CircleChat's database" "$CC_DIR/hermes-homes"
+}
+
 if [ "$SECRETS_ONLY" = true ]; then
   if [ "$UPGRADE_ONLY" = true ]; then
     docker compose up -d --remove-orphans
@@ -244,6 +360,8 @@ if [ "$SECRETS_ONLY" = true ]; then
   start_gateway_and_notifier
   [ "$UPGRADE_ONLY" = true ] && start_egress
   [ "$EGRESS" = on ] && docker network connect --alias cc-gateway "$AGENT_NET" "cc-gateway$SUFFIX" 2>/dev/null || true
+  agents_to_gateway
+  key_check
   if [ "$UPGRADE_ONLY" = true ]; then what="Upgrade applied"; else what="Secrets applied"; fi
   echo "$what${TENANT:+ (stack: $TENANT)}: gateway and Slack notifier recreated."
   exit 0
@@ -309,6 +427,8 @@ docker run -d --name "betty-proto$SUFFIX" --restart unless-stopped -p "127.0.0.1
 
 start_gateway_and_notifier
 start_egress
+agents_to_gateway
+key_check
 
 # Background jobs, the native way for this OS (systemd on Linux, launchd on macOS).
 ENVS="CC_DIR=$CC_DIR WS=$WS SITE=$SITE"

@@ -5,7 +5,10 @@
 set -uo pipefail
 cd /work || exit 1
 
-: "${TARGET_REPO:?}" "${ANTHROPIC_API_KEY:?}" "${PORTER_GITHUB_PAT:?}" "${PORTER_REPORT:=/work/report.md}"
+: "${TARGET_REPO:?}" "${ANTHROPIC_BASE_URL:?}" "${ANTHROPIC_AUTH_TOKEN:?}" "${PORTER_GITHUB_PAT:?}" "${PORTER_REPORT:=/work/report.md}"
+# Claude Code sends its model requests to the stack's gateway, with the gateway key for the job's
+# task. The gateway picks the model from the task's "Cloud models" setting; the job holds no cloud key.
+export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
 export GH_TOKEN="$PORTER_GITHUB_PAT"            # gh and git both use the job's own token
 git config --global user.name  "${PORTER_GIT_NAME:?set PORTER_GIT_NAME on the job-runner machine}"
 git config --global user.email "${PORTER_GIT_EMAIL:?set PORTER_GIT_EMAIL on the job-runner machine}"

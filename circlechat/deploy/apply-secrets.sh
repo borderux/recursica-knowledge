@@ -8,7 +8,8 @@
 #   agent-stacks-apply --lock <stack> <computer>
 #
 # --unlock opens a client stack's encrypted disk image and starts the stack's Docker VM, and
-# --lock does the reverse. The key passes through on stdin and is never written to disk.
+# --lock does the reverse. The key passes through on stdin and is never written to disk. On Linux
+# and WSL, this script opens and closes the LUKS image itself, as root, with agent-stacks-disk.
 #
 # <stack> is the GitHub environment: "border" for the stack with no tenant name, or
 # "client-<name>" for the client stack with site.tenant <name>. <computer> is a node name in that
@@ -42,13 +43,27 @@ fi
 if [ "$MODE" != apply ]; then
   [ -n "$TENANT" ] || { echo "Only a client stack has an encrypted disk image."; exit 1; }
   DISK="$KIT/circlechat/tenant/disk-image.sh"
+  as_owner() { if [ "$(id -un)" = "$OWNER" ]; then "$@"; else sudo -u "$OWNER" -H "$@"; fi; }
+  # Linux and WSL: the image opens as root, then the owner starts the VM inside the open image.
+  LUKS=false; [ "$(uname -s)" = Linux ] && LUKS=true
+  HELPER="${AGENT_STACKS_DISK:-/usr/local/bin/agent-stacks-disk}"
+  luks() { if [ "$(id -u)" = 0 ]; then "$HELPER" "$@"; else sudo -n "$HELPER" "$@"; fi; }
   if [ "$MODE" = unlock ]; then
     KEY=""
     while IFS= read -r line || [ -n "$line" ]; do case "$line" in STACK_DISK_KEY=*) KEY="${line#STACK_DISK_KEY=}" ;; esac; done
     [ -n "$KEY" ] || { echo "No STACK_DISK_KEY in the client's GitHub environment."; exit 1; }
-    printf '%s' "$KEY" | sudo -u "$OWNER" -H bash "$DISK" unlock "$TENANT"
+    if [ "$LUKS" = true ]; then
+      printf '%s' "$KEY" | luks open "$TENANT"
+      as_owner bash "$DISK" unlock "$TENANT" </dev/null
+    else
+      printf '%s' "$KEY" | as_owner bash "$DISK" unlock "$TENANT"
+    fi
+  elif [ "$LUKS" = true ]; then
+    as_owner bash "$DISK" stop-vm "$TENANT"
+    luks close "$TENANT"
+    echo "Locked stack $TENANT: Docker VM stopped, image closed."
   else
-    sudo -u "$OWNER" -H bash "$DISK" lock "$TENANT"
+    as_owner bash "$DISK" lock "$TENANT"
   fi
   exit 0
 fi
@@ -56,7 +71,9 @@ SITE="$CC_DIR/site.json"
 [ -f "$SITE" ] || { echo "No $SITE on this computer. Copy the stack's site.json here first."; exit 1; }
 
 # The secrets, from stdin. A name outside this list, or an empty value, is skipped.
-KNOWN='^(AWS_ACCESS_KEY_ID|AWS_SECRET_ACCESS_KEY|AWS_REGION_NAME|VERTEXAI_PROJECT|VERTEXAI_LOCATION|AZURE_API_KEY|AZURE_API_BASE|AZURE_API_VERSION|GIT_TOKEN|SLACK_APP_TOKEN|SLACK_BOT_TOKEN|SLACK_CHANNEL_ID|CLUSTER_TOKEN|APPROVERS|TOTP_SECRET_[A-Z0-9_]+|ANTHROPIC_API_KEY|RESTIC_PASSWORD|KEV_ENGINE_KEY|KEV_API_KEY|JOBD_TOKEN|PORTER_HOOK_URL|PORTER_HOOK_SECRET|PORTER_ANTHROPIC_API_KEY|PORTER_GITHUB_PAT|PORTER_GIT_NAME|PORTER_GIT_EMAIL|[A-Z][A-Z0-9]*_GITHUB_PAT)$'
+# MODEL_KEY_<NAME> is a cloud model key, named in site.json's model_keys. ANTHROPIC_API_KEY is the
+# older name of MODEL_KEY_DEFAULT.
+KNOWN='^(MODEL_KEY_[A-Z0-9_]+|AWS_ACCESS_KEY_ID|AWS_SECRET_ACCESS_KEY|AWS_REGION_NAME|VERTEXAI_PROJECT|VERTEXAI_LOCATION|AZURE_API_KEY|AZURE_API_BASE|AZURE_API_VERSION|GIT_TOKEN|SLACK_APP_TOKEN|SLACK_BOT_TOKEN|SLACK_CHANNEL_ID|CLUSTER_TOKEN|APPROVERS|TOTP_SECRET_[A-Z0-9_]+|ANTHROPIC_API_KEY|RESTIC_PASSWORD|KEV_ENGINE_KEY|KEV_API_KEY|JOBD_TOKEN|PORTER_HOOK_URL|PORTER_HOOK_SECRET|PORTER_ANTHROPIC_API_KEY|PORTER_GITHUB_PAT|PORTER_GIT_NAME|PORTER_GIT_EMAIL|[A-Z][A-Z0-9]*_GITHUB_PAT)$'
 NAMES=""
 while IFS= read -r line || [ -n "$line" ]; do
   k="${line%%=*}"; v="${line#*=}"
@@ -80,11 +97,11 @@ ROLES="$("$NODE_BIN" -e '
 ' "$SITE" "$COMPUTER")"
 [ "$ROLES" != none ] || { echo "Computer $COMPUTER runs nothing for stack $STACK in $SITE."; exit 1; }
 
-# A client stack without the client's recorded permission runs local models only, so no cloud
+# A client or demo stack without a recorded permission runs local models only, so no cloud
 # key may reach the stack. The helper refuses the whole run before writing anything.
 CLOUD="$("$NODE_BIN" -e '
   const s = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
-  const local = s.site?.kind === "client" && s.site?.cloud_models?.allowed !== true;
+  const local = ["client", "demo"].includes(s.site?.kind) && s.site?.cloud_models?.allowed !== true;
   console.log(local ? "local-only" : "allowed");
 ' "$SITE")"
 # Alan sends pull requests only to the stack's own knowledge repo. A client stack that still uses
@@ -93,9 +110,21 @@ if [ -n "$TENANT" ] && has ALAN_GITHUB_PAT && grep -q 'borderux/recursica-knowle
   echo "Refused: stack $STACK uses the public knowledge repo, so it never holds ALAN_GITHUB_PAT. Point repos.knowledge at the client's own fork first. Nothing was written."; exit 1
 fi
 if [ "$CLOUD" = local-only ]; then
-  for k in ANTHROPIC_API_KEY PORTER_ANTHROPIC_API_KEY AWS_ACCESS_KEY_ID VERTEXAI_PROJECT AZURE_API_KEY; do
-    has "$k" && { echo "Refused: $k is a cloud model key, and stack $STACK has no recorded permission for cloud models. Nothing was written."; exit 1; }
-  done
+  for k in $NAMES; do case "$k" in ANTHROPIC_API_KEY|PORTER_ANTHROPIC_API_KEY|AWS_ACCESS_KEY_ID|VERTEXAI_PROJECT|AZURE_API_KEY|MODEL_KEY_*)
+    echo "Refused: $k is a cloud model key, and stack $STACK has no recorded permission for cloud models. Nothing was written."; exit 1 ;;
+  esac; done
+fi
+# Cloud credentials under a provider's own names went to .env, where every container of the stack
+# could read them. A cloud key now goes in MODEL_KEY_<NAME>, which only the gateway reads.
+for k in AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY VERTEXAI_PROJECT AZURE_API_KEY; do
+  has "$k" && { echo "Refused: $k goes in a MODEL_KEY_<NAME> secret now, named in site.json's model_keys (circlechat/README.md, \"Cloud models\"). Nothing was written."; exit 1; }
+done
+# The helper runs as root, and the owner can replace model-keys.env with a symlink. Writing the
+# cloud keys through a symlink would write them to the file the symlink names.
+if [[ " $ROLES " == *" control "* ]] && [ -L "$CC_DIR/model-keys.env" ]; then
+  for k in $NAMES; do case "$k" in ANTHROPIC_API_KEY|MODEL_KEY_*)
+    echo "Refused: $CC_DIR/model-keys.env is a symlink. Replace the symlink with a plain file. Nothing was written."; exit 1 ;;
+  esac; done
 fi
 
 # Replace or add one KEY=value line, keeping every other line and the file's owner.
@@ -110,12 +139,35 @@ set_kv() {
   echo "  $k -> $f"
 }
 
+# Remove one KEY=value line from a file, when the file has the line.
+drop_kv() {
+  local f="$1" k="$2" tmp
+  [ -f "$f" ] && grep -q "^$k=" "$f" || return 0
+  tmp="$(mktemp)"; awk -v k="$k" 'index($0, k "=") != 1' "$f" > "$tmp"; cat "$tmp" > "$f"; rm -f "$tmp"
+  echo "  $k removed from $f"
+}
+
 WROTE_CONTROL=false
 if [[ " $ROLES " == *" control "* ]]; then
   echo "Control computer of stack $STACK:"
-  for k in ANTHROPIC_API_KEY AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_REGION_NAME VERTEXAI_PROJECT VERTEXAI_LOCATION AZURE_API_KEY AZURE_API_BASE AZURE_API_VERSION SLACK_BOT_TOKEN RESTIC_PASSWORD KEV_ENGINE_KEY JOBD_TOKEN PORTER_HOOK_URL PORTER_HOOK_SECRET; do
+  for k in SLACK_BOT_TOKEN RESTIC_PASSWORD KEV_ENGINE_KEY JOBD_TOKEN PORTER_HOOK_URL PORTER_HOOK_SECRET; do
     has "$k" && { set_kv "$CC_DIR/.env" "$k" "$(val "$k")"; WROTE_CONTROL=true; }
   done
+  # Cloud keys go to the gateway's secrets file, which root owns and only the gateway reads.
+  KEYS_FILE="$CC_DIR/model-keys.env"
+  for k in $NAMES; do
+    case "$k" in MODEL_KEY_*) name="$k" ;; ANTHROPIC_API_KEY) name=MODEL_KEY_DEFAULT ;; *) continue ;; esac
+    [ "$k" = ANTHROPIC_API_KEY ] && has MODEL_KEY_DEFAULT && continue
+    [ -f "$KEYS_FILE" ] || install -m 600 /dev/null "$KEYS_FILE"
+    tmp="$(mktemp)"; awk -v k="$name" 'index($0, k "=") != 1' "$KEYS_FILE" > "$tmp"
+    printf '%s=%s\n' "$name" "$(val "$k")" >> "$tmp"; cat "$tmp" > "$KEYS_FILE"; rm -f "$tmp"
+    chmod 600 "$KEYS_FILE"
+    # On a Mac, the Docker VM reads the Mac's files as the owner, never as root, so the gateway
+    # can mount only a file the owner owns. On Linux, root keeps the file.
+    if [ "$(uname -s)" = Darwin ]; then chown -h "$OWNER" "$KEYS_FILE"; fi
+    echo "  $name -> $KEYS_FILE"; WROTE_CONTROL=true
+  done
+  drop_kv "$CC_DIR/.env" ANTHROPIC_API_KEY
   # An agent's GitHub token goes in that agent's own .env, named <HANDLE>_GITHUB_PAT.
   for k in $NAMES; do
     case "$k" in PORTER_GITHUB_PAT|*[!A-Z0-9_]*) continue ;; *_GITHUB_PAT) ;; *) continue ;; esac
@@ -146,8 +198,10 @@ if [[ " $ROLES " == *" jobs "* || " $ROLES " == *" service:"* ]]; then
   for k in KEV_API_KEY JOBD_TOKEN PORTER_GITHUB_PAT PORTER_GIT_NAME PORTER_GIT_EMAIL PORTER_HOOK_URL PORTER_HOOK_SECRET; do
     has "$k" && { set_kv "$NODE_ENV" "$k" "$(val "$k")"; WROTE_NODE=true; }
   done
-  # The port jobs call Claude with their own key, stored in GitHub as PORTER_ANTHROPIC_API_KEY.
-  has PORTER_ANTHROPIC_API_KEY && { set_kv "$NODE_ENV" ANTHROPIC_API_KEY "$(val PORTER_ANTHROPIC_API_KEY)"; WROTE_NODE=true; }
+  # Port jobs reach cloud models through the gateway, with a key for each task. The node secrets
+  # file holds no cloud key.
+  has PORTER_ANTHROPIC_API_KEY && echo "  PORTER_ANTHROPIC_API_KEY skipped: port jobs use the gateway. Rename the secret to MODEL_KEY_PORTER, and name porter in that key's agents in site.json."
+  drop_kv "$NODE_ENV" ANTHROPIC_API_KEY
   chown "$OWNER" "$NODE_ENV" 2>/dev/null || true
 fi
 
@@ -167,8 +221,8 @@ if [ "$WROTE_CLUSTER" = true ]; then
   for u in cluster-agent cluster-bot; do restart_unit "$u" 2>/dev/null || true; done
 fi
 if [ "$WROTE_CONTROL" = true ]; then
-  # The gateway and the notifier read .env when they start, so the kit recreates both. Agents read
-  # their own .env at the start of each turn and need no restart.
+  # The gateway reads the secrets file and the notifier reads .env when they start, so the kit
+  # recreates both. Agents read their own .env at the start of each turn and need no restart.
   sudo -u "$OWNER" -H env TENANT="$TENANT" CC_DIR="$CC_DIR" SITE="$SITE" PATH="$(dirname "$NODE_BIN"):$PATH" \
     bash "$KIT/circlechat/setup-host.sh" --secrets-only
 fi

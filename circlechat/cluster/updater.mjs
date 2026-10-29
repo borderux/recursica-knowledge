@@ -41,6 +41,28 @@ export function localStacks(home, computer) {
   return out;
 }
 
+// Two commands are root-owned copies of kit files, so the account that runs them cannot change them:
+//   /usr/local/bin/agent-stacks-apply  apply-secrets.sh (deploy/install-secrets-helper.sh, any computer)
+//   /usr/local/bin/agent-stacks-disk   disk-helper.sh (tenant/setup-pc.sh, Linux and WSL)
+// A copy that differs from the kit is installed again, so a new kit reaches both commands.
+//   fsx: { exists, read } for the tests; run(cmd, args): the command's exit status
+export function refreshRootCopies({ kit, mac, run, fsx = { exists: fs.existsSync, read: (f) => fs.readFileSync(f, "utf8") } }) {
+  const done = [];
+  const conf = (f) => { try { return Object.fromEntries(fsx.read(f).split("\n").map((l) => l.match(/^([A-Z_]+)=(.*)$/)).filter(Boolean).map((m) => [m[1], m[2].replace(/^'(.*)'$/, "$1").replace(/\\(.)/g, "$1")])); } catch { return {}; } };
+  const differs = (src, dest) => fsx.exists(dest) && fsx.exists(src) && fsx.read(src) !== fsx.read(dest);
+  const apply = conf("/etc/agent-stacks.conf");
+  const applyKit = apply.KIT || kit;
+  if (differs(path.join(applyKit, "circlechat/deploy/apply-secrets.sh"), "/usr/local/bin/agent-stacks-apply")) {
+    // The runner's account is in the config since this change, and before it only in the sudo rule.
+    let runner = apply.RUNNER;
+    if (!runner) try { runner = fsx.read("/etc/sudoers.d/agent-stacks").split(/\s/)[0]; } catch {}
+    if (runner && run("bash", [path.join(applyKit, "circlechat/deploy/install-secrets-helper.sh"), runner]) === 0) done.push("agent-stacks-apply");
+  }
+  const disk = path.join(kit, "circlechat/tenant/disk-helper.sh");
+  if (!mac && differs(disk, "/usr/local/bin/agent-stacks-disk") && run("install", ["-m", "755", "-o", "root", disk, "/usr/local/bin/agent-stacks-disk"]) === 0) done.push("agent-stacks-disk");
+  return done;
+}
+
 async function main() {
   const env = process.env;
   const here = path.dirname(new URL(import.meta.url).pathname);
@@ -59,6 +81,8 @@ async function main() {
     if (p.images) { asOwner(st.ccDir, path.join(here, "images.mjs")); state.images = { ...(state.images ?? {}), [p.name]: Date.now() }; }
   }
   fs.writeFileSync(stateFile, JSON.stringify(state), { mode: 0o600 });
+  const run = (cmd, args) => spawnSync(cmd, args, { stdio: "inherit" }).status;
+  for (const c of refreshRootCopies({ kit: env.KIT, mac: process.platform === "darwin", run })) console.log(`${c}: installed again from the kit`);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) main().catch((e) => { console.error(e); process.exit(1); });
