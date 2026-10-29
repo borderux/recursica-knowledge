@@ -212,3 +212,15 @@ test("a stack's job runner on its one computer gets its own port and the compute
   assert.notEqual(other.status, 0);
   assert.match(other.stdout, /No node "machine-2" .* lists only the computers picked for the stack/);
 });
+
+test("the hourly sync job calls /usr/sbin/chown on a Mac, and chown on Linux", () => {
+  for (const [system, unit, chown] of [["Darwin", "io.recursica.agents-sync.plist", "/usr/sbin/chown"], ["Linux", "agents-sync.service", "chown"]]) {
+    const s = sandbox(example, { system });
+    // A git stand-in, so the full run clones nothing.
+    fs.writeFileSync(path.join(s.home, "bin", "git"), `#!/usr/bin/env bash\n[ "$1" = clone ] && mkdir -p "\${@: -1}/.git"\nexit 0\n`, { mode: 0o755 });
+    const r = s.run("setup-host.sh");
+    assert.equal(r.status, 0, r.stdout + r.stderr);
+    const text = fs.readFileSync(path.join(s.units, unit), "utf8");
+    assert.match(text, new RegExp(`sync-skills\\.sh; ${chown} -R `), system);
+  }
+});

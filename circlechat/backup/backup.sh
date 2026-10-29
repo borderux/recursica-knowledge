@@ -8,7 +8,8 @@
 # stack's .env, before anything leaves the computer. The backup holds the database, CircleChat's
 # file store, the agent homes, the shared workspace and site.json. The backup leaves out .env:
 # every secret lives in the stack's GitHub environment.
-# -E: a failure inside a function, such as own_for_docker, also runs the ERR trap and reports.
+# -E: a failure inside a function, such as own_for_docker, also runs the ERR trap and reports. -E
+# also gives the trap to each subshell, so only the main shell reports, and each failure posts once.
 set -Eeuo pipefail
 : "${CC_DIR:?CC_DIR}" "${OWNER_HOME:?OWNER_HOME}"
 WS="${WS:-$OWNER_HOME/circlechat-workspace}"
@@ -22,7 +23,7 @@ say() {
   CC_DIR="$CC_DIR" node "$(dirname "$0")/../kit/slack.mjs" "$1" >/dev/null 2>&1 || true
 }
 STEP="start"
-trap 'say ":warning: Backup of stack $STACK failed on $(hostname -s), at step: $STEP."' ERR
+trap '[ "$BASH_SUBSHELL" -gt 0 ] || say ":warning: Backup of stack $STACK failed on $(hostname -s), at step: $STEP."' ERR
 
 [ -n "$BACKUP_REMOTE" ] || { echo "No backup.remote in site.json. Nothing to back up."; exit 0; }
 export RESTIC_PASSWORD; RESTIC_PASSWORD="$(env_value RESTIC_PASSWORD)"
