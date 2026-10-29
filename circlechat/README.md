@@ -110,7 +110,7 @@ To move an agent to another server or model, change `site.json` and rerun `setup
    `LOCAL_REDACTIONS=<path to your local-redactions.json>` so client names are checked too.
 3. **Every other machine:** copy `site.json` over (it holds no secrets), put its services'
    secrets in `~/.recursica-node.env`, and run `./circlechat/setup-node.sh <node name>`.
-4. Point your HTTPS name at `127.0.0.1:<port>`; the script prints the Tailscale commands.
+4. **CircleChat's address and the app preview's address:** `setup-host.sh` runs `tailscale serve` for both, as "Addresses on the tailnet" describes. With `site.proxy` set to `other`, point an HTTPS reverse proxy on the control computer at `127.0.0.1:<site.port>` and `127.0.0.1:<site.preview_port>`.
 5. For each agent: add the agent in the CircleChat UI (**Members → Add agent**: Hermes, provider
    custom (FreeLLMAPI), base URL `http://cc-gateway:4000/v1`, key `placeholder-key`, **Install + link**).
    Never paste a cloud key into CircleChat. Wait for the install to finish, then run:
@@ -304,7 +304,7 @@ The limits choose the models and size the stack's VM and jobs. A shared model se
 
 5. **Put the stack's secrets,** including the Slack app's `SLACK_BOT_TOKEN`, in the stack's GitHub environment, as "Secrets in GitHub" describes.
 6. **Run every kit script with `TENANT=<client>`**, such as `TENANT=<client> ~/recursica-knowledge/circlechat/setup-host.sh`. Use the same prefix for `setup-agent.sh`, and for `setup-node.sh` on each picked computer that runs jobs.
-7. **Give the stack an address** with `tailscale serve --bg --https=<port> http://127.0.0.1:<port>`.
+7. **The stack's address:** `setup-host.sh` gives the stack's CircleChat `https://<host>:<site.port>`, and the stack's app preview `https://<host>:<site.preview_port>`, as "Addresses on the tailnet" describes.
 
 With `TENANT=<client>`, the stack lives in `~/tenants/<client>/`. The stack's containers, volume, Compose project, ports and background jobs all carry the client's name. The stack's job runner reads secrets from `~/tenants/<client>/node.env`.
 
@@ -345,6 +345,21 @@ After every restart of the computer, the client's image stays closed. Run the "U
 
 Deleting the image and the key makes the client's data unreadable for good.
 
+## Addresses on the tailnet
+
+**CircleChat and the app preview listen on `127.0.0.1` only, and `tailscale serve` gives each one an HTTPS address on the tailnet.** The full setup, `setup-host.sh` with no option, runs both rules when `site.proxy` is `tailscale`, the default:
+
+| Stack                   | CircleChat                                                              | The app preview                                                                         |
+| ----------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| The cluster's own stack | `tailscale serve --bg --https=443 http://127.0.0.1:<site.port>`         | `tailscale serve --bg --https=<site.preview_port> http://127.0.0.1:<site.preview_port>` |
+| A client or demo stack  | `tailscale serve --bg --https=<site.port> http://127.0.0.1:<site.port>` | The same as the cluster's own stack, with the stack's own `site.preview_port`           |
+
+- **Only the tailnet reaches either address.** The setup never turns on Tailscale Funnel, which opens a port to the internet.
+- **The setup checks both rules** in `tailscale serve status`. The setup stops when a rule is missing, when a rule passes to another port, or when Funnel serves either port. The message names the port and the fix.
+- **Without Tailscale on the computer,** the setup prints the two commands to run after Tailscale is installed.
+- **With `site.proxy` set to `other`,** the setup leaves `tailscale serve` alone. Point an HTTPS reverse proxy on the computer at both ports.
+- **Offboarding a client** turns off both of the client's rules.
+
 ## Secrets in GitHub
 
 **Keep each stack's secrets in GitHub, in the private repo that holds the stacks' site.json files.** GitHub records each change, and more than one person can update a secret. GitHub never shows a secret again after the secret is saved. Keep a copy of each secret in a password manager.
@@ -356,6 +371,14 @@ Deleting the image and the key makes the client's data unreadable for good.
 5. **Install a GitHub self-hosted runner on each computer**, for the private repo only, under a separate account. Give the runner a label with the computer's name from site.json.
 6. **Run `~/recursica-knowledge/circlechat/deploy/install-secrets-helper.sh <runner account>`** on each computer, as the account that owns the stacks. The runner's account can then run one command as root: the helper that writes the secrets. The hourly update job reruns the script as root after the kit changes the helper.
 7. **Run the "Deploy secrets" workflow** with the stack and the computer. The workflow writes each secret to the file that reads the secret, then restarts the services that read the file.
+
+**A deploy needs no password-free sudo for the account that owns the stacks.** The runner's account runs the helper as root, and the helper takes each step that needs root itself. The owner's account runs only the Docker steps. After a deploy that writes a control computer's secrets, the helper takes three steps:
+
+1. **As root:** the helper writes the gateway's state folder, LiteLLM's master key, and the password and address of the router's database role. On a Mac, the owner owns each one, so Colima's VM can mount the files. The helper refuses a symlinked state folder, and a secrets file with a symlink or a second hard link.
+2. **As the owner:** `setup-host.sh --secrets-only` recreates the model gateway and the Slack notifier in Docker. The helper passes the database role's password on stdin, never on a command line.
+3. **As root:** the key check reads CircleChat's database, the gateway's secrets file and the agent homes. The deploy fails when a cloud key is in the database or in an agent's home.
+
+The helper starts in `/`, so no command the owner runs prints `getcwd` errors from the runner's work folder. Never add a `NOPASSWD` sudo rule for the owner's account.
 
 The node secrets file is `~/.recursica-node.env`, or `~/tenants/<client>/node.env` for a client or demo stack.
 

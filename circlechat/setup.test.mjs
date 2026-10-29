@@ -226,9 +226,24 @@ test("a stack's job runner on its one computer gets its own port and the compute
   assert.match(other.stdout, /No node "machine-2" .* lists only the computers picked for the stack/);
 });
 
+// tailscale serve status --json after the full setup: CircleChat on 443 and the app preview on
+// 5173, each on 127.0.0.1, tailnet only.
+const host = example.site.public_host;
+const siteServe = (extra = {}) => ({ Web: { [`${host}:443`]: { Handlers: { "/": { Proxy: "http://127.0.0.1:8080" } } }, [`${host}:5173`]: { Handlers: { "/": { Proxy: "http://127.0.0.1:5173" } } } }, ...extra });
+// A stand-in for tailscale that records each call and answers serve status with the given status.
+const tailscaleStub = (s, status = siteServe()) => s.stub("tailscale", `[ "$1 $2" = "serve status" ] && echo '${JSON.stringify(status)}'; exit 0`);
+// A full setup, with stand-ins for git, so the run clones nothing, and for the Mac's model and VM
+// services, so the run never reaches the computer's own Ollama, Colima or Homebrew.
+function fullSetup(s, status) {
+  s.stub("git", `[ "$1" = clone ] && mkdir -p "\${@: -1}/.git"; exit 0`);
+  for (const t of ["ollama", "colima", "brew"]) s.stub(t, "exit 0");
+  tailscaleStub(s, status);
+  return s.run("setup-host.sh");
+}
+
 // A Mac whose Docker runs in Colima: an office network address, and Tailscale's address. Each
 // gateway check gets the answer the test names.
-function colimaMac({ site = example, serveStatus = { TCP: { 4000: { TCPForward: "127.0.0.1:4001" } } }, jobsAnswer = "401", officeAnswers = false } = {}) {
+function colimaMac({ site = example, serveStatus = siteServe({ TCP: { 4000: { TCPForward: "127.0.0.1:4001" } } }), jobsAnswer = "401", officeAnswers = false } = {}) {
   const s = sandbox(site, { system: "Darwin", dockerContext: "colima" });
   s.stub("tailscale", `[ "$1 $2" = "serve status" ] && echo '${JSON.stringify(serveStatus)}'; exit 0`);
   s.stub("ifconfig", `printf 'lo0: flags\\n\\tinet 127.0.0.1 netmask 0xff000000\\nen0: flags\\n\\tinet 192.168.1.20 netmask 0xffffff00\\nutun4: flags\\n\\tinet 100.64.0.1 --> 100.64.0.1\\n'`);
@@ -281,11 +296,7 @@ test("on Linux, and on a Mac with another Docker, Docker publishes the port for 
 test("the hourly sync job calls /usr/sbin/chown on a Mac, and chown on Linux", () => {
   for (const [system, unit, chown] of [["Darwin", "io.recursica.agents-sync.plist", "/usr/sbin/chown"], ["Linux", "agents-sync.service", "chown"]]) {
     const s = sandbox(example, { system });
-    // Stand-ins for git, so the full run clones nothing, and for the Mac's model, VM and network
-    // services, so the full run never reaches the computer's own Ollama, Colima, Homebrew or Tailscale.
-    s.stub("git", `[ "$1" = clone ] && mkdir -p "\${@: -1}/.git"; exit 0`);
-    for (const t of ["ollama", "colima", "brew", "tailscale"]) s.stub(t, "exit 0");
-    const r = s.run("setup-host.sh");
+    const r = fullSetup(s);
     assert.equal(r.status, 0, r.stdout + r.stderr);
     const text = fs.readFileSync(path.join(s.units, unit), "utf8");
     assert.match(text, new RegExp(`sync-skills\\.sh; ${chown} -R `), system);
@@ -324,6 +335,68 @@ test("on a Mac, the full setup stops and changes nothing while a LaunchDaemon ou
   assert.equal(fs.readdirSync(s.units).length, 0, "no service was installed");
   assert.ok(!fs.existsSync(path.join(s.cc, "kit-out")), "the setup stopped before the render");
   assert.ok(!fs.existsSync(path.join(s.cc, ".env")));
+});
+
+test("the full setup gives CircleChat and the app preview tailnet-only addresses with tailscale serve", () => {
+  const s = sandbox(example, { system: "Linux" });
+  const r = fullSetup(s);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  const calls = s.calls();
+  assert.match(calls, /^tailscale serve --bg --https=443 http:\/\/127\.0\.0\.1:8080$/m);
+  assert.match(calls, /^tailscale serve --bg --https=5173 http:\/\/127\.0\.0\.1:5173$/m);
+  assert.doesNotMatch(calls, /^tailscale funnel/m, "the setup never turns on Funnel");
+  assert.match(r.stdout, /tailscale serve, tailnet only: https:\/\/circlechat\.example\.ts\.net passes to http:\/\/127\.0\.0\.1:8080/);
+});
+
+test("the full setup stops when a serve rule is missing, or when Funnel serves a port to the internet", () => {
+  const noPreview = siteServe(); delete noPreview.Web[`${host}:5173`];
+  for (const [status, message] of [
+    [noPreview, /HTTPS port 5173 does not pass to http:\/\/127\.0\.0\.1:5173/],
+    [siteServe({ AllowFunnel: { [`${host}:443`]: true } }), /Funnel serves HTTPS port 443 to the internet\. Turn Funnel off: tailscale funnel --https=443 off/],
+  ]) {
+    const r = fullSetup(sandbox(example, { system: "Linux" }), status);
+    assert.equal(r.status, 1, r.stdout + r.stderr);
+    assert.match(r.stdout, message);
+  }
+});
+
+test("with site.proxy other, the full setup leaves tailscale serve alone and names the two local ports", () => {
+  const site = structuredClone(example);
+  site.site.proxy = "other";
+  const s = sandbox(site, { system: "Linux" });
+  const r = fullSetup(s);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.doesNotMatch(s.calls(), /^tailscale serve --bg --https/m);
+  assert.match(r.stdout, /Point an HTTPS reverse proxy on this computer at http:\/\/127\.0\.0\.1:8080 for CircleChat, and at http:\/\/127\.0\.0\.1:5173 for the app preview/);
+});
+
+test("with the secrets helper, --secrets-only takes only the Docker steps, and the owner needs no sudo", () => {
+  for (const system of ["Linux", "Darwin"]) {
+    const s = sandbox(example, { system });
+    // The owner's sudo asks for a password, as on a computer with no password-free sudo.
+    s.stub("sudo", `echo "sudo: a password is required" >&2; exit 1`);
+    const pw = "0123456789abcdef0123456789abcdef0123456789abcdef";
+    const r = spawnSync("bash", [path.join(here, "setup-host.sh"), "--secrets-only"], { env: { ...process.env, HOME: s.home, PATH: `${s.home}/bin:${process.env.PATH}`, KIT_SECRETS_HELPER: "1" }, input: `${pw}\n`, encoding: "utf8", cwd: s.home });
+    assert.equal(r.status, 0, system + r.stdout + r.stderr);
+    assert.match(r.stdout, /Secrets applied: gateway and Slack notifier recreated/);
+    const calls = s.calls();
+    assert.doesNotMatch(calls, /^sudo /m, `${system}: no sudo`);
+    assert.match(calls, /^docker compose exec -T postgres psql -q -U postgres -d circlechat$/m, "the router's database role");
+    assert.match(calls, /^docker run -d --name cc-gateway /m);
+    assert.match(calls, /^docker run -d --name cc-litellm /m);
+    // The helper writes the role's address and runs the key check, as root.
+    assert.ok(!fs.existsSync(path.join(s.units, "db.url")));
+    assert.doesNotMatch(calls, /key-check\.mjs/);
+  }
+});
+
+test("KIT_SECRETS_HELPER runs only with --secrets-only", () => {
+  const s = sandbox(example, { system: "Linux" });
+  for (const mode of [[], ["--upgrade"]]) {
+    const r = spawnSync("bash", [path.join(here, "setup-host.sh"), ...mode], { env: { ...process.env, HOME: s.home, PATH: `${s.home}/bin:${process.env.PATH}`, KIT_SECRETS_HELPER: "1" }, input: "x\n", encoding: "utf8", cwd: s.home });
+    assert.equal(r.status, 1);
+    assert.match(r.stdout, /KIT_SECRETS_HELPER needs --secrets-only/);
+  }
 });
 
 test("the job runner listens on loopback and the computer's Tailscale addresses, never on every interface", () => {
