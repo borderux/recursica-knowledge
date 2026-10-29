@@ -25,6 +25,14 @@ set -euo pipefail
 SECRETS_ONLY=false; UPGRADE_ONLY=false
 [ "${1:-}" = --secrets-only ] && SECRETS_ONLY=true
 [ "${1:-}" = --upgrade ] && { SECRETS_ONLY=true; UPGRADE_ONLY=true; }
+# KIT_SECRETS_HELPER=1: the secrets helper (deploy/apply-secrets.sh) runs --secrets-only as the
+# owner, with no sudo. The helper takes each step that needs root before and after this run, and
+# passes the database role's password on stdin. This run takes only the Docker steps.
+HELPER=false
+if [ -n "${KIT_SECRETS_HELPER:-}" ]; then
+  [ "$SECRETS_ONLY" = true ] && [ "$UPGRADE_ONLY" = false ] || { echo "KIT_SECRETS_HELPER needs --secrets-only."; exit 1; }
+  HELPER=true; IFS= read -r HELPER_DB_PASSWORD || true; exec </dev/null
+fi
 
 if [ -n "${TENANT:-}" ]; then
   CC_DIR="${CC_DIR:-$HOME/tenants/$TENANT/circlechat}"
@@ -244,17 +252,21 @@ set_env ENFORCE_AGENT_SCOPES true
 # MODEL_KEY_DEFAULT, the default key's secret, and leaves .env.
 MODEL_KEYS="$CC_DIR/model-keys.env"
 GW_STATE="$CC_DIR/gateway-state"
-sudo test -f "$MODEL_KEYS" || sudo install -m 600 /dev/null "$MODEL_KEYS"
-sudo mkdir -p "$GW_STATE" && sudo chmod 700 "$GW_STATE"
-# LiteLLM's master key: only the router uses the key, so the key lives in the gateway's state
-# folder, never in .env. Agents now use their own gateway keys.
-sudo test -s "$GW_STATE/litellm-master.key" || echo "sk-$(openssl rand -hex 24)" | sudo tee "$GW_STATE/litellm-master.key" >/dev/null
-# The password of the router's read-only database role (gateway/gateway-db.sql).
-sudo test -s "$GW_STATE/db-password" || openssl rand -hex 24 | sudo tee "$GW_STATE/db-password" >/dev/null
-# On a Mac, the owner owns both, so the gateway's containers can mount them (kit/lib.sh).
-own_for_docker "$MODEL_KEYS" "$GW_STATE"
+# With the secrets helper, the helper made the secrets file and the state folder as root.
+if [ "$HELPER" = false ]; then
+  sudo test -f "$MODEL_KEYS" || sudo install -m 600 /dev/null "$MODEL_KEYS"
+  sudo mkdir -p "$GW_STATE" && sudo chmod 700 "$GW_STATE"
+  # LiteLLM's master key: only the router uses the key, so the key lives in the gateway's state
+  # folder, never in .env. Agents now use their own gateway keys.
+  sudo test -s "$GW_STATE/litellm-master.key" || echo "sk-$(openssl rand -hex 24)" | sudo tee "$GW_STATE/litellm-master.key" >/dev/null
+  # The password of the router's read-only database role (gateway/gateway-db.sql).
+  sudo test -s "$GW_STATE/db-password" || openssl rand -hex 24 | sudo tee "$GW_STATE/db-password" >/dev/null
+  # On a Mac, the owner owns both, so the gateway's containers can mount them (kit/lib.sh).
+  own_for_docker "$MODEL_KEYS" "$GW_STATE"
+fi
 sedi '/^LITELLM_MASTER_KEY=/d' .env
-if env_has ANTHROPIC_API_KEY; then
+# The secrets helper removes ANTHROPIC_API_KEY from .env before this run.
+if [ "$HELPER" = false ] && env_has ANTHROPIC_API_KEY; then
   if ! sudo grep -q '^MODEL_KEY_DEFAULT=.' "$MODEL_KEYS"; then
     sed -n 's/^ANTHROPIC_API_KEY=/MODEL_KEY_DEFAULT=/p' .env | tail -1 | sudo tee -a "$MODEL_KEYS" >/dev/null
   fi
@@ -318,13 +330,18 @@ start_egress() {
 # when it starts, so this waits for them.
 gateway_db_role() {
   local pw i
-  pw="$(sudo cat "$GW_STATE/db-password")"
+  # The secrets helper passes the password, and writes the role's address itself.
+  if [ "$HELPER" = true ]; then
+    pw="$HELPER_DB_PASSWORD"
+    [ -n "$pw" ] || { echo "The secrets helper passed no password for the router's database role."; return 1; }
+  else pw="$(sudo cat "$GW_STATE/db-password")"; fi
   for i in $(seq 90); do
     [ "$(docker compose exec -T postgres psql -U postgres -d circlechat -Atc "select to_regclass('public.agent_runs') is not null" 2>/dev/null)" = t ] && break
     [ "$i" = 90 ] && { echo "CircleChat's tables are not there yet, so the gateway cannot read tasks and treats every request as cluster only. Run this script again once CircleChat is up."; return 0; }
     sleep 2
   done
   { printf '\\set password %s\n' "$pw"; cat "$HERE/gateway/gateway-db.sql"; } | docker compose exec -T postgres psql -q -U postgres -d circlechat >/dev/null
+  [ "$HELPER" = false ] || return 0
   printf 'postgres://cc_gateway_read:%s@postgres:5432/circlechat\n' "$pw" | sudo tee "$GW_STATE/db.url" >/dev/null
   sudo chmod 600 "$GW_STATE/db.url"
   own_for_docker "$GW_STATE/db.url"
@@ -333,10 +350,14 @@ gateway_db_role() {
 # On a Mac with Colima: tailscale serve passes site.gateway_port on the Tailscale address to the
 # router's port for port jobs, on 127.0.0.1. The other modes run without a sudo password, so they
 # try sudo only where sudo asks for nothing.
+# One tailscale serve rule: as the owner, then with sudo where sudo asks for nothing, then, in the
+# full setup only, with sudo.
+ts_serve() {
+  tailscale serve --bg "$@" >/dev/null 2>&1 || sudo -n tailscale serve --bg "$@" >/dev/null 2>&1 \
+    || { [ "$SECRETS_ONLY" = false ] && sudo tailscale serve --bg "$@" >/dev/null; }
+}
 gateway_serve() {
-  local args=(serve --bg "--tcp=$GATEWAY_PORT" "tcp://127.0.0.1:$JOBS_LOCAL_PORT")
-  tailscale "${args[@]}" >/dev/null 2>&1 || sudo -n tailscale "${args[@]}" >/dev/null 2>&1 \
-    || { [ "$SECRETS_ONLY" = false ] && sudo tailscale "${args[@]}" >/dev/null; } \
+  ts_serve "--tcp=$GATEWAY_PORT" "tcp://127.0.0.1:$JOBS_LOCAL_PORT" \
     || { echo "tailscale serve failed, so port jobs on other computers cannot reach the gateway. Run setup-host.sh in a terminal."; exit 1; }
   gateway_port_check
 }
@@ -448,8 +469,12 @@ if [ "$SECRETS_ONLY" = true ]; then
   start_gateway_and_notifier
   [ "$UPGRADE_ONLY" = true ] && start_egress
   [ "$EGRESS" = on ] && docker network connect --alias cc-gateway "$AGENT_NET" "cc-gateway$SUFFIX" 2>/dev/null || true
-  agents_to_gateway
-  key_check
+  # With the secrets helper, the helper runs the key check as root after this run. A secrets
+  # deploy changes no agent's gateway key: the full setup and setup-agent.sh give each agent one.
+  if [ "$HELPER" = false ]; then
+    agents_to_gateway
+    key_check
+  fi
   if [ "$UPGRADE_ONLY" = true ]; then what="Upgrade applied"; else what="Secrets applied"; fi
   echo "$what${TENANT:+ (stack: $TENANT)}: gateway and Slack notifier recreated."
   exit 0
@@ -566,19 +591,41 @@ if grep -qi microsoft /proc/version 2>/dev/null; then
   echo "  schtasks /create /tn \"WSL keep-alive\" /sc onstart /ru SYSTEM /rl highest /tr \"wsl.exe -d ${WSL_DISTRO_NAME:-Ubuntu} -u $(id -un) --exec sleep infinity\""
 fi
 
+# CircleChat's address and the app preview's address. Caddy and the preview listen on 127.0.0.1
+# only. With site.proxy "tailscale" (the default), tailscale serve gives each one an HTTPS address
+# on the tailnet: CircleChat on 443 for the cluster's own stack, or on site.port for a client or
+# demo stack, and the preview on site.preview_port. The setup never turns on Funnel, and stops when
+# Funnel serves either port, because Funnel opens the port to the internet.
+#   site_serve_check <https port>:<local port> ...   prints each rule that is missing or public
+site_serve_check() {
+  tailscale serve status --json 2>/dev/null | node -e '
+    const s = JSON.parse(require("fs").readFileSync(0, "utf8") || "{}");
+    for (const pair of process.argv.slice(1)) {
+      const [https, local] = pair.split(":");
+      const keys = Object.keys(s.Web ?? {}).filter((k) => k.endsWith(`:${https}`));
+      const proxy = keys.map((k) => s.Web[k]?.Handlers?.["/"]?.Proxy).find(Boolean);
+      if (proxy !== `http://127.0.0.1:${local}`) console.log(`HTTPS port ${https} does not pass to http://127.0.0.1:${local}`);
+      else if (keys.some((k) => s.AllowFunnel?.[k])) console.log(`Funnel serves HTTPS port ${https} to the internet. Turn Funnel off: tailscale funnel --https=${https} off`);
+    }
+  ' "$@"
+}
 if [ "$PROXY" = other ]; then
-  SERVE="your own HTTPS reverse proxy, on this computer"
   WHERE="https://<your address>"
-elif [ -z "$TENANT" ]; then
-  SERVE="tailscale serve --bg http://127.0.0.1:$PORT"
-  WHERE="https://$TS_HOST"
+  ADDRESS="Point an HTTPS reverse proxy on this computer at http://127.0.0.1:$PORT for CircleChat, and at http://127.0.0.1:$PREVIEW_PORT for the app preview."
 else
-  SERVE="tailscale serve --bg --https=$PORT http://127.0.0.1:$PORT"
-  WHERE="https://$TS_HOST:$PORT"
+  if [ -z "$TENANT" ]; then CC_HTTPS=443; WHERE="https://$TS_HOST"; else CC_HTTPS="$PORT"; WHERE="https://$TS_HOST:$PORT"; fi
+  if ! command -v tailscale >/dev/null; then
+    ADDRESS="Tailscale is not installed. Install Tailscale, then run: tailscale serve --bg --https=$CC_HTTPS http://127.0.0.1:$PORT && tailscale serve --bg --https=$PREVIEW_PORT http://127.0.0.1:$PREVIEW_PORT"
+  else
+    ts_serve "--https=$CC_HTTPS" "http://127.0.0.1:$PORT" && ts_serve "--https=$PREVIEW_PORT" "http://127.0.0.1:$PREVIEW_PORT" \
+      || { echo "tailscale serve failed, so the tailnet cannot reach CircleChat or the app preview. Run setup-host.sh in a terminal."; exit 1; }
+    problems="$(site_serve_check "$CC_HTTPS:$PORT" "$PREVIEW_PORT:$PREVIEW_PORT")"
+    [ -z "$problems" ] || { echo "$problems"; echo "Check tailscale serve status, then run setup-host.sh again."; exit 1; }
+    ADDRESS="tailscale serve, tailnet only: $WHERE passes to http://127.0.0.1:$PORT, and https://$TS_HOST:$PREVIEW_PORT to http://127.0.0.1:$PREVIEW_PORT for the app preview."
+  fi
 fi
 cat << MSG
 
-Done${TENANT:+ (stack: $TENANT)}. Point $WHERE at http://127.0.0.1:$PORT (Tailscale: $SERVE)
-and https://$TS_HOST:$PREVIEW_PORT at http://127.0.0.1:$PREVIEW_PORT for the app preview.
+Done${TENANT:+ (stack: $TENANT)}. $ADDRESS
 Wait ~30s for the api, then install agents in the UI and run ${TENANT:+TENANT=$TENANT }setup-agent.sh for each.
 MSG
