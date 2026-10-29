@@ -8,7 +8,7 @@ import { spawnSync } from "node:child_process";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
 
-function setup({ restic = "ok" } = {}) {
+function setup({ restic = "ok", system } = {}) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "backup-"));
   const bin = path.join(tmp, "bin"), cc = path.join(tmp, "cc"), log = path.join(tmp, "calls.log");
   fs.mkdirSync(bin); fs.mkdirSync(path.join(cc, "kit-out"), { recursive: true }); fs.mkdirSync(path.join(cc, "hermes-homes", ".hermes-alan"), { recursive: true });
@@ -28,6 +28,9 @@ case "$1" in
   snapshots) echo '[{"time":"2026-10-20T02:00:00Z"}]' ;;
 esac`);
   stub("curl", `cat >/dev/null; exit 0`);
+  stub("sudo", `exec "$@"`);
+  stub("chown", "");
+  if (system) stub("uname", `[ "$1" = -s ] || [ $# -eq 0 ] && { echo ${system}; exit 0; }; PATH=/usr/bin:/bin exec uname "$@"`);
   const env = { ...process.env, PATH: `${bin}:${process.env.PATH}`, CC_DIR: cc, OWNER_HOME: tmp, WS: path.join(tmp, "ws"), FORCE: "1" };
   fs.mkdirSync(env.WS);
   return { env, cc, log };
@@ -73,4 +76,16 @@ test("the restore test finds a key from the gateway's secrets file by its exact 
   assert.equal(run("backup.sh", env).status, 0);
   fs.writeFileSync(path.join(cc, "backup-saved", "notes.txt"), "plain-looking-provider-secret-1234\n");
   assert.match(run("restore-test.sh", env).stdout, /found a cloud key in the backup/);
+});
+
+test("on a Mac, the stack's owner owns the staging folder before a container writes into it", () => {
+  for (const [system, owned] of [["Darwin", true], ["Linux", false]]) {
+    const { env, cc, log } = setup({ system });
+    const b = run("backup.sh", env);
+    assert.equal(b.status, 0, b.stdout + b.stderr);
+    const calls = fs.readFileSync(log, "utf8").split("\n");
+    const chown = calls.indexOf(`chown -h -R ${os.userInfo().username} ${path.join(cc, "backup-staging")}`);
+    assert.equal(chown >= 0, owned, `${system}: ${calls.join("\n")}`);
+    if (owned) assert.ok(chown < calls.findIndex((c) => c.startsWith("docker run")), "the chown comes before the file store step");
+  }
 });

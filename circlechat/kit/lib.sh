@@ -11,7 +11,8 @@ sudo_sedi() { if sed --version >/dev/null 2>&1; then sudo sed -i "$@"; else sudo
 # VM, such as Colima's, and the VM reads the Mac's files as the owner, never as root. A file that
 # root owns with mode 600 cannot be mounted there. On Linux, Docker runs as root, and root keeps the
 # files. The modes stay the same. -h changes a symlink itself, never the file the symlink names.
-own_for_docker() { [ "$OS" = Darwin ] || return 0; sudo chown -h -R "$(id -un)" "$@"; }
+# A script that runs as root, such as backup.sh, sets DOCKER_OWNER to the stack's owner.
+own_for_docker() { [ "$OS" = Darwin ] || return 0; sudo chown -h -R "${DOCKER_OWNER:-$(id -un)}" "$@"; }
 
 # Read one value from site.json: site_get '.repos.app'
 site_get() { node -e '

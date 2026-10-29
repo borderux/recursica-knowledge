@@ -11,6 +11,7 @@
 set -euo pipefail
 : "${CC_DIR:?CC_DIR}" "${OWNER_HOME:?OWNER_HOME}"
 WS="${WS:-$OWNER_HOME/circlechat-workspace}"
+. "$(dirname "$0")/../kit/lib.sh"
 . "$CC_DIR/kit-out/tenant.env"
 [ -n "$DOCKER_CONTEXT" ] && export DOCKER_CONTEXT
 STACK="${TENANT:-border}"
@@ -28,8 +29,12 @@ export RESTIC_PASSWORD; RESTIC_PASSWORD="$(env_value RESTIC_PASSWORD)"
 export RESTIC_REPOSITORY="rclone:$BACKUP_REMOTE/$STACK"
 export RCLONE_CONFIG="${RCLONE_CONFIG:-$OWNER_HOME/.config/rclone/rclone.conf}"
 
+STEP="staging folder"
 STAGE="$CC_DIR/backup-staging"
 rm -rf "$STAGE"; mkdir -p "$STAGE"; chmod 700 "$STAGE"
+# The file store step writes into the staging folder from a container. On a Mac, the stack's owner
+# owns the folder, because Docker's VM reads the Mac's files as the owner. The mode stays 700.
+DOCKER_OWNER="$(ls -ld "$OWNER_HOME" | awk '{print $3}')" own_for_docker "$STAGE"
 # CircleChat's generated secrets: the file store (MinIO) encrypts its own settings with its root
 # password, and the session secret keeps people signed in. A restore needs the same values. The
 # backup is encrypted, like every other part.
