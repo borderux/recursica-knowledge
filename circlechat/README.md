@@ -288,6 +288,15 @@ The workflow passes every `MODEL_KEY_<NAME>` secret in the environment, with no 
 
 The allowlist holds GitHub, the npm and Python package registries, and the stack's other computers. The sites in `egress.allow` in site.json join the list. No cloud model provider is ever on the list. Agents and port jobs reach cloud models only through the model gateway. The config check refuses a cloud model provider in `egress.allow`.
 
+**The filter opens five ports and never a model server's port.** The five ports are:
+
+- 80 and 443, for websites
+- 7400, for the job runner
+- 8009, for Kev's model
+- `site.gateway_port`, 4000 by default, for the model gateway
+
+A model server's own API can delete or download a model, such as Ollama's API on port 11434. Only the model gateway reaches a model server. The gateway's LiteLLM container sits on the gateway's Docker network, which has a route out. LiteLLM reaches each model server directly, without the filter. The filter leaves out every port that site.json gives a model server, such as an mlx-lm server's port. The config check refuses a model server on one of the five ports.
+
 When the filter refuses a site:
 
 1. The agent gets an error page that names the filter and the rule. The agent uses an allowed site only when the allowed site is the genuine source of the same thing. The agent never reaches the blocked site another way.
