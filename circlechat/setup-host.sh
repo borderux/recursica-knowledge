@@ -181,16 +181,26 @@ fi
 # non-root user by default; the official image ran as root, so root keeps existing volumes writable.
 MINIO_IMAGE="$(pin_image cgr.dev/chainguard/minio:latest)"
 MC_IMAGE="$(pin_image cgr.dev/chainguard/minio-client:latest-dev)"
-cat > compose.storage.yml <<YAML
-# Written by setup-host.sh: the file store's images.
-services:
-  minio:
-    image: $MINIO_IMAGE
-    user: "0:0"
-  minio-setup:
-    image: $MC_IMAGE
-YAML
-CF="compose.yml:compose.agents.yml:compose.storage.yml"
+# CircleChat's own caddy, postgres and redis run at the digest in images.lock, like every other image
+# the kit starts. The tags come from CircleChat's compose.yml. The weekly image job moves each pin.
+CC_IMAGES="$(docker compose -f compose.yml config --format json 2>/dev/null | node -e '
+  let j = {}; try { j = JSON.parse(require("fs").readFileSync(0, "utf8")); } catch {}
+  for (const s of ["caddy", "postgres", "redis"]) {
+    const i = j.services?.[s]?.image;
+    if (i && !i.includes("@")) console.log(`${s} ${i}`);
+    else if (!i) console.error(`CircleChat\u0027s compose.yml names no image for ${s}, so ${s} runs at an unpinned version.`);
+  }
+')"
+rm -f compose.storage.yml
+{
+  echo "# Written by setup-host.sh: the pinned images of CircleChat's own services and the file store."
+  echo "services:"
+  while read -r svc tag; do
+    [ -n "$svc" ] && printf '  %s:\n    image: %s\n' "$svc" "$(pin_image "$tag")"
+  done <<<"$CC_IMAGES"
+  printf '  minio:\n    image: %s\n    user: "0:0"\n  minio-setup:\n    image: %s\n' "$MINIO_IMAGE" "$MC_IMAGE"
+} > compose.images.yml
+CF="compose.yml:compose.agents.yml:compose.images.yml"
 [ "$EGRESS" = on ] && CF="$CF:compose.egress.yml"
 [ "$MASK_PII" = on ] && CF="$CF:compose.privacy.yml"
 set_env COMPOSE_FILE "$CF"
@@ -273,16 +283,18 @@ NET="${COMPOSE_PROJECT_NAME}_default"
 
 start_egress() {
   [ "$EGRESS" = on ] || { docker rm -f "cc-egress$SUFFIX" >/dev/null 2>&1 || true; return 0; }
-  docker build -q -t recursica/egress "$HERE/egress" >/dev/null
+  local image; image="$(egress_image)"
   mkdir -p "$CC_DIR/egress-logs" && chmod 777 "$CC_DIR/egress-logs"
   docker rm -f "cc-egress$SUFFIX" >/dev/null 2>&1 || true
   docker run -d --name "cc-egress$SUFFIX" --restart unless-stopped --network "$NET" \
     --add-host host.docker.internal:host-gateway \
     -v "$KIT_OUT/egress":/etc/egress:ro -v "$CC_DIR/egress-logs":/var/log/egress \
-    recursica/egress >/dev/null
+    "$image" >/dev/null
   docker network connect --alias egress "$AGENT_NET" "cc-egress$SUFFIX"
   docker network connect --alias cc-gateway "$AGENT_NET" "cc-gateway$SUFFIX" 2>/dev/null || true
   echo "Outgoing filter running: agents reach only the sites in $KIT_OUT/egress/allow.txt."
+  # The job runner's filter on this computer, from setup-node.sh, moves to the same image.
+  refresh_egress "$image"
 }
 
 # The router's database role: it reads only the columns the router needs, and writes nothing

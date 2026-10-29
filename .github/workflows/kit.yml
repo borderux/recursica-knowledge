@@ -53,6 +53,10 @@ jobs:
             sed "s/@CANARY_PORTS@/2222 2121 8088/; s/@SPLASHTOP_PORT@/6783/" "circlechat/cluster/firewall/pf-$f.conf" > "/tmp/pf-$f.conf"
             sudo pfctl -a agentguard-ci -nf "/tmp/pf-$f.conf"
           done
+          # macOS's main rules with the loopback skip and the agentguard anchor.
+          bash circlechat/cluster/firewall/pf-main.sh < /etc/pf.conf > /tmp/pf-main.conf
+          grep -qx 'set skip on lo0' /tmp/pf-main.conf
+          sudo pfctl -nf /tmp/pf-main.conf
       - name: A client disk image is created, opened and closed
         run: |
           printf 'ci-test-key-0123456789abcdefgh' | bash circlechat/tenant/disk-image.sh create citest 1g

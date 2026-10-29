@@ -174,6 +174,8 @@ a command line. Each job sends the job's model requests to the control computer'
 the gateway key for the job's task. Porter gets that key from the gateway during a turn on the task. A job that runs out of memory ends as `out_of_memory` and is reported; the machine
 keeps running.
 
+**A job runner listens on `127.0.0.1` and the computer's Tailscale addresses, never on the office network.** `setup-node.sh` reads the Tailscale addresses with `tailscale ip`. Without Tailscale, the job runner listens on `127.0.0.1` only, and other computers cannot reach the job runner. Porter reaches the control computer's job runner at the control computer's `tailnet_address`. On Linux, `host.docker.internal` is Docker's bridge address, where no job runner listens.
+
 ## Clients: one isolated stack each
 
 **Give each client, and each demo, a separate stack.** A stack is one client's CircleChat, agents, secrets, Slack channel, model gateway and job runner. A client's stack shares no data with the cluster's own stack or another client's stack. Several stacks can run on one computer. A demo stack (`site.kind` `"demo"`) follows the same rules as a client stack, including the recorded permission for cloud models.
@@ -345,6 +347,8 @@ When the filter refuses a site:
 3. The stack's Slack channel gets one request with two buttons. "Allow once (15 min)" needs an authenticator code and opens the site for that stack for 15 minutes. "Deny" keeps the site closed.
 4. After a decision, tell the agent on the task, so the agent retries or stops waiting.
 
+**The filter's image, `recursica/egress:<hash>`, is built once for each version of `circlechat/egress`.** The tag carries a hash of the folder's files, so `setup-host.sh` and `setup-node.sh` use the same image. After a build, each script recreates each filter container that runs another image, with the container's mounts and networks. The agents' filter, `cc-egress`, and the port jobs' filter, `cc-jobs-egress`, then run the same image.
+
 A refused site in a port job gets a Slack alert with no buttons, because a job cannot wait. To allow a site for good, add the site to `egress.allow` in the stack's site.json through a pull request. Then rerun `setup-host.sh`. Set `"egress": { "enabled": false }` only for a stack with no agents.
 
 ## Privacy rules for agents
@@ -486,11 +490,28 @@ A test restore runs on the first day of January, April, July and October. The te
 
 `~/recursica-knowledge/circlechat/cluster/install-cluster.sh <computer>` installs the security services on one computer. Run the script on each computer, after `setup-host.sh` or `setup-node.sh`. The script installs five parts:
 
-- **Firewall rules:** each new incoming connection is refused, except from the computer itself, Tailscale, Docker's internal networks and allowed sources. The rules load at every start-up. On Windows, run `circlechat/cluster/windows/install-windows-guard.ps1` once in an Administrator PowerShell.
+- **Firewall rules:** each new incoming connection is refused, except from the computer itself, Tailscale, Docker's internal networks and allowed sources. The rules load at every start-up. On Windows, run `circlechat/cluster/windows/install-windows-guard.ps1` once in an Administrator PowerShell, after Tailscale is up.
 - **Decoys:** OpenCanary runs a fake SSH login, FTP server and web page on ports 2222, 2121 and 8088. Nobody legitimate touches a decoy, so any touch starts a lockdown.
 - **The cluster agent:** each minute, the agent checks incoming connections, the decoys and the other computers' stacks. The agent also runs each scheduled reboot.
 - **The update job,** hourly: one job for every kind of update.
 - **The Slack app,** on the control computer only.
+
+### Firewall rules on a Mac and on Windows
+
+**On a Mac, pf never filters loopback (`lo0`).** `install-cluster.sh` adds `set skip on lo0` to the top of `/etc/pf.conf`. A copy of the old file stays in `/etc/pf.conf.agentguard-backup`. pf takes an option such as `set skip` only in the main rules, never in the `agentguard` anchor. The reasons for the choice:
+
+- pf keeps a record of each connection it lets through. A connection opened before the rules load has no record. pf then misses the connection's opening settings and drops the connection's next packets. Colima's ssh link from the Mac into the VM is one such connection.
+- Only programs on the Mac itself reach loopback. No rule in the anchor needs loopback, so skipping loopback opens nothing to other computers.
+
+**A Tailscale address passes only on Tailscale's interface.** The office network can send a packet that claims a Tailscale address, `100.64.0.0/10` or `fd7a:115c:a1e0::/48`. A rule that checks only the address lets that packet in. Each rule names Tailscale's interface too:
+
+| Computer | Tailscale's interface                                | Rule                                                                                                 |
+| -------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| A Mac    | A `utun` interface                                   | `pass in quick on $tailscale_if`, for `utun0` to `utun31`                                            |
+| Windows  | The `Tailscale` adapter                              | "AgentGuard: Tailscale peers" names the `Tailscale` adapter                                          |
+| WSL      | No adapter: a Hyper-V firewall rule takes no adapter | "AgentGuard: Tailscale peers to WSL" takes the computer's own Tailscale addresses as local addresses |
+
+macOS has no interface groups, and Tailscale takes the first free `utun` number, so the rule lists 32 `utun` numbers. On Windows, Windows accepts a packet for a Tailscale address only on the Tailscale adapter. Rerun `install-windows-guard.ps1` after the computer's Tailscale address changes. The Linux rules are unchanged.
 
 ### Remote access
 
@@ -550,7 +571,7 @@ One job, `cluster-updater`, runs each hour on each computer, with one rule:
 
 Each hour, the update job compares each copy with the kit. For a copy that differs, the job reruns `install-secrets-helper.sh` for the runner's account, or copies `disk-helper.sh` again.
 
-Operating system packages are checked each hour, and each stack's container images once a day. Every image runs at an exact version from the stack's `images.lock`, and a failed health check moves the stack back to the old versions. macOS installs its own system updates overnight, and Windows waits 7 days before installing a quality update. A stack without `upgrade.auto` moves `@recursica/mcp` to a new version after 7 days. The version lives in `.recursica-mcp-version` in the shared workspace, and each agent turn reads it at start.
+Operating system packages are checked each hour, and each stack's container images once a day. Every image runs at an exact version from the stack's `images.lock`. A failed health check moves the stack back to the old versions. The pinned images include CircleChat's own caddy, postgres and redis. `setup-host.sh` reads each one's tag from CircleChat's `compose.yml`, and pins the tag by digest in `compose.images.yml`. macOS installs its own system updates overnight, and Windows waits 7 days before installing a quality update. A stack without `upgrade.auto` moves `@recursica/mcp` to a new version after 7 days. The version lives in `.recursica-mcp-version` in the shared workspace, and each agent turn reads it at start.
 
 ### Uptime
 

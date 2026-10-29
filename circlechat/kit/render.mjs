@@ -576,7 +576,10 @@ export function render(site) {
   const jobNodes = nodes
     .filter((n) => n.jobs)
     .sort((a, b) => (a.jobs.priority ?? 99) - (b.jobs.priority ?? 99))
-    .map((n) => url(n, n.jobs.port));
+    // jobd listens on loopback and the Tailscale address only (setup-node.sh). Porter reaches the
+    // control computer's jobd at the control computer's Tailscale address: host.docker.internal is
+    // Docker's bridge address on Linux.
+    .map((n) => url(n.control && n.tailnet_address ? { ...n, address: n.tailnet_address } : n, n.jobs.port));
   const p = site.porter;
   const porterEnv = p ? `PORTER_OWNER=${p.owner ?? ""}\nJOBD_ALLOWED_REPOS=${p.targets.join(",")}\n` : "";
   const watches = p ? [{ repo: p.watch, hook: "PORTER" }] : [];

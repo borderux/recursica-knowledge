@@ -146,7 +146,7 @@ test("catches the mistakes that would break a deployment", () => {
 
 test("job runners are ordered by priority, and Porter gets its allowlist", () => {
   const r = render(example);
-  assert.deepEqual(r.jobNodes, ["http://machine-2.example.ts.net:7400", "http://host.docker.internal:7400"]);
+  assert.deepEqual(r.jobNodes, ["http://machine-2.example.ts.net:7400", "http://100.64.0.1:7400"], "the control computer's job runner over Tailscale");
   assert.match(r.porterEnv, /JOBD_ALLOWED_REPOS=https:\/\/github.com\/borderux\/recursica-adapter-mui-v7,/);
   assert.deepEqual(r.watches, [{ repo: "borderux/recursica-adapter-mantine-v8", hook: "PORTER" }]);
   assert.equal(r.services["machine-2"].jobs.slots, 3);
