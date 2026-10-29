@@ -52,3 +52,14 @@ test("reads only new decoy touches, and skips the decoys' own start-up lines", (
   fs.appendFileSync(log, JSON.stringify({ logtype: 2000, src_host: "10.0.0.10", dst_port: 2121 }) + "\n");
   assert.equal(readCanary(log, pos)[0].src_host, "10.0.0.10");
 });
+
+test("each minute runs the network check, and a failed check stops nothing else", async () => {
+  const stateDir = fs.mkdtempSync(path.join(os.tmpdir(), "agent-"));
+  let ticks = 0;
+  const guard = { state: { status: "normal" }, tick: async () => {} };
+  const network = { tick: async () => { ticks++; throw new Error("no route"); } };
+  const agent = makeAgent({ env: { COMPUTER: "machine-1", KIT: "/nonexistent" }, platform: {}, guard, post: async () => {}, stateDir, network });
+  await agent.minute();
+  await agent.minute();
+  assert.equal(ticks, 2);
+});

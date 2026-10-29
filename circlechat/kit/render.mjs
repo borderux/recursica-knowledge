@@ -31,6 +31,7 @@
 // writes such a site.json from the cluster's. A chosen computer's limits (nodes[].limits) make it
 // act like a smaller computer, and placeStack() leaves out each model that does not fit.
 import fs from "node:fs";
+import net from "node:net";
 import path from "node:path";
 
 const SLUG = /^[a-z0-9][a-z0-9-]*$/;
@@ -477,6 +478,8 @@ export function validate(site, { cluster } = {}) {
     names.add(n.name);
     if (!n.address) errs.push(`node ${n.name}: address is required`);
     if (!["linux", "macos", "windows"].includes(n.os)) errs.push(`node ${n.name}: os must be linux, macos or windows`);
+    // The router the computer's default route must lead to (cluster/network.mjs).
+    if (n.router !== undefined && !net.isIP(String(n.router))) errs.push(`node ${n.name}: router must be an IP address, such as 192.0.2.1`);
     if (n.slack_icon !== undefined && !/^:[a-z0-9_+'-]+:$/.test(n.slack_icon)) errs.push(`node ${n.name}: slack_icon must be one emoji, such as :desktop_computer:`);
     const ids = new Set();
     for (const m of n.models ?? []) {

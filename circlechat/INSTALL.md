@@ -37,6 +37,7 @@ Copy `circlechat/site.example.json` to `~/circlechat/site.json`, and fill in eac
 | `site.public_host`                                    | The address people use for CircleChat                                                                                                            |
 | `site.port`, `site.preview_port`, `site.gateway_port` | CircleChat's and the app preview's ports on the computer, and the gateway's port for port jobs on other computers                                |
 | `site.tenant`, `site.kind`, `site.docker_context`     | One stack per client on a shared computer; see "Clients" in `circlechat/README.md`                                                               |
+| `nodes[].router`                                      | The router each computer's default route leads to; the network check posts in Slack when the router differs                                      |
 | `nodes[].slack_icon`                                  | An optional emoji for each computer, shown on the computer's Slack messages, such as `:desktop_computer:`                                        |
 | `site.timezone`                                       | The cluster's time zone for reboot times in Slack, such as `Europe/Berlin`; each computer's own time zone when unset                             |
 | `site.stack_name`                                     | The name of the stack with no `site.tenant`, `cluster` when unset: the stack's GitHub environment and backups                                    |

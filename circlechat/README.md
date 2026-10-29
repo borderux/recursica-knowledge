@@ -666,6 +666,21 @@ Operating system packages are checked each hour, and each stack's container imag
 
 Each computer asks the other computers for the health of their stacks every minute. A computer silent for 3 minutes, or a stack that stops answering, gets one alert in each affected stack's channel.
 
+**Each computer checks the computer's own network every 5 minutes.** The check posts in the cluster's channel, `SLACK_CHANNEL_ID`:
+
+| Check              | Posts when                                                                                       |
+| ------------------ | ------------------------------------------------------------------------------------------------ |
+| The router         | The computer's default route leads to a router other than `router` for the computer in site.json |
+| github.com         | github.com resolves to an address outside the `web` addresses that `api.github.com/meta` lists   |
+| The office address | The computer's address on the office network changes, and once at the first check                |
+
+- A wrong router or a wrong github.com address posts once when the problem starts. A second post says when the problem ends. Another router can read and change the computer's traffic outside Tailscale. A changed name lookup can send the computer's GitHub traffic to another server.
+- The check keeps the last list of GitHub's addresses, and fetches a new list once a day. A changed name lookup that also breaks the fetch is still checked.
+- On a Mac, FileVault unlocks over SSH at the office address after a restart, before Tailscale starts. The office address post gives the address to use.
+- The office address is the computer's address on the default route. In WSL, the check reads the router and the office address from Windows.
+
+Set `router` for each computer in site.json's `nodes`, such as `"router": "192.0.2.1"`, then rerun `install-cluster.sh` on the computer. Without `router`, the check skips the router.
+
 ## Offboarding a client
 
 1. **Open the client's stack** with the Unlock stack workflow.
