@@ -354,7 +354,7 @@ The config check refuses a client or demo stack in these cases:
 - `site.computers` is `"cluster"`, and the stack leaves out a computer of the cluster, or names another control computer.
 - The stack uses a port of the cluster's own stack.
 
-The config check also refuses a client stack that sets `data.kev_disagreements_branch`. Review data from a client's code stays in the client's stack. With no recorded permission in `site.cloud_models`, the config check also refuses a `model_keys` block, every cloud route and Porter on a client or demo stack. The secrets helper refuses to deploy a cloud key to the stack.
+The config check also refuses a client stack that sets `data.repo`. Review data from a client's code stays in the client's stack. With no recorded permission in `site.cloud_models`, the config check also refuses a `model_keys` block, every cloud route and Porter on a client or demo stack. The secrets helper refuses to deploy a cloud key to the stack.
 
 A stack with no `site.tenant` keeps the names a single install uses today. An existing install changes nothing.
 
@@ -430,6 +430,7 @@ The node secrets file is `~/.recursica-node.env`, or `~/tenants/<client>/node.en
 | `<HANDLE>_GITHUB_PAT`, such as `ALAN_GITHUB_PAT`           | The `.env` in the agent's Hermes home                     | The agent, at the start of each turn                                       |
 | `KEV_API_KEY`                                              | The node secrets file                                     | Kev's model                                                                |
 | `PORTER_GITHUB_PAT`, `PORTER_GIT_NAME`, `PORTER_GIT_EMAIL` | The node secrets file                                     | The port jobs                                                              |
+| `KEV_DATA_GITHUB_PAT`                                      | `kev-data.env` on the control computer                    | The Kev data jobs, and nothing else. See "Kev's review data"               |
 
 The workflow passes every `MODEL_KEY_<NAME>` secret in the environment, with no list to keep. The helper still accepts `ANTHROPIC_API_KEY` as the older name of `MODEL_KEY_DEFAULT`. The helper never writes a cloud key to `.env` or to a node secrets file. To deploy a GitHub token for a new agent, add the agent's `<HANDLE>_GITHUB_PAT` line to the workflow's list of secrets.
 
@@ -746,9 +747,30 @@ progress 12 h with no activity. It reads the database, so it misses nothing acro
 ## Privacy
 
 `site.example.json` is the only deployment-shaped file here, and it holds placeholders.
-Don't commit a real `site.json`, an `.env`, a machine name, an address or a key. Kev's
-disagreement notes can be pushed to a branch (`data.kev_disagreements_branch`); leave it empty when
-the application's code is confidential, since that branch is as public as this repository.
+Don't commit a real `site.json`, an `.env`, a machine name, an address or a key.
+
+### Kev's review data
+
+Barb writes Kev disagreement notes to `reviews/kev-disagreements.md` in the workspace. The notes name rules and file paths, and can quote the application's code. The notes never go to this repo or to any other public repo. A person reviews each change before Kev trains on it.
+
+With `data.repo` in `site.json`, such as `your-org/recursica-kev-data`, the setup installs two jobs on the control computer:
+
+| Job              | When       | What it does                                                                                                                                                                                                                        |
+| ---------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `kev-data-push`  | Each hour  | Pushes new notes to a new `kev-notes/<date>-<time>` branch of the repo, and opens a pull request into `main`. The new pull request holds every note, and it closes the job's older open pull requests. The job never pushes `main`. |
+| `kev-notes-pull` | Each night | The first step of Kev's training. It writes the notes on the repo's `main` branch to `$CC_DIR/kev-reviewed/kev-disagreements.md`. It reads no other branch, so notes that wait for review never reach training.                     |
+
+Without `data.repo`, neither job runs. An earlier setting, `data.kev_disagreements_branch`, pushed the notes to a branch of this public repo. The config check now refuses it.
+
+**Before each push, the job checks the repo's visibility through GitHub's API.** The job refuses a public or internal repo, and the knowledge repo under any name. The nightly job makes the same check before each read. The config check also refuses a `data.repo` that names the knowledge repo, and a client stack that sets `data.repo`.
+
+To turn on the jobs:
+
+1. Make a private repo with a first commit on `main`, such as a README.
+2. Make a fine-grained GitHub token for that repo only, with read and write access to contents and pull requests. Store the token as `KEV_DATA_GITHUB_PAT` in the stack's GitHub environment, and deploy the secrets (see "Secrets in GitHub").
+3. Set `data.repo` in `site.json`, and rerun `setup-host.sh`.
+
+The secrets helper writes the token to `$CC_DIR/kev-data.env` only, with mode 600. No agent, container or other job reads that file. The jobs give the token to git in the environment, never on a command line or in the clone's settings.
 
 ## The agents
 

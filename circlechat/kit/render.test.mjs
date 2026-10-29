@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
 import { clusterStackName, githubEnvironment, keySecret, ollamaService, placeStack, render, stackName, validate } from "./render.mjs";
+import { repoOf } from "./kev-data.mjs";
 
 const example = JSON.parse(fs.readFileSync(new URL("../site.example.json", import.meta.url), "utf8"));
 const clone = () => structuredClone(example);
@@ -188,11 +189,21 @@ test("a tenant gets its own names and ports", () => {
 test("a client stack must have a tenant, its own Docker VM, and no review-data push", () => {
   const s = clone();
   s.site.kind = "client";
-  s.data = { kev_disagreements_branch: "data/kev" };
+  s.data = { repo: "acme/kev-data" };
   const errs = validate(s).join("\n");
   assert.match(errs, /client stack needs site.tenant/);
   assert.match(errs, /client stack needs site.docker_context/);
-  assert.match(errs, /cannot set data.kev_disagreements_branch/);
+  assert.match(errs, /client stack cannot set data.repo/);
+});
+
+test("Kev's review data goes to a repo named owner/name, never the knowledge repo, and the old branch setting is refused", () => {
+  const check = (data) => { const s = clone(); s.data = data; return validate(s).join("\n"); };
+  assert.doesNotMatch(check({ repo: "acme/recursica-kev-data" }), /data\./);
+  assert.doesNotMatch(check({ repo: "" }), /data\./);
+  assert.match(check({ repo: "https://github.com/acme/kev-data" }), /data.repo must be owner\/name/);
+  const kb = repoOf(clone().repos.knowledge);
+  assert.match(check({ repo: kb.toUpperCase() }), /data.repo cannot be the knowledge repo/);
+  assert.match(check({ kev_disagreements_branch: "data/kev" }), /data.kev_disagreements_branch is gone/);
 });
 
 test("a stack's three ports must differ, and the tenant name is a slug", () => {

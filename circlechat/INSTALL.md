@@ -56,7 +56,7 @@ Copy `circlechat/site.example.json` to `~/circlechat/site.json`, and fill in eac
 | `agents`                                              | Each agent's routes, or one server and model, and cloud switch                                                                                   |
 | `porter`                                              | Porter's golden adapter and target adapters, only when the client ports adapters                                                                 |
 | `notify`                                              | Slack alerts for task changes                                                                                                                    |
-| `data`                                                | Kev's disagreement log; leave out for a client                                                                                                   |
+| `data`                                                | `repo`: a private repo for Kev's review data (README, "Kev's review data"); leave out for a client                                               |
 | `backup`                                              | The rclone remote and the time of the nightly backup                                                                                             |
 | `security`                                            | `security.evidence_recipient`: the age public key for lockdown evidence                                                                          |
 | `egress`                                              | The outgoing filter: `egress.allow` lists extra sites the agents may reach                                                                       |
