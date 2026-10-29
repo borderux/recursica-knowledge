@@ -36,7 +36,7 @@ function sandbox(agents) {
   fs.chmodSync(path.join(outside, "target.txt"), 0o600);
   const bin = path.join(root, "bin");
   fs.mkdirSync(bin);
-  const env = { ...process.env, HOME: home, OWNER: me, OWNER_HOME: home, NO_PULL: "1", PATH: `${bin}:${process.env.PATH}` };
+  const env = { ...process.env, HOME: home, OWNER: me, OWNER_HOME: home, PATH: `${bin}:${process.env.PATH}` };
   for (const k of ["CC_DIR", "WS", "TENANT", "SITE"]) delete env[k];
   const run = (script, ...args) => spawnSync("bash", [path.join(kit, "circlechat", script), ...args], { env, encoding: "utf8", cwd: home });
   const h = (a, f = "") => path.join(cc, `hermes-homes/.hermes-${a}`, f);
@@ -147,4 +147,65 @@ test("setup-agent.sh replaces a symlinked backup, and its chmod leaves the file 
   assert.match(cfg, /^ {2}context_length: 131072$/m);
   assert.match(cfg, /^auxiliary:\n {2}compression:\n {4}context_length: 131072$/m);
   assert.equal(fs.statSync(s.h("loki", "config.yaml")).mode & 0o777, 0o777);
+});
+
+test("sync-skills.sh never runs git, and the agents' checkouts in the workspace stay as the agents left them", () => {
+  const s = sandbox(["alan"]);
+  const log = path.join(s.root, "git.log");
+  fs.writeFileSync(path.join(s.bin, "git"), `#!/usr/bin/env bash\necho "git $*" >> "${log}"\nexit 0\n`, { mode: 0o755 });
+  fs.mkdirSync(path.join(s.ws, "recursica-knowledge/.git"), { recursive: true });
+  fs.mkdirSync(path.join(s.ws, "kb-proposals/.git"), { recursive: true });
+  const r = s.run("sync-skills.sh");
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.ok(!fs.existsSync(log), "no git command ran");
+  assert.equal(fs.readFileSync(path.join(s.ws, "recursica-knowledge/skills/components/recursica-skill-button/SKILL.md"), "utf8"), "changed by an agent\n");
+});
+
+// Every git command in the kit's scripts, outside the tests: each one runs in the kit checkout or
+// in CircleChat's own folder, or clones a missing checkout once. None runs in the workspace.
+test("no kit script runs git in the workspace", () => {
+  const files = fs.readdirSync(here, { recursive: true }).filter((f) => /\.(sh|mjs)$/.test(f) && !/\.test\.mjs$/.test(f) && !f.includes("node_modules"));
+  const allowed = [
+    /^clone_once\(\) \{ \[ -e "\$2" \] \|\| \[ -L "\$2" \] \|\| git clone "\$\{@:3\}" "\$1" "\$2"; \}$/,   // setup-host.sh: a missing checkout, once
+    /execFileSync\("git", \["-C", ccDir, \.\.\.a\]/,                                                        // kit/upgrade.mjs: CircleChat's own folder
+    /execFileSync\("git", \["-C", kit, \.\.\.a\]/,                                                          // kit/upgrade.mjs: the kit checkout
+  ];
+  const offenders = [];
+  for (const f of files) {
+    for (const line of fs.readFileSync(path.join(here, f), "utf8").split("\n")) {
+      const code = line.replace(/^\s*(#|\/\/).*$/, "").trim();
+      if (!/(^|[\s;|&(`"'])git\s|"git"/.test(code)) continue;
+      if (!allowed.some((re) => re.test(code))) offenders.push(`${f}: ${code}`);
+    }
+  }
+  assert.deepEqual(offenders.filter((o) => /WS|workspace|kb-proposals|recursica-knowledge|\bws\b|\$K\b/.test(o)), [], "a git command names the workspace");
+  assert.ok(!offenders.some((o) => o.startsWith("kit/upgrade.mjs")), offenders.join("\n"));
+});
+
+test("the Kev data push never publishes a file a symlink in the workspace names", () => {
+  const s = sandbox([]);
+  const secret = path.join(s.outside, "target.txt");
+  s.put(path.join(s.cc, "site.json"), JSON.stringify({ repos: { knowledge: "https://example.com/kb.git" }, data: { kev_disagreements_branch: "data/kev" } }));
+  const log = path.join(s.root, "git.log");
+  // A stand-in for git: the clone makes the folder the notes go to, and every call is recorded.
+  fs.writeFileSync(path.join(s.bin, "git"), `#!/usr/bin/env bash\necho "git $*" >> "${log}"\n[ "$1" = clone ] && mkdir -p "\${@: -1}/.git" "\${@: -1}/tools/kev/evals"\n[ "$1" = ls-remote ] && exit 2\n[ "$1 $2" = "diff --cached" ] && exit 1\nexit 0\n`, { mode: 0o755 });
+  const push = () => spawnSync("bash", [path.join(s.kit, "circlechat/kit/push-data.sh")], { env: { ...s.env, CC_DIR: s.cc, WS: s.ws }, encoding: "utf8", cwd: s.home });
+  link(secret, path.join(s.ws, "reviews/kev-disagreements.md"));
+  const r = push();
+  assert.equal(r.status, 1, r.stdout + r.stderr);
+  assert.match(r.stderr, /Refused: .*kev-disagreements\.md is a symlink/);
+  assert.ok(!fs.existsSync(log) || !/git (add|commit|push)/.test(fs.readFileSync(log, "utf8")), "nothing was added, committed or pushed");
+  // A symlinked reviews folder: refused the same way.
+  fs.rmSync(path.join(s.ws, "reviews"), { recursive: true });
+  link(path.join(s.outside, "dir"), path.join(s.ws, "reviews"));
+  fs.writeFileSync(path.join(s.outside, "dir", "kev-disagreements.md"), "outside notes\n");
+  assert.equal(push().status, 1);
+  assert.ok(!fs.existsSync(log) || !/git (add|commit|push)/.test(fs.readFileSync(log, "utf8")));
+  // Real notes: published as written.
+  fs.rmSync(path.join(s.ws, "reviews"));
+  s.put(path.join(s.ws, "reviews/kev-disagreements.md"), "Barb's notes\n");
+  const ok = push();
+  assert.equal(ok.status, 0, ok.stdout + ok.stderr);
+  assert.equal(fs.readFileSync(path.join(s.cc, "kev-data/tools/kev/evals/kev-disagreements.md"), "utf8"), "Barb's notes\n");
+  assert.match(fs.readFileSync(log, "utf8"), /git push -q -u origin data\/kev/);
 });

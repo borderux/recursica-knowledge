@@ -1,10 +1,11 @@
 // Upgrade the stack to each new release of the knowledge repo (tags @recursica/knowledge@X.Y.Z).
 // Runs hourly on the control computer when site.json sets upgrade.auto, as the account that owns
-// the stack, instead of the hourly pull of main.
+// the stack.
 //
-// Two checkouts move to each release: the kit checkout this script runs from, which root runs and
-// which sits outside the agents' workspace, and the workspace's checkout, which the agents read.
-// The setup runs from the kit checkout.
+// The kit checkout this script runs from moves to each release: root runs that checkout, which
+// sits outside the agents' workspace. The setup runs from the kit checkout, and the agents' skills
+// and personas come from it. The script never runs git in the workspace's checkouts: agents can
+// change them, and the agents update their own checkouts from inside their containers.
 //
 //   - A release with the same first number installs on its own: check out the release, rerun the
 //     setup, sync the agents, and check the stack. On a failure, the stack goes back to the
@@ -19,6 +20,7 @@ import os from "node:os";
 import path from "node:path";
 import { kitProblem } from "../cluster/kit-check.mjs";
 import { stackSlack } from "./slack.mjs";
+import { readFile as readInPlace, writeFile as writeInPlace } from "./safe-files.mjs";
 
 const TAG = /^@recursica\/knowledge@(\d+)\.(\d+)\.(\d+)$/;
 export const parse = (t) => { const m = String(t).match(TAG); return m ? m.slice(1).map(Number) : null; };
@@ -77,14 +79,15 @@ export function decideMcp(current, latest, state = {}) {
 }
 
 async function updateMcp(ws, stateFile, state, say) {
+  // Agents can change the workspace: the file is read and written without following a symlink.
   const file = path.join(ws, ".recursica-mcp-version");
-  if (!fs.existsSync(file)) return;
-  const current = fs.readFileSync(file, "utf8").trim();
+  const current = readInPlace(ws, file)?.trim();
+  if (!current) return;
   const r = await fetch("https://registry.npmjs.org/@recursica/mcp/latest", { signal: AbortSignal.timeout(20_000) }).catch(() => null);
   if (!r?.ok) return;
   const latest = (await r.json()).version;
   const d = decideMcp(current, latest, state);
-  if (d.action === "upgrade") { fs.writeFileSync(file, `${d.version}\n`); console.log(`@recursica/mcp ${current} -> ${d.version}`); }
+  if (d.action === "upgrade") { writeInPlace(ws, file, `${d.version}\n`); console.log(`@recursica/mcp ${current} -> ${d.version}`); }
   if (d.action === "ask") {
     const here = path.dirname(new URL(import.meta.url).pathname);
     const post = spawnSync(process.execPath, [path.join(here, "../cluster/post.mjs"), "upgrade", `:arrow_up: @recursica/mcp ${latest} is a new major version (the agents run ${current}).`, process.env.COMPUTER ?? "", d.tag], { encoding: "utf8" });
@@ -102,7 +105,7 @@ async function updateMcp(ws, stateFile, state, say) {
 export function setupRunner({ kit, rootSteps, password = "", record = () => {}, run = spawnSync }) {
   return () => {
     record();
-    const env = { ...process.env, NO_PULL: "1" };
+    const env = { ...process.env };
     if (!rootSteps) {
       const opts = { env, stdio: "inherit" };
       const a = run("bash", [path.join(kit, "circlechat/setup-host.sh"), "--upgrade"], opts);
@@ -118,13 +121,13 @@ export function setupRunner({ kit, rootSteps, password = "", record = () => {}, 
 const rootPassword = process.env.KIT_ROOT_STEPS && import.meta.url === `file://${process.argv[1]}` ? (() => { try { return fs.readFileSync(0, "utf8").split("\n")[0].trim(); } catch { return ""; } })() : "";
 
 async function main() {
-  const ws = process.env.WS, ccDir = process.env.CC_DIR, k = path.join(ws, "recursica-knowledge");
+  const ws = process.env.WS, ccDir = process.env.CC_DIR;
   const here = path.dirname(new URL(import.meta.url).pathname);
   const kit = path.resolve(here, "../..");
   const stateFile = path.join(ccDir, "kit-out/upgrade-state.json");
   let state = {}; try { state = JSON.parse(fs.readFileSync(stateFile, "utf8")); } catch {}
-  const gitIn = (repo, ...a) => execFileSync("git", ["-C", repo, ...a], { encoding: "utf8" }).trim();
-  const git = (...a) => gitIn(kit, ...a);
+  // git runs only in the kit checkout, never in the workspace.
+  const git = (...a) => execFileSync("git", ["-C", kit, ...a], { encoding: "utf8" }).trim();
   const post = stackSlack(ccDir);
   const say = (text) => { post(text).catch(() => {}); };
   // A kit checkout that the setup would refuse stops the upgrade. Slack hears each new reason once.
@@ -140,7 +143,6 @@ async function main() {
   try { pickUpCircleChat(ccDir, say, state, saveState); } catch (e) { say(`:x: CircleChat update failed to start: ${e.message}`); }
   await updateMcp(ws, stateFile, state, say).catch((e) => console.error(`@recursica/mcp check: ${e.message}`));
   git("fetch", "--tags", "--quiet");
-  gitIn(k, "fetch", "--tags", "--quiet");
   const current = JSON.parse(fs.readFileSync(path.join(kit, "package.json"), "utf8")).version;
   const tags = git("tag", "--list", "@recursica/knowledge@*").split("\n").filter(Boolean);
   const wanted = process.argv[2];
@@ -151,10 +153,9 @@ async function main() {
     return;
   }
   if (d.action !== "upgrade") return;
-  const before = git("rev-parse", "HEAD"), beforeWs = gitIn(k, "rev-parse", "HEAD");
+  const before = git("rev-parse", "HEAD");
   const run = setupRunner({ kit, rootSteps: Boolean(process.env.KIT_ROOT_STEPS), password: rootPassword, record: () => { state.setupRanAt = Date.now(); saveState(); } });
   git("checkout", "--quiet", d.tag);
-  gitIn(k, "checkout", "--quiet", d.tag);
   if (run()) {
     // A release that changes the services or timers needs the full setup, which asks for sudo.
     const changed = git("diff", "--name-only", before, "HEAD", "--", "circlechat/kit/lib.sh", "circlechat/setup-node.sh", "circlechat/cluster/install-cluster.sh");
@@ -166,7 +167,6 @@ async function main() {
     return;
   }
   git("checkout", "--quiet", before);
-  gitIn(k, "checkout", "--quiet", beforeWs);
   run();
   state.failed = { ...(state.failed ?? {}), [d.tag]: Date.now() }; saveState();
   say(`:x: The upgrade of the knowledge repo to ${d.tag.split("@").pop()} failed on the setup or the checks. The stack is back on ${current}, and skips ${d.tag.split("@").pop()} until a newer release appears.`);

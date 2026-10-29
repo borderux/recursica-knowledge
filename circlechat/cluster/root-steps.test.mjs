@@ -81,7 +81,7 @@ function fakeRun(answers = {}) {
 }
 const env = (home) => ({ OWNER: "owner", OWNER_HOME: home, KIT: "/kit", PATH: "/usr/bin:/bin", COMPUTER: "machine-1" });
 
-test("after an upgrade, the owner syncs the skills without a pull, then root runs the key check on the owner's database dump", () => {
+test("after an upgrade, the owner syncs the skills, then root runs the key check on the owner's database dump", () => {
   const { home, ccDir } = stack();
   fs.writeFileSync(path.join(ccDir, "kit-out/tenant.env"), "DOCKER_CONTEXT=colima-acme\n");
   const f = fakeRun({ "pg_dump": { status: 0, stdout: "the dump" } });
@@ -90,7 +90,7 @@ test("after an upgrade, the owner syncs the skills without a pull, then root run
   // The sync runs as the owner, never as root: agents can change the workspace and their homes.
   assert.match(sync.line, /^sudo -u owner -H env /);
   assert.ok(sync.line.endsWith(" bash /kit/circlechat/sync-skills.sh"), sync.line);
-  for (const v of ["NO_PULL=1", `CC_DIR=${ccDir}`, `WS=${path.join(home, "circlechat-workspace")}`, "OWNER=owner"]) assert.ok(sync.args.includes(v), v);
+  for (const v of [`CC_DIR=${ccDir}`, `WS=${path.join(home, "circlechat-workspace")}`, "OWNER=owner"]) assert.ok(sync.args.includes(v), v);
   assert.ok(!f.calls.some((c) => /chown/.test(c.line)), "root changes no owner in the workspace");
   assert.match(dump.line, /^sudo -u owner -H env DOCKER_CONTEXT=colima-acme PATH=\/usr\/bin:\/bin bash -c /);
   assert.equal(check.cmd, process.execPath);

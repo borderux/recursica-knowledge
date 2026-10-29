@@ -76,8 +76,7 @@ export function afterUpgrade({ env, ccDir, run = spawnSync }) {
   const kit = path.join(env.KIT, "circlechat");
   const problems = [];
   const vars = { CC_DIR: ccDir, WS: ws, SITE: path.join(ccDir, "site.json"), OWNER: env.OWNER, OWNER_HOME: env.OWNER_HOME, ...(tenant ? { TENANT: tenant } : {}) };
-  // The upgrade checked out the release in the workspace, so the sync does not pull.
-  const sync = run("sudo", ["-u", env.OWNER, "-H", "env", ...Object.entries({ ...vars, NO_PULL: "1", PATH: env.PATH }).map(([k, v]) => `${k}=${v}`),
+  const sync = run("sudo", ["-u", env.OWNER, "-H", "env", ...Object.entries({ ...vars, PATH: env.PATH }).map(([k, v]) => `${k}=${v}`),
     "bash", path.join(kit, "sync-skills.sh")], { stdio: "inherit" });
   if (sync.status !== 0) problems.push("the agents' skills and personas did not sync");
   // The key check: the owner dumps CircleChat's database from Docker, and root reads the gateway's

@@ -6,7 +6,8 @@
 # Agents can change the shared workspace and their own homes, the workspace's checkout of this repo
 # included. So every file this script copies comes from the kit's own checkout, outside the
 # workspace, and every write goes through kit/safe-files.mjs, which never follows a symlink
-# (setup-agent.sh --sync). The workspace's checkout is only pulled, for the agents to read.
+# (setup-agent.sh --sync). The script never runs git in the workspace: agents can change each
+# checkout there, and the agents update their own checkouts from inside their containers.
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 [ "$(id -u)" != 0 ] || { echo "Run sync-skills.sh as the account that owns the stacks, never as root."; exit 1; }
@@ -19,11 +20,8 @@ fi
 CC_DIR="${CC_DIR:-$HOME/circlechat}"
 WS="${WS:-$HOME/circlechat-workspace}"
 export CC_DIR WS
-K="$WS/recursica-knowledge"
 KIT_ROOT="$(cd "$HERE/.." && pwd)"
 
-# With upgrade.auto, the upgrade job checks out each release, so this script does not pull.
-[ "${NO_PULL:-}" = 1 ] || git -C "$K" pull --ff-only
 # Kev, Barb's quick first pass, from the kit's checkout.
 if [ -d "$WS/kev" ] && [ -d "$KIT_ROOT/tools/kev" ]; then
   node "$HERE/kit/safe-files.mjs" copy "$WS" "$WS/kev" "$KIT_ROOT/tools/kev/."

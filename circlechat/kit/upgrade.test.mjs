@@ -40,7 +40,6 @@ test("with root's steps, the setup gets the password on stdin, needs no sudo, an
   assert.equal(recorded, 1, "the run is recorded before the setup starts");
   assert.deepEqual(calls.map((c) => c.line), ["bash /kit/circlechat/setup-host.sh --upgrade"]);
   assert.equal(calls[0].opts.env.KIT_ROOT_STEPS, "1");
-  assert.equal(calls[0].opts.env.NO_PULL, "1");
   assert.equal(calls[0].opts.input, "pw48\n");
   calls.length = 0;
   // Without root's steps, such as a run by hand, the setup and the skill sync run as before.

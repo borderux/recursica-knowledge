@@ -13,6 +13,7 @@ import path from "node:path";
 import { promisify } from "node:util";
 import { SOAK_MS } from "./updates.mjs";
 import { stackSlack } from "../kit/slack.mjs";
+import { readFile as readInPlace, writeFile as writeInPlace } from "../kit/safe-files.mjs";
 import { stackName } from "../kit/render.mjs";
 
 const here = path.dirname(new URL(import.meta.url).pathname);
@@ -98,13 +99,16 @@ async function main() {
   }
   // @recursica/mcp on a stack without automatic upgrades: a new version goes in after 7 days.
   const tenantUpgrade = tenantEnv.UPGRADE_AUTO;
-  const mcpFile = path.join(process.env.WS ?? path.join(process.env.HOME ?? "", "circlechat-workspace"), ".recursica-mcp-version");
-  if (tenantUpgrade !== "on" && fs.existsSync(mcpFile)) {
+  // Agents can change the workspace: the file is read and written without following a symlink.
+  const ws = process.env.WS ?? path.join(process.env.HOME ?? "", "circlechat-workspace");
+  const mcpFile = path.join(ws, ".recursica-mcp-version");
+  let current = "";
+  try { current = readInPlace(ws, mcpFile)?.trim() ?? ""; } catch (e) { console.error(e.message); }
+  if (tenantUpgrade !== "on" && current) {
     const latest = await fetch("https://registry.npmjs.org/@recursica/mcp/latest").then((r) => r.json()).then((j) => j.version).catch(() => "");
-    const current = fs.readFileSync(mcpFile, "utf8").trim();
     const [m] = chooseDigests([{ tag: "@recursica/mcp", current, pulled: latest }], seen);
     fs.writeFileSync(stateFile, JSON.stringify(seen));
-    if (m.changed && latest.split(".")[0] === current.split(".")[0]) fs.writeFileSync(mcpFile, `${latest}\n`);
+    if (m.changed && latest.split(".")[0] === current.split(".")[0]) writeInPlace(ws, mcpFile, `${latest}\n`);
   }
   const changed = choice.filter((c) => c.changed).map((c) => c.tag);
   if (await healthy()) {

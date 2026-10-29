@@ -106,8 +106,8 @@ To move an agent to another server or model, change `site.json` and rerun `setup
    it is wrong), then: fixes `.env` (including `HERMES_TIMEOUT`), ports, the shared workspace and
    its checkouts, copies Kev, starts CircleChat, the app preview, the model gateway
    and the Slack notifier, and installs start-at-boot and hourly jobs (systemd
-   or launchd). It turns on this repository's commit hooks in Alan's checkout; add
-   `LOCAL_REDACTIONS=<path to your local-redactions.json>` so client names are checked too.
+   or launchd). It clones Alan's checkout with this repository's commit hooks turned on. Set
+   `LOCAL_REDACTIONS=<path to the local-redactions.json file>` so client names are checked too.
 3. **Every other machine:** copy `site.json` over (it holds no secrets), put its services'
    secrets in `~/.recursica-node.env`, and run `./circlechat/setup-node.sh <node name>`.
 4. **CircleChat's address and the app preview's address:** `setup-host.sh` runs `tailscale serve` for both, as "Addresses on the tailnet" describes. With `site.proxy` set to `other`, point an HTTPS reverse proxy on the control computer at `127.0.0.1:<site.port>` and `127.0.0.1:<site.preview_port>`.
@@ -128,15 +128,14 @@ To move an agent to another server or model, change `site.json` and rerun `setup
 6. Test: `@betty hello`, `@barb run node -v`, `@alan list open PRs on <this repo>`.
 
 After that, an hourly job, `sync-skills.sh`, refreshes each agent's skills and persona from the kit
-checkout, as "Files in the workspace and the agents' homes" describes. The job also pulls the
-workspace's checkout, for the agents to read. With `upgrade.auto`, the upgrade job does both
-after each release instead.
+checkout, as "Files in the workspace and the agents' homes" describes. With `upgrade.auto`, the
+upgrade job does the same after each release instead.
 
 ### Files in the workspace and the agents' homes
 
 **An agent can change any file in the shared workspace and in the agent's own Hermes home,
 symlinks included.** A plain `cp -r`, `tee` or `chmod -R` there would follow a symlink an agent
-put there, and change a file anywhere on the computer. So the kit keeps three rules:
+put there, and change a file anywhere on the computer. So the kit keeps four rules:
 
 - **`sync-skills.sh` and `setup-agent.sh` never run as root.** Each script stops when root runs it.
   The hourly sync job and the upgrade job run `sync-skills.sh` as the account that owns the
@@ -149,7 +148,12 @@ put there, and change a file anywhere on the computer. So the kit keeps three ru
   to a file is refused, and nothing is written there. Each file is written as a new file, then
   moved into place, so a symlink at the file's own name is replaced and the file the symlink names
   never changes. A read never follows a symlink. The chmod of an agent's home leaves each symlink
-  alone. `gateway/hermes-access.mjs`, which writes the agent's gateway key, follows the same rules.
+  alone. `gateway/hermes-access.mjs`, which writes the agent's gateway key, follows the same rules,
+  and so do the version file of `@recursica/mcp` in the workspace and the Kev data push, which
+  reads Barb's notes from the workspace before the notes go to a public branch.
+- **The key check never follows a symlink.** Root runs `gateway/key-check.mjs` over the agents'
+  homes, and the test restore runs the check over each restored backup. The check skips each symlink, never reads the file the
+  symlink names, and names each skipped symlink in the report.
 
 **`sync-skills.sh` refreshes only the skills and the persona** (`setup-agent.sh --sync`), with no
 sudo. A change to the rest of an agent's setup, such as the agent's gateway access, needs
@@ -185,7 +189,13 @@ The check refuses a checkout in three cases:
 
 A root-owned folder with the sticky bit, such as `/tmp`, passes above a checkout. Other accounts cannot rename or delete the owner's folder there.
 
-**The workspace keeps a separate checkout for the agents to read,** `~/circlechat-workspace/recursica-knowledge`. The hourly sync pulls that checkout. With `upgrade.auto`, the upgrade job moves both checkouts to each release. The job runs the setup from `~/recursica-knowledge`.
+**The workspace keeps separate checkouts for the agents,** such as `~/circlechat-workspace/recursica-knowledge`, which every agent reads, and `kb-proposals`, where Alan keeps the branches of his pull requests. The agents update their own checkouts, from inside their containers.
+
+**No kit script runs git in the workspace, as the owner or as root.** An agent can change each checkout there, the checkout's git settings and hooks included, and git runs the hooks and the filters a checkout's settings name. So:
+
+- `setup-host.sh` clones each checkout once, when nothing is at the checkout's path, and never runs git in a checkout after that. Alan's checkout gets the repository's commit hooks at the clone.
+- `sync-skills.sh` never pulls a checkout in the workspace. The skills and personas come from the kit checkout.
+- With `upgrade.auto`, the upgrade job moves only the kit checkout, `~/recursica-knowledge`, to each release. The job runs the setup from that checkout.
 
 **The check finds a checkout that agents or other accounts could change.** The check cannot find a file that was changed before the check ran.
 

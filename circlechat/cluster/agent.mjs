@@ -48,7 +48,10 @@ export function makeAgent({ env, platform, guard, post, now = () => Date.now(), 
       case "upgrade-now": {
         const mcp = String(ref ?? "").match(/^@recursica\/mcp@(\d+\.\d+\.\d+)$/);
         if (mcp) {
-          fs.writeFileSync(path.join(env.OWNER_HOME, "circlechat-workspace/.recursica-mcp-version"), `${mcp[1]}\n`);
+          // Root writes in the workspace, which agents can change, so never through a symlink.
+          const ws = path.join(env.OWNER_HOME, "circlechat-workspace");
+          const { writeFile: writeInPlace } = await import("../kit/safe-files.mjs");
+          try { writeInPlace(ws, path.join(ws, ".recursica-mcp-version"), `${mcp[1]}\n`); } catch (e) { return { ok: false, message: e.message }; }
           return { ok: true, message: `@recursica/mcp ${mcp[1]} takes effect at each agent's next turn` };
         }
         if (!/^@recursica\/knowledge@\d+\.\d+\.\d+$/.test(ref ?? "")) return { ok: false, message: "not a release tag" };

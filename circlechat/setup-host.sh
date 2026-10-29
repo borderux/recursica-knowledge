@@ -238,14 +238,15 @@ set_env APPROVE_RISK_AT high
 # The exact version lives in the shared workspace, read at the start of each agent turn: a stack
 # with upgrade.auto moves it hourly (kit/upgrade.mjs), every other stack after 7 days
 # (cluster/images.mjs).
+# Agents can change the workspace, so each file here is written without following a symlink.
 mkdir -p "$WS"
-[ -s "$WS/.recursica-mcp-version" ] || printf '%s\n' "$RECURSICA_MCP_VERSION" > "$WS/.recursica-mcp-version"
-cat > "$WS/.recursica-mcp.sh" <<'SH'
+SAFE="$HERE/kit/safe-files.mjs"
+[ -s "$WS/.recursica-mcp-version" ] && [ ! -L "$WS/.recursica-mcp-version" ] || printf '%s\n' "$RECURSICA_MCP_VERSION" | node "$SAFE" write "$WS" "$WS/.recursica-mcp-version"
+node "$SAFE" write "$WS" "$WS/.recursica-mcp.sh" 755 <<'SH'
 #!/bin/sh
 # Start the Recursica MCP server in the given project, at the version in .recursica-mcp-version.
 cd "$1" && exec npx -y "@recursica/mcp@$(cat /workspace/.recursica-mcp-version)"
 SH
-chmod 755 "$WS/.recursica-mcp.sh"
 RMCP="{\"command\":\"sh\",\"args\":[\"/workspace/.recursica-mcp.sh\",\"/workspace/${APP_REPO:-app}\"],\"enabled\":true,\"timeout\":120}"
 set_env CC_AGENT_MCP_SERVERS "{\"betty\":{\"recursica-mcp\":$RMCP},\"barb\":{\"recursica-mcp\":$RMCP}}"
 set_env ENFORCE_AGENT_SCOPES true
@@ -505,17 +506,21 @@ grep -q ':/workspace' compose.agents.yml || \
       - ${CC_SHARED_WORKSPACE_DIR}:/workspace|' compose.agents.yml
 
 mkdir -p hermes-homes "$WS" "$WS/reviews" "$WS/loki"
-# The checkout every agent reads. Nobody writes to it; sync-skills.sh pulls it.
-[ -d "$WS/recursica-knowledge" ] || git clone "$KNOWLEDGE_REPO" "$WS/recursica-knowledge"
+# The workspace's checkouts. The setup clones each one once, when nothing is at its path, and never
+# runs git in a checkout after that: agents can change each checkout, its git settings and hooks
+# included, and the agents update their own checkouts from inside their containers.
+clone_once() { [ -e "$2" ] || [ -L "$2" ] || git clone "${@:3}" "$1" "$2"; }
+# The checkout every agent reads.
+clone_once "$KNOWLEDGE_REPO" "$WS/recursica-knowledge"
 # Alan's own clone, for his proposal branches. Kept apart so an unmerged rule never reaches
-# the checkout Betty builds from and Barb reviews against.
-[ -d "$WS/kb-proposals" ] || git clone "$KNOWLEDGE_REPO" "$WS/kb-proposals"
-git -C "$WS/kb-proposals" config core.hooksPath .husky
+# the checkout Betty builds from and Barb reviews against. The repo's commit hooks are set at the
+# clone, never later.
+clone_once "$KNOWLEDGE_REPO" "$WS/kb-proposals" -c core.hooksPath=.husky
 if [ -n "${LOCAL_REDACTIONS:-}" ] && [ -f "$LOCAL_REDACTIONS" ]; then
-  cp "$LOCAL_REDACTIONS" "$WS/kb-proposals/buzz-agents/local-redactions.json"
+  node "$SAFE" write "$WS" "$WS/kb-proposals/buzz-agents/local-redactions.json" < "$LOCAL_REDACTIONS"
 fi
 # The application Betty builds in and Barb reviews.
-[ -d "$WS/$APP_REPO" ] || git clone "$APP_REPO_URL" "$WS/$APP_REPO"
+clone_once "$APP_REPO_URL" "$WS/$APP_REPO"
 
 # Kev, Barb's quick first pass. Copied out of the kit's checkout so its cache and node_modules
 # never land in a repository. Agents can change the workspace, so the copy never follows a symlink
