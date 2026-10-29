@@ -504,3 +504,11 @@ test("a computer's slack_icon is one emoji", () => {
   s.nodes[0].slack_icon = "desktop";
   assert.match(validate(s).join("\n"), /node machine-1: slack_icon must be one emoji, such as :desktop_computer:/);
 });
+
+test("a computer's router is an IP address", () => {
+  const s = clone();
+  s.nodes[0].router = "192.0.2.1";
+  assert.deepEqual(validate(s), []);
+  s.nodes[0].router = "the office router";
+  assert.match(validate(s).join("\n"), /node machine-1: router must be an IP address, such as 192\.0\.2\.1/);
+});
