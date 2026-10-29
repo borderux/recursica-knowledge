@@ -153,6 +153,21 @@ export function gatewayConfig(site) {
 
 const AGENT = /^[a-z0-9][a-z0-9._-]{0,39}$/;
 
+// The ports agents and port jobs may use through the outgoing filter: web (80, 443), the job runner
+// (7400), Kev's model (8009) and the gateway. A model server's own port is never on the list:
+// Ollama's API, for one, deletes and downloads models. Only the gateway reaches a model server,
+// and the gateway does not use the filter.
+export const FILTER_PORTS = [80, 443, 7400, 8009];
+export function modelServerPorts(site = {}) {
+  const out = new Set();
+  for (const n of site.nodes ?? []) for (const m of [...(n.servers ?? []), ...(n.models ?? [])]) if (Number.isInteger(m.port)) out.add(m.port);
+  return out;
+}
+export function filterPorts(site = {}) {
+  const model = modelServerPorts(site);
+  return [...new Set([...FILTER_PORTS, site.site?.gateway_port ?? 4000])].filter((p) => !model.has(p));
+}
+
 export function squidConf(site = {}) {
   return `# Written by circlechat/kit/render.mjs. Each stack's outgoing filter.
 http_port 3128
@@ -163,7 +178,7 @@ acl allowed_ips dst "/etc/egress/allow-ips.txt"
 acl allow_once dstdomain "/etc/egress/allow-once.txt"
 # The blocked page agents see lives in the templates folder; Squid looks there for every page.
 error_directory /usr/share/squid/errors/templates
-acl Safe_ports port 80 443 1919 7400 8009 11434 ${site.site?.gateway_port ?? 4000}
+acl Safe_ports port ${filterPorts(site).join(" ")}
 http_access deny !Safe_ports
 http_access allow allowed
 http_access allow allowed_ips
@@ -414,6 +429,9 @@ export function validate(site, { cluster } = {}) {
       if (!m.port || !m.model) errs.push(`node ${n.name}/${m.id}: port and model are required`);
     }
     errs.push(...serverErrors(n, { leaveOut: Boolean(site.site?.computers) }));
+    for (const m of [...(n.servers ?? []), ...(n.models ?? [])]) {
+      if ([...FILTER_PORTS, site.site?.gateway_port ?? 4000].includes(m.port)) errs.push(`node ${n.name}: model server port ${m.port} is a port agents reach through the outgoing filter. Give the model server another port`);
+    }
     if (n.jobs) {
       if (!Number.isInteger(n.jobs.port) || !Number.isInteger(n.jobs.slots) || n.jobs.slots < 1) errs.push(`node ${n.name}: jobs needs an integer port and slots >= 1`);
       if (!(n.jobs.memory_gb > 0)) errs.push(`node ${n.name}: jobs.memory_gb must be a positive number`);

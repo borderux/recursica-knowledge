@@ -106,6 +106,19 @@ test("port jobs reach the control computer's gateway: over the job network there
   assert.match(validate(s).join("\n"), /tailnet_address must be an IP address/);
 });
 
+test("agents never reach a model server's own API through the outgoing filter", () => {
+  const ports = (conf) => conf.match(/^acl Safe_ports port (.*)$/m)[1].split(" ").map(Number);
+  assert.deepEqual(ports(render(example).egress.conf), [80, 443, 7400, 8009, 4000], "web, the job runner, Kev's model and the gateway");
+  const s = clone();
+  s.nodes[1].servers.push({ id: "mlx-2", kind: "mlx-lm", port: 8082, models: [{ id: "other", model: "<name>", memory_gb: 1 }] });
+  s.nodes[0].models = [{ id: "old", port: 11434, model: "<name>" }];
+  delete s.nodes[0].servers;
+  const open = ports(render(s).egress.conf);
+  for (const p of [11434, 8082, 8081]) assert.ok(!open.includes(p), `model server port ${p} stays closed`);
+  s.nodes[1].servers[1].port = 7400;
+  assert.match(validate(s).join("\n"), /model server port 7400 is a port agents reach through the outgoing filter/);
+});
+
 test("kev engines are ordered by priority", () => {
   assert.deepEqual(render(example).kev, ["http://machine-2.example.ts.net:8009", "http://host.docker.internal:8009"]);
 });

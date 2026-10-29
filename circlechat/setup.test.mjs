@@ -61,7 +61,12 @@ test("setup-host --secrets-only writes the stack's settings and starts the gatew
   assert.match(litellm, /-v .*\/model-keys\.env:\/run\/secrets\/model-keys\.env:ro/);
   assert.match(litellm, /--entrypoint python ghcr\.io\/berriai\/litellm:main-stable@sha256:0123abcd \/kit\/start-litellm\.py/);
   assert.doesNotMatch(litellm, /--env-file|-p /, "LiteLLM gets no environment file and publishes no port");
-  assert.match(calls, /docker network create circlechat_models/);
+  // LiteLLM reaches the model servers directly, not through the outgoing filter, which keeps every
+  // model server's port closed to agents.
+  assert.match(litellm, /--add-host host\.docker\.internal:host-gateway /);
+  assert.doesNotMatch(litellm, /_PROXY=|_proxy=/, "LiteLLM does not use the outgoing filter");
+  assert.match(calls, /docker network create circlechat_models\n/, "the gateway's network has a route out");
+  assert.doesNotMatch(calls, /docker network connect \S* ?circlechat_agents cc-litellm/, "LiteLLM is not on the agents' closed network");
   const router = calls.split("\n").find((l) => l.startsWith("docker run -d --name cc-gateway "));
   // With the filter on, only the port for port jobs is published, on the Tailscale address.
   assert.match(router, /--network circlechat_default -p 100\.64\.0\.1:4000:4001 -v /);
