@@ -5,17 +5,29 @@
 //   node kit/slack.mjs "<text>"        (with CC_DIR set, or run from the stack's folder)
 import fs from "node:fs";
 import path from "node:path";
+import { stackName } from "./render.mjs";
+
+// The name and the icon a Slack message shows as its sender: the sending computer's name for the
+// cluster's own programs, and the stack's name for a message about a whole stack. The icon is an
+// emoji, such as :desktop_computer: (nodes[].slack_icon in site.json). Slack uses both only when
+// the Slack app has the chat:write.customize scope. Without that scope, Slack ignores both and
+// posts as the app.
+export function senderFields(name, icon) {
+  return { ...(name ? { username: name } : {}), ...(icon ? { icon_emoji: icon } : {}) };
+}
 
 export function stackSlack(ccDir) {
   let env = "";
   try { env = fs.readFileSync(path.join(ccDir, ".env"), "utf8"); } catch {}
   const get = (k) => (env.match(new RegExp(`^${k}=(.+)$`, "m")) ?? [])[1]?.trim() ?? "";
   const token = get("SLACK_BOT_TOKEN"), channel = get("SLACK_CHANNEL");
+  let name = "";
+  try { name = stackName(JSON.parse(fs.readFileSync(path.join(ccDir, "site.json"), "utf8"))); } catch {}
   return async (text) => {
     if (!token || !channel) return false;
     const r = await fetch("https://slack.com/api/chat.postMessage", { method: "POST",
       headers: { authorization: `Bearer ${token}`, "content-type": "application/json; charset=utf-8" },
-      body: JSON.stringify({ channel, text }) }).catch(() => null);
+      body: JSON.stringify({ channel, text, ...senderFields(name) }) }).catch(() => null);
     return Boolean(r && (await r.json()).ok);
   };
 }

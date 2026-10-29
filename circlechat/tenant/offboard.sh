@@ -71,6 +71,8 @@ remove)
     docker volume rm "cc-notify-state-$CLIENT" >/dev/null 2>&1 || true
     PORT="$(node -e 'console.log(JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")).site?.port ?? "")' "$CC_DIR/site.json")"
     [ -n "$PORT" ] && { tailscale serve --https="$PORT" off >/dev/null 2>&1 || true; }
+    # setup-host.sh gives the app preview a tailscale serve rule too.
+    [ -n "${PREVIEW_PORT:-}" ] && { tailscale serve --https="$PREVIEW_PORT" off >/dev/null 2>&1 || true; }
     # On a Mac, tailscale serve passes the stack's gateway port to the gateway (setup-host.sh).
     [ -n "${GATEWAY_PORT:-}" ] && { tailscale serve --tcp="$GATEWAY_PORT" off >/dev/null 2>&1 || true; }
     # The client's nightly backups: the archive replaces them, and this computer can read them.

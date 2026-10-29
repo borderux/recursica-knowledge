@@ -8,10 +8,10 @@ import { totp, newSecret } from "./totp.mjs";
 import { buttonBlocks } from "./actions.mjs";
 
 const NOW = 1_800_000_000_000;
-function setup() {
+function setup(extra = {}) {
   const secret = newSecret();
   const env = { APPROVERS: "U1=person_a,U2=person_b", TOTP_SECRET_PERSON_A: secret, TOTP_SECRET_PERSON_B: newSecret(),
-    SLACK_CHANNEL_ID: "C1", STATE_DIR: fs.mkdtempSync(path.join(os.tmpdir(), "bot-")) };
+    SLACK_CHANNEL_ID: "C1", STATE_DIR: fs.mkdtempSync(path.join(os.tmpdir(), "bot-")), ...extra };
   const calls = [], relays = [];
   const bot = makeBot({ env, now: () => NOW,
     api: async (m, b) => { calls.push([m, b]); return { ok: true }; },
@@ -92,4 +92,12 @@ test("a click is acknowledged without waiting for the target computer", async ()
   await bot.handle(click("U1", "cut-off-now"));
   assert.ok(Date.now() - started < 1000);
   release();
+});
+
+test("the bot's messages show the control computer's name and icon as the sender", async () => {
+  const { bot, calls } = setup({ COMPUTER: "machine-1", SLACK_ICON: ":desktop_computer:" });
+  for (let i = 0; i < 3; i++) await bot.handle(submit("U1", codeView("000000")));
+  const posts = calls.filter(([m]) => m === "chat.postMessage");
+  assert.ok(posts.length > 0);
+  for (const [, b] of posts) { assert.equal(b.username, "machine-1"); assert.equal(b.icon_emoji, ":desktop_computer:"); }
 });

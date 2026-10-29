@@ -37,6 +37,8 @@ Copy `circlechat/site.example.json` to `~/circlechat/site.json`, and fill in eac
 | `site.public_host`                                    | The address people use for CircleChat                                                                                                            |
 | `site.port`, `site.preview_port`, `site.gateway_port` | CircleChat's and the app preview's ports on the computer, and the gateway's port for port jobs on other computers                                |
 | `site.tenant`, `site.kind`, `site.docker_context`     | One stack per client on a shared computer; see "Clients" in `circlechat/README.md`                                                               |
+| `nodes[].router`                                      | The router each computer's default route leads to; the network check posts in Slack when the router differs                                      |
+| `nodes[].slack_icon`                                  | An optional emoji for each computer, shown on the computer's Slack messages, such as `:desktop_computer:`                                        |
 | `site.timezone`                                       | The cluster's time zone for reboot times in Slack, such as `Europe/Berlin`; each computer's own time zone when unset                             |
 | `site.stack_name`                                     | The name of the stack with no `site.tenant`, `cluster` when unset: the stack's GitHub environment and backups                                    |
 | `site.computers`, `nodes[].limits`                    | A client or demo stack's computers: one computer or the whole cluster, and optional limits that make a computer act smaller                      |
@@ -82,7 +84,7 @@ The secret names are in the table under "Secrets in GitHub" in `circlechat/READM
 1. **Clone the forks:** CircleChat to `~/circlechat`, and the knowledge repo to `~/recursica-knowledge`. Root runs the scripts in `~/recursica-knowledge`, so the checkout stays outside the agents' workspace. `setup-host.sh` clones the agents' own checkout into the workspace.
 2. **Put the secrets on the computer,** as "Secrets" describes.
 3. **Run the setup scripts** from `~/recursica-knowledge`, in order: `circlechat/setup-host.sh`, `circlechat/setup-node.sh <computer>`, then `circlechat/cluster/install-cluster.sh <computer>`. See "The kit checkout" in `circlechat/README.md`.
-4. **Point HTTPS at CircleChat:** run the `tailscale serve` line the setup prints. With a reverse proxy, point the proxy at CircleChat's port.
+4. **Check the HTTPS addresses:** `setup-host.sh` runs `tailscale serve` for CircleChat and the app preview, tailnet only. `tailscale serve status` shows both rules. With a reverse proxy (`site.proxy` set to `other`), point the proxy at CircleChat's port and the app preview's port. See "Addresses on the tailnet" in `circlechat/README.md`.
 5. **Turn on single sign-on:** CircleChat supports OpenID Connect providers, such as Google Workspace, Okta and Entra ID, in each workspace's enterprise settings. The provider's redirect address is `https://<CircleChat's address>/api/auth/sso/callback`. List the company's email domain as the allowed domain.
 6. **Install the agents** in CircleChat, then run `circlechat/setup-agent.sh <handle>` for each agent, and `circlechat/sync-skills.sh` once.
 

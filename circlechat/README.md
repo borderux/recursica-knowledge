@@ -106,11 +106,11 @@ To move an agent to another server or model, change `site.json` and rerun `setup
    it is wrong), then: fixes `.env` (including `HERMES_TIMEOUT`), ports, the shared workspace and
    its checkouts, copies Kev, starts CircleChat, the app preview, the model gateway
    and the Slack notifier, and installs start-at-boot and hourly jobs (systemd
-   or launchd). It turns on this repository's commit hooks in Alan's checkout; add
-   `LOCAL_REDACTIONS=<path to your local-redactions.json>` so client names are checked too.
+   or launchd). It clones Alan's checkout with this repository's commit hooks turned on. Set
+   `LOCAL_REDACTIONS=<path to the local-redactions.json file>` so client names are checked too.
 3. **Every other machine:** copy `site.json` over (it holds no secrets), put its services'
    secrets in `~/.recursica-node.env`, and run `./circlechat/setup-node.sh <node name>`.
-4. Point your HTTPS name at `127.0.0.1:<port>`; the script prints the Tailscale commands.
+4. **CircleChat's address and the app preview's address:** `setup-host.sh` runs `tailscale serve` for both, as "Addresses on the tailnet" describes. With `site.proxy` set to `other`, point an HTTPS reverse proxy on the control computer at `127.0.0.1:<site.port>` and `127.0.0.1:<site.preview_port>`.
 5. For each agent: add the agent in the CircleChat UI (**Members → Add agent**: Hermes, provider
    custom (FreeLLMAPI), base URL `http://cc-gateway:4000/v1`, key `placeholder-key`, **Install + link**).
    Never paste a cloud key into CircleChat. Wait for the install to finish, then run:
@@ -127,8 +127,40 @@ To move an agent to another server or model, change `site.json` and rerun `setup
    as the person who made it.
 6. Test: `@betty hello`, `@barb run node -v`, `@alan list open PRs on <this repo>`.
 
-After that, an hourly job pulls this repo and reruns `setup-agent.sh` for every agent
-(`sync-skills.sh`), so merged changes reach the agents within the hour.
+After that, an hourly job, `sync-skills.sh`, refreshes each agent's skills and persona from the kit
+checkout, as "Files in the workspace and the agents' homes" describes. With `upgrade.auto`, the
+upgrade job does the same after each release instead.
+
+### Files in the workspace and the agents' homes
+
+**An agent can change any file in the shared workspace and in the agent's own Hermes home,
+symlinks included.** A plain `cp -r`, `tee` or `chmod -R` there would follow a symlink an agent
+put there, and change a file anywhere on the computer. So the kit keeps four rules:
+
+- **`sync-skills.sh` and `setup-agent.sh` never run as root.** Each script stops when root runs it.
+  The hourly sync job and the upgrade job run `sync-skills.sh` as the account that owns the
+  stacks. `setup-agent.sh`, run by hand, writes in the agent's home with sudo, through the helper
+  below.
+- **Every file the kit copies there comes from the kit checkout,** `~/recursica-knowledge`, never
+  from the workspace's checkout, which an agent can change: the skills, Barb's subagents, each
+  persona, and Kev's files.
+- **Every write there goes through `circlechat/kit/safe-files.mjs`.** A symlinked folder on the way
+  to a file is refused, and nothing is written there. Each file is written as a new file, then
+  moved into place, so a symlink at the file's own name is replaced and the file the symlink names
+  never changes. A read never follows a symlink. The chmod of an agent's home leaves each symlink
+  alone. `gateway/hermes-access.mjs`, which writes the agent's gateway key, follows the same rules,
+  and so does the Kev data push, which reads Barb's notes from the workspace before the notes go to
+  a public branch.
+- **The key check never follows a symlink.** Root runs `gateway/key-check.mjs` over the agents'
+  homes, and the test restore runs the check over each restored backup. The check skips each symlink, never reads the file the
+  symlink names, and names each skipped symlink in the report.
+
+**`sync-skills.sh` refreshes only the skills and the persona** (`setup-agent.sh --sync`), with no
+sudo. A change to the rest of an agent's setup, such as the agent's gateway access, needs
+`setup-agent.sh <handle>` by hand. After a release that changes `setup-agent.sh` or
+`gateway/hermes-access.mjs`, the upgrade job says so in Slack. Files that root wrote in an agent's
+home before this change can stop the owner's sync: run `setup-agent.sh <handle>` once by hand for
+each agent, which sets the home's modes again.
 
 ### The cluster's own stack's name
 
@@ -144,7 +176,7 @@ After that, an hourly job pulls this repo and reruns `setup-agent.sh` for every 
 Each script below checks the kit checkout first, with `circlechat/kit/check-kit.sh`:
 
 - `setup-host.sh`, which installs the backups and the hourly sync
-- `backup/backup.sh`, `backup/restore-test.sh` and `sync-skills.sh`
+- `backup/backup.sh`, `backup/restore-test.sh` and `sync-skills.sh` (which runs as the owner, never as root)
 - `deploy/install-secrets-helper.sh`, and the secrets helper, `agent-stacks-apply`
 - `tenant/setup-pc.sh`, which installs `agent-stacks-disk`
 - `cluster/install-cluster.sh`, and the cluster agent and the update job at each start
@@ -157,7 +189,13 @@ The check refuses a checkout in three cases:
 
 A root-owned folder with the sticky bit, such as `/tmp`, passes above a checkout. Other accounts cannot rename or delete the owner's folder there.
 
-**The workspace keeps a separate checkout for the agents to read,** `~/circlechat-workspace/recursica-knowledge`. The hourly sync pulls that checkout. With `upgrade.auto`, the upgrade job moves both checkouts to each release. The job runs the setup from `~/recursica-knowledge`.
+**The workspace keeps separate checkouts for the agents,** such as `~/circlechat-workspace/recursica-knowledge`, which every agent reads, and `kb-proposals`, where Alan keeps the branches of his pull requests. The agents update their own checkouts, from inside their containers.
+
+**No kit script runs git in the workspace, as the owner or as root.** An agent can change each checkout there, the checkout's git settings and hooks included, and git runs the hooks and the filters a checkout's settings name. So:
+
+- `setup-host.sh` clones each checkout once, when nothing is at the checkout's path, and never runs git in a checkout after that. Alan's checkout gets the repository's commit hooks at the clone.
+- `sync-skills.sh` never pulls a checkout in the workspace. The skills and personas come from the kit checkout.
+- With `upgrade.auto`, the upgrade job moves only the kit checkout, `~/recursica-knowledge`, to each release. The job runs the setup from that checkout.
 
 **The check finds a checkout that agents or other accounts could change.** The check cannot find a file that was changed before the check ran.
 
@@ -304,7 +342,7 @@ The limits choose the models and size the stack's VM and jobs. A shared model se
 
 5. **Put the stack's secrets,** including the Slack app's `SLACK_BOT_TOKEN`, in the stack's GitHub environment, as "Secrets in GitHub" describes.
 6. **Run every kit script with `TENANT=<client>`**, such as `TENANT=<client> ~/recursica-knowledge/circlechat/setup-host.sh`. Use the same prefix for `setup-agent.sh`, and for `setup-node.sh` on each picked computer that runs jobs.
-7. **Give the stack an address** with `tailscale serve --bg --https=<port> http://127.0.0.1:<port>`.
+7. **The stack's address:** `setup-host.sh` gives the stack's CircleChat `https://<host>:<site.port>`, and the stack's app preview `https://<host>:<site.preview_port>`, as "Addresses on the tailnet" describes.
 
 With `TENANT=<client>`, the stack lives in `~/tenants/<client>/`. The stack's containers, volume, Compose project, ports and background jobs all carry the client's name. The stack's job runner reads secrets from `~/tenants/<client>/node.env`.
 
@@ -345,6 +383,21 @@ After every restart of the computer, the client's image stays closed. Run the "U
 
 Deleting the image and the key makes the client's data unreadable for good.
 
+## Addresses on the tailnet
+
+**CircleChat and the app preview listen on `127.0.0.1` only, and `tailscale serve` gives each one an HTTPS address on the tailnet.** The full setup, `setup-host.sh` with no option, runs both rules when `site.proxy` is `tailscale`, the default:
+
+| Stack                   | CircleChat                                                              | The app preview                                                                         |
+| ----------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| The cluster's own stack | `tailscale serve --bg --https=443 http://127.0.0.1:<site.port>`         | `tailscale serve --bg --https=<site.preview_port> http://127.0.0.1:<site.preview_port>` |
+| A client or demo stack  | `tailscale serve --bg --https=<site.port> http://127.0.0.1:<site.port>` | The same as the cluster's own stack, with the stack's own `site.preview_port`           |
+
+- **Only the tailnet reaches either address.** The setup never turns on Tailscale Funnel, which opens a port to the internet.
+- **The setup checks both rules** in `tailscale serve status`. The setup stops when a rule is missing, when a rule passes to another port, or when Funnel serves either port. The message names the port and the fix.
+- **Without Tailscale on the computer,** the setup prints the two commands to run after Tailscale is installed.
+- **With `site.proxy` set to `other`,** the setup leaves `tailscale serve` alone. Point an HTTPS reverse proxy on the computer at both ports.
+- **Offboarding a client** turns off both of the client's rules.
+
 ## Secrets in GitHub
 
 **Keep each stack's secrets in GitHub, in the private repo that holds the stacks' site.json files.** GitHub records each change, and more than one person can update a secret. GitHub never shows a secret again after the secret is saved. Keep a copy of each secret in a password manager.
@@ -356,6 +409,14 @@ Deleting the image and the key makes the client's data unreadable for good.
 5. **Install a GitHub self-hosted runner on each computer**, for the private repo only, under a separate account. Give the runner a label with the computer's name from site.json.
 6. **Run `~/recursica-knowledge/circlechat/deploy/install-secrets-helper.sh <runner account>`** on each computer, as the account that owns the stacks. The runner's account can then run one command as root: the helper that writes the secrets. The hourly update job reruns the script as root after the kit changes the helper.
 7. **Run the "Deploy secrets" workflow** with the stack and the computer. The workflow writes each secret to the file that reads the secret, then restarts the services that read the file.
+
+**A deploy needs no password-free sudo for the account that owns the stacks.** The runner's account runs the helper as root, and the helper takes each step that needs root itself. The owner's account runs only the Docker steps. After a deploy that writes a control computer's secrets, the helper takes three steps:
+
+1. **As root:** the helper writes the gateway's state folder, LiteLLM's master key, and the password and address of the router's database role. On a Mac, the owner owns each one, so Colima's VM can mount the files. The helper refuses a symlinked state folder, and a secrets file with a symlink or a second hard link.
+2. **As the owner:** `setup-host.sh --secrets-only` recreates the model gateway and the Slack notifier in Docker. The helper passes the database role's password on stdin, never on a command line.
+3. **As root:** the key check reads CircleChat's database, the gateway's secrets file and the agent homes. The deploy fails when a cloud key is in the database or in an agent's home.
+
+The helper starts in `/`, so no command the owner runs prints `getcwd` errors from the runner's work folder. Never add a `NOPASSWD` sudo rule for the owner's account.
 
 The node secrets file is `~/.recursica-node.env`, or `~/tenants/<client>/node.env` for a client or demo stack.
 
@@ -588,7 +649,7 @@ An incoming connection that no rule allows, or a touch on a decoy, starts a lock
 
 ### The Slack app
 
-1. Create a Slack app with Socket Mode on. Give the app-level token the `connections:write` scope, and the bot the `chat:write` scope. Invite the bot to #agent-cluster and to each client's channel.
+1. Create a Slack app with Socket Mode on. Give the app-level token the `connections:write` scope. Give the bot the `chat:write` and `chat:write.customize` scopes. The second scope lets each message name the computer or stack that sent it. Invite the bot to the cluster's channel, `SLACK_CHANNEL_ID`, and to each client's channel.
 2. Enroll each approver: `node circlechat/cluster/enroll.mjs <name>`, then scan the QR code with an authenticator app.
 3. Add the cluster's secrets to the GitHub environment of the cluster's own stack, then deploy them to each computer:
    - `SLACK_APP_TOKEN`, `SLACK_BOT_TOKEN` and `SLACK_CHANNEL_ID`, from the Slack app.
@@ -597,6 +658,17 @@ An incoming connection that no rule allows, or a touch on a decoy, starts a lock
    - Each approver's `TOTP_SECRET_<NAME>`, from `enroll.mjs`.
 4. Set `site.slack_channel_id` in each stack's site.json, so uptime alerts reach the stack's own channel.
 
+**Each Slack message names the computer or the stack that sent it.** The sender's name replaces the app's name on the message:
+
+| Sender                                                                                | Name on the message                                                               | Icon                        |
+| ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------- |
+| The cluster agent, the Slack app's replies, the update job and the uptime checks      | The computer's name in site.json, such as `machine-1`                             | The computer's `slack_icon` |
+| The notifier, the backups, the upgrade job and the image refresh, about a whole stack | The stack's name: `site.tenant`, or `site.stack_name` for the cluster's own stack | The app's icon              |
+
+`slack_icon` is an optional emoji for each computer in site.json's `nodes`, such as `:desktop_computer:`. Rerun `install-cluster.sh` on the computer after a change to `slack_icon`.
+
+Slack shows the name and the icon only when the bot has the `chat:write.customize` scope. Without the scope, Slack ignores both and posts as the app, so nothing breaks. Add the scope in the Slack app's settings, under "OAuth & Permissions", then reinstall the app to the workspace.
+
 ### Updates
 
 One job, `cluster-updater`, runs each hour on each computer, with one rule:
@@ -604,6 +676,14 @@ One job, `cluster-updater`, runs each hour on each computer, with one rule:
 - **Recursica's own software** (the knowledge repo and the CircleChat fork), on a stack with `upgrade.auto`: right away. A new major version asks in Slack.
 - **Everything else** (operating system packages and container images): after 7 days. A fix for a flaw on CISA's Known Exploited Vulnerabilities list goes in at once.
 - **An update that needs a reboot** asks for a time in Slack: "4 a.m.", "Tonight", "Pick a time" or "Skip".
+
+**A release upgrade needs no password-free sudo for the account that owns the stacks.** The upgrade, `kit/upgrade.mjs`, runs as the owner's account. The root process that starts the upgrade takes each step that needs root: `cluster-updater` each hour, or the cluster agent for the "Upgrade now" button in Slack (`cluster/root-steps.mjs`):
+
+1. **Before the upgrade, as root:** the gateway's state folder, LiteLLM's master key, and the password and address of the router's database role, as the secrets helper writes them ("Secrets in GitHub").
+2. **The upgrade, as the owner:** `setup-host.sh --upgrade` takes only the Docker steps. The database role's password passes on stdin.
+3. **After an upgrade that ran the setup:** `sync-skills.sh` refreshes each agent's skills and persona, as the owner, never as root. Then the key check runs as root. A failure goes to the stack's Slack channel.
+
+An older stack's `ANTHROPIC_API_KEY` in `.env` moves to the gateway's secrets file at the next full setup or secrets deploy. A run of `upgrade.mjs` by hand, in a terminal, uses sudo as before.
 
 Each reboot time is in the cluster's time zone, `site.timezone` in the cluster's site.json, such as `Europe/Berlin`. Without `site.timezone`, each computer uses the computer's own time zone. Rerun `install-cluster.sh` after a change to `site.timezone`.
 
@@ -631,6 +711,21 @@ Operating system packages are checked each hour, and each stack's container imag
 ### Uptime
 
 Each computer asks the other computers for the health of their stacks every minute. A computer silent for 3 minutes, or a stack that stops answering, gets one alert in each affected stack's channel.
+
+**Each computer checks the computer's own network every 5 minutes.** The check posts in the cluster's channel, `SLACK_CHANNEL_ID`:
+
+| Check              | Posts when                                                                                       |
+| ------------------ | ------------------------------------------------------------------------------------------------ |
+| The router         | The computer's default route leads to a router other than `router` for the computer in site.json |
+| github.com         | github.com resolves to an address outside the `web` addresses that `api.github.com/meta` lists   |
+| The office address | The computer's address on the office network changes, and once at the first check                |
+
+- A wrong router or a wrong github.com address posts once when the problem starts. A second post says when the problem ends. Another router can read and change the computer's traffic outside Tailscale. A changed name lookup can send the computer's GitHub traffic to another server.
+- The check keeps the last list of GitHub's addresses, and fetches a new list once a day. A changed name lookup that also breaks the fetch is still checked.
+- On a Mac, FileVault unlocks over SSH at the office address after a restart, before Tailscale starts. The office address post gives the address to use.
+- The office address is the computer's address on the default route. In WSL, the check reads the router and the office address from Windows.
+
+Set `router` for each computer in site.json's `nodes`, such as `"router": "192.0.2.1"`, then rerun `install-cluster.sh` on the computer. Without `router`, the check skips the router.
 
 ## Offboarding a client
 

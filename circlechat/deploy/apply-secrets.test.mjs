@@ -246,3 +246,99 @@ test("on a Mac, the secrets helper never looks chown up in PATH", () => {
   apply(conf, ["cluster", control, "false"], "MODEL_KEY_DEFAULT=k\nJOBD_TOKEN=jt\n", { PATH: fake.env.PATH, CHOWN: "" });
   assert.equal(fake.calls(), "");
 });
+
+// A deploy with restart: stand-ins for sudo, which runs the command as this account, for Docker,
+// which prints a database dump, and for the kit's setup-host.sh and key check, which record what
+// each one got.
+function restartRun(system, { keyCheckExit = 0 } = {}) {
+  const { home, conf } = setup();
+  const fake = fakeSystem(home, system);
+  const log = path.join(home, "calls.log");
+  const kit = path.join(home, "kit", "circlechat");
+  fs.mkdirSync(path.join(kit, "gateway"), { recursive: true });
+  fs.writeFileSync(path.join(fake.bin, "sudo"), `#!/usr/bin/env bash\necho "sudo $*" >> "${log}"\nwhile [ $# -gt 0 ]; do case "$1" in -u) shift 2 ;; -H|-n) shift ;; *) break ;; esac; done\nexec "$@"\n`, { mode: 0o755 });
+  fs.writeFileSync(path.join(fake.bin, "docker"), `#!/usr/bin/env bash\necho "docker $*" >> "${log}"\necho "dump of the database"\n`, { mode: 0o755 });
+  fs.writeFileSync(path.join(kit, "setup-host.sh"), `echo "setup-host $* helper=\${KIT_ROOT_STEPS:-} pwd=$(pwd)" >> "${log}"\nIFS= read -r pw; echo "setup-host password=$pw" >> "${log}"\n`);
+  fs.writeFileSync(path.join(kit, "gateway", "key-check.mjs"), `import fs from "node:fs";\nfs.appendFileSync(${JSON.stringify(log)}, "key-check " + process.argv.slice(2).join(" | ") + " stdin=" + fs.readFileSync(0, "utf8").trim() + "\\n");\nprocess.exit(${keyCheckExit});\n`);
+  const calls = () => (fs.existsSync(log) ? fs.readFileSync(log, "utf8") : "");
+  return { home, conf, fake, calls, run: (input = "MODEL_KEY_DEFAULT=k\nRESTIC_PASSWORD=r\n") => apply(conf, ["cluster", control, "true"], input, fake.env) };
+}
+
+test("a deploy needs no sudo from the owner: root prepares the gateway's files, the owner runs only Docker, and root runs the key check", () => {
+  for (const system of ["Linux", "Darwin"]) {
+    const t = restartRun(system);
+    const r = t.run();
+    assert.equal(r.status, 0, system + r.stdout + r.stderr);
+    assert.doesNotMatch(r.stderr, /getcwd/);
+    const gw = path.join(t.home, "circlechat", "gateway-state");
+    assert.equal(fs.statSync(gw).mode & 0o777, 0o700);
+    const pw = fs.readFileSync(path.join(gw, "db-password"), "utf8").trim();
+    assert.match(pw, /^[0-9a-f]{48}$/);
+    assert.match(fs.readFileSync(path.join(gw, "litellm-master.key"), "utf8"), /^sk-[0-9a-f]{48}\n$/);
+    assert.equal(fs.readFileSync(path.join(gw, "db.url"), "utf8"), `postgres://cc_gateway_read:${pw}@postgres:5432/circlechat\n`);
+    for (const f of ["db-password", "litellm-master.key", "db.url"]) assert.equal(fs.statSync(path.join(gw, f)).mode & 0o777, 0o600, f);
+    const calls = t.calls();
+    // The owner's run: the Docker steps only, from /, with the password on stdin and never in ps.
+    assert.match(calls, /^sudo -u \S+ -H env KIT_ROOT_STEPS=1 .* bash \S+\/setup-host\.sh --secrets-only$/m);
+    assert.doesNotMatch(calls, new RegExp(`^sudo .*${pw}`, "m"));
+    assert.match(calls, /^setup-host --secrets-only helper=1 pwd=\/$/m);
+    assert.match(calls, new RegExp(`^setup-host password=${pw}$`, "m"));
+    // The key check, after the owner's run: the owner's database dump, read by root's key check.
+    assert.ok(calls.indexOf("setup-host --secrets-only") < calls.indexOf("key-check "));
+    assert.match(calls, /^docker compose exec -T postgres pg_dump -U postgres circlechat$/m);
+    assert.match(calls, new RegExp(`^key-check --secrets \\| \\S+/model-keys\\.env \\| --stdin \\| CircleChat's database \\| \\S+/hermes-homes stdin=dump of the database$`, "m"));
+    // On a Mac, the owner gets the state folder and each file the helper wrote, and no whole folder.
+    // On Linux, root keeps them. (The node secrets file goes to the owner on both.)
+    const chowns = t.fake.calls().split("\n").filter((c) => c.startsWith("chown -h "));
+    if (system === "Darwin") {
+      assert.ok(chowns.includes(`chown -h ${os.userInfo().username} ${gw}`), chowns.join("\n"));
+      assert.ok(chowns.some((c) => c.includes(`${gw}/.new.`)), "each new file in the state folder");
+      assert.ok(t.fake.calls().split("\n").every((c) => !/ -R /.test(c)), "no chown of a whole folder");
+    } else assert.deepEqual(chowns, []);
+    // A second deploy keeps the password and the master key.
+    const key = fs.readFileSync(path.join(gw, "litellm-master.key"), "utf8");
+    assert.equal(t.run().status, 0);
+    assert.equal(fs.readFileSync(path.join(gw, "db-password"), "utf8").trim(), pw);
+    assert.equal(fs.readFileSync(path.join(gw, "litellm-master.key"), "utf8"), key);
+  }
+});
+
+test("a deploy fails when the key check finds a cloud key", () => {
+  const t = restartRun("Linux", { keyCheckExit: 1 });
+  assert.equal(t.run().status, 1);
+});
+
+test("the helper replaces a database password that a kit did not make, and never writes through a symlink", () => {
+  const t = restartRun("Linux");
+  const gw = path.join(t.home, "circlechat", "gateway-state");
+  fs.mkdirSync(gw, { recursive: true });
+  const outside = path.join(t.home, "outside.txt");
+  fs.writeFileSync(outside, "text of another file\n");
+  fs.symlinkSync(outside, path.join(gw, "db-password"));
+  fs.symlinkSync(outside, path.join(gw, "db.url"));
+  assert.equal(t.run().status, 0);
+  assert.equal(fs.readFileSync(outside, "utf8"), "text of another file\n");
+  assert.ok(!fs.lstatSync(path.join(gw, "db.url")).isSymbolicLink());
+  assert.doesNotMatch(fs.readFileSync(path.join(gw, "db.url"), "utf8"), /another file/);
+  assert.match(fs.readFileSync(path.join(gw, "db-password"), "utf8"), /^[0-9a-f]{48}\n$/);
+});
+
+test("the helper refuses a symlinked gateway state folder, and a hard-linked secrets file", () => {
+  const a = restartRun("Linux");
+  const target = path.join(a.home, "elsewhere");
+  fs.mkdirSync(target);
+  fs.symlinkSync(target, path.join(a.home, "circlechat", "gateway-state"));
+  const r = a.run();
+  assert.equal(r.status, 1);
+  assert.match(r.stdout, /Refused: .*gateway-state is a symlink/);
+  assert.deepEqual(fs.readdirSync(target), []);
+  assert.doesNotMatch(a.calls(), /setup-host/);
+  const b = restartRun("Linux");
+  const keys = path.join(b.home, "circlechat", "model-keys.env");
+  fs.writeFileSync(path.join(b.home, "other.env"), "");
+  fs.linkSync(path.join(b.home, "other.env"), keys);
+  const r2 = b.run();
+  assert.equal(r2.status, 1);
+  assert.match(r2.stdout, /Refused: .*model-keys\.env is a symlink or has a second hard link/);
+  assert.equal(fs.readFileSync(path.join(b.home, "other.env"), "utf8"), "");
+});

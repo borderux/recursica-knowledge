@@ -9,9 +9,10 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import http from "node:http";
 import path from "node:path";
-import { spawn, spawnSync, execFile } from "node:child_process";
+import { spawnSync, execFile } from "node:child_process";
 import { Guard } from "./guard.mjs";
-import { makePlatform } from "./platform.mjs";
+import { IS_MAC, IS_WSL, makePlatform } from "./platform.mjs";
+import { NetworkWatch, readNetwork } from "./network.mjs";
 import { buttonBlocks, clusterTz, formatTime, nextAt } from "./actions.mjs";
 import { parsePairs } from "./bot.mjs";
 import { makeChannel } from "./channel.mjs";
@@ -21,7 +22,7 @@ import { AgentControls } from "./agent-controls.mjs";
 import { requireKit } from "./kit-check.mjs";
 import { DEFAULT_STACK_NAME, clusterStackName } from "../kit/render.mjs";
 
-export function makeAgent({ env, platform, guard, post, now = () => Date.now(), stateDir, monitor, stacks = async () => [], egress, controls }) {
+export function makeAgent({ env, platform, guard, post, now = () => Date.now(), stateDir, monitor, stacks = async () => [], egress, controls, network }) {
   const tz = clusterTz(env);
   const rebootFile = path.join(stateDir, "reboot.json");
   const readReboot = () => { try { return JSON.parse(fs.readFileSync(rebootFile, "utf8")); } catch { return null; } };
@@ -48,8 +49,8 @@ export function makeAgent({ env, platform, guard, post, now = () => Date.now(), 
       case "upgrade-now": {
         if (!/^@recursica\/knowledge@\d+\.\d+\.\d+$/.test(ref ?? "")) return { ok: false, message: "not a release tag" };
         const ccDir = path.join(env.OWNER_HOME, "circlechat");
-        spawn("sudo", ["-u", env.OWNER, "-H", "env", `CC_DIR=${ccDir}`, `WS=${path.join(env.OWNER_HOME, "circlechat-workspace")}`, `SITE=${path.join(ccDir, "site.json")}`, `COMPUTER=${env.COMPUTER}`,
-          process.execPath, path.join(env.KIT, "circlechat/kit/upgrade.mjs"), ref], { detached: true, stdio: "ignore" }).unref();
+        // The upgrade runs as the owner, and the agent takes the steps that need root (root-steps.mjs).
+        import("./root-steps.mjs").then(({ runUpgrade }) => runUpgrade({ env, ccDir, ref })).catch((e) => console.error(`upgrade to ${ref}: ${e.message}`));
         return { ok: true, message: `upgrading to ${ref.split("@").pop()}; Slack hears again only on a failure` };
       }
       case "upgrade-skip": {
@@ -69,6 +70,7 @@ export function makeAgent({ env, platform, guard, post, now = () => Date.now(), 
     if (monitor) await monitor.tick().catch((e) => console.error(`monitor: ${e.message}`));
     if (egress) await egress.tick().catch((e) => console.error(`egress: ${e.message}`));
     if (controls) await controls.tick().catch((e) => console.error(`controls: ${e.message}`));
+    if (network) await network.tick().catch((e) => console.error(`network check: ${e.message}`));
     const r = readReboot();
     if (r && r.at <= now()) {
       fs.rmSync(rebootFile, { force: true });
@@ -174,7 +176,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     { cwd: st.ccDir, env: { ...process.env, ...(st.context ? { DOCKER_CONTEXT: st.context } : {}) } }, (err, out) => resolve(err ? [] : out.split("\n").filter(Boolean).map((l) => l.split("\t")))));
   const controls = new AgentControls({ stacks: controlStacks, sql, docker: (st, args) => docker(st, args), computer: env.COMPUTER,
     stateFile: path.join(stateDir, "controls.json"), post: (channel, text, blocks) => chat.post(channel, "info", text, undefined, blocks) });
-  const agent = makeAgent({ env, platform, guard, post, stateDir, monitor, stacks: () => localStacks(env.OWNER_HOME), egress, controls });
+  // The network check, every 5 minutes: the router, github.com's addresses and the office address
+  // (network.mjs). Its messages go to the cluster's channel.
+  const run = (cmd, args) => new Promise((resolve) => execFile(cmd, args, { timeout: 30_000 }, (err, out) => resolve(err ? "" : out)));
+  const network = new NetworkWatch({ computer: env.COMPUTER, expectedRouter: env.EXPECTED_ROUTER ?? "", post: (text) => post("info", text),
+    stateFile: path.join(stateDir, "network.json"), read: () => readNetwork({ run, mac: IS_MAC, wsl: IS_WSL }) });
+  const agent = makeAgent({ env, platform, guard, post, stateDir, monitor, stacks: () => localStacks(env.OWNER_HOME), egress, controls, network });
   const srv = agent.server();
   for (const host of String(env.AGENT_BIND ?? "127.0.0.1").split(",")) {
     http.createServer(srv.listeners("request")[0]).listen(Number(env.AGENT_PORT ?? 7500), host.trim());

@@ -16,6 +16,10 @@
 # site.tenant <name>. <computer> is a node name in that
 # stack's site.json. Only the key names below are read; every other line is ignored.
 set -euo pipefail
+# The runner starts the helper in the runner's own work folder, which the owner cannot read. Each
+# command the helper runs as the owner would then fail to read the current folder, and print
+# "getcwd: cannot access parent directories". Every path below is absolute.
+cd /
 # macOS keeps chown in /usr/sbin, and the runner's PATH can leave /usr/sbin out. The tests set CHOWN
 # to a stand-in.
 case "$(uname -s)" in Darwin) CHOWN="${CHOWN:-/usr/sbin/chown}" ;; *) CHOWN="${CHOWN:-chown}" ;; esac
@@ -136,10 +140,9 @@ for k in AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY VERTEXAI_PROJECT AZURE_API_KEY;
 done
 # The helper runs as root, and the owner can replace model-keys.env with a symlink. Writing the
 # cloud keys through a symlink would write them to the file the symlink names.
-if [[ " $ROLES " == *" control "* ]] && [ -L "$CC_DIR/model-keys.env" ]; then
-  for k in $NAMES; do case "$k" in ANTHROPIC_API_KEY|MODEL_KEY_*)
-    echo "Refused: $CC_DIR/model-keys.env is a symlink. Replace the symlink with a plain file. Nothing was written."; exit 1 ;;
-  esac; done
+# A hard link would do the same, and the helper also gives the file to the owner on a Mac.
+if [[ " $ROLES " == *" control "* ]] && { [ -L "$CC_DIR/model-keys.env" ] || [ -n "$(find "$CC_DIR/model-keys.env" -links +1 2>/dev/null)" ]; }; then
+  echo "Refused: $CC_DIR/model-keys.env is a symlink or has a second hard link. Replace the file with a plain file. Nothing was written."; exit 1
 fi
 
 # Replace or add one KEY=value line, keeping every other line and the file's owner.
@@ -238,7 +241,43 @@ fi
 if [ "$WROTE_CONTROL" = true ]; then
   # The gateway reads the secrets file and the notifier reads .env when they start, so the kit
   # recreates both. Agents read their own .env at the start of each turn and need no restart.
-  sudo -u "$OWNER" -H env TENANT="$TENANT" CC_DIR="$CC_DIR" SITE="$SITE" PATH="$(dirname "$NODE_BIN"):$PATH" \
-    bash "$KIT/circlechat/setup-host.sh" --secrets-only
+  # The owner needs no sudo for this: the helper takes each step that needs root, and the owner
+  # takes only the Docker steps (setup-host.sh with KIT_ROOT_STEPS=1).
+  #   1. Root: the gateway's state folder, LiteLLM's master key, and the database role's password
+  #      and address (setup-host.sh does the same in the full setup). On a Mac, the owner owns each
+  #      one, so the gateway's containers can mount them. The owner can change the stack's folder:
+  #      the helper refuses a symlinked state folder, writes each file as a new file that replaces
+  #      the old one, and gives the owner only the files the helper writes.
+  GW_STATE="$CC_DIR/gateway-state"
+  [ ! -L "$GW_STATE" ] || { echo "Refused: $GW_STATE is a symlink. Replace the symlink with a folder."; exit 1; }
+  mkdir -p "$GW_STATE"; chmod 700 "$GW_STATE"
+  MAC=false; [ "$(uname -s)" = Darwin ] && MAC=true
+  [ "$MAC" = false ] || "$CHOWN" -h "$OWNER" "$GW_STATE"
+  put_state() {
+    local tmp; tmp="$(mktemp "$GW_STATE/.new.XXXXXX")"
+    cat > "$tmp"; chmod 600 "$tmp"
+    [ "$MAC" = false ] || "$CHOWN" -h "$OWNER" "$tmp"
+    mv -f "$tmp" "$GW_STATE/$1"
+  }
+  [ -s "$GW_STATE/litellm-master.key" ] && [ ! -L "$GW_STATE/litellm-master.key" ] || echo "sk-$(openssl rand -hex 24)" | put_state litellm-master.key
+  # A password the kit made is 48 hex digits. Anything else, such as a file the owner swapped in,
+  # is replaced, so the helper never copies another file's text into the database address.
+  DB_PASSWORD="$(cat "$GW_STATE/db-password" 2>/dev/null || true)"
+  if [ -L "$GW_STATE/db-password" ] || ! [[ "$DB_PASSWORD" =~ ^[0-9a-f]{48}$ ]]; then
+    DB_PASSWORD="$(openssl rand -hex 24)"; printf '%s\n' "$DB_PASSWORD" | put_state db-password
+  fi
+  printf 'postgres://cc_gateway_read:%s@postgres:5432/circlechat\n' "$DB_PASSWORD" | put_state db.url
+  if [ ! -f "$KEYS_FILE" ]; then install -m 600 /dev/null "$KEYS_FILE"; [ "$MAC" = false ] || "$CHOWN" -h "$OWNER" "$KEYS_FILE"; fi
+  #   2. The owner: the gateway and the notifier, in Docker. The database role's password goes on
+  #      stdin, never on a command line, which every account can read in ps.
+  printf '%s\n' "$DB_PASSWORD" | sudo -u "$OWNER" -H env KIT_ROOT_STEPS=1 TENANT="$TENANT" CC_DIR="$CC_DIR" SITE="$SITE" \
+    PATH="$(dirname "$NODE_BIN"):$PATH" bash "$KIT/circlechat/setup-host.sh" --secrets-only
+  #   3. Root: the key check (gateway/key-check.mjs), as in every mode of setup-host.sh. The owner
+  #      dumps CircleChat's database from Docker, and root reads the secrets file and the agent
+  #      homes. The kit passed the kit check above.
+  DCTX="$(sed -n 's/^DOCKER_CONTEXT=//p' "$CC_DIR/kit-out/tenant.env" 2>/dev/null || true)"
+  (sudo -u "$OWNER" -H env ${DCTX:+DOCKER_CONTEXT="$DCTX"} PATH="$(dirname "$NODE_BIN"):$PATH" \
+    bash -c 'cd "$1" && docker compose exec -T postgres pg_dump -U postgres circlechat' _ "$CC_DIR" 2>/dev/null || true) |
+    "$NODE_BIN" "$KIT/circlechat/gateway/key-check.mjs" --secrets "$KEYS_FILE" --stdin "CircleChat's database" "$CC_DIR/hermes-homes"
 fi
 echo "Secrets written and applied for stack $STACK on $COMPUTER."
