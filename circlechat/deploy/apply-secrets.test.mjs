@@ -10,13 +10,21 @@ const here = path.dirname(new URL(import.meta.url).pathname);
 const example = JSON.parse(fs.readFileSync(path.join(here, "..", "site.example.json"), "utf8"));
 const control = example.nodes.find((n) => n.control).name;
 
+// A stand-in for the kit's check (kit/check-kit.sh, tested in kit/check-kit.test.mjs): passes, or
+// refuses the kit with the given message.
+function fakeKitCheck(kit, refuse = "") {
+  fs.mkdirSync(path.join(kit, "circlechat", "kit"), { recursive: true });
+  fs.writeFileSync(path.join(kit, "circlechat", "kit", "check-kit.sh"), refuse ? `echo "${refuse}"; exit 1\n` : "exit 0\n");
+}
+
 function setup() {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), "stacks-"));
+  fakeKitCheck(path.join(home, "kit"));
   fs.mkdirSync(path.join(home, "circlechat", "hermes-homes", ".hermes-alan"), { recursive: true });
   fs.writeFileSync(path.join(home, "circlechat", "site.json"), JSON.stringify(example));
   fs.writeFileSync(path.join(home, "circlechat", ".env"), "KEEP=1\nANTHROPIC_API_KEY=old\n");
   const conf = path.join(home, "conf");
-  fs.writeFileSync(conf, `OWNER=${os.userInfo().username}\nOWNER_HOME=${home}\nKIT=/nonexistent\nNODE_BIN=${process.execPath}\n`);
+  fs.writeFileSync(conf, `OWNER=${os.userInfo().username}\nOWNER_HOME=${home}\nKIT=${path.join(home, "kit")}\nNODE_BIN=${process.execPath}\n`);
   return { home, conf };
 }
 
@@ -186,6 +194,7 @@ test("on Linux, unlock opens the LUKS image itself, then starts the VM as the ow
   const stub = (file, name) => fs.writeFileSync(file, `#!/usr/bin/env bash\nin="$(cat)"; echo "${name} $* stdin=\${#in}" >> "${log}"\n`, { mode: 0o755 });
   stub(path.join(bin, "helper"), "helper");
   stub(path.join(kit, "circlechat", "tenant", "disk-image.sh"), "disk-image.sh");
+  fakeKitCheck(kit);
   fs.writeFileSync(path.join(bin, "sudo"), '#!/usr/bin/env bash\n[ "$1" = -n ] && shift; exec "$@"\n', { mode: 0o755 });
   const conf = path.join(home, "conf");
   fs.writeFileSync(conf, `OWNER=${os.userInfo().username}\nOWNER_HOME=${home}\nKIT=${kit}\nNODE_BIN=${process.execPath}\n`);
@@ -201,4 +210,14 @@ test("on Linux, unlock opens the LUKS image itself, then starts the VM as the ow
     "disk-image.sh stop-vm acme stdin=0",
     "helper close acme stdin=0",
   ]);
+});
+
+test("refuses a kit checkout that fails the kit check, and writes nothing", () => {
+  const { home, conf } = setup();
+  fakeKitCheck(path.join(home, "kit"), "Refusing the kit checkout: the checkout sits inside the agents' workspace.");
+  const before = fs.readFileSync(path.join(home, "circlechat", ".env"), "utf8");
+  const r = apply(conf, ["border", control, "false"], "ANTHROPIC_API_KEY=new\n");
+  assert.equal(r.status, 1);
+  assert.match(r.stdout, /Refusing the kit checkout/);
+  assert.equal(fs.readFileSync(path.join(home, "circlechat", ".env"), "utf8"), before);
 });

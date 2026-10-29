@@ -91,14 +91,16 @@ test("Linux gets no Mac services", () => {
 test("the update job reruns the secrets helper as root, for the owner and the runner the first run recorded", () => {
   const s = sandbox();
   const conf = path.join(s.dir, "agent-stacks.conf");
-  fs.writeFileSync(conf, "OWNER=owner\nOWNER_HOME=/Users/owner\nKIT=/old/kit\nNODE_BIN=/opt/homebrew/bin/node\n");
+  // The kit check reads the real owner of this checkout.
+  const me = os.userInfo().username;
+  fs.writeFileSync(conf, `OWNER=${me}\nOWNER_HOME=/Users/owner\nKIT=/old/kit\nNODE_BIN=/opt/homebrew/bin/node\n`);
   s.stub("id", `[ "$1" = -un ] && { echo root; exit 0; }; exit 0`);
   s.stub("sudo", `if [ "$1" = tee ]; then cat > "${s.units}/$(basename "$2")"; exit 0; fi; exit 0`);
   const r = spawnSync("bash", [path.join(here, "../deploy/install-secrets-helper.sh"), "gh-runner"], { env: { ...s.env, AGENT_STACKS_CONF: conf }, encoding: "utf8" });
   assert.equal(r.status, 0, r.stdout + r.stderr);
   const kit = path.resolve(here, "../..");
   assert.equal(fs.readFileSync(path.join(s.units, "agent-stacks.conf"), "utf8"),
-    `OWNER=owner\nOWNER_HOME=/Users/owner\nRUNNER=gh-runner\nKIT=${kit}\nNODE_BIN=/opt/homebrew/bin/node\n`);
+    `OWNER=${me}\nOWNER_HOME=/Users/owner\nRUNNER=gh-runner\nKIT=${kit}\nNODE_BIN=/opt/homebrew/bin/node\n`);
   assert.match(s.calls(), new RegExp(`sudo install -m 755 -o root ${kit}/circlechat/deploy/apply-secrets.sh /usr/local/bin/agent-stacks-apply`));
   // As root with no first run on record, the script still refuses.
   fs.rmSync(conf);

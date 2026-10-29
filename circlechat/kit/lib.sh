@@ -14,6 +14,12 @@ sudo_sedi() { if sed --version >/dev/null 2>&1; then sudo sed -i "$@"; else sudo
 # A script that runs as root, such as backup.sh, sets DOCKER_OWNER to the stack's owner.
 own_for_docker() { [ "$OS" = Darwin ] || return 0; sudo chown -h -R "${DOCKER_OWNER:-$(id -un)}" "$@"; }
 
+# Stop unless the kit checkout is one root may run: outside the agents' workspace, and changed by
+# the owner only (kit/check-kit.sh). Every script that runs as root, or installs a command that root
+# runs, calls this first.
+#   require_kit <kit folder> [<owner account>] [<owner home folder>]
+require_kit() { bash "$(dirname "${BASH_SOURCE[0]}")/check-kit.sh" "$@" || exit 1; }
+
 # Read one value from site.json: site_get '.repos.app'
 site_get() { node -e '
   const s = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));

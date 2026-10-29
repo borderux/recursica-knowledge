@@ -2,6 +2,8 @@
 # After merging a knowledge PR: pull, then refresh every agent's skills and persona.
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
+# The hourly sync runs as root. The kit checkout must sit outside the agents' workspace.
+bash "$HERE/kit/check-kit.sh" "$HERE/.." "${OWNER:-}" "${OWNER_HOME:-$HOME}" || exit 1
 if [ -n "${TENANT:-}" ]; then
   CC_DIR="${CC_DIR:-$HOME/tenants/$TENANT/circlechat}"
   WS="${WS:-$HOME/tenants/$TENANT/workspace}"

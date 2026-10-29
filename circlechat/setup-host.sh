@@ -36,6 +36,9 @@ WS="${WS:-$HOME/circlechat-workspace}"
 SITE="${SITE:-$CC_DIR/site.json}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 . "$HERE/kit/lib.sh"
+# Every mode runs the key check as root, and the full setup installs jobs that root runs from this
+# checkout. The checkout must sit outside the agents' workspace.
+require_kit "$HERE/.."
 # Exact versions of the npm packages the agents run. Move a version up by pull request, 7 days
 # or more after the version's release.
 RECURSICA_MCP_VERSION=0.8.1
@@ -489,7 +492,7 @@ agents_to_gateway
 key_check
 
 # Background jobs, the native way for this OS (systemd on Linux, launchd on macOS).
-ENVS="CC_DIR=$CC_DIR WS=$WS SITE=$SITE"
+ENVS="CC_DIR=$CC_DIR WS=$WS SITE=$SITE OWNER=$(id -un) OWNER_HOME=$HOME"
 # A client stack's folder sits inside an encrypted disk image, which the "Unlock stack" workflow
 # opens after a restart. Until then the boot job finds no folder and does nothing.
 [ -n "$TENANT" ] && export UNIT_LOG_DIR="$HOME/tenants/$TENANT/logs"
@@ -502,7 +505,7 @@ if [ -n "$BACKUP_REMOTE" ]; then
     || { echo "rclone has no remote named ${BACKUP_REMOTE%%:*}. Set it up first: see README, \"Backups\"."; exit 1; }
   # Root reads Docker's settings from the owner's ~/.docker: on a Mac, Colima's Docker belongs to
   # the owner, and root has no settings of its own.
-  BENV="OWNER_HOME=$HOME CC_DIR=$CC_DIR WS=$WS DOCKER_CONFIG=$HOME/.docker PATH=$(dirname "$(command -v node)"):/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin"
+  BENV="OWNER=$(id -un) OWNER_HOME=$HOME CC_DIR=$CC_DIR WS=$WS DOCKER_CONFIG=$HOME/.docker PATH=$(dirname "$(command -v node)"):/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin"
   install_unit "backup$SUFFIX" "$BENV $HERE/backup/backup.sh" "$CC_DIR" root "*-*-* $BACKUP_TIME"
   install_unit "restore-test$SUFFIX" "$BENV $HERE/backup/restore-test.sh" "$CC_DIR" root "*-*-01 04:30"
 fi
